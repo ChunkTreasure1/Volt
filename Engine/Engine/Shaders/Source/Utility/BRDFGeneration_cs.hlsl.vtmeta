@@ -1,8 +1,0 @@
-Metadata:
-  assetHandle: 33044798551944974
-  filePath: Engine/Shaders/Source/Utility/BRDFGeneration_cs.hlsl
-  type: 128
-  Dependencies:
-    []
-  Properties:
-    {}

@@ -11,7 +11,7 @@ struct Constants
     
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
     TypedBuffer<GPUMesh> meshBuffer;
-    UniformBuffer<ViewData> viewData;
+    TypedBuffer<ViewData> viewData;
     
     uint objectCount;
     
@@ -23,7 +23,7 @@ struct Constants
 
 bool IsInFrustum(in Constants constants, in float3 boundingSphereCenter, in float boundingSphereRadius)
 {
-    const ViewData viewData = constants.viewData.Load();
+    const ViewData viewData = constants.viewData.Load(0);
     
     const float3 center = mul(viewData.view, float4(boundingSphereCenter, 1.f)).xyz;
 

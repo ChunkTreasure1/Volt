@@ -4,7 +4,7 @@
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 
 #include <Volt/Asset/AssetManager.h>
-#include <Volt/Asset/Rendering/Material.h>
+#include <Volt/Asset/Mesh/Material.h>
 
 #include <Volt/Scene/Scene.h>
 
@@ -105,7 +105,7 @@ bool PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)
 	}
 
 	myEntity.GetComponent<Volt::MeshComponent>().handle = assetItem->handle;
-	//myEntity.GetComponent<Volt::MeshComponent>().material = Volt::Asset::Null();
+	myEntity.GetComponent<Volt::MeshComponent>().material = Volt::Asset::Null();
 
 	const glm::vec3 rotation = { glm::radians(30.f), glm::radians(135.f), 0.f };
 	myCamera->SetRotation(rotation);
@@ -133,7 +133,7 @@ bool PreviewRenderer::RenderMaterialPreview(Weak<AssetBrowser::AssetItem> assetI
 	}
 
 	myEntity.GetComponent<Volt::MeshComponent>().handle = meshAsset->handle;
-	//myEntity.GetComponent<Volt::MeshComponent>().material = material->handle;
+	myEntity.GetComponent<Volt::MeshComponent>().material = material->handle;
 
 	myCamera->SetPosition({ 0.f, 0.f, -150.f });
 	myCamera->SetRotation(0.f);

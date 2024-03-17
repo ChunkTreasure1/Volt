@@ -15,6 +15,7 @@
 #include "Volt/Rendering/UIRenderer.h"
 #include "Volt/Rendering/Renderer.h"
 
+#include "Volt/Asset/Mesh/SubMaterial.h"
 #include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Rendering/PostProcessingStack.h"
 #include "Volt/Asset/Rendering/PostProcessingMaterial.h"
@@ -40,6 +41,7 @@
 #include "Volt/Asset/Prefab.h"
 #include "Volt/Asset/Animation/AnimationGraphAsset.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
+#include "Volt/Asset/Mesh/Material.h"
 #include "Volt/Asset/Video/Video.h"
 #include "Volt/Animation/AnimationController.h"
 
@@ -4221,7 +4223,7 @@ namespace Volt
 			return false;
 		}
 
-		return false;  //entity.GetComponent<MeshComponent>().material != Asset::Null();
+		return entity.GetComponent<MeshComponent>().material != Asset::Null();
 	}
 
 	inline static void MeshComponent_SetOverrideMaterial(EntityID id, uint64_t materialHandle)
@@ -4239,7 +4241,7 @@ namespace Volt
 			return;
 		}
 
-		//entity.GetComponent<MeshComponent>().material = materialHandle;
+		entity.GetComponent<MeshComponent>().material = materialHandle;
 	}
 
 	inline static uint64_t MeshComponent_GetOverrideMaterial(EntityID id)
@@ -4257,7 +4259,7 @@ namespace Volt
 			return 0;
 		}
 
-		return 0; //entity.GetComponent<MeshComponent>().material;
+		return entity.GetComponent<MeshComponent>().material;
 	}
 #pragma endregion 
 
@@ -4420,15 +4422,13 @@ namespace Volt
 #pragma region Mesh
 	inline static uint64_t Mesh_GetMaterial(uint64_t meshHandle)
 	{
-		//Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-		//if (!mesh || !mesh->IsValid())
-		//{
-		//	return 0;
-		//}
+		Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+		if (!mesh || !mesh->IsValid())
+		{
+			return 0;
+		}
 
-		//return mesh->GetMaterial()->handle;
-
-		return 0;
+		return mesh->GetMaterial()->handle;
 	}
 #pragma endregion
 

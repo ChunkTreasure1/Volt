@@ -65,7 +65,7 @@ namespace Volt
 		return s_shaderMap.at(name);
 	}
 
-	Ref<RHI::ComputePipeline> ShaderMap::GetComputePipeline(const std::string& name, bool useGlobalResouces)
+	Ref<RHI::ComputePipeline> ShaderMap::GetComputePipeline(const std::string& name)
 	{
 		const size_t hash = Utility::GetComputeShaderHash(name);
 
@@ -74,7 +74,7 @@ namespace Volt
 			return s_computePipelineCache.at(hash);
 		}
 
-		Ref<RHI::ComputePipeline> pipeline = RHI::ComputePipeline::Create(Get(name), useGlobalResouces);
+		Ref<RHI::ComputePipeline> pipeline = RHI::ComputePipeline::Create(Get(name));
 		s_computePipelineCache[hash] = pipeline;
 
 		return pipeline;
@@ -132,15 +132,8 @@ namespace Volt
 				{
 					// #TODO: Fix force compile!
 					// We need to do this because the formats / input layouts are not created correctly otherwise
+					Ref<RHI::Shader> shader = RHI::Shader::Create(def->GetName(), def->GetSourceFiles(), true);
 
-					RHI::ShaderSpecification specification;
-					specification.entryPoint = def->GetEntryPoint();
-					specification.name = def->GetName();
-					specification.sourceFiles = def->GetSourceFiles();
-					specification.permutations = def->GetPermutations();
-					specification.forceCompile = true;
-
-					Ref<RHI::Shader> shader = RHI::Shader::Create(specification);
 					{
 						std::scoped_lock lock{ shaderMapMutex };
 						s_shaderMap[std::string(def->GetName())] = shader;

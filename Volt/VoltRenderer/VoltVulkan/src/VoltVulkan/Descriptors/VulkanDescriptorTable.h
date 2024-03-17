@@ -52,7 +52,6 @@ namespace Volt::RHI
 
 		void SetImageView(std::string_view name, Ref<ImageView> view, uint32_t arrayIndex = 0) override;
 		void SetBufferView(std::string_view name, Ref<BufferView> view, uint32_t arrayIndex = 0) override;
-		void SetSamplerState(std::string_view name, Ref<SamplerState> samplerState, uint32_t arrayIndex = 0) override;
 
 		void SetBufferViews(const std::vector<Ref<BufferView>>& bufferViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset /* = 0 */) override;
 		void SetImageViews(const std::vector<Ref<ImageView>>& imageViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset /* = 0 */) override;
@@ -81,8 +80,6 @@ namespace Volt::RHI
 		Weak<Shader> m_shader;
 		uint32_t m_maxTotalDescriptorCount = 0;
 		uint32_t m_descriptorPoolCount = 0;
-		uint32_t m_currentIndex = 0;
-		bool m_isGlobal = false;
 
 		std::map<uint32_t, std::vector<VkDescriptorSet_T*>> m_descriptorSets{};
 		std::vector<VkDescriptorPool_T*> m_descriptorPools;

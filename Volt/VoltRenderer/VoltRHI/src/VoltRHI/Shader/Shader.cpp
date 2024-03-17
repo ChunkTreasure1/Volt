@@ -24,17 +24,17 @@ namespace Volt::RHI
 		m_size = size;
 	}
 
-	Ref<Shader> Shader::Create(const ShaderSpecification& createInfo)
+	Ref<Shader> Shader::Create(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles, bool forceCompile)
 	{
 		const auto api = GraphicsContext::GetAPI();
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: return CreateRef<D3D12Shader>(createInfo); break;
+			case GraphicsAPI::D3D12: return CreateRef<D3D12Shader>(name, sourceFiles, forceCompile); break;
 			case GraphicsAPI::Mock:
 			case GraphicsAPI::MoltenVk:
 				break;
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanShader>(createInfo); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanShader>(name, sourceFiles, forceCompile); break;
 		}
 
 		return nullptr;

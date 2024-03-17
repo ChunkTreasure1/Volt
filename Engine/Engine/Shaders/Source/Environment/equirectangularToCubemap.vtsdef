@@ -1,4 +1,0 @@
-name: "EquirectangularToCubemap"
-internal: true
-paths:
-  - "Engine/Shaders/Source/Environment/EquirectangularToCubemap_cs.hlsl"

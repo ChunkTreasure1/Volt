@@ -12,8 +12,6 @@
 
 #include "Volt/Scripting/Mono/MonoScriptFieldCache.h"
 
-#include "Volt/RenderingNew/RendererStructs.h"
-
 #include <glm/glm.hpp>
 
 #include <map>
@@ -30,9 +28,19 @@ namespace Volt
 	class Skeleton;
 	class AnimatedCharacter;
 	class Event;
+	class Image2D;
 
 	class Entity;
 	class RenderScene;
+
+	struct SceneEnvironment
+	{
+		Ref<Image2D> irradianceMap;
+		Ref<Image2D> radianceMap;
+
+		float lod = 0.f;
+		float intensity = 1.f;
+	};
 
 	struct SceneSettings
 	{

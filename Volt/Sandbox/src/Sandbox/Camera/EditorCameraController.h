@@ -62,8 +62,8 @@ private:
 	float m_yawDelta = 0.f;
 
 	glm::vec3 m_focalPoint = { 0.f, 0.f, 0.f };
-	float m_focalDistance = 0.01f;
-	float m_minFocalDistance = 1.f;
+	float m_focalDistance = 1.f;
+	float m_minFocalDistance = 100.f;
 
 	float m_fov = 45.f;
 	float m_nearPlane = 0.01f;
@@ -71,7 +71,7 @@ private:
 
 	float m_translationSpeed = 5.f;
 
-	const float m_scrollTranslationSpeed = 0.5f;
+	const float m_scrollTranslationSpeed = 1.f;
 	const float m_maxTranslationSpeed = 40.f;
 	const float m_sensitivity = 0.12f;
 

@@ -152,7 +152,7 @@ Ref<Volt::Texture2D> EditorResources::TryLoadIcon(const std::filesystem::path& p
 
 Ref<Volt::Mesh> EditorResources::TryLoadMesh(const std::filesystem::path& path)
 {
-	Ref<Volt::Mesh> mesh = nullptr; //Volt::MeshTypeImporter::ImportMesh(path);
+	Ref<Volt::Mesh> mesh = Volt::MeshTypeImporter::ImportMesh(path);
 	if (!mesh)
 	{
 		mesh = Volt::Shape::CreateUnitCube();

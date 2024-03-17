@@ -13,7 +13,7 @@ struct Constants
 {
     TypedBuffer<GPUScene> gpuScene;
     TypedBuffer<DrawContext> drawContext;
-    UniformBuffer<ViewData> viewData;
+    TypedBuffer<ViewData> viewData; // #TODO_Ivar: Should be uniform buffer
 };
 
 struct VertexOutput

@@ -9,6 +9,7 @@
 #include "Volt/Project/ProjectManager.h"
 
 #include "Volt/Utility/YAMLSerializationHelpers.h"
+#include "Volt/Utility/SerializationMacros.h"
 
 namespace Volt
 {
@@ -26,20 +27,40 @@ namespace Volt
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
-		if (!streamReader.OpenFile(filePath))
+		std::ifstream input(filePath, std::ios::binary | std::ios::in);
+		if (!input.is_open())
 		{
 			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
-		streamReader.EnterScope("AnimationGraph");
+		std::stringstream sstream;
+		sstream << input.rdbuf();
+		input.close();
+
+		YAML::Node root;
+
+		try
+		{
+			root = YAML::Load(sstream.str());
+		}
+		catch (std::exception& e)
+		{
+			VT_CORE_ERROR("{0} contains invalid YAML with error {1}! Please correct it!", metadata.filePath, e.what());
+			asset->SetFlag(AssetFlag::Invalid, true);
+			return false;
+		}
+
+		YAML::Node graphNode = root["AnimationGraph"];
 
 		// Graph base
 		{
-			std::string state = streamReader.ReadAtKey("state", std::string(""));
-			AssetHandle skeletonHandle = streamReader.ReadAtKey("skeleton", AssetHandle(0));
+			std::string state;
+			VT_DESERIALIZE_PROPERTY(state, state, graphNode, std::string(""));
+
+			AssetHandle skeletonHandle;
+			VT_DESERIALIZE_PROPERTY(skeleton, skeletonHandle, graphNode, AssetHandle(0));
 
 			animGraph->mySkeletonHandle = skeletonHandle;
 			animGraph->myGraphState = state;
@@ -47,12 +68,13 @@ namespace Volt
 
 		// Graph
 		{
-			streamReader.EnterScope("Graph");
-			GraphKey::Graph::Deserialize(animGraph, streamReader);
-			streamReader.ExitScope();
+			YAML::Node graphSaveNode = graphNode["Graph"];
+			if (graphNode)
+			{
+				GraphKey::Graph::Deserialize(animGraph, graphSaveNode);
+			}
 		}
 
-		streamReader.ExitScope();
 
 		animGraph->SetSkeletonHandle(animGraph->mySkeletonHandle);
 		return true;
@@ -62,18 +84,20 @@ namespace Volt
 	{
 		const Ref<AnimationGraphAsset> animGraph = std::reinterpret_pointer_cast<AnimationGraphAsset>(asset);
 
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
-		streamWriter.BeginMap();
-		streamWriter.BeginMapNamned("AnimationGraph");
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "AnimationGraph" << YAML::Value;
+		{
+			out << YAML::BeginMap;
+			VT_SERIALIZE_PROPERTY(state, animGraph->myGraphState, out);
+			VT_SERIALIZE_PROPERTY(skeleton, animGraph->mySkeletonHandle, out);
+			GraphKey::Graph::Serialize(animGraph, out);
+			out << YAML::EndMap;
+		}
+		out << YAML::EndMap;
 
-		streamWriter.SetKey("state", animGraph->myGraphState);
-		streamWriter.SetKey("skeleton", animGraph->mySkeletonHandle);
-
-		GraphKey::Graph::Serialize(animGraph, streamWriter);
-
-		streamWriter.EndMap();
-		streamWriter.EndMap();
-
-		streamWriter.WriteToDisk();
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
+		fout << out.c_str();
+		fout.close();
 	}
 }

@@ -9,9 +9,6 @@
 
 #include <Volt/Scene/Entity.h>
 
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
-
 #include <yaml-cpp/yaml.h>
 
 namespace GraphKey
@@ -95,8 +92,8 @@ namespace GraphKey
 		void RemoveParameter(const std::string& name);
 
 		static void Copy(Ref<Graph> srcGraph, Ref<Graph> dstGraph);
-		static void Serialize(Ref<Graph> graph, YAMLStreamWriter& out);
-		static void Deserialize(Ref<Graph> graph, YAMLStreamReader& node);
+		static void Serialize(Ref<Graph> graph, YAML::Emitter& out);
+		static void Deserialize(Ref<Graph> graph, const YAML::Node& node);
 
 		static Volt::AssetType GetStaticType() { return Volt::AssetType::None; }
 		Volt::AssetType GetType() override { return GetStaticType(); };

@@ -3,8 +3,6 @@
 #include "Volt/RenderingNew/RendererStructs.h"
 #include "Volt/RenderingNew/Resources/GlobalResource.h"
 
-#include "Volt/Scene/Scene.h"
-
 #include <VoltRHI/Images/SamplerState.h>
 #include <VoltRHI/Core/RHICommon.h>
 
@@ -15,19 +13,6 @@ namespace Volt
 		class SamplerState;
 		struct SamplerStateCreateInfo;
 	}
-
-	class Texture2D;
-	class Material;
-
-	struct DefaultResources
-	{
-		Ref<Texture2D> whiteTexture;
-
-		Ref<RHI::Image2D> BRDFLuT;
-		Ref<RHI::Image2D> blackCubeTexture;
-
-		Ref<Material> defaultMaterial;
-	};
 
 	class Mesh;
 	class RendererNew
@@ -40,9 +25,6 @@ namespace Volt
 		static void Flush();
 		static const uint32_t GetFramesInFlight();
 		static void DestroyResource(std::function<void()>&& function);
-
-		static const DefaultResources& GetDefaultResources();
-		static SceneEnvironment GenerateEnvironmentTextures(AssetHandle baseTextureHandle);
 
 		static void Update();
 
@@ -61,8 +43,6 @@ namespace Volt
 
 	private:
 		static Ref<GlobalResource<RHI::SamplerState>> GetSamplerInternal(const RHI::SamplerStateCreateInfo& samplerInfo);
-		static void CreateDefaultResources();
-		static void GenerateBRDFLuT();
 
 		RendererNew() = delete;
 	};

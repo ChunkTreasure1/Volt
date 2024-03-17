@@ -4,8 +4,6 @@
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 
-#include "Volt/Asset/Rendering/Material.h"
-
 #include "Volt/Math/Math.h"
 #include "Volt/Utility/Algorithms.h"
 
@@ -135,9 +133,9 @@ namespace Volt
 		m_vertices = aVertices;
 		m_indices = aIndices;
 
-		m_materialTable.SetMaterial(aMaterial->handle, 0);
+		m_material = aMaterial;
 
-		SubMesh& subMesh = m_subMeshes.emplace_back();
+		SubMesh subMesh;
 		subMesh.indexCount = (uint32_t)aIndices.size();
 		subMesh.vertexCount = (uint32_t)aVertices.size();
 		subMesh.vertexStartOffset = 0;
@@ -146,15 +144,17 @@ namespace Volt
 
 		subMesh.GenerateHash();
 
+		m_subMeshes.push_back(subMesh);
+
 		Construct();
 	}
 
-	Mesh::Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, const MaterialTable& materialTable, const std::vector<SubMesh>& subMeshes)
+	Mesh::Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material> aMaterial, const std::vector<SubMesh>& subMeshes)
 	{
 		m_vertices = aVertices;
 		m_indices = aIndices;
 
-		m_materialTable = materialTable;
+		m_material = aMaterial;
 		m_subMeshes = subMeshes;
 
 		Construct();
@@ -414,7 +414,7 @@ namespace Volt
 
 		// Indices
 		{
-			m_indexBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(m_indices.size()), sizeof(uint32_t), "Index Buffer - " + meshName, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndexBuffer));
+			m_indexBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(m_indices.size()), sizeof(uint32_t), "Index Buffer - " + meshName));
 			m_indexBuffer->GetResource()->SetData(m_indices.data(), m_indices.size() * sizeof(uint32_t));
 		}
 
@@ -518,8 +518,8 @@ namespace Volt
 
 			// Tex coords
 			{
-				encodedVertex.texCoords[0] = static_cast<half_float::half>(vertex.uv.x);
-				encodedVertex.texCoords[1] = static_cast<half_float::half>(vertex.uv.y);
+				encodedVertex.texCoords[0] = static_cast<half_float::half>(vertex.texCoords.x);
+				encodedVertex.texCoords[1] = static_cast<half_float::half>(vertex.texCoords.y);
 			}
 
 			// Influences
@@ -540,9 +540,6 @@ namespace Volt
 		}
 
 		return result;
-	}
-	void Mesh::SetMaterial(Ref<Material> material, uint32_t index)
-	{
 	}
 	std::vector<std::vector<Vertex>> Mesh::ExtractSubMeshVertices()
 	{
@@ -604,8 +601,8 @@ namespace Volt
 			data.normal.x = uint8_t(octNormal.x * 255);
 			data.normal.y = uint8_t(octNormal.y * 255);
 			data.tangent = Utility::EncodeTangent(vertex.normal, vertex.tangent);
-			data.texCoords.x = static_cast<half_float::half>(vertex.uv.x);
-			data.texCoords.y = static_cast<half_float::half>(vertex.uv.y);
+			data.texCoords.x = static_cast<half_float::half>(vertex.texCoords.x);
+			data.texCoords.y = static_cast<half_float::half>(vertex.texCoords.y);
 		}
 
 		return result;

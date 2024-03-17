@@ -6,6 +6,7 @@
 #include "Sandbox/Utility/EditorResources.h"
 
 #include <Volt/Asset/AssetManager.h>
+#include <Volt/Asset/Mesh/Material.h>
 
 #include <Volt/Utility/UIUtility.h>
 
@@ -216,7 +217,7 @@ void PrefabEditorPanel::SaveCurrentMesh()
 		return;
 	}
 
-	if (!Volt::MeshCompiler::TryCompile(myCurrentMesh, metadata.filePath, myCurrentMesh->GetMaterialTable()))
+	if (!Volt::MeshCompiler::TryCompile(myCurrentMesh, metadata.filePath, myCurrentMesh->GetMaterial()->handle))
 	{
 		UI::Notify(NotificationType::Error, "Unable to save Mesh!", std::format("Unable to save mesh {0}!", metadata.filePath.string()));
 	}

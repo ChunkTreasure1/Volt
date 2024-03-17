@@ -60,11 +60,6 @@ namespace Volt::RHI
 			s_enabledFeatures.vulkan12Features.shaderBufferInt64Atomics = VK_TRUE;
 			s_enabledFeatures.vulkan12Features.shaderSharedInt64Atomics = VK_TRUE;
 			s_enabledFeatures.vulkan12Features.shaderFloat16 = VK_TRUE;
-			s_enabledFeatures.vulkan12Features.shaderInt8 = VK_TRUE;
-			s_enabledFeatures.vulkan12Features.storageBuffer8BitAccess = VK_TRUE;
-			s_enabledFeatures.vulkan12Features.scalarBlockLayout = VK_TRUE;
-			s_enabledFeatures.vulkan12Features.shaderOutputLayer = VK_TRUE;
-			s_enabledFeatures.vulkan12Features.shaderOutputViewportIndex = VK_TRUE;
 
 			s_enabledFeatures.vulkan13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
 			s_enabledFeatures.vulkan13Features.pNext = &s_enabledFeatures.vulkan12Features;

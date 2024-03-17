@@ -4,6 +4,7 @@
 #include "Volt/Net/SceneInteraction/NetContract.h"
 
 #include <yaml-cpp/yaml.h>
+#include "Volt/Utility/SerializationMacros.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
 namespace Volt
@@ -35,7 +36,7 @@ namespace Volt
 		YAML::Node root = YAML::Load(sstream.str());
 		YAML::Node node = root["Contract"];
 
-		/*{
+		{
 			VT_DESERIALIZE_PROPERTY(prefab, rAsset->prefab, node, AssetHandle(0));
 
 			if (node["Calls"])
@@ -74,7 +75,7 @@ namespace Volt
 				}
 			}
 
-		}*/
+		}
 		return true;
 	}
 
@@ -84,36 +85,36 @@ namespace Volt
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Contract" << YAML::Value;
-		//{
-		//	out << YAML::BeginMap;
-		//	VT_SERIALIZE_PROPERTY(prefab, p->prefab, out);
+		{
+			out << YAML::BeginMap;
+			VT_SERIALIZE_PROPERTY(prefab, p->prefab, out);
 
-		//	// CALLS
-		//	out << YAML::Key << "Calls" << YAML::BeginMap;
-		//	for (const auto& call : p->calls)
-		//	{
-		//		out << YAML::Key << (uint8_t)call.first << YAML::Value << call.second;
-		//	}
-		//	out << YAML::EndMap;
+			// CALLS
+			out << YAML::Key << "Calls" << YAML::BeginMap;
+			for (const auto& call : p->calls)
+			{
+				out << YAML::Key << (uint8_t)call.first << YAML::Value << call.second;
+			}
+			out << YAML::EndMap;
 
-		//	// RULES
-		//	out << YAML::Key << "Rules" << YAML::BeginMap;
-		//	for (const auto& ruleOuter : p->rules)
-		//	{
-		//		out << YAML::Key << ruleOuter.first << YAML::BeginMap;
-		//		for (const auto& ruleInner : ruleOuter.second)
-		//		{
-		//			out << YAML::Key << ruleInner.first << YAML::BeginMap;
-		//			VT_SERIALIZE_PROPERTY(owner, ruleInner.second.owner, out);
-		//			VT_SERIALIZE_PROPERTY(other, ruleInner.second.other, out);
-		//			VT_SERIALIZE_PROPERTY(host, ruleInner.second.host, out);
-		//			out << YAML::EndMap;
-		//		}
-		//		out << YAML::EndMap;
-		//	}
-		//	out << YAML::EndMap;
-		//	out << YAML::EndMap;
-		//}
+			// RULES
+			out << YAML::Key << "Rules" << YAML::BeginMap;
+			for (const auto& ruleOuter : p->rules)
+			{
+				out << YAML::Key << ruleOuter.first << YAML::BeginMap;
+				for (const auto& ruleInner : ruleOuter.second)
+				{
+					out << YAML::Key << ruleInner.first << YAML::BeginMap;
+					VT_SERIALIZE_PROPERTY(owner, ruleInner.second.owner, out);
+					VT_SERIALIZE_PROPERTY(other, ruleInner.second.other, out);
+					VT_SERIALIZE_PROPERTY(host, ruleInner.second.host, out);
+					out << YAML::EndMap;
+				}
+				out << YAML::EndMap;
+			}
+			out << YAML::EndMap;
+			out << YAML::EndMap;
+		}
 		out << YAML::EndMap;
 		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
 		fout << out.c_str();

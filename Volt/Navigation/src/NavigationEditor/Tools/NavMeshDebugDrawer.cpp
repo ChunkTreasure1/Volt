@@ -2,7 +2,7 @@
 #include "NavMeshDebugDrawer.h"
 
 #include <Volt/Asset/AssetManager.h>
-#include <Volt/Asset/Rendering/Material.h>
+#include <Volt/Asset/Mesh/Material.h>
 
 #include <Volt/Rendering/DebugRenderer.h>
 
@@ -148,7 +148,7 @@ void NavMeshDrawCompiler::vertex(const float* pos, unsigned int color, const flo
 {
 	Volt::Vertex vertex;
 	vertex.position = *(glm::vec3*)pos;
-	vertex.uv = *(glm::vec2*)uv;
+	vertex.texCoords = *(glm::vec2*)uv;
 
 	if (myPrimitive == DU_DRAW_TRIS)
 	{
@@ -166,7 +166,7 @@ void NavMeshDrawCompiler::vertex(const float x, const float y, const float z, un
 {
 	Volt::Vertex vertex;
 	vertex.position = glm::vec3(x, y, z);
-	vertex.uv = glm::vec2(u, v);
+	vertex.texCoords = glm::vec2(u, v);
 
 	if (myPrimitive == DU_DRAW_TRIS)
 	{
@@ -198,10 +198,7 @@ Ref<Volt::Mesh> NavMeshDrawCompiler::GetDebugMesh() const
 	const auto path = Volt::AssetManager::GetRelativePath(NavMeshDebugDrawer::DebugMaterialPath);
 	auto material = Volt::AssetManager::GetAsset<Volt::Material>(path);
 
-	Volt::MaterialTable materialTable{};
-	materialTable.SetMaterial(material->handle, 0);
-
-	return CreateRef<Volt::Mesh>(myVertices, myIndices, materialTable, mySubmeshes);
+	return CreateRef<Volt::Mesh>(myVertices, myIndices, material, mySubmeshes);
 }
 
 std::vector<NavMeshLine> NavMeshDrawCompiler::GetDebugLines() const

@@ -49,7 +49,6 @@ function AddCommonDefines()
 		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
 		"GLM_FORCE_LEFT_HANDED",
 
-		"TRACY_ENABLE",
-		"TRACY_ON_DEMAND"
+		"TRACY_ENABLE"
 	}
 end

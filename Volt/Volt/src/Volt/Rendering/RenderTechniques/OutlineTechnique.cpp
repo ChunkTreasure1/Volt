@@ -1,7 +1,9 @@
 #include "vtpch.h"
 #include "OutlineTechnique.h"
 
+#include "Volt/Asset/Mesh/Material.h"
 #include "Volt/Asset/Mesh/Mesh.h"
+#include "Volt/Asset/Mesh/SubMaterial.h"
 
 #include "Volt/Rendering/RenderTechniques/TechniqueStructures.h"
 

@@ -21,24 +21,12 @@ namespace Volt
 
 	static constexpr uint32_t BYTEADDRESSBUFFER_BINDING = 7;
 	static constexpr uint32_t RWBYTEADDRESSBUFFER_BINDING = 8;
-	static constexpr uint32_t UNIFORMBUFFER_BINDING = 9;
-	static constexpr uint32_t SAMPLERSTATES_BINDING = 10;
-
-	static constexpr uint32_t RWTEXTURE2DARRAY_BINDING = 11;
-	static constexpr uint32_t TEXTURE2DARRAY_BINDING = 12;
 
 	void GlobalResourceManager::Initialize()
 	{
 		RHI::DescriptorTableCreateInfo info{};
-
-		RHI::ShaderSpecification shaderSpec{};
-		shaderSpec.name = "GlobalResourcesDescriptor";
-		shaderSpec.sourceFiles = { "Engine/Shaders/Source/Utility/GlobalDescriptorsShader_cs.hlsl" };
-		shaderSpec.forceCompile = true;
-
-		info.shader = RHI::Shader::Create(shaderSpec);
+		info.shader = RHI::Shader::Create("GlobalResourcesDescriptor", { "Engine/Shaders/Source/Utility/GlobalDescriptorsShader_cs.hlsl" }, true);
 		info.count = 1;
-		info.isGlobal = true;
 
 		s_globalDescriptorTable = RHI::DescriptorTable::Create(info);
 	}
@@ -50,25 +38,12 @@ namespace Volt
 
 	void GlobalResourceManager::Update()
 	{
-		// Uniform Buffers
-		{
-			auto& resources = GetResourceContainer<RHI::StorageBuffer, ResourceSpecialization::UniformBuffer>();
-			std::scoped_lock lock{ resources.accessMutex };
-
-			for (const auto& resource : resources.GetDirtyRange())
-			{
-				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, UNIFORMBUFFER_BINDING, resources.GetResourceHandle(resource).Get());
-			}
-
-			resources.ClearDirty();
-		}
-
 		// Buffers
 		{
 			auto& resources = GetResourceContainer<RHI::StorageBuffer>();
 			std::scoped_lock lock{ resources.accessMutex };
-
 			for (const auto& resource : resources.GetDirtyRange())
+
 			{
 				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, BYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource).Get());
 				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, RWBYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource).Get());
@@ -77,33 +52,15 @@ namespace Volt
 			resources.ClearDirty();
 		}
 
-		// Image1D
+		// Images
 		{
-			auto& resources = GetResourceContainer<RHI::ImageView, ResourceSpecialization::Texture1D>();
-			std::scoped_lock lock{ resources.accessMutex };
-
-			for (const auto& resource : resources.GetDirtyRange())
-			{
-				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE1D_BINDING, resources.GetResourceHandle(resource).Get());
-
-				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
-				{
-					s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
-				}
-			}
-
-			resources.ClearDirty();
-		}
-
-		// Image2D
-		{
-			auto& resources = GetResourceContainer<RHI::ImageView, ResourceSpecialization::Texture2D>();
+			auto& resources = GetResourceContainer<RHI::ImageView>();
 			std::scoped_lock lock{ resources.accessMutex };
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
 				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
-			
+
 				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
 				{
 					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
@@ -113,42 +70,6 @@ namespace Volt
 			resources.ClearDirty();
 		}
 
-		// ImageCube
-		{
-			auto& resources = GetResourceContainer<RHI::ImageView, ResourceSpecialization::TextureCube>();
-			std::scoped_lock lock{ resources.accessMutex };
-
-			for (const auto& resource : resources.GetDirtyRange())
-			{
-				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURECUBE_BINDING, resources.GetResourceHandle(resource).Get());
-			}
-
-			resources.ClearDirty();
-		}
-
-		// Image2DArray
-		{
-			auto& resources = GetResourceContainer<RHI::ImageView, ResourceSpecialization::Texture2DArray>();
-			std::scoped_lock lock{ resources.accessMutex };
-
-			for (const auto& resource : resources.GetDirtyRange())
-			{
-				//res_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2DARRAY_BINDING, resources.GetResourceHandle(resource).Get());
-
-				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
-				{
-					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2DARRAY_BINDING, resources.GetResourceHandle(resource).Get());
-				}
-			}
-
-			resources.ClearDirty();
-		}
-
-		// Image3D
-		{
-
-		}
-
 		// Samplers
 		{
 			auto& resources = GetResourceContainer<RHI::SamplerState>();
@@ -156,7 +77,7 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetSamplerState(resource, 0, SAMPLERSTATES_BINDING, resources.GetResourceHandle(resource).Get());
+				s_globalDescriptorTable->SetSamplerState(resource, 0, 10, resources.GetResourceHandle(resource).Get());
 			}
 
 			resources.ClearDirty();

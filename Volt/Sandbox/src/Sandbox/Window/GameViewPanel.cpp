@@ -9,6 +9,7 @@
 #include "Sandbox/Sandbox.h"
 
 #include <Volt/Asset/Mesh/Mesh.h>
+#include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/Prefab.h>
 

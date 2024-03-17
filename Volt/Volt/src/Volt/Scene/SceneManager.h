@@ -9,11 +9,11 @@ namespace Volt
 	{
 	public:
 		static void Shutdown();
-		inline static void SetActiveScene(Weak<Scene> scene) { m_activeScene = scene; }
-		inline static Weak<Scene> GetActiveScene() { return m_activeScene; }
+		inline static void SetActiveScene(Weak<Scene> scene) { myActiveScene = scene; }
+		inline static Weak<Scene> GetActiveScene() { return myActiveScene; }
 
 	private:
 		SceneManager() = delete;
-		inline static Weak<Scene> m_activeScene;
+		inline static Weak<Scene> myActiveScene;
 	};
 }

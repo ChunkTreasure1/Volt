@@ -15,9 +15,9 @@ namespace Volt
 		FbxImporter() = default;
 
 	protected:
-		void ImportMeshImpl(const std::filesystem::path& path, Ref<Mesh>& mesh) override;
-		void ImportSkeletonImpl(const std::filesystem::path& path, Ref<Skeleton>& skeleton) override;
-		void ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Ref<Animation>& animation) override;
+		Ref<Mesh> ImportMeshImpl(const std::filesystem::path& path) override;
+		Ref<Skeleton> ImportSkeletonImpl(const std::filesystem::path& path) override;
+		Ref<Animation> ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton) override;
 
 		void ExportMeshImpl(std::vector<Ref<Mesh>> assets, const std::filesystem::path& path) override;
 		void ExportSkeletonImpl(std::vector<Ref<Skeleton>> assets, const std::filesystem::path&) override {};

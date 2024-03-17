@@ -5,7 +5,6 @@
 #include "Volt/RenderingNew/RendererCommon.h"
 #include "Volt/RenderingNew/SceneRendererStructs.h"
 #include "Volt/RenderingNew/Resources/GlobalResource.h"
-#include "Volt/RenderingNew/RendererStructs.h"
 
 // #TODO_Ivar: Maybe remove from here
 #include "Volt/RenderingNew/RenderGraph/RenderGraph.h"
@@ -28,7 +27,6 @@ namespace Volt
 		class DescriptorTable;
 	}
 
-	class Mesh;
 	class Camera;
 	class Scene;
 	class RenderScene;
@@ -73,7 +71,6 @@ namespace Volt
 
 		///// Passes //////
 		void UploadUniformBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
-		void UploadLightBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void SetupDrawContext(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
@@ -91,8 +88,6 @@ namespace Volt
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddLandscapePass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		void AddGenerateDirectionalShadowRenderCommand(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		void AddDirectionalShadowPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
@@ -101,12 +96,10 @@ namespace Volt
 		void AddGenerateMaterialIndirectArgsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, bool first, const uint32_t materialId);
-		void AddSkyboxPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		
 		Ref<RHI::Image2D> m_outputImage;
-		Ref<Mesh> m_skyboxMesh;
 
 		bool m_shouldResize = false;
 
@@ -126,6 +119,5 @@ namespace Volt
 		////////////////
 
 		Ref<Scene> m_scene;
-		SceneEnvironment m_sceneEnvironment;
 	};
 }

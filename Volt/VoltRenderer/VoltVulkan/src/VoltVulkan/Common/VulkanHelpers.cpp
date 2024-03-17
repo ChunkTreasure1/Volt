@@ -28,7 +28,7 @@ namespace Volt::RHI::Utility
 		{
 			imageInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 		}
-		else if (imageSpecification.layers > 1 && imageSpecification.depth > 1)
+		else if (imageSpecification.layers > 1)
 		{
 			imageInfo.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
 		}

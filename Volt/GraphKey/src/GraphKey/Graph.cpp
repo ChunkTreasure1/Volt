@@ -8,13 +8,12 @@
 #include "GraphKey/Nodes/CustomEventNode.h"
 
 #include <Volt/Asset/Importers/SceneImporter.h>
+
+#include <Volt/Utility/SerializationMacros.h>
 #include <Volt/Utility/YAMLSerializationHelpers.h>
 
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
-
-inline static std::unordered_map<std::type_index, std::function<void(const std::any& data, YAMLStreamWriter& out)>> s_typeSerializers;
-inline static std::unordered_map<std::type_index, std::function<void(std::any& data, YAMLStreamReader& node)>> s_typeDeserializers;
+inline static std::unordered_map<std::type_index, std::function<void(const std::any& data, YAML::Emitter& out)>> s_typeSerializers;
+inline static std::unordered_map<std::type_index, std::function<void(std::any& data, const YAML::Node& node)>> s_typeDeserializers;
 inline static bool s_initialized = false;
 
 namespace Volt
@@ -22,30 +21,34 @@ namespace Volt
 	template<typename T>
 	void RegisterTypeSerializer()
 	{
-		s_typeSerializers[std::type_index{ typeid(T) }] = [](const std::any& data, YAMLStreamWriter& out)
+		s_typeSerializers[std::type_index{ typeid(T) }] = [](const std::any& data, YAML::Emitter& out)
 		{
 			T var = std::any_cast<T>(data);
-			out.SetKey("data", var);
+			VT_SERIALIZE_PROPERTY(data, var, out);
 		};
 
-		s_typeDeserializers[std::type_index{ typeid(T) }] = [](std::any& data, YAMLStreamReader& node)
+		s_typeDeserializers[std::type_index{ typeid(T) }] = [](std::any& data, const YAML::Node& node)
 		{
-			T tempData = node.ReadAtKey("data", T{});
+			T tempData = {};
+			VT_DESERIALIZE_PROPERTY(data, tempData, node, T{});
+
 			data = tempData;
 		};
 	}
 
 	void RegisterEntitySerializer()
 	{
-		s_typeSerializers[std::type_index{ typeid(Volt::Entity) }] = [](const std::any& data, YAMLStreamWriter& out)
+		s_typeSerializers[std::type_index{ typeid(Volt::Entity) }] = [](const std::any& data, YAML::Emitter& out)
 		{
 			Volt::Entity var = std::any_cast<Volt::Entity>(data);
-			out.SetKey("data", var.GetID());
+			VT_SERIALIZE_PROPERTY(data, var.GetID(), out);
 		};
 
-		s_typeDeserializers[std::type_index{ typeid(Volt::Entity) }] = [](std::any& data, YAMLStreamReader& node)
+		s_typeDeserializers[std::type_index{ typeid(Volt::Entity) }] = [](std::any& data, const YAML::Node& node)
 		{
-			entt::entity tempData = node.ReadAtKey("data", (entt::entity)entt::null);
+			entt::entity tempData = {};
+			VT_DESERIALIZE_PROPERTY(data, tempData, node, (entt::entity)entt::null);
+
 			data = Volt::Entity{ tempData, nullptr };
 		};
 	}
@@ -333,107 +336,126 @@ namespace GraphKey
 		dstGraph->myGraphEvents = srcGraph->myGraphEvents;
 	}
 
-	void Graph::Serialize(Ref<Graph> graph, YAMLStreamWriter& out)
+	void Graph::Serialize(Ref<Graph> graph, YAML::Emitter& out)
 	{
-		out.BeginMapNamned("Graph");
-		out.BeginSequence("Nodes");
-		for (const auto& n : graph->GetNodes())
+		out << YAML::Key << "Graph" << YAML::Value;
 		{
-			out.BeginMap();
-			out.SetKey("id", n->id);
-			out.SetKey("type", n->GetRegistryName());
-			out.SetKey("state", n->editorState);
-
-			out.BeginMapNamned("nodeSpecific");
-			n->Serialize(out);
-			out.EndMap();
-
-			if (auto paramType = std::dynamic_pointer_cast<GraphKey::ParameterNode>(n))
+			out << YAML::BeginMap;
 			{
-				out.SetKey("parameterId", paramType->parameterId);
-			}
-			else if (auto eventType = std::dynamic_pointer_cast<GraphKey::CustomEventNode>(n))
-			{
-				out.SetKey("eventId", eventType->eventId);
-			}
-
-			out.BeginSequence("inputs");
-			for (const auto& i : n->inputs)
-			{
-				out.BeginMap();
-				out.SetKey("name", i.name);
-				out.SetKey("id", i.id);
-
-				const bool shouldSerialize = !graph->IsAttributeLinked(i.id) && i.data.has_value();
-				if (shouldSerialize && s_typeSerializers.contains(i.data.type()))
+				out << YAML::Key << "Nodes" << YAML::BeginSeq;
+				for (const auto& n : graph->GetNodes())
 				{
-					s_typeSerializers[i.data.type()](i.data, out);
+					out << YAML::BeginMap;
+					{
+						VT_SERIALIZE_PROPERTY(id, n->id, out);
+						VT_SERIALIZE_PROPERTY(type, n->GetRegistryName(), out);
+						VT_SERIALIZE_PROPERTY(state, n->editorState, out);
+
+						out << YAML::Key << "nodeSpecific" << YAML::BeginMap;
+						n->Serialize(out);
+						out << YAML::EndMap;
+
+						if (auto paramType = std::dynamic_pointer_cast<GraphKey::ParameterNode>(n))
+						{
+							VT_SERIALIZE_PROPERTY(parameterId, paramType->parameterId, out);
+						}
+						else if (auto eventType = std::dynamic_pointer_cast<GraphKey::CustomEventNode>(n))
+						{
+							VT_SERIALIZE_PROPERTY(eventId, eventType->eventId, out);
+						}
+
+						out << YAML::Key << "inputs" << YAML::BeginSeq;
+						{
+							for (const auto& i : n->inputs)
+							{
+								out << YAML::BeginMap;
+								{
+									VT_SERIALIZE_PROPERTY(name, i.name, out);
+									VT_SERIALIZE_PROPERTY(id, i.id, out);
+
+									const bool shouldSerialize = !graph->IsAttributeLinked(i.id) && i.data.has_value();
+									if (shouldSerialize && s_typeSerializers.contains(i.data.type()))
+									{
+										s_typeSerializers[i.data.type()](i.data, out);
+									}
+								}
+								out << YAML::EndMap;
+							}
+						}
+						out << YAML::EndSeq;
+
+						out << YAML::Key << "outputs" << YAML::BeginSeq;
+						{
+							for (const auto& o : n->outputs)
+							{
+								out << YAML::BeginMap;
+								{
+									VT_SERIALIZE_PROPERTY(name, o.name, out);
+									VT_SERIALIZE_PROPERTY(id, o.id, out);
+
+									const bool shouldSerialize = o.data.has_value();
+									if (shouldSerialize && s_typeSerializers.contains(o.data.type()))
+									{
+										s_typeSerializers[o.data.type()](o.data, out);
+									}
+								}
+								out << YAML::EndMap;
+							}
+							out << YAML::EndSeq;
+						}
+					}
+					out << YAML::EndMap;
 				}
-				out.EndMap();
-			}
-			out.EndSequence();
+				out << YAML::EndSeq;
 
-			out.BeginSequence("outputs");
-			for (const auto& o : n->outputs)
-			{
-				out.BeginMap();
-				out.SetKey("name", o.name);
-				out.SetKey("id", o.id);
-
-				const bool shouldSerialize = o.data.has_value();
-				if (shouldSerialize && s_typeSerializers.contains(o.data.type()))
+				out << YAML::Key << "Links" << YAML::BeginSeq;
+				for (const auto& l : graph->GetLinks())
 				{
-					s_typeSerializers[o.data.type()](o.data, out);
+					out << YAML::BeginMap;
+					{
+						VT_SERIALIZE_PROPERTY(id, l.id, out);
+						VT_SERIALIZE_PROPERTY(output, l.output, out);
+						VT_SERIALIZE_PROPERTY(input, l.input, out);
+					}
+					out << YAML::EndMap;
 				}
-				out.EndMap();
+				out << YAML::EndSeq;
+
+				out << YAML::Key << "Parameters" << YAML::BeginSeq;
+				for (const auto& p : graph->GetBlackboard())
+				{
+					out << YAML::BeginMap;
+					{
+						VT_SERIALIZE_PROPERTY(name, p.name, out);
+						VT_SERIALIZE_PROPERTY(type, GraphKey::TypeRegistry::GetNameFromTypeIndex(p.value.type()), out);
+						VT_SERIALIZE_PROPERTY(id, p.id, out);
+
+						if (s_typeSerializers.contains(p.value.type()))
+						{
+							s_typeSerializers[p.value.type()](p.value, out);
+						}
+					}
+					out << YAML::EndMap;
+				}
+				out << YAML::EndSeq;
+
+				out << YAML::Key << "Events" << YAML::BeginSeq;
+				for (const auto& e : graph->GetEvents())
+				{
+					out << YAML::BeginMap;
+					{
+						VT_SERIALIZE_PROPERTY(name, e.name, out);
+						VT_SERIALIZE_PROPERTY(id, e.id, out);
+					}
+					out << YAML::EndMap;
+				}
+				out << YAML::EndSeq;
 			}
-			out.EndSequence();
-
-			out.EndMap();
+			out << YAML::EndMap;
 		}
-		out.EndSequence();
-
-		out.BeginSequence("Links");
-		for (const auto& l : graph->GetLinks())
-		{
-			out.BeginMap();
-			out.SetKey("id", l.id);
-			out.SetKey("output", l.output);
-			out.SetKey("input", l.input);
-			out.EndMap();
-		}
-		out.EndSequence();
-
-		out.BeginSequence("Parameters");
-		for (const auto& p : graph->GetBlackboard())
-		{
-			out.BeginMap();
-			out.SetKey("name", p.name);
-			out.SetKey("type", GraphKey::TypeRegistry::GetNameFromTypeIndex(p.value.type()));
-			out.SetKey("id", p.id);
-
-			if (s_typeSerializers.contains(p.value.type()))
-			{
-				s_typeSerializers[p.value.type()](p.value, out);
-			}
-
-			out.EndMap();
-		}
-		out.EndSequence();
-
-		out.BeginSequence("Events");
-		for (const auto& e : graph->GetEvents())
-		{
-			out.BeginMap();
-			out.SetKey("name", e.name);
-			out.SetKey("id", e.id);
-			out.EndMap();
-		}
-		out.EndSequence();
-		out.EndMap();
 	}
 
-	void Graph::Deserialize(Ref<Graph> graph, YAMLStreamReader& streamReader)
+	void Graph::Deserialize(Ref<Graph> graph, const YAML::Node& yamlNode)
 	{
 		struct Attribute
 		{
@@ -484,78 +506,80 @@ namespace GraphKey
 		std::vector<Parameter> parameters;
 		std::vector<Event> events;
 
-		streamReader.ForEach("Nodes", [&]()
+		for (const auto& n : yamlNode["Nodes"])
 		{
 			auto& data = nodes.emplace_back();
-			data.id = streamReader.ReadAtKey("id", UUID64(0));
-			data.type = streamReader.ReadAtKey("type", std::string());
-			data.parameterId = streamReader.ReadAtKey("parameterId", UUID64(0));
-			data.eventId = streamReader.ReadAtKey("eventId", UUID64(0));
-			data.state = streamReader.ReadAtKey("state", std::string());
+			VT_DESERIALIZE_PROPERTY(id, data.id, n, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(type, data.type, n, std::string(""));
+			VT_DESERIALIZE_PROPERTY(parameterId, data.parameterId, n, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(eventId, data.eventId, n, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(state, data.state, n, std::string(""));
 
-			if (streamReader.HasKey("nodeSpecific"))
+			if (n["nodeSpecific"])
 			{
-				data.nodeSpecific.reset(streamReader.GetRawNode());
+				data.nodeSpecific.reset(n["nodeSpecific"]);
 			}
 
-			streamReader.ForEach("inputs", [&]()
+			for (const auto& i : n["inputs"])
 			{
 				auto& inData = data.inputs.emplace_back();
-				inData.id = streamReader.ReadAtKey("id", UUID64(0));
-				inData.name = streamReader.ReadAtKey("name", std::string("Null"));
-			
-				if (streamReader.HasKey("data"))
-				{
-					inData.node.reset(streamReader.GetRawNode());
-				}
-			});
+				VT_DESERIALIZE_PROPERTY(id, inData.id, i, UUID64(0));
+				VT_DESERIALIZE_PROPERTY(name, inData.name, i, std::string("Null"));
 
-			streamReader.ForEach("outputs", [&]()
+				if (i["data"])
+				{
+					inData.node.reset(i);
+				}
+			}
+
+			for (const auto& o : n["outputs"])
 			{
 				auto& outData = data.outputs.emplace_back();
-				outData.id = streamReader.ReadAtKey("id", UUID64(0));
-				outData.name = streamReader.ReadAtKey("name", std::string("Null"));
+				VT_DESERIALIZE_PROPERTY(id, outData.id, o, UUID64(0));
+				VT_DESERIALIZE_PROPERTY(name, outData.name, o, std::string("Null"));
 
-				if (streamReader.HasKey("data"))
+				if (o["data"])
 				{
-					outData.node.reset(streamReader.GetRawNode());
+					outData.node.reset(o);
 				}
-			});
-		});
+			}
+		}
 
-		streamReader.ForEach("Links", [&]() 
+		for (const auto& l : yamlNode["Links"])
 		{
 			auto& data = links.emplace_back();
-			data.id = streamReader.ReadAtKey("id", UUID64(0));
-			data.input = streamReader.ReadAtKey("input", UUID64(0));
-			data.output = streamReader.ReadAtKey("output", UUID64(0));
-		});
+			VT_DESERIALIZE_PROPERTY(id, data.id, l, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(input, data.input, l, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(output, data.output, l, UUID64(0));
+		}
 
-		streamReader.ForEach("Parameters", [&]() 
+		for (const auto& p : yamlNode["Parameters"])
 		{
 			auto& data = parameters.emplace_back();
-			data.name = streamReader.ReadAtKey("name", std::string());
-			data.id = streamReader.ReadAtKey("id", UUID64(0));
+			VT_DESERIALIZE_PROPERTY(name, data.name, p, std::string(""));
+			VT_DESERIALIZE_PROPERTY(id, data.id, p, UUID64(0));
 
-			std::string type = streamReader.ReadAtKey("type", std::string());
+			std::string type;
+			VT_DESERIALIZE_PROPERTY(type, type, p, std::string(""));
 			if (type.empty())
 			{
-				return;
+				continue;
 			}
 
 			data.value = GraphKey::TypeRegistry::GetDefaultValueFromName(type);
+
 			if (s_typeDeserializers.contains(data.value.type()))
 			{
-				s_typeDeserializers[data.value.type()](data.value, streamReader);
+				s_typeDeserializers[data.value.type()](data.value, p);
 			}
-		});
+		}
 
-		streamReader.ForEach("Events", [&]() 
+		for (const auto& e : yamlNode["Events"])
 		{
 			auto& data = events.emplace_back();
-			data.name = streamReader.ReadAtKey("name", std::string());
-			data.id = streamReader.ReadAtKey("id", UUID64(0));
-		});
+			VT_DESERIALIZE_PROPERTY(name, data.name, e, std::string(""));
+			VT_DESERIALIZE_PROPERTY(id, data.id, e, UUID64(0));
+		}
 
 		for (const auto& p : parameters)
 		{
@@ -576,7 +600,7 @@ namespace GraphKey
 			node->editorState = n.state;
 			node->Initialize();
 
-			//node->Deserialize(n.nodeSpecific);
+			node->Deserialize(n.nodeSpecific);
 
 			if (auto paramType = std::dynamic_pointer_cast<GraphKey::ParameterNode>(node))
 			{
@@ -598,11 +622,10 @@ namespace GraphKey
 				{
 					it->id = i.id;
 
-					// #TODO_Ivar: Fix
-					//if (i.node && it->data.has_value() && s_typeDeserializers.contains(it->data.type()))
-					//{
-					//	s_typeDeserializers[it->data.type()](it->data, i.node);
-					//}
+					if (i.node && it->data.has_value() && s_typeDeserializers.contains(it->data.type()))
+					{
+						s_typeDeserializers[it->data.type()](it->data, i.node);
+					}
 				}
 			}
 
@@ -617,10 +640,10 @@ namespace GraphKey
 				{
 					it->id = o.id;
 
-					//if (o.node && it->data.has_value() && s_typeDeserializers.contains(it->data.type()))
-					//{
-					//	s_typeDeserializers[it->data.type()](it->data, o.node);
-					//}
+					if (o.node && it->data.has_value() && s_typeDeserializers.contains(it->data.type()))
+					{
+						s_typeDeserializers[it->data.type()](it->data, o.node);
+					}
 				}
 			}
 

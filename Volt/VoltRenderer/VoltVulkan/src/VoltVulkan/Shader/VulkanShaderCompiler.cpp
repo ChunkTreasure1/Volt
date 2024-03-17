@@ -101,12 +101,6 @@ namespace Volt::RHI
 			}
 		}
 
-		// #TODO_Ivar: This is a dumb hack for vertex only shaders
-		if (vulkanShader.m_shaderSources.contains(RHI::ShaderStage::Vertex) && !vulkanShader.m_shaderSources.contains(RHI::ShaderStage::Pixel))
-		{
-			vulkanShader.m_resources.outputFormats.emplace_back(RHI::PixelFormat::D32_SFLOAT);
-		}
-
 		return CompilationResult::Success;
 	}
 
@@ -162,8 +156,6 @@ namespace Volt::RHI
 			L"-D",
 			L"__VULKAN__ ",
 			L"-enable-16bit-types",
-
-			L"-fvk-use-scalar-layout",
 			//L"-fvk-t-shift", std::to_wstring(VulkanDefaults::ShaderTRegisterOffset), L"0",
 			//L"-fvk-u-shift", std::to_wstring(VulkanDefaults::ShaderURegisterOffset), L"0",
 

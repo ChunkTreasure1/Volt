@@ -7,6 +7,7 @@
 
 namespace Volt
 {
+	class SubMaterial;
 	class Mesh;
 	class Material;
 
@@ -107,6 +108,7 @@ namespace Volt
 	///// Indirect /////
 	struct IndirectBatch
 	{
+		Ref<SubMaterial> material = nullptr;
 		Ref<Mesh> mesh = nullptr;
 
 		SubMesh subMesh{};

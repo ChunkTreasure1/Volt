@@ -1,4 +1,0 @@
-name: "OpaqueDefault"
-internal: true
-paths:
-  - "Engine/Shaders/Source/Defaults/OpaqueDefault_cs.hlsl"

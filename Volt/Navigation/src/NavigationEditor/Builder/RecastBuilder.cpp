@@ -6,6 +6,7 @@
 
 #include <Volt/Log/Log.h>
 #include <Volt/Asset/AssetManager.h>
+#include <Volt/Asset/Mesh/Material.h>
 
 #include <DetourAssert.h>
 #include <DetourNavMesh.h>

@@ -39,11 +39,11 @@ void TestingLayer::OnAttach()
 	m_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics, false);
 #endif
 
-	//m_shader = RHI::Shader::Create("SimpleTriangle",
-	//{
-	//	Volt::ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/MeshIndirectPulling_vs.hlsl",
-	//	Volt::ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/MeshIndirectPulling_ps.hlsl"
-	//}, true);
+	m_shader = RHI::Shader::Create("SimpleTriangle",
+	{
+		Volt::ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/MeshIndirectPulling_vs.hlsl",
+		Volt::ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/MeshIndirectPulling_ps.hlsl"
+	}, true);
 
 	RHI::RenderPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.shader = m_shader;

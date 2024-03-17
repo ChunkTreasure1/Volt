@@ -197,10 +197,6 @@ namespace Volt::RHI
 		SetBufferView(view, binding.set, binding.binding, arrayIndex);
 	}
 
-	void VulkanDescriptorBufferTable::SetSamplerState(std::string_view name, Ref<SamplerState> samplerState, uint32_t arrayIndex)
-	{
-	}
-
 	void VulkanDescriptorBufferTable::SetBufferViews(const std::vector<Ref<BufferView>>& bufferViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset)
 	{
 		for (uint32_t index = arrayStartOffset; const auto & view : bufferViews)

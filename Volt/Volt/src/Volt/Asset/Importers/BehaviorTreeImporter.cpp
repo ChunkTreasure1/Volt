@@ -3,6 +3,7 @@
 
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/BehaviorTree/BehaviorTree.hpp"
+#include "Volt/Utility/SerializationMacros.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
 #include <yaml-cpp/yaml.h>
@@ -61,52 +62,52 @@ namespace Volt
 			behaviorTree->CreateNode<BehaviorTree::Selector>(n);
 
 		// OH NO...
-		//YAML::Node decoraterNodes = root["DecoratorIDs"];
-		//for (const auto& n : decoraterNodes)
-		//{
-		//	int decType;
-		//	UUID64 thing;
-		//	std::string ifFun1;
-		//	VT_DESERIALIZE_PROPERTY(uuid, thing, n, uint64_t(0));
-		//	VT_DESERIALIZE_PROPERTY(ifFun, ifFun1, n, std::string(""));
-		//	VT_DESERIALIZE_PROPERTY(type, decType, n, 0);
-		//	reinterpret_cast<BehaviorTree::Decorator*>(behaviorTree->GetNodeManager().GetNodeFromUUID(behaviorTree->CreateNode<BehaviorTree::Decorator>(thing)).get())->m_type = static_cast<BehaviorTree::eDecoratorType>(decType);
-		//	reinterpret_cast<BehaviorTree::Decorator*>(behaviorTree->GetNodeManager().GetNodeFromUUID(thing).get())->m_if = ifFun1;
-		//}
+		YAML::Node decoraterNodes = root["DecoratorIDs"];
+		for (const auto& n : decoraterNodes)
+		{
+			int decType;
+			UUID64 thing;
+			std::string ifFun1;
+			VT_DESERIALIZE_PROPERTY(uuid, thing, n, uint64_t(0));
+			VT_DESERIALIZE_PROPERTY(ifFun, ifFun1, n, std::string(""));
+			VT_DESERIALIZE_PROPERTY(type, decType, n, 0);
+			reinterpret_cast<BehaviorTree::Decorator*>(behaviorTree->GetNodeManager().GetNodeFromUUID(behaviorTree->CreateNode<BehaviorTree::Decorator>(thing)).get())->m_type = static_cast<BehaviorTree::eDecoratorType>(decType);
+			reinterpret_cast<BehaviorTree::Decorator*>(behaviorTree->GetNodeManager().GetNodeFromUUID(thing).get())->m_if = ifFun1;
+		}
 
-		//YAML::Node leafNodes = root["LeafIDs"];
-		//for (const auto& n : leafNodes)
-		//{
-		//	UUID64 thing;
-		//	std::string funcName;
-		//	VT_DESERIALIZE_PROPERTY(uuid, thing, n, uint64_t(0));
-		//	VT_DESERIALIZE_PROPERTY(functionName, funcName, n, std::string(""));
-		//	reinterpret_cast<BehaviorTree::Leaf*>(behaviorTree->GetNodeManager().GetNodeFromUUID(behaviorTree->CreateNode<BehaviorTree::Leaf>(thing)).get())->m_monoScriptFunctonName = funcName;
-		//}
+		YAML::Node leafNodes = root["LeafIDs"];
+		for (const auto& n : leafNodes)
+		{
+			UUID64 thing;
+			std::string funcName;
+			VT_DESERIALIZE_PROPERTY(uuid, thing, n, uint64_t(0));
+			VT_DESERIALIZE_PROPERTY(functionName, funcName, n, std::string(""));
+			reinterpret_cast<BehaviorTree::Leaf*>(behaviorTree->GetNodeManager().GetNodeFromUUID(behaviorTree->CreateNode<BehaviorTree::Leaf>(thing)).get())->m_monoScriptFunctonName = funcName;
+		}
 
-		//YAML::Node linkNodes = root["Links"];
-		//for (const auto& n : linkNodes)
-		//{
-		//	UUID64 lnkID;
-		//	UUID64 parentID;
-		//	UUID64 childID;
+		YAML::Node linkNodes = root["Links"];
+		for (const auto& n : linkNodes)
+		{
+			UUID64 lnkID;
+			UUID64 parentID;
+			UUID64 childID;
 
-		//	VT_DESERIALIZE_PROPERTY(LinkID, lnkID, n, UUID64(0));
-		//	VT_DESERIALIZE_PROPERTY(ParentID, parentID, n, UUID64(0));
-		//	VT_DESERIALIZE_PROPERTY(ChildID, childID, n, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(LinkID, lnkID, n, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(ParentID, parentID, n, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(ChildID, childID, n, UUID64(0));
 
-		//	behaviorTree->GetNodeManager().RegisterLink(parentID, childID, lnkID);
-		//	//behaviorTree-><BehaviorTree::Selector>(n);
-		//}
+			behaviorTree->GetNodeManager().RegisterLink(parentID, childID, lnkID);
+			//behaviorTree-><BehaviorTree::Selector>(n);
+		}
 
-		//for (const auto& positionNode : root["Positions"])
-		//{
-		//	UUID64 nodeID;
-		//	std::string position;
-		//	VT_DESERIALIZE_PROPERTY(uuid, nodeID, positionNode, UUID64(0));
-		//	VT_DESERIALIZE_PROPERTY(pos, position, positionNode, std::string(""));
-		//	behaviorTree->GetNodeManager().GetNodeFromUUID(nodeID)->SetPos(position);
-		//}
+		for (const auto& positionNode : root["Positions"])
+		{
+			UUID64 nodeID;
+			std::string position;
+			VT_DESERIALIZE_PROPERTY(uuid, nodeID, positionNode, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(pos, position, positionNode, std::string(""));
+			behaviorTree->GetNodeManager().GetNodeFromUUID(nodeID)->SetPos(position);
+		}
 		return true;
 	}
 
@@ -152,26 +153,26 @@ namespace Volt
 			}
 			out << YAML::EndSeq;
 
-			//out << YAML::Key << "DecoratorIDs" << YAML::BeginSeq;
-			//for (auto nID : decoratorVec)
-			//{
-			//	out << YAML::BeginMap;
-			//	VT_SERIALIZE_PROPERTY(uuid, nID, out);
-			//	VT_SERIALIZE_PROPERTY(ifFun, reinterpret_cast<Volt::BehaviorTree::Decorator*>(tree->GetNodeManager().GetNodeFromUUID(nID).get())->m_if, out);
-			//	VT_SERIALIZE_PROPERTY(type, (int)reinterpret_cast<Volt::BehaviorTree::Decorator*>(tree->GetNodeManager().GetNodeFromUUID(nID).get())->m_type, out);
-			//	out << YAML::EndMap;
-			//}
-			//out << YAML::EndSeq;
+			out << YAML::Key << "DecoratorIDs" << YAML::BeginSeq;
+			for (auto nID : decoratorVec)
+			{
+				out << YAML::BeginMap;
+				VT_SERIALIZE_PROPERTY(uuid, nID, out);
+				VT_SERIALIZE_PROPERTY(ifFun, reinterpret_cast<Volt::BehaviorTree::Decorator*>(tree->GetNodeManager().GetNodeFromUUID(nID).get())->m_if, out);
+				VT_SERIALIZE_PROPERTY(type, (int)reinterpret_cast<Volt::BehaviorTree::Decorator*>(tree->GetNodeManager().GetNodeFromUUID(nID).get())->m_type, out);
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
 
-			//out << YAML::Key << "LeafIDs" << YAML::BeginSeq;
-			//for (auto nID : leafVec)
-			//{
-			//	out << YAML::BeginMap;
-			//	VT_SERIALIZE_PROPERTY(uuid, nID, out);
-			//	VT_SERIALIZE_PROPERTY(functionName, reinterpret_cast<Volt::BehaviorTree::Leaf*>(tree->GetNodeManager().GetNodeFromUUID(nID).get())->m_monoScriptFunctonName, out);
-			//	out << YAML::EndMap;
-			//}
-			//out << YAML::EndSeq;
+			out << YAML::Key << "LeafIDs" << YAML::BeginSeq;
+			for (auto nID : leafVec)
+			{
+				out << YAML::BeginMap;
+				VT_SERIALIZE_PROPERTY(uuid, nID, out);
+				VT_SERIALIZE_PROPERTY(functionName, reinterpret_cast<Volt::BehaviorTree::Leaf*>(tree->GetNodeManager().GetNodeFromUUID(nID).get())->m_monoScriptFunctonName, out);
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
 
 			//out << YAML::BeginMap;
 			out << YAML::Key << "Links" << YAML::BeginSeq;

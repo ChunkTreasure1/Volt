@@ -3,10 +3,8 @@
 
 #include "Volt/Log/Log.h"
 #include "Volt/Asset/Mesh/Mesh.h"
-
-#include "Volt/Asset/Rendering/Material.h"
-#include "Volt/Asset/Rendering/MaterialTable.h"
-
+#include "Volt/Asset/Mesh/Material.h"
+#include "Volt/Asset/Mesh/SubMaterial.h"
 #include "Volt/Asset/AssetManager.h"
 
 #include "Volt/RenderingNew/Shader/ShaderMap.h"
@@ -19,13 +17,12 @@
 
 namespace Volt
 {
-	void GLTFImporter::ImportMeshImpl(const std::filesystem::path& path, Ref<Mesh>& mesh)
+	Ref<Mesh> GLTFImporter::ImportMeshImpl(const std::filesystem::path& path)
 	{
 		if (!std::filesystem::exists(path))
 		{
 			VT_CORE_ERROR("File does not exist: {0}", path.string().c_str());
-			mesh->SetFlag(AssetFlag::Missing, true);
-			return;
+			return nullptr;
 		}
 
 		tinygltf::Model gltfInput;
@@ -46,14 +43,17 @@ namespace Volt
 		if (!loaded)
 		{
 			VT_CORE_ERROR("Unable to load GLTF file {0}! Error: {1}, warning {2}", path.string().c_str(), error.c_str(), warning.c_str());
-			return mesh->SetFlag(AssetFlag::Invalid, true);
+			return nullptr;
 		}
+
+		Ref<Mesh> mesh = CreateRef<Mesh>();
+		mesh->m_material = CreateRef<Material>();
+		mesh->m_material->myName = path.stem().string() + "_mat";
 
 		uint32_t index = 0;
 		for (const auto& mat : gltfInput.materials)
 		{
-			auto newMaterial = AssetManager::CreateAsset<Material>("", mat.name);
-			mesh->m_materialTable.SetMaterial(newMaterial->handle, index);
+			mesh->m_material->mySubMaterials[index] = SubMaterial::Create(mat.name, index, ShaderMap::Get("VisibilityBuffer"));
 			index++;
 		}
 
@@ -65,6 +65,8 @@ namespace Volt
 		}
 
 		mesh->Construct();
+
+		return mesh;
 	}
 
 	void GLTFImporter::LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model& inputModel, GLTF::Node*, Ref<Mesh> outMesh)
@@ -153,9 +155,9 @@ namespace Volt
 						Vertex vert{};
 						vert.position = positionBuffer ? *(glm::vec3*)&positionBuffer[v * 3] : glm::vec3();
 						vert.normal = glm::normalize(normalBuffer ? *(glm::vec3*)&normalBuffer[v * 3] : glm::vec3(0.f, 1.f, 0.f));
-						vert.uv = texCoordsBuffer ? *(glm::vec2*)&texCoordsBuffer[v * 2] : glm::vec2();
+						vert.texCoords = texCoordsBuffer ? *(glm::vec2*)&texCoordsBuffer[v * 2] : glm::vec2();
 
-						vert.uv.y = 1.f - vert.uv.y;
+						vert.texCoords.y = 1.f - vert.texCoords.y;
 
 						glm::vec4 tangent = tangentBuffer ? *(glm::vec4*)&tangentBuffer[v * 4] : glm::vec4();
 
@@ -231,10 +233,9 @@ namespace Volt
 				subMesh.transform = node.transform;
 				subMesh.GenerateHash();
 
-				if (!outMesh->m_materialTable.ContainsMaterialIndex(subMesh.materialIndex))
+				if (!outMesh->m_material->mySubMaterials.contains(subMesh.materialIndex))
 				{
-					auto newMaterial = AssetManager::CreateAsset<Material>("", inputModel.materials[subMesh.materialIndex].name);
-					outMesh->m_materialTable.SetMaterial(newMaterial->handle, subMesh.materialIndex);
+					outMesh->m_material->mySubMaterials[subMesh.materialIndex] = SubMaterial::Create(inputModel.materials[subMesh.materialIndex].name, subMesh.materialIndex, ShaderMap::Get("Deferred"));
 				}
 			}
 		}

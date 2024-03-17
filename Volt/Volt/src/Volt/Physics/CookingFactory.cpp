@@ -5,8 +5,7 @@
 #include "Volt/Physics/PhysXUtilities.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
-#include "Volt/Asset/Rendering/Material.h"
-
+#include "Volt/Asset/Mesh/Material.h"
 #include "Volt/Asset/AssetManager.h"
 
 #include "Volt/Physics/MeshColliderCache.h"
@@ -262,11 +261,7 @@ namespace Volt
 			if (vertices.size() > 0)
 			{
 				Ref<Material> material = AssetManager::GetAsset<Material>("Engine/Meshes/Primitives/SM_Cube.vtmat");
-
-				MaterialTable materialTable{};
-				materialTable.SetMaterial(material->handle, 0);
-
-				Ref<Mesh> mesh = CreateRef<Mesh>(vertices, indices, materialTable, subMeshes);
+				Ref<Mesh> mesh = CreateRef<Mesh>(vertices, indices, material, subMeshes);
 				MeshColliderCache::AddTriangleDebugMesh(colliderComp.colliderMesh, mesh);
 			}
 		}
@@ -335,11 +330,7 @@ namespace Volt
 			if (vertices.size() > 0)
 			{
 				Ref<Material> material = AssetManager::GetAsset<Material>("Engine/Meshes/Primitives/SM_Cube.vtmat");
-
-				MaterialTable materialTable{};
-				materialTable.SetMaterial(material->handle, 0);
-
-				Ref<Mesh> mesh = CreateRef<Mesh>(vertices, indices, materialTable, subMeshes);
+				Ref<Mesh> mesh = CreateRef<Mesh>(vertices, indices, material, subMeshes);
 				MeshColliderCache::AddConvexDebugMesh(colliderComp.colliderMesh, mesh);
 			}
 		}

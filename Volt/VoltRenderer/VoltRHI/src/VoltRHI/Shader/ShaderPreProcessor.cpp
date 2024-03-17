@@ -157,14 +157,8 @@ namespace Volt::RHI
 				valueStr.find("UniformBuffer") != std::string_view::npos ||
 				valueStr.find("TypedBuffer") != std::string_view::npos ||
 				valueStr.find("RWTypedBuffer") != std::string_view::npos ||
-				valueStr.find("TTexture") != std::string_view::npos ||
-				valueStr.find("RWTexture") != std::string_view::npos ||
-				valueStr.find("UniformRawByteBuffer") != std::string_view::npos ||
-				valueStr.find("UniformRWRawByteBuffer") != std::string_view::npos ||
-				valueStr.find("UniformTypedBuffer") != std::string_view::npos ||
-				valueStr.find("UniformRWTypedBuffer") != std::string_view::npos ||
-				valueStr.find("UniformTexture") != std::string_view::npos ||
-				valueStr.find("UniformRWTexture") != std::string_view::npos)
+				valueStr.find("TextureT") != std::string_view::npos ||
+				valueStr.find("RWTexture") != std::string_view::npos)
 			{
 				return true;
 			}
@@ -736,38 +730,6 @@ namespace Volt::RHI
 			resultType.baseType = ShaderUniformBaseType::Sampler;
 			isResourceType = true;
 		}
-
-		else if (str.find("UniformRWRawByteBuffer") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::RWBuffer;
-			isResourceType = true;
-		}
-		else if (str.find("UniformRawByteBuffer") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::Buffer;
-			isResourceType = true;
-		}
-		else if (str.find("UniformRWTypedBuffer") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::RWBuffer;
-			isResourceType = true;
-		}
-		else if (str.find("UniformTypedBuffer") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::Buffer;
-			isResourceType = true;
-		}
-		else if (str.find("UniformRWTexture") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::RWTexture;
-			isResourceType = true;
-		}
-		else if (str.find("UniformTexture") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::Texture;
-			isResourceType = true;
-		}
-
 		else if (str.find("RWRawByteBuffer") != std::string_view::npos)
 		{
 			resultType.baseType = ShaderUniformBaseType::RWBuffer;
@@ -780,7 +742,7 @@ namespace Volt::RHI
 		}
 		else if (str.find("UniformBuffer") != std::string_view::npos)
 		{
-			resultType.baseType = ShaderUniformBaseType::UniformBuffer;
+			resultType.baseType = ShaderUniformBaseType::Buffer;
 			isResourceType = true;
 		}
 		else if (str.find("RWTypedBuffer") != std::string_view::npos)
@@ -798,7 +760,7 @@ namespace Volt::RHI
 			resultType.baseType = ShaderUniformBaseType::RWTexture;
 			isResourceType = true;
 		}
-		else if (str.find("TTexture") != std::string_view::npos)
+		else if (str.find("TextureT") != std::string_view::npos)
 		{
 			resultType.baseType = ShaderUniformBaseType::Texture;
 			isResourceType = true;
@@ -867,7 +829,7 @@ namespace Volt::RHI
 				findOffset = tTypeOffset;
 			}
 
-			size_t lastNumOffset = str.find_last_not_of("abcdefghijklmnopqrstuvwxyz<>[]", findOffset);
+			size_t lastNumOffset = str.find_last_not_of("abcdefghijklmnopqrstuvwxyz", findOffset);
 			if (lastNumOffset != std::string_view::npos)
 			{
 				std::string_view postfixStr = str.substr(lastNumOffset, str.size() - lastNumOffset);

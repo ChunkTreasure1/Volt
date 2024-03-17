@@ -21,7 +21,6 @@ namespace Volt::RHI
 		void GenerateMips() override;
 
 		const Ref<ImageView> GetView(const int32_t mip, const int32_t layer) override;
-		const Ref<ImageView> GetArrayView(const int32_t mip /* = -1 */) override;
 
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
@@ -37,8 +36,6 @@ namespace Volt::RHI
 		const ImageLayout GetCurrentLayout() const { return m_currentImageLayout; }
 		void SetCurrentLayout(ImageLayout layout) { m_currentImageLayout = layout; }
 		inline const ImageAspect GetImageAspect() const override { return m_imageAspect; }
-
-		void InitializeWithData(const void* data);
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -59,6 +56,5 @@ namespace Volt::RHI
 		ImageAspect m_imageAspect = ImageAspect::None;
 
 		std::map<int32_t, std::map<int32_t, Ref<ImageView>>> m_imageViews; // Layer -> Mip -> View
-		std::map<int32_t, Ref<ImageView>> m_arrayImageViews;
 	};
 }

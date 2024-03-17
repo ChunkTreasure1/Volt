@@ -4,6 +4,8 @@
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Window.h"
 
+#include "Volt/Asset/Mesh/Material.h"
+#include "Volt/Asset/Mesh/SubMaterial.h"
 #include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Text/MSDFData.h"
 
@@ -487,7 +489,7 @@ namespace Volt
 
 		for (const auto& cmd : s_uiRendererData->spriteCommands)
 		{
-			//auto subMat = s_uiRendererData->quadData.quadMaterial->GetSubMaterialAt(0);
+			auto subMat = s_uiRendererData->quadData.quadMaterial->GetSubMaterialAt(0);
 
 			const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget->GetWidth(), (float)s_uiRendererData->currentRenderTarget->GetHeight() };
 			const glm::vec2 halfSize = currentSize / 2.f;

@@ -6,6 +6,7 @@
 #include <Volt/Asset/Prefab.h>
 
 #include <Volt/Utility/UIUtility.h>
+#include <Volt/Utility/FileIO/YAMLStreamReader.h>
 
 #include <Volt/Asset/Asset.h>
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
@@ -16,11 +17,9 @@
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
 #include <Volt/Components/RenderingComponents.h>
-#include <Volt/Utility/YAMLSerializationHelpers.h>
-
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
 
 #include <imgui.h>
+#include <Volt/Utility/SerializationMacros.h>
 
 enum class PreV113PropertyType : uint32_t
 {
@@ -59,7 +58,7 @@ struct TypeIndexContainer
 };
 
 static std::unordered_map<PreV113PropertyType, TypeIndexContainer> s_preV113PropTypeToTypeIndexMap;
-static std::unordered_map<std::type_index, std::function<void(YAMLStreamReader&, uint8_t*, const size_t)>> s_arrayDeserializers;
+static std::unordered_map<std::type_index, std::function<void(Volt::YAMLStreamReader&, uint8_t*, const size_t)>> s_arrayDeserializers;
 static std::unordered_map<VoltGUID, std::unordered_map<std::string, std::string>> s_componentMemberRemap;
 
 static bool s_initialize = false;
@@ -67,9 +66,9 @@ static bool s_initialize = false;
 template<typename T>
 void RegisterArrayDeserializationFunction()
 {
-	s_arrayDeserializers[std::type_index{ typeid(T) }] = [](YAMLStreamReader& streamReader, uint8_t* data, const size_t offset)
+	s_arrayDeserializers[std::type_index{ typeid(T) }] = [](Volt::YAMLStreamReader& streamReader, uint8_t* data, const size_t offset)
 	{
-		*reinterpret_cast<T*>(&data[offset]) = streamReader.ReadAtKey("value", T());
+		*reinterpret_cast<T*>(&data[offset]) = streamReader.ReadKey("value", T());
 	};
 }
 
@@ -292,7 +291,7 @@ void ProjectUpgradeModal::ConvertAnimationGraphsToV0_1_2()
 	{
 		for (const auto& characterPath : characterAssets)
 		{
-			YAMLStreamReader metaStreamReader{};
+			Volt::YAMLStreamReader metaStreamReader{};
 
 			if (!metaStreamReader.OpenFile(characterPath.string() + ".vtmeta"))
 			{
@@ -303,11 +302,11 @@ void ProjectUpgradeModal::ConvertAnimationGraphsToV0_1_2()
 
 			metaStreamReader.EnterScope("Metadata");
 
-			characterAssetHandle = metaStreamReader.ReadAtKey("assetHandle", uint64_t(0));
+			characterAssetHandle = metaStreamReader.ReadKey("assetHandle", uint64_t(0));
 
 			if (characterAssetHandle == handle)
 			{
-				YAMLStreamReader charStreamReader{};
+				Volt::YAMLStreamReader charStreamReader{};
 
 				if (!charStreamReader.OpenFile(characterPath))
 				{
@@ -315,8 +314,8 @@ void ProjectUpgradeModal::ConvertAnimationGraphsToV0_1_2()
 				}
 
 				charStreamReader.EnterScope("AnimatedCharacter");
-				outSkeletonHandle = charStreamReader.ReadAtKey("skeleton", uint64_t(0));
-				outSkinHandle = charStreamReader.ReadAtKey("skin", uint64_t(0));
+				outSkeletonHandle = charStreamReader.ReadKey("skeleton", uint64_t(0));
+				outSkinHandle = charStreamReader.ReadKey("skin", uint64_t(0));
 				return true;
 			}
 		}
@@ -338,7 +337,7 @@ void ProjectUpgradeModal::ConvertAnimationGraphsToV0_1_2()
 		AnimGraphDescriptor& descriptor = animGraphDescriptors.emplace_back();
 		{ // convert the animgraph
 			{// parse meta
-				YAMLStreamReader metaStreamReader{};
+				Volt::YAMLStreamReader metaStreamReader{};
 
 				if (!metaStreamReader.OpenFile(animGraphPath.string() + ".vtmeta"))
 				{
@@ -349,7 +348,7 @@ void ProjectUpgradeModal::ConvertAnimationGraphsToV0_1_2()
 
 				metaStreamReader.EnterScope("Metadata");
 
-				descriptor.handle = metaStreamReader.ReadAtKey("assetHandle", uint64_t(0));
+				descriptor.handle = metaStreamReader.ReadKey("assetHandle", uint64_t(0));
 			}
 
 			std::ifstream input(animGraphPath);
@@ -678,7 +677,7 @@ void ProjectUpgradeModal::ConvertScenesToV113()
 
 		// Load scene name
 		{
-			YAMLStreamReader streamReader{};
+			Volt::YAMLStreamReader streamReader{};
 			if (!streamReader.OpenFile(sceneFilePath))
 			{
 				VT_CORE_ERROR("[Project Upgrade]: Unable to open scene file! Skipping!");
@@ -686,7 +685,7 @@ void ProjectUpgradeModal::ConvertScenesToV113()
 			}
 
 			streamReader.EnterScope("Scene");
-			sceneName = streamReader.ReadAtKey("name", std::string("New Scene"));
+			sceneName = streamReader.ReadKey("name", std::string("New Scene"));
 			streamReader.ExitScope();
 		}
 
@@ -718,7 +717,7 @@ void ProjectUpgradeModal::ConvertScenesToV113()
 
 void ProjectUpgradeModal::ConvertPreV113Prefab(const std::filesystem::path& filePath)
 {
-	YAMLStreamReader streamReader{};
+	Volt::YAMLStreamReader streamReader{};
 	if (!streamReader.OpenFile(filePath))
 	{
 		return;
@@ -732,11 +731,11 @@ void ProjectUpgradeModal::ConvertPreV113Prefab(const std::filesystem::path& file
 
 	streamReader.EnterScope("Prefab");
 	{
-		version = streamReader.ReadAtKey("version", 0u);
+		version = streamReader.ReadKey("version", 0u);
 
 		streamReader.ForEach("entities", [&]()
 		{
-			Volt::EntityID entityId = streamReader.ReadAtKey("id", Volt::Entity::NullID());
+			Volt::EntityID entityId = streamReader.ReadKey("id", Volt::Entity::NullID());
 			if (IsPreV113EntityNull(entityId))
 			{
 				return;
@@ -769,7 +768,7 @@ void ProjectUpgradeModal::ConvertPreV113Prefab(const std::filesystem::path& file
 
 void ProjectUpgradeModal::DeserializePreV113SceneLayer(Ref<Volt::Scene> scene, Volt::SceneLayer& sceneLayer, const std::filesystem::path& layerPath, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping)
 {
-	YAMLStreamReader streamReader{};
+	Volt::YAMLStreamReader streamReader{};
 
 	if (!streamReader.OpenFile(layerPath))
 	{
@@ -778,10 +777,10 @@ void ProjectUpgradeModal::DeserializePreV113SceneLayer(Ref<Volt::Scene> scene, V
 
 	streamReader.EnterScope("Layer");
 	{
-		sceneLayer.name = streamReader.ReadAtKey("name", std::string("Null"));
-		sceneLayer.id = streamReader.ReadAtKey("id", 0u);
-		sceneLayer.visible = streamReader.ReadAtKey("visible", true);
-		sceneLayer.locked = streamReader.ReadAtKey("locked", false);
+		sceneLayer.name = streamReader.ReadKey("name", std::string("Null"));
+		sceneLayer.id = streamReader.ReadKey("id", 0u);
+		sceneLayer.visible = streamReader.ReadKey("visible", true);
+		sceneLayer.locked = streamReader.ReadKey("locked", false);
 
 		streamReader.ForEach("Entities", [&]()
 		{
@@ -791,14 +790,14 @@ void ProjectUpgradeModal::DeserializePreV113SceneLayer(Ref<Volt::Scene> scene, V
 	streamReader.ExitScope();
 }
 
-void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, YAMLStreamReader& streamReader, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping, bool isPrefabEntity)
+void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt::YAMLStreamReader& streamReader, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping, bool isPrefabEntity)
 {
 	if (!isPrefabEntity)
 	{
 		streamReader.EnterScope("Entity");
 	}
 
-	Volt::EntityID originalEntityId = streamReader.ReadAtKey("id", Volt::Entity::NullID());
+	Volt::EntityID originalEntityId = streamReader.ReadKey("id", Volt::Entity::NullID());
 
 	if (IsPreV113EntityNull(originalEntityId))
 	{
@@ -822,7 +821,7 @@ void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, YAMLS
 
 	streamReader.ForEach("components", [&]()
 	{
-		const VoltGUID compGuid = streamReader.ReadAtKey("guid", VoltGUID::Null());
+		const VoltGUID compGuid = streamReader.ReadKey("guid", VoltGUID::Null());
 		if (compGuid == VoltGUID::Null())
 		{
 			return;
@@ -928,13 +927,13 @@ void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, YAMLS
 	}
 }
 
-void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, const Volt::IComponentTypeDesc* componentDesc, YAMLStreamReader& streamReader)
+void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, const Volt::IComponentTypeDesc* componentDesc, Volt::YAMLStreamReader& streamReader)
 {
 	const auto& typeDeserializers = Volt::SceneImporter::GetTypeDeserializers();
 
 	streamReader.ForEach("properties", [&]()
 	{
-		const std::string memberName = streamReader.ReadAtKey("name", std::string(""));
+		const std::string memberName = streamReader.ReadKey("name", std::string(""));
 
 		if (memberName.empty())
 		{
@@ -947,12 +946,12 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 			return;
 		}
 
-		const PreV113PropertyType oldType = static_cast<PreV113PropertyType>(streamReader.ReadAtKey("type", 0u));
+		const PreV113PropertyType oldType = static_cast<PreV113PropertyType>(streamReader.ReadKey("type", 0u));
 
 		if (oldType == PreV113PropertyType::Vector && componentMember->typeDesc != nullptr)
 		{
 			const Volt::IArrayTypeDesc* arrayTypeDesc = reinterpret_cast<const Volt::IArrayTypeDesc*>(componentMember->typeDesc);
-			const PreV113PropertyType vectorType = static_cast<PreV113PropertyType>(streamReader.ReadAtKey("vectorType", 0u));
+			const PreV113PropertyType vectorType = static_cast<PreV113PropertyType>(streamReader.ReadKey("vectorType", 0u));
 			const std::type_index vectorValueType = s_preV113PropTypeToTypeIndexMap.at(vectorType).typeIndex;
 			void* arrayPtr = &componentData[componentMember->offset];
 
@@ -1010,7 +1009,7 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 	});
 }
 
-void ProjectUpgradeModal::DeserializePreV113MonoScripts(Ref<Volt::Scene> scene, const Volt::EntityID entityId, YAMLStreamReader& streamReader)
+void ProjectUpgradeModal::DeserializePreV113MonoScripts(Ref<Volt::Scene> scene, const Volt::EntityID entityId, Volt::YAMLStreamReader& streamReader)
 {
 	Volt::Entity entity = scene->GetEntityFromUUID(entityId);
 	const auto& typeDeserializers = Volt::SceneImporter::GetTypeDeserializers();
@@ -1024,8 +1023,8 @@ void ProjectUpgradeModal::DeserializePreV113MonoScripts(Ref<Volt::Scene> scene, 
 			entity.AddComponent<Volt::MonoScriptComponent>();
 		}
 
-		const std::string scriptName = streamReader.ReadAtKey("name", std::string(""));
-		UUID64 scriptId = streamReader.ReadAtKey("id", UUID64(0));
+		const std::string scriptName = streamReader.ReadKey("name", std::string(""));
+		UUID64 scriptId = streamReader.ReadKey("id", UUID64(0));
 
 		auto scriptClass = Volt::MonoScriptEngine::GetScriptClass(scriptName);
 		if (!scriptClass)
@@ -1052,7 +1051,7 @@ void ProjectUpgradeModal::DeserializePreV113MonoScripts(Ref<Volt::Scene> scene, 
 
 		streamReader.ForEach("properties", [&]()
 		{
-			const std::string memberName = streamReader.ReadAtKey("name", std::string(""));
+			const std::string memberName = streamReader.ReadKey("name", std::string(""));
 			if (!classFields.contains(memberName))
 			{
 				return;
@@ -1064,7 +1063,7 @@ void ProjectUpgradeModal::DeserializePreV113MonoScripts(Ref<Volt::Scene> scene, 
 			fieldInstance->field = classFields.at(memberName);
 			if (fieldInstance->field.type.IsString())
 			{
-				const std::string str = streamReader.ReadAtKey("data", std::string(""));
+				const std::string str = streamReader.ReadKey("data", std::string(""));
 				fieldInstance->SetValue(str, str.size());
 			}
 			else if (typeDeserializers.contains(fieldInstance->field.type.typeIndex))
@@ -1289,7 +1288,7 @@ const Volt::ComponentMember* ProjectUpgradeModal::TryGetComponentMemberFromName(
 
 std::pair<std::filesystem::path, Volt::AssetHandle> ProjectUpgradeModal::DeserializeV0MetaFile(const std::filesystem::path& metaPath)
 {
-	YAMLStreamReader streamReader{};
+	Volt::YAMLStreamReader streamReader{};
 
 	if (!streamReader.OpenFile(metaPath))
 	{
@@ -1304,15 +1303,15 @@ std::pair<std::filesystem::path, Volt::AssetHandle> ProjectUpgradeModal::Deseria
 	{
 		streamReader.EnterScope("Metadata");
 
-		resultAssetFilePath = streamReader.ReadAtKey("filePath", std::string(""));
-		resultAssetHandle = streamReader.ReadAtKey("assetHandle", uint64_t(0u));
+		resultAssetFilePath = streamReader.ReadKey("filePath", std::string(""));
+		resultAssetHandle = streamReader.ReadKey("assetHandle", uint64_t(0u));
 
 		streamReader.ExitScope();
 	}
 	else if (streamReader.HasKey("Handle"))
 	{
-		resultAssetHandle = streamReader.ReadAtKey("Handle", uint64_t(0));
-		resultAssetFilePath = streamReader.ReadAtKey("Path", std::string(""));
+		resultAssetHandle = streamReader.ReadKey("Handle", uint64_t(0));
+		resultAssetFilePath = streamReader.ReadKey("Path", std::string(""));
 	}
 
 	return { resultAssetFilePath, resultAssetHandle };

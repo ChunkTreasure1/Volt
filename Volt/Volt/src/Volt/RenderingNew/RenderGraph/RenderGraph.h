@@ -59,11 +59,6 @@ namespace Volt
 			RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc);
 			RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
 
-			RenderGraphResourceHandle AddExternalImage2D(Ref<RHI::Image2D> image, bool trackGlobalResource = true);
-			//RenderGraphResourceHandle AddExternalImage3D(Ref<RHI::Image3D> image, bool trackGlobalResource = true);
-			RenderGraphResourceHandle AddExternalBuffer(Ref<RHI::StorageBuffer> buffer, bool trackGlobalResource = true);
-			RenderGraphResourceHandle AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer, bool trackGlobalResource = true);
-
 			void SetHasSideEffect();
 			void SetIsComputePass();
 
@@ -103,7 +98,6 @@ namespace Volt
 		RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
 
 		ResourceHandle GetImage2D(const RenderGraphResourceHandle resourceHandle, const uint32_t mip = 0, const uint32_t layer = 0);
-		ResourceHandle GetImage2DArray(const RenderGraphResourceHandle resourceHandle, const uint32_t mip = 0);
 		//Ref<RHI::Image3D> GetImage3D(const RenderGraphResourceHandle resourceHandle); // #TODO: Implement Image3D first
 		ResourceHandle GetBuffer(const RenderGraphResourceHandle resourceHandle);
 		ResourceHandle GetUniformBuffer(const RenderGraphResourceHandle resourceHandle);
@@ -113,30 +107,14 @@ namespace Volt
 		friend class Builder;
 		friend class RenderGraphExecutionThread;
 
-		inline static constexpr RenderGraphResourceHandle INVALID_RESOURCE_HANDLE = std::numeric_limits<RenderGraphResourceHandle>::max();
-
 		void ExecuteInternal();
 		void DestroyResources();
 		void AllocateConstantsBuffer();
-
-		struct GlobalResourceInfo
-		{
-			ResourceHandle handle;
-			ResourceSpecialization specialization = ResourceSpecialization::None;
-
-			friend bool operator<(const GlobalResourceInfo& lhs, const GlobalResourceInfo& rhs)
-			{
-				return lhs.handle < rhs.handle;
-			}
-		};
 
 		Weak<RHI::ImageView> GetImage2DView(const RenderGraphResourceHandle resourceHandle);
 		Weak<RHI::Image2D> GetImage2DRaw(const RenderGraphResourceHandle resourceHandle);
 		Weak<RHI::StorageBuffer> GetBufferRaw(const RenderGraphResourceHandle resourceHandle);
 		Weak<RHI::RHIResource> GetResourceRaw(const RenderGraphResourceHandle resourceHandle);
-
-		RenderGraphResourceHandle TryGetRegisteredExternalResource(Weak<RHI::RHIResource> resource);
-		void RegisterExternalResource(Weak<RHI::RHIResource> resource, RenderGraphResourceHandle handle);
 
 		std::vector<std::vector<MarkerFunction>> m_standaloneMarkers; // Pass -> Markers
 		std::vector<std::vector<RenderGraphResourceHandle>> m_surrenderableResources; // Pass -> Resources
@@ -146,10 +124,8 @@ namespace Volt
 		std::vector<std::vector<ResourceUsageInfo>> m_resourceBarriers; // Pass -> Transitions
 		std::vector<std::vector<ResourceUsageInfo>> m_standaloneBarriers;
 		
-		std::unordered_map<Weak<RHI::RHIResource>, RenderGraphResourceHandle> m_registeredExternalResources;
-
-		std::set<GlobalResourceInfo> m_usedGlobalImageResourceHandles;
-		std::set<GlobalResourceInfo> m_usedGlobalBufferResourceHandles;
+		std::set<ResourceHandle> m_usedGlobalImage2DResourceHandles;
+		std::set<ResourceHandle> m_usedGlobalBufferResourceHandles;
 		std::vector<uint8_t*> m_temporaryAllocations;
 
 		uint32_t m_passIndex = 0;

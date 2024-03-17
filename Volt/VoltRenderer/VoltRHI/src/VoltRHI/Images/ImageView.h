@@ -27,7 +27,6 @@ namespace Volt::RHI
 		virtual const ImageAspect GetImageAspect() const = 0;
 		virtual const uint64_t GetDeviceAddress() const = 0;
 		virtual const ImageUsage GetImageUsage() const = 0;
-		virtual const ImageViewType GetViewType() const = 0;
 
 	protected:
 		ImageView() = default;

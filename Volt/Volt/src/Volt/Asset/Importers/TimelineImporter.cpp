@@ -8,14 +8,12 @@
 
 #include <yaml-cpp/yaml.h>
 #include "Volt/Asset/ParticlePreset.h"
+#include "Volt/Utility/SerializationMacros.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Asset/AssetManager.h"
-
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
 
 namespace Volt
 {
@@ -30,8 +28,8 @@ namespace Volt
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
-		if (!streamReader.OpenFile(filePath))
+		std::ifstream file(filePath);
+		if (!file.is_open())
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
@@ -41,47 +39,51 @@ namespace Volt
 		asset = CreateRef<TimelinePreset>();
 		Ref<TimelinePreset> preset = std::reinterpret_pointer_cast<TimelinePreset>(asset);
 
-		preset->maxLength = streamReader.ReadAtKey("maxLength", 0);
+		std::stringstream sstream;
+		sstream << file.rdbuf();
 
-		streamReader.ForEach("Tracks", [&]() 
+		YAML::Node root = YAML::Load(sstream.str());
+
+		VT_DESERIALIZE_PROPERTY(maxLength, preset->maxLength, root, 0);
+
+		for (auto track : root["Tracks"])
 		{
 			Volt::Track newTrack = Volt::Track();
-			
-			newTrack.trackType = streamReader.ReadAtKey("trackType", TrackType::T_Animation);
+
+			VT_DESERIALIZE_PROPERTY(trackType, newTrack.trackType, track, TrackType::T_Animation);
 
 			if (newTrack.trackType == TrackType::T_Animation)
 			{
-				newTrack.targetEntity = streamReader.ReadAtKey("targetEntId", Entity::NullID());
+				VT_DESERIALIZE_PROPERTY(targetEntId, newTrack.targetEntity, track, Entity::NullID());
 
-				streamReader.ForEach("Keyframes", [&]() 
+				for (auto keyFrame : track["Keyframes"])
 				{
 					Volt::Keyframe newKeyFrame = Volt::Keyframe();
 
-					newKeyFrame.time = streamReader.ReadAtKey("time", 0.f);
-					newKeyFrame.frame = streamReader.ReadAtKey("frame", 0);
-					newKeyFrame.timelineXPos = streamReader.ReadAtKey("timelineXPos", 0.f);
-					newKeyFrame.position = streamReader.ReadAtKey("position", glm::vec3(0.f));
-					newKeyFrame.rotation = streamReader.ReadAtKey("rotation", glm::identity<glm::quat>());
+					VT_DESERIALIZE_PROPERTY(time, newKeyFrame.time, keyFrame, 0.f);
+					VT_DESERIALIZE_PROPERTY(frame, newKeyFrame.frame, keyFrame, 0);
+					VT_DESERIALIZE_PROPERTY(timelineXPos, newKeyFrame.timelineXPos, keyFrame, 0.f);
+					VT_DESERIALIZE_PROPERTY(position, newKeyFrame.position, keyFrame, glm::vec3(0.f));
+					VT_DESERIALIZE_PROPERTY(rotation, newKeyFrame.rotation, keyFrame, glm::quat());
 
 					newTrack.keyframes.emplace_back(newKeyFrame);
-				});
+				}
 			}
 			else if (newTrack.trackType == TrackType::T_Clip)
 			{
-				streamReader.ForEach("Clips", [&]() 
+				for (auto clip : track["Clips"])
 				{
 					Volt::Clip newClip = Volt::Clip();
-					
-					newClip.activeCamera = streamReader.ReadAtKey("clipCamera", Entity::NullID());
-					newClip.startTime = streamReader.ReadAtKey("startTime", 0.f);
-					newClip.endTime = streamReader.ReadAtKey("endTime", 0.f);
+
+					VT_DESERIALIZE_PROPERTY(clipCamera, newClip.activeCamera, clip, Entity::NullID());
+					VT_DESERIALIZE_PROPERTY(startTime, newClip.startTime, clip, 0.f);
+					VT_DESERIALIZE_PROPERTY(endTime, newClip.endTime, clip, 0.f);
 
 					newTrack.clips.emplace_back(newClip);
-				});
+				}
 			}
-
 			preset->myTracks.emplace_back(newTrack);
-		});
+		}
 
 		return true;
 	}
@@ -95,56 +97,66 @@ namespace Volt
 			std::sort(track.keyframes.begin(), track.keyframes.end(), [](const Volt::Keyframe& lhsKeyFrame, const Volt::Keyframe& rhsKeyFrame) { return lhsKeyFrame.time < rhsKeyFrame.time; });
 		}
 
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
-		
-		streamWriter.BeginMap();
-		
-		streamWriter.SetKey("maxLength", preset->maxLength);
-		
-		streamWriter.BeginSequence("Tracks");
-		for (const auto& track : preset->myTracks)
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		VT_SERIALIZE_PROPERTY(maxLength, preset->maxLength, out);
+
+		out << YAML::Key << "Tracks" << YAML::BeginSeq;
 		{
-			streamWriter.BeginMap();
-
-			if (track.trackType == TrackType::T_Animation)
+			for (const auto& track : preset->myTracks)
 			{
-				streamWriter.SetKey("trackType", track.trackType);
-				streamWriter.SetKey("targetEntId", track.targetEntity);
-
-				streamWriter.BeginSequence("Keyframes");
-				for (const auto& key : track.keyframes)
+				out << YAML::BeginMap;
+				out << YAML::Key << "Track" << YAML::Value << "";
 				{
-					streamWriter.BeginMap();
+					if (track.trackType == TrackType::T_Animation)
+					{
+						VT_SERIALIZE_PROPERTY(trackType, track.trackType, out);
+						VT_SERIALIZE_PROPERTY(targetEntId, track.targetEntity, out);
 
-					streamWriter.SetKey("time", key.time);
-					streamWriter.SetKey("frame", key.frame);
-					streamWriter.SetKey("timelineXPos", key.timelineXPos);
-					streamWriter.SetKey("position", key.position);
-					streamWriter.SetKey("rotation", key.rotation);
+						out << YAML::Key << "Keyframes" << YAML::BeginSeq;
+						for (const auto& key : track.keyframes)
+						{
+							out << YAML::BeginMap;
+							out << YAML::Key << "Frame" << YAML::Value << "";
+							{
+								VT_SERIALIZE_PROPERTY(time, key.time, out);
+								VT_SERIALIZE_PROPERTY(frame, key.frame, out);
+								VT_SERIALIZE_PROPERTY(timelineXPos, key.timelineXPos, out);
+								VT_SERIALIZE_PROPERTY(position, key.position, out);
+								VT_SERIALIZE_PROPERTY(rotation, key.rotation, out);
+							}
+							out << YAML::EndMap;
+						}
+						out << YAML::EndSeq;
+					}
+					else if (track.trackType == TrackType::T_Clip)
+					{
+						VT_SERIALIZE_PROPERTY(trackType, track.trackType, out);
 
-					streamWriter.EndMap();
+						out << YAML::Key << "Clips" << YAML::BeginSeq;
+						for (const auto& clip : track.clips)
+						{
+							out << YAML::BeginMap;
+							out << YAML::Key << "Clip" << YAML::Value << "";
+							{
+								VT_SERIALIZE_PROPERTY(clipCamera, clip.activeCamera, out);
+								VT_SERIALIZE_PROPERTY(startTime, clip.startTime, out);
+								VT_SERIALIZE_PROPERTY(endTime, clip.endTime, out);
+							}
+							out << YAML::EndMap;
+						}
+						out << YAML::EndSeq;
+					}
 				}
-				streamWriter.EndSequence();
+				out << YAML::EndMap;
 			}
-			else if (track.trackType == TrackType::T_Clip)
-			{
-				streamWriter.SetKey("trackType", track.trackType);
-
-				streamWriter.BeginSequence("Clips");
-				for (const auto& clip : track.clips)
-				{
-					streamWriter.SetKey("clipCamera", clip.activeCamera);
-					streamWriter.SetKey("startTime", clip.startTime);
-					streamWriter.SetKey("endTime", clip.endTime);
-				}
-				streamWriter.EndSequence();
-			}
-
-			streamWriter.EndMap();
 		}
-		streamWriter.EndSequence();
-		streamWriter.EndMap();
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
 
-		streamWriter.WriteToDisk();
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
+		fout << out.c_str();
+		fout.close();
 	}
 }

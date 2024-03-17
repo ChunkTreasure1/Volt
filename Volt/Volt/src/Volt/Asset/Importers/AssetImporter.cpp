@@ -3,6 +3,8 @@
 
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Importers/TextureImporter.h"
+#include "Volt/Asset/Mesh/Material.h"
+#include "Volt/Asset/Mesh/SubMaterial.h"
 #include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Video/Video.h"
 
@@ -22,12 +24,10 @@
 
 #include "Volt/Rendering/Renderer.h"
 
+#include "Volt/Utility/SerializationMacros.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
 #include <VoltRHI/Shader/Shader.h>
-
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
-#include <CoreUtilities/FileIO//YAMLStreamWriter.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -61,56 +61,65 @@ namespace Volt
 
 	bool ShaderDefinitionImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
+		asset = CreateRef<ShaderDefinition>();
 		Ref<ShaderDefinition> shaderDef = std::reinterpret_pointer_cast<ShaderDefinition>(asset);
 
 		const auto filesytemPath = AssetManager::GetFilesystemPath(metadata.filePath);
 
-		if (!std::filesystem::exists(filesytemPath))
+		if (!std::filesystem::exists(filesytemPath)) [[unlikely]]
 		{
 			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
-		if (!streamReader.OpenFile(filesytemPath))
+		std::ifstream file(filesytemPath);
+		if (!file.is_open()) [[unlikely]]
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
-		std::string name = streamReader.ReadAtKey("name", std::string("Unnamed"));
-		std::string entryPoint = streamReader.ReadAtKey("entryPoint", std::string("main"));
-		bool isInternal = streamReader.ReadAtKey("internal", false);
+		std::stringstream sstream;
+		sstream << file.rdbuf();
+		file.close();
 
-		if (!streamReader.HasKey("paths"))
+		YAML::Node root;
+
+		try
+		{
+			root = YAML::Load(sstream.str());
+		}
+		catch (std::exception& e)
+		{
+			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
+			asset->SetFlag(AssetFlag::Invalid, true);
+			return false;
+		}
+
+		std::string name = root["name"] ? root["name"].as<std::string>() : "Unnamed";
+
+		bool isInternal;
+		VT_DESERIALIZE_PROPERTY(internal, isInternal, root, false);
+
+		if (!root["paths"])
 		{
 			VT_CORE_ERROR("No shaders defined in shader definition {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
+		YAML::Node pathsNode = root["paths"];
 		std::vector<std::filesystem::path> paths;
-		streamReader.ForEach("paths", [&]() 
+		for (const auto path : pathsNode)
 		{
-			paths.emplace_back(streamReader.ReadValue<std::string>());
-		});
-
-		std::vector<std::string> permutationValues;
-		if (streamReader.HasKey("permutations"))
-		{
-			streamReader.ForEach("permutations", [&]() 
-			{
-				permutationValues.emplace_back(streamReader.ReadValue<std::string>());
-			});
+			paths.emplace_back(path.as<std::string>());
 		}
 
 		shaderDef->m_isInternal = isInternal;
 		shaderDef->m_name = name;
 		shaderDef->m_sourceFiles = paths;
-		shaderDef->m_permutaionValues = permutationValues;
-		shaderDef->m_entryPoint = entryPoint;
 
 		return true;
 	}
@@ -119,341 +128,342 @@ namespace Volt
 	{
 		Ref<ShaderDefinition> shaderDef = std::reinterpret_pointer_cast<ShaderDefinition>(asset);
 
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
-		streamWriter.BeginMap();
-		streamWriter.SetKey("name", shaderDef->GetName());
-		streamWriter.SetKey("entryPoint", shaderDef->GetEntryPoint());
-		streamWriter.SetKey("internal", shaderDef->IsInternal());
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		VT_SERIALIZE_PROPERTY(name, shaderDef->GetName(), out);
+		VT_SERIALIZE_PROPERTY(internal, shaderDef->IsInternal(), out);
 
-		streamWriter.BeginSequence("paths");
+		out << YAML::Key << "paths" << YAML::BeginSeq;
 		for (const auto& path : shaderDef->GetSourceFiles())
 		{
-			streamWriter.AddValue(path);
+			out << path;
 		}
-		streamWriter.EndSequence();
-		streamWriter.EndMap();
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
 
-		streamWriter.WriteToDisk();
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
+		fout << out.c_str();
+		fout.close();
 	}
 
-	//bool MaterialImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
-	//{
-	//	asset = CreateRef<Material>();
-	//	const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
+	bool MaterialImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		asset = CreateRef<Material>();
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
-	//	if (!std::filesystem::exists(filePath))
-	//	{
-	//		VT_CORE_ERROR("File {0} not found!", metadata.filePath);
-	//		asset->SetFlag(AssetFlag::Missing, true);
-	//		return false;
-	//	}
+		if (!std::filesystem::exists(filePath))
+		{
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			asset->SetFlag(AssetFlag::Missing, true);
+			return false;
+		}
 
-	//	std::ifstream file(filePath);
-	//	if (!file.is_open())
-	//	{
-	//		VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
-	//		asset->SetFlag(AssetFlag::Invalid, true);
-	//		return false;
-	//	}
+		std::ifstream file(filePath);
+		if (!file.is_open())
+		{
+			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			asset->SetFlag(AssetFlag::Invalid, true);
+			return false;
+		}
 
-	//	std::stringstream sstream;
-	//	sstream << file.rdbuf();
-	//	file.close();
+		std::stringstream sstream;
+		sstream << file.rdbuf();
+		file.close();
 
-	//	YAML::Node root;
+		YAML::Node root;
 
-	//	try
-	//	{
-	//		root = YAML::Load(sstream.str());
-	//	}
-	//	catch (std::exception& e)
-	//	{
-	//		VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
-	//		asset->SetFlag(AssetFlag::Invalid, true);
-	//		return false;
-	//	}
+		try
+		{
+			root = YAML::Load(sstream.str());
+		}
+		catch (std::exception& e)
+		{
+			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
+			asset->SetFlag(AssetFlag::Invalid, true);
+			return false;
+		}
 
-	//	YAML::Node rootMaterialNode = root["Material"];
+		YAML::Node rootMaterialNode = root["Material"];
 
-	//	std::string nameString;
-	//	VT_DESERIALIZE_PROPERTY(name, nameString, rootMaterialNode, std::string("Null"));
+		std::string nameString;
+		VT_DESERIALIZE_PROPERTY(name, nameString, rootMaterialNode, std::string("Null"));
 
-	//	std::unordered_map<uint32_t, Ref<SubMaterial>> materials;
+		std::unordered_map<uint32_t, Ref<SubMaterial>> materials;
 
-	//	YAML::Node materialsNode = rootMaterialNode["materials"];
-	//	for (const auto& materialNode : materialsNode)
-	//	{
-	//		std::string materialNameString;
-	//		VT_DESERIALIZE_PROPERTY(material, materialNameString, materialNode, std::string("Null"));
+		YAML::Node materialsNode = rootMaterialNode["materials"];
+		for (const auto& materialNode : materialsNode)
+		{
+			std::string materialNameString;
+			VT_DESERIALIZE_PROPERTY(material, materialNameString, materialNode, std::string("Null"));
 
-	//		uint32_t materialIndex;
-	//		VT_DESERIALIZE_PROPERTY(index, materialIndex, materialNode, 0);
+			uint32_t materialIndex;
+			VT_DESERIALIZE_PROPERTY(index, materialIndex, materialNode, 0);
 
-	//		std::string shaderNameString;
-	//		VT_DESERIALIZE_PROPERTY(shader, shaderNameString, materialNode, std::string("Illum"));
+			std::string shaderNameString;
+			VT_DESERIALIZE_PROPERTY(shader, shaderNameString, materialNode, std::string("Illum"));
 
-	//		uint32_t materialFlags;
-	//		VT_DESERIALIZE_PROPERTY(flags, materialFlags, materialNode, (uint32_t)(MaterialFlag::Deferred | MaterialFlag::CastAO | MaterialFlag::CastShadows));
+			uint32_t materialFlags;
+			VT_DESERIALIZE_PROPERTY(flags, materialFlags, materialNode, (uint32_t)(MaterialFlag::Deferred | MaterialFlag::CastAO | MaterialFlag::CastShadows));
 
-	//		bool isPermutation;
-	//		VT_DESERIALIZE_PROPERTY(isPermutation, isPermutation, materialNode, false);
+			bool isPermutation;
+			VT_DESERIALIZE_PROPERTY(isPermutation, isPermutation, materialNode, false);
 
-	//		std::map<std::string, Ref<Texture2D>> textures;
+			std::map<std::string, Ref<Texture2D>> textures;
 
-	//		YAML::Node texturesNode = materialNode["textures"];
-	//		for (const auto& textureNode : texturesNode)
-	//		{
-	//			std::string shaderName;
-	//			VT_DESERIALIZE_PROPERTY(binding, shaderName, textureNode, std::string("Empty"));
+			YAML::Node texturesNode = materialNode["textures"];
+			for (const auto& textureNode : texturesNode)
+			{
+				std::string shaderName;
+				VT_DESERIALIZE_PROPERTY(binding, shaderName, textureNode, std::string("Empty"));
 
-	//			AssetHandle textureHandle;
-	//			VT_DESERIALIZE_PROPERTY(handle, textureHandle, textureNode, uint64_t(0));
+				AssetHandle textureHandle;
+				VT_DESERIALIZE_PROPERTY(handle, textureHandle, textureNode, uint64_t(0));
 
-	//			Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
-	//			if (texture)
-	//			{
-	//				textures.emplace(shaderName, texture);
-	//			}
-	//		}
+				Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
+				if (texture)
+				{
+					textures.emplace(shaderName, texture);
+				}
+			}
 
-	//		Ref<RHI::Shader> shader = ShaderMap::Get("VisibilityBuffer");
-	//		if (!shader)
-	//		{
-	//			shader = ShaderMap::Get("VisibilityBuffer");
-	//			VT_CORE_ERROR("Shader {0} not found or invalid! Falling back to default!", shaderNameString);
-	//		}
+			Ref<RHI::Shader> shader = ShaderMap::Get("VisibilityBuffer");
+			if (!shader)
+			{
+				shader = ShaderMap::Get("VisibilityBuffer");
+				VT_CORE_ERROR("Shader {0} not found or invalid! Falling back to default!", shaderNameString);
+			}
 
-	//		Ref<SubMaterial> material = SubMaterial::Create(materialNameString, materialIndex, shader);
+			Ref<SubMaterial> material = SubMaterial::Create(materialNameString, materialIndex, shader);
 
-	//		for (const auto& [name, texture] : textures)
-	//		{
-	//			material->AddTexture(texture);
-	//		}
+			for (const auto& [name, texture] : textures)
+			{
+				material->AddTexture(texture);
+			}
 
-	//		//material->SetFlags((MaterialFlag)materialFlags);
-	//		//if (!material->HasFlag(MaterialFlag::Opaque) && !material->HasFlag(MaterialFlag::Transparent) && !material->HasFlag(MaterialFlag::Deferred))
-	//		//{
-	//		//	material->SetFlag(MaterialFlag::Deferred, true);
-	//		//}
+			//material->SetFlags((MaterialFlag)materialFlags);
+			//if (!material->HasFlag(MaterialFlag::Opaque) && !material->HasFlag(MaterialFlag::Transparent) && !material->HasFlag(MaterialFlag::Deferred))
+			//{
+			//	material->SetFlag(MaterialFlag::Deferred, true);
+			//}
 
-	//		//if (shaderNameString == "Illum" && material->HasFlag(MaterialFlag::Opaque))
-	//		//{
-	//		//	material->SetFlag(MaterialFlag::Deferred, true);
-	//		//	material->SetFlag(MaterialFlag::Opaque, false);
-	//		//}
+			//if (shaderNameString == "Illum" && material->HasFlag(MaterialFlag::Opaque))
+			//{
+			//	material->SetFlag(MaterialFlag::Deferred, true);
+			//	material->SetFlag(MaterialFlag::Opaque, false);
+			//}
 
-	//		//// Get pipeline properties
-	//		//{
-	//		//	Topology topology;
-	//		//	CullMode cullMode;
-	//		//	FillMode triangleFillMode;
-	//		//	DepthMode depthMode;
+			//// Get pipeline properties
+			//{
+			//	Topology topology;
+			//	CullMode cullMode;
+			//	FillMode triangleFillMode;
+			//	DepthMode depthMode;
 
-	//		//	VT_DESERIALIZE_PROPERTY(topology, *(uint32_t*)&topology, materialNode, (uint32_t)Topology::TriangleList);
-	//		//	VT_DESERIALIZE_PROPERTY(cullMode, *(uint32_t*)&cullMode, materialNode, (uint32_t)CullMode::Back);
-	//		//	VT_DESERIALIZE_PROPERTY(triangleFillMode, *(uint32_t*)&triangleFillMode, materialNode, (uint32_t)FillMode::Solid);
-	//		//	VT_DESERIALIZE_PROPERTY(depthMode, *(uint32_t*)&depthMode, materialNode, (uint32_t)DepthMode::ReadWrite);
+			//	VT_DESERIALIZE_PROPERTY(topology, *(uint32_t*)&topology, materialNode, (uint32_t)Topology::TriangleList);
+			//	VT_DESERIALIZE_PROPERTY(cullMode, *(uint32_t*)&cullMode, materialNode, (uint32_t)CullMode::Back);
+			//	VT_DESERIALIZE_PROPERTY(triangleFillMode, *(uint32_t*)&triangleFillMode, materialNode, (uint32_t)FillMode::Solid);
+			//	VT_DESERIALIZE_PROPERTY(depthMode, *(uint32_t*)&depthMode, materialNode, (uint32_t)DepthMode::ReadWrite);
 
-	//		//	material->myTopology = topology;
-	//		//	material->myCullMode = cullMode;
-	//		//	material->myTriangleFillMode = triangleFillMode;
-	//		//	material->myDepthMode = depthMode;
+			//	material->myTopology = topology;
+			//	material->myCullMode = cullMode;
+			//	material->myTriangleFillMode = triangleFillMode;
+			//	material->myDepthMode = depthMode;
 
-	//		//	material->InvalidatePipeline(shader);
-	//		//}
+			//	material->InvalidatePipeline(shader);
+			//}
 
 
-	//		//auto materialDataNode = materialNode["data"];
-	//		//if (materialDataNode)
-	//		//{
-	//		//	VT_DESERIALIZE_PROPERTY(color, material->myMaterialData.color, materialDataNode, glm::vec4(1.f));
-	//		//	VT_DESERIALIZE_PROPERTY(emissiveColor, material->myMaterialData.emissiveColor, materialDataNode, glm::vec3(1.f));
-	//		//	VT_DESERIALIZE_PROPERTY(emissiveStrength, material->myMaterialData.emissiveStrength, materialDataNode, 1.f);
-	//		//	VT_DESERIALIZE_PROPERTY(roughness, material->myMaterialData.roughness, materialDataNode, 0.5f);
-	//		//	VT_DESERIALIZE_PROPERTY(metalness, material->myMaterialData.metalness, materialDataNode, 0.f);
-	//		//	VT_DESERIALIZE_PROPERTY(normalStrength, material->myMaterialData.normalStrength, materialDataNode, 0.f);
-	//		//}
+			//auto materialDataNode = materialNode["data"];
+			//if (materialDataNode)
+			//{
+			//	VT_DESERIALIZE_PROPERTY(color, material->myMaterialData.color, materialDataNode, glm::vec4(1.f));
+			//	VT_DESERIALIZE_PROPERTY(emissiveColor, material->myMaterialData.emissiveColor, materialDataNode, glm::vec3(1.f));
+			//	VT_DESERIALIZE_PROPERTY(emissiveStrength, material->myMaterialData.emissiveStrength, materialDataNode, 1.f);
+			//	VT_DESERIALIZE_PROPERTY(roughness, material->myMaterialData.roughness, materialDataNode, 0.5f);
+			//	VT_DESERIALIZE_PROPERTY(metalness, material->myMaterialData.metalness, materialDataNode, 0.f);
+			//	VT_DESERIALIZE_PROPERTY(normalStrength, material->myMaterialData.normalStrength, materialDataNode, 0.f);
+			//}
 
-	//		//for (const auto& [shaderName, texture] : textures)
-	//		//{
-	//		//	const auto& textureDefinitions = shader->GetResources().shaderTextureDefinitions;
+			//for (const auto& [shaderName, texture] : textures)
+			//{
+			//	const auto& textureDefinitions = shader->GetResources().shaderTextureDefinitions;
 
-	//		//	bool isDefault = shaderName == "albedo" || shaderName == "normal" || shaderName == "material";
+			//	bool isDefault = shaderName == "albedo" || shaderName == "normal" || shaderName == "material";
 
-	//		//	if (auto it = std::find_if(textureDefinitions.begin(), textureDefinitions.end(), [&](const auto& lhs)
-	//		//	{
-	//		//		return lhs.shaderName == shaderName;
+			//	if (auto it = std::find_if(textureDefinitions.begin(), textureDefinitions.end(), [&](const auto& lhs)
+			//	{
+			//		return lhs.shaderName == shaderName;
 
-	//		//	}); it != textureDefinitions.end() || isDefault)
-	//		//	{
-	//		//		material->SetTexture(shaderName, texture);
-	//		//	}
-	//		//}
+			//	}); it != textureDefinitions.end() || isDefault)
+			//	{
+			//		material->SetTexture(shaderName, texture);
+			//	}
+			//}
 
-	//		//YAML::Node specializationDataNode = materialNode["specializationData"];
-	//		//if (specializationDataNode && material->GetMaterialSpecializationData().IsValid())
-	//		//{
-	//		//	auto& materialData = material->GetMaterialSpecializationData();
+			//YAML::Node specializationDataNode = materialNode["specializationData"];
+			//if (specializationDataNode && material->GetMaterialSpecializationData().IsValid())
+			//{
+			//	auto& materialData = material->GetMaterialSpecializationData();
 
-	//		//	for (const auto& memberNode : specializationDataNode["members"])
-	//		//	{
-	//		//		std::string memberName;
-	//		//		VT_DESERIALIZE_PROPERTY(name, memberName, memberNode, std::string(""));
+			//	for (const auto& memberNode : specializationDataNode["members"])
+			//	{
+			//		std::string memberName;
+			//		VT_DESERIALIZE_PROPERTY(name, memberName, memberNode, std::string(""));
 
-	//		//		ShaderUniformType type;
-	//		//		VT_DESERIALIZE_PROPERTY(type, type, memberNode, ShaderUniformType::Bool);
+			//		ShaderUniformType type;
+			//		VT_DESERIALIZE_PROPERTY(type, type, memberNode, ShaderUniformType::Bool);
 
-	//		//		auto it = std::find_if(materialData.GetMembers().begin(), materialData.GetMembers().end(), [&](const auto& value)
-	//		//		{
-	//		//			return value.first == memberName && value.second.type == type;
-	//		//		});
+			//		auto it = std::find_if(materialData.GetMembers().begin(), materialData.GetMembers().end(), [&](const auto& value)
+			//		{
+			//			return value.first == memberName && value.second.type == type;
+			//		});
 
-	//		//		if (it != materialData.GetMembers().end())
-	//		//		{
-	//		//			switch (type)
-	//		//			{
-	//		//				case Volt::ShaderUniformType::Bool: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<bool>(memberName), memberNode, false); break;
-	//		//				case Volt::ShaderUniformType::UInt: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<uint32_t>(memberName), memberNode, 0u); break;
-	//		//				case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec2>(memberName), memberNode, glm::uvec2{ 0 }); break;
-	//		//				case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec3>(memberName), memberNode, glm::uvec3{ 0 }); break;
-	//		//				case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec4>(memberName), memberNode, glm::uvec4{ 0 }); break;
+			//		if (it != materialData.GetMembers().end())
+			//		{
+			//			switch (type)
+			//			{
+			//				case Volt::ShaderUniformType::Bool: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<bool>(memberName), memberNode, false); break;
+			//				case Volt::ShaderUniformType::UInt: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<uint32_t>(memberName), memberNode, 0u); break;
+			//				case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec2>(memberName), memberNode, glm::uvec2{ 0 }); break;
+			//				case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec3>(memberName), memberNode, glm::uvec3{ 0 }); break;
+			//				case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec4>(memberName), memberNode, glm::uvec4{ 0 }); break;
 
-	//		//				case Volt::ShaderUniformType::Int: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<int32_t>(memberName), memberNode, 0); break;
-	//		//				case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec2>(memberName), memberNode, glm::ivec2{ 0 }); break;
-	//		//				case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec3>(memberName), memberNode, glm::ivec3{ 0 }); break;
-	//		//				case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec4>(memberName), memberNode, glm::ivec4{ 0 }); break;
+			//				case Volt::ShaderUniformType::Int: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<int32_t>(memberName), memberNode, 0); break;
+			//				case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec2>(memberName), memberNode, glm::ivec2{ 0 }); break;
+			//				case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec3>(memberName), memberNode, glm::ivec3{ 0 }); break;
+			//				case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec4>(memberName), memberNode, glm::ivec4{ 0 }); break;
 
-	//		//				case Volt::ShaderUniformType::Float: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<float>(memberName), memberNode, 0.f); break;
-	//		//				case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec2>(memberName), memberNode, glm::vec2{ 0.f }); break;
-	//		//				case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec3>(memberName), memberNode, glm::vec3{ 0.f }); break;
-	//		//				case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec4>(memberName), memberNode, glm::vec4{ 0.f }); break;
-	//		//			}
-	//		//		}
-	//		//	}
-	//		//}
+			//				case Volt::ShaderUniformType::Float: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<float>(memberName), memberNode, 0.f); break;
+			//				case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec2>(memberName), memberNode, glm::vec2{ 0.f }); break;
+			//				case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec3>(memberName), memberNode, glm::vec3{ 0.f }); break;
+			//				case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec4>(memberName), memberNode, glm::vec4{ 0.f }); break;
+			//			}
+			//		}
+			//	}
+			//}
 
-	//		//YAML::Node pipelineGenerationNode = materialNode["pipelineGenerationData"];
-	//		//if (isPermutation && pipelineGenerationNode && !material->GetPipelineGenerationDatas().empty())
-	//		//{
-	//		//	std::map<ShaderStage, ShaderDataBuffer>& generationData = material->GetPipelineGenerationDatas();
+			//YAML::Node pipelineGenerationNode = materialNode["pipelineGenerationData"];
+			//if (isPermutation && pipelineGenerationNode && !material->GetPipelineGenerationDatas().empty())
+			//{
+			//	std::map<ShaderStage, ShaderDataBuffer>& generationData = material->GetPipelineGenerationDatas();
 
-	//		//	for (const auto& generationDataNode : pipelineGenerationNode)
-	//		//	{
-	//		//		ShaderStage stage;
-	//		//		VT_DESERIALIZE_PROPERTY(stage, stage, generationDataNode, ShaderStage::None);
+			//	for (const auto& generationDataNode : pipelineGenerationNode)
+			//	{
+			//		ShaderStage stage;
+			//		VT_DESERIALIZE_PROPERTY(stage, stage, generationDataNode, ShaderStage::None);
 
-	//		//		if (!generationData.contains(stage))
-	//		//		{
-	//		//			continue;
-	//		//		}
+			//		if (!generationData.contains(stage))
+			//		{
+			//			continue;
+			//		}
 
-	//		//		for (const auto& memberNode : generationDataNode["members"])
-	//		//		{
-	//		//			std::string memberName;
-	//		//			VT_DESERIALIZE_PROPERTY(name, memberName, memberNode, std::string(""));
+			//		for (const auto& memberNode : generationDataNode["members"])
+			//		{
+			//			std::string memberName;
+			//			VT_DESERIALIZE_PROPERTY(name, memberName, memberNode, std::string(""));
 
-	//		//			ShaderUniformType type;
-	//		//			VT_DESERIALIZE_PROPERTY(type, type, memberNode, ShaderUniformType::Bool);
+			//			ShaderUniformType type;
+			//			VT_DESERIALIZE_PROPERTY(type, type, memberNode, ShaderUniformType::Bool);
 
-	//		//			auto it = std::find_if(generationData.at(stage).GetMembers().begin(), generationData.at(stage).GetMembers().end(), [&](const auto& value)
-	//		//			{
-	//		//				return value.first == memberName && value.second.type == type;
-	//		//			});
+			//			auto it = std::find_if(generationData.at(stage).GetMembers().begin(), generationData.at(stage).GetMembers().end(), [&](const auto& value)
+			//			{
+			//				return value.first == memberName && value.second.type == type;
+			//			});
 
-	//		//			if (it != generationData.at(stage).GetMembers().end())
-	//		//			{
-	//		//				switch (type)
-	//		//				{
-	//		//					case Volt::ShaderUniformType::Bool: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<bool>(memberName), memberNode, false); break;
-	//		//					case Volt::ShaderUniformType::UInt: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<uint32_t>(memberName), memberNode, 0u); break;
-	//		//					case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec2>(memberName), memberNode, glm::uvec2{ 0 }); break;
-	//		//					case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec3>(memberName), memberNode, glm::uvec3{ 0 }); break;
-	//		//					case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec4>(memberName), memberNode, glm::uvec4{ 0 }); break;
+			//			if (it != generationData.at(stage).GetMembers().end())
+			//			{
+			//				switch (type)
+			//				{
+			//					case Volt::ShaderUniformType::Bool: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<bool>(memberName), memberNode, false); break;
+			//					case Volt::ShaderUniformType::UInt: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<uint32_t>(memberName), memberNode, 0u); break;
+			//					case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec2>(memberName), memberNode, glm::uvec2{ 0 }); break;
+			//					case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec3>(memberName), memberNode, glm::uvec3{ 0 }); break;
+			//					case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec4>(memberName), memberNode, glm::uvec4{ 0 }); break;
 
-	//		//					case Volt::ShaderUniformType::Int: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<int32_t>(memberName), memberNode, 0); break;
-	//		//					case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec2>(memberName), memberNode, glm::ivec2{ 0 }); break;
-	//		//					case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec3>(memberName), memberNode, glm::ivec3{ 0 }); break;
-	//		//					case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec4>(memberName), memberNode, glm::ivec4{ 0 }); break;
+			//					case Volt::ShaderUniformType::Int: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<int32_t>(memberName), memberNode, 0); break;
+			//					case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec2>(memberName), memberNode, glm::ivec2{ 0 }); break;
+			//					case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec3>(memberName), memberNode, glm::ivec3{ 0 }); break;
+			//					case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec4>(memberName), memberNode, glm::ivec4{ 0 }); break;
 
-	//		//					case Volt::ShaderUniformType::Float: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<float>(memberName), memberNode, 0.f); break;
-	//		//					case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec2>(memberName), memberNode, glm::vec2{ 0.f }); break;
-	//		//					case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec3>(memberName), memberNode, glm::vec3{ 0.f }); break;
-	//		//					case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec4>(memberName), memberNode, glm::vec4{ 0.f }); break;
-	//		//				}
-	//		//			}
-	//		//		}
-	//		//	}
+			//					case Volt::ShaderUniformType::Float: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<float>(memberName), memberNode, 0.f); break;
+			//					case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec2>(memberName), memberNode, glm::vec2{ 0.f }); break;
+			//					case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec3>(memberName), memberNode, glm::vec3{ 0.f }); break;
+			//					case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec4>(memberName), memberNode, glm::vec4{ 0.f }); break;
+			//				}
+			//			}
+			//		}
+			//	}
 
-	//		//	material->RecompilePermutation();
-	//		//}
+			//	material->RecompilePermutation();
+			//}
 
-	//		//Renderer::UpdateMaterial(material.get());
+			//Renderer::UpdateMaterial(material.get());
 
-	//		materials.emplace(materialIndex, material);
-	//	}
+			materials.emplace(materialIndex, material);
+		}
 
-	//	Ref<Material> material = std::reinterpret_pointer_cast<Material>(asset);
-	//	material->myName = nameString;
-	//	material->mySubMaterials = materials;
+		Ref<Material> material = std::reinterpret_pointer_cast<Material>(asset);
+		material->myName = nameString;
+		material->mySubMaterials = materials;
 
-	//	return true;
-	//}
+		return true;
+	}
 
-	//void MaterialImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
-	//{
-	//	Ref<Material> material = std::reinterpret_pointer_cast<Material>(asset);
+	void MaterialImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
+	{
+		Ref<Material> material = std::reinterpret_pointer_cast<Material>(asset);
 
-	//	YAML::Emitter out;
-	//	out << YAML::BeginMap;
-	//	out << YAML::Key << "Material" << YAML::Value;
-	//	{
-	//		out << YAML::BeginMap;
-	//		VT_SERIALIZE_PROPERTY(name, material->myName, out);
-	//		{
-	//			out << YAML::Key << "materials" << YAML::BeginSeq;
-	//			for (const auto& [index, subMaterial] : material->mySubMaterials)
-	//			{
-	//				out << YAML::BeginMap;
-	//				VT_SERIALIZE_PROPERTY(material, subMaterial->m_name, out);
-	//				VT_SERIALIZE_PROPERTY(index, index, out);
-	//				VT_SERIALIZE_PROPERTY(shader, subMaterial->m_pipeline->GetShader()->GetName(), out);
-	//				VT_SERIALIZE_PROPERTY(flags, (uint32_t)subMaterial->m_materialFlags, out);
-	//				VT_SERIALIZE_PROPERTY(topology, (uint32_t)subMaterial->m_topology, out);
-	//				VT_SERIALIZE_PROPERTY(cullMode, (uint32_t)subMaterial->m_cullMode, out);
-	//				VT_SERIALIZE_PROPERTY(triangleFillMode, (uint32_t)subMaterial->m_triangleFillMode, out);
-	//				VT_SERIALIZE_PROPERTY(depthMode, (uint32_t)subMaterial->m_depthMode, out);
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Material" << YAML::Value;
+		{
+			out << YAML::BeginMap;
+			VT_SERIALIZE_PROPERTY(name, material->myName, out);
+			{
+				out << YAML::Key << "materials" << YAML::BeginSeq;
+				for (const auto& [index, subMaterial] : material->mySubMaterials)
+				{
+					out << YAML::BeginMap;
+					VT_SERIALIZE_PROPERTY(material, subMaterial->m_name, out);
+					VT_SERIALIZE_PROPERTY(index, index, out);
+					VT_SERIALIZE_PROPERTY(shader, subMaterial->m_pipeline->GetShader()->GetName(), out);
+					VT_SERIALIZE_PROPERTY(flags, (uint32_t)subMaterial->m_materialFlags, out);
+					VT_SERIALIZE_PROPERTY(topology, (uint32_t)subMaterial->m_topology, out);
+					VT_SERIALIZE_PROPERTY(cullMode, (uint32_t)subMaterial->m_cullMode, out);
+					VT_SERIALIZE_PROPERTY(triangleFillMode, (uint32_t)subMaterial->m_triangleFillMode, out);
+					VT_SERIALIZE_PROPERTY(depthMode, (uint32_t)subMaterial->m_depthMode, out);
 
-	//				out << YAML::Key << "textures" << YAML::BeginSeq;
-	//				for (const auto& texture : subMaterial->m_textures)
-	//				{
-	//					std::string binding = "";
+					out << YAML::Key << "textures" << YAML::BeginSeq;
+					for (const auto& texture : subMaterial->m_textures)
+					{
+						std::string binding = "";
 
-	//					out << YAML::BeginMap;
-	//					VT_SERIALIZE_PROPERTY(binding, binding, out);
+						out << YAML::BeginMap;
+						VT_SERIALIZE_PROPERTY(binding, binding, out);
 
-	//					AssetHandle textureHandle = Asset::Null();
-	//					if (texture)
-	//					{
-	//						textureHandle = texture->handle;
-	//					}
+						AssetHandle textureHandle = Asset::Null();
+						if (texture)
+						{
+							textureHandle = texture->handle;
+						}
 
-	//					VT_SERIALIZE_PROPERTY(handle, textureHandle, out);
-	//					out << YAML::EndMap;
-	//				}
-	//				out << YAML::EndSeq;
-	//				out << YAML::EndMap;
-	//			}
-	//			out << YAML::EndSeq;
-	//		}
+						VT_SERIALIZE_PROPERTY(handle, textureHandle, out);
+						out << YAML::EndMap;
+					}
+					out << YAML::EndSeq;
+					out << YAML::EndMap;
+				}
+				out << YAML::EndSeq;
+			}
 
-	//		out << YAML::EndMap;
-	//	}
-	//	out << YAML::EndMap;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndMap;
 
-	//	std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
-	//	fout << out.c_str();
-	//	fout.close();
-	//}
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
+		fout << out.c_str();
+		fout.close();
+	}
 
 	bool FontImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
@@ -483,19 +493,38 @@ namespace Volt
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
-		if (!streamReader.OpenFile(filePath))
+		std::ifstream file(filePath);
+		if (!file.is_open())
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
+		std::stringstream sstream;
+		sstream << file.rdbuf();
+		file.close();
+
 		Ref<PhysicsMaterial> physicsMat = std::reinterpret_pointer_cast<PhysicsMaterial>(asset);
 
-		physicsMat->staticFriction = streamReader.ReadAtKey("staticFriction", 0.1f);
-		physicsMat->dynamicFriction = streamReader.ReadAtKey("dynamicFriction", 0.1f);
-		physicsMat->bounciness = streamReader.ReadAtKey("bounciness", 0.1f);
+		YAML::Node root;
+
+		try
+		{
+			root = YAML::Load(sstream.str());
+		}
+		catch (std::exception& e)
+		{
+			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
+			asset->SetFlag(AssetFlag::Invalid, true);
+			return false;
+		}
+
+		YAML::Node materialNode = root["PhysicsMaterial"];
+
+		VT_DESERIALIZE_PROPERTY(staticFriction, physicsMat->staticFriction, materialNode, 0.1f);
+		VT_DESERIALIZE_PROPERTY(dynamicFriction, physicsMat->dynamicFriction, materialNode, 0.1f);
+		VT_DESERIALIZE_PROPERTY(bounciness, physicsMat->bounciness, materialNode, 0.1f);
 
 		return false;
 	}
@@ -504,19 +533,19 @@ namespace Volt
 	{
 		Ref<PhysicsMaterial> material = std::reinterpret_pointer_cast<PhysicsMaterial>(asset);
 
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "PhysicsMaterial" << YAML::Value;
+		{
+			VT_SERIALIZE_PROPERTY(staticFriction, material->staticFriction, out);
+			VT_SERIALIZE_PROPERTY(dynamicFriction, material->dynamicFriction, out);
+			VT_SERIALIZE_PROPERTY(bounciness, material->bounciness, out);
+		}
+		out << YAML::EndMap;
 
-		streamWriter.BeginMap();
-		streamWriter.BeginMapNamned("PhysicsMaterial");
-
-		streamWriter.SetKey("staticFriction", material->staticFriction);
-		streamWriter.SetKey("dynamicFriction", material->dynamicFriction);
-		streamWriter.SetKey("bounciness", material->bounciness);
-
-		streamWriter.EndMap();
-		streamWriter.EndMap();
-
-		streamWriter.WriteToDisk();
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
+		fout << out.c_str();
+		fout.close();
 	}
 
 	bool VideoImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
@@ -551,35 +580,48 @@ namespace Volt
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
-
-		if (!streamReader.OpenFile(filePath))
+		std::ifstream file(filePath);
+		if (!file.is_open())
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
+		std::stringstream sstream;
+		sstream << file.rdbuf();
+		file.close();
+
+		YAML::Node root;
+
+		try
+		{
+			root = YAML::Load(sstream.str());
+		}
+		catch (std::exception& e)
+		{
+			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
+			asset->SetFlag(AssetFlag::Invalid, true);
+			return false;
+		}
+
+		YAML::Node rootBlendSpaceNode = root["BlendSpace"];
 
 		uint32_t dimension = 0;
 		glm::vec2 horizontalValues;
 		glm::vec2 verticalValues;
 		std::vector<std::pair<glm::vec2, AssetHandle>> animations;
 
-		streamReader.EnterScope("BlendSpace");
+		VT_DESERIALIZE_PROPERTY(dimension, dimension, rootBlendSpaceNode, 0u);
+		VT_DESERIALIZE_PROPERTY(horizontalValues, horizontalValues, rootBlendSpaceNode, glm::vec2(-1.f, 1.f));
+		VT_DESERIALIZE_PROPERTY(verticalValues, verticalValues, rootBlendSpaceNode, glm::vec2(-1.f, 1.f));
 
-		dimension = streamReader.ReadAtKey("dimension", 0u);
-		horizontalValues = streamReader.ReadAtKey("horizontalValues", glm::vec2{ -1.f, 1.f });
-		verticalValues = streamReader.ReadAtKey("verticalValues", glm::vec2{ -1.f, 1.f });
-
-		streamReader.ForEach("Animations", [&]() 
+		for (const auto& animNode : rootBlendSpaceNode["Animations"])
 		{
 			auto& [value, anim] = animations.emplace_back();
-			anim = streamReader.ReadAtKey("animation", AssetHandle(0));
-			value = streamReader.ReadAtKey("value", glm::vec2(0.f));
-		});
-
-		streamReader.ExitScope();
+			VT_DESERIALIZE_PROPERTY(animation, anim, animNode, AssetHandle(0));
+			VT_DESERIALIZE_PROPERTY(value, value, animNode, glm::vec2(0.f));
+		}
 
 		Ref<BlendSpace> blendSpace = std::reinterpret_pointer_cast<BlendSpace>(asset);
 		blendSpace->myAnimations = animations;
@@ -594,32 +636,33 @@ namespace Volt
 	{
 		Ref<BlendSpace> blendSpace = std::reinterpret_pointer_cast<BlendSpace>(asset);
 
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
-
-		streamWriter.BeginMap();
-		streamWriter.BeginMapNamned("BlendSpace");
-
-		streamWriter.SetKey("dimension", (uint32_t)blendSpace->myDimension);
-		streamWriter.SetKey("horizontalValues", blendSpace->myHorizontalValues);
-		streamWriter.SetKey("verticalValues", blendSpace->myVerticalValues);
-
-		streamWriter.BeginSequence("Animations");
-		for (const auto& anim : blendSpace->myAnimations)
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "BlendSpace" << YAML::Value;
 		{
-			streamWriter.BeginMap();
-			streamWriter.SetKey("animation", anim.second);
-			streamWriter.SetKey("value", anim.first);
-			streamWriter.EndMap();
-		}
-		streamWriter.EndSequence();
+			out << YAML::BeginMap;
+			VT_SERIALIZE_PROPERTY(dimension, (uint32_t)blendSpace->myDimension, out);
+			VT_SERIALIZE_PROPERTY(horizontalValues, blendSpace->myHorizontalValues, out);
+			VT_SERIALIZE_PROPERTY(verticalValues, blendSpace->myVerticalValues, out);
 
-		streamWriter.EndMap();
-		streamWriter.EndMap();
-	
-		streamWriter.WriteToDisk();
+			out << YAML::Key << "Animations" << YAML::BeginSeq;
+			for (const auto& anim : blendSpace->myAnimations)
+			{
+				out << YAML::BeginMap;
+				VT_SERIALIZE_PROPERTY(animation, anim.second, out);
+				VT_SERIALIZE_PROPERTY(value, anim.first, out);
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndMap;
+
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
+		fout << out.c_str();
+		fout.close();
 	}
 
-	// #TODO_Ivar: Remvoe?
 	bool PostProcessingStackImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<PostProcessingStack>();
@@ -661,11 +704,11 @@ namespace Volt
 
 		YAML::Node stackRoot = root["PostProcessingStack"];
 
-		//for (const auto& effectNode : stackRoot["Effects"])
-		//{
-		//	PostProcessingEffect& effect = postStack->myPostProcessingStack.emplace_back();
-		//	//VT_DESERIALIZE_PROPERTY(materialHandle, effect.materialHandle, effectNode, AssetHandle(0));
-		//}
+		for (const auto& effectNode : stackRoot["Effects"])
+		{
+			PostProcessingEffect& effect = postStack->myPostProcessingStack.emplace_back();
+			VT_DESERIALIZE_PROPERTY(materialHandle, effect.materialHandle, effectNode, AssetHandle(0));
+		}
 
 		return true;
 	}
@@ -680,12 +723,12 @@ namespace Volt
 		{
 			out << YAML::BeginMap;
 			out << YAML::Key << "Effects" << YAML::BeginSeq;
-			//for (const auto& effect : postStack->myPostProcessingStack)
-			//{
-			//	out << YAML::BeginMap;
-			//	//VT_SERIALIZE_PROPERTY(materialHandle, effect.materialHandle, out);
-			//	out << YAML::EndMap;
-			//}
+			for (const auto& effect : postStack->myPostProcessingStack)
+			{
+				out << YAML::BeginMap;
+				VT_SERIALIZE_PROPERTY(materialHandle, effect.materialHandle, out);
+				out << YAML::EndMap;
+			}
 			out << YAML::EndSeq;
 			out << YAML::EndMap;
 		}
@@ -737,7 +780,7 @@ namespace Volt
 		YAML::Node rootMaterialNode = root["PostProcessingMaterial"];
 
 		std::string shaderName;
-		//VT_DESERIALIZE_PROPERTY(shader, shaderName, rootMaterialNode, std::string(""));
+		VT_DESERIALIZE_PROPERTY(shader, shaderName, rootMaterialNode, std::string(""));
 
 		if (shaderName.empty())
 		{
@@ -756,7 +799,7 @@ namespace Volt
 		Ref<PostProcessingMaterial> postMat = std::reinterpret_pointer_cast<PostProcessingMaterial>(asset);
 
 		YAML::Node specializationDataNode = rootMaterialNode["specializationData"];
-		/*if (specializationDataNode && postMat->myMaterialData.IsValid())
+		if (specializationDataNode && postMat->myMaterialData.IsValid())
 		{
 			auto& materialData = postMat->myMaterialData;
 
@@ -795,7 +838,7 @@ namespace Volt
 					}
 				}
 			}
-		}*/
+		}
 
 		return true;
 	}
@@ -806,56 +849,56 @@ namespace Volt
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		/*	out << YAML::Key << "PostProcessingMaterial" << YAML::Value;
+		out << YAML::Key << "PostProcessingMaterial" << YAML::Value;
+		{
+			out << YAML::BeginMap;
 			{
-				out << YAML::BeginMap;
+				VT_SERIALIZE_PROPERTY(shader, material->myPipeline->GetShader()->GetName(), out);
+
+				if (material->myMaterialData.IsValid())
 				{
-					VT_SERIALIZE_PROPERTY(shader, material->myPipeline->GetShader()->GetName(), out);
-
-					if (material->myMaterialData.IsValid())
+					const auto& materialData = material->myMaterialData;
+					out << YAML::Key << "specializationData" << YAML::Value;
+					out << YAML::BeginMap;
 					{
-						const auto& materialData = material->myMaterialData;
-						out << YAML::Key << "specializationData" << YAML::Value;
-						out << YAML::BeginMap;
+						VT_SERIALIZE_PROPERTY(size, materialData.GetSize(), out);
+
+						out << YAML::Key << "members" << YAML::BeginSeq;
+						for (const auto& [memberName, memberData] : materialData.GetMembers())
 						{
-							VT_SERIALIZE_PROPERTY(size, materialData.GetSize(), out);
+							out << YAML::BeginMap;
+							VT_SERIALIZE_PROPERTY(name, memberName, out);
+							VT_SERIALIZE_PROPERTY(type, memberData.type, out);
 
-							out << YAML::Key << "members" << YAML::BeginSeq;
-							for (const auto& [memberName, memberData] : materialData.GetMembers())
+							switch (memberData.type)
 							{
-								out << YAML::BeginMap;
-								VT_SERIALIZE_PROPERTY(name, memberName, out);
-								VT_SERIALIZE_PROPERTY(type, memberData.type, out);
+								case Volt::ShaderUniformType::Bool: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<bool>(memberName), out); break;
+								case Volt::ShaderUniformType::UInt: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<uint32_t>(memberName), out); break;
+								case Volt::ShaderUniformType::UInt2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec2>(memberName), out); break;
+								case Volt::ShaderUniformType::UInt3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec3>(memberName), out); break;
+								case Volt::ShaderUniformType::UInt4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec4>(memberName), out); break;
 
-								switch (memberData.type)
-								{
-									case Volt::ShaderUniformType::Bool: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<bool>(memberName), out); break;
-									case Volt::ShaderUniformType::UInt: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<uint32_t>(memberName), out); break;
-									case Volt::ShaderUniformType::UInt2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec2>(memberName), out); break;
-									case Volt::ShaderUniformType::UInt3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec3>(memberName), out); break;
-									case Volt::ShaderUniformType::UInt4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec4>(memberName), out); break;
+								case Volt::ShaderUniformType::Int: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<int32_t>(memberName), out); break;
+								case Volt::ShaderUniformType::Int2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec2>(memberName), out); break;
+								case Volt::ShaderUniformType::Int3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec3>(memberName), out); break;
+								case Volt::ShaderUniformType::Int4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec4>(memberName), out); break;
 
-									case Volt::ShaderUniformType::Int: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<int32_t>(memberName), out); break;
-									case Volt::ShaderUniformType::Int2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec2>(memberName), out); break;
-									case Volt::ShaderUniformType::Int3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec3>(memberName), out); break;
-									case Volt::ShaderUniformType::Int4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec4>(memberName), out); break;
-
-									case Volt::ShaderUniformType::Float: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<float>(memberName), out); break;
-									case Volt::ShaderUniformType::Float2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec2>(memberName), out); break;
-									case Volt::ShaderUniformType::Float3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec3>(memberName), out); break;
-									case Volt::ShaderUniformType::Float4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec4>(memberName), out); break;
-								}
-
-								out << YAML::EndMap;
+								case Volt::ShaderUniformType::Float: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<float>(memberName), out); break;
+								case Volt::ShaderUniformType::Float2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec2>(memberName), out); break;
+								case Volt::ShaderUniformType::Float3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec3>(memberName), out); break;
+								case Volt::ShaderUniformType::Float4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec4>(memberName), out); break;
 							}
-							out << YAML::EndSeq;
+
+							out << YAML::EndMap;
 						}
-						out << YAML::EndMap;
+						out << YAML::EndSeq;
 					}
 					out << YAML::EndMap;
 				}
 				out << YAML::EndMap;
-			}*/
+			}
+			out << YAML::EndMap;
+		}
 		out << YAML::EndMap;
 
 		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));

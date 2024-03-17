@@ -4,7 +4,7 @@
 
 #include "Volt/Asset/AssetManager.h"
 
-#include "Volt/Asset/Rendering/Material.h"
+#include "Volt/Asset/Mesh/Material.h"
 
 #include "Volt/Asset/Animation/Animation.h"
 #include "Volt/Asset/Animation/Skeleton.h"
@@ -59,9 +59,13 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 				//	}
 				//}
 
+				const auto materialFilePath = Volt::AssetManager::GetFilePathFromAssetHandle(asset->GetMaterial()->handle).string();
+
 				std::vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("Submesh Count", std::to_string(asset->GetSubMeshes().size())),
+					
+					std::make_pair("Material Path", materialFilePath),
 					
 					std::make_pair("Vertex Count", Utility::ToStringWithThousandSeparator(asset->GetVertexCount())),
 					std::make_pair("Index Count", Utility::ToStringWithThousandSeparator(asset->GetIndexCount())),
@@ -103,12 +107,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 		EditorAssetData(
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
-				auto asset = Volt::AssetManager::QueueAsset<Volt::Texture2D>(aAssetHandle);
-				if (!asset || !asset->IsValid())
-				{
-					return {};
-				}
-
+				auto asset = Volt::AssetManager::GetAsset<Volt::Texture2D>(aAssetHandle);
 				std::vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("Width", std::to_string(asset->GetWidth())),
@@ -125,6 +124,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 				auto asset = Volt::AssetManager::GetAsset<Volt::Material>(aAssetHandle);
 				std::vector<std::pair<std::string, std::string>> data =
 				{
+					std::make_pair("Sub Material Count", std::to_string(asset->GetSubMaterialCount())),
 				};
 				return data;
 			})

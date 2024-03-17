@@ -2,6 +2,7 @@
 #include "DebugRenderer.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
+#include "Volt/Asset/Mesh/Material.h"
 
 namespace Volt
 {

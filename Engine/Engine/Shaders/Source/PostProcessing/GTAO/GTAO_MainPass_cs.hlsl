@@ -7,8 +7,8 @@ struct Constants
     RWTexture<uint> aoTerm;
     RWTexture<float> edges;
     
-    TTexture<float> srcDepth;
-    TTexture<float4> viewspaceNormals;
+    TextureT<float> srcDepth;
+    TextureT<float4> viewspaceNormals;
     TextureSampler pointClampSampler;
     uint3 padding;
     

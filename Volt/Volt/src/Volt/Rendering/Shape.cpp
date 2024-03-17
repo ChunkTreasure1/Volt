@@ -2,7 +2,7 @@
 #include "Shape.h"
 
 #include "Volt/Rendering/Vertex.h"
-#include "Volt/Asset/Rendering/Material.h"
+#include "Volt/Asset/Mesh/Material.h"
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/AssetManager.h"
 

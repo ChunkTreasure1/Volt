@@ -340,8 +340,8 @@ void VertexPainterPanel::PanelDraw()
 			{
 				Volt::Entity entity = ex_scene->GetEntityFromUUID(entId);
 				if (!entity.HasComponent<Volt::MeshComponent>()) continue;
-				//auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
-				//meshComp.material = m_materialSettings.singleMat;
+				auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
+				meshComp.material = m_materialSettings.singleMat;
 			}
 		}
 		/*ImGui::TreePop();
@@ -610,14 +610,14 @@ void VertexPainterPanel::SetView(bool in_viewVertexColors)
 		{
 			Volt::Entity entity = ex_scene->GetEntityFromUUID(entId);
 			if (!entity.HasComponent<Volt::MeshComponent>()) continue;
-			//auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
+			auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
 
 			std::pair<Volt::EntityID, Volt::AssetHandle> entry;
 			entry.first = entId;
-			//entry.second = meshComp.material;
+			entry.second = meshComp.material;
 			m_originalMaterials.insert(entry);
 
-			//meshComp.material = Volt::AssetManager::GetAssetHandleFromFilePath("Editor/Materials/M_VisualizeVertexColors.vtmat");
+			meshComp.material = Volt::AssetManager::GetAssetHandleFromFilePath("Editor/Materials/M_VisualizeVertexColors.vtmat");
 		}
 		return;
 	}
@@ -625,8 +625,8 @@ void VertexPainterPanel::SetView(bool in_viewVertexColors)
 	{
 		Volt::Entity entity = ex_scene->GetEntityFromUUID(_pair.first);
 		if (!entity.HasComponent<Volt::MeshComponent>()) continue;
-		//auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
-		//meshComp.material = _pair.second;
+		auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
+		meshComp.material = _pair.second;
 	}
 	m_originalMaterials.clear();
 

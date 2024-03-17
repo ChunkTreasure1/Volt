@@ -14,8 +14,8 @@ namespace GraphKey
 		void OnEvent(Volt::Event& e) override;
 		void Initialize() override;
 
-		void Serialize(YAMLStreamWriter& out) override;
-		void Deserialize(YAMLStreamReader& node) override;
+		void Serialize(YAML::Emitter& out) override;
+		void Deserialize(const YAML::Node& node) override;
 
 		const std::string GetName() override;
 		Ref<Node> CreateCopy(Graph* ownerGraph, Volt::EntityID entity = Volt::Entity::NullID()) override;

@@ -20,8 +20,7 @@ namespace Volt
 		SkipRelationships = BIT(0),
 		SkipPrefab = BIT(1),
 		SkipTransform = BIT(2),
-		SkipCommonData = BIT(3),
-		SkipID = BIT(4)
+		SkipCommonData = BIT(3)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(EntityCopyFlags)

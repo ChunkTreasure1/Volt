@@ -34,8 +34,5 @@ namespace Volt::RHI
 
 		std::vector<Ref<Allocation>> m_activeImageAllocations;
 		std::vector<Ref<Allocation>> m_activeBufferAllocations;
-	
-		std::mutex m_bufferAllocationMutex;
-		std::mutex m_imageAllocationMutex;
 	};
 }

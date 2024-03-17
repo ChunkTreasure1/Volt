@@ -1,4 +1,0 @@
-name: "ScatterUpload"
-internal: true
-paths:
-  - "Engine/Shaders/Source/Utility/ScatterUpload_cs.hlsl"

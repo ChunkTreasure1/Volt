@@ -132,7 +132,7 @@ void Sandbox::CreateDeleteWatch()
 				{
 					if (Volt::AssetManager::ExistsInRegistry(Volt::AssetManager::GetRelativePath(newPath)))
 					{
-						Volt::AssetManager::Get().RemoveAssetFromRegistry(Volt::AssetManager::GetRelativePath(newPath));
+						Volt::AssetManager::Get().RemoveFromRegistry(Volt::AssetManager::GetRelativePath(newPath));
 					}
 				}
 			}

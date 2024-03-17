@@ -18,7 +18,6 @@ namespace Volt::RHI
 		void Release() override;
 		void GenerateMips() override;
 		const Ref<ImageView> GetView(const int32_t mip, const int32_t layer) override;
-		const Ref<ImageView> GetArrayView(const int32_t mip /* = -1 */) override;
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
 		const PixelFormat GetFormat() const override;

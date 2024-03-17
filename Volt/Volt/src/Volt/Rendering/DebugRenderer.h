@@ -7,6 +7,7 @@ namespace Volt
 {
 	class Texture2D;
 	class Mesh;
+	class Material;
 	class DebugRenderer
 	{
 	public:

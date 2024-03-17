@@ -59,9 +59,4 @@ namespace Volt::RHI
 	{
 		return m_specs.image->GetUsage();
 	}
-
-	const ImageViewType D3D12ImageView::GetViewType() const
-	{
-		return m_specs.viewType;
-	}
 }

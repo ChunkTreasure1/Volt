@@ -360,39 +360,39 @@ namespace GraphKey
 		};
 	}
 
-	void LayeredBlendPerBoneNode::Serialize(YAMLStreamWriter& out)
+	void LayeredBlendPerBoneNode::Serialize(YAML::Emitter& out)
 	{
-		out.BeginSequence("BlendIncludeFilters");
+		out << YAML::Key << "BlendIncludeFilters" << YAML::BeginSeq;
 		for (const auto& filter : myIncludeFilters)
 		{
-			out.AddValue(filter.boneName);
+			out << filter.boneName;
 		}
-		out.EndSequence();
+		out << YAML::EndSeq;
 
-		out.BeginSequence("BlendExcludeFilters");
+		out << YAML::Key << "BlendExcludeFilters" << YAML::BeginSeq;
 		for (const auto& filter : myExcludeFilters)
 		{
-			out.AddValue(filter.boneName);
+			out << filter.boneName;
 		}
-		out.EndSequence();
+		out << YAML::EndSeq;
 	}
 
-	void LayeredBlendPerBoneNode::Deserialize(YAMLStreamReader& node)
+	void LayeredBlendPerBoneNode::Deserialize(const YAML::Node& node)
 	{
-		if (node.HasKey("BlendIncludeFilters"))
+		if (node["BlendIncludeFilters"])
 		{
-			node.ForEach("BlendIncludeFilters", [&]()
+			for (const auto& filterNode : node["BlendIncludeFilters"])
 			{
-				myIncludeFilters.emplace_back(node.ReadValue<std::string>());
-			});
+				myIncludeFilters.emplace_back(filterNode.as<std::string>());
+			}
 		}
 
-		if (node.HasKey("BlendExcludeFilters"))
+		if (node["BlendExcludeFilters"])
 		{
-			node.ForEach("BlendExcludeFilters", [&]()
+			for (const auto& filterNode : node["BlendExcludeFilters"])
 			{
-				myExcludeFilters.emplace_back(node.ReadValue<std::string>());
-			});
+				myExcludeFilters.emplace_back(filterNode.as<std::string>());
+			}
 		}
 	}
 

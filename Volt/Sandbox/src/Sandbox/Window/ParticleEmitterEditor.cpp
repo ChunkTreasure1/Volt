@@ -272,7 +272,7 @@ bool ParticleEmitterEditor::DrawEditorPanel()
 					UI::PropertyAxisColor("Rotation", modelRot);
 					UI::PropertyAxisColor("Scale", modelScale);
 					EditorUtils::Property("Mesh", myReferenceModel.GetComponent<Volt::MeshComponent>().handle, Volt::AssetType::Mesh);
-					//EditorUtils::Property("Material", myReferenceModel.GetComponent<Volt::MeshComponent>().material, Volt::AssetType::Material);
+					EditorUtils::Property("Material", myReferenceModel.GetComponent<Volt::MeshComponent>().material, Volt::AssetType::Material);
 
 					myReferenceModel.SetPosition(modelPos);
 					myReferenceModel.SetRotation(modelRot);

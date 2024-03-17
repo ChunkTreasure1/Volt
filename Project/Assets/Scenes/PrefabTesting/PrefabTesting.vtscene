@@ -1,0 +1,4 @@
+Scene:
+  name: PrefabTesting
+  Settings:
+    useWorldEngine: false

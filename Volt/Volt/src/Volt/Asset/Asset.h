@@ -46,6 +46,7 @@ namespace Volt
 		GraphKey = BIT(18),
 		MonoScript = BIT(19),
 		BehaviorGraph = BIT(20),
+		MaterialGraph = BIT(21),
 		RenderPipeline = BIT(22),
 		Timeline = BIT(23),
 		NetContract = BIT(24),
@@ -95,6 +96,7 @@ namespace Volt
 		{ ".hlslh", AssetType::ShaderSource },
 		{ ".hlsli", AssetType::ShaderSource },
 
+		{ ".vtmgraph", AssetType::MaterialGraph },
 		{ ".vtmat", AssetType::Material },
 		{ ".vtpostmat", AssetType::PostProcessingMaterial },
 		{ ".vtpoststack", AssetType::PostProcessingStack },
@@ -132,6 +134,7 @@ namespace Volt
 		{ "Shader", AssetType::ShaderDefinition },
 		{ "Shader Source", AssetType::ShaderSource },
 
+		{ "Material Graph", AssetType::MaterialGraph },
 		{ "Material", AssetType::Material },
 		{ "Post Processing Material", AssetType::PostProcessingMaterial },
 		{ "Post Processing Stack", AssetType::PostProcessingStack },
@@ -147,7 +150,7 @@ namespace Volt
 		{ "Behavior Graph", AssetType::BehaviorGraph},
 		{ "Blend Space", AssetType::BlendSpace },
 
-		{ "Net Contract", AssetType::NetContract },
+		{ "Net Contract", AssetType::NetContract }
 	};
 
 	inline static const std::unordered_map<std::string, AssetType>& GetAssetNames()

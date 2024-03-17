@@ -19,7 +19,6 @@ namespace Volt::RHI
 	{
 		Ref<Shader> shader;
 		uint32_t count = 1;
-		bool isGlobal = false;
 	};
 
 	class DescriptorTable : public RHIInterface
@@ -32,7 +31,6 @@ namespace Volt::RHI
 
 		virtual void SetImageView(std::string_view name, Ref<ImageView> view, uint32_t arrayIndex) = 0;
 		virtual void SetBufferView(std::string_view name, Ref<BufferView> view, uint32_t arrayIndex) = 0;
-		virtual void SetSamplerState(std::string_view name, Ref<SamplerState> samplerState, uint32_t arrayIndex) = 0;
 
 		virtual void SetBufferViews(const std::vector<Ref<BufferView>>& bufferViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset = 0) = 0;
 		virtual void SetImageViews(const std::vector<Ref<ImageView>>& imageViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset = 0) = 0;

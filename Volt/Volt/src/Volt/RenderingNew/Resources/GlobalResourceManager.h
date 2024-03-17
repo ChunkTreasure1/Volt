@@ -19,19 +19,7 @@ namespace Volt
 		class DescriptorTable;
 	}
 
-	enum class ResourceSpecialization
-	{
-		None,
-		Texture1D,
-		Texture2D,
-		Texture3D,
-		TextureCube,
-		Texture2DArray,
-
-		UniformBuffer
-	};
-
-	template<typename T, ResourceSpecialization SPECIALIZATION = ResourceSpecialization::None>
+	template<typename T>
 	struct ResourceContainer
 	{
 		inline const ResourceHandle GetOrAddResource(Weak<T> resource)
@@ -177,81 +165,81 @@ namespace Volt
 		static void Initialize();
 		static void Shutdown();
 
-		template<typename T, ResourceSpecialization SPECIALIZATION = ResourceSpecialization::None>
+		template<typename T>
 		static const ResourceHandle RegisterResource(Weak<T> resource);
 
-		template<typename T, ResourceSpecialization SPECIALIZATION = ResourceSpecialization::None>
+		template<typename T>
 		static void UnregisterResource(ResourceHandle handle);
 
-		template<typename T, ResourceSpecialization SPECIALIZATION = ResourceSpecialization::None>
+		template<typename T>
 		static void UnregisterResource(Weak<T> resource);
 
-		template<typename T, ResourceSpecialization SPECIALIZATION = ResourceSpecialization::None>
+		template<typename T>
 		static std::span<const Weak<T>> GetResourceRange();
 
-		template<typename T, ResourceSpecialization SPECIALIZATION = ResourceSpecialization::None>
+		template<typename T>
 		static ResourceHandle GetResourceHandle(Weak<T> resource);
 
-		template<typename T, ResourceSpecialization SPECIALIZATION = ResourceSpecialization::None>
+		template<typename T>
 		static void MarkAsDirty(ResourceHandle handle);
  		
 		static void Update();
 		inline static Ref<RHI::DescriptorTable> GetDescriptorTable() { return s_globalDescriptorTable; }
 	private:
-		template<typename T, ResourceSpecialization SPECIALIZATION = ResourceSpecialization::None>
-		static ResourceContainer<T, SPECIALIZATION>& GetResourceContainer();
+		template<typename T>
+		static ResourceContainer<T>& GetResourceContainer();
 
 		inline static Ref<RHI::DescriptorTable> s_globalDescriptorTable;
 
 		GlobalResourceManager() = delete;
 	};
 
-	template<typename T, ResourceSpecialization SPECIALIZATION>
+	template<typename T>
 	inline const ResourceHandle GlobalResourceManager::RegisterResource(Weak<T> resource)
 	{
-		auto& container = GetResourceContainer<T, SPECIALIZATION>();
+		auto& container = GetResourceContainer<T>();
 		return container.GetOrAddResource(resource);
 	}
 
-	template<typename T, ResourceSpecialization SPECIALIZATION>
+	template<typename T>
 	inline void GlobalResourceManager::UnregisterResource(ResourceHandle handle)
 	{
-		auto& container = GetResourceContainer<T, SPECIALIZATION>();
+		auto& container = GetResourceContainer<T>();
 		container.RemoveResource(handle);
 	}
 
-	template<typename T, ResourceSpecialization SPECIALIZATION>
+	template<typename T>
 	inline void GlobalResourceManager::UnregisterResource(Weak<T> resource)
 	{
-		auto& container = GetResourceContainer<T, SPECIALIZATION>();
+		auto& container = GetResourceContainer<T>();
 		container.RemoveResource(resource);
 	}
 
-	template<typename T, ResourceSpecialization SPECIALIZATION>
+	template<typename T>
 	inline std::span<const Weak<T>> GlobalResourceManager::GetResourceRange()
 	{
-		auto& container = GetResourceContainer<T, SPECIALIZATION>();
+		auto& container = GetResourceContainer<T>();
 		return container.GetRange();
 	}
 
-	template<typename T, ResourceSpecialization SPECIALIZATION>
+	template<typename T>
 	inline ResourceHandle GlobalResourceManager::GetResourceHandle(Weak<T> resource)
 	{
-		auto& container = GetResourceContainer<T, SPECIALIZATION>();
+		auto& container = GetResourceContainer<T>();
 		return container.GetResourceHandle(resource);
 	}
 
-	template<typename T, ResourceSpecialization SPECIALIZATION>
+	template<typename T>
 	inline void GlobalResourceManager::MarkAsDirty(ResourceHandle handle)
 	{
-		auto& container = GetResourceContainer<T, SPECIALIZATION>();
+		auto& container = GetResourceContainer<T>();
 		container.MarkAsDirty(handle);
 	}
 
-	template<typename T, ResourceSpecialization SPECIALIZATION>
-	inline ResourceContainer<T, SPECIALIZATION>& GlobalResourceManager::GetResourceContainer()
+	template<typename T>
+	inline ResourceContainer<T>& GlobalResourceManager::GetResourceContainer()
 	{
-		static ResourceContainer<T, SPECIALIZATION> resourceContainer;
+		static ResourceContainer<T> resourceContainer;
 		return resourceContainer;
 	}
 }

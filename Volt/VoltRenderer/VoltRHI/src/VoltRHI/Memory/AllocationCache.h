@@ -28,9 +28,6 @@ namespace Volt::RHI
 		AllocationsToRemove UpdateAndGetAllocationsToDestroy();
 
 	private:
-		std::mutex m_imageAllocationMutex;
-		std::mutex m_bufferAllocationMutex;
-
 		std::vector<AllocationContainer> m_imageAllocations;
 		std::vector<AllocationContainer> m_bufferAllocations;
 	};

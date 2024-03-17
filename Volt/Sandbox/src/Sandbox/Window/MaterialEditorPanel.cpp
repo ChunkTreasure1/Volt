@@ -7,7 +7,8 @@
 
 #include "Sandbox/Utility/AssetBrowserUtilities.h"
 
-#include <Volt/Asset/Rendering/Material.h>
+#include <Volt/Asset/Mesh/SubMaterial.h>
+#include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Asset/AssetManager.h>
 
@@ -66,7 +67,9 @@ void MaterialEditorPanel::UpdateContent()
 void MaterialEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 {
 	mySelectedMaterial = std::reinterpret_pointer_cast<Volt::Material>(asset);
-	//myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
+	mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);
+
+	myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
 }
 
 void MaterialEditorPanel::OnEvent(Volt::Event& e)
@@ -160,27 +163,29 @@ void MaterialEditorPanel::UpdateToolbar()
 				auto id = SelectionManager::GetSelectedEntities().front();
 				Volt::Entity entity = myEditorScene->GetEntityFromUUID(id);
 
-				//if (entity.HasComponent<Volt::MeshComponent>())
-				//{
-				//	auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
-				//	if (meshComp.material != Volt::Asset::Null())
-				//	{
-				//		mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(meshComp.material);
-				//	}
-				//	else
-				//	{
-				//		if (meshComp.GetHandle() != Volt::Asset::Null())
-				//		{
-				//			//mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.GetHandle())->GetMaterial();
-				//		}
-				//	}
+				if (entity.HasComponent<Volt::MeshComponent>())
+				{
+					auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
+					if (meshComp.material != Volt::Asset::Null())
+					{
+						mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(meshComp.material);
+						mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);
+					}
+					else
+					{
+						if (meshComp.GetHandle() != Volt::Asset::Null())
+						{
+							mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.GetHandle())->GetMaterial();
+							mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);
+						}
+					}
 
-				//	if (mySelectedMaterial)
-				//	{
-				//		myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
-				//		myPreviewEntity.GetComponent<Volt::MeshComponent>().subMaterialIndex = 0;
-				//	}
-				//}
+					if (mySelectedMaterial)
+					{
+						myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
+						myPreviewEntity.GetComponent<Volt::MeshComponent>().subMaterialIndex = 0;
+					}
+				}
 			}
 		}
 
@@ -195,8 +200,8 @@ void MaterialEditorPanel::UpdateToolbar()
 
 				if (entity.HasComponent<Volt::MeshComponent>())
 				{
-					//auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
-					//meshComp.material = mySelectedMaterial->handle;
+					auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
+					meshComp.material = mySelectedMaterial->handle;
 				}
 			}
 		}
@@ -681,82 +686,83 @@ void MaterialEditorPanel::UpdateSubMaterials()
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.1f, 0.1f, 0.5f });
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 1.f, 0.f, 0.f, 1.f });
 
-			//const auto& subMaterials = mySelectedMaterial->GetSubMaterials();
-			//for (auto& [index, material] : subMaterials)
-			//{
-			//	ImGui::PushID(std::string(material->GetName() + "##" + std::to_string(index)).c_str());
+			const auto& subMaterials = mySelectedMaterial->GetSubMaterials();
+			for (auto& [index, material] : subMaterials)
+			{
+				ImGui::PushID(std::string(material->GetName() + "##" + std::to_string(index)).c_str());
 
-			//	const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(thumbnailSize);
-			//	const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
-			//	const ImVec2 minChild = AssetBrowserUtilities::GetBrowserItemPos();
+				const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(thumbnailSize);
+				const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
+				const ImVec2 minChild = AssetBrowserUtilities::GetBrowserItemPos();
 
-			//	ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0.f, 0.f, 0.f, 0.f });
-			//	ImGui::BeginChild("hoverWindow", itemSize, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-			//	ImGui::PopStyleColor();
+				ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0.f, 0.f, 0.f, 0.f });
+				ImGui::BeginChild("hoverWindow", itemSize, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+				ImGui::PopStyleColor();
 
-			//	{
-			//		const bool itemHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
+				{
+					const bool itemHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
 
-			//		ImVec4 childBgCol = AssetBrowserUtilities::GetBrowserItemDefaultColor();
+					ImVec4 childBgCol = AssetBrowserUtilities::GetBrowserItemDefaultColor();
 
-			//		if (itemHovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
-			//		{
-			//			childBgCol = AssetBrowserUtilities::GetBrowserItemClickedColor();
-			//		}
-			//		else if (itemHovered)
-			//		{
-			//			ImGui::BeginTooltip();
-			//			ImGui::TextUnformatted(material->GetName().c_str());
-			//			ImGui::EndTooltip();
+					if (itemHovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+					{
+						childBgCol = AssetBrowserUtilities::GetBrowserItemClickedColor();
+					}
+					else if (itemHovered)
+					{
+						ImGui::BeginTooltip();
+						ImGui::TextUnformatted(material->GetName().c_str());
+						ImGui::EndTooltip();
 
-			//			childBgCol = AssetBrowserUtilities::GetBrowserItemHoveredColor();
-			//		}
-			//		//else if (material == mySelectedSubMaterial)
-			//		//{
-			//		//	childBgCol = AssetBrowserUtilities::GetBrowserItemSelectedColor();
-			//		//}
+						childBgCol = AssetBrowserUtilities::GetBrowserItemHoveredColor();
+					}
+					else if (material == mySelectedSubMaterial)
+					{
+						childBgCol = AssetBrowserUtilities::GetBrowserItemSelectedColor();
+					}
 
-			//		ImGui::PushStyleColor(ImGuiCol_ChildBg, childBgCol);
-			//		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 2.f);
-			//		ImGui::BeginChild("item", itemSize, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-			//		{
-			//			UI::ShiftCursor(itemPadding / 2.f, 10.f);
+					ImGui::PushStyleColor(ImGuiCol_ChildBg, childBgCol);
+					ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 2.f);
+					ImGui::BeginChild("item", itemSize, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+					{
+						UI::ShiftCursor(itemPadding / 2.f, 10.f);
 
-			//			ImGui::BeginChild("image", { thumbnailSize, thumbnailSize }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-			//			{
-			//				ImGui::Image(UI::GetTextureID(EditorResources::GetAssetIcon(Volt::AssetType::Material)), { thumbnailSize, thumbnailSize });
-			//			}
-			//			ImGui::EndChild();
-			//			ImGui::PopStyleVar();
+						ImGui::BeginChild("image", { thumbnailSize, thumbnailSize }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+						{
+							ImGui::Image(UI::GetTextureID(EditorResources::GetAssetIcon(Volt::AssetType::Material)), { thumbnailSize, thumbnailSize });
+						}
+						ImGui::EndChild();
+						ImGui::PopStyleVar();
 
-			//			UI::ShiftCursor(itemPadding / 2.f, 0.f);
+						UI::ShiftCursor(itemPadding / 2.f, 0.f);
 
-			//			std::string materialName = material->GetName();
-			//			ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - itemPadding / 2.f);
-			//			if (ImGui::InputTextString(("##materialName" + std::to_string(index)).c_str(), &materialName))
-			//			{
-			//				material->SetName(materialName);
-			//			}
-			//			ImGui::PopItemWidth();
+						std::string materialName = material->GetName();
+						ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - itemPadding / 2.f);
+						if (ImGui::InputTextString(("##materialName" + std::to_string(index)).c_str(), &materialName))
+						{
+							material->SetName(materialName);
+						}
+						ImGui::PopItemWidth();
 
-			//			//ImGui::TextWrapped(material->GetName().c_str());
+						//ImGui::TextWrapped(material->GetName().c_str());
 
-			//			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && itemHovered)
-			//			{
-			//				myPreviewEntity.GetComponent<Volt::MeshComponent>().subMaterialIndex = index;
-			//			}
-			//		}
+						if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && itemHovered)
+						{
+							mySelectedSubMaterial = material;
+							myPreviewEntity.GetComponent<Volt::MeshComponent>().subMaterialIndex = index;
+						}
+					}
 
-			//		ImGui::EndChild();
-			//	}
+					ImGui::EndChild();
+				}
 
-			//	ImGui::EndChild();
+				ImGui::EndChild();
 
-			//	ImGui::PopStyleColor();
-			//	ImGui::NextColumn();
+				ImGui::PopStyleColor();
+				ImGui::NextColumn();
 
-			//	ImGui::PopID();
-			//}
+				ImGui::PopID();
+			}
 
 			ImGui::PopStyleColor(2);
 
@@ -811,9 +817,10 @@ void MaterialEditorPanel::UpdateMaterials()
 				if (ImGui::Selectable(materialName.c_str(), &selected))
 				{
 					mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(material);
+					mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);
 
-					//myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
-					//myPreviewEntity.GetComponent<Volt::MeshComponent>().subMaterialIndex = 0;
+					myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
+					myPreviewEntity.GetComponent<Volt::MeshComponent>().subMaterialIndex = 0;
 				}
 			}
 		}

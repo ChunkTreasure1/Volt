@@ -6,10 +6,8 @@
 
 #include "Volt/Asset/Importers/SceneImporter.h"
 
-#include "Volt/Utility/YAMLSerializationHelpers.h"
-
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
+#include "Volt/Utility/FileIO/YAMLStreamWriter.h"
+#include "Volt/Utility/FileIO/YAMLStreamReader.h"
 
 namespace Volt
 {
@@ -42,8 +40,8 @@ namespace Volt
 
 		streamReader.EnterScope("Prefab");
 		{
-			prefab->m_version = streamReader.ReadAtKey("version", uint32_t(0));
-			prefab->m_rootEntityId = streamReader.ReadAtKey("rootEntityId", Entity::NullID());
+			prefab->m_version = streamReader.ReadKey("version", uint32_t(0));
+			prefab->m_rootEntityId = streamReader.ReadKey("rootEntityId", Entity::NullID());
 
 			streamReader.ForEach("Entities", [&]() 
 			{
@@ -52,9 +50,9 @@ namespace Volt
 		
 			streamReader.ForEach("PrefabReferences", [&]() 
 			{
-				EntityID entityId = streamReader.ReadAtKey("entity", Entity::NullID());
-				AssetHandle prefabHandle = streamReader.ReadAtKey("prefabHandle", Asset::Null());
-				EntityID prefabEntityReference = streamReader.ReadAtKey("prefabEntityReference", Entity::NullID());
+				EntityID entityId = streamReader.ReadKey("entity", Entity::NullID());
+				AssetHandle prefabHandle = streamReader.ReadKey("prefabHandle", Asset::Null());
+				EntityID prefabEntityReference = streamReader.ReadKey("prefabEntityReference", Entity::NullID());
 
 				auto& prefabRefData = prefab->m_prefabReferencesMap[entityId];
 				prefabRefData.prefabAsset = prefabHandle;

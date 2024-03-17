@@ -43,7 +43,7 @@ namespace Volt::RHI
 				continue;
 			}
 
-			VulkanDefaultAllocator::DestroyImageInternal(m_activeImageAllocations.at(i));
+			VulkanDefaultAllocator::DestroyImage(m_activeImageAllocations.at(i));
 		}
 
 		for (int32_t i = static_cast<int32_t>(m_activeBufferAllocations.size()) - 1; i >= 0; i--)
@@ -54,7 +54,7 @@ namespace Volt::RHI
 				continue;
 			}
 
-			VulkanDefaultAllocator::DestroyBufferInternal(m_activeBufferAllocations.at(i));
+			VulkanDefaultAllocator::DestroyBuffer(m_activeBufferAllocations.at(i));
 		}
 
 		vmaDestroyAllocator(m_allocator);
@@ -65,13 +65,9 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		const size_t hash = Utility::GetHashFromBufferSpec(size, usage, memoryUsage);
-
+		if (auto buffer = m_allocationCache.TryGetBufferAllocationFromHash(hash))
 		{
-			std::scoped_lock lock{ m_bufferAllocationMutex };
-			if (auto buffer = m_allocationCache.TryGetBufferAllocationFromHash(hash))
-			{
-				return buffer;
-			}
+			return buffer;
 		}
 
 		VkBufferCreateInfo bufferInfo{};
@@ -126,10 +122,7 @@ namespace Volt::RHI
 
 		allocation->m_size = size;
 
-		{
-			std::scoped_lock lock{ m_bufferAllocationMutex };
-			m_activeBufferAllocations.push_back(allocation);
-		}
+		m_activeBufferAllocations.push_back(allocation);
 		return allocation;
 	}
 
@@ -139,13 +132,9 @@ namespace Volt::RHI
 
 		const size_t hash = Utility::GetHashFromImageSpec(imageSpecification, memoryUsage);
 
+		if (auto image = m_allocationCache.TryGetImageAllocationFromHash(hash))
 		{
-			std::scoped_lock lock{ m_imageAllocationMutex };
-
-			if (auto image = m_allocationCache.TryGetImageAllocationFromHash(hash))
-			{
-				return image;
-			}
+			return image;
 		}
 
 		const VkImageCreateInfo imageInfo = Utility::GetVkImageCreateInfo(imageSpecification);
@@ -194,10 +183,7 @@ namespace Volt::RHI
 			allocation->m_size = info.size;
 		}
 
-		{
-			std::scoped_lock lock{ m_imageAllocationMutex };
-			m_activeImageAllocations.push_back(allocation);
-		}
+		m_activeImageAllocations.push_back(allocation);
 		return allocation;
 	}
 
@@ -233,7 +219,6 @@ namespace Volt::RHI
 		const Ref<VulkanBufferAllocation> bufferAlloc = allocation->As<VulkanBufferAllocation>();
 		vmaDestroyBuffer(m_allocator, bufferAlloc->m_resource, bufferAlloc->m_allocation);
 
-		std::scoped_lock lock{ m_bufferAllocationMutex };
 		if (const auto it = std::ranges::find(m_activeBufferAllocations, allocation); it != m_activeBufferAllocations.end())
 		{
 			m_activeBufferAllocations.erase(it);
@@ -247,7 +232,6 @@ namespace Volt::RHI
 		const Ref<VulkanImageAllocation> imageAlloc = allocation->As<VulkanImageAllocation>();
 		vmaDestroyImage(m_allocator, imageAlloc->m_resource, imageAlloc->m_allocation);
 
-		std::scoped_lock lock{ m_imageAllocationMutex };
 		if (const auto it = std::ranges::find(m_activeImageAllocations, allocation); it != m_activeImageAllocations.end())
 		{
 			m_activeImageAllocations.erase(it);

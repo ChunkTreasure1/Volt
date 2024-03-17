@@ -6,7 +6,7 @@
 
 struct Constants
 {
-    TTexture<uint> visibilityBuffer;
+    TextureT<uint> visibilityBuffer;
     TypedBuffer<ObjectDrawData> objectDrawData;
     TypedBuffer<Meshlet> meshletsBuffer;
     RWTypedBuffer<uint> materialCountsBuffer;

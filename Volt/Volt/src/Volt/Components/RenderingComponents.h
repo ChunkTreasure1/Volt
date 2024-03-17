@@ -4,7 +4,6 @@
 #include "Volt/Scene/Reflection/ComponentRegistry.h"
 #include "Volt/Scene/Entity.h"
 
-#include "Volt/Asset/Rendering/MaterialTable.h"
 #include "Volt/Asset/Asset.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 
@@ -21,28 +20,22 @@ namespace Volt
 	struct MeshComponent
 	{
 		AssetHandle handle = Asset::Null();
-		std::vector<AssetHandle> materials;
+		AssetHandle material = Asset::Null();
 
+		int32_t subMaterialIndex = -1;
 		std::vector<UUID64> renderObjectIds;
 
 		[[nodiscard]] inline const AssetHandle& GetHandle() const { return handle; }
-
-		static void OnMemberChanged(MeshComponent& data, Entity entity);
 
 		static void ReflectType(TypeDesc<MeshComponent>& reflect)
 		{
 			reflect.SetGUID("{45D008BE-65C9-4D6F-A0C6-377F7B384E47}"_guid);
 			reflect.SetLabel("Mesh Component");
 			reflect.AddMember(&MeshComponent::handle, "handle", "Mesh", "", Asset::Null(), AssetType::Mesh);
-			reflect.AddMember(&MeshComponent::materials, "materials", "Materials", "", std::vector<AssetHandle>{}, AssetType::Material);
-			reflect.SetOnMemberChangedCallback(&MeshComponent::OnMemberChanged);
+			reflect.AddMember(&MeshComponent::material, "material", "Material", "", Asset::Null(), AssetType::Material);
 		}
 
 		REGISTER_COMPONENT(MeshComponent);
-
-	private:
-		AssetHandle m_oldHandle = Asset::Null();
-		std::vector<AssetHandle> m_oldMaterials;
 	};
 
 	struct CameraComponent

@@ -6,8 +6,6 @@
 #include "Volt/Utility/MemoryUtility.h"
 #include "Volt/Asset/Asset.h"
 
-#include "Volt/Scene/Entity.h"
-
 #include <CoreUtilities/VoltGUID.h>
 
 #include <typeindex>
@@ -144,8 +142,6 @@ namespace Volt
 		[[nodiscard]] virtual ComponentMember* FindMemberByOffset(const ptrdiff_t offset) = 0;
 		[[nodiscard]] virtual ComponentMember* FindMemberByName(std::string_view name) = 0;
 		[[nodiscard]] virtual const ComponentMember* FindMemberByName(std::string_view name) const = 0;
-		
-		virtual void OnMemberChanged(void* objectPtr, Entity entity) const = 0;
 	};
 
 	class IEnumTypeDesc : public CommonTypeDesc<ValueType::Enum>
@@ -311,8 +307,6 @@ namespace Volt
 		[[nodiscard]] inline const std::vector<ComponentMember>& GetMembers() const override { return m_members; }
 		[[nodiscard]] inline const bool IsHidden() const override { return m_isHidden; }
 
-		void OnMemberChanged(void* objectPtr, Entity entity) const override;
-
 		[[nodiscard]] ComponentMember* FindMemberByOffset(const ptrdiff_t offset) override;
 		[[nodiscard]] ComponentMember* FindMemberByName(std::string_view name) override;
 		[[nodiscard]] const ComponentMember* FindMemberByName(std::string_view name) const override;
@@ -367,11 +361,6 @@ namespace Volt
 			return m_members.back();
 		}
 
-		void SetOnMemberChangedCallback(std::function<void(T&, Entity)>&& func)
-		{
-			m_onMemberChangedCallback = std::move(func);
-		}
-
 	private:
 		std::vector<ComponentMember> m_members;
 
@@ -380,7 +369,7 @@ namespace Volt
 		std::string m_componentDescription;
 
 		bool m_isHidden = false;
-		std::function<void(T& component, Entity entity)> m_onMemberChangedCallback;
+
 	};
 
 	template<Enum T>
@@ -427,15 +416,6 @@ namespace Volt
 	inline void ComponentTypeDesc<T>::SetGUID(const VoltGUID& guid)
 	{
 		m_guid = guid;
-	}
-
-	template<typename T>
-	inline void ComponentTypeDesc<T>::OnMemberChanged(void* objectPtr, Entity entity) const
-	{
-		if (m_onMemberChangedCallback)
-		{
-			m_onMemberChangedCallback(*reinterpret_cast<T*>(objectPtr), entity);
-		}
 	}
 
 	template<typename T>

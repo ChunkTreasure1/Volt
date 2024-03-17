@@ -92,7 +92,9 @@ namespace Volt
 		if (m_contracts.contains(in_handle)) return;
 
 		const std::filesystem::path contractDirectory = "Assets/Networking/Contracts";
-		Ref<NetContract> contract = AssetManager::CreateAsset<NetContract>(contractDirectory, std::to_string(in_handle));
+		const std::string filename = std::to_string(in_handle) + ".vtncon";
+
+		Ref<NetContract> contract = AssetManager::CreateAsset<NetContract>(contractDirectory, filename);
 		contract->prefab = in_handle;
 		m_contracts.insert({ in_handle, contract });
 	}

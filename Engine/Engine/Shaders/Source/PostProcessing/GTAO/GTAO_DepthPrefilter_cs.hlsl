@@ -10,7 +10,7 @@ struct Constants
     RWTexture<float> outDepthMIP3;
     RWTexture<float> outDepthMIP4;
     
-    TTexture<float> sourceDepth;
+    TextureT<float> sourceDepth;
     TextureSampler pointClampSampler;
     uint padding;
     

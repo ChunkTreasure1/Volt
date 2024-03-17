@@ -3,6 +3,7 @@
 #include "VTMeshImporter.h"
 
 #include "Volt/Asset/AssetManager.h"
+#include "Volt/Asset/Mesh/Material.h"
 #include "Volt/Asset/Mesh/MeshCompiler.h"
 #include "Volt/Core/Profiling.h"
 

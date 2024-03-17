@@ -3,11 +3,9 @@
 
 #include "Volt/Log/Log.h"
 
-#include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Mesh/Mesh.h"
-
-#include "Volt/Asset/Rendering/Material.h"
-#include "Volt/Asset/Rendering/MaterialTable.h"
+#include "Volt/Asset/Mesh/Material.h"
+#include "Volt/Asset/Mesh/SubMaterial.h"
 
 #include "Volt/Asset/Animation/Skeleton.h"
 #include "Volt/Asset/Animation/Animation.h"
@@ -20,7 +18,7 @@
 
 namespace Volt
 {
-	void FbxImporter::ImportMeshImpl(const std::filesystem::path& path, Ref<Mesh>& mesh)
+	Ref<Mesh> FbxImporter::ImportMeshImpl(const std::filesystem::path& path)
 	{
 		TGA::FBX::Importer::InitImporter();
 
@@ -29,22 +27,23 @@ namespace Volt
 		{
 			if (!TGA::FBX::Importer::LoadMeshW(path.wstring(), tgaMesh))
 			{
-				mesh->SetFlag(AssetFlag::Invalid, true);
-				return;
+				return nullptr;
 			}
 		}
 		catch (const std::exception& e)
 		{
 			VT_CORE_ERROR("[FBXImporter] Unable to import animation! Reason: {0}", e.what());
-			mesh->SetFlag(AssetFlag::Invalid, true);
-			return;
+			return nullptr;
 		}
 
 		if (!tgaMesh.IsValid())
 		{
-			mesh->SetFlag(AssetFlag::Invalid, true);
-			return;
+			return nullptr;
 		}
+
+		Ref<Mesh> mesh = CreateRef<Mesh>();
+		mesh->m_material = CreateRef<Material>();
+		mesh->m_material->myName = path.stem().string() + "_mat";
 
 		for (const auto& element : tgaMesh.Elements)
 		{
@@ -71,7 +70,7 @@ namespace Volt
 				newVertex.position = *reinterpret_cast<const glm::vec4*>(tgaVertex.Position);
 				newVertex.normal = *reinterpret_cast<const glm::vec3*>(tgaVertex.Normal);
 				newVertex.tangent = *reinterpret_cast<const glm::vec3*>(tgaVertex.Tangent);
-				newVertex.uv = *reinterpret_cast<const glm::vec2*>(tgaVertex.UVs[0]);
+				newVertex.texCoords = *reinterpret_cast<const glm::vec2*>(tgaVertex.UVs[0]);
 				newVertex.influences = *reinterpret_cast<const glm::uvec4*>(tgaVertex.BoneIDs);
 				newVertex.weights = *reinterpret_cast<const glm::vec4*>(tgaVertex.BoneWeights);
 			}
@@ -81,16 +80,13 @@ namespace Volt
 
 		if (tgaMesh.Materials.empty())
 		{
-			auto newMaterial = AssetManager::CreateAsset<Material>("", "None");
-			mesh->m_materialTable.SetMaterial(newMaterial->handle, 0);
+			mesh->m_material->CreateSubMaterial(ShaderMap::Get("VisibilityBuffer"));
 		}
 		else
 		{
-			for (uint32_t index = 0; const auto& material : tgaMesh.Materials)
+			for (const auto& material : tgaMesh.Materials)
 			{
-				auto newMaterial = AssetManager::CreateAsset<Material>("", material.MaterialName);
-				mesh->m_materialTable.SetMaterial(newMaterial->handle, index);
-				index++;
+				mesh->m_material->CreateSubMaterial(ShaderMap::Get("VisibilityBuffer"), material.MaterialName);
 			}
 		}
 
@@ -101,9 +97,10 @@ namespace Volt
 		TGA::FBX::Importer::UninitImporter();
 
 		mesh->Construct();
+		return mesh;
 	}
 
-	void FbxImporter::ImportSkeletonImpl(const std::filesystem::path& path, Ref<Skeleton>& skeleton)
+	Ref<Skeleton> FbxImporter::ImportSkeletonImpl(const std::filesystem::path& path)
 	{
 		TGA::FBX::Importer::InitImporter();
 
@@ -113,17 +110,16 @@ namespace Volt
 		{
 			if (!TGA::FBX::Importer::LoadMeshW(path.wstring(), tgaMesh))
 			{
-				skeleton->SetFlag(AssetFlag::Invalid, true);
-				return;
+				return nullptr;
 			}
 		}
 		catch (const std::exception& e)
 		{
 			VT_CORE_ERROR("[FBXImporter] Unable to import animation! Reason: {0}", e.what());
-			skeleton->SetFlag(AssetFlag::Invalid, true);
-			return;
+			return nullptr;
 		}
 
+		Ref<Skeleton> skeleton = CreateRef<Skeleton>();
 		skeleton->myJoints.resize(tgaMesh.Skeleton.Bones.size());
 		skeleton->myInverseBindPose.resize(tgaMesh.Skeleton.Bones.size());
 		skeleton->myRestPose.resize(tgaMesh.Skeleton.Bones.size());
@@ -131,9 +127,10 @@ namespace Volt
 		ProcessSkeleton(skeleton, tgaMesh.Skeleton.Bones, 0);
 
 		TGA::FBX::Importer::UninitImporter();
+		return skeleton;
 	}
 
-	void FbxImporter::ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Ref<Animation>& animation)
+	Ref<Animation> FbxImporter::ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton)
 	{
 		TGA::FBX::Importer::InitImporter();
 
@@ -143,17 +140,16 @@ namespace Volt
 		{
 			if (!TGA::FBX::Importer::LoadAnimationW(path.wstring(), tgaAnimation))
 			{
-				animation->SetFlag(AssetFlag::Invalid, true);
-				return;
+				return nullptr;
 			}
 		}
 		catch (const std::exception& e)
 		{
 			VT_CORE_ERROR("[FBXImporter] Unable to import animation! Reason: {0}", e.what());
-			animation->SetFlag(AssetFlag::Invalid, true);
-			return;
+			return nullptr;
 		}
 
+		Ref<Animation> animation = CreateRef<Animation>();
 		animation->myFramesPerSecond = static_cast<uint32_t>(tgaAnimation.FramesPerSecond);
 		animation->myDuration = static_cast<float>(tgaAnimation.Duration);
 
@@ -180,6 +176,7 @@ namespace Volt
 		}
 
 		TGA::FBX::Importer::UninitImporter();
+		return animation;
 	}
 
 	void FbxImporter::ExportMeshImpl(std::vector<Ref<Mesh>>, const std::filesystem::path&)

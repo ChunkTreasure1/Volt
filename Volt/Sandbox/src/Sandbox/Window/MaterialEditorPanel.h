@@ -10,6 +10,7 @@ namespace Volt
 	class Material;
 	class Mesh;
 	class Camera;
+	class SubMaterial;
 	class Scene;
 	class SceneRendererNew;
 }
@@ -41,6 +42,7 @@ private:
 	Ref<Volt::Camera> myPreviewCamera;
 
 	Ref<Volt::Material> mySelectedMaterial;
+	Ref<Volt::SubMaterial> mySelectedSubMaterial;
 	Ref<Volt::Scene>& myEditorScene;
 
 	Ref<Volt::Scene> myPreviewScene;

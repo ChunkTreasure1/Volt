@@ -22,7 +22,7 @@ namespace Volt::RHI
 			VkShaderModule_T* shaderModule;
 		};
 
-		VulkanShader(const ShaderSpecification& createInfo);
+		VulkanShader(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles, bool forceCompile);
 		~VulkanShader() override;
 
 		const bool Reload(bool forceCompile) override;
@@ -76,7 +76,8 @@ namespace Volt::RHI
 
 		std::vector<std::pair<uint32_t, uint32_t>> m_descriptorPoolSizes{}; // Descriptor type -> count
 
-		ShaderSpecification m_specification;
+		std::string_view m_name;
 		ShaderResources m_resources;
+		std::vector<std::filesystem::path> m_sourceFiles;
 	};
 }

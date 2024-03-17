@@ -5,9 +5,10 @@
 #include "Volt/Core/Application.h"
 
 #include "Volt/Utility/YAMLSerializationHelpers.h"
+#include "Volt/Utility/SerializationMacros.h"
 
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include "Volt/Utility/FileIO/YAMLStreamReader.h"
+#include "Volt/Utility/FileIO/YAMLStreamWriter.h"
 
 namespace Volt
 {
@@ -80,14 +81,14 @@ namespace Volt
 
 		streamReader.EnterScope("Project");
 
-		m_currentProject->engineVersion = streamReader.ReadAtKey("EngineVersion", std::string(""));
-		m_currentProject->name = streamReader.ReadAtKey("Name", std::string("None"));
-		m_currentProject->companyName = streamReader.ReadAtKey("CompanyName", std::string("None"));
-		m_currentProject->assetsDirectory = streamReader.ReadAtKey("AssetsDirectory", std::filesystem::path("Assets"));
-		m_currentProject->audioBanksDirectory = streamReader.ReadAtKey("AudioBanksDirectory", std::filesystem::path("Audio/Banks"));
-		m_currentProject->iconPath = streamReader.ReadAtKey("IconPath", std::filesystem::path(""));
-		m_currentProject->cursorPath = streamReader.ReadAtKey("CursorPath", std::filesystem::path(""));
-		m_currentProject->startScenePath = streamReader.ReadAtKey("StartScene", std::filesystem::path(""));
+		m_currentProject->engineVersion = streamReader.ReadKey("EngineVersion", std::string(""));
+		m_currentProject->name = streamReader.ReadKey("Name", std::string("None"));
+		m_currentProject->companyName = streamReader.ReadKey("CompanyName", std::string("None"));
+		m_currentProject->assetsDirectory = streamReader.ReadKey("AssetsDirectory", std::filesystem::path("Assets"));
+		m_currentProject->audioBanksDirectory = streamReader.ReadKey("AudioBanksDirectory", std::filesystem::path("Audio/Banks"));
+		m_currentProject->iconPath = streamReader.ReadKey("IconPath", std::filesystem::path(""));
+		m_currentProject->cursorPath = streamReader.ReadKey("CursorPath", std::filesystem::path(""));
+		m_currentProject->startScenePath = streamReader.ReadKey("StartScene", std::filesystem::path(""));
 
 		streamReader.ExitScope();
 

@@ -34,8 +34,7 @@ project "Sandbox"
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
 		"/WHOLEARCHIVE:PhysX",
-		"/WHOLEARCHIVE:GraphKey",
-		"/WHOLEARCHIVE:Mosaic"
+		"/WHOLEARCHIVE:GraphKey"
 	}
 
 	buildoptions 
@@ -71,7 +70,6 @@ project "Sandbox"
 		"../Navigation/src/",
 		"../Nexus/src",
 		"../VoltRenderer/VoltRHI/src",
-		"../Mosaic/src",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -166,9 +164,7 @@ project "Sandbox"
 		"%{Library.discord}",
 
 		"%{Library.Vulkan}",
-		"%{Library.dxc}",
-
-		"%{Library.METIS}"
+		"%{Library.dxc}"
     }
 
 	debugargs 

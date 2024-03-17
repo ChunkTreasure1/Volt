@@ -73,11 +73,6 @@ namespace Volt::RHI
 		return m_specification.image->GetUsage();
 	}
 
-	const ImageViewType VulkanImageView::GetViewType() const
-	{
-		return m_specification.viewType;
-	}
-
 	void* VulkanImageView::GetHandleImpl() const
 	{
 		return m_imageView;

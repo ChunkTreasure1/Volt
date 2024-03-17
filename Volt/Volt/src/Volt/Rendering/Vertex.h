@@ -42,15 +42,11 @@ namespace Volt
 		{
 		}
 
-		Vertex(const glm::vec3& aPosition, const glm::vec2& aUV)
+		Vertex(const glm::vec3& aPosition, const glm::vec2& aTexCoords)
 			: position(aPosition)
 		{
-			uv = aUV;
+			texCoords = aTexCoords;
 		}
-
-		Vertex(const glm::vec3& aPosition, const glm::vec3& aNormal, const glm::vec3& aTangent, const glm::vec2& aUV)
-			: position(aPosition), normal(aNormal), tangent(aTangent), uv(aUV)
-		{ }
 
 		bool operator==(const Vertex& aVert) const
 		{
@@ -58,7 +54,7 @@ namespace Volt
 			const bool bNorm = AbsEqualVector(normal, aVert.normal);
 			const bool bTangent = AbsEqualVector(normal, aVert.tangent);
 
-			const bool bTex0 = AbsEqualVector(uv, aVert.uv);
+			const bool bTex0 = AbsEqualVector(texCoords, aVert.texCoords);
 
 			const bool bInfluences = AbsEqualVector(influences, aVert.influences);
 			const bool bWeights = AbsEqualVector(weights, aVert.weights);
@@ -80,7 +76,7 @@ namespace Volt
 		glm::vec3 normal = glm::vec3(0.f);
 		glm::vec3 tangent = glm::vec3(0.f);
 
-		glm::vec2 uv{ 0.f };
+		glm::vec2 texCoords{ 0.f };
 
 		glm::uvec4 influences = { 0, 0, 0, 0 };
 		glm::vec4 weights = { 0.f, 0.f, 0.f, 0.f };

@@ -18,9 +18,6 @@
 
 #define GK_BIND_FUNCTION(fn) std::bind(&fn, this)
 
-class YAMLStreamReader;
-class YAMLStreamWriter;
-
 namespace GraphKey
 {
 	enum class AttributeType
@@ -69,8 +66,8 @@ namespace GraphKey
 		virtual void Initialize() {}
 		virtual void OnCopy() {}
 
-		virtual void Serialize(YAMLStreamWriter&) {}
-		virtual void Deserialize(YAMLStreamReader&) {}
+		virtual void Serialize(YAML::Emitter&) {}
+		virtual void Deserialize(const YAML::Node&) {}
 		virtual Ref<Node> CreateCopy(Graph* ownerGraph, Volt::EntityID entity = Volt::Entity::NullID());
 
 		virtual const std::string GetName() = 0;

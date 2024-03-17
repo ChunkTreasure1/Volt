@@ -10,9 +10,9 @@ namespace Volt
 		ObjImporter() = default;
 
 	protected:
-		void ImportMeshImpl(const std::filesystem::path&, Ref<Mesh>&) override {};
-		void ImportSkeletonImpl(const std::filesystem::path&, Ref<Skeleton>&) override {}
-		void ImportAnimationImpl(const std::filesystem::path&, Ref<Skeleton>, Ref<Animation>&) override {}
+		Ref<Mesh> ImportMeshImpl(const std::filesystem::path&) override { return nullptr; };
+		Ref<Skeleton> ImportSkeletonImpl(const std::filesystem::path&) override { return nullptr; }
+		Ref<Animation> ImportAnimationImpl(const std::filesystem::path&, Ref<Skeleton>) override { return nullptr; }
 
 		void ExportMeshImpl(std::vector<Ref<Mesh>> assets, const std::filesystem::path& path) override;
 		void ExportSkeletonImpl(std::vector<Ref<Skeleton>>, const std::filesystem::path&) override {};

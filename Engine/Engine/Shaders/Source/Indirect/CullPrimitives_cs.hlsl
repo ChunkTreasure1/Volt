@@ -19,7 +19,7 @@ struct Constants
     TypedBuffer<Meshlet> gpuMeshlets;
     TypedBuffer<GPUMesh> gpuMeshes;
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    UniformBuffer<ViewData> viewData;
+    TypedBuffer<ViewData> viewData;
     
     float2 renderSize;
 };
@@ -28,7 +28,7 @@ struct Constants
 void main(uint3 gid : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
 {
     const Constants constants = GetConstants<Constants>();
-    const ViewData viewData = constants.viewData.Load();
+    const ViewData viewData = constants.viewData.Load(0);
     
     uint groupId = UnwrapDispatchGroupId(gid);
     
