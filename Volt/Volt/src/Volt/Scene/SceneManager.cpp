@@ -5,6 +5,6 @@ namespace Volt
 {
 	void SceneManager::Shutdown()
 	{
-		myActiveScene.Reset();
+		m_activeScene.Reset();
 	}
 }

@@ -13,7 +13,7 @@ struct Constants
     
     TypedBuffer<Meshlet> gpuMeshlets;
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    TypedBuffer<ViewData> viewData;
+    UniformBuffer<ViewData> viewData;
     
     float frustum0;
     float frustum1;
@@ -23,7 +23,7 @@ struct Constants
 
 bool IsInFrustum(in Constants constants, in float4x4 transform, in float3 boundingSphereCenter, in float boundingSphereRadius)
 {
-    const ViewData viewData = constants.viewData.Load(0);
+    const ViewData viewData = constants.viewData.Load();
     
     const float3 globalScale = float3(length(transform[0]), length(transform[1]), length(transform[2]));
     const float maxScale = max(max(globalScale.x, globalScale.y), globalScale.z);
@@ -37,7 +37,7 @@ bool IsInFrustum(in Constants constants, in float4x4 transform, in float3 boundi
     visible = visible && center.z * constants.frustum3 - abs(center.y) * constants.frustum2 > -boundingSphereRadius;
     visible = visible && center.z + boundingSphereRadius > viewData.nearPlane && center.z - boundingSphereRadius < viewData.farPlane;
     
-    return visible;
+    return true;
 }
 
 bool ConeCull(in float3 center, in float radius, float3 coneAxis, float coneCutoff, float3 cameraPosition)

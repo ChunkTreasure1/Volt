@@ -1,0 +1,5 @@
+name: "Sample"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Sample/Sample_vs.hlsl"
+  - "Engine/Shaders/Source/Sample/Sample_ps.hlsl"

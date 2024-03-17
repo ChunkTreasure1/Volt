@@ -11,7 +11,6 @@ namespace Volt
 {
 	bool MeshSourceImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		asset = CreateRef<Mesh>();
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filePath))
@@ -20,15 +19,9 @@ namespace Volt
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
-		auto mesh = MeshTypeImporter::ImportMesh(filePath);
 
-		if (!mesh)
-		{
-			asset->SetFlag(AssetFlag::Invalid, true);
-			return false;
-		}
-
-		asset = mesh;
+		Ref<Mesh> mesh = std::reinterpret_pointer_cast<Mesh>(asset);
+		MeshTypeImporter::ImportMesh(filePath, mesh);
 		return true;
 	}
 

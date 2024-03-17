@@ -20,7 +20,10 @@ namespace Volt
 			VT_PROFILE_FUNCTION();
 			for (const auto& f : m_queue)
 			{
-				f();
+				if (f)
+				{
+					f();
+				}
 			}
 
 			m_queue.clear();

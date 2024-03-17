@@ -30,7 +30,7 @@ namespace Volt
 			}
 			for (const auto& v : mesh->GetVertices())
 			{
-				SStexCoords << "vt " << v.texCoords.x << " " << v.texCoords.y << "\n";
+				SStexCoords << "vt " << v.uv.x << " " << v.uv.y << "\n";
 			}
 			for (const auto& v : mesh->GetVertices())
 			{

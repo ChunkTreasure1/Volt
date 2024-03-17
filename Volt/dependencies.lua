@@ -38,6 +38,7 @@ IncludeDir["NFDExtended"] = "%{wks.location}/Volt/vendor/nfd-extended/src/includ
 IncludeDir["TGAFbx"] = "%{wks.location}/Volt/vendor/TGAFbx/src"
 IncludeDir["entt"] = "%{wks.location}/Volt/vendor/entt/include"
 IncludeDir["cityhash"] = "%{wks.location}/Volt/vendor/cityhash/src"
+IncludeDir["METIS"] = "%{wks.location}/Volt/vendor/METIS/include"
 
 IncludeDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/include/"
 IncludeDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/include/"
@@ -67,6 +68,7 @@ LibraryDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/lib/%{cfg.buildcfg}"
 LibraryDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/lib/%{cfg.buildcfg}"
 
 LibraryDir["Aftermath"] = "%{wks.location}/Volt/vendor/Aftermath/lib"
+LibraryDir["METIS"] = "%{wks.location}/Volt/vendor/METIS/libmetis/%{cfg.buildcfg}"
 
 Library = {}
 Library["fmod"] = "%{LibraryDir.fmod}/fmod_vc.lib"
@@ -124,3 +126,5 @@ Library["SPIRV_Cross_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-core.lib"
 Library["SPIRV_Cross_GLSL_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.lib"
 
 Library["Aftermath"] = "%{LibraryDir.Aftermath}/x64/GFSDK_Aftermath_Lib.x64.lib"
+
+Library["METIS"] = "%{LibraryDir.METIS}/metis.lib"

@@ -2,7 +2,6 @@
 #include "Volt/Core/Base.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
-#include "Volt/Asset/Mesh/Material.h"
 
 #include "Volt/Scene/Entity.h"
 
@@ -10,6 +9,8 @@
 
 namespace Volt
 {
+	class Material;
+
 	class MeshExporterUtilities
 	{
 	public:

@@ -9,7 +9,7 @@ namespace Volt::RHI
 	{
 		
 	public:
-		D3D12Shader(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles, bool forceCompile);
+		D3D12Shader(const ShaderSpecification& createInfo);
 		~D3D12Shader() override;
 
 		IDxcBlob* GetBlob(ShaderStage stage);

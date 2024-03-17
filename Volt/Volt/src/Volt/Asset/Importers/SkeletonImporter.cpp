@@ -4,11 +4,13 @@
 #include "Volt/Asset/Animation/Skeleton.h"
 #include "Volt/Asset/AssetManager.h"
 
-#include "Volt/Utility/SerializationMacros.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 #include "Volt/Project/ProjectManager.h"
 
 #include "Volt/Log/Log.h"
+
+#include <CoreUtilities/FileIO/YAMLStreamReader.h>
+#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -28,73 +30,48 @@ namespace Volt
 			return false;
 		}
 
-		std::ifstream file(filePath);
-		if (!file.is_open())
+		YAMLStreamReader streamReader{};
+		if (!streamReader.OpenFile(filePath))
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
-		std::stringstream sstream;
-		sstream << file.rdbuf();
-		file.close();
+		streamReader.EnterScope("Skeleton");
 
-		YAML::Node root;
+		skeleton->myName = streamReader.ReadAtKey("name", std::string("Null"));
 
-		try
+		if (streamReader.HasKey("joints"))
 		{
-			root = YAML::Load(sstream.str());
-		}
-		catch (std::exception& e)
-		{
-			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
-			asset->SetFlag(AssetFlag::Invalid, true);
-			return false;
-		}
-
-		YAML::Node skeletonNode = root["Skeleton"];
-		if (!skeletonNode)
-		{
-			VT_CORE_ERROR("File {0} is corrupted!", metadata.filePath);
-			asset->SetFlag(AssetFlag::Invalid, true);
-			return false;
-		}
-
-		VT_DESERIALIZE_PROPERTY(name, skeleton->myName, skeletonNode, std::string("Null"));
-
-		YAML::Node jointsNode = skeletonNode["joints"];
-		if (jointsNode)
-		{
-			for (const auto& jointNode : jointsNode)
+			streamReader.ForEach("joints", [&]() 
 			{
 				auto& joint = skeleton->myJoints.emplace_back();
-				VT_DESERIALIZE_PROPERTY(parentIndex, joint.parentIndex, jointNode, -1);
-				VT_DESERIALIZE_PROPERTY(name, joint.name, jointNode, std::string("Null"));
-			}
+				joint.parentIndex = streamReader.ReadAtKey("parentIndex", -1);
+				joint.name = streamReader.ReadAtKey("name", std::string("Null"));
+			});
 		}
 
-		YAML::Node invBindPosesNode = skeletonNode["inverseBindPoses"];
-		if (invBindPosesNode)
+		if (streamReader.HasKey("inverseBindPoses"))
 		{
-			for (const auto& invBindPoseNode : invBindPosesNode)
+			streamReader.ForEach("inverseBindPoses", [&]() 
 			{
-				VT_DESERIALIZE_PROPERTY(invBindPose, skeleton->myInverseBindPose.emplace_back(), invBindPoseNode, glm::mat4(1.f));
-			}
+				skeleton->myInverseBindPose.emplace_back() = streamReader.ReadAtKey("invBindPose", glm::mat4{ 1.f });
+			});
 		}
 
-		YAML::Node restPoseNode = skeletonNode["restPose"];
-		if (restPoseNode)
+		if (streamReader.HasKey("restPose"))
 		{
-			for (const auto& transform : restPoseNode)
+			streamReader.ForEach("restPose", [&]() 
 			{
 				auto& trs = skeleton->myRestPose.emplace_back();
-				VT_DESERIALIZE_PROPERTY(position, trs.position, transform, glm::vec3{ 0.f });
-				VT_DESERIALIZE_PROPERTY(rotation, trs.rotation, transform, glm::quat{});
-				VT_DESERIALIZE_PROPERTY(scale, trs.scale, transform, glm::vec3{ 1.f });
-			}
+				trs.position = streamReader.ReadAtKey("position", glm::vec3{ 0.f });
+				trs.rotation = streamReader.ReadAtKey("rotation", glm::quat{});
+				trs.scale = streamReader.ReadAtKey("scale", glm::vec3{ 1.f });
+			});
 		}
 
+		streamReader.ExitScope();
 		return true;
 	}
 
@@ -102,48 +79,45 @@ namespace Volt
 	{
 		Ref<Skeleton> skeleton = std::reinterpret_pointer_cast<Skeleton>(asset);
 
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Skeleton" << YAML::Value;
+		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
+
+		streamWriter.BeginMap();
+		streamWriter.BeginMapNamned("Skeleton");
+
+		streamWriter.SetKey("name", skeleton->myName);
+
+		streamWriter.BeginSequence("joints");
+		for (const auto& joint : skeleton->myJoints)
 		{
-			out << YAML::BeginMap;
-			VT_SERIALIZE_PROPERTY(name, skeleton->myName, out);
-
-			out << YAML::Key << "joints" << YAML::BeginSeq;
-			for (const auto& joint : skeleton->myJoints)
-			{
-				out << YAML::BeginMap;
-				VT_SERIALIZE_PROPERTY(parentIndex, joint.parentIndex, out);
-				VT_SERIALIZE_PROPERTY(name, joint.name, out);
-				out << YAML::EndMap;
-			}
-			out << YAML::EndSeq;
-
-			out << YAML::Key << "inverseBindPoses" << YAML::BeginSeq;
-			for (const auto& invBindPose : skeleton->myInverseBindPose)
-			{
-				out << YAML::BeginMap;
-				VT_SERIALIZE_PROPERTY(invBindPose, invBindPose, out);
-				out << YAML::EndMap;
-			}
-			out << YAML::EndSeq;
-
-			out << YAML::Key << "restPose" << YAML::BeginSeq;
-			for (const auto& restPose : skeleton->myRestPose)
-			{
-				out << YAML::BeginMap;
-				VT_SERIALIZE_PROPERTY(position, restPose.position, out);
-				VT_SERIALIZE_PROPERTY(rotation, restPose.rotation, out);
-				VT_SERIALIZE_PROPERTY(scale, restPose.scale, out);
-				out << YAML::EndMap;
-			}
-			out << YAML::EndSeq;
-			out << YAML::EndMap;
+			streamWriter.BeginMap();
+			streamWriter.SetKey("parentIndex", joint.parentIndex);
+			streamWriter.SetKey("name", joint.name);
+			streamWriter.EndMap();
 		}
-		out << YAML::EndMap;
+		streamWriter.EndSequence();
 
-		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
-		fout << out.c_str();
-		fout.close();
+		streamWriter.BeginSequence("inverseBindPose");
+		for (const auto& invBindPose : skeleton->myInverseBindPose)
+		{
+			streamWriter.BeginMap();
+			streamWriter.SetKey("invBindPose", invBindPose);
+			streamWriter.EndMap();
+		}
+		streamWriter.EndSequence();
+
+		streamWriter.BeginSequence("restPose");
+		for (const auto& restPose : skeleton->myRestPose)
+		{
+			streamWriter.BeginMap();
+			streamWriter.SetKey("position", restPose.position);
+			streamWriter.SetKey("rotation", restPose.rotation);
+			streamWriter.SetKey("scale", restPose.scale);
+			streamWriter.EndMap();
+		}
+		streamWriter.EndSequence();
+
+		streamWriter.EndMap();
+		streamWriter.EndMap();
+		streamWriter.WriteToDisk();
 	}
 }

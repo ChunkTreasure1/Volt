@@ -5,8 +5,8 @@
 struct Constants
 {
     RWTexture<uint> finalAOTerm;
-    TextureT<uint> aoTerm;
-    TextureT<float> edges;
+    TTexture<uint> aoTerm;
+    TTexture<float> edges;
     TextureSampler pointClampSampler;
     
     GTAOConstants constants;

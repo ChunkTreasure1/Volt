@@ -7,6 +7,7 @@
 #include "Volt/Asset/Animation/Animation.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
 #include "Volt/Asset/Video/Video.h"
+#include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Core/Profiling.h"
 
@@ -33,6 +34,7 @@
 #include "Volt/Math/Math.h"
 
 #include "Volt/RenderingNew/RenderScene.h"
+#include "Volt/RenderingNew/RendererNew.h"
 
 #include "Volt/Rendering/RendererStructs.h"
 #include "Volt/Rendering/Camera/Camera.h"
@@ -256,22 +258,13 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 		m_statistics.entityCount = static_cast<uint32_t>(m_registry.alive());
-
+		
 		AnimationManager::Update(aDeltaTime);
 		Physics::GetScene()->Simulate(aDeltaTime);
 		m_visionSystem->Update(aDeltaTime);
 
 		m_timeSinceStart += aDeltaTime;
 		m_currentDeltaTime = aDeltaTime;
-
-		// Update scene data
-		{
-			//SceneData sceneData;
-			//sceneData.deltaTime = aDeltaTime;
-			//sceneData.timeSinceStart = myTimeSinceStart;
-
-			//Renderer::SetSceneData(sceneData);
-		}
 
 		GraphKey::TimerManager::Update(aDeltaTime);
 
@@ -330,15 +323,6 @@ namespace Volt
 
 		m_statistics.entityCount = static_cast<uint32_t>(m_registry.size());
 		m_particleSystem.Update(m_registry, shared_from_this(), aDeltaTime);
-
-		// Update scene data
-		{
-			//SceneData sceneData;
-			//sceneData.deltaTime = aDeltaTime;
-			//sceneData.timeSinceStart = m_timeSinceStart;
-
-			//Renderer::SetSceneData(sceneData);
-		}
 
 		ForEachWithComponents<CameraComponent, const TransformComponent>([&](entt::entity id, CameraComponent& cameraComp, const TransformComponent& transComp)
 		{
@@ -571,9 +555,16 @@ namespace Volt
 			{
 				m_worldEngine.OnEntityMoved(ent);
 			}
-		}
 
-		m_renderScene->Invalidate();
+			if (ent.HasComponent<MeshComponent>())
+			{
+				const auto& renderObjectsComp = ent.GetComponent<MeshComponent>();
+				for (const auto& renderObjId : renderObjectsComp.renderObjectIds)
+				{
+					m_renderScene->InvalidateRenderObject(renderObjId);
+				}
+			}
+		}
 	}
 
 	Entity Scene::InstantiateSplitMesh(AssetHandle meshHandle)
@@ -716,14 +707,15 @@ namespace Volt
 			// Cube
 			if (createDefaultMesh)
 			{
-				auto ent = newScene->CreateEntity("Cube");
+				// #TODO_Ivar: Readd
+				//auto ent = newScene->CreateEntity("Cube");
 
-				auto id = ent.GetComponent<IDComponent>();
+				//auto id = ent.GetComponent<IDComponent>();
 
-				auto& meshComp = ent.AddComponent<MeshComponent>();
-				meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+				//auto& meshComp = ent.AddComponent<MeshComponent>();
+				//meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 
-				ent.AddComponent<RigidbodyComponent>();
+				//ent.AddComponent<RigidbodyComponent>();
 			}
 
 			// Light
@@ -1419,15 +1411,30 @@ namespace Volt
 
 			meshComp.renderObjectIds.clear();
 
-			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshComp.handle);
-			if (!mesh || !mesh->IsValid())
+			Ref<Mesh> mesh = AssetManager::QueueAsset<Mesh>(meshComp.handle);
+			if (!mesh)
 			{
 				continue;
 			}
 
+			const auto& materialTable = mesh->GetMaterialTable();
+
 			for (size_t i = 0; i < mesh->GetSubMeshes().size(); i++)
 			{
-				auto uuid = m_renderScene->Register(idComp.id, mesh, static_cast<uint32_t>(i));
+				const auto materialIndex = mesh->GetSubMeshes().at(i).materialIndex;
+
+				Ref<Material> mat = AssetManager::QueueAsset<Material>(materialTable.GetMaterial(materialIndex));
+
+				if (static_cast<uint32_t>(meshComp.materials.size()) > materialIndex)
+				{
+					if (meshComp.materials.at(materialIndex) != mat->handle)
+					{
+						Ref<Material> tempMat = AssetManager::QueueAsset<Material>(meshComp.materials.at(materialIndex));
+						mat = tempMat;
+					}
+				}
+
+				auto uuid = m_renderScene->Register(idComp.id, mesh, mat, static_cast<uint32_t>(i));
 				meshComp.renderObjectIds.emplace_back(uuid);
 			}
 		}

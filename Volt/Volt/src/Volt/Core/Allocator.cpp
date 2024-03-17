@@ -16,8 +16,7 @@ void* operator new(size_t size)
 
 	if (void* ptr = malloc(size))
 	{
-		VT_PROFILE_ALLOC(ptr, size);
-
+		//VT_PROFILE_ALLOC(ptr, size);
 		return ptr;
 	}
 
@@ -35,7 +34,7 @@ void* operator new[](size_t size)
 
 	if (void* ptr = malloc(size))
 	{
-		VT_PROFILE_ALLOC(ptr, size);
+		//VT_PROFILE_ALLOC(ptr, size);
 		return ptr;
 	}
 
@@ -44,7 +43,7 @@ void* operator new[](size_t size)
 
 void operator delete(void* p, size_t size) noexcept
 {
-	VT_PROFILE_FREE(p);
+	//VT_PROFILE_FREE(p);
 	free(p);
 
 	s_totalAllocation -= size;
@@ -52,7 +51,7 @@ void operator delete(void* p, size_t size) noexcept
 
 void operator delete[](void* p, size_t size) noexcept
 {
-	VT_PROFILE_FREE(p);
+	//VT_PROFILE_FREE(p);
 	free(p);
 
 	s_totalAllocation -= size;

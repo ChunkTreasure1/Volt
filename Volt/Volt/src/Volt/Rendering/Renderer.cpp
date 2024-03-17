@@ -5,8 +5,6 @@
 #include "Volt/Core/Window.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
-#include "Volt/Asset/Mesh/Material.h"
-#include "Volt/Asset/Mesh/SubMaterial.h"
 #include "Volt/Asset/AssetManager.h"
 
 #include "Volt/Asset/Rendering/PostProcessingMaterial.h"
@@ -138,9 +136,6 @@ namespace Volt
 	void Renderer::AddShaderDependency(Ref<Shader> shader, ComputePipeline* computePipeline)
 	{
 	}
-	void Renderer::AddShaderDependency(Ref<Shader> shader, SubMaterial* subMaterial)
-	{
-	}
 	void Renderer::AddShaderDependency(Ref<Shader> shader, PostProcessingMaterial* subMaterial)
 	{
 	}
@@ -150,20 +145,7 @@ namespace Volt
 	void Renderer::RemoveShaderDependency(Ref<Shader> shader, ComputePipeline* computePipeline)
 	{
 	}
-	void Renderer::RemoveShaderDependency(Ref<Shader> shader, SubMaterial* material)
-	{
-	}
 	void Renderer::RemoveShaderDependency(Ref<Shader> shader, PostProcessingMaterial* material)
-	{
-	}
-	const uint32_t Renderer::AddMaterial(SubMaterial* material)
-	{
-		return 0;
-	}
-	void Renderer::RemoveMaterial(SubMaterial* material)
-	{
-	}
-	void Renderer::UpdateMaterial(SubMaterial* material)
 	{
 	}
 	Renderer::BindlessData& Renderer::GetBindlessData()

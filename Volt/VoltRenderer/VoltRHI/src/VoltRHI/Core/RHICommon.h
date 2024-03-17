@@ -746,6 +746,17 @@ namespace Volt::RHI
 		uint32_t layerCount = 1;
 	};
 
+	constexpr uint32_t ALL_MIPS = std::numeric_limits<uint32_t>::max();
+	constexpr uint32_t ALL_LAYERS = std::numeric_limits<uint32_t>::max();
+
+	struct ImageSubResource
+	{
+		uint32_t baseMipLevel = 0;
+		uint32_t levelCount = ALL_MIPS;
+		uint32_t baseArrayLayer = 0;
+		uint32_t layerCount = ALL_LAYERS;
+	};
+
 	struct ImageBarrier
 	{
 		Weak<RHIResource> resource;
@@ -758,6 +769,8 @@ namespace Volt::RHI
 	
 		ImageLayout srcLayout = ImageLayout::Undefined;
 		ImageLayout dstLayout = ImageLayout::Undefined;
+
+		ImageSubResource subResource;
 	};
 
 	struct BufferBarrier

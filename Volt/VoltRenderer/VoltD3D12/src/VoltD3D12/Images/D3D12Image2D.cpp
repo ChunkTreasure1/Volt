@@ -118,6 +118,11 @@ namespace Volt::RHI
 		return m_view;
 	}
 
+	const Ref<ImageView> D3D12Image2D::GetArrayView(const int32_t mip)
+	{
+		return Ref<ImageView>();
+	}
+
 	const uint32_t D3D12Image2D::GetWidth() const
 	{
 		return m_specs.width;

@@ -5,7 +5,6 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Scene/Scene.h"
 
-#include "Volt/Utility/SerializationMacros.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 #include "Volt/Utility/FileSystem.h"
 #include "Volt/Utility/Random.h"
@@ -22,8 +21,6 @@
 #include <fstream>
 #include <filesystem>
 #include <random>
-
-#include "Volt/Asset/Mesh/Material.h"
 
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Threading/ThreadPool.h"

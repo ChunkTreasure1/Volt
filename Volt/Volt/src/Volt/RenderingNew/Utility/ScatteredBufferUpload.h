@@ -2,7 +2,14 @@
 
 #include "Volt/Core/Base.h"
 
-#include <VoltRHI/Buffers/CommandBuffer.h>
+#include "Volt/RenderingNew/RenderGraph/RenderGraph.h"
+#include "Volt/RenderingNew/RenderGraph/RenderGraphUtils.h"
+
+#include "Volt/RenderingNew/Shader/ShaderMap.h"
+
+#include "Volt/Math/Math.h"
+
+#include <atomic>
 
 namespace Volt
 {
@@ -11,90 +18,116 @@ namespace Volt
 		class StorageBuffer;
 	}
 
+	class RenderGraph;
+
 	template<typename T>
-	concept IsTrivial = std::is_trivial<T>::value;
+	concept IsTrivial = std::is_trivially_copyable<T>::value && sizeof(T) % 4 == 0;
 
 	template<IsTrivial T>
 	class ScatteredBufferUpload
 	{
 	public:
-		ScatteredBufferUpload(Ref<RHI::StorageBuffer> dstBuffer);
+		ScatteredBufferUpload(const size_t uploadCount);
 
 		T& AddUploadItem(size_t bufferIndex);
-		void Upload();
-		void UploadAndWait();
+		void UploadTo(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer);
+		void UploadTo(RenderGraph& renderGraph, const GlobalResource<RHI::StorageBuffer>& dstBuffer);
 
 	private:
-		void UploadInternal(Ref<RHI::CommandBuffer> commandBuffer);
+		void UploadToInternal(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer, bool trackGlobalResource);
 
-		struct DataContainer
-		{
-			size_t bufferIndex;
-			T data;
-		};
-
-		std::vector<DataContainer> m_data;
-		Ref<RHI::StorageBuffer> m_dstBuffer;
+		std::vector<T> m_data;
+		std::vector<uint32_t> m_dataIndices;
+		std::atomic<uint32_t> m_currentIndex = 0;
 	};
 
 	template<IsTrivial T>
-	inline ScatteredBufferUpload<T>::ScatteredBufferUpload(Ref<RHI::StorageBuffer> dstBuffer)
-		: m_dstBuffer(dstBuffer)
+	inline ScatteredBufferUpload<T>::ScatteredBufferUpload(const size_t uploadCount)
 	{
+		m_data.resize(uploadCount);
+		m_dataIndices.resize(uploadCount);
 	}
 
 	template<IsTrivial T>
 	inline T& ScatteredBufferUpload<T>::AddUploadItem(size_t bufferIndex)
 	{
-		auto& element = m_data.emplace_back(bufferIndex, T{});
-		return element.data;
+		const uint32_t index = m_currentIndex++;
+
+		m_dataIndices[index] = static_cast<uint32_t>(bufferIndex);
+		return m_data[index];
 	}
 
 	template<IsTrivial T>
-	inline void ScatteredBufferUpload<T>::Upload()
+	inline void ScatteredBufferUpload<T>::UploadTo(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer)
 	{
-		// #TODO_Ivar: We probably want to use a transfer queue instead
-		Ref<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
-		UploadInternal(commandBuffer);
-		commandBuffer->Execute();
+		UploadToInternal(renderGraph, dstBuffer, true);
 	}
 
 	template<IsTrivial T>
-	inline void ScatteredBufferUpload<T>::UploadAndWait()
+	inline void ScatteredBufferUpload<T>::UploadTo(RenderGraph& renderGraph, const GlobalResource<RHI::StorageBuffer>& dstBuffer)
 	{
-		// #TODO_Ivar: We probably want to use a transfer queue instead
-		Ref<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
-		UploadInternal(commandBuffer);
-		commandBuffer->ExecuteAndWait();
+		UploadToInternal(renderGraph, dstBuffer.GetResource(), false);
 	}
 
 	template<IsTrivial T>
-	inline void ScatteredBufferUpload<T>::UploadInternal(Ref<RHI::CommandBuffer> commandBuffer)
+	inline void ScatteredBufferUpload<T>::UploadToInternal(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer, bool trackGlobalResource)
 	{
-		commandBuffer->Begin();
-
-		RHI::ResourceBarrierInfo barrier{};
-		barrier.type = RHI::BarrierType::Buffer;
-		barrier.bufferBarrier().srcAccess = RHI::BarrierAccess::ShaderRead | RHI::BarrierAccess::ShaderWrite;
-		barrier.bufferBarrier().srcStage = RHI::BarrierStage::AllGraphics;
-		barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
-		barrier.bufferBarrier().dstStage = RHI::BarrierStage::Copy;
-		barrier.bufferBarrier().resource = m_dstBuffer;
-
-		commandBuffer->ResourceBarrier({ barrier });
-
-		constexpr size_t stride = sizeof(T);
-
-		for (const auto& element : m_data)
+		if (m_data.empty())
 		{
-			const size_t offset = stride * element.bufferIndex;
-			commandBuffer->UpdateBuffer(m_dstBuffer, offset, stride, element.data);
+			return;
 		}
 
-		std::swap(barrier.bufferBarrier().srcAccess, barrier.bufferBarrier().dstAccess);
-		std::swap(barrier.bufferBarrier().srcStage, barrier.bufferBarrier().dstStage);
+		struct ResourceHandles
+		{
+			RenderGraphResourceHandle srcBuffer;
+			RenderGraphResourceHandle dstBuffer;
+			RenderGraphResourceHandle indicesBuffer;
 
-		commandBuffer->ResourceBarrier({ barrier });
-		commandBuffer->End();
+			uint32_t dataCount = 0;
+		} data;
+
+		{
+			const auto desc = RGUtils::CreateBufferDesc<T>(m_data.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Src Data");
+			data.srcBuffer = renderGraph.CreateBuffer(desc);
+		}
+
+		{
+			const auto desc = RGUtils::CreateBufferDesc<uint32_t>(m_data.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Scatter Indices");
+			data.indicesBuffer = renderGraph.CreateBuffer(desc);
+		}
+
+		{
+			data.dstBuffer = renderGraph.AddExternalBuffer(dstBuffer, trackGlobalResource);
+			data.dataCount = static_cast<uint32_t>(m_data.size());
+		}
+
+		renderGraph.AddMappedBufferUpload(data.srcBuffer, m_data.data(), sizeof(T) * m_data.size(), "Upload Src Data");
+		renderGraph.AddMappedBufferUpload(data.indicesBuffer, m_dataIndices.data(), sizeof(uint32_t) * m_dataIndices.size(), "Upload Src Indices");
+
+		renderGraph.AddPass("Scatter Buffer Upload",
+		[&](RenderGraph::Builder& builder)
+		{
+			builder.WriteResource(data.dstBuffer);
+			builder.ReadResource(data.srcBuffer);
+			builder.ReadResource(data.indicesBuffer);
+
+			builder.SetIsComputePass();
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			constexpr uint32_t sizeInUINT = static_cast<uint32_t>(sizeof(T) / sizeof(uint32_t));
+
+			const uint32_t groupSize = Math::DivideRoundUp(static_cast<uint32_t>(sizeInUINT * data.dataCount), 64u);
+
+			auto pipeline = ShaderMap::GetComputePipeline("ScatterUpload");
+
+			context.BindPipeline(pipeline);
+			context.SetConstant("dstBuffer", resources.GetBuffer(data.dstBuffer));
+			context.SetConstant("srcBuffer", resources.GetBuffer(data.srcBuffer));
+			context.SetConstant("scatterIndices", resources.GetBuffer(data.indicesBuffer));
+			context.SetConstant("typeSizeInUINT", static_cast<uint32_t>(sizeInUINT));
+			context.SetConstant("copyCount", data.dataCount);
+			context.Dispatch(groupSize, 1, 1);
+		});
 	}
 }

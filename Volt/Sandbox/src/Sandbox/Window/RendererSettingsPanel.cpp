@@ -3,6 +3,9 @@
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/RenderingNew/SceneRendererNew.h>
+#include <Volt/RenderingNew/RendererNew.h>
+
+#include "Sandbox/Utility/EditorUtilities.h"
 
 RendererSettingsPanel::RendererSettingsPanel(Ref<Volt::SceneRendererNew>& sceneRenderer)
 	: EditorWindow("Renderer Settings"), mySceneRenderer(sceneRenderer)
@@ -14,6 +17,22 @@ void RendererSettingsPanel::UpdateMainContent()
 	if (ImGui::Button("Invalidate Render Scene"))
 	{
 		mySceneRenderer->Invalidate();
+	}
+
+	static Volt::AssetHandle handle;
+
+	if (UI::BeginProperties(""))
+	{
+		if (EditorUtils::Property("EnvMap", handle, Volt::AssetType::Texture))
+		{
+		}
+
+		if (handle != Volt::Asset::Null())
+		{
+			Volt::RendererNew::GenerateEnvironmentTextures(handle);
+		}
+
+		UI::EndProperties();
 	}
 
 	//UI::Header("Settings");

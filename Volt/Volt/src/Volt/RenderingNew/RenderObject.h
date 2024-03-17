@@ -15,8 +15,11 @@ namespace Volt
 		EntityID entity;
 	
 		Weak<Mesh> mesh;
+		Weak<Material> material;
+
 		uint32_t subMeshIndex = 0;
 		uint32_t vertexBufferIndex = 0;
+		uint32_t meshletStartOffset = 0;
 	};
 
 	inline bool operator==(const RenderObject& lhs, const RenderObject& rhs) { return lhs.id == rhs.id; }

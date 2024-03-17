@@ -1316,7 +1316,7 @@ bool UI::Property(const std::string& text, float& value, float min, float max, c
 		}
 		else
 		{
-			c = ImGui::DragFloat(id.c_str(), &value, 1.f);
+			c = ImGui::DragFloat(id.c_str(), &value, 0.1f);
 		}
 
 		return c;
@@ -1339,7 +1339,7 @@ bool UI::Property(const std::string& text, glm::vec2& value, float min, float ma
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	changed = DragScalarN(id.c_str(), ImGuiDataType_Float, glm::value_ptr(value), 2, 1.f, &min, &max);
+	changed = DragScalarN(id.c_str(), ImGuiDataType_Float, glm::value_ptr(value), 2, 0.1f, &min, &max);
 
 	EndPropertyRow();
 
@@ -1358,7 +1358,7 @@ bool UI::Property(const std::string& text, glm::vec3& value, float min, float ma
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	changed = DragScalarN(id.c_str(), ImGuiDataType_Float, glm::value_ptr(value), 3, 1.f, &min, &max);
+	changed = DragScalarN(id.c_str(), ImGuiDataType_Float, glm::value_ptr(value), 3, 0.1f, &min, &max);
 
 	EndPropertyRow();
 
@@ -1377,7 +1377,7 @@ bool UI::Property(const std::string& text, glm::vec4& value, float min, float ma
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	changed = DragScalarN(id.c_str(), ImGuiDataType_Float, glm::value_ptr(value), 4, 1.f, &min, &max);
+	changed = DragScalarN(id.c_str(), ImGuiDataType_Float, glm::value_ptr(value), 4, 0.1f, &min, &max);
 	EndPropertyRow();
 
 	return changed;

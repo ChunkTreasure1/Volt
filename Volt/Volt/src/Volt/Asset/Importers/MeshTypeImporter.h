@@ -18,18 +18,18 @@ namespace Volt
 		static void Initialize();
 		static void Shutdown();
 
-		static Ref<Mesh> ImportMesh(const std::filesystem::path& path);
-		static Ref<Skeleton> ImportSkeleton(const std::filesystem::path& path);
-		static Ref<Animation> ImportAnimation(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton);
+		static void ImportMesh(const std::filesystem::path& path, Ref<Mesh>& mesh);
+		static void ImportSkeleton(const std::filesystem::path& path, Ref<Skeleton>& skeleton);
+		static void ImportAnimation(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Ref<Animation>& animation);
 
 		static void ExportMesh(std::vector<Ref<Mesh>> assets, const std::filesystem::path& path);
 		static void ExportSkeleton(std::vector<Ref<Skeleton>> assets, const std::filesystem::path& path);
 		static void ExportAnimation(std::vector<Ref<Animation>> assets, const std::filesystem::path& path);
 
 	protected:
-		virtual Ref<Mesh> ImportMeshImpl(const std::filesystem::path& path) = 0;
-		virtual Ref<Skeleton> ImportSkeletonImpl(const std::filesystem::path& path) = 0;
-		virtual Ref<Animation> ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton) = 0;
+		virtual void ImportMeshImpl(const std::filesystem::path& path, Ref<Mesh>& mesh) = 0;
+		virtual void ImportSkeletonImpl(const std::filesystem::path& path, Ref<Skeleton>& skeleton) = 0;
+		virtual void ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Ref<Animation>& animation) = 0;
 
 		virtual void ExportMeshImpl(std::vector<Ref<Mesh>>, const std::filesystem::path&) {};
 		virtual void ExportSkeletonImpl(std::vector<Ref<Skeleton>>, const std::filesystem::path&) {};

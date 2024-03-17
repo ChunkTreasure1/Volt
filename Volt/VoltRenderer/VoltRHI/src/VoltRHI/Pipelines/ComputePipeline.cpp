@@ -7,7 +7,7 @@
 
 namespace Volt::RHI
 {
-	Ref<ComputePipeline> ComputePipeline::Create(Ref<Shader> shader)
+	Ref<ComputePipeline> ComputePipeline::Create(Ref<Shader> shader, bool useGlobalResources)
 	{
 		const auto api = GraphicsContext::GetAPI();
 
@@ -18,7 +18,7 @@ namespace Volt::RHI
 			case GraphicsAPI::Mock:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanComputePipeline>(shader);
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanComputePipeline>(shader, useGlobalResources);
 		}
 
 		return nullptr;

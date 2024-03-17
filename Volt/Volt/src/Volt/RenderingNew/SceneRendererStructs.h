@@ -14,6 +14,8 @@ namespace Volt
 	struct ExternalImagesData
 	{
 		RenderGraphResourceHandle outputImage;
+		RenderGraphResourceHandle black1x1Cube;
+		RenderGraphResourceHandle BRDFLuT;
 	};
 
 	struct ExternalBuffersData
@@ -23,6 +25,12 @@ namespace Volt
 		RenderGraphResourceHandle gpuMeshesBuffer;
 		RenderGraphResourceHandle gpuMeshletsBuffer;
 		RenderGraphResourceHandle gpuSceneBuffer;
+	};
+
+	struct EnvironmentTexturesData
+	{
+		RenderGraphResourceHandle radiance;
+		RenderGraphResourceHandle irradiance;
 	};
 
 	struct CullObjectsData
@@ -52,16 +60,22 @@ namespace Volt
 		RenderGraphResourceHandle directionalLightBuffer;
 	};
 
+	struct LightBuffersData
+	{
+		RenderGraphResourceHandle pointLightsBuffer;
+		RenderGraphResourceHandle spotLightsBuffer;
+	};
+
 	struct PreDepthData
 	{
 		RenderGraphResourceHandle depth;
 		RenderGraphResourceHandle normals;
 	};
 
-	struct TestRenderData
+	struct DirectionalShadowData
 	{
-		RenderGraphResourceHandle outputTexture;
-		RenderGraphResourceHandle depth;
+		RenderGraphResourceHandle shadowTexture;
+		glm::uvec2 renderSize;
 	};
 
 	struct VisibilityBufferData

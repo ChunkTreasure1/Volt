@@ -706,7 +706,7 @@
 //		constexpr uint32_t START_OBJECT_COUNT = 1;
 //		constexpr uint32_t START_LIGHT_COUNT = 1;
 //		constexpr uint32_t START_PARTICLE_COUNT = 1;
-//		constexpr uint32_t START_VERTEX_COLOR_COUNT = 1;
+//		constexpr uint32_t START_VERTEX_COLOR_COUNT = 1;x
 //
 //		//myShaderStorageBufferSet = ShaderStorageBufferSet::Create(maxFramesInFlight);
 //
@@ -4025,7 +4025,7 @@
 //			Renderer::EndFrameGraphPass(commandBuffer);
 //			EndTimestamp();
 //		});
-//	}
+//	}S
 //
 //	void SceneRenderer::AddBillboardPass(FrameGraph& frameGraph)
 //	{

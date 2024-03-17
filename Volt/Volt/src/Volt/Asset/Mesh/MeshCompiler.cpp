@@ -4,7 +4,8 @@
 #include "Volt/Core/BinarySerializer.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
-#include "Volt/Asset/Mesh/Material.h"
+#include "Volt/Asset/Rendering/Material.h"
+
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Log/Log.h"
 
@@ -12,7 +13,7 @@
 
 namespace Volt
 {
-	bool MeshCompiler::TryCompile(Ref<Mesh> mesh, const std::filesystem::path& destination, AssetHandle materialHandle)
+	bool MeshCompiler::TryCompile(Ref<Mesh> mesh, const std::filesystem::path& destination, const MaterialTable& materialTable)
 	{
 		if (!mesh || !mesh->IsValid())
 		{
@@ -20,21 +21,22 @@ namespace Volt
 			return false;
 		}
 
-		if (materialHandle == Asset::Null())
+		if (!materialTable.IsValid())
 		{
-			CreateMaterial(mesh, destination);
+			SetupMaterials(mesh, destination);
+		}
+		else
+		{
+			mesh->m_materialTable = materialTable;
 		}
 
-		AssetHandle matHandle = materialHandle;
-		if (matHandle == Asset::Null())
-		{
-			matHandle = mesh->m_material->handle;
-		}
+		const auto& tempMaterialTable = mesh->m_materialTable;
 
 		/*
 		* Encoding:
 		* uint32_t: Sub mesh count
-		* AssetHandle: Material handle
+		* uint32_t: Material count
+		* material handles
 		*
 		* uint32_t: Vertex count
 		* vertices
@@ -70,7 +72,12 @@ namespace Volt
 		const float boundingRadius = mesh->m_boundingSphere.radius;
 
 		serializer.Serialize<uint32_t>(submeshCount);
-		serializer.Serialize<AssetHandle>(matHandle);
+		serializer.Serialize<uint32_t>(tempMaterialTable.GetSize());
+
+		for (const auto& mat : tempMaterialTable)
+		{
+			serializer.Serialize<AssetHandle>(mat);
+		}
 
 		serializer.Serialize<uint32_t>(vertexCount);
 		serializer.Serialize(mesh->m_vertices.data(), sizeof(Vertex) * vertexCount);
@@ -108,7 +115,8 @@ namespace Volt
 		size_t size = 0;
 
 		size += sizeof(uint32_t); // Sub mesh count
-		size += sizeof(AssetHandle); // Material handle
+		size += sizeof(uint32_t); // Material handle
+		size += sizeof(AssetHandle) * mesh->m_materialTable.GetSize();
 
 		size += sizeof(uint32_t); // Vertex count
 		size += sizeof(Vertex) * mesh->m_vertices.size(); // Vertices
@@ -143,12 +151,16 @@ namespace Volt
 		return size;
 	}
 
-	void MeshCompiler::CreateMaterial(Ref<Mesh> mesh, const std::filesystem::path& destination)
+	void MeshCompiler::SetupMaterials(Ref<Mesh> mesh, const std::filesystem::path& destination)
 	{
-		const auto materialPath = destination.parent_path().string() + "\\";
-		const auto filename = destination.stem().string() + ".vtmat";
+		const auto materialPath = destination.parent_path();
 
-		mesh->m_material = AssetManager::CreateAsset<Material>(materialPath, filename, *mesh->m_material);
-		AssetManager::Get().SaveAsset(mesh->m_material);
+		for (auto& material : mesh->m_materialTable)
+		{
+			auto asset = AssetManager::GetAsset<Material>(material);
+
+			AssetManager::Get().MoveAsset(asset, materialPath);
+			AssetManager::SaveAsset(asset);
+		}
 	}
 }

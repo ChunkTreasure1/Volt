@@ -42,7 +42,7 @@ void AssetRegistryPanel::UpdateMainContent()
 
 			for (const auto& path : pathsToClear)
 			{
-				Volt::AssetManager::Get().RemoveFromRegistry(path);
+				Volt::AssetManager::Get().RemoveAssetFromRegistry(path);
 			}
 			hasReds = false;
 		}
@@ -108,7 +108,7 @@ void AssetRegistryPanel::UpdateMainContent()
 			const std::string remId = "-##" + std::to_string(handle);
 			if (ImGui::Button(remId.c_str(), { buttonSize, buttonSize }))
 			{
-				Volt::AssetManager::Get().RemoveFromRegistry(handle);
+				Volt::AssetManager::Get().RemoveAssetFromRegistry(handle);
 				break;
 			}
 		}

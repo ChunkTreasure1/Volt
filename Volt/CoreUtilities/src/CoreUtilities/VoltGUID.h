@@ -107,6 +107,11 @@ struct VoltGUID
 		);
 	}
 
+	std::string ToString()
+	{
+		return std::to_string(hiPart) + "-" + std::to_string(loPart);
+	}
+
 	uint64_t hiPart;
 	uint64_t loPart;
 };

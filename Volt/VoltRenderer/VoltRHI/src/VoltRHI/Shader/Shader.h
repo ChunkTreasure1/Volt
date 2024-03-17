@@ -33,6 +33,7 @@ namespace Volt::RHI
 		Half,
 
 		Buffer,
+		UniformBuffer,
 		Texture,
 		RWBuffer,
 		RWTexture,
@@ -63,6 +64,7 @@ namespace Volt::RHI
 				case ShaderUniformBaseType::UInt64: size = 8; break;
 
 				case ShaderUniformBaseType::Buffer: size = 4; break;
+				case ShaderUniformBaseType::UniformBuffer: size = 4; break;
 				case ShaderUniformBaseType::Texture: size = 4; break;
 				case ShaderUniformBaseType::RWBuffer: size = 4; break;
 				case ShaderUniformBaseType::RWTexture: size = 4; break;
@@ -195,6 +197,15 @@ namespace Volt::RHI
 		std::vector<PixelFormat> outputFormats;
 	};
 
+	struct ShaderSpecification
+	{
+		std::string_view name;
+		std::string_view entryPoint;
+		std::vector<std::filesystem::path> sourceFiles;
+		std::vector<std::string> permutations;
+		bool forceCompile = false;
+	};
+
 	class Shader : public RHIInterface
 	{
 	public:
@@ -205,7 +216,7 @@ namespace Volt::RHI
 		virtual ShaderDataBuffer GetConstantsBuffer() const = 0;
 		virtual const ShaderResourceBinding& GetResourceBindingFromName(std::string_view name) const = 0;
 
-		static Ref<Shader> Create(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles, bool forceCompile = false);
+		static Ref<Shader> Create(const ShaderSpecification& createInfo);
 
 	protected:
 		Shader() = default;

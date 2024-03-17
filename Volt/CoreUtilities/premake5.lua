@@ -36,6 +36,7 @@ project "CoreUtilities"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.tracy}",
+		"%{IncludeDir.yaml}",
 	}
 
 	filter "files:vendor/**.cpp"

@@ -518,6 +518,7 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawNodes()
 
 template<GraphKey::GraphType graphType, typename EditorBackend>
 inline void IONodeGraphEditor<graphType, EditorBackend>::DrawPanels()
+
 {
 	DrawNodesPanel();
 	DrawGraphDataPanel();

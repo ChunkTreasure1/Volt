@@ -32,14 +32,14 @@ namespace Volt
 		void Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
 	};
 
-	class MaterialImporter : public AssetImporter
-	{
-	public:
-		~MaterialImporter() override = default;
+	//class MaterialImporter : public AssetImporter
+	//{
+	//public:
+	//	~MaterialImporter() override = default;
 
-		bool Load(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
-		void Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
-	};
+	//	bool Load(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
+	//	void Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
+	//};
 
 	class BlendSpaceImporter : public AssetImporter
 	{

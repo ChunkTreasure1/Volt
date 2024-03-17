@@ -18,12 +18,11 @@
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Prefab.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
+#include <Volt/Asset/Rendering/Material.h>
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
-#include <Volt/Asset/Mesh/Material.h>
-#include <Volt/Asset/Mesh/SubMaterial.h>
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/Rendering/PostProcessingMaterial.h>
 #include <Volt/Asset/Rendering/PostProcessingStack.h>
@@ -43,13 +42,14 @@
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/YAMLSerializationHelpers.h>
-#include <Volt/Utility/SerializationMacros.h>
 #include <Volt/Utility/PremadeCommands.h>
 
 #include <Volt/Scripting/Mono/MonoScriptUtils.h>
 
 #include <Volt/Input/Input.h>
 #include <Volt/Input/KeyCodes.h>
+
+#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -895,9 +895,9 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 					CreateNewAssetInCurrentDirectory(Volt::AssetType::Material);
 				}
 
-				if (ImGui::MenuItem("Material Graph"))
+				if (ImGui::MenuItem("Mosaic Graph"))
 				{
-					CreateNewAssetInCurrentDirectory(Volt::AssetType::MaterialGraph);
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::Material);
 				}
 
 				if (ImGui::MenuItem("Shader"))
@@ -1203,7 +1203,7 @@ void AssetBrowserPanel::CreatePrefabAndSetupEntities(Volt::EntityID id)
 
 	const auto& tagComp = entity.GetComponent<Volt::TagComponent>();
 
-	std::string name = tagComp.tag + ".vtprefab";
+	std::string name = tagComp.tag;
 	name.erase(std::remove_if(name.begin(), name.end(), ::isspace), name.end());
 
 	Ref<Volt::Prefab> prefab = Volt::AssetManager::CreateAsset<Volt::Prefab>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), name, entity);
@@ -1295,7 +1295,6 @@ float AssetBrowserPanel::GetThumbnailSize()
 
 void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 {
-	const std::string extension = Volt::AssetManager::GetExtensionFromAssetType(type);
 	std::string originalName;
 	std::string tempName;
 	uint32_t i = 0;
@@ -1319,7 +1318,8 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 	tempName = originalName;
 
-	while (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / Volt::AssetManager::GetRelativePath(myCurrentDirectory->path) / (tempName + extension)))
+	const std::string ext = Volt::AssetManager::GetExtensionFromAssetType(type);
+	while (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / Volt::AssetManager::GetRelativePath(myCurrentDirectory->path) / (tempName + ext)))
 	{
 		tempName = originalName + " (" + std::to_string(i) + ")";
 		i++;
@@ -1329,9 +1329,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 	{
 		case Volt::AssetType::Material:
 		{
-			Ref<Volt::Material> material = Volt::AssetManager::CreateAsset<Volt::Material>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
-			material->SetName(std::filesystem::path(tempName).stem().string());
-			material->CreateSubMaterial(Volt::ShaderMap::Get("Illum"));
+			Ref<Volt::Material> material = Volt::AssetManager::CreateAsset<Volt::Material>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName);
 			Volt::AssetManager::SaveAsset(material);
 
 			newAssetHandle = material->handle;
@@ -1374,14 +1372,14 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 			FileSystem::CreateDirectory(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path) / tempName);
 
 			Ref<Volt::Scene> scene = Volt::Scene::CreateDefaultScene("New Scene");
-			const std::filesystem::path targetFilePath = (Volt::AssetManager::GetRelativePath(myCurrentDirectory->path / tempName / (tempName + extension)));
+			const std::filesystem::path targetFilePath = (Volt::AssetManager::GetRelativePath(myCurrentDirectory->path / tempName / (tempName + ext)));
 			Volt::AssetManager::SaveAssetAs(scene, targetFilePath);
 			break;
 		}
 
 		case Volt::AssetType::BlendSpace:
 		{
-			Ref<Volt::BlendSpace> blendSpace = Volt::AssetManager::CreateAsset<Volt::BlendSpace>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
+			Ref<Volt::BlendSpace> blendSpace = Volt::AssetManager::CreateAsset<Volt::BlendSpace>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName);
 			Volt::AssetManager::SaveAsset(blendSpace);
 
 			newAssetHandle = blendSpace->handle;
@@ -1390,7 +1388,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 		case Volt::AssetType::ParticlePreset:
 		{
-			Ref<Volt::ParticlePreset> particlePreset = Volt::AssetManager::CreateAsset<Volt::ParticlePreset>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
+			Ref<Volt::ParticlePreset> particlePreset = Volt::AssetManager::CreateAsset<Volt::ParticlePreset>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName);
 			Volt::AssetManager::SaveAsset(particlePreset);
 
 			newAssetHandle = particlePreset->handle;
@@ -1405,7 +1403,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 		case Volt::AssetType::PostProcessingStack:
 		{
-			Ref<Volt::PostProcessingStack> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingStack>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
+			Ref<Volt::PostProcessingStack> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingStack>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName);
 			Volt::AssetManager::SaveAsset(postStack);
 
 			newAssetHandle = postStack->handle;
@@ -1415,7 +1413,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 		case Volt::AssetType::PostProcessingMaterial:
 		{
-			Ref<Volt::PostProcessingMaterial> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingMaterial>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension, Volt::Renderer::GetDefaultData().defaultPostProcessingShader);
+			Ref<Volt::PostProcessingMaterial> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingMaterial>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName, Volt::Renderer::GetDefaultData().defaultPostProcessingShader);
 			Volt::AssetManager::SaveAsset(postStack);
 
 			newAssetHandle = postStack->handle;
@@ -1623,21 +1621,20 @@ void AssetBrowserPanel::CreateNewShaderModal()
 			{
 				using namespace Volt; // YAML Serialization helpers
 
-				YAML::Emitter out;
-				out << YAML::BeginMap;
-				VT_SERIALIZE_PROPERTY(name, myNewShaderData.name, out);
-				VT_SERIALIZE_PROPERTY(internal, false, out);
+				YAMLStreamWriter streamWriter{ definitionDestinationPath };
+				streamWriter.BeginMap();
 
-				out << YAML::Key << "paths" << YAML::Value << shaderPaths;
-				out << YAML::Key << "inputTextures" << YAML::BeginSeq;
-				out << YAML::EndSeq;
-				out << YAML::EndMap;
+				streamWriter.SetKey("name", myNewShaderData.name);
+				streamWriter.SetKey("internal", false);
+				streamWriter.SetKey("paths", shaderPaths);
 
-				std::ofstream fout(definitionDestinationPath);
-				fout << out.c_str();
-				fout.close();
+				streamWriter.BeginSequence("inputTextures");
+				streamWriter.EndSequence();
+				streamWriter.EndMap();
 
-				Ref<Volt::Shader> newShader = Volt::AssetManager::CreateAsset<Volt::Shader>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + ".vtsdef", tempName, shaderPaths, false);
+				streamWriter.WriteToDisk();
+
+				Ref<Volt::Shader> newShader = Volt::AssetManager::CreateAsset<Volt::Shader>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName, tempName, shaderPaths, false);
 				//Volt::ShaderRegistry::Register(tempName, newShader);
 			}
 

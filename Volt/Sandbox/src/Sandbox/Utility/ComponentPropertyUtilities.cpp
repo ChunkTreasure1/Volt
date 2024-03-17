@@ -193,20 +193,22 @@ void ComponentPropertyUtility::DrawMonoScripts(Weak<Volt::Scene> scene, Volt::En
 	}
 }
 
-void ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::IComponentTypeDesc* componentType, void* data, const size_t offset, bool isOpen, bool isSubSection)
+bool ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::IComponentTypeDesc* componentType, void* data, const size_t offset, bool isOpen, bool isSubSection)
 {
 	if (isSubSection)
 	{
 		if (componentType->IsHidden())
 		{
-			return;
+			return false;
 		}
 	}
 
 	if (!isOpen)
 	{
-		return;
+		return false;
 	}
+
+	bool edited = false;
 
 	if (UI::BeginProperties(std::string(componentType->GetLabel())))
 	{
@@ -220,7 +222,7 @@ void ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, Volt::Enti
 					{
 						const Volt::IComponentTypeDesc* compDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(member.typeDesc);
 						bool open = UI::CollapsingHeader(compDesc->GetLabel());
-						DrawComponent(scene, entity, compDesc, data, offset + member.offset, open, true);
+						edited |= DrawComponent(scene, entity, compDesc, data, offset + member.offset, open, true);
 
 						break;
 					}
@@ -228,29 +230,37 @@ void ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, Volt::Enti
 					case Volt::ValueType::Enum:
 					{
 						const Volt::IEnumTypeDesc* enumDesc = reinterpret_cast<const Volt::IEnumTypeDesc*>(member.typeDesc);
-						DrawComponentEnum(scene, entity, member, enumDesc, data, offset + member.offset);
+						edited |= DrawComponentEnum(scene, entity, member, enumDesc, data, offset + member.offset);
 						break;
 					}
 
 					case Volt::ValueType::Array:
 					{
 						const Volt::IArrayTypeDesc* arrayDesc = reinterpret_cast<const Volt::IArrayTypeDesc*>(member.typeDesc);
-						DrawComponentArray(scene, entity, member, arrayDesc, data, offset + member.offset);
+						edited |= DrawComponentArray(scene, entity, member, arrayDesc, data, offset + member.offset);
 						break;
 					}
 				}
 			}
 			else
 			{
-				DrawComponentDefaultMember(scene, entity, member, data, offset);
+				edited |= DrawComponentDefaultMember(scene, entity, member, data, offset);
 			}
 		}
 
 		UI::EndProperties();
 	}
+
+	if (edited)
+	{
+		uint8_t* offsetPtr = ((uint8_t*)data) + offset;
+		componentType->OnMemberChanged(offsetPtr, entity);
+	}
+
+	return edited;
 }
 
-void ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::ComponentMember& member, void* data, const size_t offset)
+bool ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::ComponentMember& member, void* data, const size_t offset)
 {
 	uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data);
 
@@ -259,8 +269,10 @@ void ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scen
 		if (EditorUtils::Property(std::string(member.label), *reinterpret_cast<Volt::AssetHandle*>(&bytePtr[offset + member.offset]), member.assetType))
 		{
 			AddLocalChangeToEntity(entity, member.ownerTypeDesc->GetGUID(), member.name);
+			return true;
 		}
-		return;
+
+		return false;
 	}
 
 	if ((member.flags & Volt::ComponentMemberFlag::Color3) != Volt::ComponentMemberFlag::None)
@@ -268,8 +280,10 @@ void ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scen
 		if (UI::PropertyColor(std::string(member.label), *reinterpret_cast<glm::vec3*>(&bytePtr[offset + member.offset])))
 		{
 			AddLocalChangeToEntity(entity, member.ownerTypeDesc->GetGUID(), member.name);
+			return true;
 		}
-		return;
+
+		return false;
 	}
 
 	if ((member.flags & Volt::ComponentMemberFlag::Color4) != Volt::ComponentMemberFlag::None)
@@ -277,8 +291,10 @@ void ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scen
 		if (UI::PropertyColor(std::string(member.label), *reinterpret_cast<glm::vec4*>(&bytePtr[offset + member.offset])))
 		{
 			AddLocalChangeToEntity(entity, member.ownerTypeDesc->GetGUID(), member.name);
+			return true;
 		}
-		return;
+
+		return false;
 	}
 
 	// Special case for entities
@@ -287,33 +303,40 @@ void ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scen
 		if (UI::PropertyEntity(std::string(member.label), scene, *reinterpret_cast<Volt::EntityID*>(&bytePtr[offset + member.offset])))
 		{
 			AddLocalChangeToEntity(entity, member.ownerTypeDesc->GetGUID(), member.name);
+			return true;
 		}
-		return;
+
+		return false;
 	}
 
 	if (!s_propertyFunctions.contains(member.typeIndex))
 	{
-		return;
+		return false;
 	}
 
 	if (s_propertyFunctions.at(member.typeIndex)(member.label, data, offset + member.offset))
 	{
 		AddLocalChangeToEntity(entity, member.ownerTypeDesc->GetGUID(), member.name);
+		return true;
 	}
+
+	return false;
 }
 
-void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::ComponentMember& arrayMember, void* elementData, const size_t index, const std::type_index& typeIndex)
+bool ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::ComponentMember& arrayMember, void* elementData, const size_t index, const std::type_index& typeIndex, Volt::AssetType arrayAssetType)
 {
 	const std::string label = std::format("Element {0}", index);
 
-	if (arrayMember.assetType != Volt::AssetType::None)
+	if (arrayMember.assetType != Volt::AssetType::None || arrayAssetType != Volt::AssetType::None)
 	{
-		if (EditorUtils::Property(label, *reinterpret_cast<Volt::AssetHandle*>(elementData), arrayMember.assetType))
+		if (EditorUtils::Property(label, *reinterpret_cast<Volt::AssetHandle*>(elementData), arrayMember.assetType != Volt::AssetType::None ? arrayMember.assetType : arrayAssetType))
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
 			EditorUtils::MarkEntityAsEdited(entity);
+		
+			return true;
 		}
-		return;
+		return false;
 	}
 
 	if ((arrayMember.flags & Volt::ComponentMemberFlag::Color3) != Volt::ComponentMemberFlag::None)
@@ -322,8 +345,10 @@ void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
 			EditorUtils::MarkEntityAsEdited(entity);
+		
+			return true;
 		}
-		return;
+		return false;
 	}
 
 	if ((arrayMember.flags & Volt::ComponentMemberFlag::Color4) != Volt::ComponentMemberFlag::None)
@@ -332,8 +357,10 @@ void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
 			EditorUtils::MarkEntityAsEdited(entity);
+			
+			return true;
 		}
-		return;
+		return false;
 	}
 
 	// Special case for entities
@@ -343,23 +370,29 @@ void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
 			EditorUtils::MarkEntityAsEdited(entity);
+		
+			return true;
 		}
-		return;
+		return false;
 	}
 
 	if (!s_propertyFunctions.contains(typeIndex))
 	{
-		return;
+		return false;
 	}
 
 	if (s_propertyFunctions.at(typeIndex)(label, elementData, 0))
 	{
 		AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
 		EditorUtils::MarkEntityAsEdited(entity);
+
+		return true;
 	}
+
+	return false;
 }
 
-void ComponentPropertyUtility::DrawComponentEnum(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::ComponentMember& member, const Volt::IEnumTypeDesc* enumType, void* data, const size_t offset)
+bool ComponentPropertyUtility::DrawComponentEnum(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::ComponentMember& member, const Volt::IEnumTypeDesc* enumType, void* data, const size_t offset)
 {
 	uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data);
 	const auto& constants = enumType->GetConstants();
@@ -389,10 +422,14 @@ void ComponentPropertyUtility::DrawComponentEnum(Weak<Volt::Scene> scene, Volt::
 		currentValue = indexToValueMap.at(currentValue);
 		AddLocalChangeToEntity(entity, member.ownerTypeDesc->GetGUID(), member.name);
 		EditorUtils::MarkEntityAsEdited(entity);
+
+		return true;
 	}
+
+	return false;
 }
 
-void ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::ComponentMember& member, const Volt::IArrayTypeDesc* arrayDesc, void* data, const size_t offset)
+bool ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::ComponentMember& member, const Volt::IArrayTypeDesc* arrayDesc, void* data, const size_t offset)
 {
 	uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data);
 	void* arrayPtr = &bytePtr[offset];
@@ -403,6 +440,8 @@ void ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, Volt:
 
 	ImGui::TableNextColumn();
 	const bool arrayOpen = ImGui::TreeNodeEx(member.label.data(), ImGuiTreeNodeFlags_SpanFullWidth);
+
+	bool edited = false;
 
 	if (arrayOpen)
 	{
@@ -422,7 +461,7 @@ void ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, Volt:
 						ImGui::TableNextColumn();
 
 						bool open = UI::CollapsingHeader(std::string(compDesc->GetLabel()) + std::format("##{0}", i));
-						DrawComponent(scene, entity, compDesc, elementData, 0, open, true);
+						edited |= DrawComponent(scene, entity, compDesc, elementData, 0, open, true);
 
 						break;
 					}
@@ -430,21 +469,21 @@ void ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, Volt:
 					case Volt::ValueType::Enum:
 					{
 						const Volt::IEnumTypeDesc* enumDesc = reinterpret_cast<const Volt::IEnumTypeDesc*>(elementTypeDesc);
-						DrawComponentEnum(scene, entity, member, enumDesc, elementData, 0);
+						edited |= DrawComponentEnum(scene, entity, member, enumDesc, elementData, 0);
 						break;
 					}
 
 					case Volt::ValueType::Array:
 					{
 						const Volt::IArrayTypeDesc* elementArrayDesc = reinterpret_cast<const Volt::IArrayTypeDesc*>(elementTypeDesc);
-						DrawComponentArray(scene, entity, member, elementArrayDesc, elementData, 0);
+						edited |= DrawComponentArray(scene, entity, member, elementArrayDesc, elementData, 0);
 						break;
 					}
 				}
 			}
 			else
 			{
-				DrawComponentDefaultMemberArray(scene, entity, member, elementData, i, elementTypeIndex);
+				edited |= DrawComponentDefaultMemberArray(scene, entity, member, elementData, i, elementTypeIndex, member.assetType);
 			}
 		}
 
@@ -454,6 +493,7 @@ void ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, Volt:
 			AddLocalChangeToEntity(entity, member.ownerTypeDesc->GetGUID(), member.name);
 
 			EditorUtils::MarkEntityAsEdited(entity);
+			edited = true;
 		}
 
 		ImGui::TreePop();
@@ -463,6 +503,8 @@ void ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, Volt:
 	{
 		ImGui::TableNextColumn();
 	}
+
+	return edited;
 }
 
 void ComponentPropertyUtility::DrawMonoScript(Weak<Volt::Scene> scene, const Volt::MonoScriptEntry& scriptEntry, Volt::Entity entity)

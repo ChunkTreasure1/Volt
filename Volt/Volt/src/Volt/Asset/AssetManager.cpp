@@ -19,12 +19,15 @@
 #include "Volt/Asset/Importers/BehaviorTreeImporter.h"
 #include "Volt/Asset/Importers/NetContractImporter.h"
 #include "Volt/Asset/Importers/ParticlePresetImporter.h"
+#include "Volt/Asset/Importers/MosaicGraphImporter.h"
 
 #include "Volt/Platform/ThreadUtility.h"
 
 #include "Volt/Utility/FileSystem.h"
+
 #include "Volt/Utility/YAMLSerializationHelpers.h"
-#include "Volt/Utility/SerializationMacros.h"
+#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLStreamReader.h>
 
 namespace Volt
 {
@@ -50,7 +53,7 @@ namespace Volt
 		m_assetImporters.emplace(AssetType::MeshSource, CreateScope<MeshSourceImporter>());
 		m_assetImporters.emplace(AssetType::Texture, CreateScope<TextureSourceImporter>());
 		m_assetImporters.emplace(AssetType::ShaderDefinition, CreateScope<ShaderDefinitionImporter>());
-		m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>());
+		//m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>());
 		m_assetImporters.emplace(AssetType::Mesh, CreateScope<MeshSourceImporter>());
 		m_assetImporters.emplace(AssetType::NavMesh, CreateScope<VTNavMeshImporter>());
 		m_assetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>());
@@ -68,6 +71,7 @@ namespace Volt
 		m_assetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>());
 		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>());
 		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>());
+		m_assetImporters.emplace(AssetType::Material, CreateScope<MosaicGraphImporter>());
 
 		LoadAssetMetafiles();
 	}
@@ -76,6 +80,26 @@ namespace Volt
 	{
 		TextureImporter::Shutdown();
 		MeshTypeImporter::Shutdown();
+	}
+
+	UUID64 AssetManager::RegisterAssetChangedCallback(AssetType assetType, AssetChangedCallback&& callbackFunction)
+	{
+		AssetManager& instance = Get();
+		UUID64 id = UUID64{};
+
+		instance.m_assetChangedCallbacks[assetType].push_back({ id, callbackFunction });
+		return id;
+	}
+
+	void AssetManager::UnregisterAssetChangedCallback(AssetType assetType, UUID64 id)
+	{
+		AssetManager& instance = Get();
+		auto& callbacks = instance.m_assetChangedCallbacks[assetType];
+
+		callbacks.erase(std::remove_if(callbacks.begin(), callbacks.end(), [&](const AssetChangedCallbackInfo& callbackInfo)
+		{
+			return callbackInfo.id == id;
+		}));
 	}
 
 	void AssetManager::AddDependency(AssetHandle asset, const std::filesystem::path& dependency)
@@ -162,6 +186,22 @@ namespace Volt
 		return result;
 	}
 
+	void AssetManager::UpdateInternal()
+	{
+		{
+			std::scoped_lock lock{ m_assetChangedQueueMutex };
+			if (!m_assetChangedQueue.empty())
+			{
+				for (const auto& info : m_assetChangedQueue)
+				{
+					OnAssetChanged(info.handle, info.state);
+				}
+
+				m_assetChangedQueue.clear();
+			}
+		}
+	}
+
 	void AssetManager::LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset)
 	{
 		{
@@ -179,32 +219,36 @@ namespace Volt
 			return;
 		}
 
-		{ 
+		AssetMetadata metadata;
+		{
 			ReadLock lock{ m_assetRegistryMutex };
+			metadata = GetMetadataFromHandleMutable(assetHandle);
+		}
 
-			AssetMetadata& metadata = GetMetadataFromHandleMutable(assetHandle);
-			if (!metadata.IsValid())
-			{
-				return;
-			}
+		if (!metadata.IsValid())
+		{
+			return;
+		}
 
-			if (!m_assetImporters.contains(metadata.type))
-			{
-				VT_CORE_WARN("[AssetManager] No importer for asset found!");
-				return;
-			}
+		if (!m_assetImporters.contains(metadata.type))
+		{
+			VT_CORE_WARN("[AssetManager] No importer for asset found!");
+			return;
+		}
 
-			m_assetImporters.at(metadata.type)->Load(metadata, asset);
-			if (!asset) { return; }
+		m_assetImporters.at(metadata.type)->Load(metadata, asset);
+		if (!asset) { return; }
 
 #ifdef VT_DEBUG
-			VT_CORE_TRACE("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath, assetHandle);
+		VT_CORE_TRACE("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath, assetHandle);
 #endif	
 
-			asset->handle = metadata.handle;
-			asset->assetName = metadata.filePath.stem().string();
+		asset->handle = metadata.handle;
+		asset->assetName = metadata.filePath.stem().string();
 
-			metadata.isLoaded = true;
+		{
+			WriteLock lock{ m_assetRegistryMutex };
+			GetMetadataFromHandleMutable(assetHandle).isLoaded = true;
 		}
 
 		{
@@ -292,7 +336,7 @@ namespace Volt
 		}
 
 		AssetMetadata metadata = s_nullMetadata;
-		
+
 		{
 			ReadLock lock{ instance.m_assetRegistryMutex };
 			metadata = GetMetadataFromHandle(asset->handle);
@@ -541,6 +585,8 @@ namespace Volt
 			m_assetCache.erase(assetHandle);
 		}
 
+		QueueAssetChanged(assetHandle, AssetChangedState::Removed);
+
 		FileSystem::MoveToRecycleBin(projDir / filePath);
 		RemoveMetaFile(filePath);
 
@@ -570,6 +616,8 @@ namespace Volt
 			m_assetCache.erase(metadata.handle);
 		}
 
+		QueueAssetChanged(metadata.handle, AssetChangedState::Removed);
+
 		FileSystem::MoveToRecycleBin(projDir / filePath);
 		RemoveMetaFile(filePath);
 
@@ -588,7 +636,26 @@ namespace Volt
 		}
 	}
 
-	void AssetManager::RemoveFromRegistry(AssetHandle assetHandle)
+	void AssetManager::OnAssetChanged(AssetHandle assetHandle, AssetChangedState state)
+	{
+		const auto type = GetAssetTypeFromHandle(assetHandle);
+		if (m_assetChangedCallbacks.contains(type))
+		{
+			const auto& callbacks = m_assetChangedCallbacks.at(type);
+			for (const auto& callback : callbacks)
+			{
+				callback.callback(assetHandle, state);
+			}
+		}
+	}
+
+	void AssetManager::QueueAssetChanged(AssetHandle assetHandle, AssetChangedState state)
+	{
+		std::scoped_lock lock{ m_assetChangedQueueMutex };
+		m_assetChangedQueue.emplace_back(assetHandle, state);
+	}
+
+	void AssetManager::RemoveAssetFromRegistry(AssetHandle assetHandle)
 	{
 		bool assetExists = false;
 
@@ -634,7 +701,7 @@ namespace Volt
 #endif
 	}
 
-	void AssetManager::RemoveFromRegistry(const std::filesystem::path& filePath)
+	void AssetManager::RemoveAssetFromRegistry(const std::filesystem::path& filePath)
 	{
 		AssetMetadata metadata = s_nullMetadata;
 
@@ -795,6 +862,11 @@ namespace Volt
 		Get().QueueAssetInternal(assetHandle, asset);
 
 		return asset;
+	}
+
+	void AssetManager::Update()
+	{
+		Get().UpdateInternal();
 	}
 
 	AssetType AssetManager::GetAssetTypeFromHandle(const AssetHandle& handle)
@@ -1044,96 +1116,13 @@ namespace Volt
 					m_assetCache[handle] = asset;
 				}
 
+				QueueAssetChanged(asset->handle, AssetChangedState::Updated);
+
 			}, assetHandle);
 
 #ifndef VT_DIST
 			VT_CORE_TRACE("[AssetManager] Queued asset {0} for loading!", metadata.filePath.string());
 #endif
-		}
-	}
-
-	void AssetManager::QueueAssetInternal(AssetHandle assetHandle, Ref<Asset>& asset, const std::function<void()>& loadedCallback)
-	{
-		// Check if asset is loaded
-		{
-			ReadLock lock{ m_assetCacheMutex };
-
-			if (m_assetCache.contains(assetHandle))
-			{
-				asset = m_assetCache.at(assetHandle);
-				return;
-			}
-		}
-
-		AssetMetadata metadata = s_nullMetadata;
-
-		{
-			ReadLock registryLock{ m_assetRegistryMutex };
-			metadata = GetMetadataFromHandle(assetHandle);
-		}
-
-		if (!metadata.IsValid())
-		{
-			return;
-		}
-
-		{
-			WriteLock lock{ m_assetCacheMutex };
-			asset->handle = metadata.handle;
-			m_assetCache.emplace(assetHandle, asset);
-		}
-
-		// If not, queue
-		{
-			auto& threadPool = Application::GetThreadPool();
-
-			threadPool.SubmitTask([this, metadata, loadedCallback](AssetHandle handle)
-			{
-				if (!metadata.IsValid())
-				{
-					VT_CORE_ERROR("[AssetManager] Trying to load asset {0} which is invalid!", handle);
-					return;
-				}
-
-				if (!m_assetImporters.contains(metadata.type))
-				{
-					VT_CORE_ERROR("No importer for asset found!");
-					return;
-				}
-
-				Ref<Asset> asset;
-				{
-					ReadLock lock{ m_assetCacheMutex };
-					asset = m_assetCache.at(handle);
-				}
-
-				m_assetImporters.at(metadata.type)->Load(metadata, asset);
-				if (handle != Asset::Null())
-				{
-					asset->handle = handle;
-				}
-
-				asset->assetName = metadata.filePath.stem().string();
-
-#ifndef VT_DIST
-				VT_CORE_INFO("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath.string().c_str(), asset->handle);
-#endif
-
-				asset->SetFlag(AssetFlag::Queued, false);
-
-				{
-					ReadLock lock{ m_assetRegistryMutex };
-					m_assetRegistry.at(handle).isLoaded = true;
-				}
-
-				{
-					WriteLock lock{ m_assetCacheMutex };
-					m_assetCache[handle] = asset;
-				}
-
-				loadedCallback();
-
-			}, assetHandle);
 		}
 	}
 
@@ -1236,35 +1225,31 @@ namespace Volt
 			return;
 		}
 
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Metadata" << YAML::Value;
-		{
-			out << YAML::BeginMap;
-			VT_SERIALIZE_PROPERTY(assetHandle, metadata.handle, out);
-			VT_SERIALIZE_PROPERTY(filePath, metadata.filePath, out);
-			VT_SERIALIZE_PROPERTY(type, (uint32_t)metadata.type, out);
-
-			out << YAML::Key << "Dependencies" << YAML::Value << metadata.dependencies;
-
-			out << YAML::Key << "Properties" << YAML::Value;
-			out << YAML::BeginMap;
-			for (const auto& [name, data] : metadata.properties)
-			{
-				out << YAML::Key << name << YAML::Value << data;
-			}
-			out << YAML::EndMap;
-			out << YAML::EndMap;
-		}
-		out << YAML::EndMap;
-		out << YAML::EndMap;
-
 		auto metaPath = GetFilesystemPath(assetHandle);
 		metaPath.replace_filename(metaPath.filename().string() + ".vtmeta");
 
-		std::ofstream fout(metaPath);
-		fout << out.c_str();
-		fout.close();
+		YAMLStreamWriter streamWriter{ metaPath };
+
+		streamWriter.BeginMap();
+		streamWriter.BeginMapNamned("Metadata");
+		
+		streamWriter.SetKey("assetHandle", metadata.handle);
+		streamWriter.SetKey("filePath", metadata.filePath);
+		streamWriter.SetKey("type", (uint32_t)metadata.type);
+
+		streamWriter.SetKey("Dependencies", metadata.dependencies);
+
+		streamWriter.BeginMapNamned("Properties");
+		for (const auto& [name, data] : metadata.properties)
+		{
+			streamWriter.SetKey(name, data);
+		}
+		streamWriter.EndMap();
+
+		streamWriter.EndMap();
+		streamWriter.EndMap();
+
+		streamWriter.WriteToDisk();
 	}
 
 	bool AssetManager::HasAssetMetaFile(AssetHandle assetHandle)
@@ -1282,66 +1267,53 @@ namespace Volt
 			return;
 		}
 
-		std::ifstream file(metaFilePath);
-		if (!file.is_open())
+		YAMLStreamReader streamReader{};
+
+		if (!streamReader.OpenFile(metaFilePath))
 		{
 			VT_CORE_CRITICAL("[AssetManager] Failed to open asset registry file: {0}!", metaFilePath.string().c_str());
 			return;
 		}
 
-		std::stringstream strStream;
-		strStream << file.rdbuf();
-		file.close();
+		streamReader.EnterScope("Metadata");
 
-		YAML::Node root;
-		try
-		{
-			root = YAML::Load(strStream.str());
-		}
-		catch (std::exception& e)
-		{
-			VT_CORE_CRITICAL("[AssetManager] Meta file {0} contains invalid YAML! Please correct it! Error: {1}", metaFilePath, e.what());
-			return;
-		}
-
-		YAML::Node metaRoot = root["Metadata"];
-
-		if (!metaRoot["assetHandle"])
+		if (!streamReader.HasKey("assetHandle"))
 		{
 			VT_CORE_CRITICAL("[AssetManager] Meta file {0} is missing an asset handle! Please correct it!", metaFilePath);
 			return;
 		}
 
-		AssetHandle assetHandle = metaRoot["assetHandle"].as<uint64_t>();
+		AssetHandle assetHandle = streamReader.ReadAtKey("assetHandle", uint64_t(0));
 
-		if (!metaRoot["filePath"])
+		if (!streamReader.HasKey("filePath"))
 		{
 			VT_CORE_CRITICAL("[AssetManager] Meta file {0} is missing a file path! Please correct it!", metaFilePath);
 			return;
 		}
 
-		std::filesystem::path filePath = metaRoot["filePath"].as<std::string>();
+		std::filesystem::path filePath = streamReader.ReadAtKey("filePath", std::string());
 
 		std::vector<AssetHandle> dependencies;
-		if (metaRoot["Dependencies"])
+		if (streamReader.HasKey("Dependencies"))
 		{
-			for (const auto& d : metaRoot["Dependencies"])
+			streamReader.ForEach("Dependencies", [&]() 
 			{
-				dependencies.emplace_back(d.as<uint64_t>());
-			}
+				dependencies.emplace_back(streamReader.ReadValue<uint64_t>());
+			});
 		}
 
 		std::unordered_map<std::string, std::string> assetProperties;
 
-		if (metaRoot["Properties"])
+		if (streamReader.HasKey("Properties"))
 		{
-			for (const auto& node : metaRoot["Properties"])
+			streamReader.ForEach("Properties", [&]()
 			{
-				const auto key = node.first.as<std::string>();
-				const auto value = node.as<std::string>();
+				const auto key = streamReader.ReadKeyValue<std::string>();
+				const auto value = streamReader.ReadValue<std::string>();
 
 				assetProperties[key] = value;
-			}
+			});
+
 		}
 
 		{
@@ -1352,7 +1324,9 @@ namespace Volt
 			metadata.dependencies = dependencies;
 			metadata.properties = assetProperties;
 
-			VT_DESERIALIZE_PROPERTY(type, *(uint32_t*)&metadata.type, metaRoot, 0);
+			metadata.type = (AssetType)streamReader.ReadAtKey<uint32_t>("type", 0u);
 		}
+
+		streamReader.ExitScope();
 	}
 }

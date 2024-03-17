@@ -38,25 +38,6 @@ struct CommonResourcesData
 {
 };
 
-struct SamplersData
-{
-    uint linearSampler;
-    uint linearPointSampler;
-    
-    uint pointSampler;
-    uint pointLinearSampler;
-    
-    uint linearClampSampler;
-    uint linearPointClampSampler;
-    
-    uint pointClampSampler;
-    uint pointLinearClampSampler;
-    
-    uint anisotropicSampler;
-    
-    uint3 padding;
-};
-
 struct ViewData
 {
     // Camera
@@ -74,13 +55,52 @@ struct ViewData
     // Render Target
     float2 renderSize;
     float2 invRenderSize;
+    
+    // Temp lights
+    uint pointLightCount;
+    uint spotLightCount;
 };
+
+#define DIRECTIONAL_SHADOW_CASCADE_COUNT 5
 
 struct DirectionalLight
 {
     float4 direction;
     float3 color;
     float intensity;
+
+    uint enableShadows;
+
+    float cascadeDistances[DIRECTIONAL_SHADOW_CASCADE_COUNT];
+    float4x4 viewProjections[DIRECTIONAL_SHADOW_CASCADE_COUNT];
+};
+
+struct PointLight
+{
+    float3 position;
+    float radius;
+    
+    float3 color;
+    float intensity;
+    
+    float falloff;
+    float3 padding;
+};
+
+struct SpotLight
+{
+    float3 position;
+    float angleAttenuation;
+    
+    float3 color;
+    float intensity;
+    
+    float3 direction;
+    float range;
+    
+    float angle;
+    float falloff;
+    float2 padding;
 };
 
 #endif

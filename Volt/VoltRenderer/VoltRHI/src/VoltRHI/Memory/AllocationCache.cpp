@@ -7,6 +7,7 @@ namespace Volt::RHI
 {
 	Ref<Allocation> AllocationCache::TryGetImageAllocationFromHash(const size_t hash)
 	{
+		std::scoped_lock lock{ m_imageAllocationMutex };
 		for (int32_t i = static_cast<int32_t>(m_imageAllocations.size()) - 1; i >= 0; --i)
 		{
 			const auto alloc = m_imageAllocations.at(i);
@@ -23,6 +24,7 @@ namespace Volt::RHI
 
 	Ref<Allocation> AllocationCache::TryGetBufferAllocationFromHash(const size_t hash)
 	{
+		std::scoped_lock lock{ m_bufferAllocationMutex };
 		for (int32_t i = static_cast<int32_t>(m_bufferAllocations.size()) - 1; i >= 0; --i)
 		{
 			const auto alloc = m_bufferAllocations.at(i);
@@ -39,11 +41,13 @@ namespace Volt::RHI
 
 	void AllocationCache::QueueImageAllocationForRemoval(Ref<Allocation> alloc)
 	{
+		std::scoped_lock lock{ m_imageAllocationMutex };
 		m_imageAllocations.emplace_back(alloc, 0);
 	}
 
 	void AllocationCache::QueueBufferAllocationForRemoval(Ref<Allocation> alloc)
 	{
+		std::scoped_lock lock{ m_bufferAllocationMutex };
 		m_bufferAllocations.emplace_back(alloc, 0);
 	}
 
@@ -63,23 +67,29 @@ namespace Volt::RHI
 		
 		AllocationsToRemove result{};
 
-		for (int32_t i = static_cast<int32_t>(m_imageAllocations.size()) - 1; i >= 0; --i)
 		{
-			const auto& alloc = m_imageAllocations.at(i);
-			if (alloc.framesAlive >= MAX_FRAMES_ALIVE)
+			std::scoped_lock lock{ m_imageAllocationMutex };
+			for (int32_t i = static_cast<int32_t>(m_imageAllocations.size()) - 1; i >= 0; --i)
 			{
-				result.imageAllocations.push_back(alloc.allocation);
-				m_imageAllocations.erase(m_imageAllocations.begin() + i);
+				const auto& alloc = m_imageAllocations.at(i);
+				if (alloc.framesAlive >= MAX_FRAMES_ALIVE)
+				{
+					result.imageAllocations.push_back(alloc.allocation);
+					m_imageAllocations.erase(m_imageAllocations.begin() + i);
+				}
 			}
 		}
 
-		for (int32_t i = static_cast<int32_t>(m_bufferAllocations.size()) - 1; i >= 0; --i)
 		{
-			const auto& alloc = m_bufferAllocations.at(i);
-			if (alloc.framesAlive >= MAX_FRAMES_ALIVE)
+			std::scoped_lock lock{ m_bufferAllocationMutex };
+			for (int32_t i = static_cast<int32_t>(m_bufferAllocations.size()) - 1; i >= 0; --i)
 			{
-				result.bufferAllocations.push_back(alloc.allocation);
-				m_bufferAllocations.erase(m_bufferAllocations.begin() + i);
+				const auto& alloc = m_bufferAllocations.at(i);
+				if (alloc.framesAlive >= MAX_FRAMES_ALIVE)
+				{
+					result.bufferAllocations.push_back(alloc.allocation);
+					m_bufferAllocations.erase(m_bufferAllocations.begin() + i);
+				}
 			}
 		}
 

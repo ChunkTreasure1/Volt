@@ -5,8 +5,6 @@
 
 #include <Volt/Asset/Prefab.h>
 #include <Volt/Asset/AssetManager.h>
-#include <Volt/Asset/Mesh/Material.h>
-#include <Volt/Asset/Mesh/SubMaterial.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>

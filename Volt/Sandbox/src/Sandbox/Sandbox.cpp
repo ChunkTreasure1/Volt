@@ -42,6 +42,7 @@
 #include "Sandbox/Window/BehaviourGraph/BehaviorPanel.h"
 #include "Sandbox/Window/SceneSettingsPanel.h"
 #include "Sandbox/Window/WorldEnginePanel.h"
+#include "Sandbox/Window/MosaicEditor/MosaicEditorPanel.h"
 #include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
@@ -58,8 +59,6 @@
 
 #include <Volt/Components/CoreComponents.h>
 #include <Volt/Components/LightComponents.h>
-
-#include <Volt/Asset/Mesh/SubMaterial.h>
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/Scene.h>
@@ -148,6 +147,8 @@ void Sandbox::OnAttach()
 	EditorLibrary::Register<SceneSettingsPanel>("", myRuntimeScene);
 	EditorLibrary::Register<WorldEnginePanel>("", myRuntimeScene);
 
+	EditorLibrary::RegisterWithType<MosaicEditorPanel>("", Volt::AssetType::Material);
+
 	if (userSettings.sceneSettings.lowMemoryUsage)
 	{
 		myGameViewPanel = EditorLibrary::Register<GameViewPanel>("Level Editor", mySceneRenderer, myRuntimeScene, mySceneState);
@@ -160,7 +161,7 @@ void Sandbox::OnAttach()
 	myAssetBrowserPanel = EditorLibrary::Register<AssetBrowserPanel>("", myRuntimeScene, "##Main");
 
 	EditorLibrary::RegisterWithType<CharacterEditorPanel>("Animation", Volt::AssetType::AnimatedCharacter);
-	EditorLibrary::RegisterWithType<MaterialEditorPanel>("", Volt::AssetType::Material, myRuntimeScene);
+	//EditorLibrary::RegisterWithType<MaterialEditorPanel>("", , myRuntimeScene);
 	EditorLibrary::RegisterWithType<ParticleEmitterEditor>("", Volt::AssetType::ParticlePreset);
 	EditorLibrary::RegisterWithType<AnimationGraphPanel>("Animation", Volt::AssetType::AnimationGraph, myRuntimeScene);
 	EditorLibrary::RegisterWithType<BehaviorPanel>("", Volt::AssetType::BehaviorGraph);

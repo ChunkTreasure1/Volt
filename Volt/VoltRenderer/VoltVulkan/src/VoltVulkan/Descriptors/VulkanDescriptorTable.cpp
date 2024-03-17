@@ -41,6 +41,7 @@ namespace Volt::RHI
 	{
 		m_shader = specification.shader;
 		m_descriptorPoolCount = specification.count;
+		m_isGlobal = specification.isGlobal;
 
 		Invalidate();
 	}
@@ -203,6 +204,17 @@ namespace Volt::RHI
 		SetBufferView(view, binding.set, binding.binding, arrayIndex);
 	}
 
+	void VulkanDescriptorTable::SetSamplerState(std::string_view name, Ref<SamplerState> samplerState, uint32_t arrayIndex)
+	{
+		const auto& binding = m_shader->GetResourceBindingFromName(name);
+		if (!binding.IsValid())
+		{
+			return;
+		}
+
+		SetSamplerState(samplerState, binding.set, binding.binding, arrayIndex);
+	}
+
 	void VulkanDescriptorTable::SetBufferViews(const std::vector<Ref<BufferView>>& bufferViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset)
 	{
 		for (uint32_t index = arrayStartOffset; const auto& view : bufferViews)
@@ -302,17 +314,27 @@ namespace Volt::RHI
 	void VulkanDescriptorTable::Bind(Ref<CommandBuffer> commandBuffer)
 	{
 		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer->AsRef<VulkanCommandBuffer>();
-
 		const VkPipelineBindPoint bindPoint = vulkanCommandBuffer.m_currentRenderPipeline ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;
-		const auto descriptorSet = VulkanBindlessManager::GetGlobalDescriptorSet();
-		vkCmdBindDescriptorSets(vulkanCommandBuffer.GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr);
 
-		// #TODO_Ivar: move to an implementation that binds all descriptor sets in one call
-		//for (const auto& [set, sets] : GetDescriptorSets())
-		//{
-		//	const bool isSingleFrameSet = sets.size() == 1;
-		//	vkCmdBindDescriptorSets(vulkanCommandBuffer.GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), set, 1, &sets.at(isSingleFrameSet ? 0 : index), 0, nullptr);
-		//}
+		if (m_isGlobal)
+		{
+			const auto descriptorSet = VulkanBindlessManager::GetGlobalDescriptorSet();
+			vkCmdBindDescriptorSets(vulkanCommandBuffer.GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr);
+
+		}
+		else
+		{
+			Update(m_currentIndex);
+
+			// #TODO_Ivar: move to an implementation that binds all descriptor sets in one call
+			for (const auto& [set, sets] : GetDescriptorSets())
+			{
+				const bool isSingleFrameSet = sets.size() == 1;
+				vkCmdBindDescriptorSets(vulkanCommandBuffer.GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), set, 1, &sets.at(isSingleFrameSet ? 0 : m_currentIndex), 0, nullptr);
+			}
+		}
+
+		m_currentIndex++;
 	}
 
 	void VulkanDescriptorTable::SetDirty(bool state)
@@ -329,7 +351,7 @@ namespace Volt::RHI
 
 		VT_PROFILE_FUNCTION();
 
-		m_isDirty = std::vector<bool>(3, true);
+		m_isDirty = std::vector<bool>(m_descriptorPoolCount, true);
 		m_maxTotalDescriptorCount = 0;
 		m_imageInfos.clear();
 		m_bufferInfos.clear();
@@ -344,10 +366,10 @@ namespace Volt::RHI
 			m_maxTotalDescriptorCount += count;
 		}
 
-		//if (m_maxTotalDescriptorCount == 0)
-		//{
-		//	return;
-		//}
+		if (!m_isGlobal && m_maxTotalDescriptorCount == 0)
+		{
+			return;
+		}
 
 		VkDescriptorPoolCreateInfo info{};
 		info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -387,7 +409,10 @@ namespace Volt::RHI
 			}
 		}
 
-		m_descriptorSets[0][0] = VulkanBindlessManager::GetGlobalDescriptorSet();
+		if (m_isGlobal)
+		{
+			m_descriptorSets[0][0] = VulkanBindlessManager::GetGlobalDescriptorSet();
+		}
 
 		BuildWriteDescriptors();
 		InitializeInfoStructs();

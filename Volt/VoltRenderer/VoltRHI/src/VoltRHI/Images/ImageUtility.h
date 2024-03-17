@@ -53,5 +53,29 @@ namespace Volt::RHI
 
 			return r;
 		}
+
+		inline uint32_t GetByteSizePerPixelFromFormat(PixelFormat format)
+		{
+			switch (format)
+			{
+				case PixelFormat::R8_UNORM: return 1 * 1;
+				case PixelFormat::R16_SFLOAT: return 1 * 2;
+				case PixelFormat::R32_SFLOAT: return 1 * 4;
+				case PixelFormat::R32_SINT: return 1 * 4;
+				case PixelFormat::R32_UINT: return 1 * 4;
+
+				case PixelFormat::R32G32_UINT: return 2 * 4;
+				case PixelFormat::R16G16_SFLOAT: return 2 * 2;
+				case PixelFormat::R32G32_SFLOAT: return 2 * 4;
+
+				case PixelFormat::R8G8B8A8_UNORM: return 4 * 1;
+				case PixelFormat::R16G16B16A16_SFLOAT: return 4 * 2;
+				case PixelFormat::R32G32B32A32_SFLOAT: return 4 * 4;
+
+				case PixelFormat::B10G11R11_UFLOAT_PACK32: return 4 * 1;
+			}
+
+			return 0;
+		}
 	}
 }

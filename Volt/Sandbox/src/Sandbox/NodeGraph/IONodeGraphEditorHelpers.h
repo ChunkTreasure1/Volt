@@ -345,6 +345,72 @@ public:
 		ImGui::PopItemWidth();
 	}
 
+	inline static void Attribute(glm::ivec2& value)
+	{
+		ImGui::PushItemWidth(40.f);
+
+		{
+			const std::string id = "##" + std::to_string(s_stackId++);
+			ImGui::DragScalar(id.c_str(), ImGuiDataType_S32, &value.x);
+		}
+
+		{
+			const std::string id = "##" + std::to_string(s_stackId++);
+			ImGui::DragScalar(id.c_str(), ImGuiDataType_S32, &value.y);
+		}
+
+		ImGui::PopItemWidth();
+	}
+
+	inline static void Attribute(glm::ivec3& value)
+	{
+		ImGui::PushItemWidth(40.f);
+
+		{
+			const std::string id = "##" + std::to_string(s_stackId++);
+			ImGui::DragScalar(id.c_str(), ImGuiDataType_S32, &value.x);
+		}
+
+		{
+			const std::string id = "##" + std::to_string(s_stackId++);
+			ImGui::DragScalar(id.c_str(), ImGuiDataType_S32, &value.y);
+		}
+
+		{
+			const std::string id = "##" + std::to_string(s_stackId++);
+			ImGui::DragScalar(id.c_str(), ImGuiDataType_S32, &value.z);
+		}
+
+		ImGui::PopItemWidth();
+	}
+
+	inline static void Attribute(glm::ivec4& value)
+	{
+		ImGui::PushItemWidth(40.f);
+
+		{
+			const std::string id = "##" + std::to_string(s_stackId++);
+			ImGui::DragScalar(id.c_str(), ImGuiDataType_S32, &value.x);
+		}
+
+		{
+			const std::string id = "##" + std::to_string(s_stackId++);
+			ImGui::DragScalar(id.c_str(), ImGuiDataType_S32, &value.y);
+		}
+
+		{
+			const std::string id = "##" + std::to_string(s_stackId++);
+			ImGui::DragScalar(id.c_str(), ImGuiDataType_S32, &value.z);
+		}
+
+		{
+			const std::string id = "##" + std::to_string(s_stackId++);
+			ImGui::DragScalar(id.c_str(), ImGuiDataType_S32, &value.w);
+		}
+
+		ImGui::PopItemWidth();
+	}
+
 	inline static void Attribute(std::string& value)
 	{
 		ImGui::PushItemWidth(50.f);

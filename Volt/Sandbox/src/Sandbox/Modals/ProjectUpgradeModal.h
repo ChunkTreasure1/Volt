@@ -14,8 +14,9 @@ namespace Volt
 
 	class Scene;
 	struct SceneLayer;
-	class YAMLStreamReader;
 }
+
+class YAMLStreamReader;
 
 class ProjectUpgradeModal : public Modal
 {
@@ -40,9 +41,9 @@ private:
 	void ConvertPreV113Prefab(const std::filesystem::path& filePath);
 	
 	void DeserializePreV113SceneLayer(Ref<Volt::Scene> scene, Volt::SceneLayer& sceneLayer, const std::filesystem::path& layerPath, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping);
-	void DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt::YAMLStreamReader& streamReader, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping, bool isPrefabEntity);
-	void DeserializePreV113Component(uint8_t* componentData, const Volt::IComponentTypeDesc* componentDesc, Volt::YAMLStreamReader& streamReader);
-	void DeserializePreV113MonoScripts(Ref<Volt::Scene> scene, const Volt::EntityID entityId, Volt::YAMLStreamReader& streamReader);
+	void DeserializePreV113Entity(Ref<Volt::Scene> scene, YAMLStreamReader& streamReader, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping, bool isPrefabEntity);
+	void DeserializePreV113Component(uint8_t* componentData, const Volt::IComponentTypeDesc* componentDesc, YAMLStreamReader& streamReader);
+	void DeserializePreV113MonoScripts(Ref<Volt::Scene> scene, const Volt::EntityID entityId, YAMLStreamReader& streamReader);
 	
 	void HandleEntityRemapping(Ref<Volt::Scene> scene, const std::map<Volt::EntityID, Volt::EntityID>& entityRemapping);
 	void HandleEntityArrayRemapping(Ref<Volt::Scene> scene, const std::map<Volt::EntityID, Volt::EntityID>& entityRemapping, const Volt::ComponentMember& componentMember, uint8_t* componentData);
