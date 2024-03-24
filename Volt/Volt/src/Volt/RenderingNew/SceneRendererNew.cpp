@@ -951,6 +951,7 @@ namespace Volt
 			context.SetConstant("objectDrawData", resources.GetBuffer(externalBuffersData.objectDrawDataBuffer));
 			context.SetConstant("meshletsBuffer", resources.GetBuffer(externalBuffersData.gpuMeshletsBuffer));
 			context.SetConstant("materialCountsBuffer", resources.GetBuffer(data.materialCountBuffer));
+			context.SetConstant("renderSize", glm::uvec2{ m_width, m_height });
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1);
 		});

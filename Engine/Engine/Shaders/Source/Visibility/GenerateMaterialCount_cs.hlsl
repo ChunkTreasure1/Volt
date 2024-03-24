@@ -10,6 +10,8 @@ struct Constants
     TypedBuffer<ObjectDrawData> objectDrawData;
     TypedBuffer<Meshlet> meshletsBuffer;
     RWTypedBuffer<uint> materialCountsBuffer;
+
+    uint2 renderSize;
 };
 
 [numthreads(8, 8, 1)]
@@ -17,10 +19,7 @@ void main(uint3 threadId : SV_DispatchThreadID)
 {
     const Constants constants = GetConstants<Constants>();
     
-    uint2 size;
-    constants.visibilityBuffer.GetDimensions(size.x, size.y);
-    
-    if (threadId.x >= size.x || threadId.y >= size.y)
+    if (threadId.x >= constants.renderSize.x || threadId.y >= constants.renderSize.y)
     {
         return;
     }
