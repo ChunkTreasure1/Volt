@@ -26,6 +26,7 @@ namespace Volt
 	public:
 		using WriteLock = std::unique_lock<std::shared_mutex>;
 		using ReadLock = std::shared_lock<std::shared_mutex>;
+		using AssetCreateFunction = std::function<Ref<Asset>()>;
 
 		AssetManager();
 		~AssetManager();
@@ -135,6 +136,8 @@ namespace Volt
 		inline static AssetManager* s_instance = nullptr;
 		inline static AssetMetadata s_nullMetadata = {};
 
+		void RegisterAssetSerializers();
+
 		void LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset);
 		void DeserializeAssetMetafile(std::filesystem::path metaPath);
 		void LoadAssetMetafiles();
@@ -154,6 +157,8 @@ namespace Volt
 		std::vector<std::filesystem::path> GetProjectMetaFiles();
 
 		std::unordered_map<AssetType, Scope<AssetImporter>> m_assetImporters;
+		std::unordered_map<AssetType, AssetCreateFunction> m_assetCreateFunctions;
+
 		std::unordered_map<AssetHandle, Ref<Asset>> m_assetCache;
 		std::unordered_map<AssetHandle, Ref<Asset>> m_memoryAssets;
 		std::unordered_map<AssetHandle, AssetMetadata> m_assetRegistry;

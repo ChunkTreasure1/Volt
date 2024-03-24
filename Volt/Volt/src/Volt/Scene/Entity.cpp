@@ -364,7 +364,11 @@ namespace Volt
 		std::vector<Entity> result{};
 		for (const auto& id : children)
 		{
-			result.emplace_back(m_scene->GetEntityFromUUID(id));
+			auto entity = m_scene->GetEntityFromUUID(id);
+			if (entity != Entity::Null())
+			{
+				result.emplace_back(entity);
+			}
 		}
 
 		return result;
@@ -499,6 +503,7 @@ namespace Volt
 
 	const EntityID Entity::GetID() const
 	{
+		VT_CORE_ASSERT(HasComponent<IDComponent>(), "Entity must have IDComponent!");
 		return GetComponent<IDComponent>().id;
 	}
 

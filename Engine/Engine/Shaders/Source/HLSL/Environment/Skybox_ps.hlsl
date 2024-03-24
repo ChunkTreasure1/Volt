@@ -32,7 +32,7 @@ float3 CalculateInscatteredLight(in float3 accumulatedLight, float2 position)
 float4 main(Input input) : SV_Target0
 {
     float4 result = 0.f;
-    result = u_environmentMap.SampleLevel(u_linearSampler, input.samplePosition / 100.f, u_pushConstants.lod) * u_pushConstants.intensity;
+    result = u_environmentMap.SampleLevel(u_linearSampler, input.samplePosition, u_pushConstants.lod) * u_pushConstants.intensity;
     result.a = 1.f;
     
     result.rgb += CalculateInscatteredLight(result.rgb, input.position.xy);

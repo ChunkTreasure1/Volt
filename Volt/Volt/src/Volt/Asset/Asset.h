@@ -22,38 +22,40 @@ namespace Volt
 		Queued = BIT(2)
 	};
 
-	enum class AssetType : uint64_t
+	enum class AssetType : uint32_t
 	{
 		None = 0,
-		Mesh = BIT(0),
-		MeshSource = BIT(1),
-		Animation = BIT(2),
-		Skeleton = BIT(3),
-		Texture = BIT(4),
-		Material = BIT(5),
-		Shader = BIT(6),
-		ShaderSource = BIT(7),
-		Scene = BIT(8),
-		AnimatedCharacter = BIT(9),
-		ParticlePreset = BIT(10),
-		Prefab = BIT(11),
-		Font = BIT(12),
-		PhysicsMaterial = BIT(13),
-		Video = BIT(14),
-		BlendSpace = BIT(15),
-		NavMesh = BIT(16),
-		AnimationGraph = BIT(17),
-		GraphKey = BIT(18),
-		MonoScript = BIT(19),
-		BehaviorGraph = BIT(20),
-		MaterialGraph = BIT(21),
-		RenderPipeline = BIT(22),
-		Timeline = BIT(23),
-		NetContract = BIT(24),
-		PostProcessingMaterial = BIT(25),
-		PostProcessingStack = BIT(26),
-		MotionWeave = BIT(27),
-		TextureSource = BIT(28)
+		Mesh,
+		MeshSource,
+		Animation,
+		Skeleton,
+		Texture,
+		Material,
+		Shader,
+		ShaderSource,
+		Scene,
+		AnimatedCharacter,
+		ParticlePreset,
+		Prefab,
+		Font,
+		PhysicsMaterial,
+		Video,
+		BlendSpace,
+		NavMesh,
+		AnimationGraph,
+		GraphKey,
+		MonoScript,
+		BehaviorGraph,
+		RenderPipeline,
+		Timeline,
+		NetContract,
+		PostProcessingMaterial,
+		PostProcessingStack,
+		MotionWeave,
+		TextureSource,
+
+		// Add new assets above this line
+		Count
 	};
 
 	inline AssetType operator|(AssetType aLhs, AssetType aRhs)
@@ -97,7 +99,6 @@ namespace Volt
 		{ ".hlslh", AssetType::ShaderSource },
 		{ ".hlsli", AssetType::ShaderSource },
 
-		{ ".vtmgraph", AssetType::MaterialGraph },
 		{ ".vtmat", AssetType::Material },
 		{ ".vtpostmat", AssetType::PostProcessingMaterial },
 		{ ".vtpoststack", AssetType::PostProcessingStack },
@@ -135,7 +136,6 @@ namespace Volt
 		{ "Shader", AssetType::Shader },
 		{ "Shader Source", AssetType::ShaderSource },
 
-		{ "Material Graph", AssetType::MaterialGraph },
 		{ "Material", AssetType::Material },
 		{ "Post Processing Material", AssetType::PostProcessingMaterial },
 		{ "Post Processing Stack", AssetType::PostProcessingStack },

@@ -191,6 +191,4 @@ namespace Volt
 		auto& registry = scenePtr->GetRegistry();
 		registry.remove<T>(m_handle);
 	}
-
-
 }

@@ -882,6 +882,52 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 		RenderProgressBar(buildProgess);
 	}
 
+	if (ImGui::Begin("Conversion Window"))
+	{
+		if (ImGui::Button("Convert Scene to M"))
+		{
+			Volt::Entity mainMenuEntity = myRuntimeScene->GetEntityWithName("PF_MainMenu");
+
+			myRuntimeScene->ForEachWithComponents<Volt::TransformComponent, Volt::MeshComponent>([&](const entt::entity id, Volt::TransformComponent& transComp, const Volt::MeshComponent& meshComp)
+			{
+				Volt::Entity entity{ id, myRuntimeScene };
+				entity.SetScale(entity.GetScale() * 0.01f);
+			});
+
+			myRuntimeScene->ForEachWithComponents<Volt::TransformComponent>([&](const entt::entity id, Volt::TransformComponent& transComp)
+			{
+				Volt::Entity entity{ id, myRuntimeScene };
+
+				if (mainMenuEntity)
+				{
+					if (myRuntimeScene->IsRelatedTo(mainMenuEntity, entity))
+					{
+						return;
+					}
+				}
+
+				if (entity == mainMenuEntity)
+				{
+					return;
+				}
+
+				entity.SetLocalPosition(entity.GetLocalPosition() * 0.01f); 
+			});
+
+			myRuntimeScene->ForEachWithComponents<Volt::PointLightComponent>([&](const entt::entity id, Volt::PointLightComponent& comp) 
+			{
+				comp.radius *= 0.01f;
+			});
+
+			myRuntimeScene->ForEachWithComponents<Volt::SpotLightComponent>([&](const entt::entity id, Volt::SpotLightComponent& comp) 
+			{
+				comp.range *= 0.01f;
+			});
+		}
+
+		ImGui::End();
+	}
+
 	return false;
 }
 

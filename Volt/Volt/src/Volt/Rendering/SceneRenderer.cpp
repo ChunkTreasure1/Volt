@@ -2467,7 +2467,7 @@ namespace Volt
 
 			if (GetGPUData().postProcessingStack && mySettings.enablePostProcessing)
 			{
-				AddPostProcessingStackPasses(frameGraph);
+				//AddPostProcessingStackPasses(frameGraph);§
 			}
 
 			if (mySettings.enableOutline)

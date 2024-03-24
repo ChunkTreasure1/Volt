@@ -47,27 +47,8 @@ namespace Volt
 		MeshTypeImporter::Initialize();
 		TextureImporter::Initialize();
 
-		m_assetImporters.emplace(AssetType::MeshSource, CreateScope<MeshSourceImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Texture, CreateScope<TextureSourceImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Shader, CreateScope<ShaderImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Mesh, CreateScope<MeshSourceImporter>()); // Done
-		m_assetImporters.emplace(AssetType::NavMesh, CreateScope<VTNavMeshImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Skeleton, CreateScope<SkeletonImporter>()); // Done
-		m_assetImporters.emplace(AssetType::AnimationGraph, CreateScope<AnimationGraphImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Animation, CreateScope<AnimationImporter>()); // Done
-		m_assetImporters.emplace(AssetType::AnimatedCharacter, CreateScope<AnimatedCharacterImporter>()); // Done
-		m_assetImporters.emplace(AssetType::ParticlePreset, CreateScope<ParticlePresetImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Prefab, CreateScope<PrefabImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Font, CreateScope<FontImporter>()); // Done
-		m_assetImporters.emplace(AssetType::PhysicsMaterial, CreateScope<PhysicsMaterialImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Video, CreateScope<VideoImporter>()); // Done
-		m_assetImporters.emplace(AssetType::BehaviorGraph, CreateScope<BehaviorTreeImporter>()); // Done
-		m_assetImporters.emplace(AssetType::BlendSpace, CreateScope<BlendSpaceImporter>());  // Done
-		m_assetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>()); // Done
-		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>()); // Done
-		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>()); // Done
+		RegisterAssetSerializers();
+		RegisterAssetCreateFunctions();
 
 		LoadAssetMetafiles();
 	}
@@ -160,6 +141,41 @@ namespace Volt
 		}
 
 		return result;
+	}
+
+	void AssetManager::RegisterAssetSerializers()
+	{
+		m_assetImporters.emplace(AssetType::MeshSource, CreateScope<MeshSourceImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Texture, CreateScope<TextureSourceImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Shader, CreateScope<ShaderImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Mesh, CreateScope<MeshSourceImporter>()); // Done
+		m_assetImporters.emplace(AssetType::NavMesh, CreateScope<VTNavMeshImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Skeleton, CreateScope<SkeletonImporter>()); // Done
+		m_assetImporters.emplace(AssetType::AnimationGraph, CreateScope<AnimationGraphImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Animation, CreateScope<AnimationImporter>()); // Done
+		m_assetImporters.emplace(AssetType::AnimatedCharacter, CreateScope<AnimatedCharacterImporter>()); // Done
+		m_assetImporters.emplace(AssetType::ParticlePreset, CreateScope<ParticlePresetImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Prefab, CreateScope<PrefabImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Font, CreateScope<FontImporter>()); // Done
+		m_assetImporters.emplace(AssetType::PhysicsMaterial, CreateScope<PhysicsMaterialImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Video, CreateScope<VideoImporter>()); // Done
+		m_assetImporters.emplace(AssetType::BehaviorGraph, CreateScope<BehaviorTreeImporter>()); // Done
+		m_assetImporters.emplace(AssetType::BlendSpace, CreateScope<BlendSpaceImporter>());  // Done
+		m_assetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>()); // Done
+		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>()); // Done
+		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>()); // Done
+	}
+
+	template<typename T>
+	void RegisterCreateFunction(AssetType assetType, std::unordered_map<AssetType, AssetManager::AssetCreateFunction>& functionMap)
+	{
+		functionMap[assetType] = []() { return CreateRef<T>(); }
+	}
+
+	void AssetManager::RegisterAssetCreateFunctions()
+	{
 	}
 
 	void AssetManager::LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset)
