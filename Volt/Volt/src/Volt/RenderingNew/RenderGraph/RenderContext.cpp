@@ -6,8 +6,6 @@
 
 #include "Volt/RenderingNew/RenderGraph/RenderGraphPass.h"
 
-#include "Volt/Core/Profiling.h"
-
 #include <VoltRHI/Buffers/CommandBuffer.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
 #include <VoltRHI/Descriptors/DescriptorTable.h>

@@ -2,7 +2,6 @@
 #include "FrameGraph.h"
 
 #include "Volt/Core/Threading/ThreadPool.h"
-#include "Volt/Core/Profiling.h"
 
 #include "Volt/Rendering/CommandBuffer.h"
 #include "Volt/Rendering/FrameGraph/TransientResourceSystemOld.h"

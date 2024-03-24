@@ -9,8 +9,6 @@
 #include "Volt/Asset/Video/Video.h"
 #include "Volt/Asset/Rendering/Material.h"
 
-#include "Volt/Core/Profiling.h"
-
 #include "Volt/Scene/Entity.h"
 #include "Volt/Scene/Entity.h"
 

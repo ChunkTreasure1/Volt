@@ -12,7 +12,6 @@
 #include "Volt/Net/SceneInteraction/NetActorComponent.h"
 #include "Volt/Net/Replicated/RepEntity.h"
 
-#include "Volt/Core/Profiling.h"
 namespace Volt
 {
 	NetHandler::NetHandler()

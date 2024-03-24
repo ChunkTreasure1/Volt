@@ -5,8 +5,6 @@
 #include "Volt/Animation/AnimationManager.h"
 #include "Volt/Asset/Animation/AnimationGraphAsset.h"
 
-#include "Volt/Core/Profiling.h"
-
 #include <GraphKey/Nodes/Animation/TransitionNodes.h>
 #include <GraphKey/Nodes/Animation/BaseAnimationNodes.h>
 #include <GraphKey/Nodes/Animation/SequenceNodes.h>

@@ -4,8 +4,6 @@
 #include "Volt/Rendering/Texture/Image2D.h"
 #include "Volt/Rendering/Renderer.h"
 
-#include "Volt/Core/Profiling.h"
-
 #include "Volt/Utility/ImageUtility.h"
 
 namespace Volt

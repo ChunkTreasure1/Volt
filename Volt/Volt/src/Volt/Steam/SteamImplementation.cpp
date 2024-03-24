@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "SteamImplementation.h"
 
-#include "Volt/Core/Profiling.h"
-
 #include "Volt/Scripting/Mono/MonoScriptGlue.h"
 
 namespace Volt

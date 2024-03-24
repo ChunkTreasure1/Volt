@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "Allocator.h"
 
-#include "Volt/Core/Profiling.h"
-
 inline static size_t s_totalAllocation = 0;
 
 void* operator new(size_t size)

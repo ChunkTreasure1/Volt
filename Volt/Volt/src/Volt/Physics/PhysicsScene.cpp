@@ -7,7 +7,6 @@
 #include "Volt/Physics/PhysicsLayer.h"
 
 #include "Volt/Log/Log.h"
-#include "Volt/Core/Profiling.h"
 #include "Volt/Core/Application.h"
 
 #include "Volt/Components/CoreComponents.h"

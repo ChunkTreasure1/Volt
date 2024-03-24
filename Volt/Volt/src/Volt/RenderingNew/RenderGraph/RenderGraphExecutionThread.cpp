@@ -5,8 +5,6 @@
 #include "Volt/Core/Threading/ThreadSafeQueue.h"
 #include "Volt/RenderingNew/RenderGraph/RenderGraph.h"
 
-#include "Volt/Core/Profiling.h"
-
 #include "Volt/Utility/FunctionQueue.h"
 #include "Volt/Platform/ThreadUtility.h"
 

@@ -2,7 +2,6 @@
 #include "MonoScriptEngine.h"
 
 #include "Volt/Core/Base.h"
-#include "Volt/Core/Profiling.h"
 #include "Volt/Core/Buffer.h"
 #include "Volt/Core/Application.h"
 

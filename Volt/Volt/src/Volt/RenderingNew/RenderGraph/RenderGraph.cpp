@@ -9,8 +9,6 @@
 
 #include "Volt/RenderingNew/RendererNew.h"
 
-#include "Volt/Core/Profiling.h"
-
 #include <VoltRHI/Buffers/CommandBuffer.h>
 #include <VoltRHI/Images/ImageUtility.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>

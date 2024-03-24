@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "TransientResourceSystem.h"
 
-#include "Volt/Core/Profiling.h"
-
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphTextureResource.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphBufferResource.h"
 

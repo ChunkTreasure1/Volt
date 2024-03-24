@@ -7,7 +7,6 @@
 #include "Volt/Input/KeyCodes.h"
 
 #include "Volt/Core/Window.h"
-#include "Volt/Core/Profiling.h"
 #include "Volt/Core/Layer/Layer.h"
 #include "Volt/Steam/SteamImplementation.h"
 

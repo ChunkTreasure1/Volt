@@ -4,8 +4,6 @@
 
 #include "Volt/Core/Application.h"
 
-#include "Volt/Core/Profiling.h"
-
 namespace Volt
 {
 	CommandBuffer::CommandBuffer(uint32_t count, bool swapchainTarget)

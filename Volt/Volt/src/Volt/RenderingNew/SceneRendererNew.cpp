@@ -22,7 +22,6 @@
 #include "Volt/RenderingNew/DrawContext.h"
 
 #include "Volt/Project/ProjectManager.h"
-#include "Volt/Core/Profiling.h"
 
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"

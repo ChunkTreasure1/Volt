@@ -3,7 +3,6 @@
 
 #include "Volt/Asset/Animation/Skeleton.h"
 #include "Volt/Animation/AnimationManager.h"
-#include "Volt/Core/Profiling.h"
 
 namespace Volt
 {

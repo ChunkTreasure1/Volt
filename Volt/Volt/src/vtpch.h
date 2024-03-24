@@ -28,3 +28,4 @@
 #include <yaml-cpp/yaml.h>
 
 #include <Volt/Log/Log.h>
+#include <Volt/Core/Profiling.h>

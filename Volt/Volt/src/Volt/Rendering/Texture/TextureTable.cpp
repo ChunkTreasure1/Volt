@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "TextureTable.h"
 
-#include "Volt/Core/Profiling.h"
-
 #include "Volt/Rendering/Texture/Image2D.h"
 #include "Volt/Rendering/GlobalDescriptorSet.h"
 #include "Volt/Rendering/Renderer.h"
