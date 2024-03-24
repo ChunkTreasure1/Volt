@@ -12,7 +12,8 @@ namespace Volt::RHI
 	enum class ShaderCompilerFlags : uint32_t
 	{
 		None = BIT(0),
-		WarningsAsErrors = BIT(1)
+		WarningsAsErrors = BIT(1),
+		EnableShaderValidator = BIT(2)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(ShaderCompilerFlags);
@@ -39,13 +40,13 @@ namespace Volt::RHI
 		enum class OptimizationLevel : uint32_t
 		{
 			Disable,
-			Debug,
-			Full,
+			Release,
+			Dist,
 		};
 
 		struct Specification
 		{
-			OptimizationLevel optimizationLevel = OptimizationLevel::Debug;
+			OptimizationLevel optimizationLevel = OptimizationLevel::Disable;
 		
 			std::string entryPoint = "main";
 			bool forceCompile = false;

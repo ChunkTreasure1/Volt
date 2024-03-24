@@ -19,22 +19,6 @@ void RendererSettingsPanel::UpdateMainContent()
 		mySceneRenderer->Invalidate();
 	}
 
-	static Volt::AssetHandle handle;
-
-	if (UI::BeginProperties(""))
-	{
-		if (EditorUtils::Property("EnvMap", handle, Volt::AssetType::Texture))
-		{
-		}
-
-		if (handle != Volt::Asset::Null())
-		{
-			Volt::RendererNew::GenerateEnvironmentTextures(handle);
-		}
-
-		UI::EndProperties();
-	}
-
 	//UI::Header("Settings");
 
 	//bool changed = false;

@@ -5,6 +5,8 @@
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 
 #include "Volt/RenderingNew/RenderGraph/RenderGraphPass.h"
+#include "Volt/RenderingNew/Debug/ShaderRuntimeValidator.h"
+#include "Volt/RenderingNew/RendererNew.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
@@ -300,10 +302,16 @@ namespace Volt
 		struct PushConstantsData
 		{
 			ResourceHandle constatsBufferIndex;
+			ResourceHandle shaderValidationBuffer;
 			uint32_t constantsOffset;
 		} constantsData;
 
 		constantsData.constatsBufferIndex = GlobalResourceManager::GetResourceHandle(m_passConstantsBuffer);
+		
+#ifndef VT_DIST
+		constantsData.shaderValidationBuffer = RendererNew::GetRuntimeShaderValidator().GetCurrentErrorBufferHandle();
+#endif
+		
 		constantsData.constantsOffset = m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
 
 		m_commandBuffer->PushConstants(&constantsData, sizeof(PushConstantsData), 0);

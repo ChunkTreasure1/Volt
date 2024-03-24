@@ -92,10 +92,10 @@ namespace Volt::RHI
 
 		switch (specification.optimizationLevel)
 		{
-			case OptimizationLevel::Debug:
+			case OptimizationLevel::Release:
 				arguments.push_back(DXC_ARG_SKIP_OPTIMIZATIONS);
 				break;
-			case OptimizationLevel::Full:
+			case OptimizationLevel::Dist:
 				arguments.push_back(DXC_ARG_SKIP_VALIDATION);
 				break;
 			case OptimizationLevel::Disable:

@@ -306,8 +306,9 @@ namespace Volt
 		}
 
 		RenderGraphExecutionThread::WaitForFinishedExecution();
-		m_window->Present();
+		RendererNew::EndOfFrameUpdate();
 
+		m_window->Present();
 		m_frameTimer.Accumulate();
 	}
 

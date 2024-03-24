@@ -1123,7 +1123,7 @@ namespace Volt::RHI
 			vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
 		}
 
-		vkCmdFillBuffer(m_commandBuffers.at(index).commandBuffer, vkBuffer.GetHandle<VkBuffer>(), 0, vkBuffer.GetSize(), value);
+		vkCmdFillBuffer(m_commandBuffers.at(index).commandBuffer, vkBuffer.GetHandle<VkBuffer>(), 0, vkBuffer.GetByteSize(), value);
 
 		// Second transition
 		{

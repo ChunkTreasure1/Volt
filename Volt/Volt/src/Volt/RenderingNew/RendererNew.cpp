@@ -12,6 +12,7 @@
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 #include "Volt/RenderingNew/Shader/ShaderMap.h"
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
+#include "Volt/RenderingNew/Debug/ShaderRuntimeValidator.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 
 #include "Volt/Math/Math.h"
@@ -48,6 +49,8 @@ namespace Volt
 	struct RendererData
 	{
 		Ref<RHI::ShaderCompiler> shaderCompiler;
+		Scope<ShaderRuntimeValidator> shaderValidator;
+
 		std::vector<FunctionQueue> deletionQueue;
 
 		std::unordered_map<size_t, Ref<GlobalResource<RHI::SamplerState>>> samplers;
@@ -77,6 +80,11 @@ namespace Volt
 		{
 			RHI::ShaderCompilerCreateInfo shaderCompilerInfo{};
 			shaderCompilerInfo.flags = RHI::ShaderCompilerFlags::WarningsAsErrors;
+
+#ifndef VT_DIST
+			shaderCompilerInfo.flags |= RHI::ShaderCompilerFlags::EnableShaderValidator;
+#endif
+
 			//shaderCompilerInfo.cacheDirectory = ProjectManager::GetEngineDirectory() / "Engine/Shaders/Cache";
 			shaderCompilerInfo.includeDirectories =
 			{
@@ -96,6 +104,10 @@ namespace Volt
 		RenderGraphExecutionThread::Initialize();
 
 		CreateDefaultResources();
+
+#ifndef VT_DIST
+		s_rendererData->shaderValidator = CreateScope<ShaderRuntimeValidator>();
+#endif
 	}
 
 	void RendererNew::Shutdown()
@@ -371,9 +383,29 @@ namespace Volt
 		return result;
 	}
 
+#ifndef VT_DIST
+	ShaderRuntimeValidator& RendererNew::GetRuntimeShaderValidator()
+	{
+		return *s_rendererData->shaderValidator;
+	}
+#endif
+
 	void RendererNew::Update()
 	{
 		//GlobalResourceManager::Update();
+	}
+
+	void RendererNew::EndOfFrameUpdate()
+	{
+#ifndef VT_DIST
+		s_rendererData->shaderValidator->Update();
+
+		const auto& frameErrors = s_rendererData->shaderValidator->GetValidationErrors();
+		for (const auto& error : frameErrors)
+		{
+			VT_CORE_ERROR(error);
+		}
+#endif
 	}
 
 	Ref<GlobalResource<RHI::SamplerState>> RendererNew::GetSamplerInternal(const RHI::SamplerStateCreateInfo& samplerInfo)

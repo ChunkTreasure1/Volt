@@ -190,8 +190,14 @@ namespace Volt::RHI
 		switch (specification.optimizationLevel)
 		{
 			case ShaderCompiler::OptimizationLevel::Disable: arguments.push_back(L"-Od"); break;
-			case ShaderCompiler::OptimizationLevel::Debug: arguments.push_back(L"-O1"); arguments.push_back(DXC_ARG_DEBUG); /*arguments.push_back(L"-fspv-debug=vulkan");*/ break;
-			case ShaderCompiler::OptimizationLevel::Full: arguments.push_back(L"-O3"); break;
+			case ShaderCompiler::OptimizationLevel::Release: arguments.push_back(L"-O1"); break;
+			case ShaderCompiler::OptimizationLevel::Dist: arguments.push_back(L"-O3"); break;
+		}
+
+		if (specification.optimizationLevel != ShaderCompiler::OptimizationLevel::Dist)
+		{
+			arguments.push_back(DXC_ARG_DEBUG);
+			/*arguments.push_back(L"-fspv-debug=vulkan");*/
 		}
 
 		if (shaderStage == ShaderStage::Vertex || shaderStage == ShaderStage::Hull || shaderStage == ShaderStage::Geometry)
@@ -336,7 +342,8 @@ namespace Volt::RHI
 		{
 			filepath.c_str(),
 			L"-P", // Preproccess
-			L"-D", L"__HLSL__"
+			L"-D", L"__HLSL__",
+			L"-D", L"__VULKAN__"
 		};
 
 		if ((m_flags & ShaderCompilerFlags::WarningsAsErrors) != ShaderCompilerFlags::None)
@@ -353,6 +360,11 @@ namespace Volt::RHI
 		for (const auto& macro : m_macros)
 		{
 			wMacros.push_back(Utility::ToWString(macro));
+		}
+
+		if ((m_flags & ShaderCompilerFlags::EnableShaderValidator) != ShaderCompilerFlags::None)
+		{
+			wMacros.push_back(L"ENABLE_RUNTIME_VALIDATION");
 		}
 
 		for (const auto& macro : wMacros)

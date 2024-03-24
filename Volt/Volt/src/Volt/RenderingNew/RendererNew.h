@@ -18,6 +18,7 @@ namespace Volt
 
 	class Texture2D;
 	class Material;
+	class ShaderRuntimeValidator;
 
 	struct DefaultResources
 	{
@@ -44,7 +45,12 @@ namespace Volt
 		static const DefaultResources& GetDefaultResources();
 		static SceneEnvironment GenerateEnvironmentTextures(AssetHandle baseTextureHandle);
 
+#ifndef VT_DIST
+		static ShaderRuntimeValidator& GetRuntimeShaderValidator();
+#endif
+
 		static void Update();
+		static void EndOfFrameUpdate();
 
 		template<RHI::TextureFilter min, RHI::TextureFilter mag, RHI::TextureFilter mip, RHI::TextureWrap wrapMode = RHI::TextureWrap::Repeat, RHI::AnisotropyLevel aniso = RHI::AnisotropyLevel::None>
 		static Ref<GlobalResource<RHI::SamplerState>> GetSampler()
