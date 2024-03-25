@@ -53,9 +53,9 @@ namespace Volt
 		YAML::Node root = YAML::Load(sstream.str());
 		YAML::Node settingsNode = root["PhysicsSettings"];
 
-		VT_DESERIALIZE_PROPERTY(gravity, mySettings.gravity, settingsNode, glm::vec3(0.f, -9.81f, 0.f));
-		VT_DESERIALIZE_PROPERTY(worldBoundsMin, mySettings.worldBoundsMin, settingsNode, glm::vec3(-100.f));
-		VT_DESERIALIZE_PROPERTY(worldBoundsMax, mySettings.worldBoundsMax, settingsNode, glm::vec3(100.f));
+		VT_DESERIALIZE_PROPERTY(gravity, mySettings.gravity, settingsNode, glm::vec3(0.f, -981.f, 0.f));
+		VT_DESERIALIZE_PROPERTY(worldBoundsMin, mySettings.worldBoundsMin, settingsNode, glm::vec3(-100000.f));
+		VT_DESERIALIZE_PROPERTY(worldBoundsMax, mySettings.worldBoundsMax, settingsNode, glm::vec3(100000.f));
 		VT_DESERIALIZE_PROPERTY(worldBoundsSubDivisions, mySettings.worldBoundsSubDivisions, settingsNode, 2);
 		VT_DESERIALIZE_PROPERTY(solverIterations, mySettings.solverIterations, settingsNode, 8);
 		VT_DESERIALIZE_PROPERTY(solverVelocityIterations, mySettings.solverVelocityIterations, settingsNode, 2);

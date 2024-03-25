@@ -19,6 +19,7 @@
 #include "Volt/Asset/Importers/BehaviorTreeImporter.h"
 #include "Volt/Asset/Importers/NetContractImporter.h"
 #include "Volt/Asset/Importers/ParticlePresetImporter.h"
+#include "Volt/Asset/AssetFactory.h"
 
 #include "Volt/Platform/ThreadUtility.h"
 
@@ -47,14 +48,17 @@ namespace Volt
 		MeshTypeImporter::Initialize();
 		TextureImporter::Initialize();
 
-		RegisterAssetSerializers();
-		RegisterAssetCreateFunctions();
+		m_assetFactory = CreateScope<AssetFactory>();
+		m_assetFactory->Initialize();
 
+		RegisterAssetSerializers();
 		LoadAssetMetafiles();
 	}
 
 	void AssetManager::Shutdown()
 	{
+		m_assetFactory->Shutdown();
+
 		TextureImporter::Shutdown();
 		MeshTypeImporter::Shutdown();
 	}
@@ -166,16 +170,6 @@ namespace Volt
 		m_assetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>()); // Done
 		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>()); // Done
 		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>()); // Done
-	}
-
-	template<typename T>
-	void RegisterCreateFunction(AssetType assetType, std::unordered_map<AssetType, AssetManager::AssetCreateFunction>& functionMap)
-	{
-		functionMap[assetType] = []() { return CreateRef<T>(); }
-	}
-
-	void AssetManager::RegisterAssetCreateFunctions()
-	{
 	}
 
 	void AssetManager::LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset)
@@ -789,6 +783,11 @@ namespace Volt
 
 	Ref<Asset> AssetManager::GetAssetRaw(AssetHandle assetHandle)
 	{
+		if (assetHandle == Asset::Null())
+		{
+			return nullptr;
+		}
+
 		{
 			ReadLock lock{ m_assetCacheMutex };
 			auto it = m_assetCache.find(assetHandle);
@@ -798,7 +797,13 @@ namespace Volt
 			}
 		}
 
-		Ref<Asset> asset;
+		const AssetType assetType = GetAssetTypeFromHandle(assetHandle);
+		if (assetType == AssetType::None)
+		{
+			return nullptr;
+		}
+
+		Ref<Asset> asset = m_assetFactory->CreateAssetOfType(assetType);
 		LoadAsset(assetHandle, asset);
 
 		return asset;
@@ -806,7 +811,18 @@ namespace Volt
 
 	Ref<Asset> AssetManager::QueueAssetRaw(AssetHandle assetHandle)
 	{
-		Ref<Asset> asset = CreateRef<Asset>();
+		if (assetHandle == Asset::Null())
+		{
+			return nullptr;
+		}
+
+		const AssetType assetType = GetAssetTypeFromHandle(assetHandle);
+		if (assetType == AssetType::None)
+		{
+			return nullptr;
+		}
+
+		Ref<Asset> asset = m_assetFactory->CreateAssetOfType(assetType);
 		asset->SetFlag(AssetFlag::Queued, true);
 		Get().QueueAssetInternal(assetHandle, asset);
 
@@ -1367,8 +1383,7 @@ namespace Volt
 			metadata.filePath = filePath;
 			metadata.dependencies = dependencies;
 			metadata.properties = assetProperties;
-
-			VT_DESERIALIZE_PROPERTY(type, *(uint32_t*)&metadata.type, metaRoot, 0);
+			metadata.type = GetAssetTypeFromExtension(filePath.extension().string());
 		}
 	}
 }

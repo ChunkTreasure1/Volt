@@ -22,7 +22,7 @@ Output main(DecalOutput input)
     const float3 pixelNormal = normalize(cross(ddy(pixelWorldPosition), ddx(pixelWorldPosition)));
     
     float decalCull = saturate(dot(rotVec.xyz, pixelNormal));
-    const float2 sampleCoords = -objectSpacePosition.xy + 0.5f;
+    const float2 sampleCoords = -(objectSpacePosition.xy / 100.f) + 0.5f;
     
     const Material material = GetMaterial(u_materialData.materialIndex);
     

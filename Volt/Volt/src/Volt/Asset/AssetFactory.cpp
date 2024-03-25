@@ -34,7 +34,7 @@ namespace Volt
 	template<typename T>
 	void RegisterCreateFunction(AssetType type, std::unordered_map<AssetType, AssetFactory::AssetCreateFunction>& out)
 	{
-		out[type] = []() { return CreateRef<T>(); }
+		out[type] = []() { return CreateRef<T>(); };
 	}
 
 	void AssetFactory::Initialize()
@@ -59,20 +59,26 @@ namespace Volt
 		RegisterCreateFunction<AnimationGraphAsset>(AssetType::AnimationGraph, m_assetFactoryFunctions);
 		RegisterCreateFunction<GraphKey::Graph>(AssetType::GraphKey, m_assetFactoryFunctions);
 		RegisterCreateFunction<BehaviorTree::Tree>(AssetType::BehaviorGraph, m_assetFactoryFunctions);
-		RegisterCreateFunction<BehaviorTree::Tree>(AssetType::GraphKey, m_assetFactoryFunctions);
 		RegisterCreateFunction<RenderPipeline>(AssetType::RenderPipeline, m_assetFactoryFunctions);
 		RegisterCreateFunction<TimelinePreset>(AssetType::Timeline, m_assetFactoryFunctions);
 		RegisterCreateFunction<NetContract>(AssetType::NetContract, m_assetFactoryFunctions);
 		RegisterCreateFunction<PostProcessingMaterial>(AssetType::PostProcessingMaterial, m_assetFactoryFunctions);
 		RegisterCreateFunction<PostProcessingStack>(AssetType::PostProcessingStack, m_assetFactoryFunctions);
+	
+		m_assetFactoryFunctions[AssetType::MotionWeave] = []() { return nullptr; };
+		m_assetFactoryFunctions[AssetType::MonoScript] = []() { return nullptr; };
+		m_assetFactoryFunctions[AssetType::TextureSource] = []() { return nullptr; };
+
+		VT_CORE_ASSERT(m_assetFactoryFunctions.size() == static_cast<size_t>(AssetType::Count) - 1, "All assets must have registered create functions!");
 	}
 	
 	void AssetFactory::Shutdown()
 	{
+		m_assetFactoryFunctions.clear();
 	}
 
 	Ref<Asset> AssetFactory::CreateAssetOfType(AssetType type)
 	{
-		return Ref<Asset>();
+		return m_assetFactoryFunctions.at(type)();
 	}
 }

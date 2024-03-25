@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 7955806645952785879
+  assetHandle: 10912109429973415851
   filePath: Engine/Shaders/Definitions/Outline/outlineComposite.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 15064921398973923722
+    - 3896226660567456510
+  Properties:
+    {}

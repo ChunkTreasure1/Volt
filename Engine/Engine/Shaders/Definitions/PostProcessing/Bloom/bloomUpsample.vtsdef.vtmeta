@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 17869560900133453661
+  assetHandle: 16319043175348845236
   filePath: Engine/Shaders/Definitions/PostProcessing/Bloom/bloomUpsample.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 15896185019340959172
+    - 3500807235121010197
+  Properties:
+    {}

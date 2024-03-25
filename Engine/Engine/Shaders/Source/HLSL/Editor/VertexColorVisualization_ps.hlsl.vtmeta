@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 986534500284155151
+  assetHandle: 15543690279891023692
   filePath: Engine/Shaders/Source/HLSL/Editor/VertexColorVisualization_ps.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

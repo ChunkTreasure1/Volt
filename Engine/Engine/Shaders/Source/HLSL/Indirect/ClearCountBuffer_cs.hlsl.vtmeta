@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 10489521087417306666
+  assetHandle: 5186308870278711452
   filePath: Engine/Shaders/Source/HLSL/Indirect/ClearCountBuffer_cs.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

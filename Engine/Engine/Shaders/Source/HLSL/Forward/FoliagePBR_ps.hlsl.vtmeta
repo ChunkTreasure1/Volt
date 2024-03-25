@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 13539890824883039717
+  assetHandle: 2363339451227361009
   filePath: Engine/Shaders/Source/HLSL/Forward/FoliagePBR_ps.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

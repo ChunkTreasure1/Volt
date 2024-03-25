@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 15092269069855623745
+  assetHandle: 6536228802478257894
   filePath: Engine/Shaders/Source/HLSL/Environment/PreethamSky_cs.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

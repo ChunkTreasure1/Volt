@@ -212,6 +212,11 @@ void ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, Volt::Enti
 	{
 		for (const auto& member : componentType->GetMembers())
 		{
+			if ((member.flags & Volt::ComponentMemberFlag::DoNotShow) != Volt::ComponentMemberFlag::None)
+			{
+				continue;
+			}
+
 			if (member.typeDesc)
 			{
 				switch (member.typeDesc->GetValueType())

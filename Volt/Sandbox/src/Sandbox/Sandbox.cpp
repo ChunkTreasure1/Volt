@@ -32,7 +32,6 @@
 #include "Sandbox/Window/Sequencer.h"
 #include "Sandbox/Window/BlendSpaceEditorPanel.h"
 #include "Sandbox/Window/CurveGraphPanel.h"
-#include "Sandbox/Window/MaterialGraphPanel.h"
 #include "Sandbox/Window/Timeline.h"
 #include "Sandbox/Window/ShaderEditorPanel.h"
 #include "Sandbox/Window/PostProcessingStackPanel.h"
@@ -115,7 +114,7 @@ void Sandbox::OnAttach()
 
 	Volt::Application::Get().GetWindow().Maximize();
 
-	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
+	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
 	UserSettingsManager::LoadUserSettings();
 	const auto& userSettings = UserSettingsManager::GetSettings();

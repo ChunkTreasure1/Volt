@@ -13,6 +13,7 @@
 #include "Sandbox/Window/AssetBrowser/DirectoryItem.h"
 #include "Sandbox/Window/AssetBrowser/AssetBrowserSelectionManager.h"
 #include "Sandbox/Window/AssetBrowser/PreviewRenderer.h"
+#include "Sandbox/Window/AssetBrowser/AssetDirectoryProcessor.h"
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Asset/AssetManager.h>
@@ -70,11 +71,17 @@ AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string
 		myPreviewRenderer = CreateRef<PreviewRenderer>();
 	}
 
-	myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = ProcessDirectory(Volt::ProjectManager::GetAssetsDirectory(), nullptr);
-	myDirectories[FileSystem::GetEnginePath()] = ProcessDirectory(FileSystem::GetEnginePath(), nullptr);
+	{
+		AssetDirectoryProcessor processor{ mySelectionManager, myAssetMask };
+		myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = processor.ProcessDirectories(Volt::ProjectManager::GetAssetsDirectory(), myMeshImportData, myMeshToImport);
+	}
+
+	{
+		AssetDirectoryProcessor processor{ mySelectionManager, myAssetMask };
+		myDirectories[FileSystem::GetEnginePath()] = processor.ProcessDirectories(FileSystem::GetEnginePath(), myMeshImportData, myMeshToImport);
+	}
 
 	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsDirectory()].get();
-
 	myCurrentDirectory = myAssetsDirectory;
 
 	myDirectoryButtons.emplace_back(myCurrentDirectory);
@@ -433,43 +440,6 @@ bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 		}
 	}
 	return false;
-}
-
-Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent)
-{
-	Ref<AssetBrowser::DirectoryItem> dirData = CreateRef<AssetBrowser::DirectoryItem>(mySelectionManager.get(), Volt::AssetManager::GetRelativePath(path));
-	dirData->parentDirectory = parent;
-
-	for (const auto& entry : std::filesystem::directory_iterator(path))
-	{
-		if (!entry.is_directory())
-		{
-			const auto type = Volt::AssetManager::GetAssetTypeFromPath(entry);
-			const auto filename = entry.path().filename().string();
-
-			if (type != Volt::AssetType::None && !Utility::StringContains(filename, ".vtthumb.png"))
-			{
-				if (myAssetMask == Volt::AssetType::None || (myAssetMask & type) != Volt::AssetType::None)
-				{
-					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), Volt::AssetManager::GetRelativePath(entry.path()), myMeshImportData, myMeshToImport);
-					dirData->assets.emplace_back(assetItem);
-				}
-			}
-		}
-		else
-		{
-			auto nextDirData = ProcessDirectory(entry.path(), dirData.get());
-			if ((!nextDirData->assets.empty() || !nextDirData->subDirectories.empty()) || myAssetMask == Volt::AssetType::None)
-			{
-				dirData->subDirectories.emplace_back(nextDirData);
-			}
-		}
-	}
-
-	std::sort(dirData->subDirectories.begin(), dirData->subDirectories.end(), [](const Ref<AssetBrowser::DirectoryItem>& a, const Ref<AssetBrowser::DirectoryItem>& b) { return a->path.string() < b->path.string(); });
-	std::sort(dirData->assets.begin(), dirData->assets.end(), [](const Ref<AssetBrowser::AssetItem>& a, const Ref<AssetBrowser::AssetItem>& b) { return a->path.stem().string() < b->path.stem().string(); });
-
-	return dirData;
 }
 
 std::vector<AssetBrowser::DirectoryItem*> AssetBrowserPanel::FindParentDirectoriesOfDirectory(AssetBrowser::DirectoryItem* directory)
@@ -896,11 +866,6 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 					CreateNewAssetInCurrentDirectory(Volt::AssetType::Material);
 				}
 
-				if (ImGui::MenuItem("Material Graph"))
-				{
-					CreateNewAssetInCurrentDirectory(Volt::AssetType::MaterialGraph);
-				}
-
 				if (ImGui::MenuItem("Shader"))
 				{
 					CreateNewAssetInCurrentDirectory(Volt::AssetType::Shader);
@@ -1074,7 +1039,10 @@ void AssetBrowserPanel::Reload()
 
 	ClearAssetPreviewsInCurrentDirectory();
 
-	myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = ProcessDirectory(Volt::ProjectManager::GetAssetsDirectory(), nullptr);
+	//myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = ProcessDirectory(Volt::ProjectManager::GetAssetsDirectory(), nullptr);
+
+	AssetDirectoryProcessor processor{ mySelectionManager, myAssetMask };
+	myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = processor.ProcessDirectories(Volt::ProjectManager::GetAssetsDirectory(), myMeshImportData, myMeshToImport);
 
 	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsDirectory()].get();
 

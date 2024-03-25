@@ -1,7 +1,9 @@
 Metadata:
-  assetHandle: 16330042432833640222
+  assetHandle: 11685137258237284022
   filePath: Engine/Shaders/Definitions/Editor/grid.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 4859897163334500134
-    - 1986156164472483170
+    - 10333585351520757801
+    - 6212267489373485534
+  Properties:
+    {}

@@ -4823,7 +4823,7 @@ namespace Volt
 		auto entity = scene->GetEntityFromUUID(id);
 		while (!entity.HasComponent<NetActorComponent>())
 		{
-			if (entity.GetParent().GetID() == Entity::NullID()) return 0;
+			if (!entity.GetParent().IsValid()) return 0;
 			entity = entity.GetParent();
 		}
 		auto netId = entity.GetComponent<NetActorComponent>().repId;
@@ -5176,6 +5176,11 @@ namespace Volt
 #pragma region Asset
 	inline static bool Asset_IsValid(uint64_t handle)
 	{
+		if (handle == Asset::Null())
+		{
+			return false;
+		}
+
 		Ref<Asset> assetRaw = AssetManager::Get().GetAssetRaw(handle);
 		if (assetRaw && assetRaw->IsValid())
 		{

@@ -16,10 +16,10 @@ void main(point DefaultBillboardVertex input[1], inout TriangleStream<Output> ou
 {
     const float2 offsets[4] =
     {
-        { -1.f, 1.f },
-        { 1.f, 1.f },
-        { -1.f, -1.f },
-        { 1.f, -1.f }
+        { -100.f, 100.f },
+        { 100.f, 100.f },
+        { -100.f, -100.f },
+        { 100.f, -100.f }
     };
 
     const float2 uvs[4] =

@@ -20,6 +20,7 @@
 
 namespace Volt
 {
+	class AssetFactory;
 	class AssetImporter;
 	class AssetManager
 	{
@@ -162,6 +163,8 @@ namespace Volt
 		std::unordered_map<AssetHandle, Ref<Asset>> m_assetCache;
 		std::unordered_map<AssetHandle, Ref<Asset>> m_memoryAssets;
 		std::unordered_map<AssetHandle, AssetMetadata> m_assetRegistry;
+
+		Scope<AssetFactory> m_assetFactory;
 
 		mutable std::shared_mutex m_assetRegistryMutex;
 		mutable std::shared_mutex m_assetCacheMutex;

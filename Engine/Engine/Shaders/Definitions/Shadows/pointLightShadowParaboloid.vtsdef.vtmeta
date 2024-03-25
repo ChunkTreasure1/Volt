@@ -1,8 +1,10 @@
 Metadata:
-  assetHandle: 8634600435813317795
+  assetHandle: 1901096243448572738
   filePath: Engine/Shaders/Definitions/Shadows/pointLightShadowParaboloid.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 12790966630591718537
-    - 17973576047235707916
-    - 4386556364066057097
+    - 17466296530272892716
+    - 703446259123602191
+    - 8898576306088752264
+  Properties:
+    {}

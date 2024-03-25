@@ -178,7 +178,7 @@ void Sandbox::CreateMovedWatch()
 		myFileChangeQueue.emplace_back([&]()
 		{
 			auto assetBrowser = EditorLibrary::Get<AssetBrowserPanel>();
-			assetBrowser->Reload();
+			//assetBrowser->Reload();
 		});
 	});
 }

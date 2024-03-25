@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 4606867269130900172
+  assetHandle: 1113443741560778378
   filePath: Engine/Shaders/Definitions/Utility/brdfGeneration.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 3293696131939240478
+    - 1128127446153439271
+  Properties:
+    {}
