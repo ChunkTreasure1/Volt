@@ -67,6 +67,28 @@ namespace Volt
 		}
 	}
 
+	Window::Window(const WindowProperties& properties, const WindowInheritanceInfo& inheritanceInfo)
+	{
+		m_isInherited = true;
+		m_data.height = properties.height;
+		m_data.width = properties.width;
+		m_data.title = properties.title;
+		m_data.vsync = properties.vsync;
+		m_data.windowMode = properties.windowMode;
+		m_data.iconPath = properties.iconPath;
+		m_data.cursorPath = properties.cursorPath;
+
+		m_properties = properties;
+		m_graphicsContext = inheritanceInfo.graphicsContext;
+
+		Invalidate();
+
+		if (!m_data.cursorPath.empty())
+		{
+			SetCursor(m_data.cursorPath);
+		}
+	}
+
 	Window::~Window()
 	{
 		Shutdown();
@@ -95,7 +117,7 @@ namespace Volt
 			Release();
 		}
 
-		if (!m_hasBeenInitialized)
+		if (!m_hasBeenInitialized && !m_isInherited)
 		{
 			if (!glfwInit())
 			{
@@ -156,19 +178,23 @@ namespace Volt
 
 		if (!m_hasBeenInitialized)
 		{
-			RHI::LogHookInfo logHook{};
-			logHook.enabled = true;
-			logHook.logCallback = RHILogCallback;
+			if (!m_isInherited)
+			{
+				RHI::LogHookInfo logHook{};
+				logHook.enabled = true;
+				logHook.logCallback = RHILogCallback;
 
-			RHI::ResourceManagementInfo resourceManagement{};
-			resourceManagement.resourceDeletionCallback = RendererNew::DestroyResource;
+				RHI::ResourceManagementInfo resourceManagement{};
+				resourceManagement.resourceDeletionCallback = RendererNew::DestroyResource;
 
-			RHI::GraphicsContextCreateInfo cinfo{};
-			cinfo.graphicsApi = RHI::GraphicsAPI::Vulkan;
-			cinfo.loghookInfo = logHook;
-			cinfo.resourceManagementInfo = resourceManagement;
+				RHI::GraphicsContextCreateInfo cinfo{};
+				cinfo.graphicsApi = RHI::GraphicsAPI::Vulkan;
+				cinfo.loghookInfo = logHook;
+				cinfo.resourceManagementInfo = resourceManagement;
 
-			m_graphicsContext = RHI::GraphicsContext::Create(cinfo);
+				m_graphicsContext = RHI::GraphicsContext::Create(cinfo);
+			}
+
 			m_swapchain = RHI::Swapchain::Create(m_window);
 			m_swapchain->Resize(m_data.width, m_data.height, m_data.vsync);
 			m_hasBeenInitialized = true;
@@ -549,6 +575,11 @@ namespace Volt
 	const float Window::GetTime() const
 	{
 		return static_cast<float>(glfwGetTime());
+	}
+
+	Scope<Window> Window::Create(const WindowProperties& aProperties, const WindowInheritanceInfo& inheritanceInfo)
+	{
+		return CreateScope<Window>(aProperties, inheritanceInfo);
 	}
 
 	Scope<Window> Window::Create(const WindowProperties& aProperties)
