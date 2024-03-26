@@ -119,7 +119,6 @@ private:
 	///// Animation Graph creation /////
 	NewAnimationGraphData myNewAnimationGraphData{};
 
-	Ref<AssetBrowser::DirectoryItem> ProcessDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent);
 	std::unordered_map <std::filesystem::path, Ref<AssetBrowser::DirectoryItem>> myDirectories;
 	Ref<AssetBrowser::SelectionManager> mySelectionManager;
 

@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 9101253671080566435
+  assetHandle: 6264200697815171063
   filePath: Engine/Shaders/Source/HLSL/Shadows/PointLightShadow_gs.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 5725027122480814311
+  assetHandle: 5398517952915921890
   filePath: Engine/Shaders/Source/HLSL/Outline/OutlineGeometry_ps.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

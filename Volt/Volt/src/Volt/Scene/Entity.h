@@ -3,6 +3,7 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/EntityID.h"
+#include "Volt/Scene/Reflection/VoltGUID.h"
 
 #include <entt.hpp>
 
@@ -20,7 +21,8 @@ namespace Volt
 		SkipRelationships = BIT(0),
 		SkipPrefab = BIT(1),
 		SkipTransform = BIT(2),
-		SkipCommonData = BIT(3)
+		SkipCommonData = BIT(3),
+		SkipID = BIT(4)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(EntityCopyFlags);
@@ -99,6 +101,7 @@ namespace Volt
 
 		const bool IsValid() const;
 		const EntityID GetID() const;
+		const entt::entity GetHandle() const { return m_handle; }
 
 		template<typename T> T& GetComponent();
 		template<typename T> const T& GetComponent() const;
@@ -106,6 +109,7 @@ namespace Volt
 		template<typename T, typename... Args> T& AddComponent(Args&&... args);
 		template<typename T> void RemoveComponent();
 
+		void RemoveComponent(const VoltGUID& guid);
 		const bool HasComponent(std::string_view componentName) const;
 
 		Entity& operator=(const Entity& entity);
@@ -124,7 +128,7 @@ namespace Volt
 		static void Copy(Entity srcEntity, Entity dstEntity, const EntityCopyFlags copyFlags = EntityCopyFlags::SkipRelationships);
 
 		// Duplicates an entire entity tree
-		static Entity Duplicate(Entity srcEntity, Ref<Scene> targetScene = nullptr, Entity parent = Entity::Null());
+		static Entity Duplicate(Entity srcEntity, Ref<Scene> targetScene = nullptr, Entity parent = Entity::Null(), const EntityCopyFlags copyFlags = EntityCopyFlags::None);
 
 	private:
 		static void CopyComponent(const uint8_t* srcData, uint8_t* dstData, const size_t offset, const IComponentTypeDesc* compDesc);
@@ -189,6 +193,4 @@ namespace Volt
 		auto& registry = scenePtr->GetRegistry();
 		registry.remove<T>(m_handle);
 	}
-
-
 }

@@ -10,21 +10,22 @@
 
 namespace Volt
 {
-	PostProcessingMaterial::PostProcessingMaterial(Ref<Shader> shader)
-		: myShader(shader)
-	{
-		myPipeline = ComputePipeline::Create(myShader, Renderer::GetFramesInFlightCount(), true);
-		Invalidate();
-
-		Renderer::AddShaderDependency(myShader, this);
-	}
-
 	PostProcessingMaterial::~PostProcessingMaterial()
 	{
 		if (myShader)
 		{
 			Renderer::RemoveShaderDependency(myShader, this);
 		}
+	}
+
+	void PostProcessingMaterial::Initialize(Ref<Shader> shader)
+	{
+		myShader = shader;
+
+		myPipeline = ComputePipeline::Create(myShader, Renderer::GetFramesInFlightCount(), true);
+		Invalidate();
+
+		Renderer::AddShaderDependency(myShader, this);
 	}
 
 	void PostProcessingMaterial::Invalidate()

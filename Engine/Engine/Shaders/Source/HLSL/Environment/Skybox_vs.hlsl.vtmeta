@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 15198442702326247597
+  assetHandle: 15505709367574573075
   filePath: Engine/Shaders/Source/HLSL/Environment/Skybox_vs.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

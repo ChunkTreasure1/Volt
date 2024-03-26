@@ -1,9 +1,9 @@
 Metadata:
-  assetHandle: 16074349637876673463
+  assetHandle: 2820475171386238705
   filePath: Engine/Shaders/Definitions/Editor/navmeshDebug.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 13639218079433149575
-    - 3437710173954916273
+    - 6321163614473994367
+    - 7359963059665638003
   Properties:
     {}

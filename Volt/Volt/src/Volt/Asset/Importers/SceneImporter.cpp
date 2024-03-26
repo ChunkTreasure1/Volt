@@ -10,6 +10,7 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Scene/Reflection/ComponentReflection.h"
 #include "Volt/Scene/Reflection/ComponentRegistry.h"
+#include "Volt/Asset/Prefab.h"
 
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
@@ -22,11 +23,11 @@
 namespace Volt
 {
 	template<typename T>
-	void RegisterSerializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLStreamWriter&, const uint8_t*, const size_t)>>& outTypes)
+	void RegisterSerializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLFileStreamWriter&, const uint8_t*, const size_t)>>& outTypes)
 	{
 		VT_PROFILE_FUNCTION();
 
-		outTypes[std::type_index{ typeid(T) }] = [](YAMLStreamWriter& streamWriter, const uint8_t* data, const size_t offset)
+		outTypes[std::type_index{ typeid(T) }] = [](YAMLFileStreamWriter& streamWriter, const uint8_t* data, const size_t offset)
 		{
 			const T& var = *reinterpret_cast<const T*>(&data[offset]);
 			streamWriter.SetKey("data", var);
@@ -34,11 +35,11 @@ namespace Volt
 	}
 
 	template<typename T>
-	void RegisterDeserializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLStreamReader&, uint8_t*, const size_t)>>& outTypes)
+	void RegisterDeserializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLFileStreamReader&, uint8_t*, const size_t)>>& outTypes)
 	{
 		VT_PROFILE_FUNCTION();
 
-		outTypes[std::type_index{ typeid(T) }] = [](YAMLStreamReader& streamReader, uint8_t* data, const size_t offset)
+		outTypes[std::type_index{ typeid(T) }] = [](YAMLFileStreamReader& streamReader, uint8_t* data, const size_t offset)
 		{
 			*reinterpret_cast<T*>(&data[offset]) = streamReader.ReadKey("data", T());
 		};
@@ -136,7 +137,7 @@ namespace Volt
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 
 		if (!streamReader.OpenFile(filePath))
 		{
@@ -188,7 +189,7 @@ namespace Volt
 
 		std::filesystem::path scenePath = directoryPath / (metadata.filePath.stem().string() + ".vtscene");
 
-		YAMLStreamWriter streamWriter{ scenePath };
+		YAMLFileStreamWriter streamWriter{ scenePath };
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("Scene");
 		streamWriter.SetKey("name", metadata.filePath.stem().string());
@@ -244,7 +245,7 @@ namespace Volt
 
 			auto& sceneLayer = sceneLayers.emplace_back();
 
-			YAMLStreamReader streamReader{};
+			YAMLFileStreamReader streamReader{};
 			if (!streamReader.OpenFile(layerPath))
 			{
 				continue;
@@ -285,7 +286,7 @@ namespace Volt
 		{
 			const auto layerPath = layerFolderPath / ("layer_" + std::to_string(layer.id) + ".vtlayer");
 
-			YAMLStreamWriter streamWriter{ layerPath };
+			YAMLFileStreamWriter streamWriter{ layerPath };
 			streamWriter.BeginMap();
 			streamWriter.BeginMapNamned("Layer");
 			{
@@ -332,7 +333,7 @@ namespace Volt
 				Entity entity = entities.at(i);
 				const auto entityPath = entitiesDirectoryPath / (entity.ToString() + ".entity");
 
-				YAMLStreamWriter streamWriter{ entityPath };
+				YAMLFileStreamWriter streamWriter{ entityPath };
 				SerializeEntity(entity, metadata, scene, streamWriter);
 
 				streamWriter.WriteToDisk();
@@ -399,7 +400,7 @@ namespace Volt
 
 			const auto& path = entityPaths.at(i);
 
-			YAMLStreamReader streamReader{};
+			YAMLFileStreamReader streamReader{};
 			if (!streamReader.OpenFile(path))
 			{
 				return;
@@ -424,7 +425,7 @@ namespace Volt
 		}
 	}
 
-	void SceneImporter::SerializeWorldEngine(const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const
+	void SceneImporter::SerializeWorldEngine(const Ref<Scene>& scene, YAMLFileStreamWriter& streamWriter) const
 	{
 		auto& worldEngine = scene->m_worldEngine;
 
@@ -435,7 +436,7 @@ namespace Volt
 		streamWriter.EndMap();
 	}
 
-	void SceneImporter::DeserializeWorldEngine(const Ref<Scene>& scene, YAMLStreamReader& streamReader) const
+	void SceneImporter::DeserializeWorldEngine(const Ref<Scene>& scene, YAMLFileStreamReader& streamReader) const
 	{
 		auto& worldEngine = scene->m_worldEngine;
 
@@ -482,7 +483,7 @@ namespace Volt
 		{
 			const auto& path = entityPaths.at(i);
 
-			YAMLStreamReader streamReader{};
+			YAMLFileStreamReader streamReader{};
 			if (!streamReader.OpenFile(path))
 			{
 				return;
@@ -532,7 +533,7 @@ namespace Volt
 		return scene->CreateEntityWithUUID(entityId);
 	}
 
-	void SceneImporter::SerializeEntity(entt::entity id, const AssetMetadata& metadata, const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const
+	void SceneImporter::SerializeEntity(entt::entity id, const AssetMetadata& metadata, const Ref<Scene>& scene, YAMLFileStreamWriter& streamWriter) const
 	{
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("Entity");
@@ -573,7 +574,7 @@ namespace Volt
 
 		if (registry.any_of<VertexPaintedComponent>(id))
 		{
-			std::filesystem::path vpPath = (ProjectManager::GetDirectory() / metadata.filePath.parent_path() / "Layers" / ("ent_" + std::to_string((uint32_t)id) + ".entVp"));
+			std::filesystem::path vpPath = (ProjectManager::GetDirectory() / metadata.filePath.parent_path() / "Layers" / ("ent_" + std::to_string((uint32_t)registry.get<IDComponent>(id).id) + ".entVp"));
 			auto& vpComp = registry.get<VertexPaintedComponent>(id);
 
 			// #TODO_Ivar: This is kind of questionable after TGA
@@ -594,7 +595,7 @@ namespace Volt
 		streamWriter.EndMap();
 	}
 
-	void SceneImporter::SerializeClass(const uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLStreamWriter& streamWriter, bool isSubComponent) const
+	void SceneImporter::SerializeClass(const uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLFileStreamWriter& streamWriter, bool isSubComponent) const
 	{
 		if (!isSubComponent)
 		{
@@ -655,7 +656,7 @@ namespace Volt
 		}
 	}
 
-	void SceneImporter::SerializeArray(const uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLStreamWriter& streamWriter) const
+	void SceneImporter::SerializeArray(const uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLFileStreamWriter& streamWriter) const
 	{
 		const void* arrayPtr = &data[offset];
 
@@ -704,7 +705,7 @@ namespace Volt
 		streamWriter.EndSequence();
 	}
 
-	void SceneImporter::SerializeMono(entt::entity id, const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const
+	void SceneImporter::SerializeMono(entt::entity id, const Ref<Scene>& scene, YAMLFileStreamWriter& streamWriter) const
 	{
 		const auto& scriptFieldCache = scene->GetScriptFieldCache();
 
@@ -762,7 +763,7 @@ namespace Volt
 		streamWriter.EndSequence();
 	}
 
-	void SceneImporter::DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLStreamReader& streamReader) const
+	void SceneImporter::DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLFileStreamReader& streamReader) const
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -818,6 +819,24 @@ namespace Volt
 			DeserializeMono(entity, scene, streamReader);
 		}
 
+		if (scene->GetRegistry().any_of<PrefabComponent>(entity))
+		{
+			auto& prefabComp = scene->GetRegistry().get<PrefabComponent>(entity);
+		
+			// We need to check that it's not the entity being referenced in the prefab, as this means we are loading the prefab
+			if (entity.GetID() != prefabComp.prefabEntity)
+			{
+				auto prefab = AssetManager::GetAsset<Prefab>(prefabComp.prefabAsset);
+				if (prefab && prefab->IsValid())
+				{
+					if (prefab->GetVersion() > prefabComp.version)
+					{
+						prefab->UpdateEntityInScene(entity);
+					}
+				}
+			}
+		}
+
 		if (scene->GetRegistry().any_of<VertexPaintedComponent>(entity))
 		{
 			std::filesystem::path vpPath = metadata.filePath.parent_path();
@@ -856,7 +875,7 @@ namespace Volt
 		streamReader.ExitScope();
 	}
 
-	void SceneImporter::DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLStreamReader& streamReader) const
+	void SceneImporter::DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLFileStreamReader& streamReader) const
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -909,7 +928,7 @@ namespace Volt
 		});
 	}
 
-	void SceneImporter::DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLStreamReader& streamReader) const
+	void SceneImporter::DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLFileStreamReader& streamReader) const
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -966,7 +985,7 @@ namespace Volt
 		});
 	}
 
-	void SceneImporter::DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLStreamReader& streamReader) const
+	void SceneImporter::DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLFileStreamReader& streamReader) const
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -1097,7 +1116,7 @@ namespace Volt
 
 			const auto& path = entityPaths.at(i);
 
-			YAMLStreamReader streamReader{};
+			YAMLFileStreamReader streamReader{};
 			if (!streamReader.OpenFile(path))
 			{
 				return;

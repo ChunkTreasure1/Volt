@@ -23,7 +23,6 @@ namespace Volt
 		const glm::vec3& GetCenter() const override { return center; }
 		const float GetRadius() const override { return radius; }
 
-
 		glm::vec3 center = 0.f;
 		float radius = 0.f;
 	};

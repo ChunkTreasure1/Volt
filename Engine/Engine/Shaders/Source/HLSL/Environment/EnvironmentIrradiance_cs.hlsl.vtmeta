@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 15135292149693505992
+  assetHandle: 10428837376462372131
   filePath: Engine/Shaders/Source/HLSL/Environment/EnvironmentIrradiance_cs.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

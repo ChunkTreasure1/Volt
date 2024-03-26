@@ -42,6 +42,7 @@ namespace Volt
 		BC7SRGB,
 
 		BC6H_SF16,
+		BC6H_UF16,
 
 		DEPTH32F,
 		DEPTH16U,

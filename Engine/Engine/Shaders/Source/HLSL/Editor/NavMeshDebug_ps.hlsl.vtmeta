@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 3437710173954916273
+  assetHandle: 7359963059665638003
   filePath: Engine/Shaders/Source/HLSL/Editor/NavMeshDebug_ps.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

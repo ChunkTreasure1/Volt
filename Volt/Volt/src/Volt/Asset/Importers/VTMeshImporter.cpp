@@ -12,12 +12,12 @@
 
 namespace Volt
 {
-	Ref<Mesh> VTMeshImporter::ImportMeshImpl(const std::filesystem::path& path)
+	bool VTMeshImporter::ImportMeshImpl(const std::filesystem::path& path, Mesh& dstMesh)
 	{
 		if (!std::filesystem::exists(path))
 		{
 			VT_CORE_ERROR("File does not exist: {0}", path.string().c_str());
-			return nullptr;
+			return false;
 		}
 
 		std::ifstream file(path, std::ios::in | std::ios::binary);
@@ -33,42 +33,40 @@ namespace Volt
 		file.read(reinterpret_cast<char*>(totalData.data()), totalData.size());
 		file.close();
 
-		Ref<Mesh> mesh = CreateRef<Mesh>();
-
 		size_t offset = 0;
 
 		const uint32_t subMeshCount = *(uint32_t*)&totalData[offset];
 		offset += sizeof(uint32_t);
 
 		const AssetHandle materialHandle = *(AssetHandle*)&totalData[offset];
-		mesh->myMaterial = AssetManager::GetAsset<Material>(materialHandle);
+		dstMesh.myMaterial = AssetManager::GetAsset<Material>(materialHandle);
 		offset += sizeof(AssetHandle);
 
 		const uint32_t vertexCount = *(uint32_t*)&totalData[offset];
 		offset += sizeof(uint32_t);
 
-		mesh->myVertices.resize(vertexCount);
-		memcpy_s(mesh->myVertices.data(), sizeof(Vertex) * vertexCount, &totalData[offset], sizeof(Vertex) * vertexCount);
+		dstMesh.myVertices.resize(vertexCount);
+		memcpy_s(dstMesh.myVertices.data(), sizeof(Vertex) * vertexCount, &totalData[offset], sizeof(Vertex) * vertexCount);
 		offset += sizeof(Vertex) * vertexCount;
 
 		const uint32_t indexCount = *(uint32_t*)&totalData[offset];
 		offset += sizeof(uint32_t);
 
-		mesh->myIndices.resize(indexCount);
-		memcpy_s(mesh->myIndices.data(), sizeof(uint32_t) * indexCount, &totalData[offset], sizeof(uint32_t) * indexCount);
+		dstMesh.myIndices.resize(indexCount);
+		memcpy_s(dstMesh.myIndices.data(), sizeof(uint32_t) * indexCount, &totalData[offset], sizeof(uint32_t) * indexCount);
 		offset += sizeof(uint32_t) * indexCount;
 
 		if (!IsValid(subMeshCount, vertexCount, indexCount, srcSize) && path.extension() != ".vtnavmesh")
 		{
 			VT_CORE_ERROR("Mesh {0} is invalid! It needs to be recompiled!", path.string());
-			mesh->SetFlag(AssetFlag::Invalid, true);
-			return mesh;
+			dstMesh.SetFlag(AssetFlag::Invalid, true);
+			return false;
 		}
 
-		mesh->myBoundingSphere.center = *(glm::vec3*)&totalData[offset];
+		dstMesh.myBoundingSphere.center = *(glm::vec3*)&totalData[offset];
 		offset += sizeof(glm::vec3);
 
-		mesh->myBoundingSphere.radius = *(float*)&totalData[offset];
+		dstMesh.myBoundingSphere.radius = *(float*)&totalData[offset];
 		offset += sizeof(float);
 
 		const uint32_t nameCount = *(uint32_t*)&totalData[offset];
@@ -90,7 +88,7 @@ namespace Volt
 
 		for (uint32_t i = 0; i < subMeshCount; i++)
 		{
-			auto& subMesh = mesh->mySubMeshes.emplace_back();
+			auto& subMesh = dstMesh.mySubMeshes.emplace_back();
 
 			subMesh.materialIndex = *(uint32_t*)&totalData[offset];
 			offset += sizeof(uint32_t);
@@ -118,15 +116,15 @@ namespace Volt
 			subMesh.GenerateHash();
 		}
 
-		if (!mesh->myMaterial)
+		if (!dstMesh.myMaterial)
 		{
-			mesh->myMaterial = CreateRef<Material>();
-			mesh->myMaterial->mySubMaterials.emplace(0, SubMaterial::Create("Null", 0, Renderer::GetDefaultData().defaultShader));
+			dstMesh.myMaterial = CreateRef<Material>();
+			dstMesh.myMaterial->mySubMaterials.emplace(0, SubMaterial::Create("Null", 0, Renderer::GetDefaultData().defaultShader));
 		}
 
-		mesh->Construct();
+		dstMesh.Construct();
 
-		return mesh;
+		return true;
 	}
 
 	bool VTMeshImporter::IsValid(uint32_t subMeshCount, uint32_t vertexCount, uint32_t indexCount, size_t srcSize) const

@@ -40,7 +40,7 @@ namespace Volt
 		VT_CORE_ASSERT(myPhysXScene, "PhysX scene not valid!");
 
 		myControllerManager = PxCreateControllerManager(*myPhysXScene);
-		myControllerManager->setTessellation(true, 1.f);
+		myControllerManager->setTessellation(true, 100.f);
 
 #ifndef VT_DIST
 		if (!Application::Get().IsRuntime())

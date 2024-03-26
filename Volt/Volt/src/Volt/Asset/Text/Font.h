@@ -17,8 +17,9 @@ namespace Volt
 		};
 
 		Font() = default;
-		Font(const std::filesystem::path& aPath);
 		~Font() override;
+
+		void Initialize(const std::filesystem::path& filePath);
 
 		float GetStringWidth(const std::string& string, const glm::vec2& scale, float maxWidth);
 		float GetStringHeight(const std::string& string, const glm::vec2& scale, float maxWidth);
@@ -28,6 +29,7 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::Font; }
 		AssetType GetType() override { return GetStaticType(); };
+		uint32_t GetVersion() const override { return 1; }
 
 	private:
 		MSDFData* myMSDFData = nullptr;

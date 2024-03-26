@@ -18,7 +18,7 @@
 
 namespace Volt
 {
-	Ref<Mesh> FbxImporter::ImportMeshImpl(const std::filesystem::path& path)
+	bool FbxImporter::ImportMeshImpl(const std::filesystem::path& path, Mesh& dstMesh)
 	{
 		TGA::FBX::Importer::InitImporter();
 
@@ -27,29 +27,28 @@ namespace Volt
 		{
 			if (!TGA::FBX::Importer::LoadMeshW(path.wstring(), tgaMesh))
 			{
-				return nullptr;
+				return false;
 			}
 		}
 		catch (const std::exception& e)
 		{
 			VT_CORE_ERROR("[FBXImporter] Unable to import animation! Reason: {0}", e.what());
-			return nullptr;
+			return false;
 		}
 
 		if (!tgaMesh.IsValid())
 		{
-			return nullptr;
+			return false;
 		}
 
-		Ref<Mesh> mesh = CreateRef<Mesh>();
-		mesh->myMaterial = CreateRef<Material>();
-		mesh->myMaterial->myName = path.stem().string() + "_mat";
+		dstMesh.myMaterial = CreateRef<Material>();
+		dstMesh.myMaterial->myName = path.stem().string() + "_mat";
 
 		for (const auto& element : tgaMesh.Elements)
 		{
-			auto& newSubMesh = mesh->mySubMeshes.emplace_back();
-			newSubMesh.vertexStartOffset = static_cast<uint32_t>(mesh->myVertices.size());
-			newSubMesh.indexStartOffset = static_cast<uint32_t>(mesh->myIndices.size());
+			auto& newSubMesh = dstMesh.mySubMeshes.emplace_back();
+			newSubMesh.vertexStartOffset = static_cast<uint32_t>(dstMesh.myVertices.size());
+			newSubMesh.indexStartOffset = static_cast<uint32_t>(dstMesh.myIndices.size());
 			newSubMesh.vertexCount = static_cast<uint32_t>(element.Vertices.size());
 			newSubMesh.indexCount = static_cast<uint32_t>(element.Indices.size());
 			newSubMesh.materialIndex = element.MaterialIndex;
@@ -66,7 +65,7 @@ namespace Volt
 
 			for (const auto& tgaVertex : element.Vertices)
 			{
-				auto& newVertex = mesh->myVertices.emplace_back();
+				auto& newVertex = dstMesh.myVertices.emplace_back();
 				newVertex.position = *reinterpret_cast<const glm::vec4*>(tgaVertex.Position);
 				newVertex.normal = *reinterpret_cast<const glm::vec3*>(tgaVertex.Normal);
 				newVertex.tangent = *reinterpret_cast<const glm::vec3*>(tgaVertex.Tangent);
@@ -75,32 +74,32 @@ namespace Volt
 				newVertex.weights = *reinterpret_cast<const glm::vec4*>(tgaVertex.BoneWeights);
 			}
 
-			mesh->myIndices.insert(mesh->myIndices.end(), element.Indices.begin(), element.Indices.end());
+			dstMesh.myIndices.insert(dstMesh.myIndices.end(), element.Indices.begin(), element.Indices.end());
 		}
 
 		if (tgaMesh.Materials.empty())
 		{
-			mesh->myMaterial->CreateSubMaterial(ShaderRegistry::GetShader("Illum"));
+			dstMesh.myMaterial->CreateSubMaterial(ShaderRegistry::GetShader("Illum"));
 		}
 		else
 		{
 			for (const auto& material : tgaMesh.Materials)
 			{
-				mesh->myMaterial->CreateSubMaterial(ShaderRegistry::GetShader("Illum"), material.MaterialName);
+				dstMesh.myMaterial->CreateSubMaterial(ShaderRegistry::GetShader("Illum"), material.MaterialName);
 			}
 		}
 
-		mesh->myBoundingBox = BoundingBox{ *reinterpret_cast<const glm::vec3*>(tgaMesh.BoxBounds.Max), *reinterpret_cast<const glm::vec3*>(tgaMesh.BoxBounds.Min) };
-		mesh->myBoundingSphere.center = { tgaMesh.BoxSphereBounds.Center[0], tgaMesh.BoxSphereBounds.Center[1], tgaMesh.BoxSphereBounds.Center[2] };
-		mesh->myBoundingSphere.radius = tgaMesh.BoxSphereBounds.Radius;
+		dstMesh.myBoundingBox = BoundingBox{ *reinterpret_cast<const glm::vec3*>(tgaMesh.BoxBounds.Max), *reinterpret_cast<const glm::vec3*>(tgaMesh.BoxBounds.Min) };
+		dstMesh.myBoundingSphere.center = { tgaMesh.BoxSphereBounds.Center[0], tgaMesh.BoxSphereBounds.Center[1], tgaMesh.BoxSphereBounds.Center[2] };
+		dstMesh.myBoundingSphere.radius = tgaMesh.BoxSphereBounds.Radius;
 
 		TGA::FBX::Importer::UninitImporter();
 
-		mesh->Construct();
-		return mesh;
+		dstMesh.Construct();
+		return true;
 	}
 
-	Ref<Skeleton> FbxImporter::ImportSkeletonImpl(const std::filesystem::path& path)
+	bool FbxImporter::ImportSkeletonImpl(const std::filesystem::path& path, Skeleton& dstSkeleton)
 	{
 		TGA::FBX::Importer::InitImporter();
 
@@ -110,27 +109,26 @@ namespace Volt
 		{
 			if (!TGA::FBX::Importer::LoadMeshW(path.wstring(), tgaMesh))
 			{
-				return nullptr;
+				return false;
 			}
 		}
 		catch (const std::exception& e)
 		{
 			VT_CORE_ERROR("[FBXImporter] Unable to import animation! Reason: {0}", e.what());
-			return nullptr;
+			return false;
 		}
 
-		Ref<Skeleton> skeleton = CreateRef<Skeleton>();
-		skeleton->myJoints.resize(tgaMesh.Skeleton.Bones.size());
-		skeleton->myInverseBindPose.resize(tgaMesh.Skeleton.Bones.size());
-		skeleton->myRestPose.resize(tgaMesh.Skeleton.Bones.size());
+		dstSkeleton.myJoints.resize(tgaMesh.Skeleton.Bones.size());
+		dstSkeleton.myInverseBindPose.resize(tgaMesh.Skeleton.Bones.size());
+		dstSkeleton.myRestPose.resize(tgaMesh.Skeleton.Bones.size());
 
-		ProcessSkeleton(skeleton, tgaMesh.Skeleton.Bones, 0);
+		ProcessSkeleton(dstSkeleton, tgaMesh.Skeleton.Bones, 0);
 
 		TGA::FBX::Importer::UninitImporter();
-		return skeleton;
+		return true;
 	}
 
-	Ref<Animation> FbxImporter::ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton)
+	bool FbxImporter::ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation)
 	{
 		TGA::FBX::Importer::InitImporter();
 
@@ -140,22 +138,21 @@ namespace Volt
 		{
 			if (!TGA::FBX::Importer::LoadAnimationW(path.wstring(), tgaAnimation))
 			{
-				return nullptr;
+				return false;
 			}
 		}
 		catch (const std::exception& e)
 		{
 			VT_CORE_ERROR("[FBXImporter] Unable to import animation! Reason: {0}", e.what());
-			return nullptr;
+			return false;
 		}
 
-		Ref<Animation> animation = CreateRef<Animation>();
-		animation->myFramesPerSecond = static_cast<uint32_t>(tgaAnimation.FramesPerSecond);
-		animation->myDuration = static_cast<float>(tgaAnimation.Duration);
+		dstAnimation.myFramesPerSecond = static_cast<uint32_t>(tgaAnimation.FramesPerSecond);
+		dstAnimation.myDuration = static_cast<float>(tgaAnimation.Duration);
 
 		for (const auto& tgaFrame : tgaAnimation.Frames)
 		{
-			auto& newFrame = animation->myFrames.emplace_back();
+			auto& newFrame = dstAnimation.myFrames.emplace_back();
 			newFrame.localTRS.resize(targetSkeleton->myJoints.size());
 
 			for (const auto& [jointName, localTQS] : tgaFrame.LocalTQS)
@@ -176,7 +173,7 @@ namespace Volt
 		}
 
 		TGA::FBX::Importer::UninitImporter();
-		return animation;
+		return true;
 	}
 
 	void FbxImporter::ExportMeshImpl(std::vector<Ref<Mesh>>, const std::filesystem::path&)
@@ -268,23 +265,23 @@ namespace Volt
 		//exporter->Destroy();
 	}
 
-	void FbxImporter::ProcessSkeleton(Ref<Skeleton> skeleton, const std::vector<TGA::FBX::Skeleton::Bone>& bones, uint32_t currentIndex)
+	void FbxImporter::ProcessSkeleton(Skeleton& skeleton, const std::vector<TGA::FBX::Skeleton::Bone>& bones, uint32_t currentIndex)
 	{
 		const auto& currentJoint = bones.at(currentIndex);
 
-		skeleton->myJoints[currentIndex].name = currentJoint.Name;
-		skeleton->myJoints[currentIndex].parentIndex = currentJoint.ParentIdx;
-		skeleton->myInverseBindPose[currentIndex] = glm::transpose(*reinterpret_cast<const glm::mat4*>(currentJoint.BindPoseInverse.Data));
-		skeleton->myJointNameToIndex[currentJoint.Name] = static_cast<size_t>(currentIndex);
+		skeleton.myJoints[currentIndex].name = currentJoint.Name;
+		skeleton.myJoints[currentIndex].parentIndex = currentJoint.ParentIdx;
+		skeleton.myInverseBindPose[currentIndex] = glm::transpose(*reinterpret_cast<const glm::mat4*>(currentJoint.BindPoseInverse.Data));
+		skeleton.myJointNameToIndex[currentJoint.Name] = static_cast<size_t>(currentIndex);
 
-		skeleton->myRestPose[currentIndex].position = { currentJoint.restPosition[0], currentJoint.restPosition[1], currentJoint.restPosition[2] };
+		skeleton.myRestPose[currentIndex].position = { currentJoint.restPosition[0], currentJoint.restPosition[1], currentJoint.restPosition[2] };
 
-		skeleton->myRestPose[currentIndex].rotation.x = currentJoint.restRotation[0];
-		skeleton->myRestPose[currentIndex].rotation.y = currentJoint.restRotation[1];
-		skeleton->myRestPose[currentIndex].rotation.z = currentJoint.restRotation[2];
-		skeleton->myRestPose[currentIndex].rotation.w = currentJoint.restRotation[3];
+		skeleton.myRestPose[currentIndex].rotation.x = currentJoint.restRotation[0];
+		skeleton.myRestPose[currentIndex].rotation.y = currentJoint.restRotation[1];
+		skeleton.myRestPose[currentIndex].rotation.z = currentJoint.restRotation[2];
+		skeleton.myRestPose[currentIndex].rotation.w = currentJoint.restRotation[3];
 		
-		skeleton->myRestPose[currentIndex].scale = { currentJoint.restScale[0], currentJoint.restScale[1], currentJoint.restScale[2] };
+		skeleton.myRestPose[currentIndex].scale = { currentJoint.restScale[0], currentJoint.restScale[1], currentJoint.restScale[2] };
 
 		for (const auto& child : currentJoint.Children)
 		{

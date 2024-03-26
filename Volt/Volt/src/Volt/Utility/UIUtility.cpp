@@ -1499,6 +1499,27 @@ bool UI::Property(const std::string& text, glm::ivec4& value, uint32_t min, uint
 	return changed;
 }
 
+bool UI::Property(const std::string& text, glm::quat& value, const std::string& toolTip)
+{
+	bool changed = false;
+
+	BeginPropertyRow();
+
+	ImGui::TextUnformatted(text.c_str());
+	SimpleToolTip(toolTip);
+
+	ImGui::TableNextColumn();
+	std::string id = "##" + std::to_string(s_stackId++);
+
+	constexpr float min = -1.f;
+	constexpr float max = 1.f;
+
+	changed = DragScalarN(id.c_str(), ImGuiDataType_Float, glm::value_ptr(value), 4, 1.f, &min, &max);
+	EndPropertyRow();
+
+	return changed;
+}
+
 bool UI::PropertyDragFloat(const std::string& text, float& value, float increment, float min, float max, const std::string& toolTip)
 {
 	bool changed = false;

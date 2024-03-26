@@ -84,7 +84,8 @@ project "Launcher"
 		"%{IncludeDir.fastlz}",
 
 		"%{IncludeDir.VulkanSDK}",
-		"%{IncludeDir.vma}"
+		"%{IncludeDir.vma}",
+		"%{IncludeDir.zlib}"
 	}
 
     links
@@ -123,7 +124,8 @@ project "Launcher"
 		"%{Library.discord}",
 		
 		"%{Library.Vulkan}",
-		"%{Library.dxc}"
+		"%{Library.dxc}",
+		"%{Library.zlib}"
     }
 	
 	debugargs 

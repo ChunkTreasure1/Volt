@@ -88,7 +88,9 @@ project "Volt"
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.shaderc_glslc}",
-		"%{IncludeDir.shaderc_utils}"
+		"%{IncludeDir.shaderc_utils}",
+
+		"%{IncludeDir.zlib}"
 	}
 
 	links

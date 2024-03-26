@@ -1,14 +1,9 @@
 #include "vtpch.h"
 #include "YAMLStreamWriter.h"
+#include "YAMLFileStreamWriter.h"
 
 namespace Volt
 {
-	YAMLStreamWriter::YAMLStreamWriter(const std::filesystem::path& targetFilePath)
-		: m_targetFilePath(targetFilePath)
-	{
-
-	}
-	
 	void YAMLStreamWriter::BeginMap()
 	{
 		m_emitter << YAML::BeginMap;
@@ -32,18 +27,5 @@ namespace Volt
 	void YAMLStreamWriter::BeginMapNamned(const std::string& mapName)
 	{
 		m_emitter << YAML::Key << mapName << YAML::BeginMap;
-	}
-
-	const bool YAMLStreamWriter::WriteToDisk()
-	{
-		std::ofstream fout{ m_targetFilePath };
-		if (!fout.is_open())
-		{
-			return false;
-		}
-		
-		fout << m_emitter.c_str();
-
-		return true;
 	}
 }

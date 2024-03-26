@@ -762,7 +762,8 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 			return nullptr;
 		}
 
-		result = CreateRef<Volt::AI::NavMesh>(navMesh);
+		result = CreateRef<Volt::AI::NavMesh>();
+		result->Initialize(navMesh);
 
 		if (result)
 		{
@@ -948,7 +949,8 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildTiledNavMesh()
 		}
 	}
 
-	result = CreateRef<Volt::AI::NavMesh>(navMesh, tileCache);
+	result = CreateRef<Volt::AI::NavMesh>();
+	result->Initialize(navMesh, tileCache);
 
 	auto gridSize = tw * th;
 	const float compressionRatio = (float)m_cacheCompressedSize / (float)(m_cacheRawSize + 1);

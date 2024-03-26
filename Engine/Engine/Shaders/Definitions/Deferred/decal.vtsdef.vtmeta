@@ -1,7 +1,9 @@
 Metadata:
-  assetHandle: 2816323678272017857
+  assetHandle: 1051185456672539728
   filePath: Engine/Shaders/Definitions/Deferred/decal.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 4230726718177388576
-    - 8473632928931621436
+    - 13277876072457634846
+    - 15364409864408163782
+  Properties:
+    {}

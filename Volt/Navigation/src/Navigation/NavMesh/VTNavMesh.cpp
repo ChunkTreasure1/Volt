@@ -7,7 +7,7 @@ namespace Volt
 {
 	namespace AI
 	{
-		NavMesh::NavMesh(Ref<dtNavMesh> navmesh, Ref<dtTileCache> tilecache)
+		void NavMesh::Initialize(Ref<dtNavMesh> navmesh, Ref<dtTileCache> tilecache)
 		{
 			myNavMesh = CreateRef<DtNavMesh>(navmesh, tilecache);
 			myCrowd = CreateRef<DtCrowd>(myNavMesh);

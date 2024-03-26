@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 14217014831154554636
+  assetHandle: 13440020572498872339
   filePath: Engine/Shaders/Source/HLSL/Includes/XeGTAOIncludes.hlsli
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

@@ -160,6 +160,7 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::RenderPipeline; }
 		AssetType GetType() override { return GetStaticType(); }
+		uint32_t GetVersion() const override { return 1; }
 
 	private:
 		friend class RenderPipelineImporter;

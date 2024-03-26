@@ -50,6 +50,7 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::NetContract; }
 		AssetType GetType() override { return GetStaticType(); }
+		uint32_t GetVersion() const override { return 1; }
 	};
 
 	class NetContractContainer

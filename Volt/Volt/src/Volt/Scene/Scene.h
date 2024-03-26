@@ -32,6 +32,8 @@ namespace Volt
 
 	class Entity;
 
+	class AppPostFrameUpdateEvent;
+
 	struct SceneEnvironment
 	{
 		Ref<Image2D> irradianceMap;
@@ -96,6 +98,7 @@ namespace Volt
 		void FixedUpdate(float aDeltaTime);
 		void UpdateEditor(float aDeltaTime);
 		void UpdateSimulation(float aDeltaTime);
+
 		void OnEvent(Event& e);
 
 		void SortScene();
@@ -170,6 +173,7 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::Scene; }
 		AssetType GetType() override { return GetStaticType(); }
+		uint32_t GetVersion() const override { return 1; }
 
 		void CopyTo(Ref<Scene> otherScene);
 		void Clear();
@@ -177,6 +181,7 @@ namespace Volt
 	private:
 		friend class Entity;
 		friend class SceneImporter;
+		friend class SceneSerializer;
 
 		void MoveToLayerRecursive(Entity entity, uint32_t targetLayer);
 
@@ -187,8 +192,11 @@ namespace Volt
 		void ConvertToLocalSpace(Entity entity);
 
 		void RemoveEntityInternal(Entity entity, bool removingParent);
+		void ExecuteEntityRemoveQueue();
 
 		void AddLayer(const std::string& layerName, uint32_t layerId);
+
+		bool PostFrameUpdateEvent(const AppPostFrameUpdateEvent& e);
 
 		const glm::mat4 GetWorldTransform(Entity entity) const;
 		const std::vector<Entity> FlattenEntityHeirarchy(Entity entity);
@@ -225,6 +233,9 @@ namespace Volt
 		entt::registry m_registry;
 
 		std::vector<SceneLayer> m_sceneLayers;
+
+		std::mutex m_removeEntityMutex;
+		std::vector<EntityID> m_entityRemoveQueue;
 
 		mutable std::unordered_map<EntityID, glm::mat4> m_cachedEntityTransforms;
 		mutable std::shared_mutex m_cachedEntityTransformMutex;

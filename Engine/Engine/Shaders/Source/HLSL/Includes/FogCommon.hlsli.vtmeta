@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 17925743135551674153
+  assetHandle: 12782173184048560370
   filePath: Engine/Shaders/Source/HLSL/Includes/FogCommon.hlsli
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

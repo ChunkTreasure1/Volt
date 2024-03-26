@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 16317597644486579018
+  assetHandle: 14011107847426585934
   filePath: Engine/Shaders/Definitions/Environment/preethamSky.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 15092269069855623745
+    - 6536228802478257894
+  Properties:
+    {}

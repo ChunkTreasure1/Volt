@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 8568422166276082566
+  assetHandle: 13431780035930367231
   filePath: Engine/Shaders/Definitions/PostProcessing/GTAO/gtaoDenoise.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 17726932713028362065
+    - 16045574824786007394
+  Properties:
+    {}

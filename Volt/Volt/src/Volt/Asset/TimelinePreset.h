@@ -70,5 +70,6 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::Timeline; }
 		virtual AssetType GetType() override { return GetStaticType(); }
+		virtual uint32_t GetVersion() const override { return 1; }
 	};
 }

@@ -484,6 +484,39 @@ namespace Volt
 		TransitionToLayout(commandBuffer, dstOriginalLayout);
 	}
 
+	size_t Image2D::CopyToBuffer(Buffer& buffer, uint32_t mip, size_t bufferOffset) const
+	{
+		const size_t mipSize = glm::max((mySpecification.width >> mip) * (mySpecification.height >> mip) * Utility::PerPixelSizeFromFormat(mySpecification.format), Utility::GetFormatMinimumSize(mySpecification.format));
+
+		VkBuffer hostBuffer{};
+		VmaAllocation hostAllocation{};
+
+		VulkanAllocator allocator{};
+
+		{
+			VkBufferCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			info.size = mipSize;
+			info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+			info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+			hostAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_GPU_TO_CPU, hostBuffer);
+		}
+
+		Utility::TransitionImageLayout(myImage, myImageData.layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+		Utility::CopyImageToBuffer(hostBuffer, 0, myImage, mySpecification.width >> mip, mySpecification.height >> mip, mip);
+		Utility::TransitionImageLayout(myImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, myImageData.layout);
+
+		auto* imageData = allocator.MapMemory<uint8_t>(hostAllocation);
+		buffer.Resize(mipSize + bufferOffset);
+		buffer.Copy(imageData, mipSize, bufferOffset);
+		allocator.UnmapMemory(hostAllocation);
+
+		allocator.DestroyBuffer(hostBuffer, hostAllocation);
+
+		return mipSize;
+	}
+
 	VkImageView Image2D::CreateMipView(const uint32_t mip)
 	{
 		if (myImageViews.find(mip) != myImageViews.end())
@@ -557,6 +590,12 @@ namespace Volt
 		Utility::TransitionImageLayout(commandBuffer, myImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, myImageData.layout);
 
 		GraphicsContext::GetDevice()->FlushCommandBuffer(commandBuffer);
+	}
+
+	const size_t Image2D::GetAllocationSize() const
+	{
+		VulkanAllocator allocator{};
+		return allocator.GetAllocationSize(myAllocation);
 	}
 
 	Ref<Image2D> Image2D::Create(const ImageSpecification& specification, const void* data)

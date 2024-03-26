@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 6724677954297314653
+  assetHandle: 5810568471916359425
   filePath: Engine/Shaders/Source/HLSL/Environment/VolumetricFog/VolumetricFog_InjectLight_cs.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

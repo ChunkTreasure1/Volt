@@ -52,5 +52,6 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::ParticlePreset; }
 		AssetType GetType() override { return GetStaticType(); }
+		uint32_t GetVersion() const override { return 1; }
 	};
 }

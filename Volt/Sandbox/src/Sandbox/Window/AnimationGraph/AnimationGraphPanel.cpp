@@ -491,12 +491,11 @@ void AnimationGraphPanel::DrawPropertiesPanel()
 		{
 			if (UI::BeginProperties("graphProperties"))
 			{
-				/*auto handle = myCurrentAsset->GetCharacterHandle();
-				if (EditorUtils::Property("Character", handle, Volt::AssetType::AnimatedCharacter))
+				auto handle = myCurrentAsset->GetSkeletonHandle();
+				if (EditorUtils::Property("Character", handle, Volt::AssetType::Skeleton))
 				{
-					myCurrentAsset->SetCharacterHandle(handle);
-				}*/
-
+					myCurrentAsset->SetSkeletonHandle(handle);
+				}
 
 				UI::EndProperties();
 			}

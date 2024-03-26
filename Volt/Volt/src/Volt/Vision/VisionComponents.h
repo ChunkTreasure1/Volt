@@ -56,8 +56,8 @@ namespace Volt
 		{
 			reflect.SetGUID("{E846C1DE-F199-4BFF-9D15-9E73B8D1C941}"_guid);
 			reflect.SetLabel("Vision Trigger Component");
-			reflect.AddMember(&VisionTriggerComponent::triggerCam, "triggerCam", "Trigger Camera", "", Entity::NullID());
-			reflect.AddMember(&VisionTriggerComponent::forceActiveCam, "forceActiveCam", "Force Active Camera", "", false);
+			reflect.AddMember(&VisionTriggerComponent::triggerCam, "triggerCam", "Trigger Camera", "", Entity::NullID(), ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionTriggerComponent::forceActiveCam, "forceActiveCam", "Force Active Camera", "", false, ComponentMemberFlag::DoNotShow);
 		}
 
 		REGISTER_COMPONENT(VisionTriggerComponent);
@@ -92,28 +92,28 @@ namespace Volt
 		{
 			reflect.SetGUID("{1213269A-DB9A-4BC2-82DF-6656A41451A3}"_guid);
 			reflect.SetLabel("Vision Camera Component");
-			reflect.AddMember(&VisionCameraComponent::blendTime, "blendTime", "Blend Time", "", 1.f);
-			reflect.AddMember(&VisionCameraComponent::fieldOfView, "fieldOfView", "Field Of View", "", 60.f);
-			reflect.AddMember(&VisionCameraComponent::layerMasks, "layerMasks", "Layer Masks", "", std::vector<uint32_t>());
-			reflect.AddMember(&VisionCameraComponent::cameraType, "cameraType", "Camera Type", "", eCameraType::Free);
-			reflect.AddMember(&VisionCameraComponent::blendType, "blendType", "Blend Type", "", eBlendType::None);
-			reflect.AddMember(&VisionCameraComponent::damping, "damping", "Damping", "", 0.f);
-			reflect.AddMember(&VisionCameraComponent::offset, "offset", "Offset", "", glm::vec3{ 0.f });
-			reflect.AddMember(&VisionCameraComponent::followId, "followId", "Follow ID", "", Entity::NullID());
-			reflect.AddMember(&VisionCameraComponent::lookAtId, "lookAtId", "Look At ID", "", Entity::NullID());
-			reflect.AddMember(&VisionCameraComponent::collisionRayPoint, "collisionRayPoint", "Collision Ray Point", "", Entity::NullID());
-			reflect.AddMember(&VisionCameraComponent::focalDistance, "focalDistance", "Focal Distance", "", 1000.f);
-			reflect.AddMember(&VisionCameraComponent::mouseSensitivity, "mouseSensitivity", "Mouse Sensitivity", "", 0.15f);
-			reflect.AddMember(&VisionCameraComponent::collisionRadius, "collisionRadius", "Collision Radius", "", 100.f);
-			reflect.AddMember(&VisionCameraComponent::isColliding, "isColliding", "Is Colliding", "", false);
-			reflect.AddMember(&VisionCameraComponent::isDefault, "isDefault", "Is Default", "", false);
-			reflect.AddMember(&VisionCameraComponent::xFollowLock, "xFollowLock", "X Follow Lock", "", false);
-			reflect.AddMember(&VisionCameraComponent::yFollowLock, "yFollowLock", "Y Follow Lock", "", false);
-			reflect.AddMember(&VisionCameraComponent::zFollowLock, "zFollowLock", "Z Follow Lock", "", false);
-			reflect.AddMember(&VisionCameraComponent::xShouldDamp, "xShouldDamp", "X Should Damp", "", true);
-			reflect.AddMember(&VisionCameraComponent::yShouldDamp, "yShouldDamp", "Y Should Damp", "", true);
-			reflect.AddMember(&VisionCameraComponent::zShouldDamp, "zShouldDamp", "Z Should Damp", "", true);
-			reflect.AddMember(&VisionCameraComponent::additiveBlend, "additiveBlend", "Additive Blend", "", false);
+			reflect.AddMember(&VisionCameraComponent::blendTime, "blendTime", "Blend Time", "", 1.f, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::fieldOfView, "fieldOfView", "Field Of View", "", 60.f, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::layerMasks, "layerMasks", "Layer Masks", "", std::vector<uint32_t>(), ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::cameraType, "cameraType", "Camera Type", "", eCameraType::Free, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::blendType, "blendType", "Blend Type", "", eBlendType::None, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::damping, "damping", "Damping", "", 0.f, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::offset, "offset", "Offset", "", glm::vec3{ 0.f }, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::followId, "followId", "Follow ID", "", Entity::NullID(), ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::lookAtId, "lookAtId", "Look At ID", "", Entity::NullID(), ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::collisionRayPoint, "collisionRayPoint", "Collision Ray Point", "", Entity::NullID(), ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::focalDistance, "focalDistance", "Focal Distance", "", 1000.f, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::mouseSensitivity, "mouseSensitivity", "Mouse Sensitivity", "", 0.15f, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::collisionRadius, "collisionRadius", "Collision Radius", "", 100.f, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::isColliding, "isColliding", "Is Colliding", "", false, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::isDefault, "isDefault", "Is Default", "", false, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::xFollowLock, "xFollowLock", "X Follow Lock", "", false, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::yFollowLock, "yFollowLock", "Y Follow Lock", "", false, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::zFollowLock, "zFollowLock", "Z Follow Lock", "", false, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::xShouldDamp, "xShouldDamp", "X Should Damp", "", true, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::yShouldDamp, "yShouldDamp", "Y Should Damp", "", true, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::zShouldDamp, "zShouldDamp", "Z Should Damp", "", true, ComponentMemberFlag::DoNotShow);
+			reflect.AddMember(&VisionCameraComponent::additiveBlend, "additiveBlend", "Additive Blend", "", false, ComponentMemberFlag::DoNotShow);
 		}
 
 		void Init(Entity& camEntity);

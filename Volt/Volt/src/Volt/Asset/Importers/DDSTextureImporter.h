@@ -10,6 +10,6 @@ namespace Volt
 		~DDSTextureImporter() override = default;
 
 	protected:
-		Ref<Texture2D> ImportTextureImpl(const std::filesystem::path& path) override;
+		bool ImportTextureImpl(const std::filesystem::path& path, Texture2D& outTexture) override;
 	};
 }

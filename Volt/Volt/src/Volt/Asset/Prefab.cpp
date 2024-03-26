@@ -30,7 +30,14 @@ namespace Volt
 			return Entity::Null();
 		}
 
-		Entity newEntity = Entity::Duplicate(m_prefabScene->GetEntityFromUUID(m_rootEntityId), targetScene);
+		auto rootEntity = m_prefabScene->GetEntityFromUUID(m_rootEntityId);
+		if (!rootEntity)
+		{
+			VT_CORE_ERROR("[Prefab] Root Entity is not a valid entity!");
+			return Entity::Null();
+		}
+
+		Entity newEntity = Entity::Duplicate(rootEntity, targetScene, Entity::Null(), EntityCopyFlags::SkipCommonData);
 		if (targetScene->IsPlaying())
 		{
 			InitializeComponents(newEntity);
@@ -84,6 +91,8 @@ namespace Volt
 				entity.GetComponent<PrefabComponent>().version = m_version;
 			}
 		}
+
+		UpdatePrefabVersion(m_prefabScene->GetEntityFromUUID(m_rootEntityId), m_version);
 
 		return updateSucceded;
 	}
@@ -340,6 +349,22 @@ namespace Volt
 		}
 	}
 
+	void Prefab::UpdatePrefabVersion(Entity entity, uint32_t targetVersion)
+	{
+		// We are not going to try and update a entity tree which root is not actually a prefab
+		if (!entity.HasComponent<PrefabComponent>())
+		{
+			return;
+		}
+
+		entity.GetComponent<PrefabComponent>().version = targetVersion;
+	
+		for (const auto& child : entity.GetChildren())
+		{
+			UpdatePrefabVersion(child, targetVersion);
+		}
+	}
+
 	const bool Prefab::UpdateEntityInPrefabInternal(Entity srcEntity, EntityID sceneRootId, EntityID forcedPrefabEntity)
 	{
 		bool shouldAddEntity = !srcEntity.HasComponent<PrefabComponent>();
@@ -398,7 +423,7 @@ namespace Volt
 		auto prefabCommonComponent = targetEntity.GetComponent<CommonComponent>();
 		auto prefabComponent = targetEntity.GetComponent<PrefabComponent>();
 
-		Entity::Copy(srcEntity, targetEntity);
+		Entity::Copy(srcEntity, targetEntity, EntityCopyFlags::SkipID | EntityCopyFlags::SkipRelationships | EntityCopyFlags::SkipCommonData);
 
 		targetEntity.GetComponent<RelationshipComponent>() = prefabRelationships;
 		targetEntity.GetComponent<CommonComponent>() = prefabCommonComponent;
@@ -442,7 +467,7 @@ namespace Volt
 		auto sceneCommonComponent = sceneEntity.GetComponent<CommonComponent>();
 		const auto sceneRootId = sceneEntity.GetComponent<PrefabComponent>().sceneRootEntity;
 
-		Entity::Copy(prefabEntity, sceneEntity);
+		Entity::Copy(prefabEntity, sceneEntity, EntityCopyFlags::SkipID | EntityCopyFlags::SkipCommonData | EntityCopyFlags::SkipRelationships);
 
 		if (prefabEntity.GetID() == m_rootEntityId)
 		{
@@ -450,6 +475,7 @@ namespace Volt
 		}
 
 		sceneEntity.GetComponent<PrefabComponent>().sceneRootEntity = sceneRootId;
+		sceneEntity.GetComponent<PrefabComponent>().version = m_version;
 		sceneEntity.GetComponent<RelationshipComponent>() = sceneRelationships;
 		sceneEntity.GetComponent<CommonComponent>() = sceneCommonComponent;
 
@@ -497,6 +523,8 @@ namespace Volt
 		{
 			InitializeComponents(newEntity);
 		}
+
+		UpdatePrefabVersion(newEntity, m_version);
 
 		targetScene->InvalidateEntityTransform(newEntity.GetID());
 		return newEntity;

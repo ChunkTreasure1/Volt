@@ -429,6 +429,33 @@ namespace Volt
 			device->FlushSingleUseCommandBuffer(cmdBuffer);
 		}
 
+		inline void CopyImageToBuffer(VkCommandBuffer commandBuffer, VkBuffer buffer, size_t bufferOffset, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel)
+		{
+			VkBufferImageCopy region{};
+			region.bufferOffset = bufferOffset;
+			region.bufferRowLength = 0;
+			region.bufferImageHeight = 0;
+
+			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.imageSubresource.mipLevel = mipLevel;
+			region.imageSubresource.baseArrayLayer = 0;
+			region.imageSubresource.layerCount = 1;
+
+			region.imageOffset = { 0, 0, 0 };
+			region.imageExtent = { width, height, 1 };
+
+			vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &region);
+		}
+
+		inline void CopyImageToBuffer(VkBuffer buffer, size_t bufferOffset, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel)
+		{
+			auto device = GraphicsContext::GetDevice();
+
+			VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
+			CopyImageToBuffer(cmdBuffer, buffer, bufferOffset, image, width, height, mipLevel);
+			device->FlushSingleUseCommandBuffer(cmdBuffer);
+		}
+
 		inline void GenerateMipMaps(VkImage image, uint32_t width, uint32_t height, uint32_t mipLevels)
 		{
 			auto device = GraphicsContext::GetDevice();
@@ -584,6 +611,7 @@ namespace Volt
 				case Volt::ImageFormat::RG32F:
 				case Volt::ImageFormat::SRGB:
 				case Volt::ImageFormat::BC6H_SF16:
+				case Volt::ImageFormat::BC6H_UF16:
 					return true;
 			}
 
@@ -626,6 +654,9 @@ namespace Volt
 
 				case ImageFormat::BC7: return VK_FORMAT_BC7_UNORM_BLOCK;
 				case ImageFormat::BC7SRGB: return VK_FORMAT_BC7_SRGB_BLOCK;
+
+				case ImageFormat::BC6H_SF16: return VK_FORMAT_BC6H_SFLOAT_BLOCK;
+				case ImageFormat::BC6H_UF16: return VK_FORMAT_BC6H_UFLOAT_BLOCK;
 
 				case ImageFormat::DEPTH32F: return VK_FORMAT_D32_SFLOAT;
 				case ImageFormat::DEPTH16U: return VK_FORMAT_D16_UNORM;
@@ -735,10 +766,76 @@ namespace Volt
 				case ImageFormat::DEPTH32F: return 1 * 4;
 				case ImageFormat::DEPTH24STENCIL8: return 4;
 				
-				case ImageFormat::BC6H_SF16: return 3 * 2;
+				case ImageFormat::BC1: return 1;
+				case ImageFormat::BC1SRGB: return 1;
+
+				case ImageFormat::BC2: return 1;
+				case ImageFormat::BC2SRGB: return 1;
+
+				case ImageFormat::BC3: return 1;
+				case ImageFormat::BC3SRGB: return 1;
+
+				case ImageFormat::BC4: return 1;
+
+				case ImageFormat::BC5: return 1;
+
+				case ImageFormat::BC6H_SF16: return 1;
+				case ImageFormat::BC6H_UF16: return 1;
+			
+				case ImageFormat::BC7: return 1;
+				case ImageFormat::BC7SRGB: return 1;
 			}
 
 			return 0;
+		}
+
+		inline uint32_t GetFormatMinimumSize(ImageFormat format)
+		{
+			switch (format)
+			{
+				case ImageFormat::None: return 0;
+
+				case ImageFormat::R8U: return 1 * 1;
+
+				case ImageFormat::R16F: return 1 * 2;
+
+				case ImageFormat::R32F: return 1 * 4;
+				case ImageFormat::R32SI: return 1 * 4;
+				case ImageFormat::R32UI: return 1 * 4;
+
+				case ImageFormat::RGBA: return 4 * 1;
+				case ImageFormat::RGBA16F: return 4 * 2;
+				case ImageFormat::RGBA32F: return 4 * 4;
+				case ImageFormat::SRGB: return 4 * 1;
+
+				case ImageFormat::RG32UI: return 2 * 4;
+				case ImageFormat::RG16F: return 2 * 2;
+				case ImageFormat::RG32F: return 2 * 4;
+
+				case ImageFormat::DEPTH32F: return 1 * 4;
+				case ImageFormat::DEPTH24STENCIL8: return 4;
+
+				case ImageFormat::BC1: return 8;
+				case ImageFormat::BC1SRGB: return 8;
+
+				case ImageFormat::BC2: return 16;
+				case ImageFormat::BC2SRGB: return 16;
+
+				case ImageFormat::BC3: return 16;
+				case ImageFormat::BC3SRGB: return 16;
+
+				case ImageFormat::BC4: return 8;
+
+				case ImageFormat::BC5: return 16;
+
+				case ImageFormat::BC6H_SF16: return 16;
+				case ImageFormat::BC6H_UF16: return 16;
+
+				case ImageFormat::BC7: return 16;
+				case ImageFormat::BC7SRGB: return 16;
+			}
+
+			return 1;
 		}
 
 		inline static uint32_t CalculateMipCount(uint32_t width, uint32_t height)

@@ -7,8 +7,8 @@
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 #include "Volt/Utility/SerializationMacros.h"
 
-#include "Volt/Utility/FileIO/YAMLStreamReader.h"
-#include "Volt/Utility/FileIO/YAMLStreamWriter.h"
+#include "Volt/Utility/FileIO/YAMLFileStreamReader.h"
+#include "Volt/Utility/FileIO/YAMLFileStreamWriter.h"
 
 namespace Volt
 {
@@ -44,7 +44,7 @@ namespace Volt
 
 	void ProjectManager::SerializeProject()
 	{
-		YAMLStreamWriter streamWriter{ m_currentProject->projectFilePath };
+		YAMLFileStreamWriter streamWriter{ m_currentProject->projectFilePath };
 
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("Project");
@@ -65,7 +65,7 @@ namespace Volt
 
 	void ProjectManager::DeserializeProject()
 	{
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 
 		if (!streamReader.OpenFile(m_currentProject->projectFilePath))
 		{
@@ -142,6 +142,11 @@ namespace Volt
 	const std::filesystem::path ProjectManager::GetMonoAssemblyPath()
 	{
 		return GetDirectory() / "Binaries" / "Project.dll";
+	}
+
+	const std::filesystem::path ProjectManager::GetMonoBinariesDirectory()
+	{
+		return GetDirectory() / "Binaries";
 	}
 
 	const std::filesystem::path& ProjectManager::GetDirectory()

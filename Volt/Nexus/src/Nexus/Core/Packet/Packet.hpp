@@ -117,8 +117,12 @@ namespace Nexus
 			}
 
 			size_t i = packet.body.size();
-			packet.body.resize(packet.body.size() + data.size());
+			packet.body.resize(packet.body.size() + data.size() + sizeof(size_t));
+
 			memcpy(packet.body.data() + i, data.data(), data.size());
+
+			const size_t strSize = data.size();
+			memcpy(packet.body.data() + i + data.size(), &strSize, sizeof(size_t));
 			//packet << data.size();
 			return packet;
 		}
@@ -130,16 +134,22 @@ namespace Nexus
 		}
 		[[nodiscard]] std::string GetString(int len = 0)
 		{
-			if (len == 0) len = (int32_t)body.size();
 			std::string data;
-			if (len > body.size())
+
+			size_t strSize = 0;
+			memcpy_s(&strSize, sizeof(size_t), body.data() + body.size() - sizeof(size_t), sizeof(size_t));
+
+			if (body.size() < strSize)
 			{
-				// Log error
 				return data;
 			}
-			data.resize(len);
-			memcpy_s(data.data(), data.size(), body.data() + body.size() - len, len);
-			body.resize(body.size() - len);
+
+			body.resize(body.size() - sizeof(size_t));
+
+			data.resize(strSize);
+
+			memcpy_s(data.data(), data.size(), body.data() + body.size() - strSize, strSize);
+			body.resize(body.size() - strSize);
 			return data;
 		}
 	};

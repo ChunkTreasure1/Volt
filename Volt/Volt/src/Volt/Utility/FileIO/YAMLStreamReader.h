@@ -10,8 +10,7 @@ namespace Volt
 	{
 	public:
 		YAMLStreamReader();
-
-		const bool OpenFile(const std::filesystem::path& filePath);
+		virtual ~YAMLStreamReader() = default;
 
 		const bool HasKey(const std::string& key);
 		const bool IsSequenceEmpty(const std::string& key);
@@ -24,7 +23,9 @@ namespace Volt
 
 		void ForEach(const std::string& key, std::function<void()> function);
 
-	private:
+		inline YAML::Node& GetCurrentNode() { return m_currentNode; }
+
+	protected:
 		YAML::Node m_currentNode;
 		std::vector<YAML::Node> m_nodeStack;
 

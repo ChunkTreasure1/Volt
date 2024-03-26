@@ -64,9 +64,11 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::AnimatedCharacter; }
 		AssetType GetType() override { return GetStaticType(); };
+		uint32_t GetVersion() const override { return 1; }
 
 	private:
 		friend class AnimatedCharacterImporter;
+		friend class AnimatedCharacterSerializer;
 
 		Ref<Skeleton> mySkeleton;
 		Ref<Mesh> mySkin;

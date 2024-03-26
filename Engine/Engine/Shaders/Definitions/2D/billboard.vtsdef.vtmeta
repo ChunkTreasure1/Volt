@@ -1,8 +1,10 @@
 Metadata:
-  assetHandle: 8082288358415729737
+  assetHandle: 15136988847370015351
   filePath: Engine/Shaders/Definitions/2D/billboard.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 9442637984690489509
-    - 1678591042527684785
-    - 5788205772959840263
+    - 15049971953168935482
+    - 14596888969656169387
+    - 16412945933612528755
+  Properties:
+    {}

@@ -42,6 +42,7 @@ namespace Volt
 		[[nodiscard]] inline const bool IsString() const { return typeIndex == typeid(std::string); }
 		[[nodiscard]] inline const bool IsEnum() const { return (typeFlags & MonoTypeFlags::Enum) != MonoTypeFlags::None; }
 		[[nodiscard]] inline const bool IsCustomMonoType() const { return typeIndex == typeid(CustomMonoType); }
+		[[nodiscard]] inline const bool IsValid() const { return typeSize != 0; }
 	};
 
 	class MonoTypeRegistry

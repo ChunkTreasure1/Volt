@@ -4,6 +4,8 @@
 #include <Volt/Asset/Importers/TextureImporter.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
 
+#include <Volt/Asset/Mesh/Mesh.h>
+
 #include <Volt/Rendering/Shape.h>
 #include <Volt/Rendering/Renderer.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
@@ -140,9 +142,10 @@ Ref<Volt::Mesh> EditorResources::GetEditorMesh(EditorMesh mesh)
 
 Ref<Volt::Texture2D> EditorResources::TryLoadIcon(const std::filesystem::path& path)
 {
-	Ref<Volt::Texture2D> texture = Volt::TextureImporter::ImportTexture(path);
+	Ref<Volt::Texture2D> texture = CreateRef<Volt::Texture2D>();
+	Volt::TextureImporter::ImportTexture(path, *texture);
 
-	if (!texture)
+	if (!texture->IsValid())
 	{
 		texture = Volt::Renderer::GetDefaultData().whiteTexture;
 	}
@@ -152,8 +155,8 @@ Ref<Volt::Texture2D> EditorResources::TryLoadIcon(const std::filesystem::path& p
 
 Ref<Volt::Mesh> EditorResources::TryLoadMesh(const std::filesystem::path& path)
 {
-	Ref<Volt::Mesh> mesh = Volt::MeshTypeImporter::ImportMesh(path);
-	if (!mesh)
+	Ref<Volt::Mesh> mesh = CreateRef<Volt::Mesh>();
+	if (!Volt::MeshTypeImporter::ImportMesh(path, *mesh))
 	{
 		mesh = Volt::Shape::CreateUnitCube();
 	}

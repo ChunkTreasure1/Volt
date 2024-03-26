@@ -32,7 +32,6 @@
 #include "Sandbox/Window/Sequencer.h"
 #include "Sandbox/Window/BlendSpaceEditorPanel.h"
 #include "Sandbox/Window/CurveGraphPanel.h"
-#include "Sandbox/Window/MaterialGraphPanel.h"
 #include "Sandbox/Window/Timeline.h"
 #include "Sandbox/Window/ShaderEditorPanel.h"
 #include "Sandbox/Window/PostProcessingStackPanel.h"
@@ -90,6 +89,9 @@
 
 #include <imgui.h>
 
+#include "Volt/Asset/ImportersNew/SourceTextureSerializer.h"
+#include "Volt/Asset/ImportersNew/TextureSerializer.h"
+
 Sandbox::Sandbox()
 {
 	VT_ASSERT(!myInstance, "Sandbox already exists!");
@@ -112,7 +114,7 @@ void Sandbox::OnAttach()
 
 	Volt::Application::Get().GetWindow().Maximize();
 
-	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
+	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
 	UserSettingsManager::LoadUserSettings();
 	const auto& userSettings = UserSettingsManager::GetSettings();
@@ -223,14 +225,14 @@ void Sandbox::OnAttach()
 	Volt::DiscordSDK::UpdateRichPresence();
 
 	myRuntimeScene->InitializeEngineScripts();
-
 	m_isInitialized = true;
 }
 
 void Sandbox::CreateWatches()
 {
 	myFileWatcher->AddWatch(Volt::ProjectManager::GetEngineDirectory());
-	myFileWatcher->AddWatch(Volt::ProjectManager::GetProjectDirectory());
+	myFileWatcher->AddWatch(Volt::ProjectManager::GetAssetsDirectory());
+	myFileWatcher->AddWatch(Volt::ProjectManager::GetMonoBinariesDirectory());
 
 	CreateModifiedWatch();
 	CreateDeleteWatch();
@@ -464,18 +466,7 @@ void Sandbox::OnEvent(Volt::Event& e)
 		return;
 	}
 
-	switch (mySceneState)
-	{
-		case SceneState::Edit:
-			break;
-		case SceneState::Play:
-			myRuntimeScene->OnEvent(e);
-			break;
-		case SceneState::Pause:
-			break;
-		case SceneState::Simulating:
-			break;
-	}
+	myRuntimeScene->OnEvent(e);
 }
 
 void Sandbox::OnScenePlay()
@@ -813,6 +804,11 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		f();
 	}
 
+	if (!myFileChangeQueue.empty())
+	{
+		EditorLibrary::Get<AssetBrowserPanel>()->Reload();
+	}
+
 	myFileChangeQueue.clear();
 
 	return true;
@@ -878,6 +874,52 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 	{
 		const float buildProgess = GameBuilder::GetBuildProgress();
 		RenderProgressBar(buildProgess);
+	}
+
+	if (ImGui::Begin("Conversion Window"))
+	{
+		if (ImGui::Button("Convert Scene to M"))
+		{
+			Volt::Entity mainMenuEntity = myRuntimeScene->GetEntityWithName("PF_MainMenu");
+
+			myRuntimeScene->ForEachWithComponents<Volt::TransformComponent, Volt::MeshComponent>([&](const entt::entity id, Volt::TransformComponent& transComp, const Volt::MeshComponent& meshComp)
+			{
+				Volt::Entity entity{ id, myRuntimeScene };
+				entity.SetScale(entity.GetScale() * 0.01f);
+			});
+
+			myRuntimeScene->ForEachWithComponents<Volt::TransformComponent>([&](const entt::entity id, Volt::TransformComponent& transComp)
+			{
+				Volt::Entity entity{ id, myRuntimeScene };
+
+				if (mainMenuEntity)
+				{
+					if (myRuntimeScene->IsRelatedTo(mainMenuEntity, entity))
+					{
+						return;
+					}
+				}
+
+				if (entity == mainMenuEntity)
+				{
+					return;
+				}
+
+				entity.SetLocalPosition(entity.GetLocalPosition() * 0.01f); 
+			});
+
+			myRuntimeScene->ForEachWithComponents<Volt::PointLightComponent>([&](const entt::entity id, Volt::PointLightComponent& comp) 
+			{
+				comp.radius *= 0.01f;
+			});
+
+			myRuntimeScene->ForEachWithComponents<Volt::SpotLightComponent>([&](const entt::entity id, Volt::SpotLightComponent& comp) 
+			{
+				comp.range *= 0.01f;
+			});
+		}
+
+		ImGui::End();
 	}
 
 	return false;

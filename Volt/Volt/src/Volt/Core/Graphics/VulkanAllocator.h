@@ -21,6 +21,8 @@ namespace Volt
 
 		VmaAllocation AllocateImageInPool(VkImageCreateInfo bufferCreateInfo, VmaMemoryUsage memoryUsage, VkImage& outImage, VmaPool pool, std::string_view name = "");
 
+		const size_t GetAllocationSize(VmaAllocation allocation);
+
 		void Free(VmaAllocation allocation);
 		void DestroyBuffer(VkBuffer buffer, VmaAllocation allocation);
 		void DestroyImage(VkImage image, VmaAllocation allocation);

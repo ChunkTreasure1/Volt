@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 15192232920369362307
+  assetHandle: 3512387666108709840
   filePath: Engine/Shaders/Source/HLSL/2D/Quad_ps.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

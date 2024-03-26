@@ -19,6 +19,7 @@
 #include "Volt/Asset/Importers/BehaviorTreeImporter.h"
 #include "Volt/Asset/Importers/NetContractImporter.h"
 #include "Volt/Asset/Importers/ParticlePresetImporter.h"
+#include "Volt/Asset/AssetFactory.h"
 
 #include "Volt/Platform/ThreadUtility.h"
 
@@ -47,33 +48,17 @@ namespace Volt
 		MeshTypeImporter::Initialize();
 		TextureImporter::Initialize();
 
-		m_assetImporters.emplace(AssetType::MeshSource, CreateScope<MeshSourceImporter>());
-		m_assetImporters.emplace(AssetType::Texture, CreateScope<TextureSourceImporter>());
-		m_assetImporters.emplace(AssetType::Shader, CreateScope<ShaderImporter>());
-		m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>());
-		m_assetImporters.emplace(AssetType::Mesh, CreateScope<MeshSourceImporter>());
-		m_assetImporters.emplace(AssetType::NavMesh, CreateScope<VTNavMeshImporter>());
-		m_assetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>());
-		m_assetImporters.emplace(AssetType::Skeleton, CreateScope<SkeletonImporter>());
-		m_assetImporters.emplace(AssetType::AnimationGraph, CreateScope<AnimationGraphImporter>());
-		m_assetImporters.emplace(AssetType::Animation, CreateScope<AnimationImporter>());
-		m_assetImporters.emplace(AssetType::AnimatedCharacter, CreateScope<AnimatedCharacterImporter>());
-		m_assetImporters.emplace(AssetType::ParticlePreset, CreateScope<ParticlePresetImporter>());
-		m_assetImporters.emplace(AssetType::Prefab, CreateScope<PrefabImporter>());
-		m_assetImporters.emplace(AssetType::Font, CreateScope<FontImporter>());
-		m_assetImporters.emplace(AssetType::PhysicsMaterial, CreateScope<PhysicsMaterialImporter>());
-		m_assetImporters.emplace(AssetType::Video, CreateScope<VideoImporter>());
-		m_assetImporters.emplace(AssetType::BehaviorGraph, CreateScope<BehaviorTreeImporter>());
-		m_assetImporters.emplace(AssetType::BlendSpace, CreateScope<BlendSpaceImporter>());
-		m_assetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>());
-		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>());
-		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>());
+		m_assetFactory = CreateScope<AssetFactory>();
+		m_assetFactory->Initialize();
 
+		RegisterAssetSerializers();
 		LoadAssetMetafiles();
 	}
 
 	void AssetManager::Shutdown()
 	{
+		m_assetFactory->Shutdown();
+
 		TextureImporter::Shutdown();
 		MeshTypeImporter::Shutdown();
 	}
@@ -160,6 +145,31 @@ namespace Volt
 		}
 
 		return result;
+	}
+
+	void AssetManager::RegisterAssetSerializers()
+	{
+		m_assetImporters.emplace(AssetType::MeshSource, CreateScope<MeshSourceImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Texture, CreateScope<TextureSourceImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Shader, CreateScope<ShaderImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Mesh, CreateScope<MeshSourceImporter>()); // Done
+		m_assetImporters.emplace(AssetType::NavMesh, CreateScope<VTNavMeshImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Skeleton, CreateScope<SkeletonImporter>()); // Done
+		m_assetImporters.emplace(AssetType::AnimationGraph, CreateScope<AnimationGraphImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Animation, CreateScope<AnimationImporter>()); // Done
+		m_assetImporters.emplace(AssetType::AnimatedCharacter, CreateScope<AnimatedCharacterImporter>()); // Done
+		m_assetImporters.emplace(AssetType::ParticlePreset, CreateScope<ParticlePresetImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Prefab, CreateScope<PrefabImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Font, CreateScope<FontImporter>()); // Done
+		m_assetImporters.emplace(AssetType::PhysicsMaterial, CreateScope<PhysicsMaterialImporter>()); // Done
+		m_assetImporters.emplace(AssetType::Video, CreateScope<VideoImporter>()); // Done
+		m_assetImporters.emplace(AssetType::BehaviorGraph, CreateScope<BehaviorTreeImporter>()); // Done
+		m_assetImporters.emplace(AssetType::BlendSpace, CreateScope<BlendSpaceImporter>());  // Done
+		m_assetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>()); // Done
+		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>()); // Done
+		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>()); // Done
 	}
 
 	void AssetManager::LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset)
@@ -259,7 +269,7 @@ namespace Volt
 	{
 		Unload(handle);
 
-		Ref<Asset> asset;
+		Ref<Asset> asset = CreateRef<Asset>();
 		LoadAsset(handle, asset);
 	}
 
@@ -773,6 +783,11 @@ namespace Volt
 
 	Ref<Asset> AssetManager::GetAssetRaw(AssetHandle assetHandle)
 	{
+		if (assetHandle == Asset::Null())
+		{
+			return nullptr;
+		}
+
 		{
 			ReadLock lock{ m_assetCacheMutex };
 			auto it = m_assetCache.find(assetHandle);
@@ -782,7 +797,13 @@ namespace Volt
 			}
 		}
 
-		Ref<Asset> asset;
+		const AssetType assetType = GetAssetTypeFromHandle(assetHandle);
+		if (assetType == AssetType::None)
+		{
+			return nullptr;
+		}
+
+		Ref<Asset> asset = m_assetFactory->CreateAssetOfType(assetType);
 		LoadAsset(assetHandle, asset);
 
 		return asset;
@@ -790,7 +811,18 @@ namespace Volt
 
 	Ref<Asset> AssetManager::QueueAssetRaw(AssetHandle assetHandle)
 	{
-		Ref<Asset> asset = CreateRef<Asset>();
+		if (assetHandle == Asset::Null())
+		{
+			return nullptr;
+		}
+
+		const AssetType assetType = GetAssetTypeFromHandle(assetHandle);
+		if (assetType == AssetType::None)
+		{
+			return nullptr;
+		}
+
+		Ref<Asset> asset = m_assetFactory->CreateAssetOfType(assetType);
 		asset->SetFlag(AssetFlag::Queued, true);
 		Get().QueueAssetInternal(assetHandle, asset);
 
@@ -1351,8 +1383,7 @@ namespace Volt
 			metadata.filePath = filePath;
 			metadata.dependencies = dependencies;
 			metadata.properties = assetProperties;
-
-			VT_DESERIALIZE_PROPERTY(type, *(uint32_t*)&metadata.type, metaRoot, 0);
+			metadata.type = GetAssetTypeFromExtension(filePath.extension().string());
 		}
 	}
 }

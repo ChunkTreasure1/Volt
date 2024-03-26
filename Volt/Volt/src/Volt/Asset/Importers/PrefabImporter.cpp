@@ -6,8 +6,8 @@
 
 #include "Volt/Asset/Importers/SceneImporter.h"
 
-#include "Volt/Utility/FileIO/YAMLStreamWriter.h"
-#include "Volt/Utility/FileIO/YAMLStreamReader.h"
+#include "Volt/Utility/FileIO/YAMLFileStreamWriter.h"
+#include "Volt/Utility/FileIO/YAMLFileStreamReader.h"
 
 namespace Volt
 {
@@ -30,7 +30,7 @@ namespace Volt
 
 		Ref<Scene> prefabScene = CreateRef<Scene>();
 
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 		if (!streamReader.OpenFile(filePath))
 		{
 			VT_CORE_ERROR("Failed to open file {0}!", metadata.filePath);
@@ -69,7 +69,7 @@ namespace Volt
 	{
 		const Ref<Prefab> prefab = std::reinterpret_pointer_cast<Prefab>(asset);
 	
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
+		YAMLFileStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
 
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("Prefab");

@@ -250,7 +250,8 @@ inline IONodeGraphEditor<graphType, EditorBackend>::IONodeGraphEditor(const std:
 		SetGraphTypeText("GRAPHKEY");
 	}
 
-	myHeaderTexture = Volt::TextureImporter::ImportTexture("Editor/Textures/Graph/Translucency.dds");
+	myHeaderTexture = CreateRef<Volt::Texture2D>();
+	Volt::TextureImporter::ImportTexture("Editor/Textures/Graph/Translucency.dds", *myHeaderTexture);
 
 	{
 		Ref<NodeGraph::EditorContext> editorContext = CreateRef<NodeGraph::EditorContext>();

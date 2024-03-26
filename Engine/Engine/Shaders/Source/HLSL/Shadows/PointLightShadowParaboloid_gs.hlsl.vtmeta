@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 17973576047235707916
+  assetHandle: 703446259123602191
   filePath: Engine/Shaders/Source/HLSL/Shadows/PointLightShadowParaboloid_gs.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

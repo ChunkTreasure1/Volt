@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 10727358917331755744
+  assetHandle: 914479535148210632
   filePath: Engine/Shaders/Source/HLSL/Environment/VolumetricFog/VolumetricFog_RayMarch_cs.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}
