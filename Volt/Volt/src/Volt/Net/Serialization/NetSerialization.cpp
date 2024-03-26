@@ -232,9 +232,12 @@ Nexus::Packet& operator<(Nexus::Packet& packet, const Volt::RepVariableData& dat
 
 Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepVariableData& varData)
 {
-	auto& fieldType = varData.fieldType;
-	packet >> varData.repId >> fieldType.typeName;
+	std::string fieldTypeName;
 
+	packet >> varData.repId >> fieldTypeName;
+
+	varData.fieldType = Volt::MonoTypeRegistry::GetTypeInfo(fieldTypeName);
+	auto& fieldType = varData.fieldType;
 
 	if (fieldType.typeIndex == typeid(bool))
 	{

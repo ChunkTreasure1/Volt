@@ -57,6 +57,7 @@ Ref<AssetBrowser::DirectoryItem> AssetDirectoryProcessor::ProcessDirectories(con
 			Ref<AssetBrowser::DirectoryItem> dirData = CreateRef<AssetBrowser::DirectoryItem>(m_selectionManager.Get(), relPath);
 			directoryItems[relPath] = dirData;
 			directoryItems[relPath.parent_path()]->subDirectories.emplace_back(dirData);
+			dirData->parentDirectory = directoryItems[relPath.parent_path()].get();
 		}
 		else
 		{

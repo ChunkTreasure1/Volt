@@ -10,6 +10,7 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Scene/Reflection/ComponentReflection.h"
 #include "Volt/Scene/Reflection/ComponentRegistry.h"
+#include "Volt/Asset/Prefab.h"
 
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
@@ -573,7 +574,7 @@ namespace Volt
 
 		if (registry.any_of<VertexPaintedComponent>(id))
 		{
-			std::filesystem::path vpPath = (ProjectManager::GetDirectory() / metadata.filePath.parent_path() / "Layers" / ("ent_" + std::to_string((uint32_t)id) + ".entVp"));
+			std::filesystem::path vpPath = (ProjectManager::GetDirectory() / metadata.filePath.parent_path() / "Layers" / ("ent_" + std::to_string((uint32_t)registry.get<IDComponent>(id).id) + ".entVp"));
 			auto& vpComp = registry.get<VertexPaintedComponent>(id);
 
 			// #TODO_Ivar: This is kind of questionable after TGA
@@ -816,6 +817,24 @@ namespace Volt
 		if (scene->GetRegistry().any_of<MonoScriptComponent>(entity))
 		{
 			DeserializeMono(entity, scene, streamReader);
+		}
+
+		if (scene->GetRegistry().any_of<PrefabComponent>(entity))
+		{
+			auto& prefabComp = scene->GetRegistry().get<PrefabComponent>(entity);
+		
+			// We need to check that it's not the entity being referenced in the prefab, as this means we are loading the prefab
+			if (entity.GetID() != prefabComp.prefabEntity)
+			{
+				auto prefab = AssetManager::GetAsset<Prefab>(prefabComp.prefabAsset);
+				if (prefab && prefab->IsValid())
+				{
+					if (prefab->GetVersion() > prefabComp.version)
+					{
+						prefab->UpdateEntityInScene(entity);
+					}
+				}
+			}
 		}
 
 		if (scene->GetRegistry().any_of<VertexPaintedComponent>(entity))

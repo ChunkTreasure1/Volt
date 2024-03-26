@@ -37,76 +37,80 @@ namespace Volt
 
 		bool NavigationSystem::OnAppUpdateEvent(Volt::AppUpdateEvent& e)
 		{
-			VT_PROFILE_FUNCTION()
-				if (myNavMesh && myActiveScene && myActiveScene->IsPlaying())
+			VT_PROFILE_FUNCTION();
+			if (myNavMesh && myActiveScene && myActiveScene->IsPlaying())
+			{
+				auto& crowd = myNavMesh->GetCrowd();
+				if (!crowd)
 				{
-					auto& crowd = myNavMesh->GetCrowd();
+					return false;
+				}
 
-					auto& agentMap = crowd->GetAgentMap();
+				auto& agentMap = crowd->GetAgentMap();
+				{
+					VT_PROFILE_SCOPE("Remove old agents");
+
+					for (auto [entityId, agentId] : agentMap)
 					{
-						VT_PROFILE_SCOPE("Remove old agents");
+						auto entity = myActiveScene->GetEntityFromUUID(entityId);
 
-						for (auto [entityId, agentId] : agentMap)
+						if (!entity || !entity.HasComponent<Volt::NavAgentComponent>())
 						{
-							auto entity = myActiveScene->GetEntityFromUUID(entityId);
-
-							if (!entity || !entity.HasComponent<Volt::NavAgentComponent>())
-							{
-								crowd->RemoveAgent(entity);
-							}
-
-							if (myEntityIdToTargetPosMap.contains(entityId))
-							{
-								myEntityIdToTargetPosMap.erase(entityId);
-							}
+							crowd->RemoveAgent(entity);
 						}
-					}
 
-					{
-						VT_PROFILE_SCOPE("Add new agents & disable movement on inactive agents");
-
-						auto& registry = myActiveScene->GetRegistry();
-
-						auto view = registry.view<const Volt::NavAgentComponent>();
-						view.each([&](const entt::entity id, const Volt::NavAgentComponent& comp) 
+						if (myEntityIdToTargetPosMap.contains(entityId))
 						{
-							auto entity = Volt::Entity(id, myActiveScene);
-
-							crowd->SetAgentPosition(entity, entity.GetPosition());
-
-							if (!crowd->GetAgentMap().contains(entity.GetID()))
-							{
-								crowd->AddAgent(entity);
-								crowd->UpdateAgentParams(entity);
-							}
-							else if (!comp.active)
-							{
-								PauseAgent(entity, e.GetTimestep());
-							}
-							else if (comp.active)
-							{
-								UnpauseAgent(entity);
-							}
-						});
-					}
-
-					{
-						VT_PROFILE_SCOPE("Detour crowd update");
-						myNavMesh->Update(e.GetTimestep());
-					}
-
-					{
-						VT_PROFILE_SCOPE("Update agent positions");
-						for (auto [entityId, agentId] : agentMap)
-						{
-							Volt::Entity entity = myActiveScene->GetEntityFromUUID(entityId);
-							if (entity.GetComponent<NavAgentComponent>().active)
-							{
-								SyncDetourPosition(entity, e.GetTimestep());
-							}
+							myEntityIdToTargetPosMap.erase(entityId);
 						}
 					}
 				}
+
+				{
+					VT_PROFILE_SCOPE("Add new agents & disable movement on inactive agents");
+
+					auto& registry = myActiveScene->GetRegistry();
+
+					auto view = registry.view<const Volt::NavAgentComponent>();
+					view.each([&](const entt::entity id, const Volt::NavAgentComponent& comp)
+					{
+						auto entity = Volt::Entity(id, myActiveScene);
+
+						crowd->SetAgentPosition(entity, entity.GetPosition());
+
+						if (!crowd->GetAgentMap().contains(entity.GetID()))
+						{
+							crowd->AddAgent(entity);
+							crowd->UpdateAgentParams(entity);
+						}
+						else if (!comp.active)
+						{
+							PauseAgent(entity, e.GetTimestep());
+						}
+						else if (comp.active)
+						{
+							UnpauseAgent(entity);
+						}
+					});
+				}
+
+				{
+					VT_PROFILE_SCOPE("Detour crowd update");
+					myNavMesh->Update(e.GetTimestep());
+				}
+
+				{
+					VT_PROFILE_SCOPE("Update agent positions");
+					for (auto [entityId, agentId] : agentMap)
+					{
+						Volt::Entity entity = myActiveScene->GetEntityFromUUID(entityId);
+						if (entity.GetComponent<NavAgentComponent>().active)
+						{
+							SyncDetourPosition(entity, e.GetTimestep());
+						}
+					}
+				}
+			}
 
 			return false;
 		}
@@ -220,7 +224,7 @@ namespace Volt
 					VT_CORE_ERROR("Could not initialize agents because active scene is null");
 					return;
 				}
-				
+
 				auto& registry = myActiveScene->GetRegistry();
 				auto view = registry.view<const Volt::NavAgentComponent>();
 				view.each([&](const entt::entity id, const Volt::NavAgentComponent& comp)

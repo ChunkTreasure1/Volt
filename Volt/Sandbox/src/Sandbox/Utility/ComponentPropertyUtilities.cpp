@@ -101,6 +101,7 @@ void ComponentPropertyUtility::Initialize()
 	RegisterMonoPropertyType<glm::vec2>(s_monoPropertyFunctions);
 	RegisterMonoPropertyType<glm::vec3>(s_monoPropertyFunctions);
 	RegisterMonoPropertyType<glm::vec4>(s_monoPropertyFunctions);
+	RegisterMonoPropertyType<glm::quat>(s_monoPropertyFunctions);
 
 	RegisterMonoPropertyType<std::string>(s_monoPropertyFunctions);
 }

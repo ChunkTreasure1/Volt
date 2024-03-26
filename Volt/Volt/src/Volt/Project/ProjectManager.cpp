@@ -144,6 +144,11 @@ namespace Volt
 		return GetDirectory() / "Binaries" / "Project.dll";
 	}
 
+	const std::filesystem::path ProjectManager::GetMonoBinariesDirectory()
+	{
+		return GetDirectory() / "Binaries";
+	}
+
 	const std::filesystem::path& ProjectManager::GetDirectory()
 	{
 		return m_currentProject->projectDirectory;

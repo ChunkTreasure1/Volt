@@ -298,6 +298,12 @@ namespace Volt
 
 		m_window->Present();
 
+		{
+			VT_PROFILE_SCOPE("Application::PostFrameUpdate");
+			AppPostFrameUpdateEvent postFrameUpdateEvent{ m_currentDeltaTime * m_timeScale };
+			OnEvent(postFrameUpdateEvent);
+		}
+
 		m_frameTimer.Accumulate();
 	}
 

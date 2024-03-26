@@ -231,7 +231,8 @@ void Sandbox::OnAttach()
 void Sandbox::CreateWatches()
 {
 	myFileWatcher->AddWatch(Volt::ProjectManager::GetEngineDirectory());
-	myFileWatcher->AddWatch(Volt::ProjectManager::GetProjectDirectory());
+	myFileWatcher->AddWatch(Volt::ProjectManager::GetAssetsDirectory());
+	myFileWatcher->AddWatch(Volt::ProjectManager::GetMonoBinariesDirectory());
 
 	CreateModifiedWatch();
 	CreateDeleteWatch();
@@ -465,18 +466,7 @@ void Sandbox::OnEvent(Volt::Event& e)
 		return;
 	}
 
-	switch (mySceneState)
-	{
-		case SceneState::Edit:
-			break;
-		case SceneState::Play:
-			myRuntimeScene->OnEvent(e);
-			break;
-		case SceneState::Pause:
-			break;
-		case SceneState::Simulating:
-			break;
-	}
+	myRuntimeScene->OnEvent(e);
 }
 
 void Sandbox::OnScenePlay()
@@ -812,6 +802,11 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	for (const auto& f : myFileChangeQueue)
 	{
 		f();
+	}
+
+	if (!myFileChangeQueue.empty())
+	{
+		EditorLibrary::Get<AssetBrowserPanel>()->Reload();
 	}
 
 	myFileChangeQueue.clear();

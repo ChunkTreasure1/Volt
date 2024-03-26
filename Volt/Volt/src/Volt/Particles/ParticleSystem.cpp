@@ -98,6 +98,13 @@ void Volt::ParticleSystem::Update(entt::registry& registry, Weak<Scene> scene, c
 			VT_PROFILE_SCOPE("Update particle system");
 
 			Entity entity{ id, scene };
+			if (!entity)
+			{
+				std::scoped_lock lock{ emittersToRemoveMutex };
+				emittersToRemove.emplace_back(id);
+				return;
+			}
+
 			const auto forward = entity.GetForward();
 
 			std::vector<Particle>& p_vec = particleStorage.particles;

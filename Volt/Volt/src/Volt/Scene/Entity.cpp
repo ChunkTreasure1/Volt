@@ -572,6 +572,10 @@ namespace Volt
 			{
 				continue;
 			}
+			else if (componentDesc->GetGUID() == GetTypeGUID<IDComponent>() && (copyFlags & EntityCopyFlags::SkipID) != EntityCopyFlags::None)
+			{
+				continue;
+			}
 
 			CopyComponent(reinterpret_cast<const uint8_t*>(storage.get(srcEntity)), componentData, 0, componentDesc);
 		}
@@ -579,13 +583,13 @@ namespace Volt
 		CopyMonoScripts(srcEntity, dstEntity);
 	}
 
-	Entity Entity::Duplicate(Entity srcEntity, Ref<Scene> targetScene, Entity parent)
+	Entity Entity::Duplicate(Entity srcEntity, Ref<Scene> targetScene, Entity parent, const EntityCopyFlags copyFlags)
 	{
 		auto scene = targetScene ? targetScene : srcEntity.GetScene().GetSharedPtr();
 
 		Entity newEntity = scene->CreateEntity();
 
-		Copy(srcEntity, newEntity);
+		Copy(srcEntity, newEntity, EntityCopyFlags::SkipID | EntityCopyFlags::SkipRelationships | copyFlags);
 
 		if (newEntity.HasComponent<NetActorComponent>())
 		{
@@ -680,6 +684,12 @@ namespace Volt
 			{
 				if (!srcFields.contains(name))
 				{
+					continue;
+				}
+
+				if (field.type.IsCustomMonoType())
+				{
+					// #TODO_Ivar: Handle copying custom mono types
 					continue;
 				}
 

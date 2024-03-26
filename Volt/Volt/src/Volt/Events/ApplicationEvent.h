@@ -124,6 +124,22 @@ namespace Volt
 		float m_timestep;
 	};
 
+	class AppPostFrameUpdateEvent : public Event
+	{
+	public:
+		AppPostFrameUpdateEvent(float timestep)
+			: m_timestep(timestep)
+		{ }
+
+		inline const float& GetTimestep() { return m_timestep; }
+
+		EVENT_CLASS_TYPE(AppPostFrameUpdate);
+		EVENT_CLASS_CATEGORY(EventCategoryApplication);
+
+	private:
+		float m_timestep;
+	};
+
 	class AppRenderEvent : public Event
 	{
 	public:
