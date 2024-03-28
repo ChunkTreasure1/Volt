@@ -42,6 +42,8 @@
 #include "Sandbox/Window/BehaviourGraph/BehaviorPanel.h"
 #include "Sandbox/Window/SceneSettingsPanel.h"
 #include "Sandbox/Window/WorldEnginePanel.h"
+#include "Sandbox/Window/SkeletonEditorPanel.h"
+#include "Sandbox/Window/AnimationEditorPanel.h"
 #include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
@@ -162,6 +164,8 @@ void Sandbox::OnAttach()
 	myAssetBrowserPanel = EditorLibrary::Register<AssetBrowserPanel>("", myRuntimeScene, "##Main");
 
 	EditorLibrary::RegisterWithType<CharacterEditorPanel>("Animation", Volt::AssetType::AnimatedCharacter);
+	EditorLibrary::RegisterWithType<SkeletonEditorPanel>("Animation", Volt::AssetType::Skeleton);
+	EditorLibrary::RegisterWithType<AnimationEditorPanel>("Animation", Volt::AssetType::Animation);
 	EditorLibrary::RegisterWithType<MaterialEditorPanel>("", Volt::AssetType::Material, myRuntimeScene);
 	EditorLibrary::RegisterWithType<ParticleEmitterEditor>("", Volt::AssetType::ParticlePreset);
 	EditorLibrary::RegisterWithType<AnimationGraphPanel>("Animation", Volt::AssetType::AnimationGraph, myRuntimeScene);
@@ -588,7 +592,13 @@ void Sandbox::NewScene()
 		Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 	}
 
+	if (myRuntimeScene)
+	{
+		myRuntimeScene->ShutdownEngineScripts();
+	}
+
 	myRuntimeScene = Volt::Scene::CreateDefaultScene("New Scene", true);
+	myRuntimeScene->InitializeEngineScripts();
 	SetupNewSceneData();
 }
 
@@ -606,6 +616,11 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 
 		const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myRuntimeScene->handle);
 
+		if (myRuntimeScene)
+		{
+			myRuntimeScene->ShutdownEngineScripts();
+		}
+
 		if (metadata.filePath == path)
 		{
 			Volt::AssetManager::Get().ReloadAsset(myRuntimeScene->handle);
@@ -616,6 +631,7 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 		}
 
 		myRuntimeScene = Volt::AssetManager::GetAsset<Volt::Scene>(path);
+		myRuntimeScene->InitializeEngineScripts();
 
 		SetupNewSceneData();
 	}
@@ -874,52 +890,6 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 	{
 		const float buildProgess = GameBuilder::GetBuildProgress();
 		RenderProgressBar(buildProgess);
-	}
-
-	if (ImGui::Begin("Conversion Window"))
-	{
-		if (ImGui::Button("Convert Scene to M"))
-		{
-			Volt::Entity mainMenuEntity = myRuntimeScene->GetEntityWithName("PF_MainMenu");
-
-			myRuntimeScene->ForEachWithComponents<Volt::TransformComponent, Volt::MeshComponent>([&](const entt::entity id, Volt::TransformComponent& transComp, const Volt::MeshComponent& meshComp)
-			{
-				Volt::Entity entity{ id, myRuntimeScene };
-				entity.SetScale(entity.GetScale() * 0.01f);
-			});
-
-			myRuntimeScene->ForEachWithComponents<Volt::TransformComponent>([&](const entt::entity id, Volt::TransformComponent& transComp)
-			{
-				Volt::Entity entity{ id, myRuntimeScene };
-
-				if (mainMenuEntity)
-				{
-					if (myRuntimeScene->IsRelatedTo(mainMenuEntity, entity))
-					{
-						return;
-					}
-				}
-
-				if (entity == mainMenuEntity)
-				{
-					return;
-				}
-
-				entity.SetLocalPosition(entity.GetLocalPosition() * 0.01f); 
-			});
-
-			myRuntimeScene->ForEachWithComponents<Volt::PointLightComponent>([&](const entt::entity id, Volt::PointLightComponent& comp) 
-			{
-				comp.radius *= 0.01f;
-			});
-
-			myRuntimeScene->ForEachWithComponents<Volt::SpotLightComponent>([&](const entt::entity id, Volt::SpotLightComponent& comp) 
-			{
-				comp.range *= 0.01f;
-			});
-		}
-
-		ImGui::End();
 	}
 
 	return false;

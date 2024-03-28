@@ -195,17 +195,19 @@ namespace Volt
 			AssetMetadata& metadata = GetMetadataFromHandleMutable(assetHandle);
 			if (!metadata.IsValid())
 			{
+				VT_CORE_ERROR("[AssetManager] Trying to load asset which has invalid metadata!");
+				asset->SetFlag(AssetFlag::Invalid, true);
 				return;
 			}
 
 			if (!m_assetImporters.contains(metadata.type))
 			{
 				VT_CORE_WARN("[AssetManager] No importer for asset found!");
+				asset->SetFlag(AssetFlag::Invalid, true);
 				return;
 			}
 
 			m_assetImporters.at(metadata.type)->Load(metadata, asset);
-			if (!asset) { return; }
 
 #ifdef VT_DEBUG
 			VT_CORE_TRACE("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath, assetHandle);
@@ -1025,6 +1027,7 @@ namespace Volt
 
 		if (!metadata.IsValid())
 		{
+			asset->SetFlag(AssetFlag::Invalid, true);
 			return;
 		}
 
@@ -1040,16 +1043,17 @@ namespace Volt
 
 			threadPool.SubmitTask([this, metadata](AssetHandle handle)
 			{
-				if (!m_assetImporters.contains(metadata.type))
-				{
-					VT_CORE_ERROR("No importer for asset found!");
-					return;
-				}
-
 				Ref<Asset> asset;
 				{
 					ReadLock lock{ m_assetCacheMutex };
 					asset = m_assetCache.at(handle);
+				}
+
+				if (!m_assetImporters.contains(metadata.type))
+				{
+					VT_CORE_ERROR("No importer for asset found!");
+					asset->SetFlag(AssetFlag::Invalid, true);
+					return;
 				}
 
 				m_assetImporters.at(metadata.type)->Load(metadata, asset);

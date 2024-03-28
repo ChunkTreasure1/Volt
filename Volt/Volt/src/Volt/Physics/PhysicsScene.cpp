@@ -132,12 +132,9 @@ namespace Volt
 
 	Ref<PhysicsActor> PhysicsScene::GetActor(Entity entity)
 	{
-		for (const auto& actor : myPhysicsActors)
+		if (m_physicsActorFromEntityIDMap.contains(entity.GetHandle()))
 		{
-			if (actor->GetEntity().GetID() == entity.GetID())
-			{
-				return actor;
-			}
+			return m_physicsActorFromEntityIDMap.at(entity.GetHandle());
 		}
 
 		return nullptr;
@@ -145,12 +142,9 @@ namespace Volt
 
 	const Ref<PhysicsActor> PhysicsScene::GetActor(Entity entity) const
 	{
-		for (const auto& actor : myPhysicsActors)
+		if (m_physicsActorFromEntityIDMap.contains(entity.GetHandle()))
 		{
-			if (actor->GetEntity().GetID() == entity.GetID())
-			{
-				return actor;
-			}
+			return m_physicsActorFromEntityIDMap.at(entity.GetHandle());
 		}
 
 		return nullptr;
@@ -158,12 +152,9 @@ namespace Volt
 
 	Ref<PhysicsControllerActor> PhysicsScene::GetControllerActor(Entity entity)
 	{
-		for (const auto& actor : myControllerActors)
+		if (m_physicsControllerActorFromEntityIDMap.contains(entity.GetHandle()))
 		{
-			if (actor->GetEntity().GetID() == entity.GetID())
-			{
-				return actor;
-			}
+			return m_physicsControllerActorFromEntityIDMap.at(entity.GetHandle());
 		}
 
 		return nullptr;
@@ -171,12 +162,9 @@ namespace Volt
 
 	const Ref<PhysicsControllerActor> PhysicsScene::GetControllerActor(Entity entity) const
 	{
-		for (const auto& actor : myControllerActors)
+		if (m_physicsControllerActorFromEntityIDMap.contains(entity.GetHandle()))
 		{
-			if (actor->GetEntity().GetID() == entity.GetID())
-			{
-				return actor;
-			}
+			return m_physicsControllerActorFromEntityIDMap.at(entity.GetHandle());
 		}
 
 		return nullptr;
@@ -186,6 +174,8 @@ namespace Volt
 	{
 		Ref<PhysicsActor> actor = CreateRef<PhysicsActor>(entity);
 		myPhysicsActors.emplace_back(actor);
+
+		m_physicsActorFromEntityIDMap[entity.GetHandle()] = actor;
 
 		auto func = [&, addedEntity = entity]()
 		{
@@ -232,14 +222,21 @@ namespace Volt
 			func();
 		}
 
-		auto it = std::find_if(myPhysicsActors.begin(), myPhysicsActors.end(), [actor](const Ref<PhysicsActor>& a)
+		auto actorEntityHandle = actor->GetEntity().GetHandle();
+
+		auto it = std::find_if(myPhysicsActors.begin(), myPhysicsActors.end(), [actorEntityHandle](const Ref<PhysicsActor>& a)
 		{
-			return actor->GetEntity().GetID() == a->GetEntity().GetID();
+			return a->GetEntity().GetHandle() == actorEntityHandle;
 		});
 
 		if (it != myPhysicsActors.end())
 		{
 			myPhysicsActors.erase(it);
+		}
+
+		if (m_physicsActorFromEntityIDMap.contains(actorEntityHandle))
+		{
+			m_physicsActorFromEntityIDMap.erase(actorEntityHandle);
 		}
 	}
 
@@ -247,6 +244,7 @@ namespace Volt
 	{
 		Ref<PhysicsControllerActor> actor = CreateRef<PhysicsControllerActor>(entity);
 		myControllerActors.emplace_back(actor);
+		m_physicsControllerActorFromEntityIDMap[entity.GetHandle()] = actor;
 
 		auto func = [&, addedEntity = entity]()
 		{
@@ -269,17 +267,22 @@ namespace Volt
 
 	void PhysicsScene::RemoveControllerActor(Ref<PhysicsControllerActor> controllerActor)
 	{
-		auto it = std::find_if(myControllerActors.begin(), myControllerActors.end(), [&, controllerActor](const auto& lhs)
+		auto actorEntityHandle = controllerActor->GetEntity().GetHandle();
+
+		auto it = std::find_if(myControllerActors.begin(), myControllerActors.end(), [actorEntityHandle](const auto& lhs)
 		{
-			return lhs->GetEntity().GetID() == controllerActor->GetEntity().GetID();
+			return lhs->GetEntity().GetHandle() == actorEntityHandle;
 		});
 
-		if (it == myControllerActors.end())
+		if (it != myControllerActors.end())
 		{
-			return;
+			myControllerActors.erase(it);
 		}
 
-		myControllerActors.erase(it);
+		if (m_physicsControllerActorFromEntityIDMap.contains(actorEntityHandle))
+		{
+			m_physicsControllerActorFromEntityIDMap.erase(actorEntityHandle);
+		}
 	}
 
 	bool PhysicsScene::Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit)

@@ -94,11 +94,11 @@ namespace GraphKey
 		//const float localTime = Volt::AnimationManager::globalClock - animGraph->GetStartTime();
 
 		const uint32_t currentFrame = anim->GetFrameFromStartTime(animGraph->GetStartTime(), speed);
-		/* ANIMATION EVENT STUFF
-		const int32_t animationIndex = character->GetAnimationIndexFromHandle(animHandle);
-		if (myGraph->GetEntity() != Volt::Entity::NullID() && Volt::SceneManager::GetActiveScene() && animationIndex != -1 && character->HasAnimationEvents((uint32_t)animationIndex))
+		
+		if (myGraph->GetEntity() != Volt::Entity::NullID() && Volt::SceneManager::GetActiveScene() && anim->HasEvents())
 		{
-			const auto& animEvents = character->GetAnimationEvents((uint32_t)animationIndex);
+			const auto& animEvents = anim->GetEvents();
+
 			for (const auto& event : animEvents)
 			{
 				if (event.frame == currentFrame && (int32_t)currentFrame != myLastFrame)
@@ -123,7 +123,7 @@ namespace GraphKey
 					}
 				}
 			}
-		}*/
+		}
 
 		myLastFrame = (int32_t)currentFrame;
 

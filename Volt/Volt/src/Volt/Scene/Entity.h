@@ -183,7 +183,7 @@ namespace Volt
 	{
 		auto scenePtr = GetScene();
 		auto& registry = scenePtr->GetRegistry();
-		return registry.emplace<T>(m_handle);
+		return registry.emplace<T>(m_handle, std::forward<Args>(args)...);
 	}
 
 	template<typename T>

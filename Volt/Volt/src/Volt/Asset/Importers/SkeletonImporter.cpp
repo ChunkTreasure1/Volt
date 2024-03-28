@@ -61,16 +61,30 @@ namespace Volt
 			return false;
 		}
 
-		VT_DESERIALIZE_PROPERTY(name, skeleton->myName, skeletonNode, std::string("Null"));
+		VT_DESERIALIZE_PROPERTY(name, skeleton->m_name, skeletonNode, std::string("Null"));
 
 		YAML::Node jointsNode = skeletonNode["joints"];
 		if (jointsNode)
 		{
 			for (const auto& jointNode : jointsNode)
 			{
-				auto& joint = skeleton->myJoints.emplace_back();
+				auto& joint = skeleton->m_joints.emplace_back();
 				VT_DESERIALIZE_PROPERTY(parentIndex, joint.parentIndex, jointNode, -1);
 				VT_DESERIALIZE_PROPERTY(name, joint.name, jointNode, std::string("Null"));
+			}
+		}
+
+		YAML::Node jointAttachmentsNode = skeletonNode["jointAttachments"];
+		if (jointAttachmentsNode)
+		{
+			for (const auto& attachmentNode : jointAttachmentsNode)
+			{
+				auto& attachment = skeleton->m_jointAttachments.emplace_back();
+				VT_DESERIALIZE_PROPERTY(name, attachment.name, attachmentNode, std::string(""));
+				VT_DESERIALIZE_PROPERTY(jointIndex, attachment.jointIndex, attachmentNode, int32_t(-1));
+				VT_DESERIALIZE_PROPERTY(id, attachment.id, attachmentNode, UUID(0));
+				VT_DESERIALIZE_PROPERTY(positionOffset, attachment.positionOffset, attachmentNode, glm::vec3(0.f));
+				VT_DESERIALIZE_PROPERTY(rotationOffset, attachment.rotationOffset, attachmentNode, glm::quat(1.f, 0.f, 0.f, 0.f));
 			}
 		}
 
@@ -79,7 +93,7 @@ namespace Volt
 		{
 			for (const auto& invBindPoseNode : invBindPosesNode)
 			{
-				VT_DESERIALIZE_PROPERTY(invBindPose, skeleton->myInverseBindPose.emplace_back(), invBindPoseNode, glm::mat4(1.f));
+				VT_DESERIALIZE_PROPERTY(invBindPose, skeleton->m_inverseBindPose.emplace_back(), invBindPoseNode, glm::mat4(1.f));
 			}
 		}
 
@@ -88,7 +102,7 @@ namespace Volt
 		{
 			for (const auto& transform : restPoseNode)
 			{
-				auto& trs = skeleton->myRestPose.emplace_back();
+				auto& trs = skeleton->m_restPose.emplace_back();
 				VT_DESERIALIZE_PROPERTY(position, trs.position, transform, glm::vec3{ 0.f });
 				VT_DESERIALIZE_PROPERTY(rotation, trs.rotation, transform, glm::quat{});
 				VT_DESERIALIZE_PROPERTY(scale, trs.scale, transform, glm::vec3{ 1.f });
@@ -107,10 +121,10 @@ namespace Volt
 		out << YAML::Key << "Skeleton" << YAML::Value;
 		{
 			out << YAML::BeginMap;
-			VT_SERIALIZE_PROPERTY(name, skeleton->myName, out);
+			VT_SERIALIZE_PROPERTY(name, skeleton->m_name, out);
 
 			out << YAML::Key << "joints" << YAML::BeginSeq;
-			for (const auto& joint : skeleton->myJoints)
+			for (const auto& joint : skeleton->m_joints)
 			{
 				out << YAML::BeginMap;
 				VT_SERIALIZE_PROPERTY(parentIndex, joint.parentIndex, out);
@@ -119,8 +133,21 @@ namespace Volt
 			}
 			out << YAML::EndSeq;
 
+			out << YAML::Key << "jointAttachments" << YAML::BeginSeq;
+			for (const auto& attachment : skeleton->m_jointAttachments)
+			{
+				out << YAML::BeginMap;
+				VT_SERIALIZE_PROPERTY(name, attachment.name, out);
+				VT_SERIALIZE_PROPERTY(jointIndex, attachment.jointIndex, out);
+				VT_SERIALIZE_PROPERTY(id, attachment.id, out);
+				VT_SERIALIZE_PROPERTY(positionOffset, attachment.positionOffset, out);
+				VT_SERIALIZE_PROPERTY(rotationOffset, attachment.rotationOffset, out);
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+
 			out << YAML::Key << "inverseBindPoses" << YAML::BeginSeq;
-			for (const auto& invBindPose : skeleton->myInverseBindPose)
+			for (const auto& invBindPose : skeleton->m_inverseBindPose)
 			{
 				out << YAML::BeginMap;
 				VT_SERIALIZE_PROPERTY(invBindPose, invBindPose, out);
@@ -129,7 +156,7 @@ namespace Volt
 			out << YAML::EndSeq;
 
 			out << YAML::Key << "restPose" << YAML::BeginSeq;
-			for (const auto& restPose : skeleton->myRestPose)
+			for (const auto& restPose : skeleton->m_restPose)
 			{
 				out << YAML::BeginMap;
 				VT_SERIALIZE_PROPERTY(position, restPose.position, out);

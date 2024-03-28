@@ -28,8 +28,6 @@ namespace Volt
 
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
-		Ref<Scene> prefabScene = CreateRef<Scene>();
-
 		YAMLFileStreamReader streamReader{};
 		if (!streamReader.OpenFile(filePath))
 		{
@@ -37,6 +35,8 @@ namespace Volt
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
+
+		Ref<Scene> prefabScene = CreateRef<Scene>();
 
 		streamReader.EnterScope("Prefab");
 		{

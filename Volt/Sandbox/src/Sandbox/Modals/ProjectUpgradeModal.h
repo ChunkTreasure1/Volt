@@ -34,13 +34,13 @@ private:
 	void ConvertAnimationGraphsToV0_1_2();
 	void ConvertMetaFilesToV011();
 
-	void ConvertPrefabsToV113();
-	void ConvertScenesToV113();
+	void ConvertPrefabsToV013();
+	void ConvertScenesToV013();
 
-	void ConvertPreV113Prefab(const std::filesystem::path& filePath);
+	void ConvertPreV013Prefab(const std::filesystem::path& filePath);
 	
 	void DeserializePreV113SceneLayer(Ref<Volt::Scene> scene, Volt::SceneLayer& sceneLayer, const std::filesystem::path& layerPath, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping);
-	void DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt::YAMLFileStreamReader& streamReader, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping, bool isPrefabEntity);
+	void DeserializePreV013Entity(Ref<Volt::Scene> scene, Volt::YAMLFileStreamReader& streamReader, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping, bool isPrefabEntity);
 	void DeserializePreV113Component(uint8_t* componentData, const Volt::IComponentTypeDesc* componentDesc, Volt::YAMLFileStreamReader& streamReader);
 	void DeserializePreV113MonoScripts(Ref<Volt::Scene> scene, const Volt::EntityID entityId, Volt::YAMLFileStreamReader& streamReader);
 	
@@ -50,7 +50,7 @@ private:
 	void ValidateSceneConversion(Ref<Volt::Scene> scene);
 	void ValidateSceneConversionArray(Ref<Volt::Scene> scene, const Volt::ComponentMember& componentMember, uint8_t* componentData);
 
-	const bool IsPreV113EntityNull(Volt::EntityID entityId);
+	const bool IsPreV013EntityNull(Volt::EntityID entityId);
 	void ValidateEntityValidity(Volt::EntityID* entityId);
 	const Volt::ComponentMember* TryGetComponentMemberFromName(const std::string& memberName, const Volt::IComponentTypeDesc* componentDesc);
 

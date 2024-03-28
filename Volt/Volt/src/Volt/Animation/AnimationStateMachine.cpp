@@ -85,7 +85,7 @@ namespace Volt
 
 		const auto& currState = myStates.at(myCurrentState);
 
-		VT_WARN("{}", currState->name);
+		//VT_WARN("{}", currState->name);
 
 		for (const auto& id : currState->transitions)
 		{

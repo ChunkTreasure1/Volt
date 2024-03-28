@@ -121,7 +121,14 @@ namespace Volt
 
             set
             {
-                GetComponent<RelationshipComponent>().parent = value;
+                if (value == null)
+                {
+                    InternalCalls.RelationshipComponent_SetParent(this.Id, 0);
+                }
+                else
+                {
+                    GetComponent<RelationshipComponent>().parent = value;
+                }
             }
         }
 

@@ -71,17 +71,21 @@ AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string
 		myPreviewRenderer = CreateRef<PreviewRenderer>();
 	}
 
+	if (!Volt::ProjectManager::GetProject().isDeprecated)
 	{
-		AssetDirectoryProcessor processor{ mySelectionManager, myAssetMask };
-		myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = processor.ProcessDirectories(Volt::ProjectManager::GetAssetsDirectory(), myMeshImportData, myMeshToImport);
+		{
+			AssetDirectoryProcessor processor{ mySelectionManager, myAssetMask };
+			myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = processor.ProcessDirectories(Volt::ProjectManager::GetAssetsDirectory(), myMeshImportData, myMeshToImport);
+		}
+
+		{
+			AssetDirectoryProcessor processor{ mySelectionManager, myAssetMask };
+			myDirectories[FileSystem::GetEnginePath()] = processor.ProcessDirectories(FileSystem::GetEnginePath(), myMeshImportData, myMeshToImport);
+		}
+
+		myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsDirectory()].get();
 	}
 
-	{
-		AssetDirectoryProcessor processor{ mySelectionManager, myAssetMask };
-		myDirectories[FileSystem::GetEnginePath()] = processor.ProcessDirectories(FileSystem::GetEnginePath(), myMeshImportData, myMeshToImport);
-	}
-
-	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsDirectory()].get();
 	myCurrentDirectory = myAssetsDirectory;
 
 	myDirectoryButtons.emplace_back(myCurrentDirectory);
@@ -421,6 +425,11 @@ bool AssetBrowserPanel::OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent& e)
 bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 {
 	if (UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage || !myPreviewRenderer)
+	{
+		return false;
+	}
+
+	if (!myCurrentDirectory)
 	{
 		return false;
 	}
@@ -1039,10 +1048,11 @@ void AssetBrowserPanel::Reload()
 
 	ClearAssetPreviewsInCurrentDirectory();
 
-	//myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = ProcessDirectory(Volt::ProjectManager::GetAssetsDirectory(), nullptr);
-
-	AssetDirectoryProcessor processor{ mySelectionManager, myAssetMask };
-	myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = processor.ProcessDirectories(Volt::ProjectManager::GetAssetsDirectory(), myMeshImportData, myMeshToImport);
+	if (!Volt::ProjectManager::GetProject().isDeprecated)
+	{
+		AssetDirectoryProcessor processor{ mySelectionManager, myAssetMask };
+		myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = processor.ProcessDirectories(Volt::ProjectManager::GetAssetsDirectory(), myMeshImportData, myMeshToImport);
+	}
 
 	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsDirectory()].get();
 

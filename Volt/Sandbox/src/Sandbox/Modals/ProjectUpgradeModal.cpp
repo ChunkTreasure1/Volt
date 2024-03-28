@@ -17,11 +17,15 @@
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
 #include <Volt/Components/RenderingComponents.h>
+#include <Volt/Vision/VisionComponents.h>
+#include <Volt/Net/SceneInteraction/NetActorComponent.h>
+#include <Volt/Net/SceneInteraction/GameModeComponent.h>
+#include <Volt/Components/AudioComponents.h>
 
 #include <imgui.h>
 #include <Volt/Utility/SerializationMacros.h>
 
-enum class PreV113PropertyType : uint32_t
+enum class PreV013PropertyType : uint32_t
 {
 	Bool = 0,
 	Int = 1,
@@ -57,7 +61,7 @@ struct TypeIndexContainer
 	std::type_index typeIndex = typeid(void);
 };
 
-static std::unordered_map<PreV113PropertyType, TypeIndexContainer> s_preV113PropTypeToTypeIndexMap;
+static std::unordered_map<PreV013PropertyType, TypeIndexContainer> s_preV113PropTypeToTypeIndexMap;
 static std::unordered_map<std::type_index, std::function<void(Volt::YAMLFileStreamReader&, uint8_t*, const size_t)>> s_arrayDeserializers;
 static std::unordered_map<VoltGUID, std::unordered_map<std::string, std::string>> s_componentMemberRemap;
 
@@ -72,34 +76,40 @@ void RegisterArrayDeserializationFunction()
 	};
 }
 
+template<typename T>
+void AddComponentMemberRemap(const std::string& oldName, const std::string& newName)
+{
+	s_componentMemberRemap[Volt::GetTypeGUID<T>()][oldName] = newName;
+}
+
 ProjectUpgradeModal::ProjectUpgradeModal(const std::string& strId)
 	: Modal(strId)
 {
 	if (!s_initialize)
 	{
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Bool].typeIndex = std::type_index{ typeid(bool) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Int].typeIndex = std::type_index{ typeid(int32_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::UInt].typeIndex = std::type_index{ typeid(uint32_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Short].typeIndex = std::type_index{ typeid(int16_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::UShort].typeIndex = std::type_index{ typeid(uint16_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Char].typeIndex = std::type_index{ typeid(int8_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::UChar].typeIndex = std::type_index{ typeid(uint8_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Float].typeIndex = std::type_index{ typeid(float) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Double].typeIndex = std::type_index{ typeid(double) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Vector2].typeIndex = std::type_index{ typeid(glm::vec2) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Vector3].typeIndex = std::type_index{ typeid(glm::vec3) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Vector4].typeIndex = std::type_index{ typeid(glm::vec4) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::String].typeIndex = std::type_index{ typeid(std::string) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Int64].typeIndex = std::type_index{ typeid(int64_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::UInt64].typeIndex = std::type_index{ typeid(uint64_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::AssetHandle].typeIndex = std::type_index{ typeid(Volt::AssetHandle) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Color3].typeIndex = std::type_index{ typeid(glm::vec3) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Color4].typeIndex = std::type_index{ typeid(glm::vec4) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Directory].typeIndex = std::type_index{ typeid(std::filesystem::path) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Path].typeIndex = std::type_index{ typeid(std::filesystem::path) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::EntityId].typeIndex = std::type_index{ typeid(entt::entity) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::GUID].typeIndex = std::type_index{ typeid(VoltGUID) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Quaternion].typeIndex = std::type_index{ typeid(glm::quat) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Bool].typeIndex = std::type_index{ typeid(bool) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Int].typeIndex = std::type_index{ typeid(int32_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::UInt].typeIndex = std::type_index{ typeid(uint32_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Short].typeIndex = std::type_index{ typeid(int16_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::UShort].typeIndex = std::type_index{ typeid(uint16_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Char].typeIndex = std::type_index{ typeid(int8_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::UChar].typeIndex = std::type_index{ typeid(uint8_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Float].typeIndex = std::type_index{ typeid(float) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Double].typeIndex = std::type_index{ typeid(double) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Vector2].typeIndex = std::type_index{ typeid(glm::vec2) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Vector3].typeIndex = std::type_index{ typeid(glm::vec3) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Vector4].typeIndex = std::type_index{ typeid(glm::vec4) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::String].typeIndex = std::type_index{ typeid(std::string) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Int64].typeIndex = std::type_index{ typeid(int64_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::UInt64].typeIndex = std::type_index{ typeid(uint64_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::AssetHandle].typeIndex = std::type_index{ typeid(Volt::AssetHandle) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Color3].typeIndex = std::type_index{ typeid(glm::vec3) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Color4].typeIndex = std::type_index{ typeid(glm::vec4) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Directory].typeIndex = std::type_index{ typeid(std::filesystem::path) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Path].typeIndex = std::type_index{ typeid(std::filesystem::path) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::EntityId].typeIndex = std::type_index{ typeid(Volt::EntityID) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::GUID].typeIndex = std::type_index{ typeid(VoltGUID) };
+		s_preV113PropTypeToTypeIndexMap[PreV013PropertyType::Quaternion].typeIndex = std::type_index{ typeid(glm::quat) };
 
 		RegisterArrayDeserializationFunction<int8_t>();
 		RegisterArrayDeserializationFunction<uint8_t>();
@@ -131,16 +141,66 @@ ProjectUpgradeModal::ProjectUpgradeModal(const std::string& strId)
 		RegisterArrayDeserializationFunction<std::string>();
 		RegisterArrayDeserializationFunction<std::filesystem::path>();
 
-		RegisterArrayDeserializationFunction<entt::entity>();
+		RegisterArrayDeserializationFunction<Volt::EntityID>();
 		RegisterArrayDeserializationFunction<Volt::AssetHandle>();
 
 		// Member remapping
 		{
-			s_componentMemberRemap[Volt::ComponentRegistry::GetGUIDFromTypeName(entt::type_name<Volt::MeshComponent>())]["Mesh"] = "handle";
-			s_componentMemberRemap[Volt::ComponentRegistry::GetGUIDFromTypeName(entt::type_name<Volt::AnimatedCharacterComponent>())]["Character"] = "animatedCharacter";
-			s_componentMemberRemap[Volt::ComponentRegistry::GetGUIDFromTypeName(entt::type_name<Volt::SpriteComponent>())]["Material"] = "materialHandle";
-			s_componentMemberRemap[Volt::ComponentRegistry::GetGUIDFromTypeName(entt::type_name<Volt::AnimationControllerComponent>())]["Override Skin"] = "skin";
-			s_componentMemberRemap[Volt::ComponentRegistry::GetGUIDFromTypeName(entt::type_name<Volt::DecalComponent>())]["Material"] = "decalMaterial";
+			AddComponentMemberRemap<Volt::MeshComponent>("Mesh", "handle");
+			AddComponentMemberRemap<Volt::AnimatedCharacterComponent>("Character", "animatedCharacter");
+			AddComponentMemberRemap<Volt::SpriteComponent>("Material", "materialHandle");
+			AddComponentMemberRemap<Volt::AnimationControllerComponent>("Override Skin", "skin");
+			AddComponentMemberRemap<Volt::DecalComponent>("Material", "decalMaterial");
+
+			// Vision components
+			{
+				AddComponentMemberRemap<Volt::VisionTriggerComponent>("Camera", "triggerCam");
+				AddComponentMemberRemap<Volt::VisionTriggerComponent>("Force Camera", "forceActiveCam");
+
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Blend Time", "blendTime");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Field Of View", "fieldOfView");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Ignored Layers", "layerMasks");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Camera Type", "cameraType");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Blend Type", "blendType");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Damping", "damping");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Offset", "offset");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Follow", "followId");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("LookAt", "lookAtId");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Collision Focus Point", "collisionRayPoint");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Focal Distance", "focalDistance");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Mouse Sensitivity", "mouseSensitivity");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Collision Sphere Radius", "collisionRadius");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Collision", "isColliding");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Is Default", "isDefault");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("X FollowLock", "xFollowLock");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Y FollowLock", "yFollowLock");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Z FollowLock", "zFollowLock");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("X ShouldDamp", "xShouldDamp");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Y ShouldDamp", "yShouldDamp");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Z ShouldDamp", "zShouldDamp");
+				AddComponentMemberRemap<Volt::VisionCameraComponent>("Additive Blend", "additiveBlend");
+			}
+
+			// NetActorComponent
+			{
+				AddComponentMemberRemap<Volt::NetActorComponent>("Condition", "condition");
+				AddComponentMemberRemap<Volt::NetActorComponent>("Update Position", "updateTransformPos");
+				AddComponentMemberRemap<Volt::NetActorComponent>("Update Rotation", "updateTransformRot");
+				AddComponentMemberRemap<Volt::NetActorComponent>("Update Scale", "updateTransformScale");
+				AddComponentMemberRemap<Volt::NetActorComponent>("RepId", "repId");
+				AddComponentMemberRemap<Volt::NetActorComponent>("cID", "clientId");
+			}
+
+			// GameModeComponent
+			{
+				AddComponentMemberRemap<Volt::GameModeComponent>("PlayerPrefab", "prefabHandle");
+				AddComponentMemberRemap<Volt::GameModeComponent>("EnemyPrefab", "enemy");
+			}
+
+			// AudioListenerComponent
+			{
+				AddComponentMemberRemap<Volt::AudioListenerComponent>("Default", "default");
+			}
 		}
 
 		s_initialize = true;
@@ -203,8 +263,8 @@ void ProjectUpgradeModal::UpgradeCurrentProject()
 
 	if (projectVersion.GetPatch() < 3 && projectVersion.GetMinor() < 2 && projectVersion.GetMajor() == 0)
 	{
-		ConvertPrefabsToV113();
-		ConvertScenesToV113();
+		ConvertPrefabsToV013();
+		ConvertScenesToV013();
 	}
 
 	Volt::ProjectManager::OnProjectUpgraded();
@@ -626,7 +686,7 @@ void ProjectUpgradeModal::ConvertAnimationGraphsToV0_1_2()
 	}
 }
 
-void ProjectUpgradeModal::ConvertPrefabsToV113()
+void ProjectUpgradeModal::ConvertPrefabsToV013()
 {
 	auto& project = Volt::ProjectManager::GetProject();
 	const std::filesystem::path assetsPath = project.projectDirectory / project.assetsDirectory;
@@ -642,11 +702,11 @@ void ProjectUpgradeModal::ConvertPrefabsToV113()
 
 	for (const auto& prefabFilePath : prefabFilePaths)
 	{
-		ConvertPreV113Prefab(prefabFilePath);
+		ConvertPreV013Prefab(prefabFilePath);
 	}
 }
 
-void ProjectUpgradeModal::ConvertScenesToV113()
+void ProjectUpgradeModal::ConvertScenesToV013()
 {
 	// We only need to convert the layer files, and not the scene files
 
@@ -715,7 +775,7 @@ void ProjectUpgradeModal::ConvertScenesToV113()
 	}
 }
 
-void ProjectUpgradeModal::ConvertPreV113Prefab(const std::filesystem::path& filePath)
+void ProjectUpgradeModal::ConvertPreV013Prefab(const std::filesystem::path& filePath)
 {
 	Volt::YAMLFileStreamReader streamReader{};
 	if (!streamReader.OpenFile(filePath))
@@ -736,12 +796,12 @@ void ProjectUpgradeModal::ConvertPreV113Prefab(const std::filesystem::path& file
 		streamReader.ForEach("entities", [&]()
 		{
 			Volt::EntityID entityId = streamReader.ReadKey("id", Volt::Entity::NullID());
-			if (IsPreV113EntityNull(entityId))
+			if (IsPreV013EntityNull(entityId))
 			{
 				return;
 			}
 
-			DeserializePreV113Entity(prefabScene, streamReader, entityRemapping, true);
+			DeserializePreV013Entity(prefabScene, streamReader, entityRemapping, true);
 		});
 	}
 	streamReader.ExitScope();
@@ -784,13 +844,13 @@ void ProjectUpgradeModal::DeserializePreV113SceneLayer(Ref<Volt::Scene> scene, V
 
 		streamReader.ForEach("Entities", [&]()
 		{
-			DeserializePreV113Entity(scene, streamReader, entityRemapping, false);
+			DeserializePreV013Entity(scene, streamReader, entityRemapping, false);
 		});
 	}
 	streamReader.ExitScope();
 }
 
-void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt::YAMLFileStreamReader& streamReader, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping, bool isPrefabEntity)
+void ProjectUpgradeModal::DeserializePreV013Entity(Ref<Volt::Scene> scene, Volt::YAMLFileStreamReader& streamReader, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping, bool isPrefabEntity)
 {
 	if (!isPrefabEntity)
 	{
@@ -799,7 +859,7 @@ void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt:
 
 	Volt::EntityID originalEntityId = streamReader.ReadKey("id", Volt::Entity::NullID());
 
-	if (IsPreV113EntityNull(originalEntityId))
+	if (IsPreV013EntityNull(originalEntityId))
 	{
 		return;
 	}
@@ -946,12 +1006,12 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 			return;
 		}
 
-		const PreV113PropertyType oldType = static_cast<PreV113PropertyType>(streamReader.ReadKey("type", 0u));
+		const PreV013PropertyType oldType = static_cast<PreV013PropertyType>(streamReader.ReadKey("type", 0u));
 
-		if (oldType == PreV113PropertyType::Vector && componentMember->typeDesc != nullptr)
+		if (oldType == PreV013PropertyType::Vector && componentMember->typeDesc != nullptr)
 		{
 			const Volt::IArrayTypeDesc* arrayTypeDesc = reinterpret_cast<const Volt::IArrayTypeDesc*>(componentMember->typeDesc);
-			const PreV113PropertyType vectorType = static_cast<PreV113PropertyType>(streamReader.ReadKey("vectorType", 0u));
+			const PreV013PropertyType vectorType = static_cast<PreV013PropertyType>(streamReader.ReadKey("vectorType", 0u));
 			const std::type_index vectorValueType = s_preV113PropTypeToTypeIndexMap.at(vectorType).typeIndex;
 			void* arrayPtr = &componentData[componentMember->offset];
 
@@ -984,7 +1044,7 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 
 			return;
 		}
-		else if (oldType == PreV113PropertyType::Enum)
+		else if (oldType == PreV013PropertyType::Enum)
 		{
 			typeDeserializers.at(typeid(int32_t))(streamReader, componentData, componentMember->offset);
 			return;
@@ -1242,7 +1302,7 @@ void ProjectUpgradeModal::ValidateSceneConversionArray(Ref<Volt::Scene> scene, c
 	}
 }
 
-const bool ProjectUpgradeModal::IsPreV113EntityNull(Volt::EntityID entityId)
+const bool ProjectUpgradeModal::IsPreV013EntityNull(Volt::EntityID entityId)
 {
 	return entityId == Volt::Entity::NullID();
 }

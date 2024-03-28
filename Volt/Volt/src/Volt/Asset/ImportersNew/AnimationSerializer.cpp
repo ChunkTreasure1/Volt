@@ -34,9 +34,9 @@ namespace Volt
 		BinaryStreamWriter streamWriter{};
 
 		AnimationSerializationData serializationData{};
-		serializationData.duration = animation->myDuration;
-		serializationData.framesPerSecond = animation->myFramesPerSecond;
-		serializationData.frames = animation->myFrames;
+		serializationData.duration = animation->m_duration;
+		serializationData.framesPerSecond = animation->m_framesPerSecond;
+		serializationData.frames = animation->m_frames;
 	
 		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
 		streamWriter.Write(serializationData);
@@ -73,9 +73,9 @@ namespace Volt
 
 		Ref<Animation> animation = std::reinterpret_pointer_cast<Animation>(destinationAsset);
 
-		animation->myDuration = serializationData.duration;
-		animation->myFramesPerSecond = serializationData.framesPerSecond;
-		animation->myFrames = serializationData.frames;
+		animation->m_duration = serializationData.duration;
+		animation->m_framesPerSecond = serializationData.framesPerSecond;
+		animation->m_frames = serializationData.frames;
 
 		return true;
 	}

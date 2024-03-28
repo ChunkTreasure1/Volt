@@ -14,7 +14,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{639786CE-6DE3-4D57-8A00-2C5A0934830A}"_guid);
 			reflect.SetLabel("Game Mode Component");
-			reflect.AddMember(&GameModeComponent::prefabHandle, "prefabHandle", "Prefab", "", Asset::Null(), AssetType::Prefab);
+			reflect.AddMember(&GameModeComponent::prefabHandle, "prefabHandle", "Player", "", Asset::Null(), AssetType::Prefab);
 			reflect.AddMember(&GameModeComponent::enemy, "enemy", "Enemy", "", Asset::Null(), AssetType::Prefab);
 		}
 

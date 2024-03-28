@@ -10,6 +10,7 @@ namespace Volt
 	{
 		std::string name;
 		std::vector<Skeleton::Joint> joints;
+		std::vector<Skeleton::JointAttachment> jointAttachments;
 		std::vector<glm::mat4> inverseBindPose;
 		std::vector<Animation::TRS> restPose;
 
@@ -17,6 +18,7 @@ namespace Volt
 		{
 			streamWriter.Write(data.name);
 			streamWriter.Write(data.joints);
+			streamWriter.Write(data.jointAttachments);
 			streamWriter.Write(data.inverseBindPose);
 			streamWriter.WriteRaw(data.restPose);
 		}
@@ -25,6 +27,7 @@ namespace Volt
 		{
 			streamReader.Read(outData.name);
 			streamReader.Read(outData.joints);
+			streamReader.Read(outData.jointAttachments);
 			streamReader.Read(outData.inverseBindPose);
 			streamReader.ReadRaw(outData.restPose);
 		}
@@ -36,10 +39,11 @@ namespace Volt
 		BinaryStreamWriter streamWriter{};
 	
 		SkeletonSerializationData serializationData{};
-		serializationData.name = skeleton->myName;
-		serializationData.joints = skeleton->myJoints;
-		serializationData.inverseBindPose = skeleton->myInverseBindPose;
-		serializationData.restPose = skeleton->myRestPose;
+		serializationData.name = skeleton->m_name;
+		serializationData.joints = skeleton->m_joints;
+		serializationData.jointAttachments = skeleton->m_jointAttachments;
+		serializationData.inverseBindPose = skeleton->m_inverseBindPose;
+		serializationData.restPose = skeleton->m_restPose;
 
 		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
 		streamWriter.Write(serializationData);
@@ -76,10 +80,11 @@ namespace Volt
 
 		Ref<Skeleton> skeleton = std::reinterpret_pointer_cast<Skeleton>(destinationAsset);
 
-		skeleton->myName = serializationData.name;
-		skeleton->myJoints = serializationData.joints;
-		skeleton->myInverseBindPose = serializationData.inverseBindPose;
-		skeleton->myRestPose = serializationData.restPose;
+		skeleton->m_name = serializationData.name;
+		skeleton->m_joints = serializationData.joints;
+		skeleton->m_jointAttachments = serializationData.jointAttachments;
+		skeleton->m_inverseBindPose = serializationData.inverseBindPose;
+		skeleton->m_restPose = serializationData.restPose;
 
 		return true;
 	}

@@ -20,11 +20,15 @@ namespace Volt
 		uint32_t layer = 0;
 		bool hasGravity = true;
 
-		inline CharacterControllerComponent(ClimbingMode aClimbingMode = ClimbingMode::Normal, float aSlopeLimit = 20.f, float aInvisibleWallHeight = 200.f, float aMaxJumpHeight = 100.f,
-			float aContactOffset = 1.f, float aStepOffset = 10.f, float aDensity = 1.f, uint32_t aLayer = 0, bool aHasGravity = true)
+		inline CharacterControllerComponent() = default;
+
+		inline CharacterControllerComponent(ClimbingMode aClimbingMode, float aSlopeLimit, float aInvisibleWallHeight, float aMaxJumpHeight,
+			float aContactOffset, float aStepOffset, float aDensity, uint32_t aLayer, bool aHasGravity)
 			: climbingMode(aClimbingMode), slopeLimit(aSlopeLimit), invisibleWallHeight(aInvisibleWallHeight), maxJumpHeight(aMaxJumpHeight), contactOffset(aContactOffset),
 			stepOffset(aStepOffset), density(aDensity), layer(aLayer), hasGravity(aHasGravity)
-		{ }
+		{ 
+			layer = aLayer;
+		} 
 
 		static void ReflectType(TypeDesc<CharacterControllerComponent>& reflect)
 		{

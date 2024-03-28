@@ -456,7 +456,7 @@ void PropertiesPanel::AddMonoScriptPopup()
 
 					if (!entity.HasComponent<Volt::MonoScriptComponent>())
 					{
-						entity.AddComponent<Volt::MonoScriptComponent>(id);
+						entity.AddComponent<Volt::MonoScriptComponent>();
 					}
 
 					auto& comp = entity.GetComponent<Volt::MonoScriptComponent>();

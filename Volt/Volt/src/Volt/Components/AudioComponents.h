@@ -25,7 +25,7 @@ namespace Volt
 	{
 		bool isDefault = true;
 
-		void OnCreate(entt::entity entityID)
+		void OnCreate(EntityID entityID)
 		{
 			m_id = entityID;
 			Amp::WwiseAudioManager::RegisterListener(static_cast<uint32_t>(m_id), std::to_string(static_cast<uint32_t>(m_id)).c_str(), isDefault);
@@ -41,19 +41,21 @@ namespace Volt
 		REGISTER_COMPONENT(AudioListenerComponent);
 
 	private:
-		entt::entity m_id = entt::null;
+		EntityID m_id = Entity::NullID();
 	};
 
 	struct AudioSourceComponent
 	{
-		void OnCreate(entt::entity entityID)
+		void OnCreate(EntityID entityID)
 		{
 			Amp::WwiseAudioManager::CreateAudioObject(static_cast<uint32_t>(entityID), "SpawnedObj");
+			m_id = entityID;
 		}
 
 		void OnStart(Volt::Entity entity)
 		{
-			Amp::WwiseAudioManager::CreateAudioObject(entity, entity.GetTag().c_str());
+			Amp::WwiseAudioManager::CreateAudioObject(entity.GetID(), entity.GetTag().c_str());
+			m_id = entity.GetID();
 		}
 
 		bool PlayOneshotEvent(const char* aEventName, const glm::vec3& aPosition, const glm::vec3& aForward, const glm::vec3& aUp)
@@ -117,7 +119,7 @@ namespace Volt
 		REGISTER_COMPONENT(AudioSourceComponent);
 
 	private:
-		entt::entity m_id = entt::null;
+		EntityID m_id = Entity::NullID();
 	};
 
 }

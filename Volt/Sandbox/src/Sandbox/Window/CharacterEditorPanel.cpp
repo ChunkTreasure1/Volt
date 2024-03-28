@@ -125,7 +125,7 @@ void CharacterEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 {
 	if (myCurrentCharacter)
 	{
-		Volt::AssetManager::Get().SaveAsset(asset);
+		Volt::AssetManager::Get().SaveAsset(myCurrentCharacter);
 	}
 
 	myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>().animatedCharacter = asset->handle;
@@ -613,7 +613,7 @@ void CharacterEditorPanel::UpdateAnimationTimelinePanel()
 					const auto id = UI::GetID();
 					bool selected = false;
 
-					ImGui::Selectable(std::format("{0}: ", events[index].name).c_str(), &selected, ImGuiSelectableFlags_AllowItemOverlap, ImVec2(100, 25));
+					ImGui::Selectable(std::format("{0}: ", events[index].name).c_str(), &selected, ImGuiSelectableFlags_AllowItemOverlap, ImVec2(150, 25));
 					ImGui::SameLine();
 					ImGui::DragInt(std::format("-##rem{0}", id).c_str(), (int*)&events[index].frame);
 
@@ -756,8 +756,8 @@ void CharacterEditorPanel::UpdateJointAttachmentViewPanel()
 
 	if (ImGui::BeginTable("AttachmentTable", 3, ImGuiTableFlags_BordersInnerH, ImGui::GetContentRegionAvail()))
 	{
-		ImGui::TableSetupColumn("Attachment Name");
 		ImGui::TableSetupColumn("Joint");
+		ImGui::TableSetupColumn("Attachment Name");
 
 		ImGui::TableHeadersRow();
 
@@ -794,6 +794,7 @@ void CharacterEditorPanel::UpdateJointAttachmentViewPanel()
 				ImGui::Text("OFFSET");
 
 				UI::Property("Pos", attachment.positionOffset);
+				UI::Property("Rot", attachment.rotationOffset);
 
 				UI::EndProperties();
 				ImGui::EndPopup();

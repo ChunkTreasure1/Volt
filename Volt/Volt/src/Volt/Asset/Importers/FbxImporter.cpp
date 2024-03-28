@@ -118,9 +118,9 @@ namespace Volt
 			return false;
 		}
 
-		dstSkeleton.myJoints.resize(tgaMesh.Skeleton.Bones.size());
-		dstSkeleton.myInverseBindPose.resize(tgaMesh.Skeleton.Bones.size());
-		dstSkeleton.myRestPose.resize(tgaMesh.Skeleton.Bones.size());
+		dstSkeleton.m_joints.resize(tgaMesh.Skeleton.Bones.size());
+		dstSkeleton.m_inverseBindPose.resize(tgaMesh.Skeleton.Bones.size());
+		dstSkeleton.m_restPose.resize(tgaMesh.Skeleton.Bones.size());
 
 		ProcessSkeleton(dstSkeleton, tgaMesh.Skeleton.Bones, 0);
 
@@ -147,13 +147,13 @@ namespace Volt
 			return false;
 		}
 
-		dstAnimation.myFramesPerSecond = static_cast<uint32_t>(tgaAnimation.FramesPerSecond);
-		dstAnimation.myDuration = static_cast<float>(tgaAnimation.Duration);
+		dstAnimation.m_framesPerSecond = static_cast<uint32_t>(tgaAnimation.FramesPerSecond);
+		dstAnimation.m_duration = static_cast<float>(tgaAnimation.Duration);
 
 		for (const auto& tgaFrame : tgaAnimation.Frames)
 		{
-			auto& newFrame = dstAnimation.myFrames.emplace_back();
-			newFrame.localTRS.resize(targetSkeleton->myJoints.size());
+			auto& newFrame = dstAnimation.m_frames.emplace_back();
+			newFrame.localTRS.resize(targetSkeleton->m_joints.size());
 
 			for (const auto& [jointName, localTQS] : tgaFrame.LocalTQS)
 			{
@@ -269,19 +269,19 @@ namespace Volt
 	{
 		const auto& currentJoint = bones.at(currentIndex);
 
-		skeleton.myJoints[currentIndex].name = currentJoint.Name;
-		skeleton.myJoints[currentIndex].parentIndex = currentJoint.ParentIdx;
-		skeleton.myInverseBindPose[currentIndex] = glm::transpose(*reinterpret_cast<const glm::mat4*>(currentJoint.BindPoseInverse.Data));
-		skeleton.myJointNameToIndex[currentJoint.Name] = static_cast<size_t>(currentIndex);
+		skeleton.m_joints[currentIndex].name = currentJoint.Name;
+		skeleton.m_joints[currentIndex].parentIndex = currentJoint.ParentIdx;
+		skeleton.m_inverseBindPose[currentIndex] = glm::transpose(*reinterpret_cast<const glm::mat4*>(currentJoint.BindPoseInverse.Data));
+		skeleton.m_jointNameToIndex[currentJoint.Name] = static_cast<size_t>(currentIndex);
 
-		skeleton.myRestPose[currentIndex].position = { currentJoint.restPosition[0], currentJoint.restPosition[1], currentJoint.restPosition[2] };
+		skeleton.m_restPose[currentIndex].position = { currentJoint.restPosition[0], currentJoint.restPosition[1], currentJoint.restPosition[2] };
 
-		skeleton.myRestPose[currentIndex].rotation.x = currentJoint.restRotation[0];
-		skeleton.myRestPose[currentIndex].rotation.y = currentJoint.restRotation[1];
-		skeleton.myRestPose[currentIndex].rotation.z = currentJoint.restRotation[2];
-		skeleton.myRestPose[currentIndex].rotation.w = currentJoint.restRotation[3];
+		skeleton.m_restPose[currentIndex].rotation.x = currentJoint.restRotation[0];
+		skeleton.m_restPose[currentIndex].rotation.y = currentJoint.restRotation[1];
+		skeleton.m_restPose[currentIndex].rotation.z = currentJoint.restRotation[2];
+		skeleton.m_restPose[currentIndex].rotation.w = currentJoint.restRotation[3];
 		
-		skeleton.myRestPose[currentIndex].scale = { currentJoint.restScale[0], currentJoint.restScale[1], currentJoint.restScale[2] };
+		skeleton.m_restPose[currentIndex].scale = { currentJoint.restScale[0], currentJoint.restScale[1], currentJoint.restScale[2] };
 
 		for (const auto& child : currentJoint.Children)
 		{

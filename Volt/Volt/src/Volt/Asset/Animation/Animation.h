@@ -49,6 +49,12 @@ namespace Volt
 			}
 		};
 
+		struct Event
+		{
+			uint32_t frame;
+			std::string name;
+		};
+
 		const std::vector<glm::mat4> Sample(float aStartTime, Ref<Skeleton> aSkeleton, bool looping);
 		const std::vector<glm::mat4> Sample(uint32_t frameIndex, Ref<Skeleton> aSkeleton);
 
@@ -59,9 +65,14 @@ namespace Volt
 		const uint32_t GetFrameFromStartTime(float startTime, float speed);
 		const float GetNormalizedCurrentTimeFromStartTime(float startTime, float speed, bool looping);
 
-		inline const float GetDuration() const { return myDuration; }
-		inline const size_t GetFrameCount() const { return myFrames.size(); }
-		inline const uint32_t GetFramesPerSecond() const { return myFramesPerSecond; }
+		inline const float GetDuration() const { return m_duration; }
+		inline const size_t GetFrameCount() const { return m_frames.size(); }
+		inline const uint32_t GetFramesPerSecond() const { return m_framesPerSecond; }
+
+		void AddEvent(const std::string& eventName, uint32_t frame);
+		void RemoveEvent(const std::string& eventName, uint32_t frame);
+		inline const bool HasEvents() const { return !m_events.empty(); }
+		inline const std::vector<Event>& GetEvents() const { return m_events; }
 
 		static AssetType GetStaticType() { return AssetType::Animation; }
 		AssetType GetType() override { return GetStaticType(); };
@@ -81,9 +92,10 @@ namespace Volt
 		friend class AnimationImporter;
 		friend class AnimationSerializer;
 
-		std::vector<Pose> myFrames;
+		std::vector<Pose> m_frames;
+		std::vector<Event> m_events;
 
-		uint32_t myFramesPerSecond = 0;
-		float myDuration = 0.f;
+		uint32_t m_framesPerSecond = 0;
+		float m_duration = 0.f;
 	};
 }

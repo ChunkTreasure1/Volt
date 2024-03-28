@@ -462,7 +462,9 @@ namespace Volt
 	void Scene::RemoveEntity(Entity entity)
 	{
 		std::scoped_lock lock{ m_removeEntityMutex };
-		m_entityRemoveQueue.push_back(entity.GetID());
+		RemoveEntityInternal(entity, false);
+		SortScene();
+		//m_entityRemoveQueue.push_back(entity.GetID());
 	}
 
 	void Scene::ParentEntity(Entity parent, Entity child)
@@ -1121,7 +1123,9 @@ namespace Volt
 		}
 
 		AudioSourceComponent& comp = registry.get<AudioSourceComponent>(id);
-		comp.OnCreate(id);
+		const IDComponent& idComp = registry.get<const IDComponent>(id);
+
+		comp.OnCreate(idComp.id);
 	}
 
 	void Scene::AudioListenerComponent_OnCreate(entt::registry& registry, entt::entity id)
@@ -1132,7 +1136,8 @@ namespace Volt
 		}
 
 		AudioListenerComponent& comp = registry.get<AudioListenerComponent>(id);
-		comp.OnCreate(id);
+		const IDComponent& idComp = registry.get<const IDComponent>(id);
+		comp.OnCreate(idComp.id);
 	}
 
 	void Scene::CameraComponent_OnCreate(entt::registry& registry, entt::entity id)
