@@ -11,12 +11,14 @@ namespace Volt
 		float duration;
 		uint32_t framesPerSecond;
 		std::vector<Animation::Pose> frames;
+		std::vector<Animation::Event> events;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const AnimationSerializationData& data)
 		{
 			streamWriter.Write(data.duration);
 			streamWriter.Write(data.framesPerSecond);
 			streamWriter.Write(data.frames);
+			streamWriter.Write(data.events);
 		}
 
 		static void Deserialize(BinaryStreamReader& streamReader, AnimationSerializationData& outData)
@@ -24,6 +26,7 @@ namespace Volt
 			streamReader.Read(outData.duration);
 			streamReader.Read(outData.framesPerSecond);
 			streamReader.Read(outData.frames);
+			streamReader.Read(outData.events);
 		}
 	};
 
@@ -37,6 +40,7 @@ namespace Volt
 		serializationData.duration = animation->m_duration;
 		serializationData.framesPerSecond = animation->m_framesPerSecond;
 		serializationData.frames = animation->m_frames;
+		serializationData.events = animation->m_events;
 	
 		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
 		streamWriter.Write(serializationData);
@@ -76,6 +80,7 @@ namespace Volt
 		animation->m_duration = serializationData.duration;
 		animation->m_framesPerSecond = serializationData.framesPerSecond;
 		animation->m_frames = serializationData.frames;
+		animation->m_events = serializationData.events;
 
 		return true;
 	}

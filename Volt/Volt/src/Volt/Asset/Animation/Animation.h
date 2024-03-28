@@ -53,6 +53,18 @@ namespace Volt
 		{
 			uint32_t frame;
 			std::string name;
+
+			static void Serialize(BinaryStreamWriter& streamWriter, const Event& data)
+			{
+				streamWriter.Write(data.frame);
+				streamWriter.Write(data.name);
+			}
+
+			static void Deserialize(BinaryStreamReader& streamReader, Event& outData)
+			{
+				streamReader.Read(outData.frame);
+				streamReader.Read(outData.name);
+			}
 		};
 
 		const std::vector<glm::mat4> Sample(float aStartTime, Ref<Skeleton> aSkeleton, bool looping);
