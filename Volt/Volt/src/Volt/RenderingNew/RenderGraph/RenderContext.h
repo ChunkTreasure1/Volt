@@ -141,6 +141,7 @@ namespace Volt
 	}
 
 	struct RenderGraphPassNodeBase;
+	class RenderGraph;
 
 	class RenderContext
 	{
@@ -151,29 +152,30 @@ namespace Volt
 		void BeginRendering(const RenderingInfo& renderingInfo);
 		void EndRendering();
 
-		const RenderingInfo CreateRenderingInfo(const uint32_t width, const uint32_t height, const std::vector<Ref<RHI::ImageView>>& attachments);
+		const RenderingInfo CreateRenderingInfo(const uint32_t width, const uint32_t height, const StackVector<RenderGraphResourceHandle, RHI::MAX_ATTACHMENT_COUNT>& attachments);
 
-		void ClearImage(Ref<RHI::Image2D> image, const glm::vec4& clearColor);
-		void ClearBuffer(Ref<RHI::StorageBuffer> buffer, uint32_t clearValue);
+		void ClearImage(RenderGraphResourceHandle handle, const glm::vec4& clearColor);
+		void ClearBuffer(RenderGraphResourceHandle handle, uint32_t clearValue);
 
-		void UploadBufferData(Ref<RHI::StorageBuffer> buffer, const void* data, const size_t size);
+		void UploadBufferData(RenderGraphResourceHandle buffer, const void* data, const size_t size);
+		void MappedBufferUpload(RenderGraphResourceHandle buffer, const void* data, const size_t size);
 
 		void DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ);
-		void DispatchMeshTasksIndirect(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride);
-		void DispatchMeshTasksIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
+		void DispatchMeshTasksIndirect(RenderGraphResourceHandle commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride);
+		void DispatchMeshTasksIndirectCount(RenderGraphResourceHandle commandsBuffer, const size_t offset, RenderGraphResourceHandle countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
 
 		void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ);
-		void DispatchIndirect(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset);
+		void DispatchIndirect(RenderGraphResourceHandle commandsBuffer, const size_t offset);
 		
-		void DrawIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
-		void DrawIndexedIndirect(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride);
+		void DrawIndirectCount(RenderGraphResourceHandle commandsBuffer, const size_t offset, RenderGraphResourceHandle countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
+		void DrawIndexedIndirect(RenderGraphResourceHandle commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride);
 		void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance);
 		void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance);
 
 		void BindPipeline(Ref<RHI::RenderPipeline> pipeline);
 		void BindPipeline(Ref<RHI::ComputePipeline> pipeline);
 
-		void BindIndexBuffer(Ref<RHI::StorageBuffer> indexBuffer);
+		void BindIndexBuffer(RenderGraphResourceHandle indexBuffer);
 		void BindIndexBuffer(Ref<RHI::IndexBuffer> indexBuffer);
 		void BindVertexBuffers(const std::vector<Ref<RHI::VertexBuffer>>& vertexBuffers, const uint32_t firstBinding);
 
@@ -199,6 +201,7 @@ namespace Volt
 
 		void SetPassConstantsBuffer(Weak<RHI::StorageBuffer> constantsBuffer);
 		void SetCurrentPassIndex(Weak<RenderGraphPassNodeBase> currentPassNode);
+		void SetRenderGraphInstance(RenderGraph* renderGraph);
 		void UploadConstantsData();
 
 		RHI::ShaderRenderGraphConstantsData GetRenderGraphConstantsData();
@@ -217,6 +220,7 @@ namespace Volt
 
 		uint32_t m_currentPassIndex = 0;
 		Weak<RenderGraphPassNodeBase> m_currentPassNode;
+		RenderGraph* m_renderGraph = nullptr;
 
 		Ref<RHI::CommandBuffer> m_commandBuffer;
 

@@ -515,6 +515,7 @@ namespace Volt
 
 		AllocateConstantsBuffer();
 		m_renderContext.SetPassConstantsBuffer(m_passConstantsBuffer);
+		m_renderContext.SetRenderGraphInstance(this);
 
 		m_commandBuffer->Begin();
 
@@ -1023,10 +1024,7 @@ namespace Volt
 
 		newNode->executeFunction = [tempData, size, bufferHandle](const Empty&, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			auto buffer = resources.GetBufferRaw(bufferHandle);
-			uint8_t* mappedPtr = buffer->Map<uint8_t>();
-			memcpy_s(mappedPtr, size, tempData, size);
-			buffer->Unmap();
+			context.MappedBufferUpload(bufferHandle, tempData, size);
 		};
 
 		m_passNodes.push_back(newNode);

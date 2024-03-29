@@ -57,6 +57,7 @@ namespace Volt
 		void Resize(const uint32_t width, const uint32_t height);
 
 		Ref<RHI::Image2D> GetFinalImage();
+		Ref<RHI::Image2D> GetUIImage();
 
 		// #TODO_Ivar: TEMP, Should not be public!
 		void Invalidate();
@@ -101,7 +102,10 @@ namespace Volt
 		void AddSkyboxPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		
+
+		void AddTestUIPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		Ref<RHI::Image2D> m_uiOutputImage;
+
 		Ref<RHI::Image2D> m_outputImage;
 		Ref<Mesh> m_skyboxMesh;
 

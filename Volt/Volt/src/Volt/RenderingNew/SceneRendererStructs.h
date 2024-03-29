@@ -125,4 +125,11 @@ namespace Volt
 		float falloffRange = 0.615f;
 		float finalValuePower = 2.2f;
 	};
+
+
+	struct TestUIData
+	{
+		RenderGraphResourceHandle outputTextureHandle;
+		RenderGraphResourceHandle uiCommandsBufferHandle;
+	};
 }

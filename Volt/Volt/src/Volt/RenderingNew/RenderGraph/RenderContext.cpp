@@ -5,6 +5,7 @@
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 
 #include "Volt/RenderingNew/RenderGraph/RenderGraphPass.h"
+#include "Volt/RenderingNew/RenderGraph/RenderGraph.h"
 #include "Volt/RenderingNew/Debug/ShaderRuntimeValidator.h"
 #include "Volt/RenderingNew/RendererNew.h"
 
@@ -46,7 +47,7 @@ namespace Volt
 		m_commandBuffer->EndRendering();
 	}
 
-	const RenderingInfo RenderContext::CreateRenderingInfo(const uint32_t width, const uint32_t height, const std::vector<Ref<RHI::ImageView>>& attachments)
+	const RenderingInfo RenderContext::CreateRenderingInfo(const uint32_t width, const uint32_t height, const StackVector<RenderGraphResourceHandle, RHI::MAX_ATTACHMENT_COUNT>& attachments)
 	{
 		RHI::Rect2D scissor = { 0, 0, width, height };
 		RHI::Viewport viewport{};
@@ -60,8 +61,13 @@ namespace Volt
 		StackVector<RHI::AttachmentInfo, RHI::MAX_COLOR_ATTACHMENT_COUNT> colorAttachments;
 		RHI::AttachmentInfo depthAttachment{};
 
-		for (const auto& view : attachments)
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+
+		for (const auto& resourceHandle : attachments)
 		{
+			resourceAccess.ValidateResourceAccess(resourceHandle);
+			const auto view = m_renderGraph->GetImage2DView(resourceHandle);
+
 			if ((view->GetImageAspect() & RHI::ImageAspect::Color) != RHI::ImageAspect::None)
 			{
 				RHI::AttachmentInfo attachment{};
@@ -92,20 +98,42 @@ namespace Volt
 		return result;
 	}
 
-	void RenderContext::ClearImage(Ref<RHI::Image2D> image, const glm::vec4& clearColor)
+	void RenderContext::ClearImage(RenderGraphResourceHandle handle, const glm::vec4& clearColor)
 	{
-		VT_PROFILE_FUNCTION();
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		resourceAccess.ValidateResourceAccess(handle);
+
+		const auto image = m_renderGraph->GetImage2DRaw(handle);
 		m_commandBuffer->ClearImage(image, { clearColor.x, clearColor.y, clearColor.z, clearColor.w });
 	}
 
-	void RenderContext::ClearBuffer(Ref<RHI::StorageBuffer> buffer, uint32_t clearValue)
+	void RenderContext::ClearBuffer(RenderGraphResourceHandle handle, uint32_t clearValue)
 	{
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		resourceAccess.ValidateResourceAccess(handle);
+
+		const auto buffer = m_renderGraph->GetBufferRaw(handle);
 		m_commandBuffer->ClearBuffer(buffer, clearValue);
 	}
 
-	void RenderContext::UploadBufferData(Ref<RHI::StorageBuffer> buffer, const void* data, const size_t size)
+	void RenderContext::UploadBufferData(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size)
 	{
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		resourceAccess.ValidateResourceAccess(bufferHandle);
+
+		const auto buffer = m_renderGraph->GetBufferRaw(bufferHandle);
 		buffer->SetData(m_commandBuffer, data, size);
+	}
+
+	void RenderContext::MappedBufferUpload(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size)
+	{
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		resourceAccess.ValidateResourceAccess(bufferHandle);
+
+		const auto buffer = m_renderGraph->GetBufferRaw(bufferHandle);
+		uint8_t* mappedPtr = buffer->Map<uint8_t>();
+		memcpy_s(mappedPtr, size, data, size);
+		buffer->Unmap();
 	}
 
 	void RenderContext::DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
@@ -114,16 +142,29 @@ namespace Volt
 		m_commandBuffer->DispatchMeshTasks(groupCountX, groupCountY, groupCountZ);
 	}
 
-	void RenderContext::DispatchMeshTasksIndirect(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
+	void RenderContext::DispatchMeshTasksIndirect(RenderGraphResourceHandle commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
 	{
 		BindDescriptorTableIfRequired();
-		m_commandBuffer->DispatchMeshTasksIndirect(commandsBuffer, offset, drawCount, stride);
+
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		resourceAccess.ValidateResourceAccess(commandsBuffer);
+
+		const auto cmdsBuffer = m_renderGraph->GetBufferRaw(commandsBuffer);
+		m_commandBuffer->DispatchMeshTasksIndirect(cmdsBuffer, offset, drawCount, stride);
 	}
 
-	void RenderContext::DispatchMeshTasksIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
+	void RenderContext::DispatchMeshTasksIndirectCount(RenderGraphResourceHandle commandsBuffer, const size_t offset, RenderGraphResourceHandle countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
 	{
 		BindDescriptorTableIfRequired();
-		m_commandBuffer->DispatchMeshTasksIndirectCount(commandsBuffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		resourceAccess.ValidateResourceAccess(commandsBuffer);
+		resourceAccess.ValidateResourceAccess(countBuffer);
+
+		const auto cmdsBuffer = m_renderGraph->GetBufferRaw(commandsBuffer);
+		const auto cntsBuffer = m_renderGraph->GetBufferRaw(countBuffer);
+
+		m_commandBuffer->DispatchMeshTasksIndirectCount(cmdsBuffer, offset, cntsBuffer, countBufferOffset, maxDrawCount, stride);
 	}
 
 	void RenderContext::Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
@@ -135,15 +176,20 @@ namespace Volt
 		m_commandBuffer->Dispatch(groupCountX, groupCountY, groupCountZ);
 	}
 
-	void RenderContext::DispatchIndirect(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset)
+	void RenderContext::DispatchIndirect(RenderGraphResourceHandle commandsBuffer, const size_t offset)
 	{
 		VT_PROFILE_FUNCTION();
 
 		BindDescriptorTableIfRequired();
-		m_commandBuffer->DispatchIndirect(commandsBuffer, offset);
+
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		resourceAccess.ValidateResourceAccess(commandsBuffer);
+
+		const auto cmdsBuffer = m_renderGraph->GetBufferRaw(commandsBuffer);
+		m_commandBuffer->DispatchIndirect(cmdsBuffer, offset);
 	}
 
-	void RenderContext::DrawIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
+	void RenderContext::DrawIndirectCount(RenderGraphResourceHandle commandsBuffer, const size_t offset, RenderGraphResourceHandle countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
 	{
 		VT_PROFILE_FUNCTION();
 		BindDescriptorTableIfRequired();
@@ -153,10 +199,16 @@ namespace Volt
 			return;
 		}
 
-		m_commandBuffer->DrawIndirectCount(commandsBuffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		resourceAccess.ValidateResourceAccess(commandsBuffer);
+		resourceAccess.ValidateResourceAccess(countBuffer);
+
+		const auto cmdsBuffer = m_renderGraph->GetBufferRaw(commandsBuffer);
+		const auto cntsBuffer = m_renderGraph->GetBufferRaw(countBuffer);
+		m_commandBuffer->DrawIndirectCount(cmdsBuffer, offset, cntsBuffer, countBufferOffset, maxDrawCount, stride);
 	}
 
-	void RenderContext::DrawIndexedIndirect(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
+	void RenderContext::DrawIndexedIndirect(RenderGraphResourceHandle commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
 	{
 		BindDescriptorTableIfRequired();
 
@@ -165,7 +217,11 @@ namespace Volt
 			return;
 		}
 
-		m_commandBuffer->DrawIndexedIndirect(commandsBuffer, offset, drawCount, stride);
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		resourceAccess.ValidateResourceAccess(commandsBuffer);
+
+		const auto cmdsBuffer = m_renderGraph->GetBufferRaw(commandsBuffer);
+		m_commandBuffer->DrawIndexedIndirect(cmdsBuffer, offset, drawCount, stride);
 	}
 
 	void RenderContext::DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance)
@@ -218,9 +274,13 @@ namespace Volt
 		m_currentDescriptorTable = GetOrCreateDescriptorTable(pipeline);
 	}
 
-	void RenderContext::BindIndexBuffer(Ref<RHI::StorageBuffer> indexBuffer)
+	void RenderContext::BindIndexBuffer(RenderGraphResourceHandle indexBuffer)
 	{
-		m_commandBuffer->BindIndexBuffer(indexBuffer);
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		resourceAccess.ValidateResourceAccess(indexBuffer);
+
+		const auto idxBuffer = m_renderGraph->GetBufferRaw(indexBuffer);
+		m_commandBuffer->BindIndexBuffer(idxBuffer);
 	}
 
 	void RenderContext::BindIndexBuffer(Ref<RHI::IndexBuffer> indexBuffer)
@@ -269,6 +329,11 @@ namespace Volt
 	{
 		m_currentPassIndex = currentPassNode->index;
 		m_currentPassNode = currentPassNode;
+	}
+
+	void RenderContext::SetRenderGraphInstance(RenderGraph* renderGraph)
+	{
+		m_renderGraph = renderGraph;
 	}
 
 	void RenderContext::UploadConstantsData()
@@ -384,7 +449,7 @@ namespace Volt
 
 		if (uniform.type.baseType == RHI::ShaderUniformBaseType::Buffer)
 		{
-			VT_ENSURE(m_currentPassNode->ReadsResource(data));
+			VT_ENSURE(m_currentPassNode->ReadsResource(data) || m_currentPassNode->CreatesResource(data));
 		}
 		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWBuffer)
 		{

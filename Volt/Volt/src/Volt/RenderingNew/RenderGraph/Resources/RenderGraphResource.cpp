@@ -11,18 +11,6 @@ namespace Volt
 	{
 	}
 
-	Weak<RHI::ImageView> RenderGraphPassResources::GetImage2DView(const RenderGraphResourceHandle resourceHandle) const
-	{
-		ValidateResourceAccess(resourceHandle);
-		return m_renderGraph.GetImage2DView(resourceHandle);
-	}
-
-	Weak<RHI::Image2D> RenderGraphPassResources::GetImage2DRaw(const RenderGraphResourceHandle resourceHandle) const
-	{
-		ValidateResourceAccess(resourceHandle);
-		return m_renderGraph.GetImage2DRaw(resourceHandle);
-	}
-
 	ResourceHandle RenderGraphPassResources::GetImage2D(const RenderGraphResourceHandle resourceHandle, const uint32_t mip, const uint32_t layer) const
 	{
 		ValidateResourceAccess(resourceHandle);
@@ -33,12 +21,6 @@ namespace Volt
 #endif
 
 		return handle;
-	}
-
-	Weak<RHI::StorageBuffer> RenderGraphPassResources::GetBufferRaw(const RenderGraphResourceHandle resourceHandle) const
-	{
-		ValidateResourceAccess(resourceHandle);
-		return m_renderGraph.GetBufferRaw(resourceHandle);
 	}
 
 	ResourceHandle RenderGraphPassResources::GetBuffer(const RenderGraphResourceHandle resourceHandle) const
