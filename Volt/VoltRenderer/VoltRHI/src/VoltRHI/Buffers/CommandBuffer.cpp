@@ -8,17 +8,33 @@
 
 namespace Volt::RHI
 {
-	Ref<CommandBuffer> CommandBuffer::Create(const uint32_t count, QueueType queueType, bool swapchainTarget)
+	Ref<CommandBuffer> CommandBuffer::Create(const uint32_t count, QueueType queueType)
 	{
 		const auto api = GraphicsContext::GetAPI();
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: return CreateRef<D3D12CommandBuffer>(count, queueType, swapchainTarget); break;
+			case GraphicsAPI::D3D12: return CreateRef<D3D12CommandBuffer>(count, queueType); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanCommandBuffer>(count, queueType, swapchainTarget); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanCommandBuffer>(count, queueType); break;
+		}
+
+		return nullptr;
+	}
+
+	Ref<CommandBuffer> CommandBuffer::Create(Weak<Swapchain> swapchain)
+	{
+		const auto api = GraphicsContext::GetAPI();
+
+		switch (api)
+		{
+		case GraphicsAPI::D3D12:
+		case GraphicsAPI::MoltenVk:
+			break;
+
+		case GraphicsAPI::Vulkan: return CreateRef<VulkanCommandBuffer>(swapchain); break;
 		}
 
 		return nullptr;
@@ -30,11 +46,11 @@ namespace Volt::RHI
 		
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: return CreateRef<D3D12CommandBuffer>(1, QueueType::Graphics, false); break;
+			case GraphicsAPI::D3D12: return CreateRef<D3D12CommandBuffer>(1, QueueType::Graphics); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanCommandBuffer>(1, QueueType::Graphics, false); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanCommandBuffer>(1, QueueType::Graphics); break;
 		}
 
 		return nullptr;

@@ -3,6 +3,7 @@
 
 #include "VoltVulkan/Common/VulkanFunctions.h"
 #include "VoltVulkan/Common/VulkanHelpers.h"
+#include "VoltVulkan/Graphics/VulkanSwapchain.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
 
@@ -41,6 +42,13 @@ namespace Volt::RHI
 	{
 		Invalidate(specification.width, specification.height, data);
 		SetName(specification.debugName);
+	}
+
+	VulkanImage2D::VulkanImage2D(const SwapchainImageSpecification& specification)
+		: m_isSwapchainImage(true)
+	{
+		InvalidateSwapchainImage(specification);
+		SetName("Swapchain Image");
 	}
 
 	VulkanImage2D::~VulkanImage2D()
@@ -120,14 +128,28 @@ namespace Volt::RHI
 		}
 	}
 
+	void VulkanImage2D::InvalidateSwapchainImage(const SwapchainImageSpecification& specification)
+	{
+		const auto& vulkanSwapchain = specification.swapchain->AsRef<VulkanSwapchain>();
+
+		m_currentImageLayout = static_cast<uint32_t>(VK_IMAGE_LAYOUT_UNDEFINED);
+		m_imageAspect = Utility::GetVoltImageAspect(VK_IMAGE_ASPECT_COLOR_BIT);
+		m_specification.width = vulkanSwapchain.GetWidth();
+		m_specification.height = vulkanSwapchain.GetHeight();
+		m_specification.format = vulkanSwapchain.GetFormat();
+		m_specification.usage = ImageUsage::Attachment;
+
+		m_swapchainImageData.image = vulkanSwapchain.GetImageAtIndex(specification.imageIndex);
+	}
+
 	void VulkanImage2D::Release()
 	{
+		m_imageViews.clear();
+
 		if (!m_allocation)
 		{
 			return;
 		}
-
-		m_imageViews.clear();
 
 		GraphicsContext::DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
 		{
@@ -146,7 +168,7 @@ namespace Volt::RHI
 
 	void VulkanImage2D::GenerateMips()
 	{
-		if (m_hasGeneratedMips)
+		if (m_hasGeneratedMips || m_isSwapchainImage)
 		{
 			return;
 		}
@@ -343,6 +365,11 @@ namespace Volt::RHI
 		return Utility::CalculateMipCount(m_specification.width, m_specification.height);
 	}
 
+	const bool VulkanImage2D::IsSwapchainImage() const
+	{
+		return m_isSwapchainImage;
+	}
+
 	void VulkanImage2D::SetName(std::string_view name)
 	{
 		if (!Volt::RHI::vkSetDebugUtilsObjectNameEXT)
@@ -353,7 +380,16 @@ namespace Volt::RHI
 		VkDebugUtilsObjectNameInfoEXT nameInfo{};
 		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 		nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
-		nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkImage>();
+		
+		if (m_isSwapchainImage)
+		{
+			nameInfo.objectHandle = (uint64_t)m_swapchainImageData.image;
+		}
+		else
+		{
+			nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkImage>();
+		}
+
 		nameInfo.pObjectName = name.data();
 
 		auto device = GraphicsContext::GetDevice();
@@ -432,7 +468,14 @@ namespace Volt::RHI
 
 	void* VulkanImage2D::GetHandleImpl() const
 	{
-		return m_allocation->GetResourceHandle<VkImage>();
+		if (m_isSwapchainImage)
+		{
+			return m_swapchainImageData.image;
+		}
+		else
+		{
+			return m_allocation->GetResourceHandle<VkImage>();
+		}
 	}
 
 	void VulkanImage2D::TransitionToLayout(ImageLayout targetLayout)

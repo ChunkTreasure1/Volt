@@ -25,6 +25,7 @@ namespace Volt::RHI
 		const ImageUsage GetUsage() const override;
 		const ImageAspect GetImageAspect() const override;
 		const uint32_t CalculateMipCount() const override;
+		const bool IsSwapchainImage() const override;
 
 		inline constexpr ResourceType GetType() const override { return ResourceType::Image2D; }
 		void SetName(std::string_view name) override;

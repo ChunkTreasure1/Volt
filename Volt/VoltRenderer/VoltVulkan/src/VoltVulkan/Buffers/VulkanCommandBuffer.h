@@ -16,7 +16,8 @@ namespace Volt::RHI
 	class VulkanCommandBuffer final : public CommandBuffer
 	{
 	public:
-		VulkanCommandBuffer(const uint32_t count, QueueType queueType, bool swapchainTarget);
+		VulkanCommandBuffer(const uint32_t count, QueueType queueType);
+		VulkanCommandBuffer(Weak<Swapchain> swapchain);
 		~VulkanCommandBuffer() override;
 
 		void Begin() override;
@@ -67,7 +68,7 @@ namespace Volt::RHI
 		void EndTimestamp(uint32_t timestampIndex) override;
 		const float GetExecutionTime(uint32_t timestampIndex) const override;
 
-		void CopyImageToBackBuffer(Ref<Image2D> srcImage) override;
+		void CopyImageToBackBuffer(Ref<Image2D> srcImage, Weak<Swapchain> targetSwapchain) override;
 		void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) override;
 		void ClearBuffer(Ref<StorageBuffer> buffer, const uint32_t value) override;
 
@@ -131,5 +132,6 @@ namespace Volt::RHI
 		// Internal state
 		Weak<RenderPipeline> m_currentRenderPipeline;
 		Weak<ComputePipeline> m_currentComputePipeline;
+		Weak<Swapchain> m_swapchainTarget;
 	};
 }

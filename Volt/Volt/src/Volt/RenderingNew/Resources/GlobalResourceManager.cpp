@@ -88,7 +88,7 @@ namespace Volt
 
 				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
 				{
-					s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
+					s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE1D_BINDING, resources.GetResourceHandle(resource).Get());
 				}
 			}
 

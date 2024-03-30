@@ -121,6 +121,16 @@ namespace Volt::RHI
 		return MaxSwapchainImages;
 	}
 
+	Ref<Image2D> D3D12Swapchain::GetCurrentImage() const
+	{
+		return Ref<Image2D>();
+	}
+
+	const PixelFormat D3D12Swapchain::GetFormat() const
+	{
+		return PixelFormat();
+	}
+
 	void D3D12Swapchain::Build()
 	{
 		auto d3d12Device = GraphicsContext::GetDevice()->As<D3D12GraphicsDevice>();

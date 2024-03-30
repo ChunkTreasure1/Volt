@@ -42,23 +42,22 @@ namespace Volt::RHI
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
 		const uint32_t GetFramesInFlight() const override;
+		const PixelFormat GetFormat() const override;
+		Ref<Image2D> GetCurrentImage() const override;
 
 		inline VkRenderPass_T* GetRenderPass() const { return m_renderPass; }
 		inline VkCommandBuffer_T* GetCommandBuffer(const uint32_t index) const { return m_perFrameInFlightData.at(index).commandBuffer; }
 		inline VkCommandPool_T* GetCommandPool(const uint32_t index) const { return m_perFrameInFlightData.at(index).commandPool; }
 		inline VkFence_T* GetFence(const uint32_t index) const { return m_perFrameInFlightData.at(index).fence; }
-		inline VkImage_T* GetCurrentImage() const { return m_perImageData.at(m_currentImage).image; }
+		inline VkImage_T* GetCurrentVkImage() const { return m_perImageData.at(m_currentImage).image; }
+		inline VkImage_T* GetImageAtIndex(const uint32_t index) const { return m_perImageData.at(index).image; }
 
 		VkFramebuffer_T* GetCurrentFramebuffer() const;
-
-		[[nodiscard]] inline static VulkanSwapchain& Get() { return *s_instance; }
 
 	protected:
 		void* GetHandleImpl() const override;
 	
 	private:
-		inline static VulkanSwapchain* s_instance = nullptr;
-
 		void Invalidate(const uint32_t width, const uint32_t height, bool enableVSync);
 		void Release();
 
@@ -98,6 +97,8 @@ namespace Volt::RHI
 			VkImage_T* image = nullptr;
 			VkImageView_T* imageView = nullptr;
 			VkFramebuffer_T* framebuffer = nullptr;
+
+			Ref<Image2D> imageReference;
 		};
 
 		struct SwapchainCapabilities

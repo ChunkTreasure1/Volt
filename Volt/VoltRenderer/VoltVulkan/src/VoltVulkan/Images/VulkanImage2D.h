@@ -2,6 +2,8 @@
 
 #include <VoltRHI/Images/Image2D.h>
 
+struct VkImage_T;
+
 namespace Volt::RHI
 {
 	class Allocation;
@@ -14,6 +16,7 @@ namespace Volt::RHI
 
 		VulkanImage2D(const ImageSpecification& specification, const void* data);
 		VulkanImage2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data);
+		VulkanImage2D(const SwapchainImageSpecification& specification);
 		~VulkanImage2D() override;
 
 		void Invalidate(const uint32_t width, const uint32_t height, const void* data) override;
@@ -28,6 +31,7 @@ namespace Volt::RHI
 		const PixelFormat GetFormat() const override;
 		const ImageUsage GetUsage() const override;
 		const uint32_t CalculateMipCount() const override;
+		const bool IsSwapchainImage() const override;
 
 		inline constexpr ResourceType GetType() const override { return ResourceType::Image2D; }
 		void SetName(std::string_view name) override;
@@ -44,16 +48,23 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
+		struct SwapchainImageData
+		{
+			VkImage_T* image = nullptr;
+		};
 
+		void InvalidateSwapchainImage(const SwapchainImageSpecification& specification);
 		void TransitionToLayout(ImageLayout targetLayout);
 
 		ImageSpecification m_specification;
+		SwapchainImageData m_swapchainImageData;
 
 		Ref<Allocation> m_allocation;
 		Weak<Allocator> m_customAllocator;
 
 		bool m_hasGeneratedMips = false;
 		bool m_allocatedUsingCustomAllocator = false;
+		bool m_isSwapchainImage = false;
 
 		ImageLayout m_currentImageLayout = 0;
 		ImageAspect m_imageAspect = ImageAspect::None;

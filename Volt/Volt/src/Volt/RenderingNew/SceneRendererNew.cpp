@@ -1289,6 +1289,7 @@ namespace Volt
 			{
 				context.SetConstant("commands", resources.GetBuffer(data.uiCommandsBufferHandle));
 				context.SetConstant("commandCount", static_cast<uint32_t>(cmds.size()));
+				context.SetConstant("renderSize", glm::uvec2{ 1024, 1024 });
 			});
 
 			context.EndRendering();

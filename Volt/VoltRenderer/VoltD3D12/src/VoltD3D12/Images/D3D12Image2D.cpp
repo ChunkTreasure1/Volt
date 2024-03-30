@@ -153,6 +153,11 @@ namespace Volt::RHI
 		return Utility::CalculateMipCount(GetWidth(), GetHeight());
 	}
 
+	const bool D3D12Image2D::IsSwapchainImage() const
+	{
+		return false;
+	}
+
 	void D3D12Image2D::SetName(std::string_view name)
 	{
 		std::wstring wname(name.begin(), name.end());

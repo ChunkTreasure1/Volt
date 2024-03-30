@@ -10,6 +10,26 @@
 
 namespace Volt
 {
+	class AppBeginFrameEvent : public Event
+	{
+	public:
+		AppBeginFrameEvent()
+		{ }
+
+		EVENT_CLASS_TYPE(BeginFrame);
+		EVENT_CLASS_CATEGORY(EventCategoryApplication);
+	};
+
+	class AppPresentFrameEvent : public Event
+	{
+	public:
+		AppPresentFrameEvent()
+		{ }
+
+		EVENT_CLASS_TYPE(PresentFrame);
+		EVENT_CLASS_CATEGORY(EventCategoryApplication);
+	};
+
 	class WindowResizeEvent : public Event
 	{
 	public:

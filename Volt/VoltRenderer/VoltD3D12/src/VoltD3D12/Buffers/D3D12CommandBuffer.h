@@ -18,7 +18,8 @@ namespace Volt::RHI
 	class D3D12CommandBuffer final : public CommandBuffer
 	{
 	public:
-		D3D12CommandBuffer(const uint32_t count, QueueType queueType, bool swapchainTarget);
+		D3D12CommandBuffer(const uint32_t count, QueueType queueType);
+		D3D12CommandBuffer(Weak<Swapchain> swapchain);
 		~D3D12CommandBuffer() override;
 
 		void* GetHandleImpl() const override;
@@ -70,7 +71,7 @@ namespace Volt::RHI
 		void EndTimestamp(uint32_t timestampIndex) override;
 		const float GetExecutionTime(uint32_t timestampIndex) const override;
 
-		void CopyImageToBackBuffer(Ref<Image2D> srcImage) override;
+		void CopyImageToBackBuffer(Ref<Image2D> srcImage, Weak<Swapchain> targetSwapchain) override;
 		void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) override;
 		void ClearBuffer(Ref<StorageBuffer> buffer, const uint32_t value) override;
 

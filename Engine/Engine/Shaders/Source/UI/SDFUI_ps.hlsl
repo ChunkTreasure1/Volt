@@ -28,6 +28,7 @@ struct Constants
 {
     UniformTypedBuffer<UICommand> commands;
     uint commandCount;
+    uint2 renderSize;
 };
 
 float SDF_Circle(float2 pixelPos, float radius)
@@ -103,9 +104,8 @@ float4 BlendColors(float4 colorA, float4 colorB)
 
 Output main(FullscreenTriangleVertex input)
 {
-    const float2 pixelPos = input.uv * float2(1024, 1024);
-
     const Constants constants = GetConstants<Constants>();
+    const float2 pixelPos = input.uv * float2(constants.renderSize);
 
     Output output;
     output.color = float4(0.f, 0.f, 1.f, 1.f);

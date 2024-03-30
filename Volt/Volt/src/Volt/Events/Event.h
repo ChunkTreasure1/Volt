@@ -18,6 +18,7 @@ namespace Volt
 	enum EventType
 	{
 		None = 0,
+		BeginFrame, PresentFrame,
 		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved, WindowDragDrop, ViewportResize, WindowTitlebarHittest,
 		AppUpdate, AppRender, AppLog, AppImGuiUpdate,
 		KeyPressed, KeyReleased, KeyTyped,

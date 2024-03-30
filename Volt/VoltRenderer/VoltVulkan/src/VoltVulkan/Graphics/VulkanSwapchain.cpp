@@ -22,17 +22,25 @@ namespace Volt::RHI
 		{
 			VkSurfaceFormatKHR result{};
 
+			bool foundOptimal = false;
+
 			for (const auto& format : swapchainFormats)
 			{
-				if (format.format == PixelFormat::B8G8R8A8_UNORM && format.colorSpace == ColorSpace::SRGB_NONLINEAR)
+				if (format.format == PixelFormat::R8G8B8A8_UNORM && format.colorSpace == ColorSpace::SRGB_NONLINEAR)
 				{
 					result.format = Utility::VoltToVulkanFormat(format.format);
 					result.colorSpace = Utility::VoltToVulkanColorSpace(format.colorSpace);
+					foundOptimal = true;
+
+					break;
 				}
 			}
 
-			result.format = Utility::VoltToVulkanFormat(swapchainFormats.front().format);
-			result.colorSpace = Utility::VoltToVulkanColorSpace(swapchainFormats.front().colorSpace);
+			if (!foundOptimal)
+			{
+				result.format = Utility::VoltToVulkanFormat(swapchainFormats.front().format);
+				result.colorSpace = Utility::VoltToVulkanColorSpace(swapchainFormats.front().colorSpace);
+			}
 
 			return result;
 		}
@@ -72,14 +80,10 @@ namespace Volt::RHI
 		assert(supportsPresent && "Device does not have present support!");
 
 		Invalidate(m_width, m_height, m_vSyncEnabled);
-
-		s_instance = this;
 	}
 
 	VulkanSwapchain::~VulkanSwapchain()
 	{
-		s_instance = nullptr;
-
 		Release();
 	}
 
@@ -219,6 +223,17 @@ namespace Volt::RHI
 	const uint32_t VulkanSwapchain::GetFramesInFlight() const
 	{
 		return VulkanSwapchain::MAX_FRAMES_IN_FLIGHT;
+	}
+
+	const PixelFormat VulkanSwapchain::GetFormat() const
+	{
+		return m_swapchainFormat;
+	}
+
+	Ref<Image2D> VulkanSwapchain::GetCurrentImage() const
+	{
+		const auto& data = m_perImageData.at(GetCurrentFrame());
+		return data.imageReference;
 	}
 
 	VkFramebuffer_T* VulkanSwapchain::GetCurrentFramebuffer() const
@@ -377,6 +392,12 @@ namespace Volt::RHI
 		for (size_t i = 0; i < m_perImageData.size(); i++)
 		{
 			m_perImageData[i].image = images.at(i);
+
+			SwapchainImageSpecification spec{};
+			spec.swapchain = this;
+			spec.imageIndex = static_cast<uint32_t>(i);
+
+			m_perImageData[i].imageReference = Image2D::Create(spec);
 		}
 
 		m_swapchainFormat = Utility::VulkanToVoltFormat(surfaceFormat.format);

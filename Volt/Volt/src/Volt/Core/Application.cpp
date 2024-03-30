@@ -156,8 +156,6 @@ namespace Volt
 		m_imguiImplementation = nullptr;
 		SceneManager::Shutdown();
 
-		m_layerStack.Clear();
-
 		Physics::SaveLayers();
 		Physics::Shutdown();
 		Physics::SaveSettings();
@@ -254,7 +252,11 @@ namespace Volt
 
 		RHI::GraphicsContext::Update();
 
-		m_window->BeginFrame();
+		{
+			m_window->BeginFrame();
+			AppBeginFrameEvent beginFrameEvent{};
+			OnEvent(beginFrameEvent);
+		}
 
 		float time = m_window->GetTime();
 		m_currentDeltaTime = time - m_lastTotalTime;
@@ -308,7 +310,12 @@ namespace Volt
 		RenderGraphExecutionThread::WaitForFinishedExecution();
 		RendererNew::EndOfFrameUpdate();
 
-		m_window->Present();
+		{
+			m_window->Present();	
+			AppPresentFrameEvent presentEvent{};
+			OnEvent(presentEvent);
+		}
+
 		m_frameTimer.Accumulate();
 	}
 

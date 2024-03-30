@@ -184,7 +184,7 @@ namespace Volt
 
 		// Find surrenderable resources
 		m_surrenderableResources.resize(m_passIndex);
-		
+
 		for (const auto& resource : m_resourceNodes)
 		{
 			if (!resource->lastUsage || resource->isExternal)
@@ -235,7 +235,7 @@ namespace Volt
 				const auto resource = m_resourceNodes.at(access.handle);
 
 				// Setup previous usage
-				
+
 				if (hasPreviousUsage)
 				{
 					if (resource->GetResourceType() == ResourceType::Image2D || resource->GetResourceType() == ResourceType::Image3D)
@@ -363,7 +363,7 @@ namespace Volt
 					usage.accessInfo.bufferBarrier().srcStage = previousUsageInfo.accessInfo.bufferBarrier().dstStage;
 					usage.accessInfo.bufferBarrier().srcAccess = previousUsageInfo.accessInfo.bufferBarrier().dstAccess;
 				}
-				
+
 				// Setup new usage
 				if (access.forcedState != RenderGraphResourceState::None)
 				{
@@ -752,26 +752,33 @@ namespace Volt
 		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
 		auto view = image->GetView();
 
-		ResourceHandle handle = Resource::Invalid;
-		ResourceSpecialization specialization = ResourceSpecialization::None;
+		if (!view->IsSwapchainView())
+		{
+			ResourceHandle handle = Resource::Invalid;
+			ResourceSpecialization specialization = ResourceSpecialization::None;
 
-		if (view->GetViewType() == RHI::ImageViewType::View2D)
-		{
-			handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(view);
-			specialization = ResourceSpecialization::Texture2D;
-		}
-		else if (view->GetViewType() == RHI::ImageViewType::View2DArray)
-		{
-			handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2DArray>(view);
-			specialization = ResourceSpecialization::Texture2DArray;
-		}
-		else if (view->GetViewType() == RHI::ImageViewType::ViewCube)
-		{
-			handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::TextureCube>(view);
-			specialization = ResourceSpecialization::TextureCube;
+			if (view->GetViewType() == RHI::ImageViewType::View2D)
+			{
+				handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(view);
+				specialization = ResourceSpecialization::Texture2D;
+			}
+			else if (view->GetViewType() == RHI::ImageViewType::View2DArray)
+			{
+				handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2DArray>(view);
+				specialization = ResourceSpecialization::Texture2DArray;
+			}
+			else if (view->GetViewType() == RHI::ImageViewType::ViewCube)
+			{
+				handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::TextureCube>(view);
+				specialization = ResourceSpecialization::TextureCube;
+			}
+
+			if (imageDesc.trackGlobalResource)
+			{
+				m_usedGlobalImageResourceHandles.insert(GlobalResourceInfo{ handle, specialization });
+			}
 		}
 
-		m_usedGlobalImageResourceHandles.insert(GlobalResourceInfo{ handle, specialization });
 		return view;
 	}
 
@@ -783,26 +790,34 @@ namespace Volt
 		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
 		auto view = image->GetView();
 
-		ResourceHandle handle = Resource::Invalid;
-		ResourceSpecialization specialization = ResourceSpecialization::None;
+		// #TODO_Ivar: Move this section to it's own function
+		if (!view->IsSwapchainView())
+		{
+			ResourceHandle handle = Resource::Invalid;
+			ResourceSpecialization specialization = ResourceSpecialization::None;
 
-		if (view->GetViewType() == RHI::ImageViewType::View2D)
-		{
-			handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(view);
-			specialization = ResourceSpecialization::Texture2D;
-		}
-		else if (view->GetViewType() == RHI::ImageViewType::View2DArray)
-		{
-			handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2DArray>(view);
-			specialization = ResourceSpecialization::Texture2DArray;
-		}
-		else if (view->GetViewType() == RHI::ImageViewType::ViewCube)
-		{
-			handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::TextureCube>(view);
-			specialization = ResourceSpecialization::TextureCube;
+			if (view->GetViewType() == RHI::ImageViewType::View2D)
+			{
+				handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(view);
+				specialization = ResourceSpecialization::Texture2D;
+			}
+			else if (view->GetViewType() == RHI::ImageViewType::View2DArray)
+			{
+				handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2DArray>(view);
+				specialization = ResourceSpecialization::Texture2DArray;
+			}
+			else if (view->GetViewType() == RHI::ImageViewType::ViewCube)
+			{
+				handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::TextureCube>(view);
+				specialization = ResourceSpecialization::TextureCube;
+			}
+
+			if (imageDesc.trackGlobalResource)
+			{
+				m_usedGlobalImageResourceHandles.insert({ handle, specialization });
+			}
 		}
 
-		m_usedGlobalImageResourceHandles.insert({ handle, specialization });
 		return image;
 	}
 
@@ -813,6 +828,8 @@ namespace Volt
 
 		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
 		auto view = image->GetView(mip, layer);
+
+		VT_ENSURE(!view->IsSwapchainView());
 
 		ResourceHandle handle = Resource::Invalid;
 		ResourceSpecialization specialization = ResourceSpecialization::None;
@@ -848,6 +865,8 @@ namespace Volt
 
 		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
 		auto view = image->GetArrayView(mip);
+
+		VT_ENSURE(!view->IsSwapchainView());
 
 		ResourceHandle handle = Resource::Invalid;
 		ResourceSpecialization specialization = ResourceSpecialization::None;
@@ -1042,6 +1061,11 @@ namespace Volt
 		if (m_standaloneBarriers.size() < m_passIndex)
 		{
 			m_standaloneBarriers.resize(m_passIndex);
+		}
+
+		if (m_passIndex == 0)
+		{
+			m_standaloneBarriers.resize(1);
 		}
 
 		const uint32_t currentIndex = m_passIndex > 0 ? m_passIndex - 1 : 0;
