@@ -1,7 +1,6 @@
 #include "sbpch.h"
 
 #include "Sandbox/Sandbox.h"
-#include "Sandbox/UI/WindowLayer.h"
 
 #include <Volt/Core/Application.h>
 #include <Volt/EntryPoint.h>
@@ -16,9 +15,6 @@ public:
 	{
 		Sandbox* sandbox = new Sandbox();
 		PushLayer(sandbox);
-
-		WindowLayer* layer = new WindowLayer();
-		PushLayer(layer);
 	}
 };
 

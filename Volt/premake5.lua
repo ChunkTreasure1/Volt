@@ -20,6 +20,11 @@ workspace "Volt"
 		"MultiProcessorCompile"
 	}
 
+	buildoptions
+	{
+		-- "/fsanitize=address"
+	}
+
 	solution_items
 	{
 		".editorconfig"

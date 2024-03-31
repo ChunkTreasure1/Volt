@@ -65,6 +65,11 @@ namespace Volt
 		MonoScriptField field;
 		Buffer data;
 
+		inline void Reset(const size_t size)
+		{
+			data.Allocate(size);
+		}
+
 		inline void SetValue(const void* value, const size_t size)
 		{
 			data.Allocate(size);

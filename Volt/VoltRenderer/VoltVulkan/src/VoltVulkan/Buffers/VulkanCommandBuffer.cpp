@@ -1166,9 +1166,7 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::UpdateBuffer(Ref<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data)
 	{
-		constexpr size_t MAX_UPDATE_SIZE = 65536;
-
-		assert(dataSize <= MAX_UPDATE_SIZE && "Size must not exceed MAX_UPDATE_SIZE!");
+		assert(dataSize <= 65536 && "Size must not exceed MAX_UPDATE_SIZE!");
 		
 		VulkanStorageBuffer& vkBuffer = dstBuffer->AsRef<VulkanStorageBuffer>();
 		const uint32_t index = GetCurrentCommandBufferIndex();

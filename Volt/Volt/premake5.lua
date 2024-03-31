@@ -20,7 +20,7 @@ project "Volt"
 
 	buildoptions 
 	{
-		"/bigobj"
+		"/bigobj",
 	}
 
 	files
