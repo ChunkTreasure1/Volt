@@ -89,6 +89,11 @@
 
 #include <imgui.h>
 
+#include "Circuit/Widgets/SliderWidget.h"
+#include "Circuit/Widgets/Primitives/RectWidget.h"
+#include "Circuit/Widgets/Primitives/CircleWidget.h"
+#include "Delegates/Observer.h"
+
 Sandbox::Sandbox()
 {
 	VT_ASSERT(!myInstance, "Sandbox already exists!");
@@ -855,6 +860,53 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 
 		NewScene();
 	}
+
+	if (ImGui::Begin("CIRCUIT WINDOW"))
+	{
+		static float SliderValue = 50.0f;
+		static Observer<float> sliderObserver(&SliderValue);
+		static std::shared_ptr<SliderWidget> slider = CreateWidget(SliderWidget)
+			.Min(0)
+			.Max(100)
+			.Value(&sliderObserver);
+
+		float test = sliderObserver.GetValue();
+		if (ImGui::SliderFloat("TEST", &test, 0, 100))
+		{
+			sliderObserver = test;
+		}
+		ImVec2 cursorScreenPos = ImGui::GetCursorScreenPos();
+
+		auto drawList = ImGui::GetWindowDrawList();
+		for (auto& child : slider->GetChildren())
+		{
+			if (child->IsRenderPrimitive())
+			{
+				switch (child->GetRenderPrimitiveType())
+				{
+					case RenderPrimitiveType::Rectangle:
+					{
+						std::shared_ptr<RectWidget> rect = std::reinterpret_pointer_cast<RectWidget>(child);
+						ImVec2 min = { cursorScreenPos.x + rect->GetX(), cursorScreenPos.y + rect->GetY() };
+						ImVec2 max = { cursorScreenPos.x + rect->GetX() + rect->GetWidth(),cursorScreenPos.y + rect->GetY() + rect->GetHeight()};
+						
+						drawList->AddRectFilled(min, max, ImGui::GetColorU32(ImVec4(rect->GetColor().m_R, rect->GetColor().m_G, rect->GetColor().m_B, rect->GetColor().m_A)), 1);
+						break;
+					}
+					case RenderPrimitiveType::Circle:
+					{
+						std::shared_ptr<CircleWidget> circle = std::reinterpret_pointer_cast<CircleWidget>(child);
+						ImVec2 center = { cursorScreenPos.x + circle->GetX() , cursorScreenPos.y + circle->GetY() };
+						drawList->AddCircleFilled(center, circle->GetRadius(), ImGui::GetColorU32(ImVec4(circle->GetColor().m_R, circle->GetColor().m_G, circle->GetColor().m_B, circle->GetColor().m_A)));
+						break;
+					}
+					default:
+						break;
+				}
+			}
+		}
+	}
+	ImGui::End();
 
 	UpdateDockSpace();
 

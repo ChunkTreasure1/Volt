@@ -72,6 +72,7 @@ project "Sandbox"
 		"../Nexus/src",
 		"../VoltRenderer/VoltRHI/src",
 		"../Mosaic/src",
+		"../Circuit/src",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -114,7 +115,7 @@ project "Sandbox"
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.vma}",
 
-		"%{IncludeDir.TGAFbx}"
+		"%{IncludeDir.TGAFbx}",
 	}
 
     links
@@ -127,6 +128,8 @@ project "Sandbox"
 
 		"ImGuizmo",
 		"ImGuiNodeEditor",
+
+		"Circuit",
 
 		"%{Library.fmod}",
 		"%{Library.fmodstudio}",
@@ -209,7 +212,7 @@ project "Sandbox"
 			"%{Library.SPIRV_Cross_GLSL_Debug}",
 			"%{Library.SPIRV_Tools_Debug}",
 
-			"%{Library.Aftermath}"
+			"%{Library.Aftermath}",
 		}
 
 	filter "configurations:Release"
@@ -227,7 +230,7 @@ project "Sandbox"
 			"%{Library.SPIRV_Cross_Release}",
 			"%{Library.SPIRV_Cross_GLSL_Release}",
 
-			"%{Library.Aftermath}"
+			"%{Library.Aftermath}",
 		}
 
 	filter "configurations:Dist"

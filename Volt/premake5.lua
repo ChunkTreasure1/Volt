@@ -65,6 +65,7 @@ include "VoltRenderer/VoltVulkan"
 
 group "Tools"
 include "Sandbox"
+include "Circuit"
 
 group ""
 include "Launcher"
