@@ -1,9 +1,9 @@
 Metadata:
-  assetHandle: 2457044044311143512
+  assetHandle: 12407222213850309022
   filePath: Engine/Shaders/Definitions/2D/quad.vtsdef
   type: 7
   Dependencies:
-    - 10798280601690009728
-    - 3512387666108709840
+    - 14307076154255412709
+    - 11465030724416367464
   Properties:
     {}

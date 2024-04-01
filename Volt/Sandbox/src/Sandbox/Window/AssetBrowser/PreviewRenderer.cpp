@@ -134,7 +134,7 @@ bool PreviewRenderer::RenderMaterialPreview(Weak<AssetBrowser::AssetItem> assetI
 		return false;
 	}
 
-	auto meshAsset = Volt::AssetManager::QueueAsset<Volt::Mesh>(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh"));
+	auto meshAsset = Volt::AssetManager::QueueAsset<Volt::Mesh>(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtasset"));
 	if (!meshAsset || !meshAsset->IsValid())
 	{
 		return false;

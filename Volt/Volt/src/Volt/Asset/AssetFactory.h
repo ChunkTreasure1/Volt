@@ -17,7 +17,7 @@ namespace Volt
 		void Initialize();
 		void Shutdown();
 
-		Ref<Asset> CreateAssetOfType(AssetType type);
+		Ref<Asset> CreateAssetOfType(AssetType type) const;
 
 	private:
 		std::unordered_map<AssetType, AssetCreateFunction> m_assetFactoryFunctions;

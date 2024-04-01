@@ -486,7 +486,19 @@ namespace Volt
 
 	size_t Image2D::CopyToBuffer(Buffer& buffer, uint32_t mip, size_t bufferOffset) const
 	{
-		const size_t mipSize = glm::max((mySpecification.width >> mip) * (mySpecification.height >> mip) * Utility::PerPixelSizeFromFormat(mySpecification.format), Utility::GetFormatMinimumSize(mySpecification.format));
+		uint32_t width = mySpecification.width;
+		uint32_t height = mySpecification.height;
+
+		if (Utility::IsEncodedFormat(mySpecification.format))
+		{
+			width = Utility::NextPow2(width);
+			height = Utility::NextPow2(height);
+		}
+
+		width = std::max(width >> mip, 1u);
+		height = std::max(height >> mip, 1u);
+
+		const size_t mipSize = glm::max(width * height * Utility::PerPixelSizeFromFormat(mySpecification.format), Utility::GetFormatMinimumSize(mySpecification.format));
 
 		VkBuffer hostBuffer{};
 		VmaAllocation hostAllocation{};
@@ -504,7 +516,7 @@ namespace Volt
 		}
 
 		Utility::TransitionImageLayout(myImage, myImageData.layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-		Utility::CopyImageToBuffer(hostBuffer, 0, myImage, mySpecification.width >> mip, mySpecification.height >> mip, mip);
+		Utility::CopyImageToBuffer(hostBuffer, 0, myImage, std::max(mySpecification.width >> mip, 1u), std::max(mySpecification.height >> mip, 1u), mip);
 		Utility::TransitionImageLayout(myImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, myImageData.layout);
 
 		auto* imageData = allocator.MapMemory<uint8_t>(hostAllocation);

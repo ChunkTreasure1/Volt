@@ -1,9 +1,9 @@
 Metadata:
-  assetHandle: 11467567915339584903
+  assetHandle: 14806327704924216509
   filePath: Engine/Shaders/Definitions/PostProcessing/aoComposite.vtsdef
   type: 7
   Dependencies:
-    - 12838837060596027054
-    - 1421142594836268293
+    - 13516047568433567417
+    - 13811339343625986972
   Properties:
     {}

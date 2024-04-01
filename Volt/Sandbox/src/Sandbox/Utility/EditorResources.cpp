@@ -3,6 +3,7 @@
 
 #include <Volt/Asset/Importers/TextureImporter.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
+#include <Volt/Asset/AssetManager.h>
 
 #include <Volt/Asset/Mesh/Mesh.h>
 
@@ -93,13 +94,13 @@ void EditorResources::Initialize()
 
 	// Meshes
 	{
-		myEditorMeshes[EditorMesh::Cube] = TryLoadMesh("Engine/Meshes/Primitives/SM_Cube.vtmesh");
-		myEditorMeshes[EditorMesh::Capsule] = TryLoadMesh("Engine/Meshes/Primitives/SM_Capsule.vtmesh");
-		myEditorMeshes[EditorMesh::Cone] = TryLoadMesh("Engine/Meshes/Primitives/SM_Cone.vtmesh");
-		myEditorMeshes[EditorMesh::Cylinder] = TryLoadMesh("Engine/Meshes/Primitives/SM_Cylinder.vtmesh");
-		myEditorMeshes[EditorMesh::Plane] = TryLoadMesh("Engine/Meshes/Primitives/SM_Plane.vtmesh");
-		myEditorMeshes[EditorMesh::Sphere] = TryLoadMesh("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
-		myEditorMeshes[EditorMesh::Arrow] = TryLoadMesh("Editor/Meshes/Arrow/3dpil.vtmesh");
+		myEditorMeshes[EditorMesh::Cube] = TryLoadMesh("Engine/Meshes/Primitives/SM_Cube_Mesh.vtasset");
+		myEditorMeshes[EditorMesh::Capsule] = TryLoadMesh("Engine/Meshes/Primitives/SM_Capsule.vtasset");
+		myEditorMeshes[EditorMesh::Cone] = TryLoadMesh("Engine/Meshes/Primitives/SM_Cone.vtasset");
+		myEditorMeshes[EditorMesh::Cylinder] = TryLoadMesh("Engine/Meshes/Primitives/SM_Cylinder.vtasset");
+		myEditorMeshes[EditorMesh::Plane] = TryLoadMesh("Engine/Meshes/Primitives/SM_Plane.vtasset");
+		myEditorMeshes[EditorMesh::Sphere] = TryLoadMesh("Engine/Meshes/Primitives/SM_Sphere.vtasset");
+		//myEditorMeshes[EditorMesh::Arrow] = TryLoadMesh("Editor/Meshes/Arrow/3dpil.vtasset");
 	}
 }
 
@@ -127,8 +128,8 @@ Ref<Volt::Texture2D> EditorResources::GetEditorIcon(EditorIcon icon)
 		return Volt::Renderer::GetDefaultData().whiteTexture;
 	}
 
-	return myEditorIcons.at(icon);
-}
+		return myEditorIcons.at(icon);
+	}
 
 Ref<Volt::Mesh> EditorResources::GetEditorMesh(EditorMesh mesh)
 {
@@ -155,8 +156,8 @@ Ref<Volt::Texture2D> EditorResources::TryLoadIcon(const std::filesystem::path& p
 
 Ref<Volt::Mesh> EditorResources::TryLoadMesh(const std::filesystem::path& path)
 {
-	Ref<Volt::Mesh> mesh = CreateRef<Volt::Mesh>();
-	if (!Volt::MeshTypeImporter::ImportMesh(path, *mesh))
+	Ref<Volt::Mesh> mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(path);
+	if (!mesh->IsValid())
 	{
 		mesh = Volt::Shape::CreateUnitCube();
 	}

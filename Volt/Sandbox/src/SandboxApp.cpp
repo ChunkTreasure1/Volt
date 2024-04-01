@@ -1,11 +1,13 @@
 #include "sbpch.h"
 
 #include "Sandbox/Sandbox.h"
+#include "ProjectUpgrade/ProjectUpgradeLayer.h"
 
 #include <Volt/Core/Application.h>
 #include <Volt/EntryPoint.h>
 
 #include <Volt/Platform/ExceptionHandling.h>
+#include <Volt/Project/ProjectManager.h>
 
 class SandboxApp : public Volt::Application
 {
@@ -13,8 +15,16 @@ public:
 	SandboxApp(const Volt::ApplicationInfo& appInfo)
 		: Volt::Application(appInfo)
 	{
-		Sandbox* sandbox = new Sandbox();
-		PushLayer(sandbox);
+		if (Volt::ProjectManager::GetProject().isDeprecated)
+		{
+			ProjectUpgradeLayer* layer = new ProjectUpgradeLayer();
+			PushLayer(layer);
+		}
+		else
+		{
+			Sandbox* sandbox = new Sandbox();
+			PushLayer(sandbox);
+		}
 	}
 };
 

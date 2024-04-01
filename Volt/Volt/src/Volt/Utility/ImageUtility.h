@@ -740,6 +740,39 @@ namespace Volt
 			return VK_ATTACHMENT_LOAD_OP_LOAD;
 		}
 
+		inline static bool IsEncodedFormat(ImageFormat format)
+		{
+			switch (format)
+			{
+				case ImageFormat::BC1:
+				case ImageFormat::BC1SRGB:
+				case ImageFormat::BC2:
+				case ImageFormat::BC2SRGB:
+				case ImageFormat::BC3:
+				case ImageFormat::BC3SRGB:
+				case ImageFormat::BC4:
+				case ImageFormat::BC5:
+				case ImageFormat::BC7:
+				case ImageFormat::BC7SRGB:
+				case ImageFormat::BC6H_SF16:
+				case ImageFormat::BC6H_UF16:
+					return true;
+			}
+			return false;
+		}
+
+		inline uint32_t NextPow2(uint32_t v)
+		{
+			v--;
+			v |= v >> 1;
+			v |= v >> 2;
+			v |= v >> 4;
+			v |= v >> 8;
+			v |= v >> 16;
+			v++;
+			return v;
+		}
+
 		inline uint32_t PerPixelSizeFromFormat(ImageFormat format)
 		{
 			switch (format)

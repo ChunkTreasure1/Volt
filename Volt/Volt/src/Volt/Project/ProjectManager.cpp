@@ -23,7 +23,7 @@ namespace Volt
 		}
 		else
 		{
-			m_currentProject->projectDirectory = "./";
+			m_currentProject->projectDirectory = std::filesystem::current_path();
 		
 			for (const auto& dir : std::filesystem::directory_iterator("./"))
 			{

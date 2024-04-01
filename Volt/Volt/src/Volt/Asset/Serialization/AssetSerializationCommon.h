@@ -9,11 +9,12 @@ namespace Volt
 
 	struct SerializedAssetMetadata
 	{
-		AssetHandle handle;
+		inline static constexpr uint32_t AssetMagic = 9999;
+
+		uint32_t magic;
 		AssetType type;
 		uint32_t version;
-
-		std::vector<AssetHandle> dependencies;
+		AssetHandle handle;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const SerializedAssetMetadata& data);
 		static void Deserialize(BinaryStreamReader& streamReader, SerializedAssetMetadata& outData);

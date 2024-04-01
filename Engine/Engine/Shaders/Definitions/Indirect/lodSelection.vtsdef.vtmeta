@@ -1,8 +1,8 @@
 Metadata:
-  assetHandle: 1151105214214712621
+  assetHandle: 15602301864654121835
   filePath: Engine/Shaders/Definitions/Indirect/lodSelection.vtsdef
   type: 7
   Dependencies:
-    - 482649990060757559
+    - 7579689898188310832
   Properties:
     {}

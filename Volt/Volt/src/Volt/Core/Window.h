@@ -23,7 +23,7 @@ namespace Volt
 	struct WindowProperties
 	{
 		WindowProperties(const std::string& aTitle = "Volt", uint32_t aWidth = 1280, uint32_t aHeight = 720, bool aVSync = true, WindowMode aWindowMode = WindowMode::Windowed)
-			: title(aTitle), width(aWidth), height(aHeight), vsync(aVSync), windowMode(aWindowMode)
+			: title(aTitle), width(aWidth), height(aHeight), vsync(aVSync), windowMode(aWindowMode), useTitlebar(false)
 		{
 		}
 
@@ -31,6 +31,7 @@ namespace Volt
 		uint32_t width;
 		uint32_t height;
 		bool vsync;
+		bool useTitlebar;
 		WindowMode windowMode;
 		std::filesystem::path iconPath;
 		std::filesystem::path cursorPath;

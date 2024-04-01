@@ -4,28 +4,42 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Core/Application.h"
 
-#include "Volt/Asset/Importers/AssetImporter.h"
-
 #include "Volt/Asset/Importers/MeshTypeImporter.h"
 #include "Volt/Asset/Importers/TextureImporter.h"
-#include "Volt/Asset/Importers/MeshSourceImporter.h"
-#include "Volt/Asset/Importers/VTNavMeshImporter.h"
-#include "Volt/Asset/Importers/SkeletonImporter.h"
-#include "Volt/Asset/Importers/AnimationImporter.h"
-#include "Volt/Asset/Importers/SceneImporter.h"
-#include "Volt/Asset/Importers/AnimatedCharacterImporter.h"
-#include "Volt/Asset/Importers/AnimationGraphImporter.h"
-#include "Volt/Asset/Importers/PrefabImporter.h"
-#include "Volt/Asset/Importers/BehaviorTreeImporter.h"
-#include "Volt/Asset/Importers/NetContractImporter.h"
-#include "Volt/Asset/Importers/ParticlePresetImporter.h"
+
+#include "Volt/Asset/Serializers/AnimatedCharacterSerializer.h"
+#include "Volt/Asset/Serializers/AnimationGraphSerializer.h"
+#include "Volt/Asset/Serializers/AnimationSerializer.h"
+#include "Volt/Asset/Serializers/BehaviourTreeSerializer.h"
+#include "Volt/Asset/Serializers/BlendSpaceSerializer.h"
+#include "Volt/Asset/Serializers/FontSerializer.h"
+#include "Volt/Asset/Serializers/MaterialSerializer.h"
+#include "Volt/Asset/Serializers/MeshSerializer.h"
+#include "Volt/Asset/Serializers/NavigationMeshSerializer.h"
+#include "Volt/Asset/Serializers/NetContractSerializer.h"
+#include "Volt/Asset/Serializers/ParticlePresetSerializer.h"
+#include "Volt/Asset/Serializers/PhysicsMaterialSerializer.h"
+#include "Volt/Asset/Serializers/PostProcessingMaterialSerializer.h"
+#include "Volt/Asset/Serializers/PostProcessingStackSerializer.h"
+#include "Volt/Asset/Serializers/PrefabSerializer.h"
+#include "Volt/Asset/Serializers/SceneSerializer.h"
+#include "Volt/Asset/Serializers/ShaderSerializer.h"
+#include "Volt/Asset/Serializers/SkeletonSerializer.h"
+#include "Volt/Asset/Serializers/SourceMeshSerializer.h"
+#include "Volt/Asset/Serializers/SourceTextureSerializer.h"
+#include "Volt/Asset/Serializers/TextureSerializer.h"
+#include "Volt/Asset/Serializers/VideoSerializer.h"
+
 #include "Volt/Asset/AssetFactory.h"
 
 #include "Volt/Platform/ThreadUtility.h"
 
+#include "Volt/Net/SceneInteraction/NetContract.h"
+
 #include "Volt/Utility/FileSystem.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 #include "Volt/Utility/SerializationMacros.h"
+#include "Volt/Core/ScopedTimer.h"
 
 namespace Volt
 {
@@ -51,8 +65,13 @@ namespace Volt
 		m_assetFactory = CreateScope<AssetFactory>();
 		m_assetFactory->Initialize();
 
+		if (!ProjectManager::AreCurrentProjectMetaFilesDeprecated())
+		{
+			NetContractContainer::Load();
+		}
+
 		RegisterAssetSerializers();
-		LoadAssetMetafiles();
+		LoadAllAssetMetadata();
 	}
 
 	void AssetManager::Shutdown()
@@ -97,7 +116,6 @@ namespace Volt
 		}
 
 		metadata.dependencies.emplace_back(dependencyMetaData.handle);
-		SerializeAssetMetaFile(metadata.handle);
 	}
 
 	const std::vector<AssetHandle> AssetManager::GetAllAssetsOfType(AssetType wantedAssetType)
@@ -149,27 +167,28 @@ namespace Volt
 
 	void AssetManager::RegisterAssetSerializers()
 	{
-		m_assetImporters.emplace(AssetType::MeshSource, CreateScope<MeshSourceImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Texture, CreateScope<TextureSourceImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Shader, CreateScope<ShaderImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Mesh, CreateScope<MeshSourceImporter>()); // Done
-		m_assetImporters.emplace(AssetType::NavMesh, CreateScope<VTNavMeshImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Skeleton, CreateScope<SkeletonImporter>()); // Done
-		m_assetImporters.emplace(AssetType::AnimationGraph, CreateScope<AnimationGraphImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Animation, CreateScope<AnimationImporter>()); // Done
-		m_assetImporters.emplace(AssetType::AnimatedCharacter, CreateScope<AnimatedCharacterImporter>()); // Done
-		m_assetImporters.emplace(AssetType::ParticlePreset, CreateScope<ParticlePresetImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Prefab, CreateScope<PrefabImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Font, CreateScope<FontImporter>()); // Done
-		m_assetImporters.emplace(AssetType::PhysicsMaterial, CreateScope<PhysicsMaterialImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Video, CreateScope<VideoImporter>()); // Done
-		m_assetImporters.emplace(AssetType::BehaviorGraph, CreateScope<BehaviorTreeImporter>()); // Done
-		m_assetImporters.emplace(AssetType::BlendSpace, CreateScope<BlendSpaceImporter>());  // Done
-		m_assetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>()); // Done
-		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>()); // Done
-		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>()); // Done
+		m_assetSerializers.emplace(AssetType::MeshSource, CreateScope<SourceMeshSerializer>()); 
+		m_assetSerializers.emplace(AssetType::TextureSource, CreateScope<SourceTextureSerializer>()); 
+		m_assetSerializers.emplace(AssetType::Texture, CreateScope<TextureSerializer>()); 
+		m_assetSerializers.emplace(AssetType::Shader, CreateScope<ShaderSerializer>()); 
+		m_assetSerializers.emplace(AssetType::Material, CreateScope<MaterialSerializer>()); 
+		m_assetSerializers.emplace(AssetType::Mesh, CreateScope<MeshSerializer>()); 
+		m_assetSerializers.emplace(AssetType::NavMesh, CreateScope<NavigationMeshSerializer>()); 
+		m_assetSerializers.emplace(AssetType::Scene, CreateScope<SceneSerializer>()); 
+		m_assetSerializers.emplace(AssetType::Skeleton, CreateScope<SkeletonSerializer>()); 
+		m_assetSerializers.emplace(AssetType::AnimationGraph, CreateScope<AnimationGraphSerializer>()); 
+		m_assetSerializers.emplace(AssetType::Animation, CreateScope<AnimationSerializer>()); 
+		m_assetSerializers.emplace(AssetType::AnimatedCharacter, CreateScope<AnimatedCharacterSerializer>()); 
+		m_assetSerializers.emplace(AssetType::ParticlePreset, CreateScope<ParticlePresetSerializer>()); 
+		m_assetSerializers.emplace(AssetType::Prefab, CreateScope<PrefabSerializer>()); 
+		m_assetSerializers.emplace(AssetType::Font, CreateScope<FontSerializer>()); 
+		m_assetSerializers.emplace(AssetType::PhysicsMaterial, CreateScope<PhysicsMaterialSerializer>()); 
+		m_assetSerializers.emplace(AssetType::Video, CreateScope<VideoSerializer>()); 
+		m_assetSerializers.emplace(AssetType::BehaviorGraph, CreateScope<BehaviourTreeSerializer>()); 
+		m_assetSerializers.emplace(AssetType::BlendSpace, CreateScope<BlendSpaceSerializer>());  
+		m_assetSerializers.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackSerializer>()); 
+		m_assetSerializers.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialSerializer>()); 
+		m_assetSerializers.emplace(AssetType::NetContract, CreateScope<NetContractSerializer>()); 
 	}
 
 	void AssetManager::LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset)
@@ -191,8 +210,8 @@ namespace Volt
 
 		{ 
 			ReadLock lock{ m_assetRegistryMutex };
-
 			AssetMetadata& metadata = GetMetadataFromHandleMutable(assetHandle);
+
 			if (!metadata.IsValid())
 			{
 				VT_CORE_ERROR("[AssetManager] Trying to load asset which has invalid metadata!");
@@ -200,14 +219,14 @@ namespace Volt
 				return;
 			}
 
-			if (!m_assetImporters.contains(metadata.type))
+			if (!m_assetSerializers.contains(metadata.type))
 			{
 				VT_CORE_WARN("[AssetManager] No importer for asset found!");
 				asset->SetFlag(AssetFlag::Invalid, true);
 				return;
 			}
 
-			m_assetImporters.at(metadata.type)->Load(metadata, asset);
+			m_assetSerializers.at(metadata.type)->Deserialize(metadata, asset);
 
 #ifdef VT_DEBUG
 			VT_CORE_TRACE("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath, assetHandle);
@@ -225,19 +244,49 @@ namespace Volt
 		}
 	}
 
-	void AssetManager::LoadAssetMetafiles()
+	void AssetManager::LoadAllAssetMetadata()
 	{
-		const auto projectMetaFiles = GetProjectMetaFiles();
-		const auto engineMetaFiles = GetEngineMetaFiles();
+		VT_CORE_INFO("[AssetManager] Fetching asset meta data...");
+		ScopedTimer timer{};
 
-		for (auto file : engineMetaFiles)
+		const auto projectAssetFiles = GetProjectAssetFiles();
+		const auto engineAssetFiles = GetEngineAssetFiles();
+
+		for (auto file : engineAssetFiles)
 		{
-			DeserializeAssetMetafile(file);
+			DeserializeAssetMetadata(file);
 		}
 
-		for (auto file : projectMetaFiles)
+		for (auto file : projectAssetFiles)
 		{
-			DeserializeAssetMetafile(file);
+			DeserializeAssetMetadata(file);
+		}
+
+		VT_CORE_INFO("[AssetManager] Finished fetching meta data in {} seconds!", timer.GetTime<Time::Seconds>());
+	}
+
+	void AssetManager::DeserializeAssetMetadata(std::filesystem::path assetPath)
+	{
+		BinaryStreamReader streamReader{ assetPath };
+		if (!streamReader.IsStreamValid())
+		{
+			VT_CORE_ERROR("Failed to open file: {0}!", assetPath);
+			return;
+		}
+
+		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
+		if (serializedMetadata.magic != SerializedAssetMetadata::AssetMagic)
+		{
+			return;
+		}
+
+		{
+			WriteLock lock{ m_assetRegistryMutex };
+			AssetMetadata& metadata = m_assetRegistry[serializedMetadata.handle];
+			metadata.handle = serializedMetadata.handle;
+			metadata.filePath = assetPath;
+			metadata.properties = {};
+			metadata.type = serializedMetadata.type;
 		}
 	}
 
@@ -280,7 +329,7 @@ namespace Volt
 	{
 		auto& instance = Get();
 
-		if (instance.m_assetImporters.find(asset->GetType()) == instance.m_assetImporters.end())
+		if (instance.m_assetSerializers.find(asset->GetType()) == instance.m_assetSerializers.end())
 		{
 			VT_CORE_ERROR("[AssetManager] No exporter for asset {0} found!", asset->handle);
 			return;
@@ -310,7 +359,7 @@ namespace Volt
 			metadata = GetMetadataFromHandle(asset->handle);
 		}
 
-		instance.m_assetImporters[metadata.type]->Save(metadata, asset);
+		instance.m_assetSerializers[metadata.type]->Serialize(metadata, asset);
 
 		{
 			WriteLock lock{ instance.m_assetCacheMutex };
@@ -319,15 +368,13 @@ namespace Volt
 				instance.m_assetCache.emplace(asset->handle, asset);
 			}
 		}
-
-		instance.SerializeAssetMetaFile(asset->handle);
 	}
 
 	void AssetManager::SaveAsset(const Ref<Asset> asset)
 	{
 		auto& instance = Get();
 
-		if (instance.m_assetImporters.find(asset->GetType()) == instance.m_assetImporters.end())
+		if (instance.m_assetSerializers.find(asset->GetType()) == instance.m_assetSerializers.end())
 		{
 			VT_CORE_ERROR("[AssetManager] No exporter for asset {0} found!", asset->handle);
 			return;
@@ -346,7 +393,7 @@ namespace Volt
 			metadata = GetMetadataFromHandle(asset->handle);
 		}
 
-		instance.m_assetImporters[metadata.type]->Save(metadata, asset);
+		instance.m_assetSerializers[metadata.type]->Serialize(metadata, asset);
 
 		{
 			WriteLock lock{ instance.m_assetCacheMutex };
@@ -384,9 +431,6 @@ namespace Volt
 			WriteLock lock{ m_assetRegistryMutex };
 			m_assetRegistry[asset->handle].filePath = newPath;
 		}
-
-		RemoveMetaFile(assetFilePath);
-		SerializeAssetMetaFile(asset->handle);
 	}
 
 	void AssetManager::MoveAsset(AssetHandle assetHandle, const std::filesystem::path& targetDir)
@@ -415,9 +459,6 @@ namespace Volt
 			WriteLock lock{ m_assetRegistryMutex };
 			m_assetRegistry[assetHandle].filePath = newPath;
 		}
-
-		RemoveMetaFile(assetFilePath);
-		SerializeAssetMetaFile(assetHandle);
 	}
 
 	void AssetManager::MoveAssetInRegistry(const std::filesystem::path& sourcePath, const std::filesystem::path& targetPath)
@@ -433,9 +474,6 @@ namespace Volt
 			metadata.filePath = GetCleanAssetFilePath(targetPath);
 			assetHandle = metadata.handle;
 		}
-
-		RemoveMetaFile(sourcePath);
-		SerializeAssetMetaFile(assetHandle);
 	}
 
 	void AssetManager::MoveFullFolder(const std::filesystem::path& sourceDir, const std::filesystem::path& targetDir)
@@ -484,11 +522,7 @@ namespace Volt
 
 				newPath.erase(directoryStringLoc, sourceDir.string().length());
 				newPath.insert(directoryStringLoc, targetDir.string());
-
-				RemoveMetaFile(metadata.filePath);
 				metadata.filePath = GetCleanAssetFilePath(newPath);
-
-				SerializeAssetMetaFile(metadata.handle);
 			}
 		}
 	}
@@ -511,9 +545,6 @@ namespace Volt
 		}
 
 		FileSystem::Rename(projDir / oldPath, newName);
-
-		RemoveMetaFile(oldPath);
-		SerializeAssetMetaFile(assetHandle);
 	}
 
 	void AssetManager::RenameAssetFolder(AssetHandle assetHandle, const std::filesystem::path& targetFilePath)
@@ -527,9 +558,7 @@ namespace Volt
 			return;
 		}
 
-		RemoveMetaFile(metadata.filePath);
 		metadata.filePath = GetCleanAssetFilePath(targetFilePath);
-		SerializeAssetMetaFile(metadata.handle);
 	}
 
 	void AssetManager::RemoveAsset(AssetHandle assetHandle)
@@ -554,7 +583,6 @@ namespace Volt
 		}
 
 		FileSystem::MoveToRecycleBin(projDir / filePath);
-		RemoveMetaFile(filePath);
 
 #ifdef VT_DEBUG
 		VT_CORE_INFO("[AssetManager] Removed asset {0} with handle {1}!", assetHandle, filePath.string());
@@ -583,21 +611,26 @@ namespace Volt
 		}
 
 		FileSystem::MoveToRecycleBin(projDir / filePath);
-		RemoveMetaFile(filePath);
 
 #ifdef VT_DEBUG
 		VT_CORE_INFO("[AssetManager] Removed asset {0} with handle {1}!", metadata.handle, filePath.string());
 #endif
 	}
 
-	void AssetManager::RemoveMetaFile(const std::filesystem::path& filePath)
+	bool AssetManager::ValidateAssetType(AssetHandle handle, Ref<Asset> asset)
 	{
-		auto metafile = GetContextPath(filePath) / filePath;
-		metafile.replace_filename(metafile.filename().string() + ".vtmeta");
-		if (std::filesystem::exists(metafile))
+		ReadLock lock{ Get().m_assetRegistryMutex };
+		const auto& metadata = GetMetadataFromHandle(handle);
+		
+		// If the metadata is not valid we allow the asset to be valid
+		if (!metadata.IsValid())
 		{
-			std::filesystem::remove(metafile);
+			return true;
 		}
+		
+		VT_CORE_ASSERT(metadata.type == asset->GetType() , "Asset type does not match meta type!");
+
+		return metadata.type == asset->GetType();
 	}
 
 	void AssetManager::RemoveFromRegistry(AssetHandle assetHandle)
@@ -638,10 +671,8 @@ namespace Volt
 			m_assetCache.erase(assetHandle);
 		}
 
-		const auto cleanFilePath = GetCleanAssetFilePath(metadata.filePath);
-		RemoveMetaFile(cleanFilePath);
-
 #ifdef VT_DEBUG
+		const auto cleanFilePath = GetCleanAssetFilePath(metadata.filePath);
 		VT_CORE_INFO("[AssetManager] Removed asset {0} with handle {1} from registry!", assetHandle, cleanFilePath);
 #endif
 	}
@@ -671,10 +702,8 @@ namespace Volt
 			m_assetCache.erase(metadata.handle);
 		}
 
-		const auto cleanFilePath = GetCleanAssetFilePath(metadata.filePath);
-		RemoveMetaFile(cleanFilePath);
-
 #ifdef VT_DEBUG
+		const auto cleanFilePath = GetCleanAssetFilePath(metadata.filePath);
 		VT_CORE_INFO("[AssetManager] Removed asset {0} with handle {1} from registry!", metadata.handle, cleanFilePath);
 #endif
 	}
@@ -721,8 +750,6 @@ namespace Volt
 					m_assetRegistry.erase(handle);
 				}
 
-				RemoveMetaFile(metadata.filePath);
-
 #ifdef VT_DEBUG
 				VT_CORE_INFO("[AssetManager] Removed asset with handle {0} from registry!", handle);
 #endif
@@ -754,12 +781,32 @@ namespace Volt
 			metadata.type = GetAssetTypeFromPath(filePath);
 		}
 
-		if (!HasAssetMetaFile(newHandle))
+		return newHandle;
+	}
+
+	void AssetManager::AddAssetToRegistry(const std::filesystem::path& filePath, AssetHandle handle, AssetType type)
+	{
 		{
-			SerializeAssetMetaFile(newHandle);
+			ReadLock lock{ m_assetRegistryMutex };
+			const std::filesystem::path cleanPath = GetCleanAssetFilePath(filePath);
+			const auto& metadata = GetMetadataFromFilePath(filePath);
+
+			if (metadata.IsValid())
+			{
+				return;
+			}
 		}
 
-		return newHandle;
+		const auto newHandle = handle;
+		const auto cleanFilePath = GetCleanAssetFilePath(filePath);
+
+		{
+			WriteLock lock{ m_assetRegistryMutex };
+			AssetMetadata& metadata = m_assetRegistry[newHandle];
+			metadata.handle = newHandle;
+			metadata.filePath = cleanFilePath;
+			metadata.type = type;
+		}
 	}
 
 	bool AssetManager::IsLoaded(AssetHandle handle)
@@ -879,9 +926,11 @@ namespace Volt
 	{
 		auto& instance = Get();
 
+		std::filesystem::path cleanPath = GetRelativePath(filePath);
+
 		for (const auto& [handle, metaData] : instance.m_assetRegistry)
 		{
-			if (metaData.filePath == filePath)
+			if (metaData.filePath == cleanPath)
 			{
 				return metaData;
 			}
@@ -891,6 +940,11 @@ namespace Volt
 	}
 
 	const std::unordered_map<AssetHandle, AssetMetadata>& AssetManager::GetAssetRegistry()
+	{
+		return Get().m_assetRegistry;
+	}
+
+	std::unordered_map<AssetHandle, AssetMetadata>& AssetManager::GetAssetRegistryMutable()
 	{
 		return Get().m_assetRegistry;
 	}
@@ -947,18 +1001,25 @@ namespace Volt
 		return {};
 	}
 
-	bool AssetManager::IsSourceFile(AssetHandle handle)
+	bool AssetManager::IsSourceAsset(AssetHandle handle)
 	{
 		auto& instance = Get();
 		ReadLock lock{ instance.m_assetRegistryMutex };
 
 		const AssetType type = GetAssetTypeFromHandle(handle);
+		return IsSourceAsset(type);
+	}
+
+	bool AssetManager::IsSourceAsset(AssetType type)
+	{
 		switch (type)
 		{
 			case AssetType::MeshSource:
 			case AssetType::ShaderSource:
+			case AssetType::TextureSource:
 				return true;
 		}
+
 		return false;
 	}
 
@@ -996,13 +1057,18 @@ namespace Volt
 		if (temp.find(ProjectManager::GetDirectory().string()) != std::string::npos)
 		{
 			relativePath = std::filesystem::relative(path, ProjectManager::GetDirectory());
-			if (relativePath.empty())
-			{
-				relativePath = path.lexically_normal();
-			}
+		} 
+		else if (temp.find(ProjectManager::GetEngineDirectory().string()) != std::string::npos)
+		{
+			relativePath = std::filesystem::relative(path, ProjectManager::GetEngineDirectory());
 		}
 
-		return relativePath;
+		if (relativePath.empty())
+		{
+			relativePath = path.lexically_normal();
+		}
+
+		return GetCleanAssetFilePath(relativePath);
 	}
 
 	void AssetManager::QueueAssetInternal(AssetHandle assetHandle, Ref<Asset>& asset)
@@ -1049,14 +1115,14 @@ namespace Volt
 					asset = m_assetCache.at(handle);
 				}
 
-				if (!m_assetImporters.contains(metadata.type))
+				if (!m_assetSerializers.contains(metadata.type))
 				{
 					VT_CORE_ERROR("No importer for asset found!");
 					asset->SetFlag(AssetFlag::Invalid, true);
 					return;
 				}
 
-				m_assetImporters.at(metadata.type)->Load(metadata, asset);
+				m_assetSerializers.at(metadata.type)->Deserialize(metadata, asset);
 				if (handle != Asset::Null())
 				{
 					asset->handle = handle;
@@ -1131,7 +1197,7 @@ namespace Volt
 					return;
 				}
 
-				if (!m_assetImporters.contains(metadata.type))
+				if (!m_assetSerializers.contains(metadata.type))
 				{
 					VT_CORE_ERROR("No importer for asset found!");
 					return;
@@ -1143,7 +1209,7 @@ namespace Volt
 					asset = m_assetCache.at(handle);
 				}
 
-				m_assetImporters.at(metadata.type)->Load(metadata, asset);
+				m_assetSerializers.at(metadata.type)->Deserialize(metadata, asset);
 				if (handle != Asset::Null())
 				{
 					asset->handle = handle;
@@ -1206,17 +1272,17 @@ namespace Volt
 		return pathClean;
 	}
 
-	std::vector<std::filesystem::path> AssetManager::GetEngineMetaFiles()
+	std::vector<std::filesystem::path> AssetManager::GetEngineAssetFiles()
 	{
 		std::vector<std::filesystem::path> files;
-		const std::string ext(".vtmeta");
+		const std::string ext(".vtasset");
 
 		// Engine Directory
 		for (auto& p : std::filesystem::recursive_directory_iterator(ProjectManager::GetEngineDirectory() / "Engine"))
 		{
 			if (p.path().extension() == ext)
 			{
-				files.emplace_back(p.path());
+				files.emplace_back(GetRelativePath(p.path()));
 			}
 		}
 
@@ -1227,7 +1293,7 @@ namespace Volt
 			{
 				if (p.path().extension() == ext)
 				{
-					files.emplace_back(p.path());
+					files.emplace_back(GetRelativePath(p.path()));
 				}
 			}
 		}
@@ -1235,16 +1301,10 @@ namespace Volt
 		return files;
 	}
 
-	std::vector<std::filesystem::path> AssetManager::GetProjectMetaFiles()
+	std::vector<std::filesystem::path> AssetManager::GetProjectAssetFiles()
 	{
-		if (ProjectManager::AreCurrentProjectMetaFilesDeprecated())
-		{
-			VT_CORE_ERROR("[AssetManager]: Unable to load metafiles as the loaded project is deprecated!");
-			return {};
-		}
-
 		std::vector<std::filesystem::path> files;
-		std::string ext(".vtmeta");
+		std::string ext(".vtasset");
 
 		// Project Directory
 		const auto assetsDir = ProjectManager::GetProject().projectDirectory / ProjectManager::GetProject().assetsDirectory;
@@ -1255,139 +1315,11 @@ namespace Volt
 			{
 				if (p.path().extension() == ext)
 				{
-					files.emplace_back(p.path());
+					files.emplace_back(GetRelativePath(p.path()));
 				}
 			}
 		}
 
 		return files;
-	}
-
-	void AssetManager::SerializeAssetMetaFile(AssetHandle assetHandle)
-	{
-		const auto& metadata = GetMetadataFromHandle(assetHandle);
-		if (!metadata.IsValid())
-		{
-			VT_CORE_WARN("[AssetManager] Unable to save meta file for invalid asset {0}!", metadata.filePath);
-			return;
-		}
-
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Metadata" << YAML::Value;
-		{
-			out << YAML::BeginMap;
-			VT_SERIALIZE_PROPERTY(assetHandle, metadata.handle, out);
-			VT_SERIALIZE_PROPERTY(filePath, metadata.filePath, out);
-			VT_SERIALIZE_PROPERTY(type, (uint32_t)metadata.type, out);
-
-			out << YAML::Key << "Dependencies" << YAML::Value << metadata.dependencies;
-
-			out << YAML::Key << "Properties" << YAML::Value;
-			out << YAML::BeginMap;
-			for (const auto& [name, data] : metadata.properties)
-			{
-				out << YAML::Key << name << YAML::Value << data;
-			}
-			out << YAML::EndMap;
-			out << YAML::EndMap;
-		}
-		out << YAML::EndMap;
-		out << YAML::EndMap;
-
-		auto metaPath = GetFilesystemPath(assetHandle);
-		metaPath.replace_filename(metaPath.filename().string() + ".vtmeta");
-
-		std::ofstream fout(metaPath);
-		fout << out.c_str();
-		fout.close();
-	}
-
-	bool AssetManager::HasAssetMetaFile(AssetHandle assetHandle)
-	{
-		auto metaPath = GetFilesystemPath(assetHandle);
-		metaPath.replace_filename(metaPath.filename().string() + ".vtmeta");
-
-		return FileSystem::Exists(metaPath);
-	}
-
-	void AssetManager::DeserializeAssetMetafile(std::filesystem::path metaFilePath)
-	{
-		if (!std::filesystem::exists(metaFilePath))
-		{
-			return;
-		}
-
-		std::ifstream file(metaFilePath);
-		if (!file.is_open())
-		{
-			VT_CORE_CRITICAL("[AssetManager] Failed to open asset registry file: {0}!", metaFilePath.string().c_str());
-			return;
-		}
-
-		std::stringstream strStream;
-		strStream << file.rdbuf();
-		file.close();
-
-		YAML::Node root;
-		try
-		{
-			root = YAML::Load(strStream.str());
-		}
-		catch (std::exception& e)
-		{
-			VT_CORE_CRITICAL("[AssetManager] Meta file {0} contains invalid YAML! Please correct it! Error: {1}", metaFilePath, e.what());
-			return;
-		}
-
-		YAML::Node metaRoot = root["Metadata"];
-
-		if (!metaRoot["assetHandle"])
-		{
-			VT_CORE_CRITICAL("[AssetManager] Meta file {0} is missing an asset handle! Please correct it!", metaFilePath);
-			return;
-		}
-
-		AssetHandle assetHandle = metaRoot["assetHandle"].as<uint64_t>();
-
-		if (!metaRoot["filePath"])
-		{
-			VT_CORE_CRITICAL("[AssetManager] Meta file {0} is missing a file path! Please correct it!", metaFilePath);
-			return;
-		}
-
-		std::filesystem::path filePath = metaRoot["filePath"].as<std::string>();
-
-		std::vector<AssetHandle> dependencies;
-		if (metaRoot["Dependencies"])
-		{
-			for (const auto& d : metaRoot["Dependencies"])
-			{
-				dependencies.emplace_back(d.as<uint64_t>());
-			}
-		}
-
-		std::unordered_map<std::string, std::string> assetProperties;
-
-		if (metaRoot["Properties"])
-		{
-			for (const auto& node : metaRoot["Properties"])
-			{
-				const auto key = node.first.as<std::string>();
-				const auto value = node.as<std::string>();
-
-				assetProperties[key] = value;
-			}
-		}
-
-		{
-			WriteLock lock{ m_assetRegistryMutex };
-			AssetMetadata& metadata = m_assetRegistry[assetHandle];
-			metadata.handle = assetHandle;
-			metadata.filePath = filePath;
-			metadata.dependencies = dependencies;
-			metadata.properties = assetProperties;
-			metadata.type = GetAssetTypeFromExtension(filePath.extension().string());
-		}
 	}
 }

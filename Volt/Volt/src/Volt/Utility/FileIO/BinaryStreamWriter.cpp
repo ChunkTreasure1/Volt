@@ -7,7 +7,8 @@ namespace Volt
 {
 	void BinaryStreamWriter::WriteToDisk(const std::filesystem::path& targetFilepath, bool compress, size_t compressedDataOffset)
 	{
-		constexpr size_t compressionEncodingHeaderSize = sizeof(uint8_t) + sizeof(size_t);
+		constexpr size_t compressionEncodingHeaderSize = sizeof(uint32_t) + sizeof(uint8_t) + sizeof(size_t);
+		constexpr uint32_t MAGIC = 5121;
 
 		std::ofstream stream(targetFilepath, std::ios::out | std::ios::binary);
 
@@ -18,10 +19,12 @@ namespace Volt
 		if (compress)
 		{
 			compressedData.resize(compressionEncodingHeaderSize);
-			compressedData[0] = 1; // First byte tells if file is compressed
+
+			*(uint32_t*)(compressedData.data()) = MAGIC; // First we set a magic value
+			compressedData[sizeof(uint32_t)] = 1; // First byte tells if file is compressed
 
 			// Next 8 bytes tells the offset to where the compressed data starts
-			memcpy_s(&compressedData[1], sizeof(size_t), &compressedDataOffset, sizeof(size_t));
+			memcpy_s(&compressedData[sizeof(uint32_t) + sizeof(uint8_t)], sizeof(size_t), &compressedDataOffset, sizeof(size_t));
 
 			compressedDataOffset += compressionEncodingHeaderSize;
 
@@ -37,9 +40,12 @@ namespace Volt
 
 		if (writePtr == m_data.data())
 		{
-			// Insert 0 at beginning to flag that file is uncompressed;
+			// Insert 0 at beginning to flag that file is uncompressed
+			// We also insert the magic value
 			std::array<uint8_t, compressionEncodingHeaderSize> emptyEncodingHeader;
 			emptyEncodingHeader.fill(0);
+
+			*(uint32_t*)(emptyEncodingHeader.data()) = MAGIC;
 
 			m_data.insert(m_data.begin(), emptyEncodingHeader.begin(), emptyEncodingHeader.end());
 			writePtr = m_data.data();
@@ -53,7 +59,7 @@ namespace Volt
 	bool BinaryStreamWriter::GetCompressed(std::vector<uint8_t>& result, size_t compressedDataOffset)
 	{
 		constexpr uint32_t CHUNK_SIZE = 16384;
-		constexpr size_t compressionEncodingHeaderSize = sizeof(uint8_t) + sizeof(size_t);
+		constexpr size_t compressionEncodingHeaderSize = sizeof(uint32_t) + sizeof(uint8_t) + sizeof(size_t);
 
 		z_stream stream;
 		stream.zalloc = Z_NULL;
@@ -113,6 +119,8 @@ namespace Volt
 
 	void BinaryStreamWriter::WriteData(const void* data, const size_t size)
 	{
+		VT_CORE_ASSERT(size > 0, "Write size must be greater than zero!");
+
 		const size_t writeSize = size;
 		const size_t currentOffset = m_data.size();
 		m_data.resize(currentOffset + writeSize);

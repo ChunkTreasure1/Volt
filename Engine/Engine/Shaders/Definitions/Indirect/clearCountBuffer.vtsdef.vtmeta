@@ -1,8 +1,8 @@
 Metadata:
-  assetHandle: 7692098614928392254
+  assetHandle: 16211559002788243770
   filePath: Engine/Shaders/Definitions/Indirect/clearCountBuffer.vtsdef
   type: 7
   Dependencies:
-    - 5186308870278711452
+    - 3401659400447313785
   Properties:
     {}

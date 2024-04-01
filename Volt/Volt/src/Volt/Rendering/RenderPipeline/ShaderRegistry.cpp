@@ -77,6 +77,8 @@ namespace Volt
 		return myShaderRegistry.at(lowName);
 	}
 
+
+
 	void ShaderRegistry::LoadAllShaders()
 	{
 		const std::vector<std::filesystem::path> searchPaths =
@@ -104,8 +106,8 @@ namespace Volt
 						AssetManager::Get().AddAssetToRegistry(relPath);
 					}
 
-					Ref<Shader> pipelineAsset = AssetManager::GetAsset<Shader>(relPath);
-					Register(pipelineAsset->GetName(), pipelineAsset);
+					Ref<Shader> shaderAsset = AssetManager::GetAsset<Shader>(relPath);
+					Register(shaderAsset->GetName(), shaderAsset);
 				}
 			}
 		}

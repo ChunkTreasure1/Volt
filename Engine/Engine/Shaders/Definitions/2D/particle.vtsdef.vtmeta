@@ -1,10 +1,10 @@
 Metadata:
-  assetHandle: 14191556180656021201
+  assetHandle: 13783186330635476140
   filePath: Engine/Shaders/Definitions/2D/particle.vtsdef
   type: 7
   Dependencies:
-    - 16312622993519494368
-    - 13060053700122240821
-    - 13968960746862725779
+    - 17303629067289062319
+    - 7333808985412559288
+    - 12894686563302475048
   Properties:
     {}

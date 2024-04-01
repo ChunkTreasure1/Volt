@@ -5,7 +5,7 @@
 
 #include "Sandbox/UISystems/ModalSystem.h"
 
-#include "Sandbox/Modals/ProjectUpgradeModal.h"
+#include "Sandbox/Modals/ProjectUpgrade/ProjectUpgradeModal.h"
 
 #include "Sandbox/Window/PropertiesPanel.h"
 #include "Sandbox/Window/ViewportPanel.h"
@@ -91,8 +91,8 @@
 
 #include <imgui.h>
 
-#include "Volt/Asset/ImportersNew/SourceTextureSerializer.h"
-#include "Volt/Asset/ImportersNew/TextureSerializer.h"
+#include "Volt/Asset/Serializers/SourceTextureSerializer.h"
+#include "Volt/Asset/Serializers/TextureSerializer.h"
 
 Sandbox::Sandbox()
 {
@@ -109,7 +109,11 @@ void Sandbox::OnAttach()
 {
 	SelectionManager::Init();
 
-	EditorResources::Initialize();
+	if (!Volt::ProjectManager::GetProject().isDeprecated)
+	{
+		EditorResources::Initialize();
+	}
+
 	VersionControl::Initialize(VersionControlSystem::Perforce);
 	NodeEditorHelpers::Initialize();
 	IONodeGraphEditorHelpers::Initialize();

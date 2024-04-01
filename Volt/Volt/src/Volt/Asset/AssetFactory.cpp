@@ -77,7 +77,7 @@ namespace Volt
 		m_assetFactoryFunctions.clear();
 	}
 
-	Ref<Asset> AssetFactory::CreateAssetOfType(AssetType type)
+	Ref<Asset> AssetFactory::CreateAssetOfType(AssetType type) const
 	{
 		return m_assetFactoryFunctions.at(type)();
 	}

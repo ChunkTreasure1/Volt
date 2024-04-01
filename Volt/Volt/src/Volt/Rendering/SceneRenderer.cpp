@@ -607,7 +607,7 @@ namespace Volt
 
 			// Decal
 			{
-				myDecalMesh = AssetManager::GetAsset<Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+				myDecalMesh = AssetManager::GetAsset<Mesh>("Engine/Meshes/Primitives/SM_Cube_Mesh.vtasset");
 
 				RenderPipelineSpecification spec{};
 				spec.shader = ShaderRegistry::GetShader("Decal");

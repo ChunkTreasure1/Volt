@@ -1,8 +1,8 @@
 Metadata:
-  assetHandle: 3135367254474799551
+  assetHandle: 3018453772997222660
   filePath: Engine/Shaders/Definitions/PostProcessing/GTAO/gtaoDepthPrefilter.vtsdef
   type: 7
   Dependencies:
-    - 4870608170725517826
+    - 10611632505612667329
   Properties:
     {}

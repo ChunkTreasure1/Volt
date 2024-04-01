@@ -1,9 +1,9 @@
 Metadata:
-  assetHandle: 5218011216011485012
+  assetHandle: 9702223394949338577
   filePath: Engine/Shaders/Definitions/PostProcessing/SSR/ssr.vtsdef
   type: 7
   Dependencies:
-    - 4999629954248835168
-    - 1421142594836268293
+    - 5513805365316638066
+    - 13811339343625986972
   Properties:
     {}

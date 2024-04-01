@@ -7,7 +7,8 @@ namespace Volt
 {
 	BinaryStreamReader::BinaryStreamReader(const std::filesystem::path& filePath)
 	{
-		constexpr size_t compressionEncodingHeaderSize = sizeof(uint8_t) + sizeof(size_t);
+		constexpr size_t compressionEncodingHeaderSize = sizeof(uint32_t) + sizeof(uint8_t) + sizeof(size_t);
+		constexpr uint32_t MAGIC = 5121;
 
 		std::ifstream stream(filePath, std::ios::in | std::ios::binary);
 		if (stream)
@@ -25,8 +26,15 @@ namespace Volt
 		}
 
 		// Read compression encoding
-		const uint8_t isCompressed = m_data[0];
-		const size_t compressedDataOffset = *reinterpret_cast<size_t*>(&m_data[1]) + compressionEncodingHeaderSize;
+		const uint32_t magic = *(uint32_t*)m_data.data();
+		if (magic != MAGIC)
+		{
+			m_streamValid = false;
+			return;
+		}
+
+		const uint8_t isCompressed = m_data[sizeof(uint32_t)];
+		const size_t compressedDataOffset = *reinterpret_cast<size_t*>(&m_data[sizeof(uint32_t) + sizeof(uint8_t)]) + compressionEncodingHeaderSize;
 
 		if (isCompressed)
 		{
@@ -52,7 +60,7 @@ namespace Volt
 	bool BinaryStreamReader::Decompress(size_t compressedDataOffset)
 	{
 		constexpr uint32_t CHUNK_SIZE = 16384;
-		constexpr size_t compressionEncodingHeaderSize = sizeof(uint8_t) + sizeof(size_t);
+		constexpr size_t compressionEncodingHeaderSize = sizeof(uint32_t) + sizeof(uint8_t) + sizeof(size_t);
 
 		z_stream stream;
 		stream.zalloc = Z_NULL;

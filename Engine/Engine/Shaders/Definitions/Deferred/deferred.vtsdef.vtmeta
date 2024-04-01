@@ -1,9 +1,9 @@
 Metadata:
-  assetHandle: 2476914073847913243
+  assetHandle: 15332723922649589144
   filePath: Engine/Shaders/Definitions/Deferred/deferred.vtsdef
   type: 7
   Dependencies:
-    - 17633572153581414977
-    - 11930847771017622628
+    - 11138145988443942200
+    - 8347663285989942360
   Properties:
     {}

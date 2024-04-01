@@ -79,6 +79,11 @@ namespace Volt
 			windowProperties.iconPath = ProjectManager::GetProject().iconPath;
 		}
 
+		if (ProjectManager::GetProject().isDeprecated)
+		{
+			windowProperties.useTitlebar = true;
+		}
+
 		m_window = Window::Create(windowProperties);
 		m_window->SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
 

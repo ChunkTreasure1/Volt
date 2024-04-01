@@ -86,13 +86,13 @@ namespace Volt
 		{ ".vtchr", AssetType::AnimatedCharacter },
 		{ ".vtanimgraph", AssetType::AnimationGraph },
 
-		{ ".png", AssetType::Texture },
-		{ ".jpg", AssetType::Texture },
-		{ ".jpeg", AssetType::Texture },
-		{ ".tga", AssetType::Texture },
-		{ ".ktx", AssetType::Texture },
-		{ ".dds", AssetType::Texture },
-		{ ".hdr", AssetType::Texture },
+		{ ".png", AssetType::TextureSource },
+		{ ".jpg", AssetType::TextureSource },
+		{ ".jpeg", AssetType::TextureSource },
+		{ ".tga", AssetType::TextureSource },
+		{ ".ktx", AssetType::TextureSource },
+		{ ".dds", AssetType::TextureSource },
+		{ ".hdr", AssetType::TextureSource },
 
 		{ ".vtsdef", AssetType::Shader },
 		{ ".hlsl", AssetType::ShaderSource },
@@ -131,6 +131,7 @@ namespace Volt
 		{ "Animated Character", AssetType::AnimatedCharacter },
 		{ "Animation Graph", AssetType::AnimationGraph },
 
+		{ "TextureSource", AssetType::TextureSource },
 		{ "Texture", AssetType::Texture },
 
 		{ "Shader", AssetType::Shader },
@@ -165,6 +166,19 @@ namespace Volt
 		{
 			if (type == aType)
 				return name;
+		}
+
+		return "Unknown";
+	}
+
+	inline static std::string GetAssetTypeExtension(AssetType type)
+	{
+		for (const auto& [ext, assetType] : s_assetExtensionsMap)
+		{
+			if (assetType == type)
+			{
+				return ext;
+			}
 		}
 
 		return "Unknown";
