@@ -1,9 +1,18 @@
 #pragma once
 #include "Circuit/Widgets/Widget.h"
+#include "Circuit/Window/WindowInterfaceDefines.h"
+
 #include <vector>
-class CircuitTab
+
+namespace Circuit
 {
-public:
-	CircuitTab();
-	~CircuitTab();
-};
+	class CircuitWindow
+	{
+	public:
+		CircuitWindow(InterfaceWindowHandle windowHandle);
+		~CircuitWindow() = default;
+
+	private:
+		const InterfaceWindowHandle m_WindowHandle;
+	};
+}

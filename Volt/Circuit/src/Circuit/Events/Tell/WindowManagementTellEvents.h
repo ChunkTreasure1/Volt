@@ -1,0 +1,76 @@
+#pragma once
+#include "Circuit/Events/Tell/BaseTellEvent.h"
+#include "Circuit/Events/CircuitEventTypes.h"
+#include "Circuit/Window/WindowInterfaceDefines.h"
+
+namespace Circuit
+{
+	//OpenWindow,
+	class OpenWindowTellEvent final : public TellEvent
+	{
+	public:
+		OpenWindowTellEvent();
+		~OpenWindowTellEvent() = default;
+	};
+
+	//CloseWindow
+	class CloseWindowTellEvent final : public TellEvent
+	{
+	public:
+		CloseWindowTellEvent(InterfaceWindowHandle windowHandle);
+		~CloseWindowTellEvent() = default;
+
+		CIRCUIT_API InterfaceWindowHandle GetWindowHandle() const { return m_WindowHandle; }
+
+	private:
+		const InterfaceWindowHandle m_WindowHandle;
+
+	};
+
+	//SetWindowPosition,
+	class SetWindowPositionTellEvent final : public TellEvent
+	{
+	public:
+		SetWindowPositionTellEvent(InterfaceWindowHandle windowHandle, int x, int y);
+		~SetWindowPositionTellEvent() = default;
+
+		CIRCUIT_API InterfaceWindowHandle GetWindowHandle() const { return m_WindowHandle; }
+		CIRCUIT_API int GetX() const { return m_X; }
+		CIRCUIT_API int GetY() const { return m_Y; }
+
+	private:
+		const InterfaceWindowHandle m_WindowHandle;
+		const int m_X;
+		const int m_Y;
+	};
+
+	//SetWindowSize
+	class SetWindowSizeTellEvent final : public TellEvent
+	{
+	public:
+		SetWindowSizeTellEvent(InterfaceWindowHandle windowHandle, int width, int height);
+		~SetWindowSizeTellEvent() = default;
+
+		CIRCUIT_API InterfaceWindowHandle GetWindowHandle() const { return m_WindowHandle; }
+		CIRCUIT_API int GetWidth() const { return m_Width; }
+		CIRCUIT_API int GetHeight() const { return m_Height; }
+
+	private:
+		const InterfaceWindowHandle m_WindowHandle;
+		const int m_Width;
+		const int m_Height;
+	};
+
+	//SetWindowFocus,
+	class SetWindowFocusTellEvent final : public TellEvent
+	{
+	public:
+		SetWindowFocusTellEvent(InterfaceWindowHandle windowHandle);
+		~SetWindowFocusTellEvent() = default;
+
+		CIRCUIT_API InterfaceWindowHandle GetWindowHandle() const { return m_WindowHandle; }
+
+	private:
+		const InterfaceWindowHandle m_WindowHandle;
+	};
+}
