@@ -112,6 +112,7 @@ namespace Volt
 		friend class RenderGraphPassResources;
 		friend class Builder;
 		friend class RenderGraphExecutionThread;
+		friend class RenderContext;
 
 		inline static constexpr RenderGraphResourceHandle INVALID_RESOURCE_HANDLE = std::numeric_limits<RenderGraphResourceHandle>::max();
 

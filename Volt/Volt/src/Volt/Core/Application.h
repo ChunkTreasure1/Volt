@@ -10,6 +10,7 @@
 #include "Volt/Core/Threading/ThreadPool.h"
 
 #include "Volt/Core/Layer/LayerStack.h"
+#include "Volt/Core/WindowManager.h"
 
 #include "Volt/Utility/Version.h"
 
@@ -59,6 +60,7 @@ namespace Volt
 	namespace RHI
 	{
 		class ImGuiImplementation;
+		class GraphicsContext;
 	}
 
 	class Application
@@ -73,9 +75,10 @@ namespace Volt
 		void PushLayer(Layer* layer);
 		void PopLayer(Layer* layer);
 
-		inline Window& GetWindow() const { return *m_window; }
+		Window& GetWindow() const;
 		inline static Application& Get() { return *s_instance; }
 		inline static ThreadPool& GetThreadPool() { return Get().m_threadPool; }
+		inline static WindowManager& GetWindowManager() { return Get().m_windowManager; }
 
 		inline const bool IsRuntime() const { return m_info.isRuntime; }
 		inline const ApplicationInfo& GetInfo() const { return m_info; }
@@ -91,6 +94,7 @@ namespace Volt
 
 	private:
 		void MainUpdate();
+		void CreateGraphicsContext();
 
 		bool OnAppUpdateEvent(AppUpdateEvent& e);
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
@@ -113,13 +117,14 @@ namespace Volt
 		ApplicationInfo m_info;
 
 		LayerStack m_layerStack;
-
 		MultiTimer m_frameTimer;
+		WindowManager m_windowManager;
 
 		Ref<RHI::ImGuiImplementation> m_imguiImplementation;
-		
+		Ref<RHI::GraphicsContext> m_graphicsContext;
+
+		WindowHandle m_windowHandle = 0;
 		Scope<AssetManager> m_assetmanager;
-		Scope<Window> m_window;
 		Scope<NetHandler> m_netHandler;
 		Scope<AI::NavigationSystem> m_navigationSystem;
 

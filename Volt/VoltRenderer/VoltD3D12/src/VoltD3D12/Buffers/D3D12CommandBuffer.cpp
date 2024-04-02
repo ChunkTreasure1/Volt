@@ -10,9 +10,16 @@
 
 namespace Volt::RHI
 {
-	D3D12CommandBuffer::D3D12CommandBuffer(const uint32_t count, QueueType queueType, bool swapchainTarget) : CommandBuffer(queueType)
+	D3D12CommandBuffer::D3D12CommandBuffer(const uint32_t count, QueueType queueType) 
+		: CommandBuffer(queueType)
 	{
-		Create(count, queueType, swapchainTarget);
+		Create(count, queueType, false);
+	}
+
+	D3D12CommandBuffer::D3D12CommandBuffer(Weak<Swapchain> swapchain)
+		: CommandBuffer(QueueType::Graphics)
+	{
+		Create(1, m_queueType, true);
 	}
 
 	D3D12CommandBuffer::~D3D12CommandBuffer()
@@ -250,7 +257,7 @@ namespace Volt::RHI
 		return 0.0f;
 	}
 
-	void D3D12CommandBuffer::CopyImageToBackBuffer(Ref<Image2D> srcImage)
+	void D3D12CommandBuffer::CopyImageToBackBuffer(Ref<Image2D> srcImage, Weak<Swapchain> swapchain)
 	{
 	}
 

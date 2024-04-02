@@ -19,6 +19,7 @@ namespace Volt::RHI
 	class Image2D;
 	class StorageBuffer;
 	class Allocation;
+	class Swapchain;
 
 	class Event;
 
@@ -77,7 +78,7 @@ namespace Volt::RHI
 		virtual void EndTimestamp(uint32_t timestampIndex) = 0;
 		virtual const float GetExecutionTime(uint32_t timestampIndex) const = 0;
 
-		virtual void CopyImageToBackBuffer(Ref<Image2D> srcImage) = 0;
+		virtual void CopyImageToBackBuffer(Ref<Image2D> srcImage, Weak<Swapchain> targetSwapchain) = 0;
 		virtual void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) = 0;
 		virtual void ClearBuffer(Ref<StorageBuffer> buffer, const uint32_t value) = 0;
 
@@ -90,7 +91,8 @@ namespace Volt::RHI
 
 		inline const QueueType GetQueueType() const { return m_queueType; }
 
-		static Ref<CommandBuffer> Create(const uint32_t count, QueueType queueType = QueueType::Graphics, bool swapchainTarget = false);
+		static Ref<CommandBuffer> Create(const uint32_t count, QueueType queueType = QueueType::Graphics);
+		static Ref<CommandBuffer> Create(Weak<Swapchain> swapchain);
 		static Ref<CommandBuffer> Create();
 
 	protected:

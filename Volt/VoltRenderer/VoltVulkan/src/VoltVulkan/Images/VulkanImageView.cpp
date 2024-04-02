@@ -78,6 +78,11 @@ namespace Volt::RHI
 		return m_specification.viewType;
 	}
 
+	const bool VulkanImageView::IsSwapchainView() const
+	{
+		return m_specification.image->IsSwapchainImage();
+	}
+
 	void* VulkanImageView::GetHandleImpl() const
 	{
 		return m_imageView;

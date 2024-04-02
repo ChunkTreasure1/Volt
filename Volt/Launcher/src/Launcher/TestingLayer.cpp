@@ -34,9 +34,9 @@ void TestingLayer::OnAttach()
 	m_sphereMesh = AssetManager::GetAsset<Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
 
 #ifdef SWAPCHAIN_TARGET
-	m_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics, true);
+	m_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics);
 #else
-	m_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics, false);
+	m_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics);
 #endif
 
 	//m_shader = RHI::Shader::Create("SimpleTriangle",

@@ -42,6 +42,8 @@ namespace Volt::RHI
 		VT_NODISCARD const uint32_t GetWidth() const override;
 		VT_NODISCARD const uint32_t GetHeight() const override;
 		VT_NODISCARD const uint32_t GetFramesInFlight() const override;
+		VT_NODISCARD Ref<Image2D> GetCurrentImage() const override;
+		VT_NODISCARD const PixelFormat GetFormat() const override;
 
 	private:
 		GLFWwindow* m_windowHandle;

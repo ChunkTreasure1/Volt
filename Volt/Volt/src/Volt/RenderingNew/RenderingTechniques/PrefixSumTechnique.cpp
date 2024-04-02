@@ -54,9 +54,7 @@ namespace Volt
 		},
 		[pipeline, groupCount, inputBuffer, outputBuffer, valueCount](const PrefixSumData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Weak<RHI::StorageBuffer> stateBuffer = resources.GetBufferRaw(data.stateBuffer);
-
-			context.ClearBuffer(stateBuffer, 0);
+			context.ClearBuffer(data.stateBuffer, 0);
 
 			context.BindPipeline(pipeline);
 			context.SetConstant("inputValues", resources.GetBuffer(inputBuffer));

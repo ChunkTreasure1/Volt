@@ -14,6 +14,7 @@
 #include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphBufferResource.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphTextureResource.h"
+#include "Volt/RenderingNew/RenderGraph/RenderContextUtils.h"
 
 #include "Volt/RenderingNew/RenderingTechniques/PrefixSumTechnique.h"
 #include "Volt/RenderingNew/RenderingTechniques/GTAOTechnique.h"
@@ -87,6 +88,18 @@ namespace Volt
 			m_outputImage = RHI::Image2D::Create(spec);
 		}
 
+		// UI Test
+		{
+			RHI::ImageSpecification spec{};
+			spec.width = 1024;
+			spec.height = 1024;
+			spec.usage = RHI::ImageUsage::AttachmentStorage;
+			spec.generateMips = false;
+			spec.format = RHI::PixelFormat::R8G8B8A8_UNORM;
+
+			m_uiOutputImage = RHI::Image2D::Create(spec);
+		}
+
 		m_sceneEnvironment.radianceMap = RendererNew::GetDefaultResources().blackCubeTexture;
 		m_sceneEnvironment.irradianceMap = RendererNew::GetDefaultResources().blackCubeTexture;
 
@@ -115,6 +128,11 @@ namespace Volt
 	Ref<RHI::Image2D> SceneRendererNew::GetFinalImage()
 	{
 		return m_outputImage;
+	}
+
+	Ref<RHI::Image2D> SceneRendererNew::GetUIImage()
+	{
+		return m_uiOutputImage;
 	}
 
 	void SceneRendererNew::OnRender(Ref<Camera> camera)
@@ -207,7 +225,10 @@ namespace Volt
 
 			AddSkyboxPass(renderGraph, rgBlackboard);
 			AddShadingPass(renderGraph, rgBlackboard);
+		
 		}
+
+		AddTestUIPass(renderGraph, rgBlackboard);
 
 		{
 			RenderGraphBarrierInfo barrier{};
@@ -216,6 +237,15 @@ namespace Volt
 			barrier.dstLayout = RHI::ImageLayout::ShaderRead;
 
 			renderGraph.AddResourceBarrier(rgBlackboard.Get<ExternalImagesData>().outputImage, barrier);
+		}
+
+		{
+			RenderGraphBarrierInfo barrier{};
+			barrier.dstStage = RHI::BarrierStage::PixelShader;
+			barrier.dstAccess = RHI::BarrierAccess::ShaderRead;
+			barrier.dstLayout = RHI::ImageLayout::ShaderRead;
+
+			renderGraph.AddResourceBarrier(rgBlackboard.Get<TestUIData>().outputTextureHandle, barrier);
 		}
 
 		renderGraph.Compile();
@@ -260,15 +290,12 @@ namespace Volt
 		const auto gpuSceneHandle = resources.GetBuffer(externalBuffers.gpuSceneBuffer);
 		const auto viewDataHandle = resources.GetUniformBuffer(uniformBuffers.viewDataBuffer);
 
-		const auto indirectCommands = resources.GetBufferRaw(cullPrimitivesData.drawCommand);
-		const auto indexBuffer = resources.GetBufferRaw(cullPrimitivesData.indexBuffer);
-
-		context.BindIndexBuffer(indexBuffer);
+		context.BindIndexBuffer(cullPrimitivesData.indexBuffer);
 		context.SetConstant("gpuScene", gpuSceneHandle);
 		context.SetConstant("viewData", viewDataHandle);
 		context.SetConstant("directionalLight", resources.GetBuffer(uniformBuffers.directionalLightBuffer));
 
-		context.DrawIndexedIndirect(indirectCommands, 0, 1, sizeof(RHI::IndirectIndexedCommand));
+		context.DrawIndexedIndirect(cullPrimitivesData.drawCommand, 0, 1, sizeof(RHI::IndirectIndexedCommand));
 	}
 
 	void SceneRendererNew::UploadUniformBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera)
@@ -549,8 +576,8 @@ namespace Volt
 			const uint32_t commandCount = renderScene->GetRenderObjectCount();
 			const uint32_t dispatchCount = Math::DivideRoundUp(commandCount, 256u);
 
-			context.ClearBuffer(resources.GetBufferRaw(data.meshletCount), 0);
-			context.ClearBuffer(resources.GetBufferRaw(data.statisticsBuffer), 0);
+			context.ClearBuffer(data.meshletCount, 0);
+			context.ClearBuffer(data.statisticsBuffer, 0);
 
 			auto pipeline = ShaderMap::GetComputePipeline("CullObjects");
 
@@ -680,7 +707,7 @@ namespace Volt
 		},
 		[=](const CullMeshletsData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			context.ClearBuffer(resources.GetBufferRaw(data.survivingMeshletCount), 0);
+			context.ClearBuffer(data.survivingMeshletCount, 0);
 
 			auto pipeline = ShaderMap::GetComputePipeline("CullMeshlets");
 
@@ -704,8 +731,7 @@ namespace Volt
 			context.SetConstant("frustum2", frustumY.y);
 			context.SetConstant("frustum3", frustumY.z);
 
-			auto argsBuffer = resources.GetBufferRaw(argsBufferHandle);
-			context.DispatchIndirect(argsBuffer, 0);
+			context.DispatchIndirect(argsBufferHandle, 0);
 		});
 	}
 
@@ -751,10 +777,11 @@ namespace Volt
 				command.firstIndex = 0;
 				command.vertexOffset = 0;
 				command.instanceCount = 1;
-				context.UploadBufferData(resources.GetBufferRaw(data.drawCommand), &command, sizeof(RHI::IndirectIndexedCommand));
+				context.UploadBufferData(data.drawCommand, &command, sizeof(RHI::IndirectIndexedCommand));
 			}
 
-			context.ClearBuffer(resources.GetBufferRaw(data.indexBuffer), 0);
+			//context.ClearBuffer(resources.GetBufferRaw(data.indexBuffer), 0);
+			context.ClearBuffer(data.indexBuffer, 0);
 
 			auto pipeline = ShaderMap::GetComputePipeline("CullPrimitives");
 
@@ -769,8 +796,7 @@ namespace Volt
 			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant("renderSize", glm::vec2(m_width, m_height));
 
-			auto argsBuffer = resources.GetBufferRaw(argsBufferHandle);
-			context.DispatchIndirect(argsBuffer, 0);
+			context.DispatchIndirect(argsBufferHandle, 0);
 		});
 	}
 
@@ -786,7 +812,7 @@ namespace Volt
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
 			context.Flush();
-			Ref<RHI::StorageBuffer> testBuffer = context.GetReadbackBuffer(resources.GetBufferRaw(objectCullData.statisticsBuffer));
+			//Ref<RHI::StorageBuffer> testBuffer = context.GetReadbackBuffer(resources.GetBufferRaw(objectCullData.statisticsBuffer));
 		});
 	}
 
@@ -811,10 +837,7 @@ namespace Volt
 		},
 		[=](const PreDepthData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Weak<RHI::ImageView> depthImageView = resources.GetImage2DView(data.depth);
-			Weak<RHI::ImageView> normalsImageView = resources.GetImage2DView(data.normals);
-
-			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { normalsImageView, depthImageView });
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { data.normals, data.depth });
 
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
 			pipelineInfo.shader = ShaderMap::Get("PreDepth");
@@ -855,9 +878,7 @@ namespace Volt
 		},
 		[=](const DirectionalShadowData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Weak<RHI::ImageView> shadowImage = resources.GetImage2DView(data.shadowTexture);
-
-			RenderingInfo info = context.CreateRenderingInfo(data.renderSize.x, data.renderSize.y, { shadowImage });
+			RenderingInfo info = context.CreateRenderingInfo(data.renderSize.x, data.renderSize.y, { data.shadowTexture });
 			info.renderingInfo.layerCount = DirectionalLightData::CASCADE_COUNT;
 			info.renderingInfo.depthAttachmentInfo.SetClearColor(1.f, 1.f, 1.f, 1.f);
 
@@ -890,10 +911,7 @@ namespace Volt
 		},
 		[=](const VisibilityBufferData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Weak<RHI::ImageView> visibilityView = resources.GetImage2DView(data.visibility);
-			Weak<RHI::ImageView> depthView = resources.GetImage2DView(preDepthHandle);
-
-			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { visibilityView, depthView });
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { data.visibility, preDepthHandle });
 			info.renderingInfo.depthAttachmentInfo.clearMode = RHI::ClearMode::Load;
 			info.renderingInfo.colorAttachments.At(0).SetClearColor(std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max());
 
@@ -941,8 +959,7 @@ namespace Volt
 		},
 		[=](const MaterialCountData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Ref<RHI::StorageBuffer> materialCountBuffer = resources.GetBufferRaw(data.materialCountBuffer);
-			context.ClearBuffer(materialCountBuffer, 0);
+			context.ClearBuffer(data.materialCountBuffer, 0);
 
 			auto pipeline = ShaderMap::GetComputePipeline("GenerateMaterialCount");
 
@@ -985,11 +1002,8 @@ namespace Volt
 		},
 		[=](const MaterialPixelsData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Weak<RHI::StorageBuffer> pixelCollectionBuffer = resources.GetBufferRaw(data.pixelCollectionBuffer);
-			Weak<RHI::StorageBuffer> currentMatCountBuffer = resources.GetBufferRaw(data.currentMaterialCountBuffer);
-
-			context.ClearBuffer(pixelCollectionBuffer, std::numeric_limits<uint32_t>::max());
-			context.ClearBuffer(currentMatCountBuffer, 0);
+			context.ClearBuffer(data.pixelCollectionBuffer, std::numeric_limits<uint32_t>::max());
+			context.ClearBuffer(data.currentMaterialCountBuffer, 0);
 
 			auto pipeline = ShaderMap::GetComputePipeline("CollectMaterialPixels");
 
@@ -1022,9 +1036,7 @@ namespace Volt
 		},
 		[=](const MaterialIndirectArgsData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Weak<RHI::StorageBuffer> indirectArgsBuffer = resources.GetBufferRaw(data.materialIndirectArgsBuffer);
-
-			context.ClearBuffer(indirectArgsBuffer, 0);
+			context.ClearBuffer(data.materialIndirectArgsBuffer, 0);
 			const uint32_t materialCount = m_scene->GetRenderScene()->GetIndividualMaterialCount();
 
 			auto pipeline = ShaderMap::GetComputePipeline("GenerateMaterialIndirectArgs");
@@ -1072,17 +1084,11 @@ namespace Volt
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Weak<RHI::Image2D> albedoImage = resources.GetImage2DRaw(gbufferData.albedo);
-			Weak<RHI::Image2D> materialEmissiveImage = resources.GetImage2DRaw(gbufferData.materialEmissive);
-			Weak<RHI::Image2D> normalEmissiveImage = resources.GetImage2DRaw(gbufferData.normalEmissive);
-
-			Weak<RHI::StorageBuffer> indirectArgsBuffer = resources.GetBufferRaw(indirectArgsData.materialIndirectArgsBuffer);
-
 			if (first)
 			{
-				context.ClearImage(albedoImage, { 0.1f, 0.1f, 0.1f, 0.f });
-				context.ClearImage(materialEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
-				context.ClearImage(normalEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
+				context.ClearImage(gbufferData.albedo, { 0.1f, 0.1f, 0.1f, 0.f });
+				context.ClearImage(gbufferData.materialEmissive, { 0.f, 0.f, 0.f, 0.f });
+				context.ClearImage(gbufferData.normalEmissive, { 0.f, 0.f, 0.f, 0.f });
 			}
 
 			auto material = renderScene->GetMaterialFromID(materialId);
@@ -1110,7 +1116,7 @@ namespace Volt
 
 			context.SetConstant("viewSize", glm::vec2(m_width, m_height));
 
-			context.DispatchIndirect(indirectArgsBuffer, sizeof(RHI::IndirectDispatchCommand) * materialId); // Should be offset with material ID
+			context.DispatchIndirect(indirectArgsData.materialIndirectArgsBuffer, sizeof(RHI::IndirectDispatchCommand) * materialId); // Should be offset with material ID
 		});
 	}
 
@@ -1121,20 +1127,20 @@ namespace Volt
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 
 		RenderGraphResourceHandle meshVertexBufferHandle = renderGraph.AddExternalBuffer(m_skyboxMesh->GetVertexPositionsBuffer()->GetResource(), false);
+		RenderGraphResourceHandle indexBufferHandle = renderGraph.AddExternalBuffer(m_skyboxMesh->GetIndexStorageBuffer()->GetResource(), false);
 
 		renderGraph.AddPass("Skybox Pass",
 		[&](RenderGraph::Builder& builder)
 		{
 			builder.ReadResource(environmentTexturesData.radiance);
 			builder.ReadResource(meshVertexBufferHandle);
+			builder.ReadResource(indexBufferHandle);
 			builder.ReadResource(uniformBuffers.viewDataBuffer);
 			builder.WriteResource(finalColorData.finalColorOutput);
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Weak<RHI::ImageView> outputImage = resources.GetImage2DView(finalColorData.finalColorOutput);
-
-			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { outputImage });
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { finalColorData.finalColorOutput });
 			
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
 			pipelineInfo.shader = ShaderMap::Get("Skybox");
@@ -1152,7 +1158,7 @@ namespace Volt
 			context.SetConstant("lod", 0.f);
 			context.SetConstant("intensity", 1.f);
 
-			context.BindIndexBuffer(m_skyboxMesh->GetIndexStorageBuffer()->GetResource());
+			context.BindIndexBuffer(indexBufferHandle);
 			context.DrawIndexed(static_cast<uint32_t>(m_skyboxMesh->GetIndexCount()), 1, 0, 0, 0);
 			context.EndRendering();
 		});
@@ -1192,8 +1198,6 @@ namespace Volt
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Weak<RHI::Image2D> outputImage = resources.GetImage2DRaw(finalColorData.finalColorOutput);
-
 			//context.ClearImage(outputImage, { 0.1f, 0.1f, 0.1f, 0.f });
 
 			auto pipeline = ShaderMap::GetComputePipeline("Shading");
@@ -1216,6 +1220,79 @@ namespace Volt
 			context.SetConstant("pbrConstants.spotLights", resources.GetBuffer(lightBuffers.spotLightsBuffer));
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1u);
+		});
+	}
+
+	void SceneRendererNew::AddTestUIPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		struct UICommand
+		{
+			uint32_t type;
+			uint32_t primitiveGroup;
+			float rotation;
+			float scale;
+			glm::vec2 radiusHalfSize;
+			glm::vec2 pixelPos;
+		};
+
+		blackboard.Add<TestUIData>() = renderGraph.AddPass<TestUIData>("Test UI",
+		[&](RenderGraph::Builder& builder, TestUIData& data)
+		{
+			{
+				data.outputTextureHandle = builder.AddExternalImage2D(m_uiOutputImage);
+			}
+
+			{
+				auto desc = RGUtils::CreateBufferDescGPU<UICommand>(1, "UI Commands");
+				data.uiCommandsBufferHandle = builder.CreateBuffer(desc);
+			}
+
+			builder.WriteResource(data.outputTextureHandle);
+			builder.SetHasSideEffect();
+		},
+		[=](const TestUIData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			std::array<UICommand, 2> cmds;
+			{
+				UICommand& tcmd = cmds[0];
+				tcmd.pixelPos = { 512, 512 };
+				tcmd.rotation = 0.f;
+				tcmd.scale = 1.f;
+				tcmd.radiusHalfSize.x = 200.f;
+				tcmd.radiusHalfSize.y = 200.f;
+				tcmd.type = 0;
+				tcmd.primitiveGroup = 0;
+			}
+
+			{
+				UICommand& tcmd = cmds[1];
+				tcmd.pixelPos = { 512, 900 };
+				tcmd.rotation = 0.25f;
+				tcmd.scale = 1.f;
+				tcmd.radiusHalfSize.x = 200.f;
+				tcmd.radiusHalfSize.y = 200.f;
+				tcmd.type = 1;
+				tcmd.primitiveGroup = 0;
+			}
+
+			context.UploadBufferData(data.uiCommandsBufferHandle, cmds.data(), sizeof(UICommand) * cmds.size());
+
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("SDFUI");
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+			RenderingInfo info = context.CreateRenderingInfo(1024, 1024, { data.outputTextureHandle });
+
+			context.BeginRendering(info);
+
+			RCUtils::DrawFullscreenTriangle(context, pipeline, [&](RenderContext& context) 
+			{
+				context.SetConstant("commands", resources.GetBuffer(data.uiCommandsBufferHandle));
+				context.SetConstant("commandCount", static_cast<uint32_t>(cmds.size()));
+				context.SetConstant("renderSize", glm::uvec2{ 1024, 1024 });
+			});
+
+			context.EndRendering();
 		});
 	}
 }

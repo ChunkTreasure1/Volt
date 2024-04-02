@@ -1,0 +1,5 @@
+name: "SDFUI"
+internal: true
+paths:
+  - "Engine/Shaders/Source/UI/SDFUI_ps.hlsl"
+  - "Engine/Shaders/Source/Utility/FullscreenTriangle_vs.hlsl"

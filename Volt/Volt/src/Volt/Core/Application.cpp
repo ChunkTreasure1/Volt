@@ -38,6 +38,25 @@
 
 namespace Volt
 {
+	inline static void RHILogCallback(RHI::Severity severity, std::string_view msg)
+	{
+		switch (severity)
+		{
+			case RHI::Severity::Trace:
+				VT_CORE_TRACE(msg);
+				break;
+			case RHI::Severity::Info:
+				VT_CORE_INFO(msg);
+				break;
+			case RHI::Severity::Warning:
+				VT_CORE_WARN(msg);
+				break;
+			case RHI::Severity::Error:
+				VT_CORE_ERROR(msg);
+				break;
+		}
+	}
+
 	Application::Application(const ApplicationInfo& info)
 		: m_frameTimer(100)
 	{
@@ -70,9 +89,18 @@ namespace Volt
 			windowProperties.cursorPath = ProjectManager::GetProject().cursorPath;
 			windowProperties.iconPath = ProjectManager::GetProject().iconPath;
 		}
+	
+		// This is required because glfwInit must be called before setting up graphics device
+		Window::StaticInitialize();
+		CreateGraphicsContext();
 
-		m_window = Window::Create(windowProperties);
-		m_window->SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
+		// Setup main window
+		{
+			m_windowHandle = m_windowManager.CreateNewWindow(windowProperties);
+
+			auto& window = m_windowManager.GetWindow(m_windowHandle);
+			window.SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
+		}
 
 		FileSystem::Initialize();
 		
@@ -113,9 +141,11 @@ namespace Volt
 
 		if (info.enableImGui)
 		{
+			auto& window = m_windowManager.GetWindow(m_windowHandle);
+
 			RHI::ImGuiCreateInfo createInfo{};
-			createInfo.swapchain = m_window->GetSwapchainPtr();
-			createInfo.window = m_window->GetNativeWindow();
+			createInfo.swapchain = window.GetSwapchainPtr();
+			createInfo.window = window.GetNativeWindow();
 
 			m_imguiImplementation = RHI::ImGuiImplementation::Create(createInfo);
 			auto defaultFont = m_imguiImplementation->AddFont("Engine/Fonts/Inter/inter-regular.ttf", 16.f);
@@ -156,8 +186,6 @@ namespace Volt
 		m_imguiImplementation = nullptr;
 		SceneManager::Shutdown();
 
-		m_layerStack.Clear();
-
 		Physics::SaveLayers();
 		Physics::Shutdown();
 		Physics::SaveSettings();
@@ -179,7 +207,8 @@ namespace Volt
 		RendererNew::Shutdown();
 		FileSystem::Shutdown();
 
-		m_window = nullptr;
+		m_windowManager.DestroyWindow(m_windowHandle);
+
 		s_instance = nullptr;
 		Log::Shutdown();
 	}
@@ -248,15 +277,24 @@ namespace Volt
 		m_layerStack.PopLayer(layer);
 	}
 
+	Window& Application::GetWindow() const
+	{
+		return m_windowManager.GetWindow(m_windowHandle);
+	}
+
 	void Application::MainUpdate()
 	{
 		m_hasSentMouseMovedEvent = false;
 
 		RHI::GraphicsContext::Update();
 
-		m_window->BeginFrame();
+		{
+			m_windowManager.BeginFrame();
+			AppBeginFrameEvent beginFrameEvent{};
+			OnEvent(beginFrameEvent);
+		}
 
-		float time = m_window->GetTime();
+		float time = GetWindow().GetTime();
 		m_currentDeltaTime = time - m_lastTotalTime;
 		m_lastTotalTime = time;
 
@@ -308,8 +346,31 @@ namespace Volt
 		RenderGraphExecutionThread::WaitForFinishedExecution();
 		RendererNew::EndOfFrameUpdate();
 
-		m_window->Present();
+		{
+			m_windowManager.Present();
+
+			AppPresentFrameEvent presentEvent{};
+			OnEvent(presentEvent);
+		}
+
 		m_frameTimer.Accumulate();
+	}
+
+	void Application::CreateGraphicsContext()
+	{
+		RHI::LogHookInfo logHook{};
+		logHook.enabled = true;
+		logHook.logCallback = RHILogCallback;
+
+		RHI::ResourceManagementInfo resourceManagement{};
+		resourceManagement.resourceDeletionCallback = RendererNew::DestroyResource;
+
+		RHI::GraphicsContextCreateInfo cinfo{};
+		cinfo.graphicsApi = RHI::GraphicsAPI::Vulkan;
+		cinfo.loghookInfo = logHook;
+		cinfo.resourceManagementInfo = resourceManagement;
+
+		m_graphicsContext = RHI::GraphicsContext::Create(cinfo);
 	}
 
 	bool Application::OnAppUpdateEvent(AppUpdateEvent&)
@@ -338,7 +399,7 @@ namespace Volt
 			m_isMinimized = false;
 		}
 
-		m_window->Resize(e.GetWidth(), e.GetHeight());
+		GetWindow().Resize(e.GetWidth(), e.GetHeight());
 
 		MainUpdate();
 
@@ -347,7 +408,7 @@ namespace Volt
 
 	bool Application::OnViewportResizeEvent(ViewportResizeEvent& e)
 	{
-		m_window->SetViewportSize(e.GetWidth(), e.GetHeight());
+		GetWindow().SetViewportSize(e.GetWidth(), e.GetHeight());
 		return false;
 	}
 

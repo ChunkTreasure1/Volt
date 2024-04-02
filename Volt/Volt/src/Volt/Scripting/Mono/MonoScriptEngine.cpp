@@ -859,7 +859,7 @@ namespace Volt
 		for (const auto& [name, field] : classFields)
 		{
 			defaultEntityFields[name] = CreateRef<Volt::MonoScriptFieldInstance>();
-			defaultEntityFields.at(name)->SetValue(0, field.type.typeSize);
+			defaultEntityFields.at(name)->Reset(field.type.typeSize);
 		}
 
 		for (auto& [name, fieldInst] : defaultEntityFields)

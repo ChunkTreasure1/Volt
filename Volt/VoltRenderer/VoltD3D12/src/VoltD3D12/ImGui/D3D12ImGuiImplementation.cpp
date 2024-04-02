@@ -79,9 +79,9 @@ namespace Volt::RHI
 		ImGui_ImplDX12_Init(device, 3,
 		DXGI_FORMAT_R8G8B8A8_UNORM, m_imguiDescriptorHeap,
 		m_imguiDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-m_imguiDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		m_imguiDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
-		s_commandBuffer = CommandBuffer::Create(3, QueueType::Graphics, true);
+		s_commandBuffer = CommandBuffer::Create(m_info.swapchain);
 	}
 
 	void D3D12ImGuiImplementation::ShutdownAPI()

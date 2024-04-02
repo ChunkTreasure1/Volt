@@ -206,7 +206,7 @@ namespace Volt::RHI
 			ImGui_ImplVulkan_DestroyFontUploadObjects();
 		}
 
-		s_commandBuffer = CommandBuffer::Create(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT, QueueType::Graphics, true);
+		s_commandBuffer = CommandBuffer::Create(m_swapchain);
 	}
 
 	void VulkanImGuiImplementation::ReleaseVulkanData()

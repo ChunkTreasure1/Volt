@@ -16,6 +16,7 @@ namespace Volt::RHI
 	class RHIResource;
 
 	inline static constexpr size_t MAX_COLOR_ATTACHMENT_COUNT = 8;
+	inline static constexpr size_t MAX_ATTACHMENT_COUNT = MAX_COLOR_ATTACHMENT_COUNT + 1;
 
 	enum class QueueType
 	{

@@ -938,6 +938,13 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 		RenderProgressBar(buildProgess);
 	}
 
+	if (ImGui::Begin("UI Test"))
+	{
+		ImGui::Image(UI::GetTextureID(mySceneRenderer->GetUIImage()), { 512, 512 });
+
+		ImGui::End();
+	}
+
 	return false;
 }
 

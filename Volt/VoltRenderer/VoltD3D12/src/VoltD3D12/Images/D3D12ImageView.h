@@ -16,6 +16,7 @@ namespace Volt::RHI
 		const uint64_t GetDeviceAddress() const override;
 		const ImageUsage GetImageUsage() const override;
 		const ImageViewType GetViewType() const override;
+		const bool IsSwapchainView() const override;
 
 	private:
 		ImageViewSpecification m_specs;

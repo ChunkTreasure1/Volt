@@ -234,10 +234,19 @@ namespace Volt::RHI
 		}
 	}
 
-	VulkanCommandBuffer::VulkanCommandBuffer(const uint32_t count, QueueType queueType, bool swapchainTarget)
-		: CommandBuffer(queueType), m_commandBufferCount(count), m_isSwapchainTarget(swapchainTarget)
+	VulkanCommandBuffer::VulkanCommandBuffer(const uint32_t count, QueueType queueType)
+		: CommandBuffer(queueType), m_commandBufferCount(count)
 	{
 		m_currentCommandBufferIndex = m_commandBufferCount - 1; // This makes sure that we start at command buffer index 0 for clarity
+
+		Invalidate();
+	}
+
+	VulkanCommandBuffer::VulkanCommandBuffer(Weak<Swapchain> swapchain)
+		: CommandBuffer(QueueType::Graphics), m_swapchainTarget(swapchain)
+	{
+		m_currentCommandBufferIndex = m_commandBufferCount - 1;
+		m_isSwapchainTarget = true;
 
 		Invalidate();
 	}
@@ -868,10 +877,10 @@ namespace Volt::RHI
 		return m_executionTimes.at(timestampsIndex).at(timestampIndex / 2);
 	}
 
-	void VulkanCommandBuffer::CopyImageToBackBuffer(Ref<Image2D> srcImage)
+	void VulkanCommandBuffer::CopyImageToBackBuffer(Ref<Image2D> srcImage, Weak<Swapchain> targetSwapchain)
 	{
 		VulkanImage2D& vkImage = srcImage->AsRef<VulkanImage2D>();
-		VulkanSwapchain& swapchain = VulkanSwapchain::Get();
+		VulkanSwapchain& swapchain = targetSwapchain->AsRef<VulkanSwapchain>();
 
 		VkImageBlit blitRegion{};
 		blitRegion.srcSubresource.aspectMask = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
@@ -927,7 +936,7 @@ namespace Volt::RHI
 			dstImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			dstImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			dstImageBarrier.subresourceRange = range;
-			dstImageBarrier.image = swapchain.GetCurrentImage();
+			dstImageBarrier.image = swapchain.GetCurrentVkImage();
 
 			const VkImageMemoryBarrier2 barriers[2] = { srcImageBarrier, dstImageBarrier };
 
@@ -945,7 +954,7 @@ namespace Volt::RHI
 			vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
 		}
 
-		vkCmdBlitImage(m_commandBuffers.at(index).commandBuffer, vkImage.GetHandle<VkImage>(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, swapchain.GetCurrentImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_NEAREST);
+		vkCmdBlitImage(m_commandBuffers.at(index).commandBuffer, vkImage.GetHandle<VkImage>(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, swapchain.GetCurrentVkImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_NEAREST);
 
 		// Second Transition
 		{
@@ -975,7 +984,7 @@ namespace Volt::RHI
 			dstImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			dstImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			dstImageBarrier.subresourceRange = range;
-			dstImageBarrier.image = swapchain.GetCurrentImage();
+			dstImageBarrier.image = swapchain.GetCurrentVkImage();
 
 			const VkImageMemoryBarrier2 barriers[2] = { srcImageBarrier, dstImageBarrier };
 
@@ -1157,9 +1166,7 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::UpdateBuffer(Ref<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data)
 	{
-		constexpr size_t MAX_UPDATE_SIZE = 65536;
-
-		assert(dataSize <= MAX_UPDATE_SIZE && "Size must not exceed MAX_UPDATE_SIZE!");
+		assert(dataSize <= 65536 && "Size must not exceed MAX_UPDATE_SIZE!");
 		
 		VulkanStorageBuffer& vkBuffer = dstBuffer->AsRef<VulkanStorageBuffer>();
 		const uint32_t index = GetCurrentCommandBufferIndex();
@@ -1442,8 +1449,8 @@ namespace Volt::RHI
 
 		if (m_isSwapchainTarget)
 		{
-			auto& swapchain = VulkanSwapchain::Get();
-			m_commandBufferCount = VulkanSwapchain::MAX_FRAMES_IN_FLIGHT;
+			auto& swapchain = m_swapchainTarget->AsRef<VulkanSwapchain>();
+			m_commandBufferCount = swapchain.GetFramesInFlight();
 			m_commandBuffers.resize(m_commandBufferCount);
 
 			for (uint32_t i = 0; i < m_commandBufferCount; i++)
@@ -1539,7 +1546,7 @@ namespace Volt::RHI
 			std::vector<VkFence> fences{};
 			for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
 			{
-				fences.push_back(VulkanSwapchain::Get().GetFence(i));
+				fences.push_back(m_swapchainTarget->AsRef<VulkanSwapchain>().GetFence(i));
 			}
 
 			CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));

@@ -6,6 +6,13 @@ namespace Volt::RHI
 {
 	class ImageView;
 	class Allocator;
+	class Swapchain;
+
+	struct SwapchainImageSpecification
+	{
+		Swapchain* swapchain = nullptr;
+		uint32_t imageIndex;
+	};
 
 	class Image2D : public RHIResource
 	{
@@ -24,9 +31,11 @@ namespace Volt::RHI
 		virtual const PixelFormat GetFormat() const = 0;
 		virtual const ImageUsage GetUsage() const = 0;
 		virtual const uint32_t CalculateMipCount() const = 0;
+		virtual const bool IsSwapchainImage() const = 0;
 
 		static Ref<Image2D> Create(const ImageSpecification& specification, const void* data = nullptr);
 		static Ref<Image2D> Create(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data = nullptr);
+		static Ref<Image2D> Create(const SwapchainImageSpecification& specification);
 
 	protected:
 		Image2D() = default;

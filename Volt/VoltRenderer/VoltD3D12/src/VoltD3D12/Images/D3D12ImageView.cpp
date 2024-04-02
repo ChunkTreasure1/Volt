@@ -64,4 +64,9 @@ namespace Volt::RHI
 	{
 		return m_specs.viewType;
 	}
+
+	const bool D3D12ImageView::IsSwapchainView() const
+	{
+		return false;
+	}
 }

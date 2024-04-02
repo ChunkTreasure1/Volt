@@ -42,18 +42,12 @@ namespace Volt
 		std::filesystem::path cursorPath;
 	};
 
-	struct WindowInheritanceInfo
-	{
-		Ref<RHI::GraphicsContext> graphicsContext;
-	};
-
 	class Window
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
 
 		Window(const WindowProperties& aProperties);
-		Window(const WindowProperties& properties, const WindowInheritanceInfo& inheritanceInfo);
 		~Window();
 
 		void Shutdown();
@@ -100,18 +94,16 @@ namespace Volt
 		inline GLFWwindow* GetNativeWindow() const { return m_window; }
 		inline HWND GetHWND() const { return m_windowHandle; }
 
-		inline Ref<RHI::GraphicsContext> GetGraphicsContext() const { return m_graphicsContext; }
 		inline const RHI::Swapchain& GetSwapchain() const { return *m_swapchain; }
 		inline const Weak <RHI::Swapchain> GetSwapchainPtr() const { return m_swapchain; }
 
-		static Scope<Window> Create(const WindowProperties& aProperties, const WindowInheritanceInfo& inheritanceInfo);
 		static Scope<Window> Create(const WindowProperties& aProperties = WindowProperties());
+		static void StaticInitialize();
 
 	private:
 		GLFWwindow* m_window = nullptr;
 		HWND m_windowHandle = nullptr;
 		bool m_hasBeenInitialized = false;
-		bool m_isInherited = false;
 		bool m_isFullscreen = false;
 
 		struct WindowData
@@ -128,7 +120,6 @@ namespace Volt
 
 		} m_data;
 
-		Ref<RHI::GraphicsContext> m_graphicsContext;
 		Ref<RHI::Swapchain> m_swapchain;
 
 		glm::uvec2 m_startPosition = 0;
