@@ -156,8 +156,10 @@ Ref<Volt::Texture2D> EditorResources::TryLoadIcon(const std::filesystem::path& p
 
 Ref<Volt::Mesh> EditorResources::TryLoadMesh(const std::filesystem::path& path)
 {
-	Ref<Volt::Mesh> mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(path);
-	if (!mesh->IsValid())
+	// #TODO_Ivar: Reimplement
+	Ref<Volt::Mesh> mesh;
+	//Ref<Volt::Mesh> mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(path);
+	//if (!mesh->IsValid())
 	{
 		mesh = Volt::Shape::CreateUnitCube();
 	}

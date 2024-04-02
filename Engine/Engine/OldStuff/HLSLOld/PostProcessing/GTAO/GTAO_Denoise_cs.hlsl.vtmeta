@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 16045574824786007394
+  assetHandle: 17726932713028362065
   filePath: Engine/Shaders/Source/HLSL/PostProcessing/GTAO/GTAO_Denoise_cs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

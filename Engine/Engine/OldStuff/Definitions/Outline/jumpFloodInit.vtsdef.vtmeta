@@ -1,9 +1,7 @@
 Metadata:
-  assetHandle: 9811275491310152904
+  assetHandle: 12910718822860452514
   filePath: Engine/Shaders/Definitions/Outline/jumpFloodInit.vtsdef
-  type: 7
+  type: 64
   Dependencies:
-    - 13811339343625986972
-    - 915217769471678931
-  Properties:
-    {}
+    - 7568016120944877380
+    - 4129469491381260990

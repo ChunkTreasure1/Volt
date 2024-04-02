@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 11308902036728422331
+  assetHandle: 14517878467463166620
   filePath: Engine/Shaders/Source/HLSL/Includes/PostProcessingBase.hlsli
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

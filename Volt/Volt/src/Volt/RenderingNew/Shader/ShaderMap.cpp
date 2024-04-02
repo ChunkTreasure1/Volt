@@ -112,7 +112,7 @@ namespace Volt
 			for (const auto& path : std::filesystem::recursive_directory_iterator(searchPath))
 			{
 				const auto relPath = AssetManager::GetRelativePath(path.path());
-				const auto type = AssetManager::GetAssetTypeFromPath(relPath);
+				const auto type = AssetManager::GetAssetTypeFromExtension(relPath.extension().string());
 			
 				if (type != AssetType::ShaderDefinition)
 				{

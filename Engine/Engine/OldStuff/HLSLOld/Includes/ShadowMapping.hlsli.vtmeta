@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 13489191753538995118
+  assetHandle: 14034933476240870481
   filePath: Engine/Shaders/Source/HLSL/Includes/ShadowMapping.hlsli
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

@@ -2,6 +2,7 @@
 #include "AssetFactory.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
+#include "Volt/Asset/Mesh/MeshSource.h"
 #include "Volt/Asset/Rendering/Material.h"
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
 #include "Volt/Asset/Animation/Animation.h"
@@ -40,7 +41,7 @@ namespace Volt
 	void AssetFactory::Initialize()
 	{
 		RegisterCreateFunction<Mesh>(AssetType::Mesh, m_assetFactoryFunctions);
-		RegisterCreateFunction<Mesh>(AssetType::MeshSource, m_assetFactoryFunctions);
+		RegisterCreateFunction<MeshSource>(AssetType::MeshSource, m_assetFactoryFunctions);
 		RegisterCreateFunction<Animation>(AssetType::Animation, m_assetFactoryFunctions);
 		RegisterCreateFunction<Skeleton>(AssetType::Skeleton, m_assetFactoryFunctions);
 		RegisterCreateFunction<Texture2D>(AssetType::Texture, m_assetFactoryFunctions);

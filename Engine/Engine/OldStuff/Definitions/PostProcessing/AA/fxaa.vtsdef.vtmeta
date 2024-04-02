@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 7313926656693230231
+  assetHandle: 4146067847974441037
   filePath: Engine/Shaders/Definitions/PostProcessing/AA/fxaa.vtsdef
-  type: 7
+  type: 64
   Dependencies:
-    - 603419948025402599
-  Properties:
-    {}
+    - 802997177005886234

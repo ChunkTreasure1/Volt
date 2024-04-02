@@ -1,9 +1,7 @@
 Metadata:
-  assetHandle: 6784887531298128888
+  assetHandle: 14376099460664762386
   filePath: Engine/Shaders/Definitions/2D/text.vtsdef
-  type: 7
+  type: 64
   Dependencies:
-    - 16326240539526189605
-    - 4759303392739937285
-  Properties:
-    {}
+    - 430456437815251791
+    - 499456458067210348

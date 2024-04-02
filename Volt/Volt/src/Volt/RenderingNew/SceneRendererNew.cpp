@@ -103,7 +103,7 @@ namespace Volt
 		m_sceneEnvironment.radianceMap = RendererNew::GetDefaultResources().blackCubeTexture;
 		m_sceneEnvironment.irradianceMap = RendererNew::GetDefaultResources().blackCubeTexture;
 
-		m_skyboxMesh = AssetManager::GetAsset<Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+		m_skyboxMesh = ShapeLibrary::GetCube();
 	}
 
 	SceneRendererNew::~SceneRendererNew()

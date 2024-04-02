@@ -1,9 +1,7 @@
 Metadata:
-  assetHandle: 16384764305504184776
+  assetHandle: 11436914709255888916
   filePath: Engine/Shaders/Definitions/Outline/jumpFloodPass.vtsdef
-  type: 7
+  type: 64
   Dependencies:
-    - 2966116593059028554
-    - 4716162580267918986
-  Properties:
-    {}
+    - 8104579433096546026
+    - 12386870303748222730

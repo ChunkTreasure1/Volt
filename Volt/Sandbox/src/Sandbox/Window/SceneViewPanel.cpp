@@ -1336,7 +1336,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Capsule.vtmesh"));
+					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Capsule.vtasset"));
 					Volt::MeshComponent::OnMemberChanged(meshComp, ent);
 
 					ent.SetTag("New Capsule");
@@ -1351,7 +1351,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cone.vtmesh"));
+					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cone.vtasset"));
 					Volt::MeshComponent::OnMemberChanged(meshComp, ent);
 
 					ent.SetTag("New Cone");
@@ -1366,7 +1366,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cylinder.vtmesh"));
+					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cylinder.vtasset"));
 					Volt::MeshComponent::OnMemberChanged(meshComp, ent);
 
 					ent.SetTag("New Cylinder");
@@ -1395,7 +1395,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Plane.vtmesh"));
+					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Plane.vtasset"));
 					Volt::MeshComponent::OnMemberChanged(meshComp, ent);
 
 					ent.SetTag("New Plane");

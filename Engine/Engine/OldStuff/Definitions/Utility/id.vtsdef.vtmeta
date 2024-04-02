@@ -1,9 +1,7 @@
 Metadata:
-  assetHandle: 9499113291806634356
+  assetHandle: 12313293562235366242
   filePath: Engine/Shaders/Definitions/Utility/id.vtsdef
-  type: 7
+  type: 64
   Dependencies:
-    - 14039424650318418426
-    - 3691422679832161666
-  Properties:
-    {}
+    - 4927946874922985744
+    - 18304475637752469466

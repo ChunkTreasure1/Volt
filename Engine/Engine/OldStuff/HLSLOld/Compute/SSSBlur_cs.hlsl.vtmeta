@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 4125849356268107829
+  assetHandle: 2371175449193359816
   filePath: Engine/Shaders/Source/HLSL/Compute/SSSBlur_cs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

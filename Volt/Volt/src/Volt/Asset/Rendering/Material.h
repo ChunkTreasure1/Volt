@@ -53,6 +53,7 @@ namespace Volt
 
 	private:
 		friend class MosaicGraphImporter;
+		friend class MaterialSerializer;
 
 		Scope<Mosaic::MosaicGraph> m_graph;
 

@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 15234732111292706428
+  assetHandle: 7441631598319276305
   filePath: Engine/Shaders/Definitions/PostProcessing/gammaCorrection.vtsdef
-  type: 7
+  type: 64
   Dependencies:
-    - 568449036929530454
-  Properties:
-    {}
+    - 6593565594344882447

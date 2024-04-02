@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 1333608582570411322
+  assetHandle: 10872559369404258742
   filePath: Engine/Shaders/Definitions/Indirect/indirectCull.vtsdef
-  type: 7
+  type: 64
   Dependencies:
-    - 14336012692834025828
-  Properties:
-    {}
+    - 15186941706852790727

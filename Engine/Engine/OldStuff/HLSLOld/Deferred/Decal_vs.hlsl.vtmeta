@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 13277876072457634846
+  assetHandle: 4230726718177388576
   filePath: Engine/Shaders/Source/HLSL/Deferred/Decal_vs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

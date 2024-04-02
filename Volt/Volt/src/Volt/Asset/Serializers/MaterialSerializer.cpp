@@ -2,283 +2,101 @@
 #include "MaterialSerializer.h"
 
 #include "Volt/Asset/AssetManager.h"
-//#include "Volt/Asset/Mesh/Material.h"
-//#include "Volt/Asset/Mesh/SubMaterial.h"
+#include "Volt/Asset/Rendering/Material.h"
 
-#include "Volt/Rendering/Renderer.h"
-#include "Volt/Rendering/Texture/Texture2D.h"
-//#include "Volt/Rendering/RenderPipeline/ShaderRegistry.h"
+#include "Volt/Utility/YAMLSerializationHelpers.h"
+
+#include <Mosaic/MosaicGraph.h>
+#include <Mosaic/MosaicNode.h>
+#include <Mosaic/NodeRegistry.h>
+
+#include <CoreUtilities/FileIO/YAMLMemoryStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLMemoryStreamReader.h>
 
 namespace Volt
 {
-	/*struct SerializedMaterialData
-	{
-		glm::vec4 color;
-		glm::vec3 emissiveColor;
-		float emissiveStrength;
-		float roughness;
-		float metalness;
-		float normalStrength;
-	};
-
-	struct SerializedTexture
-	{
-		std::string binding;
-		AssetHandle handle;
-
-		static void Serialize(BinaryStreamWriter& streamWriter, const SerializedTexture& data)
-		{
-			streamWriter.Write(data.binding);
-			streamWriter.Write(data.handle);
-		}
-
-		static void Deserialize(BinaryStreamReader& streamReader, SerializedTexture& outData)
-		{
-			streamReader.Read(outData.binding);
-			streamReader.Read(outData.handle);
-		}
-	};
-
-	struct SerializedShaderDataMember
-	{
-		std::string name;
-		ShaderUniformType type;
-		Buffer buffer;
-
-		static void Serialize(BinaryStreamWriter& streamWriter, const SerializedShaderDataMember& data)
-		{
-			streamWriter.Write(data.name);
-			streamWriter.Write(data.type);
-			streamWriter.Write(data.buffer);
-		}
-
-		static void Deserialize(BinaryStreamReader& streamReader, SerializedShaderDataMember& outData)
-		{
-			streamReader.Read(outData.name);
-			streamReader.Read(outData.type);
-			streamReader.Read(outData.buffer);
-		}
-	};
-
-	struct SerializedShaderData
-	{
-		ShaderStage stage;
-		size_t size = 0;
-		std::vector<SerializedShaderDataMember> members;
-
-		static void Serialize(BinaryStreamWriter& streamWriter, const SerializedShaderData& data)
-		{
-			streamWriter.Write(data.stage);
-			streamWriter.Write(data.size);
-			streamWriter.Write(data.members);
-		}
-
-		static void Deserialize(BinaryStreamReader& streamReader, SerializedShaderData& outData)
-		{
-			streamReader.Read(outData.stage);
-			streamReader.Read(outData.size);
-			streamReader.Read(outData.members);
-		}
-	};
-
-	struct SerializedMaterial
-	{
-		std::string name;
-		uint32_t index;
-		std::string shaderName;
-		bool isPermutation;
-		MaterialFlag flags;
-		Topology topology;
-		CullMode cullMode;
-		FillMode fillMode;
-		DepthMode depthMode;
-
-		SerializedMaterialData materialData;
-		std::vector<SerializedTexture> textures;
-
-		SerializedShaderData specializationData;
-		std::vector<SerializedShaderData> pipelineGenerationDatas;
-
-		static void Serialize(BinaryStreamWriter& streamWriter, const SerializedMaterial& data)
-		{
-			streamWriter.Write(data.name);
-			streamWriter.Write(data.index);
-			streamWriter.Write(data.shaderName);
-			streamWriter.Write(data.isPermutation);
-			streamWriter.Write(data.flags);
-			streamWriter.Write(data.topology);
-			streamWriter.Write(data.cullMode);
-			streamWriter.Write(data.fillMode);
-			streamWriter.Write(data.depthMode);
-			streamWriter.Write(data.materialData);
-			streamWriter.Write(data.textures);
-			streamWriter.Write(data.specializationData);
-			streamWriter.Write(data.pipelineGenerationDatas);
-		}
-
-		static void Deserialize(BinaryStreamReader& streamReader, SerializedMaterial& outData)
-		{
-			streamReader.Read(outData.name);
-			streamReader.Read(outData.index);
-			streamReader.Read(outData.shaderName);
-			streamReader.Read(outData.isPermutation);
-			streamReader.Read(outData.flags);
-			streamReader.Read(outData.topology);
-			streamReader.Read(outData.cullMode);
-			streamReader.Read(outData.fillMode);
-			streamReader.Read(outData.depthMode);
-			streamReader.Read(outData.materialData);
-			streamReader.Read(outData.textures);
-			streamReader.Read(outData.specializationData);
-			streamReader.Read(outData.pipelineGenerationDatas);
-		}
-	};
-
-	struct MaterialSerializationData
-	{
-		std::string name;
-		std::vector<SerializedMaterial> materials;
-
-		static void Serialize(BinaryStreamWriter& streamWriter, const MaterialSerializationData& data)
-		{
-			streamWriter.Write(data.name);
-			streamWriter.Write(data.materials);
-		}
-
-		static void Deserialize(BinaryStreamReader& streamReader, MaterialSerializationData& outData)
-		{
-			streamReader.Read(outData.name);
-			streamReader.Read(outData.materials);
-		}
-	};
-
-	template<typename T>
-	inline void WriteDataToBuffer(Buffer& buffer, const T& data)
-	{
-		buffer.Resize(sizeof(T));
-		buffer.Copy(&data, sizeof(T));
-	}*/
-
 	void MaterialSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
-		//Ref<Material> material = std::reinterpret_pointer_cast<Material>(asset);
+		const Ref<Material> mosaicAsset = std::reinterpret_pointer_cast<Material>(asset);
+		const auto graph = mosaicAsset->GetGraph();
 
-		//MaterialSerializationData serializationData{};
-		//serializationData.name = material->myName;
+		YAMLMemoryStreamWriter streamWriter{};
+		streamWriter.BeginMap();
+		streamWriter.BeginMapNamned("MosaicGraph");
+		streamWriter.SetKey("guid", mosaicAsset->m_materialGUID);
+		streamWriter.SetKey("state", graph.GetEditorState());
 
-		//for (const auto& [index, subMaterial] : material->mySubMaterials)
-		//{
-		//	auto& serMaterial = serializationData.materials.emplace_back();
-		//	serMaterial.name = subMaterial->myName;
-		//	serMaterial.index = index;
-		//	serMaterial.shaderName = subMaterial->myPipeline->GetSpecification().shader->GetName();
-		//	serMaterial.isPermutation = subMaterial->GetPipeline()->IsPermutation();
-		//	serMaterial.flags = subMaterial->myMaterialFlags;
-		//	serMaterial.topology = subMaterial->myTopology;
-		//	serMaterial.cullMode = subMaterial->myCullMode;
-		//	serMaterial.fillMode = subMaterial->myTriangleFillMode;
-		//	serMaterial.depthMode = subMaterial->myDepthMode;
+		streamWriter.BeginSequence("Nodes");
+		for (const auto& node : graph.GetUnderlyingGraph().GetNodes())
+		{
+			streamWriter.BeginMap();
+			streamWriter.SetKey("id", node.id);
+			streamWriter.SetKey("guid", node.nodeData->GetGUID());
+			streamWriter.SetKey("state", node.nodeData->GetEditorState());
 
-		//	// Material data
-		//	{
-		//		serMaterial.materialData.color = subMaterial->myMaterialData.color;
-		//		serMaterial.materialData.emissiveColor = subMaterial->myMaterialData.emissiveColor;
-		//		serMaterial.materialData.emissiveStrength = subMaterial->myMaterialData.emissiveStrength;
-		//		serMaterial.materialData.roughness = subMaterial->myMaterialData.roughness;
-		//		serMaterial.materialData.metalness = subMaterial->myMaterialData.metalness;
-		//		serMaterial.materialData.normalStrength = subMaterial->myMaterialData.normalStrength;
-		//	}
+			streamWriter.BeginMapNamned("custom");
+			node.nodeData->SerializeCustom(streamWriter);
+			streamWriter.EndMap();
 
-		//	for (const auto& [binding, texture] : subMaterial->myTextures)
-		//	{
-		//		auto& serTexture = serMaterial.textures.emplace_back();
-		//		serTexture.binding = binding;
+			streamWriter.BeginSequence("inputParams");
+			for (const auto& input : node.nodeData->GetInputParameters())
+			{
+				streamWriter.BeginMap();
+				streamWriter.SetKey("index", input.index);
 
-		//		AssetHandle textureHandle = Asset::Null();
-		//		if (texture)
-		//		{
-		//			textureHandle = texture->handle;
-		//		}
+				if (input.serializationFunc)
+				{
+					input.serializationFunc(streamWriter, input);
+				}
 
-		//		serTexture.handle = textureHandle;
-		//	}
+				streamWriter.EndMap();
+			}
+			streamWriter.EndSequence();
 
-		//	if (subMaterial->GetMaterialSpecializationData().IsValid())
-		//	{
-		//		const auto& materialData = subMaterial->GetMaterialSpecializationData();
-		//		
-		//		serMaterial.specializationData.size = materialData.GetSize();
-		//	
-		//		for (const auto& [memberName, memberData] : materialData.GetMembers())
-		//		{
-		//			auto& serMember = serMaterial.specializationData.members.emplace_back();
-		//			serMember.name = memberName;
-		//			serMember.type = memberData.type;
+			streamWriter.BeginSequence("outputParams");
+			for (const auto& output : node.nodeData->GetOutputParameters())
+			{
+				streamWriter.BeginMap();
+				streamWriter.SetKey("index", output.index);
 
-		//			switch (memberData.type)
-		//			{
-		//				case ShaderUniformType::Bool: WriteDataToBuffer(serMember.buffer, materialData.GetValue<bool>(memberName)); break;
-		//				case ShaderUniformType::UInt: WriteDataToBuffer(serMember.buffer, materialData.GetValue<uint32_t>(memberName)); break;
-		//				case ShaderUniformType::UInt2: WriteDataToBuffer(serMember.buffer, materialData.GetValue<glm::uvec2>(memberName)); break;
-		//				case ShaderUniformType::UInt3: WriteDataToBuffer(serMember.buffer, materialData.GetValue<glm::uvec3>(memberName)); break;
-		//				case ShaderUniformType::UInt4: WriteDataToBuffer(serMember.buffer, materialData.GetValue<glm::uvec4>(memberName)); break;
+				if (output.serializationFunc)
+				{
+					output.serializationFunc(streamWriter, output);
+				}
 
-		//				case ShaderUniformType::Int: WriteDataToBuffer(serMember.buffer, materialData.GetValue<int32_t>(memberName)); break;
-		//				case ShaderUniformType::Int2: WriteDataToBuffer(serMember.buffer, materialData.GetValue<glm::ivec2>(memberName)); break;
-		//				case ShaderUniformType::Int3: WriteDataToBuffer(serMember.buffer, materialData.GetValue<glm::ivec3>(memberName)); break;
-		//				case ShaderUniformType::Int4: WriteDataToBuffer(serMember.buffer, materialData.GetValue<glm::ivec4>(memberName)); break;
+				streamWriter.EndMap();
+			}
+			streamWriter.EndSequence();
 
-		//				case ShaderUniformType::Float: WriteDataToBuffer(serMember.buffer, materialData.GetValue<float>(memberName)); break;
-		//				case ShaderUniformType::Float2: WriteDataToBuffer(serMember.buffer, materialData.GetValue<glm::vec2>(memberName)); break;
-		//				case ShaderUniformType::Float3: WriteDataToBuffer(serMember.buffer, materialData.GetValue<glm::vec3>(memberName)); break;
-		//				case ShaderUniformType::Float4: WriteDataToBuffer(serMember.buffer, materialData.GetValue<glm::vec4>(memberName)); break;
-		//			}
-		//		}
-		//	}
+			streamWriter.EndMap();
+		}
+		streamWriter.EndSequence();
 
-		//	if (!subMaterial->GetPipelineGenerationDatas().empty())
-		//	{
-		//		for (const auto& [stage, generationData] : subMaterial->GetPipelineGenerationDatas())
-		//		{
-		//			auto& serGenData = serMaterial.pipelineGenerationDatas.emplace_back();
-		//			serGenData.stage = stage;
-		//			serGenData.size = generationData.GetSize();
+		streamWriter.BeginSequence("Edges");
+		for (const auto& edge : graph.GetUnderlyingGraph().GetEdges())
+		{
+			streamWriter.BeginMap();
+			streamWriter.SetKey("id", edge.id);
+			streamWriter.SetKey("startNode", edge.startNode);
+			streamWriter.SetKey("endNode", edge.endNode);
+			streamWriter.SetKey("inputIndex", edge.metaDataType->GetParameterInputIndex());
+			streamWriter.SetKey("outputIndex", edge.metaDataType->GetParameterOutputIndex());
+			streamWriter.EndMap();
+		}
+		streamWriter.EndSequence();
 
-		//			for (const auto& [memberName, memberData] : generationData.GetMembers())
-		//			{
-		//				auto& serMember = serMaterial.specializationData.members.emplace_back();
-		//				serMember.name = memberName;
-		//				serMember.type = memberData.type;
+		streamWriter.EndMap();
+		streamWriter.EndMap();
 
-		//				switch (memberData.type)
-		//				{
-		//					case ShaderUniformType::Bool: WriteDataToBuffer(serMember.buffer, generationData.GetValue<bool>(memberName)); break;
-		//					case ShaderUniformType::UInt: WriteDataToBuffer(serMember.buffer, generationData.GetValue<uint32_t>(memberName)); break;
-		//					case ShaderUniformType::UInt2: WriteDataToBuffer(serMember.buffer, generationData.GetValue<glm::uvec2>(memberName)); break;
-		//					case ShaderUniformType::UInt3: WriteDataToBuffer(serMember.buffer, generationData.GetValue<glm::uvec3>(memberName)); break;
-		//					case ShaderUniformType::UInt4: WriteDataToBuffer(serMember.buffer, generationData.GetValue<glm::uvec4>(memberName)); break;
+		BinaryStreamWriter binaryStreamWriter{};
+		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), binaryStreamWriter);
 
-		//					case ShaderUniformType::Int: WriteDataToBuffer(serMember.buffer, generationData.GetValue<int32_t>(memberName)); break;
-		//					case ShaderUniformType::Int2: WriteDataToBuffer(serMember.buffer, generationData.GetValue<glm::ivec2>(memberName)); break;
-		//					case ShaderUniformType::Int3: WriteDataToBuffer(serMember.buffer, generationData.GetValue<glm::ivec3>(memberName)); break;
-		//					case ShaderUniformType::Int4: WriteDataToBuffer(serMember.buffer, generationData.GetValue<glm::ivec4>(memberName)); break;
+		auto buffer = streamWriter.WriteAndGetBuffer();
+		binaryStreamWriter.Write(buffer);
+		buffer.Release();
 
-		//					case ShaderUniformType::Float: WriteDataToBuffer(serMember.buffer, generationData.GetValue<float>(memberName)); break;
-		//					case ShaderUniformType::Float2: WriteDataToBuffer(serMember.buffer, generationData.GetValue<glm::vec2>(memberName)); break;
-		//					case ShaderUniformType::Float3: WriteDataToBuffer(serMember.buffer, generationData.GetValue<glm::vec3>(memberName)); break;
-		//					case ShaderUniformType::Float4: WriteDataToBuffer(serMember.buffer, generationData.GetValue<glm::vec4>(memberName)); break;
-		//				}
-		//			}
-		//		}
-		//	}
-		//}
-
-		//BinaryStreamWriter streamWriter{};
-		//const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
-		//streamWriter.Write(serializationData);
-
-		//const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
-		//streamWriter.WriteToDisk(filePath, true, compressedDataOffset);
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
+		binaryStreamWriter.WriteToDisk(filePath, true, compressedDataOffset);
 	}
 
 	template<typename T>
@@ -289,7 +107,7 @@ namespace Volt
 
 	bool MaterialSerializer::Deserialize(const AssetMetadata& metadata, Ref<Asset> destinationAsset) const
 	{
-		/*const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filePath))
 		{
@@ -298,181 +116,95 @@ namespace Volt
 			return false;
 		}
 
-		BinaryStreamReader streamReader{ filePath };
+		BinaryStreamReader binaryStreamReader{ filePath };
 
-		if (!streamReader.IsStreamValid())
+		if (!binaryStreamReader.IsStreamValid())
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
-		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
+		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(binaryStreamReader);
 		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
-		MaterialSerializationData serializationData{};
-		streamReader.Read(serializationData);
+		Buffer buffer{};
+		binaryStreamReader.Read(buffer);
 
-		std::unordered_map<uint32_t, Ref<SubMaterial>> materials;
-
-		for (const auto& subMaterial : serializationData.materials)
+		YAMLMemoryStreamReader streamReader{};
+		if (!streamReader.ConsumeBuffer(buffer))
 		{
-			Ref<Shader> shader = ShaderRegistry::GetShader(subMaterial.shaderName);
-			if (!shader || !shader->IsValid())
-			{
-				shader = Renderer::GetDefaultData().defaultShader;
-				VT_CORE_ERROR("Shader {0} not found or invalid! Falling back to default!", subMaterial.shaderName);
-			}
-
-			Ref<SubMaterial> material = SubMaterial::Create(subMaterial.name, subMaterial.index, shader);
-
-			material->SetFlags(subMaterial.flags);
-			if (!material->HasFlag(MaterialFlag::Opaque) && !material->HasFlag(MaterialFlag::Transparent) && !material->HasFlag(MaterialFlag::Deferred))
-			{
-				material->SetFlag(MaterialFlag::Deferred, true);
-			}
-
-			if (subMaterial.shaderName == "Illum" && material->HasFlag(MaterialFlag::Opaque))
-			{
-				material->SetFlag(MaterialFlag::Deferred, true);
-				material->SetFlag(MaterialFlag::Opaque, false);
-			}
-
-			material->myTopology = subMaterial.topology;
-			material->myCullMode = subMaterial.cullMode;
-			material->myTriangleFillMode = subMaterial.fillMode;
-			material->myDepthMode = subMaterial.depthMode;
-
-			material->InvalidatePipeline(shader);
-
-			material->myMaterialData.color = subMaterial.materialData.color;
-			material->myMaterialData.emissiveColor = subMaterial.materialData.emissiveColor;
-			material->myMaterialData.emissiveStrength = subMaterial.materialData.emissiveStrength;
-			material->myMaterialData.roughness = subMaterial.materialData.roughness;
-			material->myMaterialData.metalness = subMaterial.materialData.metalness;
-			material->myMaterialData.normalStrength = subMaterial.materialData.normalStrength;
-
-			std::unordered_map<std::string, Ref<Texture2D>> textures;
-			for (const auto& serTexture : subMaterial.textures)
-			{
-				Ref<Texture2D> texture = AssetManager::QueueAsset<Texture2D>(serTexture.handle);
-				if (texture)
-				{
-					textures.emplace(serTexture.binding, texture);
-				}
-				else
-				{
-					textures.emplace(serTexture.binding, nullptr);
-				}
-			}
-
-			for (const auto& [shaderName, texture] : textures)
-			{
-				const auto& textureDefinitions = shader->GetResources().shaderTextureDefinitions;
-
-				bool isDefault = shaderName == "albedo" || shaderName == "normal" || shaderName == "material";
-
-				if (auto it = std::find_if(textureDefinitions.begin(), textureDefinitions.end(), [&](const auto& lhs)
-				{
-					return lhs.shaderName == shaderName;
-
-				}); it != textureDefinitions.end() || isDefault)
-				{
-					material->SetTexture(shaderName, texture);
-				}
-			}
-
-			if (material->GetMaterialSpecializationData().IsValid())
-			{
-				auto& materialData = material->GetMaterialSpecializationData();
-
-				for (const auto& member : subMaterial.specializationData.members)
-				{
-					auto it = std::find_if(materialData.GetMembers().begin(), materialData.GetMembers().end(), [&](const auto& value)
-					{
-						return value.first == member.name && value.second.type == member.type;
-					});
-
-					if (it == materialData.GetMembers().end())
-					{
-						continue;
-					}
-
-					switch (member.type)
-					{
-						case ShaderUniformType::Bool: ReadDataFromBuffer(member.buffer, materialData.GetValue<bool>(member.name)); break;
-						case ShaderUniformType::UInt: ReadDataFromBuffer(member.buffer, materialData.GetValue<uint32_t>(member.name)); break;
-						case ShaderUniformType::UInt2: ReadDataFromBuffer(member.buffer, materialData.GetValue<glm::uvec2>(member.name)); break;
-						case ShaderUniformType::UInt3: ReadDataFromBuffer(member.buffer, materialData.GetValue<glm::uvec3>(member.name)); break;
-						case ShaderUniformType::UInt4: ReadDataFromBuffer(member.buffer, materialData.GetValue<glm::uvec4>(member.name)); break;
-
-						case ShaderUniformType::Int: ReadDataFromBuffer(member.buffer, materialData.GetValue<int32_t>(member.name)); break;
-						case ShaderUniformType::Int2: ReadDataFromBuffer(member.buffer, materialData.GetValue<glm::ivec2>(member.name)); break;
-						case ShaderUniformType::Int3: ReadDataFromBuffer(member.buffer, materialData.GetValue<glm::ivec3>(member.name)); break;
-						case ShaderUniformType::Int4: ReadDataFromBuffer(member.buffer, materialData.GetValue<glm::ivec4>(member.name)); break;
-
-						case ShaderUniformType::Float: ReadDataFromBuffer(member.buffer, materialData.GetValue<float>(member.name)); break;
-						case ShaderUniformType::Float2: ReadDataFromBuffer(member.buffer, materialData.GetValue<glm::vec2>(member.name)); break;
-						case ShaderUniformType::Float3: ReadDataFromBuffer(member.buffer, materialData.GetValue<glm::vec3>(member.name)); break;
-						case ShaderUniformType::Float4: ReadDataFromBuffer(member.buffer, materialData.GetValue<glm::vec4>(member.name)); break;
-					}
-				}
-			}
-
-			if (subMaterial.isPermutation && !material->GetPipelineGenerationDatas().empty())
-			{
-				std::map<ShaderStage, ShaderDataBuffer>& generationData = material->GetPipelineGenerationDatas();
-
-				for (const auto& serGenData : subMaterial.pipelineGenerationDatas)
-				{
-					if (!generationData.contains(serGenData.stage))
-					{
-						continue;
-					}
-
-					for (const auto& member : serGenData.members)
-					{
-						auto it = std::find_if(generationData.at(serGenData.stage).GetMembers().begin(), generationData.at(serGenData.stage).GetMembers().end(), [&](const auto& value)
-						{
-							return value.first == member.name && value.second.type == member.type;
-						});
-
-						if (it == generationData.at(serGenData.stage).GetMembers().end())
-						{
-							continue;
-						}
-
-						switch (member.type)
-						{
-							case ShaderUniformType::Bool: ReadDataFromBuffer(member.buffer, generationData.at(serGenData.stage).GetValue<bool>(member.name)); break;
-							case ShaderUniformType::UInt: ReadDataFromBuffer(member.buffer, generationData.at(serGenData.stage).GetValue<uint32_t>(member.name)); break;
-							case ShaderUniformType::UInt2: ReadDataFromBuffer(member.buffer, generationData.at(serGenData.stage).GetValue<glm::uvec2>(member.name)); break;
-							case ShaderUniformType::UInt3: ReadDataFromBuffer(member.buffer, generationData.at(serGenData.stage).GetValue<glm::uvec3>(member.name)); break;
-							case ShaderUniformType::UInt4: ReadDataFromBuffer(member.buffer, generationData.at(serGenData.stage).GetValue<glm::uvec4>(member.name)); break;
-
-							case ShaderUniformType::Int: ReadDataFromBuffer(member.buffer, generationData.at(serGenData.stage).GetValue<int32_t>(member.name)); break;
-							case ShaderUniformType::Int2: ReadDataFromBuffer(member.buffer, generationData.at(serGenData.stage).GetValue<glm::ivec2>(member.name)); break;
-							case ShaderUniformType::Int3: ReadDataFromBuffer(member.buffer, generationData.at(serGenData.stage).GetValue<glm::ivec3>(member.name)); break;
-							case ShaderUniformType::Int4: ReadDataFromBuffer(member.buffer, generationData.at(serGenData.stage).GetValue<glm::ivec4>(member.name)); break;
-
-							case ShaderUniformType::Float: ReadDataFromBuffer(member.buffer, generationData.at(serGenData.stage).GetValue<float>(member.name)); break;
-							case ShaderUniformType::Float2: ReadDataFromBuffer(member.buffer, generationData.at(serGenData.stage).GetValue<glm::vec2>(member.name)); break;
-							case ShaderUniformType::Float3: ReadDataFromBuffer(member.buffer, generationData.at(serGenData.stage).GetValue<glm::vec3>(member.name)); break;
-							case ShaderUniformType::Float4: ReadDataFromBuffer(member.buffer, generationData.at(serGenData.stage).GetValue<glm::vec4>(member.name)); break;
-						}
-					}
-				}
-
-				material->RecompilePermutation();
-			}
-
-			Renderer::UpdateMaterial(material.get());
-			materials.emplace(subMaterial.index, material);
+			VT_CORE_ERROR("Failed to read file {0}!", metadata.filePath);
+			destinationAsset->SetFlag(AssetFlag::Invalid, true);
+			return false;
 		}
 
-		Ref<Material> material = std::reinterpret_pointer_cast<Material>(destinationAsset);
-		material->myName = serializationData.name;
-		material->mySubMaterials = materials;*/
+		Ref<Material> mosaicAsset = std::reinterpret_pointer_cast<Material>(destinationAsset);
+		mosaicAsset->m_graph = CreateScope<Mosaic::MosaicGraph>();
+
+		streamReader.EnterScope("MosaicGraph");
+
+		mosaicAsset->m_materialGUID = streamReader.ReadAtKey("guid", VoltGUID::Null());
+		mosaicAsset->m_graph->GetEditorState() = streamReader.ReadAtKey("state", std::string(""));
+
+		auto& underlyingGraph = mosaicAsset->m_graph->GetUnderlyingGraph();
+
+		streamReader.ForEach("Nodes", [&]()
+		{
+			const UUID64 nodeId = streamReader.ReadAtKey("id", UUID64(0));
+			const VoltGUID guid = streamReader.ReadAtKey("guid", VoltGUID::Null());
+			const std::string state = streamReader.ReadAtKey("state", std::string());
+
+			mosaicAsset->m_graph->AddNode(nodeId, guid);
+			auto& node = underlyingGraph.GetNodeFromID(nodeId);
+
+			node.nodeData->GetEditorState() = state;
+
+			if (streamReader.HasKey("custom"))
+			{
+				streamReader.EnterScope("custom");
+				node.nodeData->DeserializeCustom(streamReader);
+				streamReader.ExitScope();
+			}
+
+			streamReader.ForEach("inputParams", [&]()
+			{
+				const uint32_t index = streamReader.ReadAtKey("index", 0u);
+				auto& param = node.nodeData->GetInputParameter(index);
+
+				if (param.deserializationFunc)
+				{
+					param.deserializationFunc(streamReader, param);
+				}
+			});
+
+			streamReader.ForEach("outputParams", [&]()
+			{
+				const uint32_t index = streamReader.ReadAtKey("index", 0u);
+				auto& param = node.nodeData->GetOutputParameter(index);
+
+				if (param.deserializationFunc)
+				{
+					param.deserializationFunc(streamReader, param);
+				}
+			});
+		});
+
+		streamReader.ForEach("Edges", [&]()
+		{
+			const UUID64 edgeId = streamReader.ReadAtKey("id", UUID64(0));
+			const UUID64 startNodeId = streamReader.ReadAtKey("startNode", UUID64(0));
+			const UUID64 endNodeId = streamReader.ReadAtKey("endNode", UUID64(0));
+			const uint32_t inputIndex = streamReader.ReadAtKey("inputIndex", uint32_t(0));
+			const uint32_t outputIndex = streamReader.ReadAtKey("outputIndex", uint32_t(0));
+
+			underlyingGraph.LinkNodes(edgeId, startNodeId, endNodeId, CreateRef<Mosaic::MosaicEdge>(inputIndex, outputIndex));
+		});
+
+		streamReader.ExitScope();
+
+		// #TODO_Ivar: Should probably not happen here
+		mosaicAsset->Compile();
 
 		return true;
 	}

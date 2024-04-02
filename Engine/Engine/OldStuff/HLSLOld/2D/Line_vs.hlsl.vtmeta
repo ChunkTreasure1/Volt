@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 16244739428916651028
+  assetHandle: 8776199808573287842
   filePath: Engine/Shaders/Source/HLSL/2D/Line_vs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

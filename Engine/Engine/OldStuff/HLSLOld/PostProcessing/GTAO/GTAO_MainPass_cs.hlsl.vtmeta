@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 4756761712322692605
+  assetHandle: 2057254379516238763
   filePath: Engine/Shaders/Source/HLSL/PostProcessing/GTAO/GTAO_MainPass_cs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

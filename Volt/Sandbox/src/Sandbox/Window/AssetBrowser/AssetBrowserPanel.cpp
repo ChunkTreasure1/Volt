@@ -260,7 +260,7 @@ void AssetBrowserPanel::UpdateMainContent()
 
 			myMeshImportData = {};
 			myMeshToImport = assetData;
-			myMeshImportData.destination = myMeshToImport.path.parent_path().string() + "\\" + myMeshToImport.path.stem().string() + ".vtmesh";
+			myMeshImportData.destination = myMeshToImport.path.parent_path().string() + "\\" + myMeshToImport.path.stem().string() + ".vtasset";
 
 			UI::OpenModal("Import Mesh##assetBrowser");
 		}

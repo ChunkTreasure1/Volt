@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 11338957231479737312
+  assetHandle: 15201580576892083827
   filePath: Engine/Shaders/Source/HLSL/Includes/ACES.hlsli
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

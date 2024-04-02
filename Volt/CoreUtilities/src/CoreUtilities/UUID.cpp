@@ -24,12 +24,12 @@ UUID64::UUID64(uint64_t uuid)
 
 void UUID64::Serialize(BinaryStreamWriter& streamWriter, const UUID64& data)
 {
-	streamWriter.Write(data);
+	streamWriter.Write(data.m_uuid);
 }
 
 void UUID64::Deserialize(BinaryStreamReader& streamReader, UUID64& outData)
 {
-	streamReader.Read(outData);
+	streamReader.Read(outData.m_uuid);
 }
 
 UUID32::UUID32()

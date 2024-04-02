@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 1421142594836268293
+  assetHandle: 7568016120944877380
   filePath: Engine/Shaders/Source/HLSL/Utility/FullscreenTriangle_vs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

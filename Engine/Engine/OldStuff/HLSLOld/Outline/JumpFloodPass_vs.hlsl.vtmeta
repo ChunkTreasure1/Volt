@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 16165746696296269245
+  assetHandle: 8104579433096546026
   filePath: Engine/Shaders/Source/HLSL/Outline/JumpFloodPass_vs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

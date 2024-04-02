@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 12657936936584732687
+  assetHandle: 5805176122953993045
   filePath: Engine/Shaders/Source/HLSL/Includes/Vertex.hlsli
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

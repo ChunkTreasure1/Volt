@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 14950691606684469773
+  assetHandle: 2678238120770184226
   filePath: Engine/Shaders/Source/HLSL/Utility/CalculateLuminosity_cs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

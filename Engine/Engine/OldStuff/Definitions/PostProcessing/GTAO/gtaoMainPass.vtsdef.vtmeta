@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 14995890432789178259
+  assetHandle: 12745821712968253217
   filePath: Engine/Shaders/Definitions/PostProcessing/GTAO/gtaoMainPass.vtsdef
-  type: 7
+  type: 64
   Dependencies:
-    - 13166265678075234921
-  Properties:
-    {}
+    - 2057254379516238763

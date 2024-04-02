@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 13060053700122240821
+  assetHandle: 12244593367442711861
   filePath: Engine/Shaders/Source/HLSL/2D/Particle_gs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

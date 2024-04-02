@@ -20,7 +20,6 @@
 
     public class AudioSourceComponent : Component
     {
-        public override string GUID { get => "{06A69F94-BB09-4A3A-AF17-C9DA7D552BFE}"; }
 
         #region Event
         public uint PlayEvent(string aEventName)

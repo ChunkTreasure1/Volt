@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 9206758693655490410
+  assetHandle: 17288710654626908855
   filePath: Engine/Shaders/Source/HLSL/Includes/Poisson.hlsli
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

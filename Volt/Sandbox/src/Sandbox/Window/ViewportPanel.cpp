@@ -744,7 +744,7 @@ void ViewportPanel::CheckDragDrop()
 		case Volt::AssetType::MeshSource:
 		{
 			const std::filesystem::path meshSourcePath = Volt::AssetManager::GetFilePathFromAssetHandle(handle);
-			const std::filesystem::path vtMeshPath = meshSourcePath.parent_path() / (meshSourcePath.stem().string() + ".vtmesh");
+			const std::filesystem::path vtMeshPath = meshSourcePath.parent_path() / (meshSourcePath.stem().string() + ".vtasset");
 
 			Volt::AssetHandle resultHandle = handle;
 			Volt::Entity newEntity = m_editorScene->CreateEntity();

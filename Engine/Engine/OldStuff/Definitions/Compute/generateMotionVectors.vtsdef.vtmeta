@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 11652032054238079956
+  assetHandle: 11609366764096634010
   filePath: Engine/Shaders/Definitions/Compute/generateMotionVectors.vtsdef
-  type: 7
+  type: 64
   Dependencies:
-    - 7165052867735898511
-  Properties:
-    {}
+    - 11452112379808569437

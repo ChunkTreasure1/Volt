@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 16030116979251359974
+  assetHandle: 15750312752443933410
   filePath: Engine/Shaders/Definitions/Compute/lightCull.vtsdef
-  type: 7
+  type: 64
   Dependencies:
-    - 2228964935288828824
-  Properties:
-    {}
+    - 9129062023261513060

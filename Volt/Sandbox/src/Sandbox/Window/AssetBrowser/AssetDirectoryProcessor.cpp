@@ -61,7 +61,12 @@ Ref<AssetBrowser::DirectoryItem> AssetDirectoryProcessor::ProcessDirectories(con
 		}
 		else
 		{
-			const auto type = Volt::AssetManager::GetAssetTypeFromPath(entry.path);
+			auto type = Volt::AssetManager::GetAssetTypeFromExtension(entry.path.extension().string());
+			if (type == Volt::AssetType::None)
+			{
+				type = Volt::AssetManager::GetAssetTypeFromPath(entry.path);
+			}
+
 			const auto filename = entry.path.filename().string();
 
 			if (type != Volt::AssetType::None && !Utility::StringContains(filename, ".vtthumb.png"))

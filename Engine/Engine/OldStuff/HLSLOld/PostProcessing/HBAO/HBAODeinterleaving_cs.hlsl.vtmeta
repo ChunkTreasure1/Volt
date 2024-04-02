@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 4412157696565479291
+  assetHandle: 7787213092846016977
   filePath: Engine/Shaders/Source/HLSL/PostProcessing/HBAO/HBAODeinterleaving_cs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

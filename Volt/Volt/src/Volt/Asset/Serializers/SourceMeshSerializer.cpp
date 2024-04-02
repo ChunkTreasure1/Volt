@@ -2,6 +2,7 @@
 #include "SourceMeshSerializer.h"
 
 #include "Volt/Asset/AssetManager.h"
+#include "Volt/Asset/Mesh/MeshSource.h"
 #include "Volt/Asset/Importers/MeshTypeImporter.h"
 
 namespace Volt
@@ -17,8 +18,8 @@ namespace Volt
 			return false;
 		}
 
-		Ref<Mesh> destinationMesh = std::reinterpret_pointer_cast<Mesh>(destinationAsset);
-		if (!MeshTypeImporter::ImportMesh(filePath, *destinationMesh))
+		Ref<MeshSource> destinationMesh = std::reinterpret_pointer_cast<MeshSource>(destinationAsset);
+		if (!MeshTypeImporter::ImportMesh(filePath, *destinationMesh->m_underlyingMesh))
 		{
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;

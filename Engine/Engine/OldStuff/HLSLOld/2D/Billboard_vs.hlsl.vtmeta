@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 15049971953168935482
+  assetHandle: 9442637984690489509
   filePath: Engine/Shaders/Source/HLSL/2D/Billboard_vs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

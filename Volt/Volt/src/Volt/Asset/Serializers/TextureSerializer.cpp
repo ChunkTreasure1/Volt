@@ -87,7 +87,7 @@ namespace Volt
 			const size_t maxSize = image->GetWidth() * image->GetHeight() * RHI::Utility::GetByteSizePerPixelFromFormat(image->GetFormat());
 
 			Ref<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
-			Ref<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(maxSize, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::GPUToCPU);
+			Ref<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(maxSize, RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
 
 			commandBuffer->Begin();
 
@@ -98,8 +98,8 @@ namespace Volt
 				barrier.imageBarrier().srcAccess = RHI::BarrierAccess::None;
 				barrier.imageBarrier().srcLayout = RHI::ImageLayout::ShaderRead;
 				barrier.imageBarrier().dstStage = RHI::BarrierStage::Copy;
-				barrier.imageBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
-				barrier.imageBarrier().dstLayout = RHI::ImageLayout::TransferDestination;
+				barrier.imageBarrier().dstAccess = RHI::BarrierAccess::TransferSource;
+				barrier.imageBarrier().dstLayout = RHI::ImageLayout::TransferSource;
 				barrier.imageBarrier().resource = image;
 
 				commandBuffer->ResourceBarrier({ barrier });
@@ -136,6 +136,27 @@ namespace Volt
 				dataBuffer.Copy(data, mipSize, newMip.dataOffset);
 				stagingBuffer->Unmap();
 			}
+
+			commandBuffer->Begin();
+
+			{
+				RHI::ResourceBarrierInfo barrier{};
+				barrier.type = RHI::BarrierType::Image;
+				barrier.imageBarrier().srcAccess = RHI::BarrierAccess::TransferSource;
+				barrier.imageBarrier().srcLayout = RHI::ImageLayout::TransferSource;
+				barrier.imageBarrier().srcStage = RHI::BarrierStage::Copy;
+				barrier.imageBarrier().dstStage = RHI::BarrierStage::None;
+				barrier.imageBarrier().dstAccess = RHI::BarrierAccess::None;
+				barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
+				barrier.imageBarrier().resource = image;
+
+				commandBuffer->ResourceBarrier({ barrier });
+			}
+
+			commandBuffer->End();
+			commandBuffer->ExecuteAndWait();
+
+			RHI::GraphicsContext::GetDefaultAllocator().DestroyBuffer(stagingBuffer);
 		}
 
 		BinaryStreamWriter streamWriter{};
@@ -143,6 +164,7 @@ namespace Volt
 
 		streamWriter.Write(header);
 		streamWriter.Write(dataBuffer);
+		dataBuffer.Release();
 
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 		streamWriter.WriteToDisk(filePath, true, compressedDataOffset);

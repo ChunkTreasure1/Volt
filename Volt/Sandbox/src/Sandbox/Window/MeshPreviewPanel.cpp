@@ -207,7 +207,7 @@ void MeshPreviewPanel::UpdateToolbar()
 
 	if (UI::ImageButton("##Load", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
 	{
-		const std::filesystem::path meshPath = FileSystem::OpenFileDialogue({ { "Mesh (*.vtmesh)", "vtmesh" } });
+		const std::filesystem::path meshPath = FileSystem::OpenFileDialogue({ { "Mesh (*.vtasset)", "vtasset" } });
 		if (!meshPath.empty() && FileSystem::Exists(meshPath))
 		{
 			myCurrentMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshPath);

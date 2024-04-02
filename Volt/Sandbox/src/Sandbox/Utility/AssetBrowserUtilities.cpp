@@ -149,7 +149,7 @@ namespace AssetBrowser
 				if (ImGui::MenuItem("Import"))
 				{
 					item->meshImportData = {};
-					item->meshImportData.destination = item->path.parent_path().string() + "\\" + item->path.stem().string() + ".vtmesh";
+					item->meshImportData.destination = item->path.parent_path().string() + "\\" + item->path.stem().string() + ".vtasset";
 					item->meshToImportData.handle = item->handle;
 					item->meshToImportData.path = item->path;
 					item->meshToImportData.type = Volt::AssetType::MeshSource;

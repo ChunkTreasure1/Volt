@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 13303399783846472238
+  assetHandle: 15186941706852790727
   filePath: Engine/Shaders/Source/HLSL/Indirect/IndirectCull_cs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

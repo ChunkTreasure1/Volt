@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 6058996679118710245
+  assetHandle: 7379066190957979222
   filePath: Engine/Shaders/Source/HLSL/Compute/LightCull2_cs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

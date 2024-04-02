@@ -261,7 +261,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 			return;
 		}
 
-		const auto cameraMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Editor/Meshes/Gizmos/SM_Camera_Gizmo.vtmesh");
+		const auto cameraMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Editor/Meshes/Gizmos/SM_Camera_Gizmo.vtasset");
 		const auto material = Volt::AssetManager::GetAsset<Volt::Material>("Editor/Materials/M_Camera_Gizmo.vtmat");
 
 		if (!cameraMesh || !cameraMesh->IsValid() || !material || !material->IsValid())

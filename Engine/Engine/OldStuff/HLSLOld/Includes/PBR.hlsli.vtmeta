@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 15840197168480532883
+  assetHandle: 5238169569479677238
   filePath: Engine/Shaders/Source/HLSL/Includes/PBR.hlsli
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 10333585351520757801
+  assetHandle: 4859897163334500134
   filePath: Engine/Shaders/Source/HLSL/Editor/Grid_vs.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 10235957370092944164
+  assetHandle: 3501241317245433598
   filePath: Engine/Shaders/Source/HLSL/Includes/DecalCommon.hlsli
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

@@ -11,8 +11,7 @@
     public abstract class Component
     {
         public Entity entity { get; internal set; }
-        // #TODO_Ivar: Create actual guid class instead and use to communicate components
-        public abstract string GUID { get; }
+        public virtual string GUID { get; set; }
     }
 
     public class TransformComponent : Component

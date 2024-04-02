@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 18300370691725378731
+  assetHandle: 7027291090463571813
   filePath: Engine/Shaders/Source/HLSL/Includes/Defines.hlsli
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

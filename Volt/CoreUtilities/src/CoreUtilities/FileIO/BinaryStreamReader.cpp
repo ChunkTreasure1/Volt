@@ -23,6 +23,12 @@ BinaryStreamReader::BinaryStreamReader(const std::filesystem::path& filePath)
 		return;
 	}
 
+	if (m_data.size() < compressionEncodingHeaderSize)
+	{
+		m_streamValid = false;
+		return;
+	}
+
 	// Read compression encoding
 	const uint32_t magic = *(uint32_t*)m_data.data();
 	if (magic != MAGIC)

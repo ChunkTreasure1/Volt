@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 6812817055861832887
+  assetHandle: 499456458067210348
   filePath: Engine/Shaders/Source/HLSL/2D/Text_ps.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

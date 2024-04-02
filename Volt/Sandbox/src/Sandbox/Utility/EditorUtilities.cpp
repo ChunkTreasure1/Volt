@@ -11,7 +11,7 @@
 #include <Volt/Asset/Animation/AnimationGraphAsset.h>
 
 #include <Volt/Asset/Rendering/Material.h>
-#include <Volt/Asset/Mesh/MeshCompiler.h>
+#include <Volt/Asset/Mesh/MeshSource.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
 #include <Volt/Project/ProjectManager.h>
 
@@ -455,7 +455,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 
 			if (aImportData.importMesh)
 			{
-				Ref<Volt::Mesh> importMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(aMeshToImport);
+				Ref<Volt::MeshSource> importMesh = Volt::AssetManager::GetAsset<Volt::MeshSource>(aMeshToImport);
 				if (importMesh && importMesh->IsValid())
 				{
 					if (!aImportData.createMaterial)
@@ -479,8 +479,16 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 							}
 						}*/
 					}
-
-					succeded = Volt::MeshCompiler::TryCompile(importMesh, aImportData.destination/*, material*/);
+					else
+					{
+						for (const auto& mathandle : importMesh->GetUnderlyingMesh()->GetMaterialTable())
+						{
+							const auto materialAsset = Volt::AssetManager::GetAsset<Volt::Material>(mathandle);
+							Volt::AssetManager::SaveAssetAs(materialAsset, aImportData.destination.parent_path() / (materialAsset->assetName + "_mat.vtasset"));
+						}
+					}
+					
+					Volt::AssetManager::SaveAssetAs(importMesh->GetUnderlyingMesh(), aImportData.destination);
 					if (!succeded)
 					{
 						UI::Notify(NotificationType::Error, "Failed to compile mesh!", std::format("Failed to compile mesh to location {}!", aImportData.destination.string()));
@@ -550,16 +558,18 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 				ImGui::CloseCurrentPopup();
 			}
 
-			ImGui::SameLine();
-
-			if (ImGui::Button("Cancel"))
-			{
-				imported = ImportState::Discard;
-				ImGui::CloseCurrentPopup();
-			}
-
-			UI::EndModal();
+			ImGui::CloseCurrentPopup();
 		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Cancel"))
+		{
+			imported = ImportState::Discard;
+			ImGui::CloseCurrentPopup();
+		}
+
+		UI::EndModal();
 	}
 
 	return imported;
@@ -606,7 +616,7 @@ ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImport
 			for (const auto& src : meshesToImport)
 			{
 				const Volt::AssetHandle material = aImportData.createMaterial ? Volt::Asset::Null() : aImportData.externalMaterial;
-				const std::filesystem::path destinationPath = aImportData.destination / (src.stem().string() + ".vtmesh");
+				const std::filesystem::path destinationPath = aImportData.destination / (src.stem().string() + ".vtasset");
 
 				bool succeded = false;
 

@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 12838837060596027054
+  assetHandle: 6225348076477803563
   filePath: Engine/Shaders/Source/HLSL/PostProcessing/AOComposite_ps.hlsl
-  type: 8
+  type: 128
   Dependencies:
     []
-  Properties:
-    {}

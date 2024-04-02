@@ -1,8 +1,6 @@
 Metadata:
-  assetHandle: 3612100628127470572
+  assetHandle: 10991592143438176453
   filePath: Engine/Shaders/Definitions/PostProcessing/AA/taa.vtsdef
-  type: 7
+  type: 64
   Dependencies:
-    - 1937471627419906563
-  Properties:
-    {}
+    - 9471477371087207398
