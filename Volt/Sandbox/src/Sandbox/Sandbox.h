@@ -116,10 +116,6 @@ private:
 	void RenderGameView();
 	///////////////
 
-	///// Modals /////
-	UUID64 m_projectUpgradeModal = 0;
-	//////////////////
-
 	///// Debug Rendering /////
 	void RenderSelection(Ref<Volt::Camera> camera);
 	void RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera);

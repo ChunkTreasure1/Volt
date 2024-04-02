@@ -1,7 +1,9 @@
 Metadata:
-  assetHandle: 7916383760741131033
+  assetHandle: 14472602492546404240
   filePath: Engine/Shaders/Definitions/Shadows/directionalShadow.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 2273298033702605316
-    - 6722378989310764320
+    - 4948080663175736811
+    - 17410215861176089342
+  Properties:
+    {}

@@ -71,6 +71,9 @@ namespace Volt
 		std::vector<Ref<PhysicsActor>> myPhysicsActors;
 		std::vector<Ref<PhysicsControllerActor>> myControllerActors;
 
+		std::unordered_map<entt::entity, Ref<PhysicsActor>> m_physicsActorFromEntityIDMap;
+		std::unordered_map<entt::entity, Ref<PhysicsControllerActor>> m_physicsControllerActorFromEntityIDMap;
+
 		std::vector<std::function<void()>> myFunctionQueue;
 
 		Scene* myEntityScene;

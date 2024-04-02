@@ -87,6 +87,7 @@ project "Launcher"
 
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.vma}",
+		"%{IncludeDir.zlib}"
 	}
 
     links
@@ -126,7 +127,8 @@ project "Launcher"
 		
 		"%{Library.Vulkan}",
 		"%{Library.dxc}",
-		"%{Library.METIS}"
+		"%{Library.METIS}",
+		"%{Library.zlib}"
     }
 	
 	debugargs 

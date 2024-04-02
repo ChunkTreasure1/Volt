@@ -6,6 +6,7 @@
 #include "Volt/Scene/Entity.h"
 
 #include <Volt/Components/AudioComponents.h>
+#include <Volt/Components/CoreComponents.h>
 
 #include <Volt/Rendering/DebugRenderer.h>
 #include <Volt/Physics/Physics.h>
@@ -27,11 +28,11 @@ void Volt::AudioSystem::RuntimeStart(entt::registry& registry, Weak<Scene> scene
 
 	// Listeners
 	{
-		auto view = registry.view<AudioListenerComponent>();
-		view.each([&](entt::entity id, AudioListenerComponent& audioListenerComp)
+		auto view = registry.view<AudioListenerComponent, const IDComponent>();
+		view.each([&](entt::entity id, AudioListenerComponent& audioListenerComp, const IDComponent& idComponent)
 		{
 			Volt::Entity entity({ id, scene });
-			Amp::WwiseAudioManager::RegisterListener(static_cast<uint32_t>(id), entity.GetTag().c_str(), audioListenerComp.isDefault);
+			Amp::WwiseAudioManager::RegisterListener(idComponent.id, entity.GetTag().c_str(), audioListenerComp.isDefault);
 		});
 	}
 }

@@ -4,6 +4,9 @@
 #include "Volt/Core/UUID.h"
 #include "Volt/Rendering/Shader/ShaderUtility.h"
 
+#include <CoreUtilities/FileIO/BinaryStreamWriter.h>
+#include <CoreUtilities/FileIO/BinaryStreamReader.h>
+
 namespace Volt
 {
 	SubMesh::SubMesh(uint32_t aMaterialIndex, uint32_t aVertexCount, uint32_t aIndexCount, uint32_t aVertexStartOffset, uint32_t aIndexStartOffset)
@@ -36,6 +39,28 @@ namespace Volt
 	const bool SubMesh::operator!=(const SubMesh& rhs) const
 	{
 		return m_hash != rhs.m_hash;
+	}
+
+	void SubMesh::Serialize(BinaryStreamWriter& streamWriter, const SubMesh& data)
+	{
+		streamWriter.Write(data.materialIndex);
+		streamWriter.Write(data.vertexCount);
+		streamWriter.Write(data.indexCount);
+		streamWriter.Write(data.vertexStartOffset);
+		streamWriter.Write(data.indexStartOffset);
+		streamWriter.Write(data.transform);
+		streamWriter.Write(data.name);
+	}
+
+	void SubMesh::Deserialize(BinaryStreamReader& streamReader, SubMesh& outData)
+	{
+		streamReader.Read(outData.materialIndex);
+		streamReader.Read(outData.vertexCount);
+		streamReader.Read(outData.indexCount);
+		streamReader.Read(outData.vertexStartOffset);
+		streamReader.Read(outData.indexStartOffset);
+		streamReader.Read(outData.transform);
+		streamReader.Read(outData.name);
 	}
 
 	bool operator>(const SubMesh& lhs, const SubMesh& rhs)

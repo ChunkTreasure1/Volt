@@ -449,6 +449,51 @@ namespace Volt
 		TransitionToLayout(commandBuffer, dstOriginalLayout);
 	}
 
+	size_t Image2D::CopyToBuffer(Buffer& buffer, uint32_t mip, size_t bufferOffset) const
+	{
+		//uint32_t width = mySpecification.width;
+		//uint32_t height = mySpecification.height;
+
+		//if (Utility::IsEncodedFormat(mySpecification.format))
+		//{
+		//	width = Utility::NextPow2(width);
+		//	height = Utility::NextPow2(height);
+		//}
+
+		//width = std::max(width >> mip, 1u);
+		//height = std::max(height >> mip, 1u);
+
+		//const size_t mipSize = glm::max(width * height * Utility::PerPixelSizeFromFormat(mySpecification.format), Utility::GetFormatMinimumSize(mySpecification.format));
+
+		//VkBuffer hostBuffer{};
+		//VmaAllocation hostAllocation{};
+
+		//VulkanAllocator allocator{};
+
+		//{
+		//	VkBufferCreateInfo info{};
+		//	info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		//	info.size = mipSize;
+		//	info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		//	info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		//	hostAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_GPU_TO_CPU, hostBuffer);
+		//}
+
+		//Utility::TransitionImageLayout(myImage, myImageData.layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+		//Utility::CopyImageToBuffer(hostBuffer, 0, myImage, std::max(mySpecification.width >> mip, 1u), std::max(mySpecification.height >> mip, 1u), mip);
+		//Utility::TransitionImageLayout(myImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, myImageData.layout);
+
+		//auto* imageData = allocator.MapMemory<uint8_t>(hostAllocation);
+		//buffer.Resize(mipSize + bufferOffset);
+		//buffer.Copy(imageData, mipSize, bufferOffset);
+		//allocator.UnmapMemory(hostAllocation);
+
+		//allocator.DestroyBuffer(hostBuffer, hostAllocation);
+
+		return 0;
+	}
+
 	VkImageView Image2D::CreateMipView(const uint32_t mip)
 	{
 		if (myImageViews.find(mip) != myImageViews.end())
@@ -520,6 +565,13 @@ namespace Volt
 		//Utility::TransitionImageLayout(commandBuffer, myImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, myImageData.layout);
 
 		//GraphicsContextVolt::GetDevice()->FlushCommandBuffer(commandBuffer);
+	}
+
+	const size_t Image2D::GetAllocationSize() const
+	{
+		//VulkanAllocator allocator{};
+		//return allocator.GetAllocationSize(myAllocation);
+		return 0;
 	}
 
 	Ref<Image2D> Image2D::Create(const ImageSpecification& specification, const void* data)

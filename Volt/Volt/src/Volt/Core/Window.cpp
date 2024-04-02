@@ -77,7 +77,7 @@ namespace Volt
 
 		glfwWindowHint(GLFW_SAMPLES, 0);
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_TITLEBAR, Application::Get().GetInfo().isRuntime ? GLFW_TRUE : GLFW_FALSE);
+		glfwWindowHint(GLFW_TITLEBAR, Application::Get().GetInfo().isRuntime || m_properties.useTitlebar ? GLFW_TRUE : GLFW_FALSE);
 		glfwWindowHint(GLFW_AUTO_ICONIFY, false);
 
 		GLFWmonitor* primaryMonitor = nullptr;

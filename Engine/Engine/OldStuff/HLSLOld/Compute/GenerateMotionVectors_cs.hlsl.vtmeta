@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 11452112379808569437
+  assetHandle: 17850854312759922289
   filePath: Engine/Shaders/Source/HLSL/Compute/GenerateMotionVectors_cs.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

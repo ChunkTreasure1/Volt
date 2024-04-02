@@ -19,7 +19,6 @@ namespace Volt
 	PhysicsControllerActor::PhysicsControllerActor(Entity entity)
 		: PhysicsActorBase(entity), myGravity(glm::length(Physics::GetSettings().gravity))
 	{
-		myControllerData = myEntity.GetComponent<CharacterControllerComponent>();
 	}
 
 	PhysicsControllerActor::~PhysicsControllerActor()
@@ -222,6 +221,7 @@ namespace Volt
 
 	void PhysicsControllerActor::CreateController(physx::PxControllerManager* controllerManager)
 	{
+		myControllerData = myEntity.GetComponent<CharacterControllerComponent>();
 		if (myEntity.HasComponent<CapsuleColliderComponent>())
 		{
 			auto& capsuleCollider = myEntity.GetComponent<CapsuleColliderComponent>();

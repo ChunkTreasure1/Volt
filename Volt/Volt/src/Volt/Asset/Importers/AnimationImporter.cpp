@@ -8,6 +8,17 @@
 
 namespace Volt
 {
+	struct AnimEventsHeader
+	{
+		uint32_t eventCount;
+	};
+
+	struct AnimEventHeader
+	{
+		uint32_t totalSize;
+		uint32_t stringSize;
+	};
+
 	bool AnimationImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Animation>();
@@ -58,9 +69,30 @@ namespace Volt
 			offset += header.perFrameTransformCount * sizeof(Animation::TRS);
 		}
 
-		animation->myFrames = frames;
-		animation->myDuration = header.duration;
-		animation->myFramesPerSecond = header.framesPerSecond;
+		if (offset + sizeof(AnimEventsHeader) < totalData.size())
+		{
+			AnimEventsHeader eventsHeader = *(AnimEventsHeader*)&totalData[offset];
+			offset += sizeof(AnimEventsHeader);
+
+			for (uint32_t i = 0; i < eventsHeader.eventCount; i++)
+			{
+				AnimEventHeader eHeader = *(AnimEventHeader*)&totalData[offset];
+				offset += sizeof(AnimEventHeader);
+
+				auto& animEvent = animation->m_events.emplace_back();
+				animEvent.name.resize(eHeader.stringSize);
+
+				animEvent.frame = *(uint32_t*)&totalData[offset];
+				offset += sizeof(uint32_t);
+
+				memcpy_s(animEvent.name.data(), eHeader.stringSize, &totalData[offset], eHeader.stringSize);
+				offset += eHeader.stringSize;
+			}
+		}
+
+		animation->m_frames = frames;
+		animation->m_duration = header.duration;
+		animation->m_framesPerSecond = header.framesPerSecond;
 		return true;
 	}
 
@@ -71,10 +103,13 @@ namespace Volt
 		std::vector<uint8_t> outData;
 
 		AnimationHeader header{};
-		header.perFrameTransformCount = (uint32_t)animation->myFrames.front().localTRS.size();
-		header.frameCount = (uint32_t)animation->myFrames.size();
-		header.duration = animation->myDuration;
-		header.framesPerSecond = animation->myFramesPerSecond;
+		header.perFrameTransformCount = (uint32_t)animation->m_frames.front().localTRS.size();
+		header.frameCount = (uint32_t)animation->m_frames.size();
+		header.duration = animation->m_duration;
+		header.framesPerSecond = animation->m_framesPerSecond;
+
+		AnimEventsHeader eventsHeader{};
+		eventsHeader.eventCount = static_cast<uint32_t>(animation->m_events.size());
 
 		outData.resize(sizeof(AnimationHeader) + header.frameCount * header.perFrameTransformCount * sizeof(Animation::TRS));
 
@@ -83,10 +118,33 @@ namespace Volt
 		offset += sizeof(AnimationHeader);
 
 		// Copy matrices per frame
-		for (const auto& frame : animation->myFrames)
+		for (const auto& frame : animation->m_frames)
 		{
 			memcpy_s(&outData[offset], header.perFrameTransformCount * sizeof(Animation::TRS), frame.localTRS.data(), header.perFrameTransformCount * sizeof(Animation::TRS));
 			offset += header.perFrameTransformCount * sizeof(Animation::TRS);
+		}
+
+		outData.resize(outData.size() + sizeof(AnimEventsHeader));
+
+		memcpy_s(&outData[offset], sizeof(AnimEventsHeader), &eventsHeader, sizeof(AnimEventsHeader));
+		offset += sizeof(AnimEventsHeader);
+
+		for (const auto& animEvent : animation->m_events)
+		{
+			AnimEventHeader eHeader{};
+			eHeader.stringSize = static_cast<uint32_t>(animEvent.name.size());
+			eHeader.totalSize = eHeader.stringSize + sizeof(animEvent.frame);
+
+			outData.resize(outData.size() + eHeader.totalSize + sizeof(AnimEventHeader));
+
+			memcpy_s(&outData[offset], sizeof(AnimEventHeader), &eHeader, sizeof(AnimEventHeader));
+			offset += sizeof(AnimEventHeader);
+
+			memcpy_s(&outData[offset], sizeof(uint32_t), &animEvent.frame, sizeof(uint32_t));
+			offset += sizeof(uint32_t);
+
+			memcpy_s(&outData[offset], eHeader.stringSize, animEvent.name.data(), animEvent.name.size());
+			offset += animEvent.name.size();
 		}
 
 		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath), std::ios::binary | std::ios::out);

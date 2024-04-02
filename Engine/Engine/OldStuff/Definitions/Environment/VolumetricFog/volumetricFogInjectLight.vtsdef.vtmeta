@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 16068823847264207417
+  assetHandle: 4568994918066159140
   filePath: Engine/Shaders/Definitions/Environment/VolumetricFog/volumetricFogInjectLight.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 6724677954297314653
+    - 16839111756646803688
+  Properties:
+    {}

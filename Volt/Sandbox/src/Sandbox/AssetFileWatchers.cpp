@@ -105,12 +105,6 @@ void Sandbox::CreateModifiedWatch()
 					break;
 			}
 		});
-
-		myFileChangeQueue.emplace_back([&]()
-		{
-			auto assetBrowser = EditorLibrary::Get<AssetBrowserPanel>();
-			assetBrowser->Reload();
-		});
 	});
 }
 
@@ -137,12 +131,6 @@ void Sandbox::CreateDeleteWatch()
 				}
 			}
 		});
-
-		myFileChangeQueue.emplace_back([&]()
-		{
-			auto assetBrowser = EditorLibrary::Get<AssetBrowserPanel>();
-			assetBrowser->Reload();
-		});
 	});
 }
 
@@ -151,12 +139,6 @@ void Sandbox::CreateAddWatch()
 	myFileWatcher->AddCallback(efsw::Actions::Add, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
 	{
 		std::scoped_lock lock(myFileWatcherMutex);
-
-		myFileChangeQueue.emplace_back([&]()
-		{
-			auto assetBrowser = EditorLibrary::Get<AssetBrowserPanel>();
-			assetBrowser->Reload();
-		});
 	});
 }
 
@@ -175,12 +157,6 @@ void Sandbox::CreateMovedWatch()
 			{
 				Volt::AssetManager::Get().MoveAssetInRegistry(oldPath, newPath);
 			}
-		});
-
-		myFileChangeQueue.emplace_back([&]()
-		{
-			auto assetBrowser = EditorLibrary::Get<AssetBrowserPanel>();
-			assetBrowser->Reload();
 		});
 	});
 }

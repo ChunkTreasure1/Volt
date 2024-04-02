@@ -1,7 +1,9 @@
 Metadata:
-  assetHandle: 2224979263477557073
+  assetHandle: 4892647611999441649
   filePath: Engine/Shaders/Definitions/Forward/foliage.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 13639218079433149575
-    - 13539890824883039717
+    - 3601805211560947120
+    - 15086908939535742121
+  Properties:
+    {}

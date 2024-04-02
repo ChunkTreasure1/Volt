@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 16161792575129556467
+  assetHandle: 12455651153009938016
   filePath: Engine/Shaders/Source/HLSL/Default_vs.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

@@ -10,7 +10,8 @@ namespace Volt
 		~ShaderDefinition() override = default;
 
 		static AssetType GetStaticType() { return AssetType::ShaderDefinition; }
-		AssetType GetType() override { return GetStaticType(); }
+		inline AssetType GetType() override { return GetStaticType(); }
+		inline uint32_t GetVersion() const override { return 1; }
 
 		[[nodiscard]] inline const std::vector<std::filesystem::path>& GetSourceFiles() { return m_sourceFiles; }
 		[[nodiscard]] inline const std::vector<std::string>& GetPermutations() { return m_permutaionValues; }
@@ -20,6 +21,7 @@ namespace Volt
 
 	private:
 		friend class ShaderDefinitionImporter;
+		friend class ShaderDefinitionSerializer;
 
 		std::vector<std::filesystem::path> m_sourceFiles;
 		std::vector<std::string> m_permutaionValues;

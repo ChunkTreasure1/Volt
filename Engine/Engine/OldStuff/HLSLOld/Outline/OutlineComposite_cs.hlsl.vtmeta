@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 15064921398973923722
+  assetHandle: 3896226660567456510
   filePath: Engine/Shaders/Source/HLSL/Outline/OutlineComposite_cs.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

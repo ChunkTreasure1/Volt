@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Core/Buffer.h"
+#include <CoreUtilities/Buffer/Buffer.h>
 #include "Volt/Physics/CookingFactory.h"
 
 #include <unordered_map>

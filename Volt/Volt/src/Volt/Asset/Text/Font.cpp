@@ -6,7 +6,7 @@
 
 #include "Volt/Log/Log.h"
 #include "Volt/Core/Base.h"
-#include "Volt/Core/Buffer.h"
+#include <CoreUtilities/Buffer/Buffer.h>
 #include "Volt/Project/ProjectManager.h"
 
 #include "Volt/Rendering/Texture/Texture2D.h"
@@ -100,7 +100,12 @@ namespace Volt
 		return texture;
 	}
 
-	Font::Font(const std::filesystem::path& aPath)
+	Font::~Font()
+	{
+		delete myMSDFData;
+	}
+
+	void Font::Initialize(const std::filesystem::path& filePath)
 	{
 		myMSDFData = new MSDFData();
 
@@ -109,7 +114,7 @@ namespace Volt
 
 		fontInput.glyphType = msdf_atlas::GlyphIdentifierType::UNICODE_CODEPOINT;
 		fontInput.scale = -1.f;
-		fontInput.filename = aPath.string();
+		fontInput.filename = filePath.string();
 
 		config.imageType = msdf_atlas::ImageType::MTSDF;
 		config.imageFormat = msdf_atlas::ImageFormat::BINARY_FLOAT;
@@ -225,18 +230,18 @@ namespace Volt
 
 		switch (fontInput.glyphType)
 		{
-			case msdf_atlas::GlyphIdentifierType::GLYPH_INDEX:
-			{
-				glyphsLoaded = myMSDFData->fontGeometry.loadGlyphset(font, (double)fontInput.scale, charset);
-				break;
-			}
+		case msdf_atlas::GlyphIdentifierType::GLYPH_INDEX:
+		{
+			glyphsLoaded = myMSDFData->fontGeometry.loadGlyphset(font, (double)fontInput.scale, charset);
+			break;
+		}
 
-			case msdf_atlas::GlyphIdentifierType::UNICODE_CODEPOINT:
-			{
-				glyphsLoaded = myMSDFData->fontGeometry.loadCharset(font, (double)fontInput.scale, charset);
-				anyCodepointsAvailable |= glyphsLoaded > 0;
-				break;
-			}
+		case msdf_atlas::GlyphIdentifierType::UNICODE_CODEPOINT:
+		{
+			glyphsLoaded = myMSDFData->fontGeometry.loadCharset(font, (double)fontInput.scale, charset);
+			anyCodepointsAvailable |= glyphsLoaded > 0;
+			break;
+		}
 		}
 
 		VT_CORE_ASSERT(glyphsLoaded >= 0, "Unable to load glyphs!");
@@ -299,11 +304,11 @@ namespace Volt
 			if (config.expensiveColoring)
 			{
 				msdf_atlas::Workload([&glyphs = myMSDFData->glyphs, &config](int i, int) -> bool
-				{
-					uint64_t glyphSeed = (LCG_MULTIPLIER * (config.coloringSeed ^ i) + LCG_INCREMENT) * !!config.coloringSeed;
-					glyphs[i].edgeColoring(config.edgeColoring, config.angleThreshold, glyphSeed);
-					return true;
-				}, (int)myMSDFData->glyphs.size()).finish(THREADS);
+					{
+						uint64_t glyphSeed = (LCG_MULTIPLIER * (config.coloringSeed ^ i) + LCG_INCREMENT) * !!config.coloringSeed;
+						glyphs[i].edgeColoring(config.edgeColoring, config.angleThreshold, glyphSeed);
+						return true;
+					}, (int)myMSDFData->glyphs.size()).finish(THREADS);
 			}
 			else
 			{
@@ -337,42 +342,37 @@ namespace Volt
 			bool floatingPointFormat = true;
 			switch (config.imageType)
 			{
-				case msdf_atlas::ImageType::MSDF:
+			case msdf_atlas::ImageType::MSDF:
+			{
+				if (floatingPointFormat)
 				{
-					if (floatingPointFormat)
-					{
-						texture = CreateAndCacheAtlas<float, float, 3, msdf_atlas::msdfGenerator>(fontName, (float)config.emSize, myMSDFData->glyphs, myMSDFData->fontGeometry, config);
-					}
-					else
-					{
-						texture = CreateAndCacheAtlas<uint8_t, float, 3, msdf_atlas::msdfGenerator>(fontName, (float)config.emSize, myMSDFData->glyphs, myMSDFData->fontGeometry, config);
-					}
-
-					break;
+					texture = CreateAndCacheAtlas<float, float, 3, msdf_atlas::msdfGenerator>(fontName, (float)config.emSize, myMSDFData->glyphs, myMSDFData->fontGeometry, config);
+				}
+				else
+				{
+					texture = CreateAndCacheAtlas<uint8_t, float, 3, msdf_atlas::msdfGenerator>(fontName, (float)config.emSize, myMSDFData->glyphs, myMSDFData->fontGeometry, config);
 				}
 
-				case msdf_atlas::ImageType::MTSDF:
-				{
-					if (floatingPointFormat)
-					{
-						texture = CreateAndCacheAtlas<float, float, 4, msdf_atlas::mtsdfGenerator>(fontName, (float)config.emSize, myMSDFData->glyphs, myMSDFData->fontGeometry, config);
-					}
-					else
-					{
-						texture = CreateAndCacheAtlas<uint8_t, float, 4, msdf_atlas::mtsdfGenerator>(fontName, (float)config.emSize, myMSDFData->glyphs, myMSDFData->fontGeometry, config);
-					}
+				break;
+			}
 
-					break;
+			case msdf_atlas::ImageType::MTSDF:
+			{
+				if (floatingPointFormat)
+				{
+					texture = CreateAndCacheAtlas<float, float, 4, msdf_atlas::mtsdfGenerator>(fontName, (float)config.emSize, myMSDFData->glyphs, myMSDFData->fontGeometry, config);
 				}
+				else
+				{
+					texture = CreateAndCacheAtlas<uint8_t, float, 4, msdf_atlas::mtsdfGenerator>(fontName, (float)config.emSize, myMSDFData->glyphs, myMSDFData->fontGeometry, config);
+				}
+
+				break;
+			}
 			}
 
 		}
 		myAtlas = texture;
-	}
-
-	Font::~Font()
-	{
-		delete myMSDFData;
 	}
 
 	static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)

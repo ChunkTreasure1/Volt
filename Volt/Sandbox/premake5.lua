@@ -114,7 +114,8 @@ project "Sandbox"
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.vma}",
 
-		"%{IncludeDir.TGAFbx}"
+		"%{IncludeDir.TGAFbx}",
+		"%{IncludeDir.zlib}"
 	}
 
     links
@@ -167,7 +168,7 @@ project "Sandbox"
 
 		"%{Library.Vulkan}",
 		"%{Library.dxc}",
-
+		"%{Library.zlib}",
 		"%{Library.METIS}"
     }
 

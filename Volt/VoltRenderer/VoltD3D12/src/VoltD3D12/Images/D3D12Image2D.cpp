@@ -133,6 +133,11 @@ namespace Volt::RHI
 		return m_specs.height;
 	}
 
+	const uint32_t D3D12Image2D::GetMipCount() const
+	{
+		return 0;
+	}
+
 	const PixelFormat D3D12Image2D::GetFormat() const
 	{
 		return m_specs.format;

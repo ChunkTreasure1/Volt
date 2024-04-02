@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 1912433441300303228
+  assetHandle: 11107184385068211448
   filePath: Engine/Shaders/Source/HLSL/Forward/ForwardPBRSSS_ps.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

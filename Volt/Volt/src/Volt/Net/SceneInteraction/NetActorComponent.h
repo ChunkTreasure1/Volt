@@ -26,5 +26,7 @@ namespace Volt
 			reflect.AddMember(&NetActorComponent::repId, "repId", "Replication ID", "", Nexus::RandRepID());
 			reflect.AddMember(&NetActorComponent::clientId, "clientId", "Client ID", "", 0);
 		}
+
+		REGISTER_COMPONENT(NetActorComponent);
 	};
 }

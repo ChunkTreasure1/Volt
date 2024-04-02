@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 552392476090572286
+  assetHandle: 18374401432738887355
   filePath: Engine/Shaders/Source/HLSL/Includes/Particle.hlsli
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

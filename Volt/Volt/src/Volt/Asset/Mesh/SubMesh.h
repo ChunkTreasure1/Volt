@@ -4,6 +4,9 @@
 
 #include <glm/glm.hpp>
 
+class BinaryStreamWriter;
+class BinaryStreamReader;
+
 namespace Volt
 {
 	struct SubMesh
@@ -34,6 +37,9 @@ namespace Volt
 
 		glm::mat4 transform = { 1.f };
 		std::string name;
+
+		static void Serialize(BinaryStreamWriter& streamWriter, const SubMesh& data);
+		static void Deserialize(BinaryStreamReader& streamReader, SubMesh& outData);
 
 	private:
 		size_t m_hash = 0;

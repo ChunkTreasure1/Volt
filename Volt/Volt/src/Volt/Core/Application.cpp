@@ -94,6 +94,11 @@ namespace Volt
 		Window::StaticInitialize();
 		CreateGraphicsContext();
 
+		if (ProjectManager::GetProject().isDeprecated)
+		{
+			windowProperties.useTitlebar = true;
+		}
+
 		// Setup main window
 		{
 			m_windowHandle = m_windowManager.CreateNewWindow(windowProperties);
@@ -351,6 +356,12 @@ namespace Volt
 
 			AppPresentFrameEvent presentEvent{};
 			OnEvent(presentEvent);
+		}
+
+		{
+			VT_PROFILE_SCOPE("Application::PostFrameUpdate");
+			AppPostFrameUpdateEvent postFrameUpdateEvent{ m_currentDeltaTime * m_timeScale };
+			OnEvent(postFrameUpdateEvent);
 		}
 
 		m_frameTimer.Accumulate();

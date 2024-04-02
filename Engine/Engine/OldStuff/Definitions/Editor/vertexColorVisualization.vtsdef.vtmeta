@@ -1,7 +1,9 @@
 Metadata:
-  assetHandle: 8856950072761727371
+  assetHandle: 11435955340030689368
   filePath: Engine/Shaders/Definitions/Editor/vertexColorVisualization.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 13639218079433149575
-    - 986534500284155151
+    - 3601805211560947120
+    - 13394621642338625548
+  Properties:
+    {}

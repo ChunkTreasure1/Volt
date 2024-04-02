@@ -14,8 +14,8 @@
 
 #include "Volt/Utility/FileSystem.h"
 
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -42,7 +42,7 @@ namespace Volt
 			return;
 		}
 
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 		if (!streamReader.OpenFile(FileSystem::GetPhysicsSettingsPath()))
 		{
 			return;
@@ -69,7 +69,7 @@ namespace Volt
 			std::filesystem::create_directories(FileSystem::GetPhysicsSettingsPath().parent_path());
 		}
 
-		YAMLStreamWriter streamWriter{ FileSystem::GetPhysicsSettingsPath() };
+		YAMLFileStreamWriter streamWriter{ FileSystem::GetPhysicsSettingsPath() };
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("PhysicsSettings");
 
@@ -95,7 +95,7 @@ namespace Volt
 			return;
 		}
 
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 		if (!streamReader.OpenFile(FileSystem::GetPhysicsLayersPath()))
 		{
 			return;
@@ -123,7 +123,7 @@ namespace Volt
 			std::filesystem::create_directories(FileSystem::GetPhysicsLayersPath().parent_path());
 		}
 
-		YAMLStreamWriter streamWriter{ FileSystem::GetPhysicsLayersPath() };
+		YAMLFileStreamWriter streamWriter{ FileSystem::GetPhysicsLayersPath() };
 
 		streamWriter.BeginMap();
 		streamWriter.BeginSequence("PhysicsLayers");

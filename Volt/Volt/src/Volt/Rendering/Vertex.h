@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Volt/Rendering/Buffer/BufferLayout.h"
+#include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 
 #include <glm/glm.hpp>
 #include <half/half.hpp>

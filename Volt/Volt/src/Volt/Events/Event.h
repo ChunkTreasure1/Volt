@@ -20,7 +20,7 @@ namespace Volt
 		None = 0,
 		BeginFrame, PresentFrame,
 		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved, WindowDragDrop, ViewportResize, WindowTitlebarHittest,
-		AppUpdate, AppRender, AppLog, AppImGuiUpdate,
+		AppUpdate, AppRender, AppLog, AppImGuiUpdate, AppPostFrameUpdate,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled, MouseMovedViewport,
 

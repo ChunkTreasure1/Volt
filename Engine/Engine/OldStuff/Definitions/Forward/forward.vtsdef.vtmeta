@@ -1,7 +1,9 @@
 Metadata:
-  assetHandle: 12128052130511988899
+  assetHandle: 2623990934271536198
   filePath: Engine/Shaders/Definitions/Forward/forward.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 13639218079433149575
-    - 16466623238050363380
+    - 3601805211560947120
+    - 13521408894763143955
+  Properties:
+    {}

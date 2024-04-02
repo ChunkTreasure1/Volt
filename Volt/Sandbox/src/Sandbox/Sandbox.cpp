@@ -5,8 +5,6 @@
 
 #include "Sandbox/UISystems/ModalSystem.h"
 
-#include "Sandbox/Modals/ProjectUpgradeModal.h"
-
 #include "Sandbox/Window/PropertiesPanel.h"
 #include "Sandbox/Window/ViewportPanel.h"
 #include "Sandbox/Window/GameViewPanel.h"
@@ -43,6 +41,8 @@
 #include "Sandbox/Window/SceneSettingsPanel.h"
 #include "Sandbox/Window/WorldEnginePanel.h"
 #include "Sandbox/Window/MosaicEditor/MosaicEditorPanel.h"
+#include "Sandbox/Window/SkeletonEditorPanel.h"
+#include "Sandbox/Window/AnimationEditorPanel.h"
 #include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
@@ -89,6 +89,9 @@
 
 #include <imgui.h>
 
+#include "Volt/Asset/Serializers/SourceTextureSerializer.h"
+#include "Volt/Asset/Serializers/TextureSerializer.h"
+
 Sandbox::Sandbox()
 {
 	VT_ASSERT(!myInstance, "Sandbox already exists!");
@@ -104,14 +107,18 @@ void Sandbox::OnAttach()
 {
 	SelectionManager::Init();
 
-	EditorResources::Initialize();
+	if (!Volt::ProjectManager::GetProject().isDeprecated)
+	{
+		EditorResources::Initialize();
+	}
+
 	VersionControl::Initialize(VersionControlSystem::Perforce);
 	NodeEditorHelpers::Initialize();
 	IONodeGraphEditorHelpers::Initialize();
 
 	Volt::Application::Get().GetWindow().Maximize();
 
-	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 100000.f);
+	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
 	UserSettingsManager::LoadUserSettings();
 	const auto& userSettings = UserSettingsManager::GetSettings();
@@ -162,6 +169,8 @@ void Sandbox::OnAttach()
 
 	EditorLibrary::RegisterWithType<CharacterEditorPanel>("Animation", Volt::AssetType::AnimatedCharacter);
 	//EditorLibrary::RegisterWithType<MaterialEditorPanel>("", , myRuntimeScene);
+	EditorLibrary::RegisterWithType<SkeletonEditorPanel>("Animation", Volt::AssetType::Skeleton);
+	EditorLibrary::RegisterWithType<AnimationEditorPanel>("Animation", Volt::AssetType::Animation);
 	EditorLibrary::RegisterWithType<ParticleEmitterEditor>("", Volt::AssetType::ParticlePreset);
 	EditorLibrary::RegisterWithType<AnimationGraphPanel>("Animation", Volt::AssetType::AnimationGraph, myRuntimeScene);
 	EditorLibrary::RegisterWithType<BehaviorPanel>("", Volt::AssetType::BehaviorGraph);
@@ -224,14 +233,14 @@ void Sandbox::OnAttach()
 	Volt::DiscordSDK::UpdateRichPresence();
 
 	myRuntimeScene->InitializeEngineScripts();
-
 	m_isInitialized = true;
 }
 
 void Sandbox::CreateWatches()
 {
 	myFileWatcher->AddWatch(Volt::ProjectManager::GetEngineDirectory());
-	myFileWatcher->AddWatch(Volt::ProjectManager::GetProjectDirectory());
+	myFileWatcher->AddWatch(Volt::ProjectManager::GetAssetsDirectory());
+	myFileWatcher->AddWatch(Volt::ProjectManager::GetMonoBinariesDirectory());
 
 	CreateModifiedWatch();
 	CreateDeleteWatch();
@@ -321,10 +330,6 @@ void Sandbox::SetupNewSceneData()
 
 void Sandbox::InitializeModals()
 {
-	{
-		auto& modal = ModalSystem::AddModal<ProjectUpgradeModal>("Upgrade Project");
-		m_projectUpgradeModal = modal.GetID();
-	}
 }
 
 void Sandbox::OnDetach()
@@ -460,18 +465,7 @@ void Sandbox::OnEvent(Volt::Event& e)
 		return;
 	}
 
-	switch (mySceneState)
-	{
-		case SceneState::Edit:
-			break;
-		case SceneState::Play:
-			myRuntimeScene->OnEvent(e);
-			break;
-		case SceneState::Pause:
-			break;
-		case SceneState::Simulating:
-			break;
-	}
+	myRuntimeScene->OnEvent(e);
 }
 
 void Sandbox::OnScenePlay()
@@ -593,7 +587,13 @@ void Sandbox::NewScene()
 		Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 	}
 
+	if (myRuntimeScene)
+	{
+		myRuntimeScene->ShutdownEngineScripts();
+	}
+
 	myRuntimeScene = Volt::Scene::CreateDefaultScene("New Scene", true);
+	myRuntimeScene->InitializeEngineScripts();
 	SetupNewSceneData();
 }
 
@@ -611,6 +611,11 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 
 		const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myRuntimeScene->handle);
 
+		if (myRuntimeScene)
+		{
+			myRuntimeScene->ShutdownEngineScripts();
+		}
+			
 		const auto newScene = Volt::AssetManager::GetAsset<Volt::Scene>(path);
 		if (!newScene)
 		{
@@ -633,6 +638,8 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 		}
 
 		myRuntimeScene = newScene;
+		myRuntimeScene->InitializeEngineScripts();
+
 		SetupNewSceneData();
 	}
 }
@@ -819,6 +826,11 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		f();
 	}
 
+	if (!myFileChangeQueue.empty())
+	{
+		EditorLibrary::Get<AssetBrowserPanel>()->Reload();
+	}
+
 	myFileChangeQueue.clear();
 
 	return true;
@@ -826,14 +838,6 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 
 bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 {
-	static bool shouldOpenProjectUpgradeModal = Volt::ProjectManager::IsCurrentProjectDeprecated();
-	if (shouldOpenProjectUpgradeModal)
-	{
-		ModalSystem::GetModal<ProjectUpgradeModal>(m_projectUpgradeModal).Open();
-
-		shouldOpenProjectUpgradeModal = false;
-	}
-
 	ImGuizmo::BeginFrame();
 
 	if (SaveReturnState returnState = EditorUtils::SaveFilePopup("Do you want to save scene?##OpenScene"); returnState != SaveReturnState::None)

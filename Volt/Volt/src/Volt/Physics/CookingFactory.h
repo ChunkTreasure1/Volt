@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Core/Buffer.h"
+#include <CoreUtilities/Buffer/Buffer.h>
 #include "Volt/Components/PhysicsComponents.h"
 #include "Volt/Physics/PhysicsEnums.h"
 

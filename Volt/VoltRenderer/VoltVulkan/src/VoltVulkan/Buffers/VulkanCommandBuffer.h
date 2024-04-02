@@ -75,6 +75,7 @@ namespace Volt::RHI
 		void UpdateBuffer(Ref<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data) override;
 		void CopyBufferRegion(Ref<Allocation> srcAllocation, const size_t srcOffset, Ref<Allocation> dstAllocation, const size_t dstOffset, const size_t size) override;
 		void CopyBufferToImage(Ref<Allocation> srcBuffer, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip /* = 0 */) override;
+		void CopyImageToBuffer(Ref<Image2D> srcImage, Ref<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip) override;
 		void CopyImage(Ref<Image2D> srcImage, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height) override;
 
 		const uint32_t GetCurrentIndex() const override;

@@ -170,7 +170,7 @@ namespace TGA
 
 			if (fbxImporter->Import(fbxScene))
 			{
-				if(fbxScene->GetGlobalSettings().GetSystemUnit() != FbxSystemUnit::m)
+				if(fbxScene->GetGlobalSettings().GetSystemUnit() != FbxSystemUnit::cm)
 				{
 					constexpr FbxSystemUnit::ConversionOptions sysUnitConversion =
 					{
@@ -182,8 +182,8 @@ namespace TGA
 						true
 					};
 
-					FbxSystemUnit::m.ConvertScene(fbxScene, sysUnitConversion);
-					assert(fbxScene->GetGlobalSettings().GetSystemUnit() == FbxSystemUnit::m);
+					FbxSystemUnit::cm.ConvertScene(fbxScene, sysUnitConversion);
+					assert(fbxScene->GetGlobalSettings().GetSystemUnit() == FbxSystemUnit::cm);
 				}
 
 				// Load and set up Material data

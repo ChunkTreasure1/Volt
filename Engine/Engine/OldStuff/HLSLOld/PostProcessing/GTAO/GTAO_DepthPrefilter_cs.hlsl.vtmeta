@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 7434065980506929470
+  assetHandle: 4870608170725517826
   filePath: Engine/Shaders/Source/HLSL/PostProcessing/GTAO/GTAO_DepthPrefilter_cs.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

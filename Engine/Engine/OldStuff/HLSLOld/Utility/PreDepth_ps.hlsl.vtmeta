@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 12161986101142080347
+  assetHandle: 14806869465067222885
   filePath: Engine/Shaders/Source/HLSL/Utility/PreDepth_ps.hlsl
-  type: 128
+  type: 8
   Dependencies:
     []
+  Properties:
+    {}

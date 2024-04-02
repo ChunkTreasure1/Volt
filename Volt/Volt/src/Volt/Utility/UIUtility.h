@@ -311,6 +311,8 @@ public:
 	static bool Property(const std::string& text, glm::ivec3& value, uint32_t min = 0, uint32_t max = 0, const std::string& toolTip = "");
 	static bool Property(const std::string& text, glm::ivec4& value, uint32_t min = 0, uint32_t max = 0, const std::string& toolTip = "");
 
+	static bool Property(const std::string& text, glm::quat& value, const std::string& toolTip = "");
+
 	static bool Property(const std::string& text, const std::string& value, bool readOnly = false, const std::string& toolTip = "");
 	static bool Property(const std::string& text, std::string& value, bool readOnly = false, const std::string& toolTip = "");
 	static bool Property(const std::string& text, std::filesystem::path& path, const std::string& toolTip = "");

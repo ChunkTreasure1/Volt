@@ -50,8 +50,9 @@ namespace Volt
 
 	public:
 		Video() = default;
-		Video(const std::filesystem::path& aPath);
 		~Video();
+
+		void Initialize(const std::filesystem::path& filePath);
 
 		void Play(bool aLoop = false);
 		void Pause();
@@ -64,6 +65,7 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::Video; }
 		AssetType GetType() override { return GetStaticType(); };
+		uint32_t GetVersion() const override { return 1; }
 
 
 	private:

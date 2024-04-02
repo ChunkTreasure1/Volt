@@ -2,13 +2,13 @@
 
 #include "CoreUtilities/FileIO/SerializationHelpers.h"
 
-#include <filesystem>
 #include <yaml-cpp/yaml.h>
+#include <filesystem>
 
 class YAMLStreamWriter
 {
 public:
-	YAMLStreamWriter(const std::filesystem::path& targetFilePath);
+	virtual ~YAMLStreamWriter() = default;
 
 	void BeginMap();
 	void EndMap();
@@ -24,10 +24,9 @@ public:
 	template<typename T>
 	void AddValue(const T& value);
 
-	const bool WriteToDisk();
+	inline YAML::Emitter& GetEmitter() { return m_emitter; }
 
-private:
-	std::filesystem::path m_targetFilePath;
+protected:
 	YAML::Emitter m_emitter;
 };
 

@@ -281,6 +281,10 @@ namespace Volt::RHI
 	{
 	}
 
+	void D3D12CommandBuffer::CopyImageToBuffer(Ref<Image2D> srcImage, Ref<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip)
+	{
+	}
+
 	void D3D12CommandBuffer::CopyImage(Ref<Image2D> srcImage, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height)
 	{
 	}

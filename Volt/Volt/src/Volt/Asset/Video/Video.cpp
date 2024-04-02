@@ -36,11 +36,16 @@ namespace Volt
 		}
 	}
 
-	Video::Video(const std::filesystem::path& path)
+	Video::~Video()
+	{
+		Release();
+	}
+
+	void Video::Initialize(const std::filesystem::path& filePath)
 	{
 		av_register_all();
 
-		int32_t result = avformat_open_input(&myReaderState.formatContext, path.string().c_str(), nullptr, nullptr);
+		int32_t result = avformat_open_input(&myReaderState.formatContext, filePath.string().c_str(), nullptr, nullptr);
 		if (result < 0)
 		{
 			VT_CORE_ERROR("Error when opening video!");
@@ -117,11 +122,6 @@ namespace Volt
 		myIsPlaying = false;
 
 		myStatus = VideoStatus::Playing;
-	}
-
-	Video::~Video()
-	{
-		Release();
 	}
 
 	void Video::Play(bool shouldLoop)

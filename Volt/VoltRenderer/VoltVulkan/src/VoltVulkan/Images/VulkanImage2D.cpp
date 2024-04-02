@@ -350,6 +350,11 @@ namespace Volt::RHI
 		return m_specification.height;
 	}
 
+	const uint32_t VulkanImage2D::GetMipCount() const
+	{
+		return m_specification.mips;
+	}
+
 	const PixelFormat VulkanImage2D::GetFormat() const
 	{
 		return m_specification.format;

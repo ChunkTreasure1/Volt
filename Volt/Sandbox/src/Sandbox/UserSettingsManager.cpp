@@ -6,8 +6,8 @@
 
 #include <Volt/Utility/YAMLSerializationHelpers.h>
 
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -16,7 +16,7 @@ inline static const std::string salt = "epic42069salt";
 
 void UserSettingsManager::LoadUserSettings()
 {
-	YAMLStreamReader streamReader{};
+	YAMLFileStreamReader streamReader{};
 	if (!streamReader.OpenFile(s_userSettingsPath))
 	{
 		return;

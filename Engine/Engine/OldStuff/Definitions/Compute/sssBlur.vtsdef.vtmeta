@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 17114485686555562417
+  assetHandle: 14443470579464330243
   filePath: Engine/Shaders/Definitions/Compute/sssBlur.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 2371175449193359816
+    - 6835451459480640531
+  Properties:
+    {}

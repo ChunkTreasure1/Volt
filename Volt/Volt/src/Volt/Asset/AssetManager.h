@@ -26,12 +26,14 @@ namespace Volt
 		Updated
 	};
 
-	class AssetImporter;
+	class AssetFactory;
+	class AssetSerializer;
 	class AssetManager
 	{
 	public:
 		using WriteLock = std::unique_lock<std::shared_mutex>;
 		using ReadLock = std::shared_lock<std::shared_mutex>;
+		using AssetCreateFunction = std::function<Ref<Asset>()>;
 		using AssetChangedCallback = std::function<void(AssetHandle assetHandle, AssetChangedState state)>;
 
 		AssetManager();
@@ -42,8 +44,6 @@ namespace Volt
 
 		void AddDependency(AssetHandle asset, const std::filesystem::path& dependency);
 		void AddDependency(AssetHandle asset, AssetHandle dependency);
-
-		bool HasAssetMetaFile(AssetHandle assetHandle);
 
 		void Unload(AssetHandle assetHandle);
 
@@ -61,11 +61,17 @@ namespace Volt
 		void RemoveAssetFromRegistry(AssetHandle asset);
 		void RemoveAssetFromRegistry(const std::filesystem::path& path);
 		void RemoveFullFolderFromRegistry(const std::filesystem::path& path);
+
 		const AssetHandle AddAssetToRegistry(const std::filesystem::path& path, AssetHandle handle = 0);
+		void AddAssetToRegistry(const std::filesystem::path& path, AssetHandle handle, AssetType type);
 
 		void ReloadAsset(AssetHandle handle);
 		void ReloadAsset(const std::filesystem::path& path);
 
+		inline const AssetFactory& GetFactory() const { return *m_assetFactory; }
+
+		static bool IsSourceAsset(AssetType type);
+		static bool IsSourceAsset(AssetHandle handle);
 		Ref<Asset> GetAssetRaw(AssetHandle assetHandle);
 		Ref<Asset> QueueAssetRaw(AssetHandle assetHandle);
 
@@ -74,7 +80,6 @@ namespace Volt
 		static UUID64 RegisterAssetChangedCallback(AssetType assetType, AssetChangedCallback&& callbackFunction);
 		static void UnregisterAssetChangedCallback(AssetType assetType, UUID64 id);
 
-		static bool IsSourceFile(AssetHandle handle);
 		static bool IsLoaded(AssetHandle handle);
 
 		static bool IsEngineAsset(const std::filesystem::path& path);
@@ -99,6 +104,7 @@ namespace Volt
 		static const AssetMetadata& GetMetadataFromFilePath(const std::filesystem::path filePath);
 
 		static const std::unordered_map<AssetHandle, AssetMetadata>& GetAssetRegistry();
+		static std::unordered_map<AssetHandle, AssetMetadata>& GetAssetRegistryMutable();
 
 		static std::string GetExtensionFromAssetType(AssetType type);
 
@@ -145,28 +151,30 @@ namespace Volt
 		inline static AssetMetadata s_nullMetadata = {};
 
 		void UpdateInternal();
+		void RegisterAssetSerializers();
 
 		void LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset);
-		void DeserializeAssetMetafile(std::filesystem::path metaPath);
-		void LoadAssetMetafiles();
 
-		void SerializeAssetMetaFile(AssetHandle assetHandle);
-		void RemoveMetaFile(const std::filesystem::path& filePath);
+		void LoadAllAssetMetadata();
+		void DeserializeAssetMetadata(std::filesystem::path assetPath);
 
 		void OnAssetChanged(AssetHandle assetHandle, AssetChangedState state);
 		void QueueAssetChanged(AssetHandle assetHandle, AssetChangedState state);
 
 		void QueueAssetInternal(AssetHandle assetHandle, Ref<Asset>& asset);
 
+		static bool ValidateAssetType(AssetHandle handle, Ref<Asset> asset);
 		static AssetMetadata& GetMetadataFromHandleMutable(AssetHandle handle);
 		static AssetMetadata& GetMetadataFromFilePathMutable(const std::filesystem::path filePath);
 
 		static const std::filesystem::path GetCleanAssetFilePath(const std::filesystem::path& path);
 		
-		std::vector<std::filesystem::path> GetEngineMetaFiles();
-		std::vector<std::filesystem::path> GetProjectMetaFiles();
+		std::vector<std::filesystem::path> GetEngineAssetFiles();
+		std::vector<std::filesystem::path> GetProjectAssetFiles();
 
-		std::unordered_map<AssetType, Scope<AssetImporter>> m_assetImporters;
+		std::unordered_map<AssetType, Scope<AssetSerializer>> m_assetSerializers;
+		std::unordered_map<AssetType, AssetCreateFunction> m_assetCreateFunctions;
+
 		std::unordered_map<AssetHandle, Ref<Asset>> m_assetCache;
 		std::unordered_map<AssetHandle, Ref<Asset>> m_memoryAssets;
 		std::unordered_map<AssetHandle, AssetMetadata> m_assetRegistry;
@@ -186,6 +194,7 @@ namespace Volt
 		std::unordered_map<AssetType, std::vector<AssetChangedCallbackInfo>> m_assetChangedCallbacks;
 		std::vector<AssetChangedQueueInfo> m_assetChangedQueue;
 		std::mutex m_assetChangedQueueMutex;
+		Scope<AssetFactory> m_assetFactory;
 
 		mutable std::shared_mutex m_assetRegistryMutex;
 		mutable std::shared_mutex m_assetCacheMutex;
@@ -199,16 +208,24 @@ namespace Volt
 			return nullptr;
 		}
 
-		Ref<Asset> asset = CreateRef<T>();
-		Get().LoadAsset(assetHandle, asset);
-
-		if (asset)
 		{
-			if (asset->GetType() != T::GetStaticType())
+			ReadLock lock{ Get().m_assetRegistryMutex };
+			const auto& metadata = GetMetadataFromHandle(assetHandle);
+			if (!metadata.IsValid())
 			{
-				VT_CORE_CRITICAL("Type Mismatch!");
+				VT_CORE_ERROR("[AssetManager] Trying to load asset which has invalid metadata!");
+				return nullptr;
 			}
 		}
+
+		Ref<Asset> asset = CreateRef<T>();
+		if (!ValidateAssetType(assetHandle, asset))
+		{
+			VT_CORE_CRITICAL("[AssetManager] Asset type does not match!");
+			return nullptr;
+		}
+
+		Get().LoadAsset(assetHandle, asset);
 		return std::reinterpret_pointer_cast<T>(asset);
 	}
 
@@ -226,7 +243,18 @@ namespace Volt
 			return nullptr;
 		}
 
+		{
+			ReadLock lock{ Get().m_assetRegistryMutex };
+			const auto& metadata = GetMetadataFromHandle(assetHandle);
+			if (!metadata.IsValid())
+			{
+				VT_CORE_ERROR("[AssetManager] Trying to load asset which has invalid metadata!");
+				return nullptr;
+			}
+		}
+
 		Ref<Asset> asset = QueueAsset<T>(assetHandle);
+
 		if (!asset)
 		{
 			return nullptr;
@@ -234,12 +262,6 @@ namespace Volt
 
 		while (!asset->IsValid())
 		{}
-
-		if (asset->GetType() != T::GetStaticType())
-		{
-			VT_CORE_CRITICAL("Type Mismatch!");
-		}
-
 		return std::reinterpret_pointer_cast<T>(asset);
 	}
 
@@ -257,6 +279,16 @@ namespace Volt
 			return nullptr;
 		}
 
+		{
+			ReadLock lock{ Get().m_assetRegistryMutex };
+			const auto& metadata = GetMetadataFromHandle(handle);
+			if (!metadata.IsValid())
+			{
+				VT_CORE_ERROR("[AssetManager] Trying to load asset which has invalid metadata!");
+				return nullptr;
+			}
+		}
+
 		// If it's a memory asset, return it
 		if (Get().m_memoryAssets.contains(handle))
 		{
@@ -272,13 +304,15 @@ namespace Volt
 		}
 
 		Ref<Asset> asset = CreateRef<T>();
+		if (!ValidateAssetType(handle, asset))
+		{
+			VT_CORE_CRITICAL("[AssetManager] Asset type does not match!");
+			return nullptr;
+		}
+
 		asset->SetFlag(AssetFlag::Queued, true);
 		Get().QueueAssetInternal(handle, asset);
 
-		if (asset->GetType() != T::GetStaticType())
-		{
-			VT_CORE_CRITICAL("Type Mismatch!");
-		}
 		return std::reinterpret_pointer_cast<T>(asset);
 	}
 
@@ -308,8 +342,6 @@ namespace Volt
 		AssetManager::Get().m_assetRegistry.emplace(asset->handle, metadata);
 		AssetManager::Get().m_assetCache.emplace(asset->handle, asset);
 
-		Get().SerializeAssetMetaFile(metadata.handle);
-
 		return asset;
 	}
 
@@ -338,12 +370,12 @@ namespace Volt
 	inline const ImporterType& AssetManager::GetImporterForType()
 	{
 		const auto type = Type::GetStaticType();
-		if (!Get().m_assetImporters.contains(type))
+		if (!Get().m_assetSerializers.contains(type))
 		{
 			VT_CORE_ASSERT(false, "Importer for type does not exist!");
 		}
 
-		return (ImporterType&)*Get().m_assetImporters.at(type);
+		return (ImporterType&)*Get().m_assetSerializers.at(type);
 	}
 	template<typename T>
 	inline const std::vector<Ref<T>> AssetManager::GetAllCachedAssetsOfType()

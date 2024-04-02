@@ -3,9 +3,14 @@
 #include "Volt/Log/Log.h"
 
 #include <chrono>
-
 #include <string>
-#include <windows.h>
+
+namespace Time
+{
+	typedef std::chrono::milliseconds::period Milliseconds;
+	typedef std::chrono::seconds::period Seconds;
+	typedef std::chrono::nanoseconds Nanoseconds;
+}
 
 class ScopedTimer
 {
@@ -30,10 +35,11 @@ public:
 		}
 	}
 
+	template<typename T = Time::Milliseconds>
 	inline float GetTime()
 	{
-		return std::chrono::duration<float, std::chrono::milliseconds::period>(std::chrono::high_resolution_clock::now() - m_startTime).count();
-	};
+		return std::chrono::duration<float, T>(std::chrono::high_resolution_clock::now() - m_startTime).count();
+	}
 
 private:
 	std::string m_name;

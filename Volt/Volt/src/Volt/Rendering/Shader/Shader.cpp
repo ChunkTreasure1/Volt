@@ -211,9 +211,15 @@ namespace Volt
 		}
 	}
 
-	Shader::Shader(const std::string& name, const std::vector<std::filesystem::path>& shaderFiles, bool forceCompile)
-		: myName(name), myShaderFiles(shaderFiles)
+	Shader::~Shader()
 	{
+		Release();
+	}
+
+	void Shader::Initialize(const std::string& name, const std::vector<std::filesystem::path>& shaderFiles, bool forceCompile)
+	{
+		myName = name;
+		myShaderFiles = shaderFiles;
 
 		if (shaderFiles.empty())
 		{
@@ -223,11 +229,6 @@ namespace Volt
 
 		Reload(forceCompile);
 		GenerateHash();
-	}
-
-	Shader::~Shader()
-	{
-		Release();
 	}
 
 	const bool Shader::Reload(bool forceCompile)
@@ -314,7 +315,9 @@ namespace Volt
 
 	Ref<Shader> Shader::Create(const std::string& name, std::vector<std::filesystem::path> paths, bool forceCompile)
 	{
-		return CreateRef<Shader>(name, paths, forceCompile);
+		auto shader =  CreateRef<Shader>();
+		shader->Initialize(name, paths, forceCompile);
+		return shader;
 	}
 
 	void Shader::GenerateHash()

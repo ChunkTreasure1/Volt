@@ -1247,7 +1247,6 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::CopyBufferToImage(Ref<Allocation> srcBuffer, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
-
 		auto& vkImage = dstImage->AsRef<VulkanImage2D>();
 
 		VkBufferImageCopy region{};
@@ -1264,6 +1263,27 @@ namespace Volt::RHI
 		region.imageExtent = { width, height, 1 };
 
 		vkCmdCopyBufferToImage(m_commandBuffers.at(index).commandBuffer, srcBuffer->GetResourceHandle<VkBuffer>(), dstImage->GetHandle<VkImage>(), static_cast<VkImageLayout>(vkImage.GetCurrentLayout()), 1, &region);
+	}
+
+	void VulkanCommandBuffer::CopyImageToBuffer(Ref<Image2D> srcImage, Ref<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip)
+	{
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		auto& vkImage = srcImage->AsRef<VulkanImage2D>();
+
+		VkBufferImageCopy region{};
+		region.bufferOffset = dstOffset;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+
+		region.imageSubresource.aspectMask = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
+		region.imageSubresource.mipLevel = mip;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
+
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = { width, height, 1 };
+
+		vkCmdCopyImageToBuffer(m_commandBuffers.at(index).commandBuffer, srcImage->GetHandle<VkImage>(), static_cast<VkImageLayout>(vkImage.GetCurrentLayout()), dstBuffer->GetResourceHandle<VkBuffer>(), 1, &region);
 	}
 
 	void VulkanCommandBuffer::CopyImage(Ref<Image2D> srcImage, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height)

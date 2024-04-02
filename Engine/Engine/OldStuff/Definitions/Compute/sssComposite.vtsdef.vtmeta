@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 4379511515152957543
+  assetHandle: 17288527058691534305
   filePath: Engine/Shaders/Definitions/Compute/sssComposite.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 5645580429641607226
+    - 2892278115364692890
+  Properties:
+    {}

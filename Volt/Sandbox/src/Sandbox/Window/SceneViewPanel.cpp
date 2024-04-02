@@ -1048,7 +1048,14 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 	{
 		for (const auto& child : children)
 		{
-			DrawEntity(m_scene->GetEntityFromUUID(child), filter);
+			auto childEnt = m_scene->GetEntityFromUUID(child);
+			if (!childEnt)
+			{
+				// #TODO_Ivar: Maybe display invalid entity somehow?
+				continue;
+			}
+
+			DrawEntity(childEnt, filter);
 		}
 
 		ImGui::TreePop();

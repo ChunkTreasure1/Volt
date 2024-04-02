@@ -21,14 +21,14 @@
 MeshPreviewPanel::MeshPreviewPanel()
 	: EditorWindow("Mesh Preview", true)
 {
-	myCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
+	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myScene = Volt::Scene::CreateDefaultScene("Mesh Preview", false);
 
 	// Preview entity
 	{
 		auto entity = myScene->CreateEntity();
 		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>();
-		comp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+		comp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube_Mesh.vtasset");
 		myPreviewEntity = entity;
 	}
 }

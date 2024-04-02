@@ -10,8 +10,8 @@
 #include <Mosaic/MosaicNode.h>
 #include <Mosaic/NodeRegistry.h>
 
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
 
 namespace Volt
 {
@@ -28,7 +28,7 @@ namespace Volt
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 
 		if (!streamReader.OpenFile(filePath))
 		{
@@ -111,7 +111,7 @@ namespace Volt
 		const Ref<Material> mosaicAsset = std::reinterpret_pointer_cast<Material>(asset);
 		const auto graph = mosaicAsset->GetGraph();
 
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
+		YAMLFileStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("MosaicGraph");
 		streamWriter.SetKey("guid", mosaicAsset->m_materialGUID);

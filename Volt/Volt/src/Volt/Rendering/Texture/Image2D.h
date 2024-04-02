@@ -2,7 +2,7 @@
 
 #include "Volt/Rendering/Texture/ImageCommon.h"
 
-#include "Volt/Core/Buffer.h"
+#include <CoreUtilities/Buffer/Buffer.h>
 
 #include <vulkan/vulkan.h>
 #include <map>
@@ -46,6 +46,7 @@ namespace Volt
 		const VkDescriptorImageInfo& GetDescriptorInfo(VkImageLayout targetLayout);
 
 		void CopyFromImage(VkCommandBuffer commandBuffer, Ref<Image2D> srcImage);
+		size_t CopyToBuffer(Buffer& buffer, uint32_t mip = 0, size_t bufferOffset = 0) const;
 
 		template<typename T>
 		inline T ReadPixel(uint32_t x, uint32_t y);
@@ -57,6 +58,8 @@ namespace Volt
 		inline T* Map();
 
 		void Unmap();
+
+		const size_t GetAllocationSize() const;
 
 		static Ref<Image2D> Create(const ImageSpecification& specification, const void* data = nullptr);
 		static Ref<Image2D> Create(const ImageSpecification& specification, bool transitionTolayout);

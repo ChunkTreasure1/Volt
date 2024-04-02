@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 9657702777003503746
+  assetHandle: 2461225861046004795
   filePath: Engine/Shaders/Definitions/Environment/VolumetricFog/volumetricRayMarch.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 10727358917331755744
+    - 16737677636808457441
+  Properties:
+    {}

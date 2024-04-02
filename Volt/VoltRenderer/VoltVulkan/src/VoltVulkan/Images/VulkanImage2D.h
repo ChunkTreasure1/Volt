@@ -28,6 +28,7 @@ namespace Volt::RHI
 
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
+		const uint32_t GetMipCount() const override;
 		const PixelFormat GetFormat() const override;
 		const ImageUsage GetUsage() const override;
 		const uint32_t CalculateMipCount() const override;

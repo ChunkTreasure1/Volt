@@ -1,9 +1,6 @@
 #include "cupch.h"
 #include "YAMLStreamWriter.h"
-
-YAMLStreamWriter::YAMLStreamWriter(const std::filesystem::path& targetFilePath)
-	: m_targetFilePath(targetFilePath)
-{}
+#include "YAMLFileStreamWriter.h"
 
 void YAMLStreamWriter::BeginMap()
 {
@@ -28,17 +25,4 @@ void YAMLStreamWriter::EndSequence()
 void YAMLStreamWriter::BeginMapNamned(const std::string& mapName)
 {
 	m_emitter << YAML::Key << mapName << YAML::BeginMap;
-}
-
-const bool YAMLStreamWriter::WriteToDisk()
-{
-	std::ofstream fout{ m_targetFilePath };
-	if (!fout.is_open())
-	{
-		return false;
-	}
-
-	fout << m_emitter.c_str();
-
-	return true;
 }

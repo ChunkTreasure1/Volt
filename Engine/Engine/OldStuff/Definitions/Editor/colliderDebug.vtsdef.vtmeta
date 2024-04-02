@@ -1,7 +1,9 @@
 Metadata:
-  assetHandle: 5914096883732218415
+  assetHandle: 6530562566454829558
   filePath: Engine/Shaders/Definitions/Editor/colliderDebug.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 13639218079433149575
-    - 9706206547984285303
+    - 3601805211560947120
+    - 17449542838329971233
+  Properties:
+    {}

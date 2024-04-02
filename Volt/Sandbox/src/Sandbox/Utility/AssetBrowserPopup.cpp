@@ -72,7 +72,7 @@ AssetBrowserPopup::State AssetBrowserPopup::RenderView(const std::vector<Volt::A
 			continue;
 		}
 
-		if (Volt::AssetManager::IsSourceFile(handle))
+		if (Volt::AssetManager::IsSourceAsset(handle))
 		{
 			continue;
 		}

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Core/Buffer.h"
+#include <CoreUtilities/Buffer/Buffer.h>
 
 #include "Volt/Rendering/GlobalDescriptorSet.h"
 #include "Volt/Rendering/RendererStructs.h"

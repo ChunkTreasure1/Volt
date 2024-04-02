@@ -15,9 +15,9 @@ namespace Volt
 		FbxImporter() = default;
 
 	protected:
-		void ImportMeshImpl(const std::filesystem::path& path, Ref<Mesh>& mesh) override;
-		void ImportSkeletonImpl(const std::filesystem::path& path, Ref<Skeleton>& skeleton) override;
-		void ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Ref<Animation>& animation) override;
+		bool ImportMeshImpl(const std::filesystem::path& path, Mesh& dstMesh) override;
+		bool ImportSkeletonImpl(const std::filesystem::path& path, Skeleton& dstSkeleton) override;
+		bool ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation) override;
 
 		void ExportMeshImpl(std::vector<Ref<Mesh>> assets, const std::filesystem::path& path) override;
 		void ExportSkeletonImpl(std::vector<Ref<Skeleton>> assets, const std::filesystem::path&) override {};
@@ -30,6 +30,6 @@ namespace Volt
 			size_t hash;
 		};
 
-		void ProcessSkeleton(Ref<Skeleton> skeleton, const std::vector<TGA::FBX::Skeleton::Bone>& bones, uint32_t currentIndex);
+		void ProcessSkeleton(Skeleton& skeleton, const std::vector<TGA::FBX::Skeleton::Bone>& bones, uint32_t currentIndex);
 	};
 }

@@ -1,7 +1,9 @@
 Metadata:
-  assetHandle: 10521942238966162052
+  assetHandle: 15419602749726191012
   filePath: Engine/Shaders/Definitions/Forward/transparentComposite.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 7568016120944877380
-    - 15636453146988702227
+    - 13811339343625986972
+    - 1537890340690121028
+  Properties:
+    {}

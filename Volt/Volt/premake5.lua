@@ -83,7 +83,11 @@ project "Volt"
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.cityhash}",
-		"%{IncludeDir.METIS}"
+		"%{IncludeDir.METIS}",
+		"%{IncludeDir.shaderc_glslc}",
+		"%{IncludeDir.shaderc_utils}",
+
+		"%{IncludeDir.zlib}"
 	}
 
 	links

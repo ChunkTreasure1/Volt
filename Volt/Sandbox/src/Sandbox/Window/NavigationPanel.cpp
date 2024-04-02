@@ -118,7 +118,7 @@ Ref<Volt::Mesh> NavigationPanel::CompileWorldMeshes()
 		//	Volt::Entity entity = { id, myScene };
 		//	auto transform = entity.GetTransform();
 
-		//	srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh"));
+		//	srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Cube_Mesh.vtasset"));
 		//	srcTransforms.emplace_back(transform * glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), collider.halfSize * 2.f * 0.01f));
 		//});
 
@@ -127,7 +127,7 @@ Ref<Volt::Mesh> NavigationPanel::CompileWorldMeshes()
 		//	Volt::Entity entity = { id, myScene };
 		//	auto transform = entity.GetTransform();
 
-		//	srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Capsule.vtmesh"));
+		//	srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Capsule.vtasset"));
 		//	srcTransforms.emplace_back(transform * glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f, collider.height * 0.01f, collider.radius * 2.f * 0.01f }));
 		//});
 
@@ -136,7 +136,7 @@ Ref<Volt::Mesh> NavigationPanel::CompileWorldMeshes()
 		//	Volt::Entity entity = { id, myScene };
 		//	auto transform = entity.GetTransform();
 		//
-		//	srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh"));
+		//	srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtasset"));
 		//	srcTransforms.emplace_back(transform * glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f }));
 		//});
 

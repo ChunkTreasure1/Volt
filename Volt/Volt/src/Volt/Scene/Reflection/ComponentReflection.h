@@ -103,7 +103,8 @@ namespace Volt
 		Color4 = BIT(1),
 
 		NoCopy = BIT(2),
-		NoSerialize = BIT(3)
+		NoSerialize = BIT(3),
+		DoNotShow = BIT(4)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(ComponentMemberFlag);

@@ -90,6 +90,9 @@ namespace Volt
 	{
 		VT_PROFILE_SCOPE((std::string("Scene::OnEvent: ") + std::string(e.GetName())).c_str());
 
+		EventDispatcher dispatcher{ e };
+		dispatcher.Dispatch<AppPostFrameUpdateEvent>(VT_BIND_EVENT_FN(Scene::PostFrameUpdateEvent));
+
 		if (!m_isPlaying)
 		{
 			return;
@@ -449,8 +452,10 @@ namespace Volt
 
 	void Scene::RemoveEntity(Entity entity)
 	{
+		std::scoped_lock lock{ m_removeEntityMutex };
 		RemoveEntityInternal(entity, false);
 		SortScene();
+		//m_entityRemoveQueue.push_back(entity.GetID());
 	}
 
 	void Scene::ParentEntity(Entity parent, Entity child)
@@ -703,12 +708,12 @@ namespace Volt
 			if (createDefaultMesh)
 			{
 				// #TODO_Ivar: Readd
-				//auto ent = newScene->CreateEntity("Cube");
+				auto ent = newScene->CreateEntity("Cube");
 
 				//auto id = ent.GetComponent<IDComponent>();
 
-				//auto& meshComp = ent.AddComponent<MeshComponent>();
-				//meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+				auto& meshComp = ent.AddComponent<MeshComponent>();
+				meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube_Mesh.vtasset");
 
 				//ent.AddComponent<RigidbodyComponent>();
 			}
@@ -734,11 +739,13 @@ namespace Volt
 				auto ent = newScene->CreateEntity("Camera");
 				ent.AddComponent<CameraComponent>();
 
-				ent.SetPosition({ 0.f, 0.f, -5.f });
+				ent.SetPosition({ 0.f, 0.f, -500.f });
 			}
 		}
 
 		newScene->InvalidateRenderScene();
+		newScene->m_sceneSettings.useWorldEngine = true;
+
 		return newScene;
 	}
 
@@ -822,7 +829,7 @@ namespace Volt
 		TQS resultTransform{};
 		for (const auto& ent : std::ranges::reverse_view(hierarchy))
 		{
-			const auto& transComp = m_registry.get<TransformComponent>((entt::entity)ent);
+			const auto& transComp = m_registry.get<TransformComponent>(ent.GetHandle());
 
 			resultTransform.position = resultTransform.position + resultTransform.rotation * transComp.position;
 			resultTransform.rotation = resultTransform.rotation * transComp.rotation;
@@ -986,9 +993,27 @@ namespace Volt
 		m_registry.destroy(entity);
 	}
 
+	void Scene::ExecuteEntityRemoveQueue()
+	{
+		std::scoped_lock lock{ m_removeEntityMutex };
+		for (const auto& entityId : m_entityRemoveQueue)
+		{
+			Entity entity = GetEntityFromUUID(entityId);
+			RemoveEntityInternal(entity, false);
+		}
+
+		SortScene();
+	}
+
 	void Scene::AddLayer(const std::string& layerName, uint32_t layerId)
 	{
 		m_sceneLayers.emplace_back(layerId, layerName);
+	}
+
+	bool Scene::PostFrameUpdateEvent(const AppPostFrameUpdateEvent& e)
+	{
+		ExecuteEntityRemoveQueue();
+		return false;
 	}
 
 	void Scene::SetLayers(const std::vector<SceneLayer>& sceneLayers)
@@ -1101,7 +1126,9 @@ namespace Volt
 		}
 
 		AudioSourceComponent& comp = registry.get<AudioSourceComponent>(id);
-		comp.OnCreate(id);
+		const IDComponent& idComp = registry.get<const IDComponent>(id);
+
+		comp.OnCreate(idComp.id);
 	}
 
 	void Scene::AudioListenerComponent_OnCreate(entt::registry& registry, entt::entity id)
@@ -1112,7 +1139,8 @@ namespace Volt
 		}
 
 		AudioListenerComponent& comp = registry.get<AudioListenerComponent>(id);
-		comp.OnCreate(id);
+		const IDComponent& idComp = registry.get<const IDComponent>(id);
+		comp.OnCreate(idComp.id);
 	}
 
 	void Scene::CameraComponent_OnCreate(entt::registry& registry, entt::entity id)

@@ -34,7 +34,6 @@ namespace Volt
 	{
 	}
 
-#pragma optimize("", off)
 	void NetServer::BackendUpdate()
 	{
 		HandleIncomming();
@@ -88,7 +87,7 @@ namespace Volt
 			m_reload = false;
 		}
 	}
-#pragma optimize("", on)
+
 	void NetServer::Transmit(const Nexus::Packet& in_packet)
 	{
 		for (const auto& connection : m_connectionRegistry.GetClientIDs())
@@ -118,7 +117,7 @@ namespace Volt
 
 		m_reload = true;
 	}
-#pragma optimize("", off)
+
 	void NetServer::OnConnect()
 	{
 		//CreateDebugEnemy();
@@ -140,7 +139,6 @@ namespace Volt
 		confirmationPacket.id = Nexus::ePacketID::CONNECTION_CONFIRMED;
 		m_relay.Transmit(confirmationPacket, m_connectionRegistry.GetSockAddr(newClientID));
 	}
-#pragma optimize("", on)
 
 	void NetServer::OnConnectionConfirmed()
 	{

@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 15698253543201197327
+  assetHandle: 12886999447041920349
   filePath: Engine/Shaders/Definitions/PostProcessing/aces.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 140074450468158262
+    - 16831301972904337312
+  Properties:
+    {}

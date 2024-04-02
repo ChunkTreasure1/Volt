@@ -11,9 +11,9 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 
 		const float localTime = AnimationManager::globalClock - aStartTime;
-		const float normalizedTime = localTime / myDuration;
+		const float normalizedTime = localTime / m_duration;
 
-		const int32_t frameCount = (int32_t)myFrames.size();
+		const int32_t frameCount = (int32_t)m_frames.size();
 		int32_t currentFrameIndex = frameCount - std::abs((int32_t)(std::floor(normalizedTime * (float)frameCount)) % (2 * frameCount) - frameCount);
 
 		currentFrameIndex = std::clamp(currentFrameIndex, 0, frameCount - 1);
@@ -40,12 +40,12 @@ namespace Volt
 			return {};
 		}
 
-		const float animDelta = 1.f / (float)myFramesPerSecond;
+		const float animDelta = 1.f / (float)m_framesPerSecond;
 		const float frameTime = localTime / animDelta;
 		const float deltaTime = frameTime - (float)currentFrameIndex;
 
-		const Pose& currentFrame = myFrames.at(currentFrameIndex);
-		const Pose& nextFrame = myFrames.at(nextFrameIndex);
+		const Pose& currentFrame = m_frames.at(currentFrameIndex);
+		const Pose& nextFrame = m_frames.at(nextFrameIndex);
 
 		const auto& joints = aSkeleton->GetJoints();
 		const auto& invBindPoses = aSkeleton->GetInverseBindPose();
@@ -99,7 +99,7 @@ namespace Volt
 			return {};
 		}
 
-		const Pose& currentFrame = myFrames.at(frameIndex);
+		const Pose& currentFrame = m_frames.at(frameIndex);
 
 		const auto& joints = aSkeleton->GetJoints();
 		const auto& invBindPoses = aSkeleton->GetInverseBindPose();
@@ -141,12 +141,12 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		const float finalDuration = myDuration / speed;
+		const float finalDuration = m_duration / speed;
 
 		const float localTime = AnimationManager::globalClock - aStartTime;
 		const float normalizedTime = localTime / finalDuration;
 
-		const int32_t frameCount = (int32_t)myFrames.size();
+		const int32_t frameCount = (int32_t)m_frames.size();
 		int32_t currentFrameIndex = (int32_t)(std::floor(normalizedTime * (float)frameCount)) % frameCount;
 
 		if (normalizedTime > 1.f && !looping)
@@ -175,8 +175,8 @@ namespace Volt
 		std::vector<TRS> result;
 		result.resize(aSkeleton->GetJointCount(), TRS{});
 
-		const Pose& currentFrame = myFrames.at(currentFrameIndex);
-		const Pose& nextFrame = myFrames.at(nextFrameIndex);
+		const Pose& currentFrame = m_frames.at(currentFrameIndex);
+		const Pose& nextFrame = m_frames.at(nextFrameIndex);
 
 		const auto& joints = aSkeleton->GetJoints();
 		
@@ -202,9 +202,9 @@ namespace Volt
 	const bool Animation::IsAtEnd(float startTime, float speed)
 	{
 		const float localTime = AnimationManager::globalClock - startTime;
-		const float normalizedTime = localTime / (myDuration / speed);
+		const float normalizedTime = localTime / (m_duration / speed);
 
-		const int32_t frameCount = (int32_t)myFrames.size();
+		const int32_t frameCount = (int32_t)m_frames.size();
 		const int32_t currentFrameIndex = (int32_t)(std::floor(normalizedTime * (float)frameCount)) % frameCount;
 
 		int32_t nextFrameIndex = currentFrameIndex + 1;
@@ -220,11 +220,11 @@ namespace Volt
 	const bool Animation::HasPassedTime(float startTime, float speed, float time)
 	{
 		const float localTime = AnimationManager::globalClock - startTime;
-		const float normalizedTime = localTime / (myDuration / speed);
+		const float normalizedTime = localTime / (m_duration / speed);
 
-		const float normalizedWantedTime = time / (myDuration / speed);
+		const float normalizedWantedTime = time / (m_duration / speed);
 
-		const int32_t frameCount = (int32_t)myFrames.size();
+		const int32_t frameCount = (int32_t)m_frames.size();
 		const int32_t currentFrameIndex = (int32_t)(std::floor(normalizedTime * (float)frameCount)) % frameCount;
 
 		const int32_t wantedFrame = (int32_t)(std::floor(normalizedWantedTime * (float)frameCount)) % frameCount;
@@ -242,9 +242,9 @@ namespace Volt
 	const uint32_t Animation::GetFrameFromStartTime(float startTime, float speed)
 	{
 		const float localTime = AnimationManager::globalClock - startTime;
-		const float normalizedTime = localTime / (myDuration / speed);
+		const float normalizedTime = localTime / (m_duration / speed);
 
-		const int32_t frameCount = (int32_t)myFrames.size();
+		const int32_t frameCount = (int32_t)m_frames.size();
 		const int32_t currentFrameIndex = (int32_t)(std::floor(normalizedTime * (float)frameCount)) % frameCount;
 		return currentFrameIndex;
 	}
@@ -252,7 +252,7 @@ namespace Volt
 	const float Animation::GetNormalizedCurrentTimeFromStartTime(float startTime, float speed, bool looping)
 	{
 		const float localTime = AnimationManager::globalClock - startTime;
-		const float normalizedTime = localTime / (myDuration / speed);
+		const float normalizedTime = localTime / (m_duration / speed);
 		
 		if (looping)
 		{
@@ -265,11 +265,29 @@ namespace Volt
 		//return 0.0f;
 	}
 
+	void Animation::AddEvent(const std::string& eventName, uint32_t frame)
+	{
+		m_events.emplace_back(frame, eventName);
+	}
+
+	void Animation::RemoveEvent(const std::string& eventName, uint32_t frame)
+	{
+		auto it = std::find_if(m_events.begin(), m_events.end(), [eventName](const auto& event)
+		{
+			return event.name == eventName;
+		});
+
+		if (it != m_events.end())
+		{
+			m_events.erase(it);
+		}
+	}
+
 	const Animation::PoseData Animation::GetFrameDataFromAnimation(Animation& animation, const float aNormalizedTime)
 	{
 		PoseData animData{};
 
-		const size_t frameCount = animation.myFrames.size();
+		const size_t frameCount = animation.m_frames.size();
 
 		animData.currentFrameIndex = (size_t)std::floorf((float)frameCount * aNormalizedTime);
 		animData.nextFrameIndex = animData.currentFrameIndex + 1;
@@ -284,8 +302,8 @@ namespace Volt
 			animData.currentFrameIndex = frameCount - 1;
 		}
 
-		const float localTime = animation.myDuration * aNormalizedTime;
-		const float animDelta = 1.f / (float)animation.myFramesPerSecond;
+		const float localTime = animation.m_duration * aNormalizedTime;
+		const float animDelta = 1.f / (float)animation.m_framesPerSecond;
 		const float frameTime = localTime / animDelta;
 
 		animData.deltaTime = frameTime - (float)animData.currentFrameIndex;

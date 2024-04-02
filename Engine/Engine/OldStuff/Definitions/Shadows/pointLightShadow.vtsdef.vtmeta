@@ -1,8 +1,10 @@
 Metadata:
-  assetHandle: 16404079539625243705
+  assetHandle: 7617093585610972836
   filePath: Engine/Shaders/Definitions/Shadows/pointLightShadow.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 4329479645551032773
-    - 9101253671080566435
-    - 3942230982041443337
+    - 958466612296659324
+    - 11321470963536788218
+    - 4360583749447524551
+  Properties:
+    {}

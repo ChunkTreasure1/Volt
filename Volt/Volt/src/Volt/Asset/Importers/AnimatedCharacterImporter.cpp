@@ -9,8 +9,8 @@
 
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -30,7 +30,7 @@ namespace Volt
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 
 		if (!streamReader.OpenFile(filePath))
 		{
@@ -86,7 +86,7 @@ namespace Volt
 	{
 		Ref<AnimatedCharacter> character = std::reinterpret_pointer_cast<AnimatedCharacter>(asset);
 
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
+		YAMLFileStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("AnimatedCharacter");
 

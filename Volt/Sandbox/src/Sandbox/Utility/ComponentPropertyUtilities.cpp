@@ -101,6 +101,7 @@ void ComponentPropertyUtility::Initialize()
 	RegisterMonoPropertyType<glm::vec2>(s_monoPropertyFunctions);
 	RegisterMonoPropertyType<glm::vec3>(s_monoPropertyFunctions);
 	RegisterMonoPropertyType<glm::vec4>(s_monoPropertyFunctions);
+	RegisterMonoPropertyType<glm::quat>(s_monoPropertyFunctions);
 
 	RegisterMonoPropertyType<std::string>(s_monoPropertyFunctions);
 }
@@ -214,6 +215,11 @@ bool ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, Volt::Enti
 	{
 		for (const auto& member : componentType->GetMembers())
 		{
+			if ((member.flags & Volt::ComponentMemberFlag::DoNotShow) != Volt::ComponentMemberFlag::None)
+			{
+				continue;
+			}
+
 			if (member.typeDesc)
 			{
 				switch (member.typeDesc->GetValueType())

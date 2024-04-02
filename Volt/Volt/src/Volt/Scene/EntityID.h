@@ -1,5 +1,8 @@
 #pragma once
 
+class BinaryStreamReader;
+class BinaryStreamWriter;
+
 namespace Volt
 {
 	class EntityID
@@ -15,6 +18,10 @@ namespace Volt
 		~EntityID() = default;
 
 		operator uint32_t() const { return m_uuid; }
+		
+		static void Serialize(BinaryStreamWriter& streamWriter, const EntityID& data);
+		static void Deserialize(BinaryStreamReader& streamReader, EntityID& outData);
+
 	private:
 		uint32_t m_uuid;
 	};

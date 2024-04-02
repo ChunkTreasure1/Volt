@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Volt/Core/Base.h"
-#include "Volt/Core/Buffer.h"
+#include <CoreUtilities/Buffer/Buffer.h>
 
 #include "Volt/Net/Replicated/ReplicationConditions.h"
 

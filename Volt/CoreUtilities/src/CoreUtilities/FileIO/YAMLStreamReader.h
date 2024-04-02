@@ -9,8 +9,7 @@ class YAMLStreamReader
 {
 public:
 	YAMLStreamReader();
-
-	const bool OpenFile(const std::filesystem::path& filePath);
+	virtual ~YAMLStreamReader() = default;
 
 	const bool HasKey(const std::string& key);
 	const bool IsSequenceEmpty(const std::string& key);
@@ -29,12 +28,11 @@ public:
 
 	void ForEach(const std::string& key, std::function<void()> function);
 
-	const YAML::Node& GetRawNode() const { return m_currentNode; }
+	inline YAML::Node& GetRawNode() { return m_currentNode; }
 
-private:
+protected:
 	YAML::Node m_currentNode;
 	YAML::Node m_currentSequenceKeyNode;
-
 	std::vector<YAML::Node> m_nodeStack;
 
 	YAML::Node m_rootNode;

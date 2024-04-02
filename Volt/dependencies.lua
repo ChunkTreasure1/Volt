@@ -52,6 +52,7 @@ IncludeDir["shaderc_glslc"] = "%{wks.location}/Volt/vendor/shaderc/glslc"
 IncludeDir["Aftermath"] = "%{wks.location}/Volt/vendor/Aftermath/include"
 
 IncludeDir["meshoptimizer"] = "%{wks.location}/Volt/vendor/meshoptimizer/src"
+IncludeDir["zlib"] = "%{wks.location}/Volt/vendor/zlib/include"
 
 IncludeDir["CoreUtilities"] = "%{wks.location}/CoreUtilities/src"
 
@@ -63,12 +64,16 @@ LibraryDir["ffmpeg"] = "%{wks.location}/Volt/vendor/ffmpeg/lib/"
 LibraryDir["mono"] = "%{wks.location}/Volt/vendor/mono/lib/%{cfg.buildcfg}"
 LibraryDir["steam"] = "%{wks.location}/Volt/vendor/steam/lib/win64"
 LibraryDir["discord"] = "%{wks.location}/Volt/vendor/DiscordSDK/lib"
+LibraryDir["zlib"] = "%{wks.location}/Volt/vendor/zlib/lib/%{cfg.buildcfg}"
 
 LibraryDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/lib/%{cfg.buildcfg}"
 LibraryDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/lib/%{cfg.buildcfg}"
 
 LibraryDir["Aftermath"] = "%{wks.location}/Volt/vendor/Aftermath/lib"
 LibraryDir["METIS"] = "%{wks.location}/Volt/vendor/METIS/libmetis/%{cfg.buildcfg}"
+
+LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
+LibraryDir["VulkanSDK_Debug"] = "%{VULKAN_SDK}/Lib"
 
 Library = {}
 Library["fmod"] = "%{LibraryDir.fmod}/fmod_vc.lib"
@@ -82,12 +87,11 @@ Library["AkMusicEngine"] = "%{LibraryDir.wwise}/AkMusicEngine.lib"
 
 Library["AkRoomVerbFX"] = "%{LibraryDir.wwise}/AkRoomVerbFX.lib"
 
+Library["zlib"] = "%{LibraryDir.zlib}/libz-static.lib"
+
 Library["mono"] = "%{LibraryDir.mono}/libmono-static-sgen.lib"
 Library["steam"] = "%{LibraryDir.steam}/steam_api64.lib"
 Library["discord"] = "%{LibraryDir.discord}/discord_game_sdk.dll.lib"
-
-LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
-LibraryDir["VulkanSDK_Debug"] = "%{VULKAN_SDK}/Lib"
 
 Library["P4_client"] = "%{LibraryDir.P4}/libclient.lib"
 Library["P4_api"] = "%{LibraryDir.P4}/libp4api.lib"

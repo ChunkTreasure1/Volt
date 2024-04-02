@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Core/Buffer.h"
+#include <CoreUtilities/Buffer/Buffer.h>
 
 #include "Volt/Asset/Asset.h"
 #include "Volt/Rendering/Texture/ImageCommon.h"
@@ -191,10 +191,10 @@ namespace Volt
 			HLSL
 		};
 
-		Shader(const std::string& name, const std::vector<std::filesystem::path>& shaderFiles, bool forceCompile);
 		Shader() = default;
 		~Shader();
 
+		void Initialize(const std::string& name, const std::vector<std::filesystem::path>& shaderFiles, bool forceCompile);
 		const bool Reload(bool forceCompile);
 
 		VkDescriptorSet AllocateDescriptorSet(uint32_t set, VkDescriptorPool pool);
@@ -211,6 +211,7 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::ShaderDefinition; }
 		AssetType GetType() override { return GetStaticType(); }
+		uint32_t GetVersion() const override { return 1; }
 
 		static Ref<Shader> Create(const std::string& name, std::vector<std::filesystem::path> paths, bool forceCompile = false);
 

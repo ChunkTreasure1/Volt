@@ -26,8 +26,8 @@
 
 #include <VoltRHI/Shader/Shader.h>
 
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
-#include <CoreUtilities/FileIO//YAMLStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -35,7 +35,8 @@ namespace Volt
 {
 	bool TextureSourceImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		asset = CreateRef<Texture2D>();
+		Ref<Texture2D> texture = std::reinterpret_pointer_cast<Texture2D>(asset);
+
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filePath))
@@ -44,9 +45,8 @@ namespace Volt
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
-		asset = TextureImporter::ImportTexture(filePath);
 
-		if (!asset)
+		if (!TextureImporter::ImportTexture(filePath, *texture))
 		{
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
@@ -72,7 +72,7 @@ namespace Volt
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 		if (!streamReader.OpenFile(filesytemPath))
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
@@ -119,7 +119,7 @@ namespace Volt
 	{
 		Ref<ShaderDefinition> shaderDef = std::reinterpret_pointer_cast<ShaderDefinition>(asset);
 
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
+		YAMLFileStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
 		streamWriter.BeginMap();
 		streamWriter.SetKey("name", shaderDef->GetName());
 		streamWriter.SetKey("entryPoint", shaderDef->GetEntryPoint());
@@ -467,7 +467,8 @@ namespace Volt
 			return false;
 		}
 
-		asset = CreateRef<Font>(filePath);
+		asset = CreateRef<Font>();
+		std::reinterpret_pointer_cast<Font>(asset)->Initialize(filePath);
 		return true;
 	}
 
@@ -483,7 +484,7 @@ namespace Volt
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 		if (!streamReader.OpenFile(filePath))
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
@@ -504,7 +505,7 @@ namespace Volt
 	{
 		Ref<PhysicsMaterial> material = std::reinterpret_pointer_cast<PhysicsMaterial>(asset);
 
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
+		YAMLFileStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
 
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("PhysicsMaterial");
@@ -531,7 +532,8 @@ namespace Volt
 			return false;
 		}
 
-		asset = CreateRef<Video>(filePath);
+		asset = CreateRef<Video>();
+		std::reinterpret_pointer_cast<Video>(asset)->Initialize(filePath);
 		return true;
 	}
 
@@ -551,7 +553,7 @@ namespace Volt
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 
 		if (!streamReader.OpenFile(filePath))
 		{
@@ -594,7 +596,7 @@ namespace Volt
 	{
 		Ref<BlendSpace> blendSpace = std::reinterpret_pointer_cast<BlendSpace>(asset);
 
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
+		YAMLFileStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
 
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("BlendSpace");
@@ -698,8 +700,6 @@ namespace Volt
 
 	bool PostProcessingMaterialImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		asset = CreateRef<PostProcessingMaterial>();
-
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filePath))
@@ -752,8 +752,8 @@ namespace Volt
 			//shader = Renderer::GetDefaultData().defaultPostProcessingShader;
 		}
 
-		//asset = CreateRef<PostProcessingMaterial>(shader);
-		Ref<PostProcessingMaterial> postMat = std::reinterpret_pointer_cast<PostProcessingMaterial>(asset);
+		//Ref<PostProcessingMaterial> postMat = std::reinterpret_pointer_cast<PostProcessingMaterial>(asset);
+		//postMat->Initialize(shader);
 
 		YAML::Node specializationDataNode = rootMaterialNode["specializationData"];
 		/*if (specializationDataNode && postMat->myMaterialData.IsValid())

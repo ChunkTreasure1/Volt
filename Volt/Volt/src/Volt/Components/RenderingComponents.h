@@ -42,8 +42,8 @@ namespace Volt
 	struct CameraComponent
 	{
 		float fieldOfView = 60.f;
-		float nearPlane = 0.01f;
-		float farPlane = 1000.f;
+		float nearPlane = 1.f;
+		float farPlane = 100'000.f;
 		uint32_t priority = 0;
 
 		Ref<Camera> camera;
@@ -53,8 +53,8 @@ namespace Volt
 			reflect.SetGUID("{9258BEEC-3A31-4CAB-AB1E-654524E1C398}"_guid);
 			reflect.SetLabel("Camera Component");
 			reflect.AddMember(&CameraComponent::fieldOfView, "fieldOfView", "Field Of View", "", 60.f);
-			reflect.AddMember(&CameraComponent::nearPlane, "nearPlane", "Near Plane", "", 0.01f);
-			reflect.AddMember(&CameraComponent::farPlane, "farPlane", "Far Plane", "", 1000.f);
+			reflect.AddMember(&CameraComponent::nearPlane, "nearPlane", "Near Plane", "", 1.f);
+			reflect.AddMember(&CameraComponent::farPlane, "farPlane", "Far Plane", "", 100'000.f);
 			reflect.AddMember(&CameraComponent::priority, "priority", "Priority", "", 0);
 		}
 

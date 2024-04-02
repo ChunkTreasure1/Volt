@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 1909558494645848003
+  assetHandle: 6975907782735325665
   filePath: Engine/Shaders/Definitions/PostProcessing/AA/aaComposite.vtsdef
-  type: 64
+  type: 7
   Dependencies:
-    - 2895373394018815359
+    - 15105257189616714041
+  Properties:
+    {}

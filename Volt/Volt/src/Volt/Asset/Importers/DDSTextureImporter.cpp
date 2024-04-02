@@ -71,7 +71,7 @@ namespace Volt
 		}
 	}
 
-	Ref<Texture2D> DDSTextureImporter::ImportTextureImpl(const std::filesystem::path& path)
+	bool DDSTextureImporter::ImportTextureImpl(const std::filesystem::path& path, Texture2D& outTexture)
 	{
 		tdl::DDSFile dds;
 		auto returnCode = dds.Load(path.string().c_str());
@@ -83,7 +83,7 @@ namespace Volt
 		if (dds.GetTextureDimension() != tdl::DDSFile::TextureDimension::Texture2D)
 		{
 			VT_CORE_ERROR("Texture {0} is not 2D!", path.string().c_str());
-			return nullptr;
+			return false;
 		}
 
 		auto imageData = dds.GetImageData();
@@ -180,9 +180,8 @@ namespace Volt
 		commandBuffer->End();
 		commandBuffer->Execute();
 
-		Ref<Texture2D> texture = CreateRef<Texture2D>();
-		texture->SetImage(image);
+		outTexture.SetImage(image);
 
-		return texture;
+		return true;
 	}
 }
