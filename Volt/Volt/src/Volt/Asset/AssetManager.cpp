@@ -76,6 +76,10 @@ namespace Volt
 
 	void AssetManager::Shutdown()
 	{
+		m_assetCache.clear();
+		m_memoryAssets.clear();
+		m_assetRegistry.clear();
+
 		m_assetFactory->Shutdown();
 
 		TextureImporter::Shutdown();
@@ -265,11 +269,16 @@ namespace Volt
 			return;
 		}
 
-		m_assetSerializers.at(metadata.type)->Deserialize(metadata, asset);
+		{
+#ifndef VT_DIST
+			ScopedTimer timer{};
+#endif
+			m_assetSerializers.at(metadata.type)->Deserialize(metadata, asset);
 
-#ifdef VT_DEBUG
-		VT_CORE_TRACE("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath, assetHandle);
+#ifndef VT_DIST
+			VT_CORE_TRACE("[AssetManager]: Loaded asset {0} with handle {1} in {2} seconds!", metadata.filePath, asset->handle, timer.GetTime<Time::Seconds>());
 #endif	
+		}
 
 		asset->handle = metadata.handle;
 		asset->assetName = metadata.filePath.stem().string();
@@ -392,7 +401,6 @@ namespace Volt
 		// If the asset already exists in the registry, we only update the file path
 		if (!instance.m_assetRegistry.contains(asset->handle))
 		{
-
 			AssetMetadata& metaData = instance.m_assetRegistry[asset->handle];
 			metaData.filePath = GetCleanAssetFilePath(targetFilePath);
 			metaData.handle = asset->handle;
@@ -413,7 +421,17 @@ namespace Volt
 			metadata = GetMetadataFromHandle(asset->handle);
 		}
 
-		instance.m_assetSerializers[metadata.type]->Serialize(metadata, asset);
+		{
+#ifndef VT_DIST
+			ScopedTimer timer{};
+#endif
+
+			instance.m_assetSerializers[metadata.type]->Serialize(metadata, asset);
+
+#ifndef VT_DIST
+			VT_CORE_TRACE("[AssetManager]: Saved asset {0} to {1} in {2} seconds!", metadata.handle, metadata.filePath, timer.GetTime<Time::Seconds>());
+#endif
+		}
 
 		{
 			WriteLock lock{ instance.m_assetCacheMutex };
@@ -447,7 +465,17 @@ namespace Volt
 			metadata = GetMetadataFromHandle(asset->handle);
 		}
 
-		instance.m_assetSerializers[metadata.type]->Serialize(metadata, asset);
+		{
+#ifndef VT_DIST
+			ScopedTimer timer{};
+#endif
+
+			instance.m_assetSerializers[metadata.type]->Serialize(metadata, asset);
+
+#ifndef VT_DIST
+			VT_CORE_TRACE("[AssetManager]: Saved asset {0} to {1} in {2} seconds!", metadata.handle, metadata.filePath, timer.GetTime<Time::Seconds>());
+#endif
+		}
 
 		{
 			WriteLock lock{ instance.m_assetCacheMutex };
@@ -1206,23 +1234,29 @@ namespace Volt
 
 				if (!m_assetSerializers.contains(metadata.type))
 				{
-					VT_CORE_ERROR("No importer for asset found!");
+					VT_CORE_ERROR("[AssetManager]: No importer for asset found!");
 					asset->SetFlag(AssetFlag::Invalid, true);
 					return;
 				}
 
-				m_assetSerializers.at(metadata.type)->Deserialize(metadata, asset);
+				{
+#ifndef VT_DIST
+					ScopedTimer timer{};
+#endif
+
+					m_assetSerializers.at(metadata.type)->Deserialize(metadata, asset);
+
+#ifndef VT_DIST
+					VT_CORE_TRACE("[AssetManager]: Loaded asset {0} with handle {1} in {2} seconds!", metadata.filePath.string().c_str(), asset->handle, timer.GetTime<Time::Seconds>());
+#endif
+				}
+
 				if (handle != Asset::Null())
 				{
 					asset->handle = handle;
 				}
 
 				asset->assetName = metadata.filePath.stem().string();
-
-#ifndef VT_DIST
-				VT_CORE_INFO("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath.string().c_str(), asset->handle);
-#endif
-
 				asset->SetFlag(AssetFlag::Queued, false);
 
 				{
@@ -1240,7 +1274,7 @@ namespace Volt
 			}, assetHandle);
 
 #ifndef VT_DIST
-			VT_CORE_TRACE("[AssetManager] Queued asset {0} for loading!", metadata.filePath.string());
+			VT_CORE_TRACE("[AssetManager]: Queued asset {0} for loading!", metadata.filePath);
 #endif
 		}
 	}

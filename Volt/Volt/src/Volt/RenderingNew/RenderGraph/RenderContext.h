@@ -7,6 +7,8 @@
 
 #include <VoltRHI/Core/RHICommon.h>
 #include <VoltRHI/Shader/Shader.h>
+
+#include "CoreUtilities/Profiling/Profiling.h"
 	
 #include <glm/glm.hpp>
 #include <half/half.hpp>
@@ -204,7 +206,7 @@ namespace Volt
 		void SetRenderGraphInstance(RenderGraph* renderGraph);
 		void UploadConstantsData();
 
-		RHI::ShaderRenderGraphConstantsData GetRenderGraphConstantsData();
+		const RHI::ShaderRenderGraphConstantsData& GetRenderGraphConstantsData();
 
 		Ref<RHI::DescriptorTable> GetOrCreateDescriptorTable(Ref<RHI::RenderPipeline> renderPipeline);
 		Ref<RHI::DescriptorTable> GetOrCreateDescriptorTable(Ref<RHI::ComputePipeline> computePipeline);
@@ -233,10 +235,12 @@ namespace Volt
 	template<typename T>
 	inline void RenderContext::SetConstant(const std::string& name, const T& data)
 	{
+		VT_PROFILE_FUNCTION();
+
 		// #TODO_Ivar: Add validation
 		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
 
-		RHI::ShaderRenderGraphConstantsData constantsData = GetRenderGraphConstantsData();
+		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
 		VT_ENSURE(constantsData.uniforms.contains(name));
 
 		const auto& uniform = constantsData.uniforms.at(name);
@@ -251,9 +255,11 @@ namespace Volt
 	template<typename F>
 	inline void RenderContext::SetConstant(const std::string& name, const std::vector<F>& data)
 	{
+		VT_PROFILE_FUNCTION();
+
 		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
 		
-		RHI::ShaderRenderGraphConstantsData constantsData = GetRenderGraphConstantsData();
+		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
 		VT_ENSURE(constantsData.uniforms.contains(name));
 
 		const auto& uniform = constantsData.uniforms.at(name);
@@ -268,9 +274,11 @@ namespace Volt
 	template<typename F, size_t COUNT>
 	inline void RenderContext::SetConstant(const std::string& name, const std::array<F, COUNT>& data)
 	{
+		VT_PROFILE_FUNCTION();
+
 		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
 
-		RHI::ShaderRenderGraphConstantsData constantsData = GetRenderGraphConstantsData();
+		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
 		VT_ENSURE(constantsData.uniforms.contains(name));
 
 		const auto& uniform = constantsData.uniforms.at(name);

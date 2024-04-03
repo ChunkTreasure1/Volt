@@ -343,7 +343,7 @@ namespace Volt
 		m_passConstantsBuffer->Unmap();
 	}
 
-	RHI::ShaderRenderGraphConstantsData RenderContext::GetRenderGraphConstantsData()
+	const RHI::ShaderRenderGraphConstantsData& RenderContext::GetRenderGraphConstantsData()
 	{
 		if (m_currentRenderPipeline)
 		{
@@ -432,9 +432,11 @@ namespace Volt
 	template<>
 	void RenderContext::SetConstant(const std::string& name, const ResourceHandle& data)
 	{
+		VT_PROFILE_FUNCTION();
+
 		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
 
-		RHI::ShaderRenderGraphConstantsData constantsData = GetRenderGraphConstantsData();
+		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
 		VT_ENSURE(constantsData.uniforms.contains(name));
 
 		const auto& uniform = constantsData.uniforms.at(name);

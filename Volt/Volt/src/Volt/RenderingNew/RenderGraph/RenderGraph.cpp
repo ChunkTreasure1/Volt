@@ -14,6 +14,8 @@
 #include <VoltRHI/Buffers/StorageBuffer.h>
 #include <VoltRHI/Images/ImageView.h>
 
+#include <CoreUtilities/Profiling/Profiling.h>
+
 namespace Volt
 {
 	namespace Utility
@@ -746,6 +748,8 @@ namespace Volt
 
 	Weak<RHI::ImageView> RenderGraph::GetImage2DView(const RenderGraphResourceHandle resourceHandle)
 	{
+		VT_PROFILE_FUNCTION();
+
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
 
@@ -784,6 +788,8 @@ namespace Volt
 
 	Weak<RHI::Image2D> RenderGraph::GetImage2DRaw(const RenderGraphResourceHandle resourceHandle)
 	{
+		VT_PROFILE_FUNCTION();
+
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
 
@@ -823,6 +829,8 @@ namespace Volt
 
 	ResourceHandle RenderGraph::GetImage2D(const RenderGraphResourceHandle resourceHandle, const uint32_t mip, const uint32_t layer)
 	{
+		VT_PROFILE_FUNCTION();
+
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
 
@@ -860,6 +868,8 @@ namespace Volt
 
 	ResourceHandle RenderGraph::GetImage2DArray(const RenderGraphResourceHandle resourceHandle, const uint32_t mip)
 	{
+		VT_PROFILE_FUNCTION();
+
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
 
@@ -897,6 +907,8 @@ namespace Volt
 
 	ResourceHandle RenderGraph::GetBuffer(const RenderGraphResourceHandle resourceHandle)
 	{
+		VT_PROFILE_FUNCTION();
+
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
 
@@ -913,6 +925,8 @@ namespace Volt
 
 	Weak<RHI::StorageBuffer> RenderGraph::GetBufferRaw(const RenderGraphResourceHandle resourceHandle)
 	{
+		VT_PROFILE_FUNCTION();
+
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
 
@@ -929,6 +943,8 @@ namespace Volt
 
 	ResourceHandle RenderGraph::GetUniformBuffer(const RenderGraphResourceHandle resourceHandle)
 	{
+		VT_PROFILE_FUNCTION();
+
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphUniformBuffer>>().resourceInfo;
 
@@ -945,6 +961,8 @@ namespace Volt
 
 	Weak<RHI::RHIResource> RenderGraph::GetResourceRaw(const RenderGraphResourceHandle resourceHandle)
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (resourceHandle == std::numeric_limits<RenderGraphResourceHandle>::max())
 		{
 			return {};
