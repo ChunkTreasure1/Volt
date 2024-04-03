@@ -73,8 +73,6 @@ private:
 		}(), ...);
 
 		return valid;
-
-		return true;
 	}
 
 	static constexpr size_t m_largestTypeSize = FindLargestType();

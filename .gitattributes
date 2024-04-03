@@ -30,3 +30,4 @@
 *.pur filter=lfs diff=lfs merge=lfs -text
 *.obj filter=lfs diff=lfs merge=lfs -text
 *.bnk filter=lfs diff=lfs merge=lfs -text
+*.vtasset filter=lfs diff=lfs merge=lfs -text

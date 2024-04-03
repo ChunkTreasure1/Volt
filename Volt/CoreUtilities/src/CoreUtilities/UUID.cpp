@@ -44,10 +44,10 @@ UUID32::UUID32(uint32_t uuid)
 
 void UUID32::Serialize(BinaryStreamWriter& streamWriter, const UUID32& data)
 {
-	streamWriter.Write(data);
+	streamWriter.Write(data.m_uuid);
 }
 
 void UUID32::Deserialize(BinaryStreamReader& streamReader, UUID32& outData)
 {
-	streamReader.Read(outData);
+	streamReader.Read(outData.m_uuid);
 }

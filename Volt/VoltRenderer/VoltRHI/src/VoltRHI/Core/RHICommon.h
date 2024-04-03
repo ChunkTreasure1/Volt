@@ -803,16 +803,16 @@ namespace Volt::RHI
 
 		BarrierType type = BarrierType::Global;
 
-		ImageBarrier& imageBarrier() { return m_barrier2.Get<ImageBarrier>(); }
-		BufferBarrier& bufferBarrier() { return m_barrier2.Get<BufferBarrier>(); }
-		GlobalBarrier& globalBarrier() { return m_barrier2.Get<GlobalBarrier>(); }
+		ImageBarrier& imageBarrier() { return m_barrier.Get<ImageBarrier>(); }
+		BufferBarrier& bufferBarrier() { return m_barrier.Get<BufferBarrier>(); }
+		GlobalBarrier& globalBarrier() { return m_barrier.Get<GlobalBarrier>(); }
 
-		const ImageBarrier& imageBarrier() const { return m_barrier2.Get<ImageBarrier>(); }
-		const BufferBarrier& bufferBarrier() const { return m_barrier2.Get<BufferBarrier>(); }
-		const GlobalBarrier& globalBarrier() const { return m_barrier2.Get<GlobalBarrier>(); }
+		const ImageBarrier& imageBarrier() const { return m_barrier.Get<ImageBarrier>(); }
+		const BufferBarrier& bufferBarrier() const { return m_barrier.Get<BufferBarrier>(); }
+		const GlobalBarrier& globalBarrier() const { return m_barrier.Get<GlobalBarrier>(); }
 
 	private:
-		Variant<ImageBarrier, BufferBarrier, GlobalBarrier> m_barrier2;
+		Variant<ImageBarrier, BufferBarrier, GlobalBarrier> m_barrier;
 	};
 
 	struct IndirectIndexedCommand

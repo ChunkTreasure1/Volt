@@ -22,7 +22,7 @@ namespace Volt
 	
 	TransientResourceSystem::~TransientResourceSystem()
 	{
-		m_allocatedResources.clear();
+		m_allocatedResources.clear(); 
 	}
 
 	Weak<RHI::Image2D> TransientResourceSystem::AquireImage2D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)

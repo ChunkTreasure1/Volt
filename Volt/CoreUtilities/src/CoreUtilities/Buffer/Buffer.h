@@ -44,7 +44,8 @@ inline Buffer::~Buffer()
 
 inline void Buffer::Release()
 {
-	myData = nullptr;
+	myData.reset();
+	mySize = 0;
 }
 
 inline void Buffer::Allocate(size_t aSize)
@@ -55,8 +56,10 @@ inline void Buffer::Allocate(size_t aSize)
 	}
 
 	Release();
-	myData = Ref<uint8_t[]>(new uint8_t[aSize]);
-	memset(myData.get(), 0, aSize);
+	myData = Ref<uint8_t[]>(new uint8_t[aSize]{0}, [](uint8_t* p)
+	{
+		delete[] p;
+	});
 
 	mySize = aSize;
 }
@@ -70,7 +73,10 @@ inline void Buffer::Resize(size_t aSize)
 {
 	if (mySize < aSize)
 	{
-		Ref<uint8_t[]> newBuffer = Ref<uint8_t[]>(new uint8_t[aSize]);
+		Ref<uint8_t[]> newBuffer = Ref<uint8_t[]>(new uint8_t[aSize]{ 0 }, [](uint8_t* p)
+		{
+			delete[] p;
+		});
 
 		if (myData)
 		{

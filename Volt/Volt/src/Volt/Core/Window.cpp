@@ -64,8 +64,6 @@ namespace Volt
 		}
 
 		m_cursors.clear();
-
-		glfwTerminate();
 	}
 
 	void Window::Invalidate()
@@ -527,5 +525,10 @@ namespace Volt
 
 			glfwSetErrorCallback(GLFWErrorCallback);
 		}
+	}
+
+	void Window::StaticShutdown()
+	{
+		glfwTerminate();
 	}
 }

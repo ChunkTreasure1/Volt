@@ -100,6 +100,7 @@ namespace Volt
 
 		static Scope<Window> Create(const WindowProperties& aProperties = WindowProperties());
 		static void StaticInitialize();
+		static void StaticShutdown();
 
 	private:
 		GLFWwindow* m_window = nullptr;

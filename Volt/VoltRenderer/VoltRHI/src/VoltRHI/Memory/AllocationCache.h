@@ -27,6 +27,9 @@ namespace Volt::RHI
 		void QueueBufferAllocationForRemoval(Ref<Allocation> alloc);
 		AllocationsToRemove UpdateAndGetAllocationsToDestroy();
 
+		inline const auto& GetImageAllocations() const { return m_imageAllocations; }
+		inline const auto& GetBufferAllocations() const { return m_bufferAllocations; }
+
 	private:
 		std::mutex m_imageAllocationMutex;
 		std::mutex m_bufferAllocationMutex;

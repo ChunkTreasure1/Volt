@@ -33,7 +33,7 @@ namespace Volt
 
 		if (isHDR)
 		{
-			format = RHI::PixelFormat::R32G32B32A32_SFLOAT;
+			format = RHI::PixelFormat::R16G16B16A16_SFLOAT;
 		}
 
 		RHI::ImageSpecification imageSpec{};

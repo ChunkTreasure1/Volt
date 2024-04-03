@@ -88,18 +88,6 @@ namespace Volt
 			m_outputImage = RHI::Image2D::Create(spec);
 		}
 
-		// UI Test
-		{
-			RHI::ImageSpecification spec{};
-			spec.width = 1024;
-			spec.height = 1024;
-			spec.usage = RHI::ImageUsage::AttachmentStorage;
-			spec.generateMips = false;
-			spec.format = RHI::PixelFormat::R8G8B8A8_UNORM;
-
-			m_uiOutputImage = RHI::Image2D::Create(spec);
-		}
-
 		m_sceneEnvironment.radianceMap = RendererNew::GetDefaultResources().blackCubeTexture;
 		m_sceneEnvironment.irradianceMap = RendererNew::GetDefaultResources().blackCubeTexture;
 
@@ -128,11 +116,6 @@ namespace Volt
 	Ref<RHI::Image2D> SceneRendererNew::GetFinalImage()
 	{
 		return m_outputImage;
-	}
-
-	Ref<RHI::Image2D> SceneRendererNew::GetUIImage()
-	{
-		return m_uiOutputImage;
 	}
 
 	void SceneRendererNew::OnRender(Ref<Camera> camera)
@@ -210,7 +193,7 @@ namespace Volt
 			////For every material -> run compute shading shader using indirect args
 			auto& gbufferData = rgBlackboard.Add<GBufferData>();
 
-			gbufferData.albedo = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
+			gbufferData.albedo = renderGraph.CreateImage2D({ RHI::PixelFormat::R8G8B8A8_UNORM, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
 			gbufferData.materialEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
 			gbufferData.normalEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
 
@@ -228,7 +211,7 @@ namespace Volt
 		
 		}
 
-		AddTestUIPass(renderGraph, rgBlackboard);
+		//AddTestUIPass(renderGraph, rgBlackboard);
 
 		{
 			RenderGraphBarrierInfo barrier{};
@@ -237,15 +220,6 @@ namespace Volt
 			barrier.dstLayout = RHI::ImageLayout::ShaderRead;
 
 			renderGraph.AddResourceBarrier(rgBlackboard.Get<ExternalImagesData>().outputImage, barrier);
-		}
-
-		{
-			RenderGraphBarrierInfo barrier{};
-			barrier.dstStage = RHI::BarrierStage::PixelShader;
-			barrier.dstAccess = RHI::BarrierAccess::ShaderRead;
-			barrier.dstLayout = RHI::ImageLayout::ShaderRead;
-
-			renderGraph.AddResourceBarrier(rgBlackboard.Get<TestUIData>().outputTextureHandle, barrier);
 		}
 
 		renderGraph.Compile();
@@ -1220,79 +1194,6 @@ namespace Volt
 			context.SetConstant("pbrConstants.spotLights", resources.GetBuffer(lightBuffers.spotLightsBuffer));
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1u);
-		});
-	}
-
-	void SceneRendererNew::AddTestUIPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
-	{
-		struct UICommand
-		{
-			uint32_t type;
-			uint32_t primitiveGroup;
-			float rotation;
-			float scale;
-			glm::vec2 radiusHalfSize;
-			glm::vec2 pixelPos;
-		};
-
-		blackboard.Add<TestUIData>() = renderGraph.AddPass<TestUIData>("Test UI",
-		[&](RenderGraph::Builder& builder, TestUIData& data)
-		{
-			{
-				data.outputTextureHandle = builder.AddExternalImage2D(m_uiOutputImage);
-			}
-
-			{
-				auto desc = RGUtils::CreateBufferDescGPU<UICommand>(1, "UI Commands");
-				data.uiCommandsBufferHandle = builder.CreateBuffer(desc);
-			}
-
-			builder.WriteResource(data.outputTextureHandle);
-			builder.SetHasSideEffect();
-		},
-		[=](const TestUIData& data, RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			std::array<UICommand, 2> cmds;
-			{
-				UICommand& tcmd = cmds[0];
-				tcmd.pixelPos = { 512, 512 };
-				tcmd.rotation = 0.f;
-				tcmd.scale = 1.f;
-				tcmd.radiusHalfSize.x = 200.f;
-				tcmd.radiusHalfSize.y = 200.f;
-				tcmd.type = 0;
-				tcmd.primitiveGroup = 0;
-			}
-
-			{
-				UICommand& tcmd = cmds[1];
-				tcmd.pixelPos = { 512, 900 };
-				tcmd.rotation = 0.25f;
-				tcmd.scale = 1.f;
-				tcmd.radiusHalfSize.x = 200.f;
-				tcmd.radiusHalfSize.y = 200.f;
-				tcmd.type = 1;
-				tcmd.primitiveGroup = 0;
-			}
-
-			context.UploadBufferData(data.uiCommandsBufferHandle, cmds.data(), sizeof(UICommand) * cmds.size());
-
-			RHI::RenderPipelineCreateInfo pipelineInfo{};
-			pipelineInfo.shader = ShaderMap::Get("SDFUI");
-			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
-
-			RenderingInfo info = context.CreateRenderingInfo(1024, 1024, { data.outputTextureHandle });
-
-			context.BeginRendering(info);
-
-			RCUtils::DrawFullscreenTriangle(context, pipeline, [&](RenderContext& context) 
-			{
-				context.SetConstant("commands", resources.GetBuffer(data.uiCommandsBufferHandle));
-				context.SetConstant("commandCount", static_cast<uint32_t>(cmds.size()));
-				context.SetConstant("renderSize", glm::uvec2{ 1024, 1024 });
-			});
-
-			context.EndRendering();
 		});
 	}
 }

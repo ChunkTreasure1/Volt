@@ -213,6 +213,8 @@ namespace Volt
 		FileSystem::Shutdown();
 
 		m_windowManager.DestroyWindow(m_windowHandle);
+		m_graphicsContext = nullptr;
+		Window::StaticShutdown();
 
 		s_instance = nullptr;
 		Log::Shutdown();
@@ -226,8 +228,8 @@ namespace Volt
 
 		while (m_isRunning)
 		{
-			MainUpdate();
 			VT_PROFILE_FRAME("Frame");
+			MainUpdate();
 		}
 	}
 

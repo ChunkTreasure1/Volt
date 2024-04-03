@@ -49,7 +49,10 @@ namespace Volt
 	struct RendererData
 	{
 		Ref<RHI::ShaderCompiler> shaderCompiler;
+
+#ifndef VT_DIST
 		Scope<ShaderRuntimeValidator> shaderValidator;
+#endif
 
 		std::vector<FunctionQueue> deletionQueue;
 

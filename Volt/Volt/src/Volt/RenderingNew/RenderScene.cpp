@@ -148,6 +148,14 @@ namespace Volt
 
 	void RenderScene::Update(RenderGraph& renderGraph)
 	{
+		for (const auto& material : m_individualMaterials)
+		{
+			if (material->ClearAndGetIsDirty())
+			{
+				m_invalidMaterials.emplace_back(material, m_materialIndexFromAssetHandle.at(material->handle));
+			}
+		}
+
 		if (!m_invalidRenderObjectIndices.empty())
 		{
 			ScatteredBufferUpload<ObjectDrawData> bufferUpload{ m_invalidRenderObjectIndices.size() };

@@ -89,9 +89,6 @@
 
 #include <imgui.h>
 
-#include "Volt/Asset/Serializers/SourceTextureSerializer.h"
-#include "Volt/Asset/Serializers/TextureSerializer.h"
-
 Sandbox::Sandbox()
 {
 	VT_ASSERT(!myInstance, "Sandbox already exists!");
@@ -888,13 +885,6 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 	{
 		const float buildProgess = GameBuilder::GetBuildProgress();
 		RenderProgressBar(buildProgess);
-	}
-
-	if (ImGui::Begin("UI Test"))
-	{
-		ImGui::Image(UI::GetTextureID(mySceneRenderer->GetUIImage()), { 512, 512 });
-
-		ImGui::End();
 	}
 
 	return false;

@@ -57,6 +57,13 @@ namespace Volt
 		m_textures.erase(m_textures.begin() + index);
 	}
 
+	bool Material::ClearAndGetIsDirty()
+	{
+		bool state = m_isDirty;
+		m_isDirty = false;
+		return state;
+	}
+
 	void Material::Compile()
 	{
 		constexpr const char* REPLACE_STRING = "GENERATED_SHADER";
@@ -132,6 +139,8 @@ namespace Volt
 		shaderSpecification.forceCompile = true;
 
 		m_computePipeline = RHI::ComputePipeline::Create(RHI::Shader::Create(shaderSpecification));
+
+		m_isDirty = true;
 	}
 }
 

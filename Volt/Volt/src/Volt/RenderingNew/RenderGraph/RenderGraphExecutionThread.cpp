@@ -105,6 +105,13 @@ namespace Volt
 
 			if (!s_data->isRunning)
 			{
+				std::function<void()> executeFunction{};
+				while (s_data->executionQueue.try_pop(executeFunction))
+				{
+					s_data->isExecuting = true;
+					executeFunction();
+					s_data->isExecuting = false;
+				}
 				break;
 			}
 

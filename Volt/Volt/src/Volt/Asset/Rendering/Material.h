@@ -40,6 +40,8 @@ namespace Volt
 		void SetTexture(Ref<Texture2D> texture, uint32_t index);
 		void RemoveTexture(uint32_t index);
 
+		bool ClearAndGetIsDirty();
+
 		inline const std::vector<Ref<Texture2D>>& GetTextures() const { return m_textures; }
 		inline const std::vector<Ref<RHI::SamplerState>>& GetSamplers() const { return m_samplers; }
 
@@ -63,6 +65,7 @@ namespace Volt
 		Ref<RHI::ComputePipeline> m_computePipeline;
 
 		bool m_isEngineMaterial = false;
+		bool m_isDirty = false;
 		VoltGUID m_materialGUID;
 	};
 }

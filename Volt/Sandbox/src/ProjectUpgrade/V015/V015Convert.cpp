@@ -196,7 +196,7 @@ namespace V015
 
 		for (auto file : engineMetaFiles)
 		{
-			DeserializeAssetMetafile(file);
+			//DeserializeAssetMetafile(file);
 		}
 
 		for (auto file : projectMetaFiles)

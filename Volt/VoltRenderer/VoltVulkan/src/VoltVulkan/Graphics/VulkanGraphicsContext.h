@@ -26,7 +26,6 @@ namespace Volt::RHI
 		void Shutdown();
 
 		void CreateInstance();
-		void CreateTransientHeaps();
 
 		const bool CheckValidationLayerSupport() const;
 		const std::vector<const char*> GetRequiredExtensions() const;

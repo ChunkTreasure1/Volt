@@ -125,6 +125,7 @@ namespace Volt
 				}
 
 				const size_t mipSize = sizeWidth * sizeHeight * RHI::Utility::GetByteSizePerPixelFromFormat(image->GetFormat());
+				newMip.dataSize = mipSize;
 
 				commandBuffer->Begin();
 				commandBuffer->CopyImageToBuffer(image, stagingBuffer, 0, newMip.width, newMip.height, i);

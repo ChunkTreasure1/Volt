@@ -26,6 +26,16 @@ namespace Volt::RHI
 	{
 		m_bufferHeaps.clear();
 		m_imageHeaps.clear();
+
+		for (const auto& imageAlloc : m_allocationCache.GetImageAllocations())
+		{
+			DestroyImageInternal(imageAlloc.allocation);
+		}
+
+		for (const auto& bufferAlloc : m_allocationCache.GetBufferAllocations())
+		{
+			DestroyBufferInternal(bufferAlloc.allocation);
+		}
 	}
 
 	Ref<Allocation> VulkanTransientAllocator::CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage)
