@@ -4,6 +4,7 @@
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
 #include "Volt/Asset/Animation/Skeleton.h"
+#include "Volt/Asset/Mesh/Mesh.h"
 
 namespace Volt
 {
@@ -106,7 +107,7 @@ namespace Volt
 		AnimatedCharacterSerializationData serializationData{};
 		serializationData.skeletonHandle = character->mySkeleton ? character->mySkeleton->handle : Asset::Null();
 		serializationData.skinHandle = character->mySkin ? character->mySkin->handle : Asset::Null();
-		
+
 		serializationData.animations.reserve(character->myAnimations.size());
 		for (const auto& [index, anim] : character->myAnimations)
 		{
@@ -176,6 +177,9 @@ namespace Volt
 		character->mySkeleton = AssetManager::QueueAsset<Skeleton>(serializationData.skeletonHandle);
 		character->mySkin = AssetManager::QueueAsset<Mesh>(serializationData.skinHandle);
 
+		AssetManager::AddDependencyToAsset(metadata.handle, serializationData.skeletonHandle);
+		AssetManager::AddDependencyToAsset(metadata.handle, serializationData.skinHandle);
+
 		for (const auto& serAnim : serializationData.animations)
 		{
 			for (const auto& serEvent : serAnim.events)
@@ -188,6 +192,7 @@ namespace Volt
 			if (serAnim.index != std::numeric_limits<uint32_t>::max() && serAnim.animationHandle != Asset::Null())
 			{
 				character->myAnimations[serAnim.index] = AssetManager::QueueAsset<Animation>(serAnim.animationHandle);
+				AssetManager::AddDependencyToAsset(metadata.handle, serAnim.animationHandle);
 			}
 		}
 

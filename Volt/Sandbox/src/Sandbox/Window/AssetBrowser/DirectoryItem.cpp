@@ -10,6 +10,7 @@
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Input/KeyCodes.h>
+#include <Volt/Rendering/Texture/Texture2D.h>
 
 namespace AssetBrowser
 {

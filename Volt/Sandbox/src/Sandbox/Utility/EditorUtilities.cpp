@@ -172,6 +172,7 @@ bool EditorUtils::SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery
 
 bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Skeleton> targetSkeleton)
 {
+	// #TODO_Ivar: Reimplement
 	const auto assetType = Volt::AssetManager::GetAssetTypeFromHandle(assetHandle);
 
 	if (assetType != Volt::AssetType::Mesh &&
@@ -183,16 +184,16 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 
 	// An asset can have multiple dependencies, we must find the source mesh
 	std::filesystem::path sourcePath;
-	const auto& dependencies = Volt::AssetManager::GetMetadataFromHandle(assetHandle).dependencies;
-	for (const auto& d : dependencies)
-	{
-		const auto& depMeta = Volt::AssetManager::GetMetadataFromHandle(d);
-		if (depMeta.filePath.extension().string() == ".fbx")
-		{
-			sourcePath = depMeta.filePath;
-			break;
-		}
-	}
+	//const auto& dependencies = Volt::AssetManager::GetMetadataFromHandle(assetHandle).dependencies;
+	//for (const auto& d : dependencies)
+	//{
+	//	const auto& depMeta = Volt::AssetManager::GetMetadataFromHandle(d);
+	//	if (depMeta.filePath.extension().string() == ".fbx")
+	//	{
+	//		sourcePath = depMeta.filePath;
+	//		break;
+	//	}
+	//}
 
 	if (sourcePath.empty())
 	{
@@ -495,7 +496,6 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 					}
 
 					auto handle = Volt::AssetManager::Get().AddAssetToRegistry(aImportData.destination);
-					Volt::AssetManager::Get().AddDependency(handle, aMeshToImport);
 				}
 				else
 				{
@@ -543,7 +543,6 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 						{
 							const std::filesystem::path filePath = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + ".vtanim");
 							Volt::AssetManager::Get().SaveAssetAs(animation, filePath);
-							Volt::AssetManager::Get().AddDependency(animation->handle, aMeshToImport);
 							succeded = true;
 						}
 					}

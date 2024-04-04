@@ -52,6 +52,7 @@ namespace Volt
 
 		static Volt::AssetType GetStaticType() { return Volt::AssetType::Material; }
 		Volt::AssetType GetType() override { return GetStaticType(); };
+		void OnDependencyChanged(AssetHandle dependencyHandle, AssetChangedState state) override;
 
 	private:
 		friend class MosaicGraphImporter;

@@ -14,6 +14,12 @@ namespace Volt
 {
 	using AssetHandle = UUID64;
 
+	enum class AssetChangedState : uint8_t
+	{
+		Removed,
+		Updated
+	};
+
 	enum class AssetFlag : uint8_t
 	{
 		None = 0,
@@ -184,21 +190,6 @@ namespace Volt
 
 	struct AssetMetadata
 	{
-		inline void SetValue(const std::string& key, const std::string& data)
-		{
-			properties[key] = data;
-		}
-
-		inline const std::string& GetValue(const std::string& key) const
-		{
-			if (!properties.contains(key))
-			{
-				return {};
-			}
-
-			return properties.at(key);
-		}
-
 		inline const bool IsValid() const { return handle != 0; }
 
 		AssetHandle handle = 0;
@@ -209,8 +200,6 @@ namespace Volt
 		bool isMemoryAsset = false;
 
 		std::filesystem::path filePath;
-		std::vector<AssetHandle> dependencies;
-		std::unordered_map<std::string, std::string> properties;
 	};
 
 	class Asset
@@ -248,6 +237,7 @@ namespace Volt
 		static AssetType GetStaticType() { return AssetType::None; }
 		virtual AssetType GetType() { assert(false); return AssetType::None; }
 		virtual uint32_t GetVersion() const { return 1; }
+		virtual void OnDependencyChanged(AssetHandle dependencyHandle, AssetChangedState state) {}
 
 		uint8_t assetFlags = (uint8_t)AssetFlag::None;
 		AssetHandle handle = {};

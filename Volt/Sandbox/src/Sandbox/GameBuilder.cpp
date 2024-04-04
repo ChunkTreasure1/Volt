@@ -9,6 +9,7 @@
 #include <Volt/Scripting/Mono/MonoScriptClass.h>
 
 #include <Volt/Utility/YAMLSerializationHelpers.h>
+#include <Volt/Rendering/Texture/Texture2D.h>
 
 #include <yaml-cpp/yaml.h>
 

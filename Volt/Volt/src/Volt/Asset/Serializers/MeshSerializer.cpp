@@ -98,6 +98,7 @@ namespace Volt
 		for (uint32_t i = 0; const auto& mat : serializationData.materials)
 		{
 			mesh->m_materialTable.SetMaterial(mat, i);
+			AssetManager::AddDependencyToAsset(metadata.handle, mat);
 			i++;
 		}
 

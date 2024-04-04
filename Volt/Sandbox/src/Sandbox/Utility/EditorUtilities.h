@@ -12,6 +12,7 @@
 namespace Volt
 {
 	class AnimationGraphAsset;
+	class Mesh;
 }
 
 struct MeshImportData

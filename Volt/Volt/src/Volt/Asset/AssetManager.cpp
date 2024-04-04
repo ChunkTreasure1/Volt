@@ -4,6 +4,7 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Core/Application.h"
 
+#include "Volt/Asset/AssetDependencyGraph.h"
 #include "Volt/Asset/Importers/MeshTypeImporter.h"
 #include "Volt/Asset/Importers/TextureImporter.h"
 
@@ -62,6 +63,8 @@ namespace Volt
 		MeshTypeImporter::Initialize();
 		TextureImporter::Initialize();
 
+		m_dependencyGraph = CreateScope<AssetDependencyGraph>();
+
 		m_assetFactory = CreateScope<AssetFactory>();
 		m_assetFactory->Initialize();
 
@@ -81,6 +84,8 @@ namespace Volt
 		m_assetRegistry.clear();
 
 		m_assetFactory->Shutdown();
+		m_assetFactory = nullptr;
+		m_dependencyGraph = nullptr;
 
 		TextureImporter::Shutdown();
 		MeshTypeImporter::Shutdown();
@@ -106,42 +111,6 @@ namespace Volt
 		}));
 	}
 
-	void AssetManager::AddDependency(AssetHandle asset, const std::filesystem::path& dependency)
-	{
-		const auto& dependencyMetaData = GetMetadataFromFilePath(dependency);
-		AddDependency(asset, dependencyMetaData.handle);
-	}
-
-	void AssetManager::AddDependency(AssetHandle asset, AssetHandle dependency)
-	{
-		auto& metadata = GetMetadataFromHandleMutable(asset);
-		const auto& dependencyMetaData = GetMetadataFromHandle(dependency);
-
-		if (!metadata.IsValid())
-		{
-			VT_CORE_WARN("[AssetManager] Trying to add dependency {0} to invalid asset {1}", dependency, asset);
-			return;
-		}
-
-		if (!dependencyMetaData.IsValid())
-		{
-			VT_CORE_WARN("[AssetManager] Trying to add invalid dependency {0} to asset {1}", dependency, asset);
-			return;
-		}
-
-		auto it = std::find_if(metadata.dependencies.begin(), metadata.dependencies.end(), [&](AssetHandle dep)
-		{
-			return dep == dependencyMetaData.handle;
-		});
-
-		if (it != metadata.dependencies.end())
-		{
-			return;
-		}
-
-		metadata.dependencies.emplace_back(dependencyMetaData.handle);
-	}
-
 	const std::vector<AssetHandle> AssetManager::GetAllAssetsOfType(AssetType wantedAssetType)
 	{
 		auto& instance = Get();
@@ -154,35 +123,6 @@ namespace Volt
 			if (metadata.type == wantedAssetType || wantedAssetType == AssetType::None)
 			{
 				result.emplace_back(handle);
-			}
-		}
-
-		return result;
-	}
-
-	const std::vector<AssetHandle> AssetManager::GetAllAssetsWithDependency(const std::filesystem::path& dependencyFilePath)
-	{
-		const std::string pathString = ::Utility::ReplaceCharacter(GetRelativePath(dependencyFilePath).string(), '\\', '/');
-		std::vector<AssetHandle> result{};
-
-		auto& instance = Get();
-		ReadLock lock{ instance.m_assetRegistryMutex };
-
-		for (const auto& [handle, metadata] : instance.m_assetRegistry)
-		{
-			for (const auto& dependency : metadata.dependencies)
-			{
-				const auto& depMeta = GetMetadataFromHandle(dependency);
-				if (!depMeta.IsValid())
-				{
-					continue;
-				}
-
-				if (depMeta.filePath == dependencyFilePath)
-				{
-					result.emplace_back(handle);
-					break;
-				}
 			}
 		}
 
@@ -269,6 +209,8 @@ namespace Volt
 			return;
 		}
 
+		m_dependencyGraph->AddAssetToGraph(assetHandle);
+
 		{
 #ifndef VT_DIST
 			ScopedTimer timer{};
@@ -288,6 +230,8 @@ namespace Volt
 			AssetMetadata& postMeta = GetMetadataFromHandleMutable(assetHandle);
 			postMeta.isLoaded = true;
 		}
+
+		m_dependencyGraph->OnAssetChanged(assetHandle, AssetChangedState::Updated);
 
 		{
 			WriteLock lock{ m_assetCacheMutex };
@@ -313,6 +257,11 @@ namespace Volt
 			DeserializeAssetMetadata(GetFilesystemPath(file));
 		}
 
+		for (const auto& [handle, metadata] : m_assetRegistry)
+		{
+			m_dependencyGraph->AddAssetToGraph(handle);
+		}
+
 		VT_CORE_INFO("[AssetManager] Finished fetching meta data in {} seconds!", timer.GetTime<Time::Seconds>());
 	}
 
@@ -336,23 +285,30 @@ namespace Volt
 			AssetMetadata& metadata = m_assetRegistry[serializedMetadata.handle];
 			metadata.handle = serializedMetadata.handle;
 			metadata.filePath = GetRelativePath(assetPath);
-			metadata.properties = {};
 			metadata.type = serializedMetadata.type;
 		}
 	}
 
 	void AssetManager::Unload(AssetHandle assetHandle)
 	{
-		WriteLock lock{ m_assetCacheMutex };
-
-		auto it = m_assetCache.find(assetHandle);
-		if (it == m_assetCache.end())
 		{
-			VT_CORE_WARN("[AssetManager] Unable to unload asset with handle {0}, it has not been loaded!", assetHandle);
-			return;
+			ReadLock lock{ m_assetCacheMutex };
+			if (m_assetCache.contains(assetHandle))
+			{
+				VT_CORE_WARN("[AssetManager] Unable to unload asset with handle {0}, it has not been loaded!", assetHandle);
+				return;
+			}
 		}
 
-		m_assetCache.erase(it);
+		{
+			WriteLock lock{ m_assetRegistryMutex };
+			m_assetRegistry.at(assetHandle).isLoaded = false;
+		}
+
+		{
+			WriteLock lock{ m_assetCacheMutex };
+			m_assetCache.erase(assetHandle);
+		}
 	}
 
 	void AssetManager::ReloadAsset(const std::filesystem::path& path)
@@ -664,7 +620,9 @@ namespace Volt
 			m_assetCache.erase(assetHandle);
 		}
 
+		m_dependencyGraph->OnAssetChanged(assetHandle, AssetChangedState::Removed);
 		QueueAssetChanged(assetHandle, AssetChangedState::Removed);
+		m_dependencyGraph->RemoveAssetFromGraph(assetHandle);
 
 		FileSystem::MoveToRecycleBin(projDir / filePath);
 
@@ -675,32 +633,7 @@ namespace Volt
 
 	void AssetManager::RemoveAsset(const std::filesystem::path& path)
 	{
-		WriteLock lock{ m_assetRegistryMutex };
-
-		const auto metadata = GetMetadataFromFilePath(path);
-		if (!metadata.IsValid())
-		{
-			VT_CORE_WARN("[AssetManager] Trying to remove invalid asset {0}!", path);
-			return;
-		}
-
-		m_assetRegistry.erase(metadata.handle);
-
-		const std::filesystem::path filePath = metadata.filePath;
-		const auto projDir = GetContextPath(filePath);
-
-		{
-			WriteLock cacheLock{ m_assetCacheMutex };
-			m_assetCache.erase(metadata.handle);
-		}
-
-		QueueAssetChanged(metadata.handle, AssetChangedState::Removed);
-
-		FileSystem::MoveToRecycleBin(projDir / filePath);
-
-#ifdef VT_DEBUG
-		VT_CORE_INFO("[AssetManager] Removed asset {0} with handle {1}!", metadata.handle, filePath.string());
-#endif
+		RemoveAsset(GetAssetHandleFromFilePath(path));
 	}
 
 	bool AssetManager::ValidateAssetType(AssetHandle handle, Ref<Asset> asset)
@@ -860,6 +793,16 @@ namespace Volt
 #endif
 			}
 		}
+	}
+
+	void AssetManager::AddDependencyToAsset(AssetHandle handle, AssetHandle dependency)
+	{
+		if (handle == Asset::Null() || dependency == Asset::Null())
+		{
+			return;
+		}
+
+		Get().m_dependencyGraph->AddDependencyToAsset(handle, dependency);
 	}
 
 	const AssetHandle AssetManager::AddAssetToRegistry(const std::filesystem::path& filePath, AssetHandle handle /*= 0*/)
@@ -1030,6 +973,7 @@ namespace Volt
 	const AssetMetadata& AssetManager::GetMetadataFromHandle(AssetHandle handle)
 	{
 		auto& instance = Get();
+		ReadLock lock{ instance.m_assetRegistryMutex };
 
 		if (!instance.m_assetRegistry.contains(handle))
 		{
@@ -1042,6 +986,7 @@ namespace Volt
 	const AssetMetadata& AssetManager::GetMetadataFromFilePath(const std::filesystem::path filePath)
 	{
 		auto& instance = Get();
+		ReadLock lock{ instance.m_assetRegistryMutex };
 
 		std::filesystem::path cleanPath = GetRelativePath(filePath);
 
@@ -1220,6 +1165,15 @@ namespace Volt
 			m_assetCache.emplace(assetHandle, asset);
 		}
 
+		if (!m_assetSerializers.contains(metadata.type))
+		{
+			VT_CORE_ERROR("[AssetManager]: No importer for asset found!");
+			asset->SetFlag(AssetFlag::Invalid, true);
+			return;
+		}
+
+		m_dependencyGraph->AddAssetToGraph(assetHandle);
+
 		// If not, queue
 		{
 			auto& threadPool = Application::GetThreadPool();
@@ -1230,13 +1184,6 @@ namespace Volt
 				{
 					ReadLock lock{ m_assetCacheMutex };
 					asset = m_assetCache.at(handle);
-				}
-
-				if (!m_assetSerializers.contains(metadata.type))
-				{
-					VT_CORE_ERROR("[AssetManager]: No importer for asset found!");
-					asset->SetFlag(AssetFlag::Invalid, true);
-					return;
 				}
 
 				{
@@ -1269,6 +1216,7 @@ namespace Volt
 					m_assetCache[handle] = asset;
 				}
 
+				m_dependencyGraph->OnAssetChanged(handle, AssetChangedState::Updated);
 				QueueAssetChanged(asset->handle, AssetChangedState::Updated);
 
 			}, assetHandle);

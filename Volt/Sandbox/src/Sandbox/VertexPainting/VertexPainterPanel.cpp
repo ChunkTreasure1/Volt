@@ -3,6 +3,7 @@
 
 #include <Volt/Input/Input.h>
 #include <Volt/Asset/AssetManager.h>
+#include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Rendering/DebugRenderer.h>
 
 #include <Volt/Components/CoreComponents.h>

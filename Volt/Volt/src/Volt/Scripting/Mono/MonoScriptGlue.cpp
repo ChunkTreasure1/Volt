@@ -14,7 +14,9 @@
 #include "Volt/Rendering/DebugRenderer.h"
 #include "Volt/Rendering/UIRenderer.h"
 #include "Volt/Rendering/Renderer.h"
+#include "Volt/Rendering/Texture/Texture2D.h"
 
+#include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Rendering/PostProcessingStack.h"
 #include "Volt/Asset/Rendering/PostProcessingMaterial.h"

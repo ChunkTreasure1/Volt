@@ -13,6 +13,7 @@
 #include <Volt/Input/Input.h>
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Asset/ParticlePreset.h>
+#include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Asset/AssetManager.h>
 
 #include <Volt/Utility/UIUtility.h>

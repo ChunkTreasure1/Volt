@@ -62,7 +62,7 @@ void Sandbox::CreateModifiedWatch()
 				case Volt::AssetType::ShaderSource:
 				{
 					// #TODO_Ivar: Reimplement
-					const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::GetRelativePath(newPath));
+					//const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::GetRelativePath(newPath));
 					//for (const auto& asset : assets)
 					//{
 					//	Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(asset);
@@ -88,14 +88,14 @@ void Sandbox::CreateModifiedWatch()
 
 				case Volt::AssetType::MeshSource:
 				{
-					const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::Get().GetRelativePath(newPath));
+					/*const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::Get().GetRelativePath(newPath));
 					for (const auto& asset : assets)
 					{
 						if (EditorUtils::ReimportSourceMesh(asset))
 						{
 							UI::Notify(NotificationType::Success, "Re imported mesh!", std::format("Mesh {0} has been reimported!", Volt::AssetManager::GetFilePathFromAssetHandle(asset).string()));
 						}
-					}
+					}*/
 					break;
 				}
 

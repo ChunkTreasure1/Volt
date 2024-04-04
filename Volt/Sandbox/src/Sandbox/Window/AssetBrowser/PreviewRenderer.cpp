@@ -5,6 +5,7 @@
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Rendering/Material.h>
+#include <Volt/Asset/Mesh/Mesh.h>
 
 #include <Volt/Scene/Scene.h>
 

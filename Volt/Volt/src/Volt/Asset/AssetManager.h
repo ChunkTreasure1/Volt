@@ -6,10 +6,7 @@
 #include "Volt/Core/Profiling.h"
 #include "Volt/Log/Log.h"
 
-#include "Volt/Rendering/Texture/Texture2D.h"
-#include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Project/ProjectManager.h"
-
 #include "Volt/Utility/StringUtility.h"
 
 #include <map>
@@ -20,14 +17,9 @@
 
 namespace Volt
 {
-	enum class AssetChangedState
-	{
-		Removed,
-		Updated
-	};
-
 	class AssetFactory;
 	class AssetSerializer;
+	class AssetDependencyGraph;
 	class AssetManager
 	{
 	public:
@@ -41,9 +33,6 @@ namespace Volt
 
 		void Initialize();
 		void Shutdown();
-
-		void AddDependency(AssetHandle asset, const std::filesystem::path& dependency);
-		void AddDependency(AssetHandle asset, AssetHandle dependency);
 
 		void Unload(AssetHandle assetHandle);
 
@@ -79,6 +68,8 @@ namespace Volt
 
 		static UUID64 RegisterAssetChangedCallback(AssetType assetType, AssetChangedCallback&& callbackFunction);
 		static void UnregisterAssetChangedCallback(AssetType assetType, UUID64 id);
+
+		static void AddDependencyToAsset(AssetHandle handle, AssetHandle dependency);
 
 		static bool IsLoaded(AssetHandle handle);
 
@@ -144,7 +135,6 @@ namespace Volt
 		static const std::vector<AssetHandle> GetAllAssetsOfType();
 
 		static const std::vector<AssetHandle> GetAllAssetsOfType(AssetType assetType);
-		static const std::vector<AssetHandle> GetAllAssetsWithDependency(const std::filesystem::path& dependencyPath);
 
 	private:
 		inline static AssetManager* s_instance = nullptr;
@@ -195,6 +185,7 @@ namespace Volt
 		std::vector<AssetChangedQueueInfo> m_assetChangedQueue;
 		std::mutex m_assetChangedQueueMutex;
 		Scope<AssetFactory> m_assetFactory;
+		Scope<AssetDependencyGraph> m_dependencyGraph;
 
 		mutable std::shared_mutex m_assetRegistryMutex;
 		mutable std::shared_mutex m_assetCacheMutex;

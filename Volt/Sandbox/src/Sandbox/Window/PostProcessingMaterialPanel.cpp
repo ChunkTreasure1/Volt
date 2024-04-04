@@ -8,6 +8,7 @@
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Rendering/Renderer.h>
+#include <Volt/Rendering/Texture/Texture2D.h>
 
 #include <Volt/RenderingNew/Shader/ShaderMap.h>
 

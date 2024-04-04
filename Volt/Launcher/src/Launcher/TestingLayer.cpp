@@ -17,6 +17,7 @@
 
 #include <Volt/Project/ProjectManager.h>
 #include <Volt/Asset/AssetManager.h>
+#include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Utility/UIUtility.h>
 
 #include <glm/glm.hpp>

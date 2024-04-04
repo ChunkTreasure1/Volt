@@ -6,6 +6,8 @@
 
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
+#include "Volt/Rendering/Texture/Texture2D.h"
+
 #include <Mosaic/MosaicGraph.h>
 #include <Mosaic/MosaicNode.h>
 #include <Mosaic/NodeRegistry.h>
@@ -205,6 +207,11 @@ namespace Volt
 
 		// #TODO_Ivar: Should probably not happen here
 		mosaicAsset->Compile();
+		// #TODO_Ivar: Redo this in a proper way
+		for (const auto tex : mosaicAsset->GetTextures())
+		{
+			AssetManager::AddDependencyToAsset(metadata.handle, tex->handle);
+		}
 
 		return true;
 	}

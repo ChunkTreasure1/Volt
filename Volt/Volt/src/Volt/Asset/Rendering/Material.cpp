@@ -6,6 +6,7 @@
 #include "Volt/Asset/AssetManager.h"
 
 #include "Volt/RenderingNew/RendererNew.h"
+#include "Volt/Rendering/Texture/Texture2D.h"
 
 #include <Mosaic/MosaicNode.h>
 
@@ -62,6 +63,36 @@ namespace Volt
 		bool state = m_isDirty;
 		m_isDirty = false;
 		return state;
+	}
+
+	void Material::OnDependencyChanged(AssetHandle dependencyHandle, AssetChangedState state)
+	{
+		auto it = std::find_if(m_textures.begin(), m_textures.end(), [dependencyHandle](Ref<Texture2D> tex)
+		{
+			return tex != nullptr && tex->handle == dependencyHandle;
+		});
+
+		if (it == m_textures.end())
+		{
+			return;
+		}
+
+		if (state == AssetChangedState::Updated)
+		{
+			m_isDirty = true;
+		}
+		else if (state == AssetChangedState::Removed)
+		{
+			for (size_t i = 0; i < m_textures.size(); i++)
+			{
+				if (m_textures.at(i)->handle == dependencyHandle)
+				{
+					m_textures[i] = RendererNew::GetDefaultResources().whiteTexture;
+				}
+			}
+
+			m_isDirty = true;
+		}
 	}
 
 	void Material::Compile()
@@ -122,7 +153,7 @@ namespace Volt
 					auto textureNode = std::reinterpret_pointer_cast<SampleTextureNode>(node.nodeData);
 					const auto textureInfo = textureNode->GetTextureInfo();
 
-					Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureInfo.textureHandle);
+					Ref<Texture2D> texture = AssetManager::QueueAsset<Texture2D>(textureInfo.textureHandle);
 					if (!texture)
 					{
 						texture = RendererNew::GetDefaultResources().whiteTexture;
