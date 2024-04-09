@@ -353,6 +353,8 @@ namespace Volt
 
 			gpuMaterial.textureCount++;
 		}
+
+		VT_CORE_INFO("Tex Count: {}", gpuMaterial.textureCount);
 	}
 
 	void RenderScene::UploadGPUMeshlets()

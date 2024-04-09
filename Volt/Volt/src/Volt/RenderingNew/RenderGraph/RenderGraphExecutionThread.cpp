@@ -37,7 +37,7 @@ namespace Volt
 		s_data = CreateScope<RenderGraphThreadData>();
 		s_data->isRunning = true;
 
-		const uint32_t frameCount = Application::Get().GetWindow().GetSwapchain().GetFramesInFlight();
+		const uint32_t frameCount = 2;
 		s_data->deletionQueue.resize(frameCount);
 		s_data->framesInFlight = frameCount;
 

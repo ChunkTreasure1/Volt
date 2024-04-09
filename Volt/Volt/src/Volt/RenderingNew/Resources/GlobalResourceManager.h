@@ -45,12 +45,15 @@ namespace Volt
 				return resourceToHandleMap.at(hash);
 			}
 
-			ResourceHandle handle = static_cast<ResourceHandle>(resources.size());
-			availiableHandles.TryPop(handle);
-
-			if (static_cast<ResourceHandle>(resources.size()) < handle + 1)
+			ResourceHandle handle = Resource::Invalid;
+			if (!availiableHandles.Empty())
 			{
-				resources.resize(handle + 1);
+				availiableHandles.TryPop(handle);
+			}
+			else
+			{
+				handle = static_cast<ResourceHandle>(resources.size());
+				resources.resize(resources.size() + 1);
 			}
 
 			resourceToHandleMap[hash] = handle;

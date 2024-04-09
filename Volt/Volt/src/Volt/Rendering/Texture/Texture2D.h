@@ -37,5 +37,6 @@ namespace Volt
 
 	private:
 		Ref<RHI::Image2D> m_image;
+		ResourceHandle m_resourceHandle = Resource::Invalid;
 	};
 }

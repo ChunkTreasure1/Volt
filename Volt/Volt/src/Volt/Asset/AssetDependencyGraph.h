@@ -30,7 +30,9 @@ namespace Volt
 
 		UUID64 AddAssetToGraph(AssetHandle handle);
 		void RemoveAssetFromGraph(AssetHandle handle);
+
 		void AddDependencyToAsset(AssetHandle handle, AssetHandle dependency);
+		void RemoveDependencyToAsset(AssetHandle handle, AssetHandle dependency);
 
 		void OnAssetChanged(AssetHandle handle, AssetChangedState state);
 

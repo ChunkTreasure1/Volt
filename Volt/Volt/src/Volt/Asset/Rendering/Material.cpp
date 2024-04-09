@@ -46,6 +46,7 @@ namespace Volt
 		}
 
 		m_textures[index] = texture;
+		m_isDirty = true;
 	}
 
 	void Material::RemoveTexture(uint32_t index)
@@ -56,6 +57,7 @@ namespace Volt
 		}
 
 		m_textures.erase(m_textures.begin() + index);
+		m_isDirty = true;
 	}
 
 	bool Material::ClearAndGetIsDirty()
@@ -65,6 +67,7 @@ namespace Volt
 		return state;
 	}
 
+	VT_OPTIMIZE_OFF
 	void Material::OnDependencyChanged(AssetHandle dependencyHandle, AssetChangedState state)
 	{
 		auto it = std::find_if(m_textures.begin(), m_textures.end(), [dependencyHandle](Ref<Texture2D> tex)
@@ -94,6 +97,7 @@ namespace Volt
 			m_isDirty = true;
 		}
 	}
+	VT_OPTIMIZE_ON
 
 	void Material::Compile()
 	{

@@ -16,18 +16,20 @@ namespace Volt
 		imageSpec.height = static_cast<uint32_t>(height);
 
 		m_image = RHI::Image2D::Create(imageSpec, data);
+		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_image->GetView());
 	}
 
 	Texture2D::Texture2D(Ref<RHI::Image2D> image)
 		: m_image(image)
 	{
+		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_image->GetView());
 	}
 
 	Texture2D::~Texture2D()
 	{
 		if (m_image)
 		{
-			GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_image->GetView());
+			GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_resourceHandle);
 		}
 		
 		m_image = nullptr;
@@ -45,16 +47,17 @@ namespace Volt
 
 	ResourceHandle Texture2D::GetResourceHandle() const
 	{
-		return GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_image->GetView());
+		return m_resourceHandle;
 	}
 
 	void Texture2D::SetImage(Ref<RHI::Image2D> image)
 	{
 		if (m_image)
 		{
-			GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_image->GetView());
+			GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_resourceHandle);
 		}
 
+		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(image->GetView());
 		m_image = image;
 	}
 

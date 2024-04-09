@@ -59,10 +59,14 @@ namespace Volt
 
 		for (size_t i = 1; i < dependants.size(); i++)
 		{
-			const auto rawAsset = Volt::AssetManager::Get().GetAssetRaw(dependants.at(i));
-			if (rawAsset && rawAsset->IsValid())
+			const auto isLoaded = Volt::AssetManager::IsLoaded(dependants.at(i));
+			if (isLoaded)
 			{
-				rawAsset->OnDependencyChanged(handle, state);
+				const auto rawAsset = Volt::AssetManager::Get().GetAssetRaw(dependants.at(i));
+				if (rawAsset && rawAsset->IsValid())
+				{
+					rawAsset->OnDependencyChanged(handle, state);
+				}
 			}
 		}
 	}

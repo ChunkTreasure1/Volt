@@ -66,7 +66,7 @@ namespace Volt
 		Ref<RHI::ComputePipeline> m_computePipeline;
 
 		bool m_isEngineMaterial = false;
-		bool m_isDirty = false;
+		std::atomic_bool m_isDirty = false;
 		VoltGUID m_materialGUID;
 	};
 }
