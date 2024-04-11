@@ -35,7 +35,7 @@ project "GLFW"
 
 	postbuildcommands
 	{
-		'{COPY} "bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/GLFW/GLFW.dll" "../../../../Engine/"'
+		'{COPY} "bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/"%{prj.name}".dll" "../../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox"'
 	}
 
 	warnings "off"
@@ -107,3 +107,8 @@ project "GLFW"
 	filter "configurations:Dist"
 		runtime "Release"
 		optimize "on"
+
+		postbuildcommands
+		{
+			'{COPY} "bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../../../Engine"'
+		}

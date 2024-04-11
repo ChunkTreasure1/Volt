@@ -113,9 +113,10 @@ project "Volt"
 		"DirectXTK",
 		"stb",
 		"VulkanMemoryAllocator",
+		"VoltD3D12",
+
 		"VoltRHI",
-		"VoltVulkan",
-		"VoltD3D12"
+		"VoltVulkan"
 	}
 
 	defines

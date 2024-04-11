@@ -28,7 +28,7 @@ project "tracy"
 
 	postbuildcommands
 	{
-		'{COPY} "bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/tracy/tracy.dll" "../../../../Engine/"'
+		'{COPY} "bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/"%{prj.name}".dll" "../../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox"'
 	}
 
 	warnings "off"
@@ -53,3 +53,8 @@ project "tracy"
 	filter "configurations:Dist"
 		runtime "Release"
 		optimize "on"
+
+		postbuildcommands
+		{
+			'{COPY} "bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../../../Engine"'
+		}

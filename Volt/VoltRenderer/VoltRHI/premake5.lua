@@ -50,7 +50,7 @@ project "VoltRHI"
 
 	postbuildcommands
 	{
-		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/VoltRHI/VoltRHI.dll" "../../../Engine/"'
+		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox"'
 	}
 
 	filter "files:vendor/**.cpp"
@@ -116,3 +116,8 @@ project "VoltRHI"
 			runtime "Release"
 			optimize "on"
 			symbols "on"
+
+			postbuildcommands
+			{
+				'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../../Engine"'
+			}

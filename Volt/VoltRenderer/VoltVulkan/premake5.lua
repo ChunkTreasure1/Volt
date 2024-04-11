@@ -62,7 +62,7 @@ project "VoltVulkan"
 
 	postbuildcommands
 	{
-		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/VoltVulkan/VoltVulkan.dll" "../../../Engine/"'
+		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox"'
 	}
 
 	filter "files:vendor/**.cpp"
@@ -150,4 +150,9 @@ project "VoltVulkan"
 				"%{Library.ShaderC_Utils_Release}",
 				"%{Library.SPIRV_Cross_Release}",
 				"%{Library.SPIRV_Cross_GLSL_Release}",
+			}
+
+			postbuildcommands
+			{
+				'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../../Engine"'
 			}
