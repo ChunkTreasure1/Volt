@@ -476,9 +476,4 @@ namespace Volt::RHI
 			vkAllocateMemory(device->GetHandle<VkDevice>(), &allocInfo, nullptr, &m_pageAllocations[i].handle);
 		}
 	}
-	
-	Ref<TransientHeap> CreateVulkanTransientHeap(const TransientHeapCreateInfo& info)
-	{
-		return CreateRef<VulkanTransientHeap>(info);
-	}
 }

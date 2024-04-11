@@ -4,6 +4,7 @@
 #include "VoltVulkan/Common/VulkanFunctions.h"
 #include "VoltVulkan/Common/VulkanHelpers.h"
 #include "VoltVulkan/Graphics/VulkanSwapchain.h"
+#include "VoltVulkan/Images/VulkanImageView.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
 
@@ -313,7 +314,7 @@ namespace Volt::RHI
 
 		spec.image = this;
 
-		Ref<ImageView> view = ImageView::Create(spec);
+		Ref<ImageView> view = CreateRef<VulkanImageView>(spec);
 		m_imageViews[layer][mip] = view;
 
 		return view;
@@ -334,7 +335,7 @@ namespace Volt::RHI
 		spec.viewType = ImageViewType::View2DArray;
 		spec.image = As<Image2D>();
 
-		Ref<ImageView> view = ImageView::Create(spec);
+		Ref<ImageView> view = CreateRef<VulkanImageView>(spec);
 		m_arrayImageViews[mip] = view;
 
 		return view;
@@ -520,20 +521,5 @@ namespace Volt::RHI
 		commandBuffer->Execute();
 
 		m_currentImageLayout = targetLayout;
-	}
-
-	VTVK_API Ref<Image2D> CreateVulkanImage2D(const ImageSpecification& specification, const void* data)
-	{
-		return CreateRef<VulkanImage2D>(specification, data);
-	}
-
-	VTVK_API Ref<Image2D> CreateVulkanImage2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data)
-	{
-		return CreateRef<VulkanImage2D>(specification, customAllocator, data);
-	}
-
-	VTVK_API Ref<Image2D> CreateVulkanImage2D(const SwapchainImageSpecification& specification)
-	{
-		return CreateRef<VulkanImage2D>(specification);
 	}
 }

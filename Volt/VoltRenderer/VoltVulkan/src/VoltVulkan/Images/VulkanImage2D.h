@@ -74,8 +74,4 @@ namespace Volt::RHI
 		std::map<int32_t, std::map<int32_t, Ref<ImageView>>> m_imageViews; // Layer -> Mip -> View
 		std::map<int32_t, Ref<ImageView>> m_arrayImageViews;
 	};
-
-	VTVK_API Ref<Image2D> CreateVulkanImage2D(const ImageSpecification& specification, const void* data);
-	VTVK_API Ref<Image2D> CreateVulkanImage2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data);
-	VTVK_API Ref<Image2D> CreateVulkanImage2D(const SwapchainImageSpecification& specification);
 }

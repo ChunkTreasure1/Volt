@@ -1,27 +1,12 @@
 #include "rhipch.h"
 #include "RenderPipeline.h"
 
-#include "VoltRHI/Graphics/GraphicsContext.h"
-
-#include <VoltVulkan/Pipelines/VulkanRenderPipeline.h>
-#include <VoltD3D12/Pipelines/D3D12RenderPipeline.h>
+#include "VoltRHI/RHIProxy.h"
 
 namespace Volt::RHI
 {
 	Ref<RenderPipeline> RenderPipeline::Create(const RenderPipelineCreateInfo& createInfo)
 	{
-		const auto api = GraphicsContext::GetAPI();
-
-		switch (api)
-		{
-			//case GraphicsAPI::D3D12: return CreateRef<D3D12RenderPipeline>(createInfo); break;
-			case GraphicsAPI::MoltenVk:
-			case GraphicsAPI::Mock:
-				break;
-
-			case GraphicsAPI::Vulkan: return CreateVulkanRenderPipeline(createInfo); break;
-		}
-
-		return nullptr;
+		return RHIProxy::GetInstance().CreateRenderPipeline(createInfo);
 	}
 }

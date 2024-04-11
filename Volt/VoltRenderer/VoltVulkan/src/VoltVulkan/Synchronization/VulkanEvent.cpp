@@ -69,9 +69,4 @@ namespace Volt::RHI
 	{
 		return m_event;
 	}
-
-	Ref<Event> CreateVulkanEvent(const EventCreateInfo& createInfo)
-	{
-		return CreateRef<VulkanEvent>(createInfo);
-	}
 }

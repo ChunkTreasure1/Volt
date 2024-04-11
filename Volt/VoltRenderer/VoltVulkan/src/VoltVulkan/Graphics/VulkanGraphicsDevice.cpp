@@ -266,10 +266,5 @@ namespace Volt::RHI
 	{
 		return m_device;
 	}
-
-	VTVK_API Ref<GraphicsDevice> CreateVulkanGraphicsDevice(const GraphicsDeviceCreateInfo& createInfo)
-	{
-		return CreateRef<VulkanGraphicsDevice>(createInfo);
-	}
 }
 

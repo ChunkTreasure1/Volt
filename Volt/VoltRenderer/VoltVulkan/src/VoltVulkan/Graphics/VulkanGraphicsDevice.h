@@ -33,6 +33,4 @@ namespace Volt::RHI
 		Weak<VulkanPhysicalGraphicsDevice> m_physicalDevice;
 		GPUCrashTracker m_deviceCrashTracker{};
 	};
-
-	VTVK_API Ref<GraphicsDevice> CreateVulkanGraphicsDevice(const GraphicsDeviceCreateInfo& createInfo);
 }

@@ -61,6 +61,7 @@ namespace Volt
 	{
 		class ImGuiImplementation;
 		class GraphicsContext;
+		class RHIProxy;
 	}
 
 	class Application
@@ -122,6 +123,7 @@ namespace Volt
 
 		Ref<RHI::ImGuiImplementation> m_imguiImplementation;
 		Ref<RHI::GraphicsContext> m_graphicsContext;
+		Ref<RHI::RHIProxy> m_rhiProxy;
 
 		WindowHandle m_windowHandle = 0;
 		Scope<AssetManager> m_assetmanager;

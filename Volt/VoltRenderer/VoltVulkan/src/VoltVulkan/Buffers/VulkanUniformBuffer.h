@@ -32,6 +32,4 @@ namespace Volt::RHI
 
 		Ref<Allocation> m_allocation;
 	};
-
-	VTVK_API Ref<UniformBuffer> CreateVulkanUniformBuffer(const uint32_t size, const void* data);
 }

@@ -53,9 +53,4 @@ namespace Volt::RHI
 	{
 		return m_sampler;
 	}
-
-	VTVK_API Ref<SamplerState> CreateVulkanSamplerState(const SamplerStateCreateInfo& createInfo)
-	{
-		return CreateRef<VulkanSamplerState>(createInfo);
-	}
 }

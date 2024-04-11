@@ -69,6 +69,4 @@ namespace Volt::RHI
 		std::mutex m_allocationMutex;
 		UUID64 m_heapId;
 	};
-
-	VTVK_API Ref<TransientHeap> CreateVulkanTransientHeap(const TransientHeapCreateInfo& info);
 }

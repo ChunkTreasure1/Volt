@@ -330,9 +330,4 @@ namespace Volt::RHI
 		m_pipelineLayout = nullptr;
 		m_pipeline = nullptr;
 	}
-
-	VTVK_API Ref<RenderPipeline> CreateVulkanRenderPipeline(const RenderPipelineCreateInfo& createInfo)
-	{
-		return CreateRef<VulkanRenderPipeline>(createInfo);
-	}
 }

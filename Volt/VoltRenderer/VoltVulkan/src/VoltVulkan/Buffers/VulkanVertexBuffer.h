@@ -10,7 +10,7 @@ namespace Volt::RHI
 	class VulkanVertexBuffer : public VertexBuffer
 	{
 	public:
-		VulkanVertexBuffer(const void* data, const uint32_t size);
+		VulkanVertexBuffer(const uint32_t size, const void* data);
 		~VulkanVertexBuffer() override;
 
 		void SetData(const void* data, uint32_t size) override;
@@ -27,6 +27,4 @@ namespace Volt::RHI
 
 		Ref<Allocation> m_allocation;
 	};
-
-	VTVK_API Ref<VertexBuffer> CreateVulkanVertexBuffer(const void* data, const uint32_t size);
 }

@@ -9,7 +9,7 @@ namespace Volt::RHI
 	class VulkanIndexBuffer : public IndexBuffer
 	{
 	public:
-		VulkanIndexBuffer(std::span<uint32_t> indices);
+		VulkanIndexBuffer(std::span<const uint32_t> indices);
 		~VulkanIndexBuffer() override;
 
 		const uint32_t GetCount() const override;
@@ -28,6 +28,4 @@ namespace Volt::RHI
 
 		uint32_t m_count = 0;
 	};
-
-	VTVK_API Ref<IndexBuffer> CreateVulkanIndexBuffer(std::span<uint32_t> indices);
 }

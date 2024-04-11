@@ -30,7 +30,6 @@ project "VoltRHI"
 	{
 		"src/",
 		"../VoltD3D12/src",
-		"../VoltVulkan/src",
 
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.imgui_notify}",
@@ -42,8 +41,6 @@ project "VoltRHI"
 	{
 		"ImGui", -- Should not be here
 		"tracy",
-
-		"%{Library.VoltVulkan}"
 	}
 
 	postbuildcommands

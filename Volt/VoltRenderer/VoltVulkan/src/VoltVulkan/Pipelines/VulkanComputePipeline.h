@@ -31,6 +31,4 @@ namespace Volt::RHI
 		VkPipeline_T* m_pipeline = nullptr;
 		VkPipelineLayout_T* m_pipelineLayout = nullptr;
 	};
-
-	VTVK_API Ref<ComputePipeline> CreateVulkanComputePipeline(Ref<Shader> shader, bool useGlobalResources);
 }

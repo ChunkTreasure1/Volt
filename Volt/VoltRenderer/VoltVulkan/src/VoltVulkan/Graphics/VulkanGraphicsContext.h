@@ -46,6 +46,4 @@ namespace Volt::RHI
 
 		GraphicsContextCreateInfo m_createInfo{};
 	};
-
-	VTVK_API Ref<GraphicsContext> CreateVulkanGraphicsContext(const GraphicsContextCreateInfo& createInfo);
 }

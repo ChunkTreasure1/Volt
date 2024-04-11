@@ -126,6 +126,4 @@ namespace Volt::RHI
 
 		PixelFormat m_swapchainFormat = PixelFormat::UNDEFINED;
 	};
-
-	VTVK_API Ref<Swapchain> CreateVulkanSwapchain(GLFWwindow* glfwWindow);
 }

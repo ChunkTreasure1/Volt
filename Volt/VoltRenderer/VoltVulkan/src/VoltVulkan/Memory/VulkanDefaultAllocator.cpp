@@ -258,9 +258,4 @@ namespace Volt::RHI
 	{
 		return m_allocator;
 	}
-
-	VTVK_API Scope<DefaultAllocator> CreateVulkanDefaultAllocator()
-	{
-		return CreateScope<VulkanDefaultAllocator>();
-	}
 }

@@ -4,9 +4,7 @@
 #include "VoltRHI/Graphics/GraphicsContext.h"
 #include "VoltRHI/Core/Core.h"
 #include "VoltRHI/Core/Profiling.h"
-
-#include <VoltVulkan/ImGui/VulkanImGuiImplementation.h>
-#include <VoltD3D12/ImGui/D3D12ImGuiImplementation.h>
+#include "VoltRHI/RHIProxy.h"
 
 #include <imgui.h>
 //#include <imgui_notify.h>
@@ -236,20 +234,7 @@ namespace Volt::RHI
 
 	Ref<ImGuiImplementation> ImGuiImplementation::Create(const ImGuiCreateInfo& createInfo)
 	{
-		const auto api = GraphicsContext::GetAPI();
-
-		Ref<ImGuiImplementation> implementation;
-
-		switch (api)
-		{
-			//case GraphicsAPI::D3D12: implementation = CreateRef<D3D12ImGuiImplementation>(createInfo);
-			case GraphicsAPI::MoltenVk:
-			case GraphicsAPI::Mock:
-				break;
-			
-			case GraphicsAPI::Vulkan: implementation = CreateVulkanImGuiImplementation(createInfo);
-		}
-
+		Ref<ImGuiImplementation> implementation = RHIProxy::GetInstance().CreateImGuiImplementation(createInfo);
 		implementation->Initialize();
 
 		return implementation;

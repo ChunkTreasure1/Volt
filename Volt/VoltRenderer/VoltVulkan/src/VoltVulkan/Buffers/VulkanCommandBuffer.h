@@ -138,7 +138,4 @@ namespace Volt::RHI
 		Weak<ComputePipeline> m_currentComputePipeline;
 		Weak<Swapchain> m_swapchainTarget;
 	};
-
-	VTVK_API Ref<CommandBuffer> CreateVulkanCommandBuffer(const uint32_t count, QueueType queueType);
-	VTVK_API Ref<CommandBuffer> CreateVulkanCommandBuffer(Weak<Swapchain> swapchain);
 }

@@ -27,6 +27,4 @@ namespace Volt::RHI
 
 		VkQueue_T* m_queue = nullptr;
 	};
-
-	VTVK_API Ref<DeviceQueue> CreateVulkanDeviceQueue(const DeviceQueueCreateInfo& createInfo);
 }

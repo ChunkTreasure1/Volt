@@ -1,26 +1,12 @@
 #include "rhipch.h"
 #include "ComputePipeline.h"
 
-#include "VoltRHI/Graphics/GraphicsContext.h"
-
-#include <VoltVulkan/Pipelines/VulkanComputePipeline.h>
+#include "VoltRHI/RHIProxy.h"
 
 namespace Volt::RHI
 {
 	Ref<ComputePipeline> ComputePipeline::Create(Ref<Shader> shader, bool useGlobalResources)
 	{
-		const auto api = GraphicsContext::GetAPI();
-
-		switch (api)
-		{
-			case GraphicsAPI::D3D12:
-			case GraphicsAPI::MoltenVk:
-			case GraphicsAPI::Mock:
-				break;
-
-			case GraphicsAPI::Vulkan: return CreateVulkanComputePipeline(shader, useGlobalResources);
-		}
-
-		return nullptr;
+		return RHIProxy::GetInstance().CreateComputePipeline(shader, useGlobalResources);
 	}
 }

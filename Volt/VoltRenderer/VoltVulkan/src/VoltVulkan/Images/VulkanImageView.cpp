@@ -87,9 +87,4 @@ namespace Volt::RHI
 	{
 		return m_imageView;
 	}
-
-	VTVK_API Ref<ImageView> CreateVulkanImageView(const ImageViewSpecification& specification)
-	{
-		return CreateRef<VulkanImageView>(specification);
-	}
 }

@@ -22,6 +22,4 @@ namespace Volt::RHI
 	private:
 		RHIResource* m_buffer = nullptr;
 	};
-
-	VTVK_API Ref<BufferView> CreateVulkanBufferView(const BufferViewSpecification& specification);
 }

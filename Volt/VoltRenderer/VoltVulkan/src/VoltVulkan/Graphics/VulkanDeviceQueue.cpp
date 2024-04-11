@@ -80,9 +80,4 @@ namespace Volt::RHI
 	{
 		return m_queue;
 	}
-
-	Ref<DeviceQueue> CreateVulkanDeviceQueue(const DeviceQueueCreateInfo& createInfo)
-	{
-		return CreateRef<VulkanDeviceQueue>(createInfo);
-	}
 }

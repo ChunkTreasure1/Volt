@@ -23,6 +23,4 @@ namespace Volt::RHI
 	private:
 		VkEvent_T* m_event = nullptr;
 	};
-
-	VTVK_API Ref<Event> CreateVulkanEvent(const EventCreateInfo& createInfo);
 }

@@ -12,7 +12,7 @@
 
 namespace Volt::RHI
 {
-	VulkanIndexBuffer::VulkanIndexBuffer(std::span<uint32_t> indices)
+	VulkanIndexBuffer::VulkanIndexBuffer(std::span<const uint32_t> indices)
 		: m_count(static_cast<uint32_t>(indices.size()))
 	{
 		SetData(indices.data(), static_cast<uint32_t>(sizeof(uint32_t) * indices.size()));
@@ -125,10 +125,5 @@ namespace Volt::RHI
 
 			allocator.DestroyBuffer(stagingAllocation);
 		}
-	}
-
-	VTVK_API Ref<IndexBuffer> CreateVulkanIndexBuffer(std::span<uint32_t> indices)
-	{
-		return CreateRef<VulkanIndexBuffer>(indices);
 	}
 }

@@ -41,6 +41,4 @@ namespace Volt::RHI
 	
 		AllocationCache m_allocationCache{};
 	};
-
-	VTVK_API Ref<TransientAllocator> CreateVulkanTransientAllocator();
 }

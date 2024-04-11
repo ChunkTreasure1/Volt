@@ -45,6 +45,4 @@ namespace Volt::RHI
 		ShaderCompilerFlags m_flags = ShaderCompilerFlags::None;
 		std::filesystem::path m_cacheDirectory;
 	};
-
-	VTVK_API Ref<ShaderCompiler> CreateVulkanShaderCompiler(const ShaderCompilerCreateInfo& createInfo);
 }

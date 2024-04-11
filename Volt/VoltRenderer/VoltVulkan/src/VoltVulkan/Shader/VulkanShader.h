@@ -81,6 +81,4 @@ namespace Volt::RHI
 		ShaderSpecification m_specification;
 		ShaderResources m_resources;
 	};
-
-	VTVK_API Ref<Shader> CreateVulkanShader(const ShaderSpecification& createInfo);
 }

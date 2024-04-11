@@ -73,6 +73,4 @@ namespace Volt::RHI
 		std::map<uint32_t, std::map<uint32_t, uint64_t>> m_descriptorSetBindingOffsets;
 		std::map<uint32_t, std::map<uint32_t, uint32_t>> m_imageDescriptorTypes;
 	};
-
-	VTVK_API Ref<DescriptorTable> CreateVulkanDescriptorBufferTable(const DescriptorTableCreateInfo& createInfo);
 }

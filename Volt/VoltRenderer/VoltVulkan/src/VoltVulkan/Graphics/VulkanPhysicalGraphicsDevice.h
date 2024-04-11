@@ -57,6 +57,4 @@ namespace Volt::RHI
 		PhysicalDeviceProperties m_deviceProperties;
 		PhysicalDeviceCreateInfo m_createInfo{};
 	};
-
-	VTVK_API Ref<PhysicalGraphicsDevice> CreateVulkanPhysicalDevice(const PhysicalDeviceCreateInfo& createInfo);
 }

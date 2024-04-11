@@ -277,9 +277,4 @@ namespace Volt::RHI
 
 		return extensionsVector;
 	}
-
-	Ref<GraphicsContext> CreateVulkanGraphicsContext(const GraphicsContextCreateInfo& createInfo)
-	{
-		return CreateRef<VulkanGraphicsContext>(createInfo);
-	}
 }

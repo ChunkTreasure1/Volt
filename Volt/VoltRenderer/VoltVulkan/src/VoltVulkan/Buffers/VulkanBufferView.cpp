@@ -19,9 +19,4 @@ namespace Volt::RHI
 	{
 		return m_buffer->GetHandle<void*>();
 	}
-
-	Ref<BufferView> CreateVulkanBufferView(const BufferViewSpecification& specification)
-	{
-		return CreateRef<VulkanBufferView>(specification);
-	}
 }

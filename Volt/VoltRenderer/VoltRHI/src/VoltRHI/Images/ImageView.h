@@ -23,7 +23,7 @@ namespace Volt::RHI
 	class VTRHI_API ImageView : public RHIInterface
 	{
 	public:
-		static Ref<ImageView> Create(const ImageViewSpecification specification);
+		static Ref<ImageView> Create(const ImageViewSpecification& specification);
 
 		virtual const ImageAspect GetImageAspect() const = 0;
 		virtual const uint64_t GetDeviceAddress() const = 0;

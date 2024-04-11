@@ -418,9 +418,4 @@ namespace Volt::RHI
 	{
 		return nullptr;
 	}
-
-	VTVK_API Ref<ShaderCompiler> CreateVulkanShaderCompiler(const ShaderCompilerCreateInfo& createInfo)
-	{
-		return CreateRef<VulkanShaderCompiler>(createInfo);
-	}
 }

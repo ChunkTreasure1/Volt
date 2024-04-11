@@ -30,6 +30,7 @@
 
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
+#include <VoltVulkan/VulkanRHIProxy.h>
 
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
@@ -215,6 +216,7 @@ namespace Volt
 
 		m_windowManager.DestroyWindow(m_windowHandle);
 		m_graphicsContext = nullptr;
+		m_rhiProxy = nullptr;
 		Window::StaticShutdown();
 
 		s_instance = nullptr;
@@ -383,6 +385,11 @@ namespace Volt
 		cinfo.graphicsApi = RHI::GraphicsAPI::Vulkan;
 		cinfo.loghookInfo = logHook;
 		cinfo.resourceManagementInfo = resourceManagement;
+
+		if (cinfo.graphicsApi == RHI::GraphicsAPI::Vulkan)
+		{
+			m_rhiProxy = RHI::CreateVulkanRHIProxy();
+		}
 
 		m_graphicsContext = RHI::GraphicsContext::Create(cinfo);
 	}

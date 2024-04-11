@@ -98,6 +98,4 @@ namespace Volt::RHI
 
 		std::vector<bool> m_isDirty;
 	};
-
-	VTVK_API Ref<DescriptorTable> CreateVulkanDescriptorTable(const DescriptorTableCreateInfo& specification);
 }

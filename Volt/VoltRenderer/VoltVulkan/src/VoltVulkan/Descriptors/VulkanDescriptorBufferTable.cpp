@@ -433,9 +433,4 @@ namespace Volt::RHI
 			}
 		}
 	}
-
-	Ref<DescriptorTable> CreateVulkanDescriptorBufferTable(const DescriptorTableCreateInfo& createInfo)
-	{
-		return CreateRef<VulkanDescriptorBufferTable>(createInfo);
-	}
 }

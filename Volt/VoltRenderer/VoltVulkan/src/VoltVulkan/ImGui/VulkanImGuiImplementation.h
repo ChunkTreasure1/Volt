@@ -30,6 +30,4 @@ namespace Volt::RHI
 		GLFWwindow* m_windowPtr = nullptr;
 		Weak<Swapchain> m_swapchain;
 	};
-
-	VTVK_API Ref<ImGuiImplementation> CreateVulkanImGuiImplementation(const ImGuiCreateInfo& createInfo);
 }

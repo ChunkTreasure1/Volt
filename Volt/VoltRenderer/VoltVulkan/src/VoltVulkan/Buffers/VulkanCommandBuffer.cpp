@@ -1704,14 +1704,4 @@ namespace Volt::RHI
 
 		return pipelineLayout;
 	}
-
-	Ref<CommandBuffer> CreateVulkanCommandBuffer(const uint32_t count, QueueType queueType)
-	{
-		return CreateRef<VulkanCommandBuffer>(1, queueType);
-	}
-
-	Ref<CommandBuffer> CreateVulkanCommandBuffer(Weak<Swapchain> swapchain)
-	{
-		return CreateRef<VulkanCommandBuffer>(swapchain);
-	}
 }

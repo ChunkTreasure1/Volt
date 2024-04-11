@@ -57,8 +57,4 @@ namespace Volt::RHI
 		BufferUsage m_bufferUsage = BufferUsage::StorageBuffer;
 		MemoryUsage m_memoryUsage = MemoryUsage::GPU;
 	};
-
-	VTVK_API Ref<StorageBuffer> CreateVulkanStorageBuffer(uint32_t count, size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
-	VTVK_API Ref<StorageBuffer> CreateVulkanStorageBuffer(size_t size, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
-	VTVK_API Ref<StorageBuffer> CreateVulkanStorageBuffer(size_t size, Ref<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
 }

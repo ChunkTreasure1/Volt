@@ -12,7 +12,7 @@
 
 namespace Volt::RHI
 {
-	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, const uint32_t size)
+	VulkanVertexBuffer::VulkanVertexBuffer(const uint32_t size, const void* data)
 	{
 		Invalidate(data, size);
 	}
@@ -124,10 +124,5 @@ namespace Volt::RHI
 
 			allocator.DestroyBuffer(stagingAllocation);
 		}
-	}
-	
-	Ref<VertexBuffer> CreateVulkanVertexBuffer(const void* data, const uint32_t size)
-	{
-		return CreateRef<VulkanVertexBuffer>(data, size);
 	}
 }

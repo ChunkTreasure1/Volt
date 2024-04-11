@@ -20,6 +20,4 @@ namespace Volt::RHI
 	private:
 		VkSampler_T* m_sampler = nullptr;
 	};
-
-	VTVK_API Ref<SamplerState> CreateVulkanSamplerState(const SamplerStateCreateInfo& createInfo);
 }

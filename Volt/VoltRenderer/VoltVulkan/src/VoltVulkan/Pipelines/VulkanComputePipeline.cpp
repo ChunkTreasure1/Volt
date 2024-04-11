@@ -122,9 +122,4 @@ namespace Volt::RHI
 		m_pipeline = nullptr;
 		m_pipelineLayout = nullptr;
 	}
-
-	Ref<ComputePipeline> CreateVulkanComputePipeline(Ref<Shader> shader, bool useGlobalResources)
-	{
-		return CreateRef<VulkanComputePipeline>(shader, useGlobalResources);
-	}
 }

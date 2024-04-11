@@ -42,6 +42,7 @@ project "Volt"
 		"../Navigation/src/",
 		"../Nexus/src/",
 		"../VoltRenderer/VoltRHI/src",
+		"../VoltRenderer/VoltVulkan/src",
 		"../Mosaic/src",
 		
 		"%{IncludeDir.GLFW}",

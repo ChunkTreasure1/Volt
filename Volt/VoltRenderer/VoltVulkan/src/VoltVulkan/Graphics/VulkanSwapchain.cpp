@@ -545,9 +545,4 @@ namespace Volt::RHI
 			VT_VK_CHECK(vkAllocateCommandBuffers(device->GetHandle<VkDevice>(), &allocInfo, &frameData.commandBuffer));
 		}
 	}
-
-	VTVK_API Ref<Swapchain> CreateVulkanSwapchain(GLFWwindow* glfwWindow)
-	{
-		return CreateRef<VulkanSwapchain>(glfwWindow);
-	}
 }

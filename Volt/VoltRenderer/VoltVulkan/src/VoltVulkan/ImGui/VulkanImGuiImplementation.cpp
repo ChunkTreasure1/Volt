@@ -219,9 +219,4 @@ namespace Volt::RHI
 		vkDestroyDescriptorPool(device->GetHandle<VkDevice>(), s_descriptorPool, nullptr);
 		ImGui_ImplVulkan_Shutdown();
 	}
-
-	Ref<ImGuiImplementation> CreateVulkanImGuiImplementation(const ImGuiCreateInfo& createInfo)
-	{
-		return CreateRef<VulkanImGuiImplementation>(createInfo);
-	}
 }

@@ -101,9 +101,4 @@ namespace Volt::RHI
 	{
 		return m_allocation->GetResourceHandle<VkBuffer>();
 	}
-	
-	Ref<UniformBuffer> CreateVulkanUniformBuffer(const uint32_t size, const void* data)
-	{
-		return CreateRef<VulkanUniformBuffer>(size, data);
-	}
 }

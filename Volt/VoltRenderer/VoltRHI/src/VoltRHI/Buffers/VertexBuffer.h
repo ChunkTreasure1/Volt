@@ -9,7 +9,7 @@ namespace Volt::RHI
 	public:
 		virtual void SetData(const void* data, uint32_t size) = 0;
 
-		static Ref<VertexBuffer> Create(const void* data, const uint32_t size);
+		static Ref<VertexBuffer> Create(const uint32_t size, const void* data);
 
 	protected:
 		VertexBuffer() = default;
