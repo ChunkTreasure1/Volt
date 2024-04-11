@@ -19,7 +19,7 @@ namespace Volt::RHI
 			case GraphicsAPI::Mock:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateScope<VulkanTransientAllocator>(); break;
+			case GraphicsAPI::Vulkan: return CreateVulkanTransientAllocator(); break;
 		}
 
 		return nullptr;
@@ -36,7 +36,7 @@ namespace Volt::RHI
 			case GraphicsAPI::Mock:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateScope<VulkanDefaultAllocator>(); break;
+			case GraphicsAPI::Vulkan: return CreateVulkanDefaultAllocator(); break;
 		}
 
 		return nullptr;

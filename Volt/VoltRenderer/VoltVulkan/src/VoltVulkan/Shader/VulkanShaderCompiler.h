@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
+
 #include <VoltRHI/Core/RHICommon.h>
 #include <VoltRHI/Shader/ShaderCompiler.h>
 
@@ -43,4 +45,6 @@ namespace Volt::RHI
 		ShaderCompilerFlags m_flags = ShaderCompilerFlags::None;
 		std::filesystem::path m_cacheDirectory;
 	};
+
+	VTVK_API Ref<ShaderCompiler> CreateVulkanShaderCompiler(const ShaderCompilerCreateInfo& createInfo);
 }

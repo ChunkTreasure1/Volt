@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
 #include <VoltRHI/Images/ImageView.h>
 	
 struct VkImageView_T;
@@ -27,4 +28,6 @@ namespace Volt::RHI
 
 		VkImageView_T* m_imageView = nullptr;
 	};
+
+	VTVK_API Ref<ImageView> CreateVulkanImageView(const ImageViewSpecification& specification);
 }

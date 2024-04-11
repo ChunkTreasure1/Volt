@@ -4,7 +4,7 @@
 
 namespace Volt::RHI
 {
-	class VertexBuffer : public RHIResource
+	class VTRHI_API VertexBuffer : public RHIResource
 	{
 	public:
 		virtual void SetData(const void* data, uint32_t size) = 0;

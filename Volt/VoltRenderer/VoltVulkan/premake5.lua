@@ -1,8 +1,9 @@
 project "VoltVulkan"
 	location "."
-	kind "StaticLib"
+	kind "SharedLib"
 	language "C++"
 	cppdialect "C++20"
+	staticruntime "off"
 
 	targetdir ("../../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../../bin-int/" .. outputdir .."/%{prj.name}")
@@ -42,6 +43,25 @@ project "VoltVulkan"
 	defines
 	{
 		"OPTICK_ENABLE_GPU_VULKAN",
+		"GLFW_DLL"
+	}
+
+	links
+	{
+		"ImGui", -- Should not be here
+		"VulkanMemoryAllocator",
+		"tracy",
+		"GLFW",
+		"CoreUtilities",
+
+		"%{Library.Vulkan}",
+		"%{Library.VoltRHI}",
+		"%{Library.dxc}",
+	}
+
+	postbuildcommands
+	{
+		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/VoltVulkan/VoltVulkan.dll" "../../../Engine/"'
 	}
 
 	filter "files:vendor/**.cpp"
@@ -59,7 +79,8 @@ project "VoltVulkan"
 		systemversion "latest"
 		defines 
 		{
-			"VT_PLATFORM_WINDOWS"
+			"VT_PLATFORM_WINDOWS",
+			"VTVK_BUILD_DLL"
 		}
 		
 		filter "configurations:Debug"
@@ -70,6 +91,18 @@ project "VoltVulkan"
 				"VT_ENABLE_VALIDATION",
 				"VT_ENABLE_PROFILING"
 			}
+
+			links
+			{
+				"%{Library.ShaderC_Debug}",
+				"%{Library.ShaderC_Utils_Debug}",
+				"%{Library.SPIRV_Cross_Debug}",
+				"%{Library.SPIRV_Cross_GLSL_Debug}",
+				"%{Library.SPIRV_Tools_Debug}",
+
+				"%{Library.Aftermath}"
+			}
+
 			runtime "Debug"
 			optimize "off"
 			symbols "on"
@@ -82,6 +115,16 @@ project "VoltVulkan"
 				"VT_ENABLE_VALIDATION",
 				"VT_ENABLE_PROFILING",
 				"NDEBUG"
+			}
+
+			links
+			{
+				"%{Library.ShaderC_Release}",
+				"%{Library.ShaderC_Utils_Release}",
+				"%{Library.SPIRV_Cross_Release}",
+				"%{Library.SPIRV_Cross_GLSL_Release}",
+
+				"%{Library.Aftermath}"
 			}
 
 			buildoptions { "/Ot", "/Ob2" }
@@ -99,3 +142,11 @@ project "VoltVulkan"
 			symbols "on"
 			vectorextensions "AVX2"
 			isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
+
+			links
+			{
+				"%{Library.ShaderC_Release}",
+				"%{Library.ShaderC_Utils_Release}",
+				"%{Library.SPIRV_Cross_Release}",
+				"%{Library.SPIRV_Cross_GLSL_Release}",
+			}

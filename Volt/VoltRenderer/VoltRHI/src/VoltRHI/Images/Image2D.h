@@ -14,7 +14,7 @@ namespace Volt::RHI
 		uint32_t imageIndex;
 	};
 
-	class Image2D : public RHIResource
+	class VTRHI_API Image2D : public RHIResource
 	{
 	public:
 		virtual void Invalidate(const uint32_t width, const uint32_t height, const void* data = nullptr) = 0;

@@ -22,13 +22,12 @@ namespace Volt::RHI
 		bool isGlobal = false;
 	};
 
-	class DescriptorTable : public RHIInterface
+	class VTRHI_API DescriptorTable : public RHIInterface
 	{
 	public:
 		// Set using bindings
 		virtual void SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) = 0;
 		virtual void SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) = 0;
-		virtual void SetBufferViewSet(Ref<BufferViewSet> bufferViewSet, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) = 0;
 
 		virtual void SetImageView(std::string_view name, Ref<ImageView> view, uint32_t arrayIndex) = 0;
 		virtual void SetBufferView(std::string_view name, Ref<BufferView> view, uint32_t arrayIndex) = 0;
@@ -44,7 +43,7 @@ namespace Volt::RHI
 		static Ref<DescriptorTable> Create(const DescriptorTableCreateInfo& specification);
 
 	protected:
-		virtual void Bind(Ref<CommandBuffer> commandBuffer) = 0;
+		virtual void Bind(CommandBuffer& commandBuffer) = 0;
 
 		DescriptorTable() = default;
 	};

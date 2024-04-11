@@ -11,7 +11,7 @@ namespace Volt::RHI
 	class Allocation;
 	class MemoryPool;
 
-	class Allocator : public RHIInterface
+	class VTRHI_API Allocator : public RHIInterface
 	{
 	public:
 		virtual ~Allocator() = default;
@@ -29,7 +29,7 @@ namespace Volt::RHI
 		Allocator() = default;
 	};
 
-	class DefaultAllocator : public Allocator
+	class VTRHI_API DefaultAllocator : public Allocator
 	{
 	public:
 		virtual ~DefaultAllocator() override = default;
@@ -40,7 +40,7 @@ namespace Volt::RHI
 		DefaultAllocator() = default;
 	};
 
-	class TransientAllocator : public Allocator
+	class VTRHI_API TransientAllocator : public Allocator
 	{
 	public:
 		virtual ~TransientAllocator() override = default;

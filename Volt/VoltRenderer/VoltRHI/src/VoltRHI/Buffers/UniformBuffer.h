@@ -6,7 +6,7 @@ namespace Volt::RHI
 {
 	class BufferView;
 
-	class UniformBuffer : public RHIResource
+	class VTRHI_API UniformBuffer : public RHIResource
 	{ 
 	public:
 		~UniformBuffer() override = default;

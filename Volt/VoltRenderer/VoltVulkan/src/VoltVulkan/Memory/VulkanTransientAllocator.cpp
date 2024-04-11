@@ -217,4 +217,9 @@ namespace Volt::RHI
 			DestroyImageInternal(alloc);
 		}
 	}
+
+	VTVK_API Ref<TransientAllocator> CreateVulkanTransientAllocator()
+	{
+		return CreateRef<VulkanTransientAllocator>();
+	}
 }

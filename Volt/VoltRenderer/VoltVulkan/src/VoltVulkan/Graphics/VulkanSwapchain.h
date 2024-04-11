@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
+
 #include <VoltRHI/Core/RHICommon.h>
 #include <VoltRHI/Graphics/Swapchain.h>
 
@@ -124,4 +126,6 @@ namespace Volt::RHI
 
 		PixelFormat m_swapchainFormat = PixelFormat::UNDEFINED;
 	};
+
+	VTVK_API Ref<Swapchain> CreateVulkanSwapchain(GLFWwindow* glfwWindow);
 }

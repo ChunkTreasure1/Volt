@@ -23,7 +23,7 @@ namespace Volt::RHI
 
 	class Event;
 
-	class CommandBuffer : public RHIInterface
+	class VTRHI_API CommandBuffer : public RHIInterface
 	{
 	public:
 		VT_DELETE_COMMON_OPERATORS(CommandBuffer);
@@ -89,16 +89,13 @@ namespace Volt::RHI
 		virtual void CopyImage(Ref<Image2D> srcImage, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height) = 0;
 
 		virtual const uint32_t GetCurrentIndex() const = 0;
-
-		inline const QueueType GetQueueType() const { return m_queueType; }
+		virtual const QueueType GetQueueType() const = 0;
 
 		static Ref<CommandBuffer> Create(const uint32_t count, QueueType queueType = QueueType::Graphics);
 		static Ref<CommandBuffer> Create(Weak<Swapchain> swapchain);
 		static Ref<CommandBuffer> Create();
 
 	protected:
-		CommandBuffer(QueueType queueType);
-	
-		QueueType m_queueType = QueueType::Graphics;
+		CommandBuffer() = default;
 	};
 }

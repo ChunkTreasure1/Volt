@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
+
 #include <VoltRHI/Memory/Allocator.h>
 #include <VoltRHI/Memory/AllocationCache.h>
 
@@ -39,4 +41,6 @@ namespace Volt::RHI
 	
 		AllocationCache m_allocationCache{};
 	};
+
+	VTVK_API Ref<TransientAllocator> CreateVulkanTransientAllocator();
 }

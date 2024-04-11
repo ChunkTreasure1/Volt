@@ -235,7 +235,7 @@ namespace Volt::RHI
 	}
 
 	VulkanCommandBuffer::VulkanCommandBuffer(const uint32_t count, QueueType queueType)
-		: CommandBuffer(queueType), m_commandBufferCount(count)
+		: m_commandBufferCount(count), m_queueType(queueType)
 	{
 		m_currentCommandBufferIndex = m_commandBufferCount - 1; // This makes sure that we start at command buffer index 0 for clarity
 
@@ -243,7 +243,7 @@ namespace Volt::RHI
 	}
 
 	VulkanCommandBuffer::VulkanCommandBuffer(Weak<Swapchain> swapchain)
-		: CommandBuffer(QueueType::Graphics), m_swapchainTarget(swapchain)
+		: m_swapchainTarget(swapchain), m_queueType(QueueType::Graphics)
 	{
 		m_currentCommandBufferIndex = m_commandBufferCount - 1;
 		m_isSwapchainTarget = true;
@@ -367,7 +367,7 @@ namespace Volt::RHI
 		if (!m_isSwapchainTarget)
 		{
 			auto device = GraphicsContext::GetDevice();
-			device->GetDeviceQueue(m_queueType)->Execute({ As<VulkanCommandBuffer>() });
+			device->GetDeviceQueue(m_queueType)->Execute({ { this } });
 		}
 	}
 
@@ -378,7 +378,7 @@ namespace Volt::RHI
 		if (!m_isSwapchainTarget)
 		{
 			auto device = GraphicsContext::GetDevice();
-			device->GetDeviceQueue(m_queueType)->Execute({ As<VulkanCommandBuffer>() });
+			device->GetDeviceQueue(m_queueType)->Execute({ { this } });
 
 			const uint32_t index = GetCurrentCommandBufferIndex();
 			CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(index).fence, VK_TRUE, UINT64_MAX));
@@ -601,11 +601,11 @@ namespace Volt::RHI
 
 		if (GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled())
 		{
-			descriptorTable->AsRef<VulkanDescriptorBufferTable>().Bind(As<CommandBuffer>());
+			descriptorTable->AsRef<VulkanDescriptorBufferTable>().Bind(*this);
 		}
 		else
 		{
-			descriptorTable->AsRef<VulkanDescriptorTable>().Bind(As<CommandBuffer>());
+			descriptorTable->AsRef<VulkanDescriptorTable>().Bind(*this);
 		}
 
 	}
@@ -1450,6 +1450,11 @@ namespace Volt::RHI
 		return m_currentCommandBufferIndex;
 	}
 
+	const QueueType VulkanCommandBuffer::GetQueueType() const
+	{
+		return m_queueType;
+	}
+
 	VkFence_T* VulkanCommandBuffer::GetCurrentFence() const
 	{
 		return m_commandBuffers.at(m_currentCommandBufferIndex).fence;
@@ -1698,5 +1703,15 @@ namespace Volt::RHI
 		}
 
 		return pipelineLayout;
+	}
+
+	Ref<CommandBuffer> CreateVulkanCommandBuffer(const uint32_t count, QueueType queueType)
+	{
+		return CreateRef<VulkanCommandBuffer>(1, queueType);
+	}
+
+	Ref<CommandBuffer> CreateVulkanCommandBuffer(Weak<Swapchain> swapchain)
+	{
+		return CreateRef<VulkanCommandBuffer>(swapchain);
 	}
 }

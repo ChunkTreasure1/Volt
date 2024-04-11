@@ -5,13 +5,12 @@
 
 namespace Volt::RHI
 {
-	class IndexBuffer : public RHIResource
+	class VTRHI_API IndexBuffer : public RHIResource
 	{
 	public:
 		virtual const uint32_t GetCount() const = 0;
 
 		static Ref<IndexBuffer> Create(std::span<uint32_t> indices);
-		static Ref<IndexBuffer> Create(const uint32_t* indices, const uint32_t count);
 
 	protected:
 		IndexBuffer() = default;

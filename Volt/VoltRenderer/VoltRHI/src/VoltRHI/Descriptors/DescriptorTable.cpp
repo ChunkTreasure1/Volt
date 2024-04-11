@@ -24,13 +24,13 @@ namespace Volt::RHI
 
 			case GraphicsAPI::Vulkan:
 			{
-				if (GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled())
+				//if (GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled())
+				//{
+				//	return CreateVulkanDescriptorBufferTable(specification);
+				//}
+				//else
 				{
-					return CreateRef<VulkanDescriptorBufferTable>(specification);
-				}
-				else
-				{
-					return CreateRef<VulkanDescriptorTable>(specification);
+					return CreateVulkanDescriptorTable(specification);
 				}
 				break;
 			}

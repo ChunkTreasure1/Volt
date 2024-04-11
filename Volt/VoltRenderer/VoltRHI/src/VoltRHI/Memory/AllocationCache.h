@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltRHI/Core/Core.h"
+
 #include <CoreUtilities/Core.h>
 
 namespace Volt::RHI
@@ -18,7 +20,7 @@ namespace Volt::RHI
 		std::vector<Ref<Allocation>> bufferAllocations;
 	};
 
-	class AllocationCache
+	class VTRHI_API AllocationCache
 	{
 	public:
 		Ref<Allocation> TryGetImageAllocationFromHash(const size_t hash);

@@ -6,7 +6,7 @@ namespace Volt::RHI
 {
 	class Shader;
 
-	class ComputePipeline : public RHIInterface
+	class VTRHI_API ComputePipeline : public RHIInterface
 	{
 	public:
 		virtual void Invalidate() = 0;

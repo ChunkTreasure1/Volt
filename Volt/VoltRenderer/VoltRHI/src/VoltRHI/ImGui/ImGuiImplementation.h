@@ -6,6 +6,7 @@ struct GLFWwindow;
 
 typedef void* ImTextureID;
 struct ImFont;
+struct ImGuiContext;
 
 namespace Volt::RHI
 {
@@ -18,7 +19,7 @@ namespace Volt::RHI
 		Weak<Swapchain> swapchain;
 	};
 
-	class ImGuiImplementation
+	class VTRHI_API ImGuiImplementation
 	{
 	public:
 		virtual ~ImGuiImplementation();
@@ -29,6 +30,7 @@ namespace Volt::RHI
 		void End();
 
 		void SetDefaultFont(ImFont* font);
+		ImGuiContext* GetContext() const;
 
 		virtual ImTextureID GetTextureID(Ref<Image2D> image) const = 0;
 		virtual ImFont* AddFont(const std::filesystem::path& fontPath, float pixelSize) = 0;
@@ -42,7 +44,7 @@ namespace Volt::RHI
 		virtual void BeginAPI() = 0;
 		virtual void EndAPI() = 0;
 
-		virtual void InitializeAPI() {}
+		virtual void InitializeAPI(ImGuiContext* context) {}
 		virtual void ShutdownAPI() {}
 
 	private:

@@ -311,7 +311,7 @@ namespace Volt::RHI
 			spec.layerCount = m_specification.layers;
 		}
 
-		spec.image = As<Image2D>();
+		spec.image = this;
 
 		Ref<ImageView> view = ImageView::Create(spec);
 		m_imageViews[layer][mip] = view;
@@ -520,5 +520,20 @@ namespace Volt::RHI
 		commandBuffer->Execute();
 
 		m_currentImageLayout = targetLayout;
+	}
+
+	VTVK_API Ref<Image2D> CreateVulkanImage2D(const ImageSpecification& specification, const void* data)
+	{
+		return CreateRef<VulkanImage2D>(specification, data);
+	}
+
+	VTVK_API Ref<Image2D> CreateVulkanImage2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data)
+	{
+		return CreateRef<VulkanImage2D>(specification, customAllocator, data);
+	}
+
+	VTVK_API Ref<Image2D> CreateVulkanImage2D(const SwapchainImageSpecification& specification)
+	{
+		return CreateRef<VulkanImage2D>(specification);
 	}
 }

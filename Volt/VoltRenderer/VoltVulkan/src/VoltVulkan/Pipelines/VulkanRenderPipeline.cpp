@@ -91,7 +91,7 @@ namespace Volt::RHI
 
 		auto device = GraphicsContext::GetDevice();
 		const auto& shaderResources = m_createInfo.shader->GetResources();
-		Ref<VulkanShader> vulkanShader = m_createInfo.shader->As<VulkanShader>();
+		VulkanShader& vulkanShader = m_createInfo.shader->AsRef<VulkanShader>();
 
 		VertexAttributeData vertexAttrData{};
 
@@ -267,7 +267,7 @@ namespace Volt::RHI
 
 			std::vector<VkPipelineShaderStageCreateInfo> pipelineStageInfos{};
 
-			for (const auto& [stage, stageInfo] : vulkanShader->GetPipelineStageInfos())
+			for (const auto& [stage, stageInfo] : vulkanShader.GetPipelineStageInfos())
 			{
 				auto& newStageInfo = pipelineStageInfos.emplace_back();
 				newStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -329,5 +329,10 @@ namespace Volt::RHI
 
 		m_pipelineLayout = nullptr;
 		m_pipeline = nullptr;
+	}
+
+	VTVK_API Ref<RenderPipeline> CreateVulkanRenderPipeline(const RenderPipelineCreateInfo& createInfo)
+	{
+		return CreateRef<VulkanRenderPipeline>(createInfo);
 	}
 }

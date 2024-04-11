@@ -39,11 +39,11 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: return CreateRef<D3D12ShaderCompiler>(createInfo); break;
+			//case GraphicsAPI::D3D12: return CreateRef<D3D12ShaderCompiler>(createInfo); break;
 			case GraphicsAPI::Mock:
 			case GraphicsAPI::MoltenVk:
 				break;
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanShaderCompiler>(createInfo); break;
+			case GraphicsAPI::Vulkan: return CreateVulkanShaderCompiler(createInfo); break;
 		}
 
 		return nullptr;

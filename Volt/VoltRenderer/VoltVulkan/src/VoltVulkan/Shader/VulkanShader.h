@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
+
 #include <VoltRHI/Shader/Shader.h>
 #include <VoltRHI/Core/RHICommon.h>
 
@@ -79,4 +81,6 @@ namespace Volt::RHI
 		ShaderSpecification m_specification;
 		ShaderResources m_resources;
 	};
+
+	VTVK_API Ref<Shader> CreateVulkanShader(const ShaderSpecification& createInfo);
 }

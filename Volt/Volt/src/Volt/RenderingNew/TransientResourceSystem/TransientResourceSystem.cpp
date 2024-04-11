@@ -31,7 +31,7 @@ namespace Volt
 
 		if (m_allocatedResources.contains(resourceHandle))
 		{
-			return m_allocatedResources.at(resourceHandle).resource->As<RHI::Image2D>();
+			return std::reinterpret_pointer_cast<RHI::Image2D>(m_allocatedResources.at(resourceHandle).resource);
 		}
 
 		const size_t hash = Utility::GetHashFromImageDesc(imageDesc);
@@ -45,7 +45,7 @@ namespace Volt
 				Ref<RHI::RHIResource> resource = m_allocatedResources.at(surrenderedHandle).resource;
 				m_allocatedResources[resourceHandle].resource = resource;
 
-				return resource->As<RHI::Image2D>();
+				return std::reinterpret_pointer_cast<RHI::Image2D>(resource);
 			}
 		}
 
@@ -79,7 +79,7 @@ namespace Volt
 
 		if (m_allocatedResources.contains(resourceHandle))
 		{
-			return m_allocatedResources.at(resourceHandle).resource->As<RHI::StorageBuffer>();
+			return std::reinterpret_pointer_cast<RHI::StorageBuffer>(m_allocatedResources.at(resourceHandle).resource);
 		}
 
 		const size_t hash = Utility::GetHashFromBufferDesc(bufferDesc);
@@ -93,7 +93,7 @@ namespace Volt
 				Ref<RHI::RHIResource> resource = m_allocatedResources.at(surrenderedHandle).resource;
 				m_allocatedResources[resourceHandle].resource = resource;
 
-				return resource->As<RHI::StorageBuffer>();
+				return std::reinterpret_pointer_cast<RHI::StorageBuffer>(resource);
 			}
 		}
 
@@ -115,7 +115,7 @@ namespace Volt
 
 		if (m_allocatedResources.contains(resourceHandle))
 		{
-			return m_allocatedResources.at(resourceHandle).resource->As<RHI::UniformBuffer>();
+			return m_allocatedResources.at(resourceHandle).resource;
 		}
 
 		Ref<RHI::UniformBuffer> buffer = RHI::UniformBuffer::Create(static_cast<uint32_t>(bufferDesc.size));

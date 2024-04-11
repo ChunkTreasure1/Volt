@@ -184,6 +184,11 @@ namespace Volt::RHI
 		return false;
 	}
 
+	const UUID64 VulkanTransientHeap::GetHeapID() const
+	{
+		return m_heapId;
+	}
+
 	void* VulkanTransientHeap::GetHandleImpl() const
 	{
 		return nullptr;
@@ -470,5 +475,10 @@ namespace Volt::RHI
 			m_pageAllocations[i].alignment = m_memoryRequirements.alignment;
 			vkAllocateMemory(device->GetHandle<VkDevice>(), &allocInfo, nullptr, &m_pageAllocations[i].handle);
 		}
+	}
+	
+	Ref<TransientHeap> CreateVulkanTransientHeap(const TransientHeapCreateInfo& info)
+	{
+		return CreateRef<VulkanTransientHeap>(info);
 	}
 }

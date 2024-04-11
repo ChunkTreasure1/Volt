@@ -8,7 +8,7 @@ struct GLFWwindow;
 namespace Volt::RHI
 {
 	class Image2D;
-	class Swapchain : public RHIInterface
+	class VTRHI_API Swapchain : public RHIInterface
 	{
 	public:
 		VT_DELETE_COMMON_OPERATORS(Swapchain);

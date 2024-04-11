@@ -230,8 +230,8 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
-		const Ref<VulkanBufferAllocation> bufferAlloc = allocation->As<VulkanBufferAllocation>();
-		vmaDestroyBuffer(m_allocator, bufferAlloc->m_resource, bufferAlloc->m_allocation);
+		const VulkanBufferAllocation& bufferAlloc = allocation->AsRef<VulkanBufferAllocation>();
+		vmaDestroyBuffer(m_allocator, bufferAlloc.m_resource, bufferAlloc.m_allocation);
 
 		std::scoped_lock lock{ m_bufferAllocationMutex };
 		if (const auto it = std::ranges::find(m_activeBufferAllocations, allocation); it != m_activeBufferAllocations.end())
@@ -244,8 +244,8 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
-		const Ref<VulkanImageAllocation> imageAlloc = allocation->As<VulkanImageAllocation>();
-		vmaDestroyImage(m_allocator, imageAlloc->m_resource, imageAlloc->m_allocation);
+		const VulkanImageAllocation& imageAlloc = allocation->AsRef<VulkanImageAllocation>();
+		vmaDestroyImage(m_allocator, imageAlloc.m_resource, imageAlloc.m_allocation);
 
 		std::scoped_lock lock{ m_imageAllocationMutex };
 		if (const auto it = std::ranges::find(m_activeImageAllocations, allocation); it != m_activeImageAllocations.end())
@@ -257,5 +257,10 @@ namespace Volt::RHI
 	void* VulkanDefaultAllocator::GetHandleImpl() const
 	{
 		return m_allocator;
+	}
+
+	VTVK_API Scope<DefaultAllocator> CreateVulkanDefaultAllocator()
+	{
+		return CreateScope<VulkanDefaultAllocator>();
 	}
 }

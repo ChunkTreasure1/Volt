@@ -11,13 +11,13 @@
 namespace Volt::RHI
 {
 	D3D12CommandBuffer::D3D12CommandBuffer(const uint32_t count, QueueType queueType) 
-		: CommandBuffer(queueType)
+		: m_queueType(queueType)
 	{
 		Create(count, queueType, false);
 	}
 
 	D3D12CommandBuffer::D3D12CommandBuffer(Weak<Swapchain> swapchain)
-		: CommandBuffer(QueueType::Graphics)
+		: m_queueType(QueueType::Graphics)
 	{
 		Create(1, m_queueType, true);
 	}
@@ -54,13 +54,13 @@ namespace Volt::RHI
 	void D3D12CommandBuffer::Execute()
 	{
 		auto device = GraphicsContext::GetDevice();
-		device->GetDeviceQueue(m_queueType)->Execute({ shared_from_this()->As<D3D12CommandBuffer>()});
+		device->GetDeviceQueue(m_queueType)->Execute({ { this } });
 	}
 
 	void D3D12CommandBuffer::ExecuteAndWait()
 	{
 		auto device = GraphicsContext::GetDevice();
-		device->GetDeviceQueue(m_queueType)->Execute({ shared_from_this()->As<D3D12CommandBuffer>() });
+		device->GetDeviceQueue(m_queueType)->Execute({ { this } });
 
 		auto& commandData = GetCommandData();
 		auto& fenceData = GetFenceData();
@@ -294,6 +294,11 @@ namespace Volt::RHI
 		return m_currentCommandBufferIndex;
 	}
 
+	const QueueType D3D12CommandBuffer::GetQueueType() const
+	{
+		return m_queueType;
+	}
+
 	void D3D12CommandBuffer::Create(const uint32_t count, QueueType queueType, bool swapchainTarget)
 	{
 		m_isSwapchainTarget = swapchainTarget;
@@ -316,7 +321,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		auto d3d12deviceQueue = deviceQueue->As<D3D12DeviceQueue>();
+		//auto d3d12deviceQueue = deviceQueue->As<D3D12DeviceQueue>();
 		auto d3d12device = device->As<D3D12GraphicsDevice>()->GetHandle<ID3D12Device2*>();
 
 		auto d3d12QueueType = GetD3D12QueueType(m_queueType);

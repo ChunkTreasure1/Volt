@@ -14,11 +14,11 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: return CreateRef<D3D12CommandBuffer>(count, queueType); break;
+			//case GraphicsAPI::D3D12: return CreateRef<D3D12CommandBuffer>(count, queueType); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanCommandBuffer>(count, queueType); break;
+			case GraphicsAPI::Vulkan: return CreateVulkanCommandBuffer(count, queueType); break;
 		}
 
 		return nullptr;
@@ -34,7 +34,7 @@ namespace Volt::RHI
 		case GraphicsAPI::MoltenVk:
 			break;
 
-		case GraphicsAPI::Vulkan: return CreateRef<VulkanCommandBuffer>(swapchain); break;
+		case GraphicsAPI::Vulkan: return CreateVulkanCommandBuffer(swapchain); break;
 		}
 
 		return nullptr;
@@ -46,18 +46,13 @@ namespace Volt::RHI
 		
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: return CreateRef<D3D12CommandBuffer>(1, QueueType::Graphics); break;
+			//case GraphicsAPI::D3D12: return CreateRef<D3D12CommandBuffer>(1, QueueType::Graphics); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanCommandBuffer>(1, QueueType::Graphics); break;
+			case GraphicsAPI::Vulkan: return CreateVulkanCommandBuffer(1, QueueType::Graphics); break;
 		}
 
 		return nullptr;
-	}
-	
-	CommandBuffer::CommandBuffer(QueueType queueType)
-		: m_queueType(queueType)
-	{
 	}
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
 #include <VoltRHI/Buffers/IndexBuffer.h>
 
 namespace Volt::RHI
@@ -9,7 +10,6 @@ namespace Volt::RHI
 	{
 	public:
 		VulkanIndexBuffer(std::span<uint32_t> indices);
-		VulkanIndexBuffer(const uint32_t* indices, const uint32_t count);
 		~VulkanIndexBuffer() override;
 
 		const uint32_t GetCount() const override;
@@ -28,4 +28,6 @@ namespace Volt::RHI
 
 		uint32_t m_count = 0;
 	};
+
+	VTVK_API Ref<IndexBuffer> CreateVulkanIndexBuffer(std::span<uint32_t> indices);
 }

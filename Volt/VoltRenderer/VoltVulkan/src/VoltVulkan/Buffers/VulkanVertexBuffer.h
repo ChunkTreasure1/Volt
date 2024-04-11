@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
+
 #include <VoltRHI/Buffers/VertexBuffer.h>
 
 namespace Volt::RHI
@@ -25,4 +27,6 @@ namespace Volt::RHI
 
 		Ref<Allocation> m_allocation;
 	};
+
+	VTVK_API Ref<VertexBuffer> CreateVulkanVertexBuffer(const void* data, const uint32_t size);
 }

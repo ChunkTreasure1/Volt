@@ -27,7 +27,7 @@ namespace Volt::RHI
 		std::filesystem::path cacheDirectory = "Engine/Shaders/Cache/";
 	};
 
-	class ShaderCompiler : public RHIInterface
+	class VTRHI_API ShaderCompiler : public RHIInterface
 	{
 	public:
 		enum class CompilationResult : uint32_t

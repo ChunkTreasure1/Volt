@@ -43,17 +43,17 @@ namespace Volt::RHI
 		vkQueueWaitIdle(m_queue);
 	}
 
-	void VulkanDeviceQueue::Execute(const std::vector<Ref<CommandBuffer>>& commandBuffers)
+	void VulkanDeviceQueue::Execute(const DeviceQueueExecuteInfo& executeInfo)
 	{
 		std::vector<VkCommandBuffer> vulkanCommandBuffers;
 		VkFence waitFence = nullptr;
 
-		for (const auto& cmdBuffer : commandBuffers)
+		for (const auto& cmdBuffer : executeInfo.commandBuffers)
 		{
 			vulkanCommandBuffers.push_back(cmdBuffer->GetHandle<VkCommandBuffer>());
 		}
 
-		waitFence = commandBuffers.front()->AsRef<VulkanCommandBuffer>().GetCurrentFence();
+		waitFence = executeInfo.commandBuffers.front()->AsRef<VulkanCommandBuffer>().GetCurrentFence();
 
 		VkSubmitInfo info{};
 		info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -79,5 +79,10 @@ namespace Volt::RHI
 	void* VulkanDeviceQueue::GetHandleImpl() const
 	{
 		return m_queue;
+	}
+
+	Ref<DeviceQueue> CreateVulkanDeviceQueue(const DeviceQueueCreateInfo& createInfo)
+	{
+		return CreateRef<VulkanDeviceQueue>(createInfo);
 	}
 }

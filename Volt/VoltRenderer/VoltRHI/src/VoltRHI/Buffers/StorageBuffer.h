@@ -9,7 +9,7 @@ namespace Volt::RHI
 	class CommandBuffer;
 	class Allocation;
 
-	class StorageBuffer : public RHIResource
+	class VTRHI_API StorageBuffer : public RHIResource
 	{
 	public:
 		~StorageBuffer() override = default;

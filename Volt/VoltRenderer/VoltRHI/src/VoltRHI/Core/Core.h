@@ -9,6 +9,12 @@
 #define VT_INLINE __forceinline
 #define VT_DELETE_COMMON_OPERATORS(X) X(const X&) = delete; X& operator=(const X&) = delete; X(X&&) = delete; X& operator=(X&&) = delete
 
+#ifdef VTRHI_BUILD_DLL
+#define VTRHI_API __declspec(dllexport)
+#else
+#define VTRHI_API __declspec(dllimport)
+#endif
+
 #ifdef VT_DEBUG
 
 #ifdef VT_PLATFORM_WINDOWS

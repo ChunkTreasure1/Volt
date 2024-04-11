@@ -7,7 +7,7 @@
 
 namespace Volt::RHI
 {
-	class RHIResource : public RHIInterface
+	class VTRHI_API RHIResource : public RHIInterface
 	{
 	public:
 		~RHIResource() override = default;

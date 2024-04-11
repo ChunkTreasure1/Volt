@@ -43,7 +43,7 @@ namespace Volt::RHI
 	Ref<BufferView> VulkanUniformBuffer::GetView()
 	{
 		BufferViewSpecification spec{};
-		spec.bufferResource = As<VulkanUniformBuffer>();
+		spec.bufferResource = this;
 
 		return BufferView::Create(spec);
 	}
@@ -100,5 +100,10 @@ namespace Volt::RHI
 	void* VulkanUniformBuffer::GetHandleImpl() const
 	{
 		return m_allocation->GetResourceHandle<VkBuffer>();
+	}
+	
+	Ref<UniformBuffer> CreateVulkanUniformBuffer(const uint32_t size, const void* data)
+	{
+		return CreateRef<VulkanUniformBuffer>(size, data);
 	}
 }

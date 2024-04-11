@@ -648,4 +648,9 @@ namespace Volt::RHI
 
 		return true;
 	}
+
+	VTVK_API Ref<Shader> CreateVulkanShader(const ShaderSpecification& createInfo)
+	{
+		return CreateRef<VulkanShader>(createInfo);
+	}
 }

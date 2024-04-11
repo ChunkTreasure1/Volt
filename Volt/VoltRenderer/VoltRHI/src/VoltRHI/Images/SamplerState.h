@@ -20,7 +20,7 @@ namespace Volt::RHI
 		float maxLod = FLT_MAX;
 	};
 
-	class SamplerState : public RHIInterface
+	class VTRHI_API SamplerState : public RHIInterface
 	{
 	public:
 		static Ref<SamplerState> Create(const SamplerStateCreateInfo& createInfo);

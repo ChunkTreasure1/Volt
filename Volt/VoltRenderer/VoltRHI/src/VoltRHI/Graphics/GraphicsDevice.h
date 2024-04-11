@@ -11,18 +11,16 @@ namespace Volt::RHI
 	class DeviceQueue;
 	class TransientHeap;
 
-	class GraphicsDevice : public RHIInterface
+	class VTRHI_API GraphicsDevice : public RHIInterface
 	{
 	public:
 		VT_DELETE_COMMON_OPERATORS(GraphicsDevice);
 		~GraphicsDevice() override = default;
 
-		inline Ref<DeviceQueue> GetDeviceQueue(QueueType queueType) const { return m_deviceQueues.at(queueType); }
+		virtual Ref<DeviceQueue> GetDeviceQueue(QueueType queueType) const = 0;
 		static Ref<GraphicsDevice> Create(const GraphicsDeviceCreateInfo& deviceInfo);
 	
 	protected:
 		GraphicsDevice();
-
-		std::unordered_map<QueueType, Ref<DeviceQueue>> m_deviceQueues;
 	};
 }

@@ -13,8 +13,6 @@
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
-#include <VoltRHI/Buffers/BufferViewSet.h>
-
 #include <VoltRHI/Images/SamplerState.h>
 #include <VoltRHI/Core/Profiling.h>
 
@@ -126,52 +124,6 @@ namespace Volt::RHI
 				writeDescriptorCopy.pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
 
  				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
-				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_activeWriteDescriptors.at(i).size() - 1);
-			}
-			else
-			{
-				const uint32_t writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex][i];
-				m_activeWriteDescriptors.at(i).at(writeDescriptorIndex).pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
-			}
-		}
-	}
-
-	void VulkanDescriptorTable::SetBufferViewSet(Ref<BufferViewSet> bufferViewSet, uint32_t set, uint32_t binding, uint32_t arrayIndex)
-	{
-		if (!m_writeDescriptorsMapping[set].contains(binding))
-		{
-			return;
-		}
-
-		SetDirty(true);
-
-		const auto& views = bufferViewSet->GetViews();
-
-		VulkanBufferView& vkBufferView = views.front()->AsRef<VulkanBufferView>();
-		auto resource = vkBufferView.GetResource();
-
-		m_bufferInfos[set][binding][arrayIndex].resize(m_descriptorPoolCount);
-		const auto type = resource->GetType();
-
-		for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
-		{
-			auto& description = m_bufferInfos[set][binding][arrayIndex].at(i);
-			description.buffer = views.at(i)->GetHandle<VkBuffer>();
-
-			if (type == ResourceType::StorageBuffer)
-			{
-				description.range = resource->AsRef<VulkanStorageBuffer>().GetSize();
-			}
-
-			// Mapping for write descriptor does not exist
-			if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].size() <= static_cast<size_t>(i))
-			{
-				const uint32_t writeDescriptorIndex = m_writeDescriptorsMapping[set][binding][i];
-				WriteDescriptor writeDescriptorCopy = m_writeDescriptors.at(i).at(writeDescriptorIndex);
-				writeDescriptorCopy.dstArrayElement = arrayIndex;
-				writeDescriptorCopy.pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
-
-				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
 				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_activeWriteDescriptors.at(i).size() - 1);
 			}
 			else
@@ -311,9 +263,9 @@ namespace Volt::RHI
 		return nullptr;
 	}
 
-	void VulkanDescriptorTable::Bind(Ref<CommandBuffer> commandBuffer)
+	void VulkanDescriptorTable::Bind(CommandBuffer& commandBuffer)
 	{
-		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer->AsRef<VulkanCommandBuffer>();
+		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer.AsRef<VulkanCommandBuffer>();
 		const VkPipelineBindPoint bindPoint = vulkanCommandBuffer.m_currentRenderPipeline ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;
 
 		if (m_isGlobal)
@@ -356,8 +308,8 @@ namespace Volt::RHI
 		m_imageInfos.clear();
 		m_bufferInfos.clear();
 
-		Ref<VulkanShader> vulkanShader = m_shader->As<VulkanShader>();
-		const auto& shaderPoolSizes = vulkanShader->GetDescriptorPoolSizes();
+		VulkanShader& vulkanShader = m_shader->AsRef<VulkanShader>();
+		const auto& shaderPoolSizes = vulkanShader.GetDescriptorPoolSizes();
 
 		std::vector<VkDescriptorPoolSize> poolSizes{};
 		for (const auto& [type, count] : shaderPoolSizes)
@@ -386,7 +338,7 @@ namespace Volt::RHI
 			VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle<VkDevice>(), &info, nullptr, &m_descriptorPools.emplace_back()));
 		}
 
-		const auto& usedSets = vulkanShader->GetResources().usedSets;
+		const auto& usedSets = vulkanShader.GetResources().usedSets;
 
 		// Allocate descriptor sets
 		VkDescriptorSetAllocateInfo allocInfo{};
@@ -403,7 +355,7 @@ namespace Volt::RHI
 				VT_PROFILE_SCOPE("Allocate DescriptorSet");
 
 				allocInfo.descriptorPool = m_descriptorPools.at(i);
-				allocInfo.pSetLayouts = &vulkanShader->GetPaddedDescriptorSetLayouts().at(set);
+				allocInfo.pSetLayouts = &vulkanShader.GetPaddedDescriptorSetLayouts().at(set);
 
 				VT_VK_CHECK(vkAllocateDescriptorSets(device->GetHandle<VkDevice>(), &allocInfo, &m_descriptorSets.at(set)[i]));
 			}
@@ -577,5 +529,10 @@ namespace Volt::RHI
 				}
 			}
 		}
+	}
+
+	Ref<DescriptorTable> CreateVulkanDescriptorTable(const DescriptorTableCreateInfo& specification)
+	{
+		return CreateRef<VulkanDescriptorTable>(specification);
 	}
 }

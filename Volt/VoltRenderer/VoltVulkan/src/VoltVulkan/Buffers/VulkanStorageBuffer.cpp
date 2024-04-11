@@ -150,7 +150,7 @@ namespace Volt::RHI
 	Ref<BufferView> VulkanStorageBuffer::GetView()
 	{
 		BufferViewSpecification spec{};
-		spec.bufferResource = As<StorageBuffer>();
+		spec.bufferResource = this;
 
 		Ref<BufferView> bufferView = BufferView::Create(spec);
 		return bufferView;
@@ -225,5 +225,20 @@ namespace Volt::RHI
 		});
 
 		m_allocation = nullptr;
+	}
+	
+	VTVK_API Ref<StorageBuffer> CreateVulkanStorageBuffer(uint32_t count, size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	{
+		return CreateRef<VulkanStorageBuffer>(count, elementSize, name, bufferUsage, memoryUsage);
+	}
+
+	VTVK_API Ref<StorageBuffer> CreateVulkanStorageBuffer(size_t size, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	{
+		return CreateRef<VulkanStorageBuffer>(size, name, bufferUsage, memoryUsage);
+	}
+	
+	VTVK_API Ref<StorageBuffer> CreateVulkanStorageBuffer(size_t size, Ref<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	{
+		return CreateRef<VulkanStorageBuffer>(size, customAllocator, name, bufferUsage, memoryUsage);
 	}
 }

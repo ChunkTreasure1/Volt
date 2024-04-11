@@ -5,7 +5,6 @@
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
 #include <VoltVulkan/Graphics/VulkanGraphicsDevice.h>
-#include <VoltD3D12/Graphics/D3D12GraphicsDevice.h>
 
 namespace Volt::RHI
 {
@@ -15,11 +14,11 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: return CreateRef<D3D12GraphicsDevice>(deviceInfo); break;
+			//case GraphicsAPI::D3D12: return CreateRef<D3D12GraphicsDevice>(deviceInfo); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanGraphicsDevice>(deviceInfo); break;
+			case GraphicsAPI::Vulkan: return CreateVulkanGraphicsDevice(deviceInfo);
 		}
 
 		return nullptr;

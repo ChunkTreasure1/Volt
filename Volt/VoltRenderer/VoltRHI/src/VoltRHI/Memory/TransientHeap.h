@@ -42,7 +42,7 @@ namespace Volt::RHI
 		uint64_t size = 0;
 	};
 
-	class TransientHeap : public RHIInterface
+	class VTRHI_API TransientHeap : public RHIInterface
 	{
 	public:
 		virtual Ref<Allocation> CreateBuffer(const TransientBufferCreateInfo& createInfo) = 0;
@@ -52,12 +52,8 @@ namespace Volt::RHI
 		virtual void ForfeitImage(Ref<Allocation> allocation) = 0;
 
 		virtual const bool IsAllocationSupported(const uint64_t size, TransientHeapFlags heapFlags) const = 0;
-
-		inline const UUID64 GetHeapID() const { return m_heapId; }
+		virtual const UUID64 GetHeapID() const = 0;
 
 		static Ref<TransientHeap> Create(const TransientHeapCreateInfo& createInfo);
-
-	protected:
-		UUID64 m_heapId{};
 	};
 }

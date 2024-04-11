@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
+
 #include <VoltRHI/Memory/TransientHeap.h>
 #include <VoltRHI/Memory/Allocation.h>
 
@@ -45,7 +47,8 @@ namespace Volt::RHI
 		void ForfeitImage(Ref<Allocation> allocation) override;
 
 		const bool IsAllocationSupported(const uint64_t size, TransientHeapFlags heapFlags) const override;
-		
+		const UUID64 GetHeapID() const override;
+
 	protected:
 		void* GetHandleImpl() const override;
 
@@ -64,5 +67,8 @@ namespace Volt::RHI
 		std::array<PageAllocation, MAX_PAGE_COUNT> m_pageAllocations;
 	
 		std::mutex m_allocationMutex;
+		UUID64 m_heapId;
 	};
+
+	VTVK_API Ref<TransientHeap> CreateVulkanTransientHeap(const TransientHeapCreateInfo& info);
 }

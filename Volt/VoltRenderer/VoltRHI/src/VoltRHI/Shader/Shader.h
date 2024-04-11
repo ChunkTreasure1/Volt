@@ -3,8 +3,6 @@
 #include "VoltRHI/Core/RHIInterface.h"
 #include "VoltRHI/Core/RHICommon.h"
 
-#include "VoltRHI/Utility/Buffer.h"
-
 #include "VoltRHI/Shader/BufferLayout.h"
 
 #include <vector>
@@ -40,7 +38,7 @@ namespace Volt::RHI
 		Sampler
 	};
 
-	struct ShaderUniformType
+	struct VTRHI_API ShaderUniformType
 	{
 		ShaderUniformBaseType baseType = ShaderUniformBaseType::Invalid;
 		uint32_t vecsize = 1;
@@ -82,7 +80,7 @@ namespace Volt::RHI
 		}
 	};
 
-	struct ShaderUniform
+	struct VTRHI_API ShaderUniform
 	{
 		ShaderUniform(ShaderUniformType type, size_t size, size_t offset);
 		ShaderUniform() = default;
@@ -94,7 +92,7 @@ namespace Volt::RHI
 		size_t offset = 0;
 	};
 
-	class ShaderDataBuffer
+	class VTRHI_API ShaderDataBuffer
 	{
 	public:
 		void AddMember(const std::string& name, ShaderUniformType type, size_t size, size_t offset);
@@ -122,14 +120,14 @@ namespace Volt::RHI
 		size_t m_size = 0;
 	};
 
-	struct ShaderConstantData
+	struct VTRHI_API ShaderConstantData
 	{
 		uint32_t size = 0;
 		uint32_t offset = 0;
 		ShaderStage	stageFlags = ShaderStage::None;
 	};
 
-	struct ShaderRenderGraphConstantsData
+	struct VTRHI_API ShaderRenderGraphConstantsData
 	{
 		inline bool IsValid() const { return !uniforms.empty() && size > 0; }
 
@@ -169,7 +167,7 @@ namespace Volt::RHI
 	};
 	/////////////////////////////////
 
-	struct ShaderResourceBinding
+	struct VTRHI_API ShaderResourceBinding
 	{
 		uint32_t set = std::numeric_limits<uint32_t>::max();
 		uint32_t binding = std::numeric_limits<uint32_t>::max();
@@ -177,7 +175,7 @@ namespace Volt::RHI
 		inline const bool IsValid() const { return set != std::numeric_limits<uint32_t>::max() && binding != std::numeric_limits<uint32_t>::max(); }
 	};
 
-	struct ShaderResources
+	struct VTRHI_API ShaderResources
 	{
 		std::map<uint32_t, std::map<uint32_t, ShaderConstantBuffer>> uniformBuffers;
 		std::map<uint32_t, std::map<uint32_t, ShaderStorageBuffer>> storageBuffers;
@@ -206,7 +204,7 @@ namespace Volt::RHI
 		bool forceCompile = false;
 	};
 
-	class Shader : public RHIInterface
+	class VTRHI_API Shader : public RHIInterface
 	{
 	public:
 		virtual const bool Reload(bool forceCompile) = 0;

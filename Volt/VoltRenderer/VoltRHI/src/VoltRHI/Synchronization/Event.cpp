@@ -18,7 +18,7 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanEvent>(createInfo);
+			case GraphicsAPI::Vulkan: return CreateVulkanEvent(createInfo);
 		}
 
 		return nullptr;

@@ -169,7 +169,7 @@ namespace Volt::RHI
 		style.WindowRounding = 0.0f;
 		style.WindowBorderSize = 2.f;
 
-		InitializeAPI();
+		InitializeAPI(ImGui::GetCurrentContext());
 	}
 
 	ImGuiImplementation::~ImGuiImplementation()
@@ -229,6 +229,11 @@ namespace Volt::RHI
 		m_defaultFont = font;
 	}
 
+	ImGuiContext* ImGuiImplementation::GetContext() const
+	{
+		return ImGui::GetCurrentContext();
+	}
+
 	Ref<ImGuiImplementation> ImGuiImplementation::Create(const ImGuiCreateInfo& createInfo)
 	{
 		const auto api = GraphicsContext::GetAPI();
@@ -237,12 +242,12 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: implementation = CreateRef<D3D12ImGuiImplementation>(createInfo);
+			//case GraphicsAPI::D3D12: implementation = CreateRef<D3D12ImGuiImplementation>(createInfo);
 			case GraphicsAPI::MoltenVk:
 			case GraphicsAPI::Mock:
 				break;
 			
-			case GraphicsAPI::Vulkan: implementation = CreateRef<VulkanImGuiImplementation>(createInfo);
+			case GraphicsAPI::Vulkan: implementation = CreateVulkanImGuiImplementation(createInfo);
 		}
 
 		implementation->Initialize();

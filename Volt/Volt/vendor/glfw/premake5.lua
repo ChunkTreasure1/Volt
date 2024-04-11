@@ -1,5 +1,5 @@
 project "GLFW"
-	kind "StaticLib"
+	kind "SharedLib"
 	language "C"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
@@ -28,13 +28,23 @@ project "GLFW"
 		"src/null_joystick.c",
 	}
 
+	defines
+	{
+		"_GLFW_BUILD_DLL"
+	}
+
+	postbuildcommands
+	{
+		'{COPY} "bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/GLFW/GLFW.dll" "../../../../Engine/"'
+	}
+
 	warnings "off"
 
 	filter "system:linux"
 		pic "On"
 
 		systemversion "latest"
-		staticruntime "On"
+		staticruntime "off"
 
 		files
 		{
@@ -57,7 +67,7 @@ project "GLFW"
 
 	filter "system:windows"
 		systemversion "latest"
-		staticruntime "On"
+		staticruntime "off"
 
 		files
 		{

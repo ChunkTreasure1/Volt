@@ -40,6 +40,11 @@ project "CoreUtilities"
 		"%{IncludeDir.zlib}"
 	}
 
+	links
+	{
+		"%{Library.zlib}",
+	}
+
 	filter "files:vendor/**.cpp"
 		flags {"NoPCH"}
 		warnings "off"

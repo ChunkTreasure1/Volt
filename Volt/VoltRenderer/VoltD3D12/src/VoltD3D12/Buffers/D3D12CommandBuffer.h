@@ -82,6 +82,7 @@ namespace Volt::RHI
 		void CopyImage(Ref<Image2D> srcImage, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height) override;
 
 		const uint32_t GetCurrentIndex() const override;
+		const QueueType GetQueueType() const override;
 
 		D3D12Fence& GetFenceData();
 		D3D12CommandData& GetCommandData();
@@ -96,5 +97,6 @@ namespace Volt::RHI
 		std::vector<std::pair<D3D12CommandData, D3D12Fence>> m_perInternalBufferData;
 		uint32_t m_currentCommandBufferIndex = 0;
 		bool m_isSwapchainTarget = false;
+		QueueType m_queueType;
 	};
 }

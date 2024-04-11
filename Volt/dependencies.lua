@@ -75,6 +75,8 @@ LibraryDir["METIS"] = "%{wks.location}/Volt/vendor/METIS/libmetis/%{cfg.buildcfg
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
 LibraryDir["VulkanSDK_Debug"] = "%{VULKAN_SDK}/Lib"
 
+LibraryDir["Volt"] = "%{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
 Library = {}
 Library["fmod"] = "%{LibraryDir.fmod}/fmod_vc.lib"
 Library["fmodstudio"] = "%{LibraryDir.fmod}/fmodstudio_vc.lib"
@@ -132,3 +134,6 @@ Library["SPIRV_Cross_GLSL_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.
 Library["Aftermath"] = "%{LibraryDir.Aftermath}/x64/GFSDK_Aftermath_Lib.x64.lib"
 
 Library["METIS"] = "%{LibraryDir.METIS}/metis.lib"
+
+Library["VoltVulkan"] = "%{LibraryDir.Volt}/VoltVulkan/VoltVulkan.lib"
+Library["VoltRHI"] = "%{LibraryDir.Volt}/VoltRHI/VoltRHI.lib"

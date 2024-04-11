@@ -32,7 +32,7 @@ namespace Volt::RHI
 
 		auto device = GraphicsContext::GetDevice();
 		const auto& shaderResources = m_shader->GetResources();
-		Ref<VulkanShader> vulkanShader = m_shader->As<VulkanShader>();
+		VulkanShader& vulkanShader = m_shader->AsRef<VulkanShader>();
 
 		// Create Pipeline Layout
 		{
@@ -56,8 +56,8 @@ namespace Volt::RHI
 			}
 			else
 			{
-				info.setLayoutCount = static_cast<uint32_t>(vulkanShader->GetDescriptorSetLayouts().size());
-				info.pSetLayouts = vulkanShader->GetDescriptorSetLayouts().data();
+				info.setLayoutCount = static_cast<uint32_t>(vulkanShader.GetDescriptorSetLayouts().size());
+				info.pSetLayouts = vulkanShader.GetDescriptorSetLayouts().data();
 			}
 
 			info.pushConstantRangeCount = shaderResources.constants.size > 0 ? 1 : 0;
@@ -68,7 +68,7 @@ namespace Volt::RHI
 
 		// Create Pipeline
 		{
-			const auto& firstStage = vulkanShader->GetPipelineStageInfos().at(ShaderStage::Compute);
+			const auto& firstStage = vulkanShader.GetPipelineStageInfos().at(ShaderStage::Compute);
 
 			VkPipelineShaderStageCreateInfo computeStageInfo{};
 			computeStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -121,5 +121,10 @@ namespace Volt::RHI
 
 		m_pipeline = nullptr;
 		m_pipelineLayout = nullptr;
+	}
+
+	Ref<ComputePipeline> CreateVulkanComputePipeline(Ref<Shader> shader, bool useGlobalResources)
+	{
+		return CreateRef<VulkanComputePipeline>(shader, useGlobalResources);
 	}
 }

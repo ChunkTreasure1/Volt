@@ -18,7 +18,7 @@ namespace Volt::RHI
 			case GraphicsAPI::Mock:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanComputePipeline>(shader, useGlobalResources);
+			case GraphicsAPI::Vulkan: return CreateVulkanComputePipeline(shader, useGlobalResources);
 		}
 
 		return nullptr;

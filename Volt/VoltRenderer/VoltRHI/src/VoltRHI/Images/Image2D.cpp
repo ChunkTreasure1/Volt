@@ -18,8 +18,8 @@ namespace Volt::RHI
 			case GraphicsAPI::Mock:
 				break;
 
-			case GraphicsAPI::D3D12: return CreateRef<D3D12Image2D>(specification, data); break;
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanImage2D>(specification, data); break;
+			//case GraphicsAPI::D3D12: return CreateRef<D3D12Image2D>(specification, data); break;
+			case GraphicsAPI::Vulkan: return CreateVulkanImage2D(specification, data); break;
 		}
 
 		return nullptr;
@@ -35,8 +35,8 @@ namespace Volt::RHI
 			case GraphicsAPI::Mock:
 				break;
 
-			case GraphicsAPI::D3D12: return CreateRef<D3D12Image2D>(specification, customAllocator, data); break;
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanImage2D>(specification, customAllocator, data); break;
+			//case GraphicsAPI::D3D12: return CreateRef<D3D12Image2D>(specification, customAllocator, data); break;
+			case GraphicsAPI::Vulkan: return CreateVulkanImage2D(specification, customAllocator, data); break;
 		}
 
 		return nullptr;
@@ -53,7 +53,7 @@ namespace Volt::RHI
 		case GraphicsAPI::D3D12:
 			break;
 
-		case GraphicsAPI::Vulkan: return CreateRef<VulkanImage2D>(specification); break;
+		case GraphicsAPI::Vulkan: return CreateVulkanImage2D(specification); break;
 		}
 
 		return nullptr;

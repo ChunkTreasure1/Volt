@@ -21,7 +21,7 @@ namespace Volt::RHI
 		std::string name;
 	};
 
-	class RenderPipeline : public RHIInterface
+	class VTRHI_API RenderPipeline : public RHIInterface
 	{
 	public:
 		virtual void Invalidate() = 0;

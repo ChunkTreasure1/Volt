@@ -119,6 +119,26 @@ namespace Volt::RHI
 		Shutdown();
 	}
 
+	Allocator& VulkanGraphicsContext::GetDefaultAllocatorImpl()
+	{
+		return *m_defaultAllocator;
+	}
+
+	Ref<Allocator> VulkanGraphicsContext::GetTransientAllocatorImpl()
+	{
+		return m_transientAllocator;
+	}
+
+	Ref<GraphicsDevice> VulkanGraphicsContext::GetGraphicsDevice() const
+	{
+		return m_graphicsDevice;
+	}
+
+	Ref<PhysicalGraphicsDevice> VulkanGraphicsContext::GetPhysicalGraphicsDevice() const
+	{
+		return m_physicalDevice;
+	}
+
 	void* VulkanGraphicsContext::GetHandleImpl() const
 	{
 		return m_instance;
@@ -256,5 +276,10 @@ namespace Volt::RHI
 		extensionsVector.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
 		return extensionsVector;
+	}
+
+	Ref<GraphicsContext> CreateVulkanGraphicsContext(const GraphicsContextCreateInfo& createInfo)
+	{
+		return CreateRef<VulkanGraphicsContext>(createInfo);
 	}
 }

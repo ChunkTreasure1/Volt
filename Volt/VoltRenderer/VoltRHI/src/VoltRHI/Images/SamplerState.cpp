@@ -17,7 +17,7 @@ namespace Volt::RHI
 			case GraphicsAPI::Mock:
 			case GraphicsAPI::MoltenVk:
 				break;
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanSamplerState>(createInfo); break;
+			case GraphicsAPI::Vulkan: return CreateVulkanSamplerState(createInfo); break;
 		}
 
 		return nullptr;

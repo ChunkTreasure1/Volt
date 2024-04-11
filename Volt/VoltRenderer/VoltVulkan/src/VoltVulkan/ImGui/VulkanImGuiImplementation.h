@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
 
 struct GLFWwindow;
@@ -19,7 +20,7 @@ namespace Volt::RHI
 		void BeginAPI() override;
 		void EndAPI() override;
 
-		void InitializeAPI() override;
+		void InitializeAPI(ImGuiContext* context) override;
 		void ShutdownAPI() override;
 
 	private:
@@ -29,4 +30,6 @@ namespace Volt::RHI
 		GLFWwindow* m_windowPtr = nullptr;
 		Weak<Swapchain> m_swapchain;
 	};
+
+	VTVK_API Ref<ImGuiImplementation> CreateVulkanImGuiImplementation(const ImGuiCreateInfo& createInfo);
 }

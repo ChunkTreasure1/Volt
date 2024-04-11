@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
+
 #include <VoltRHI/Buffers/UniformBuffer.h>
 
 namespace Volt::RHI
@@ -30,4 +32,6 @@ namespace Volt::RHI
 
 		Ref<Allocation> m_allocation;
 	};
+
+	VTVK_API Ref<UniformBuffer> CreateVulkanUniformBuffer(const uint32_t size, const void* data);
 }

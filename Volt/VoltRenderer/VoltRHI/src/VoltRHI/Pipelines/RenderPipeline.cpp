@@ -14,12 +14,12 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: return CreateRef<D3D12RenderPipeline>(createInfo); break;
+			//case GraphicsAPI::D3D12: return CreateRef<D3D12RenderPipeline>(createInfo); break;
 			case GraphicsAPI::MoltenVk:
 			case GraphicsAPI::Mock:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanRenderPipeline>(createInfo); break;
+			case GraphicsAPI::Vulkan: return CreateVulkanRenderPipeline(createInfo); break;
 		}
 
 		return nullptr;

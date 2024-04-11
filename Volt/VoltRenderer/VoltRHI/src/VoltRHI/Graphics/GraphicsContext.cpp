@@ -24,10 +24,10 @@ namespace Volt::RHI
 
 		switch (s_graphicsAPI)
 		{
-			case GraphicsAPI::D3D12: return CreateRef<D3D12GraphicsContext>(createInfo); break;
+			//case GraphicsAPI::D3D12: return CreateRef<D3D12GraphicsContext>(createInfo); break;
 			case GraphicsAPI::MoltenVk:
 				break;
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanGraphicsContext>(createInfo); break;
+			case GraphicsAPI::Vulkan: return CreateVulkanGraphicsContext(createInfo); break;
 		}
 
 		return nullptr;
@@ -47,8 +47,8 @@ namespace Volt::RHI
 
 	void GraphicsContext::Update()
 	{
-		Get().m_defaultAllocator->Update();
-		Get().m_transientAllocator->Update();
+		Get().GetDefaultAllocatorImpl().Update();
+		Get().GetTransientAllocatorImpl()->Update();
 	}
 
 	void GraphicsContext::LogUnformatted(Severity logSeverity, std::string_view message)

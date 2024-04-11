@@ -133,7 +133,7 @@ namespace Volt::RHI
 		addressInfo.format = VK_FORMAT_UNDEFINED;
 		addressInfo.address = bufferView->GetDeviceAddress();
 
-		Ref<RHIResource> rawResource = bufferView->AsRef<VulkanBufferView>().GetResource();
+		RHIResource* rawResource = bufferView->AsRef<VulkanBufferView>().GetResource();
 
 		uint64_t descriptorTypeSize = 0;
 		VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -169,10 +169,6 @@ namespace Volt::RHI
 
 		VT_ENSURE(bufferOffset < m_accumulatedSize);
 		vkGetDescriptorEXT(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &bufferDescriptorInfo, descriptorTypeSize, descriptorPtr);
-	}
-
-	void VulkanDescriptorBufferTable::SetBufferViewSet(Ref<BufferViewSet> bufferViewSet, uint32_t set, uint32_t binding, uint32_t arrayIndex)
-	{
 	}
 
 	void VulkanDescriptorBufferTable::SetImageView(std::string_view name, Ref<ImageView> view, uint32_t arrayIndex)
@@ -257,17 +253,17 @@ namespace Volt::RHI
 		return nullptr;
 	}
 
-	void VulkanDescriptorBufferTable::Bind(Ref<CommandBuffer> commandBuffer)
+	void VulkanDescriptorBufferTable::Bind(CommandBuffer& commandBuffer)
 	{
 		std::vector<VkDescriptorBufferBindingInfoEXT> descriptorBindingBufferInfos{};
 
-		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer->AsRef<VulkanCommandBuffer>();
+		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer.AsRef<VulkanCommandBuffer>();
 		const VkPipelineBindPoint bindPoint = vulkanCommandBuffer.m_currentRenderPipeline ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;
 
 		{
 			void* buff = m_descriptorBuffer->Map<void*>();
 
-			memcpy(buff, m_hostDescriptorBuffer.GetData(), m_accumulatedSize);
+			memcpy(buff, m_hostDescriptorBuffer.As<void>(), m_accumulatedSize);
 
 			m_descriptorBuffer->Unmap();
 		}
@@ -282,13 +278,13 @@ namespace Volt::RHI
 			bindingInfo.usage = VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT;
 		}
 
-		vkCmdBindDescriptorBuffersEXT(commandBuffer->GetHandle<VkCommandBuffer>(), static_cast<uint32_t>(descriptorBindingBufferInfos.size()), descriptorBindingBufferInfos.data());
+		vkCmdBindDescriptorBuffersEXT(commandBuffer.GetHandle<VkCommandBuffer>(), static_cast<uint32_t>(descriptorBindingBufferInfos.size()), descriptorBindingBufferInfos.data());
 
 		constexpr uint32_t bufferIndex = 0;
 		for (const auto& set : m_usedDescriptorSets)
 		{
 			const uint64_t offset = m_descriptorSetOffsets.at(set);
-			vkCmdSetDescriptorBufferOffsetsEXT(commandBuffer->GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), set, 1, &bufferIndex, &offset);
+			vkCmdSetDescriptorBufferOffsetsEXT(commandBuffer.GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), set, 1, &bufferIndex, &offset);
 		}
 	}
 
@@ -299,9 +295,9 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		auto device = GraphicsContext::GetDevice();
-		Ref<VulkanShader> vulkanShader = m_shader->As<VulkanShader>();
+		VulkanShader& vulkanShader = m_shader->AsRef<VulkanShader>();
 
-		for (const auto& descriptorSetLayout : vulkanShader->GetPaddedDescriptorSetLayouts())
+		for (const auto& descriptorSetLayout : vulkanShader.GetPaddedDescriptorSetLayouts())
 		{
 			vkGetDescriptorSetLayoutSizeEXT(device->GetHandle<VkDevice>(), descriptorSetLayout, &m_descriptorSetLayoutSizes.emplace_back());
 		}
@@ -353,8 +349,8 @@ namespace Volt::RHI
 		auto device = GraphicsContext::GetDevice();
 
 		const auto& resources = m_shader->GetResources();
-		Ref<VulkanShader> vulkanShader = m_shader->As<VulkanShader>();
-		const auto& descriptorSetLayouts = vulkanShader->GetPaddedDescriptorSetLayouts();
+		VulkanShader& vulkanShader = m_shader->AsRef<VulkanShader>();
+		const auto& descriptorSetLayouts = vulkanShader.GetPaddedDescriptorSetLayouts();
 
 		for (const auto& [set, bindings] : resources.uniformBuffers)
 		{
@@ -436,5 +432,10 @@ namespace Volt::RHI
 				//currentOffset += descriptorSize;
 			}
 		}
+	}
+
+	Ref<DescriptorTable> CreateVulkanDescriptorBufferTable(const DescriptorTableCreateInfo& createInfo)
+	{
+		return CreateRef<VulkanDescriptorBufferTable>(createInfo);
 	}
 }

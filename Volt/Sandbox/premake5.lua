@@ -168,7 +168,6 @@ project "Sandbox"
 
 		"%{Library.Vulkan}",
 		"%{Library.dxc}",
-		"%{Library.zlib}",
 		"%{Library.METIS}"
     }
 

@@ -320,4 +320,9 @@ namespace Volt::RHI
 		m_availiableExtensions.resize(extCount);
 		VT_VK_CHECK(vkEnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &extCount, reinterpret_cast<VkExtensionProperties*>(m_availiableExtensions.data())));
 	}
+
+	VTVK_API Ref<PhysicalGraphicsDevice> CreateVulkanPhysicalDevice(const PhysicalDeviceCreateInfo& createInfo)
+	{
+		return CreateRef<VulkanPhysicalGraphicsDevice>(createInfo);
+	}
 }

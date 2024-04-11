@@ -21,7 +21,7 @@ namespace Volt::RHI
 
 		void Signal(D3D12Fence& fence, const size_t customID);
 
-		void Execute(const std::vector<Ref<CommandBuffer>>& commandBuffer) override;
+		void Execute(const DeviceQueueExecuteInfo& commandBuffer) override;
 
 		ID3D12CommandQueue** GetAddesss() { return &m_commandQueue; }
 

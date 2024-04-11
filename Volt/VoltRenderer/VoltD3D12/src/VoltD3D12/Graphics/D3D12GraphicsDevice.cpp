@@ -26,6 +26,11 @@ namespace Volt::RHI
 		VT_D3D12_DELETE(m_device);
 	}
 
+	Ref<DeviceQueue> D3D12GraphicsDevice::GetDeviceQueue(QueueType queueType) const
+	{
+		return m_deviceQueues.at(queueType);
+	}
+
 	void* D3D12GraphicsDevice::GetHandleImpl() const
 	{
 		return m_device;

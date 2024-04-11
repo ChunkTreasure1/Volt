@@ -5,7 +5,7 @@
 
 namespace Volt::RHI
 {
-	class PhysicalGraphicsDevice : public RHIInterface
+	class VTRHI_API PhysicalGraphicsDevice : public RHIInterface
 	{
 	public:
 		VT_DELETE_COMMON_OPERATORS(PhysicalGraphicsDevice);

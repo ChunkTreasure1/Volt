@@ -139,9 +139,11 @@ namespace Volt::RHI
 		s_commandBuffer->End();
 	}
 
-	void VulkanImGuiImplementation::InitializeAPI()
+	void VulkanImGuiImplementation::InitializeAPI(ImGuiContext* context)
 	{
-		ImGui_ImplGlfw_InitForVulkan(m_windowPtr, true);
+		ImGui::SetCurrentContext(context);
+
+		ImGui_ImplGlfw_InitForVulkan(m_windowPtr, context, true);
 		InitializeVulkanData();
 	}
 
@@ -216,5 +218,10 @@ namespace Volt::RHI
 
 		vkDestroyDescriptorPool(device->GetHandle<VkDevice>(), s_descriptorPool, nullptr);
 		ImGui_ImplVulkan_Shutdown();
+	}
+
+	Ref<ImGuiImplementation> CreateVulkanImGuiImplementation(const ImGuiCreateInfo& createInfo)
+	{
+		return CreateRef<VulkanImGuiImplementation>(createInfo);
 	}
 }

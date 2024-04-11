@@ -1,8 +1,9 @@
 #pragma once
 
-#include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
-
+#include "VoltVulkan/Core.h"
 #include "VoltVulkan/Graphics/PhysicalDeviceProperties.h"
+
+#include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
 
 struct VkPhysicalDevice_T;
 
@@ -56,4 +57,6 @@ namespace Volt::RHI
 		PhysicalDeviceProperties m_deviceProperties;
 		PhysicalDeviceCreateInfo m_createInfo{};
 	};
+
+	VTVK_API Ref<PhysicalGraphicsDevice> CreateVulkanPhysicalDevice(const PhysicalDeviceCreateInfo& createInfo);
 }

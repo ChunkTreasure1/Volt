@@ -167,6 +167,7 @@ namespace Volt
 			UI::SetFont(FontType::Bold_90, m_imguiImplementation->AddFont("Engine/Fonts/Inter/inter-bold.ttf", 90.f));
 
 			m_imguiImplementation->SetDefaultFont(defaultFont);
+			ImGui::SetCurrentContext(m_imguiImplementation->GetContext());
 		}
 
 		if (info.netEnabled)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 
 struct VkDescriptorPool_T;
@@ -48,7 +49,6 @@ namespace Volt::RHI
 
 		void SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) override;
 		void SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) override;
-		void SetBufferViewSet(Ref<BufferViewSet> bufferViewSet, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) override;
 
 		void SetImageView(std::string_view name, Ref<ImageView> view, uint32_t arrayIndex = 0) override;
 		void SetBufferView(std::string_view name, Ref<BufferView> view, uint32_t arrayIndex = 0) override;
@@ -67,7 +67,7 @@ namespace Volt::RHI
 		friend class VulkanCommandBuffer;
 
 		void* GetHandleImpl() const override;
-		void Bind(Ref<CommandBuffer> commandBuffer) override;
+		void Bind(CommandBuffer& commandBuffer) override;
 
 	private:
 		void SetDirty(bool state);
@@ -98,4 +98,6 @@ namespace Volt::RHI
 
 		std::vector<bool> m_isDirty;
 	};
+
+	VTVK_API Ref<DescriptorTable> CreateVulkanDescriptorTable(const DescriptorTableCreateInfo& specification);
 }

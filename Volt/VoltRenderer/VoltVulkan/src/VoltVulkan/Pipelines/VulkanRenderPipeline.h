@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
+
 #include <VoltRHI/Pipelines/RenderPipeline.h>
 
 struct VkPipelineLayout_T;
@@ -29,4 +31,6 @@ namespace Volt::RHI
 		VkPipelineLayout_T* m_pipelineLayout = nullptr;
 		VkPipeline_T* m_pipeline = nullptr;
 	};
+
+	VTVK_API Ref<RenderPipeline> CreateVulkanRenderPipeline(const RenderPipelineCreateInfo& createInfo);
 }

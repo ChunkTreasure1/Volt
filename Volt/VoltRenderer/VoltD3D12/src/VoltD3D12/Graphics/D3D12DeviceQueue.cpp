@@ -89,23 +89,23 @@ namespace Volt::RHI
 		m_commandQueue->Signal(fence.Get(), customID);
 	}
 
-	void D3D12DeviceQueue::Execute(const std::vector<Ref<CommandBuffer>>& commandBuffer)
+	void D3D12DeviceQueue::Execute(const DeviceQueueExecuteInfo& executeInfo)
 	{
-		if (commandBuffer.empty())
+		if (executeInfo.commandBuffers.empty())
 		{
 			VT_RHI_DEBUGBREAK();
 			return;
 		}
 
-		std::vector<ID3D12CommandList*> cmdLists(commandBuffer.size());
+		std::vector<ID3D12CommandList*> cmdLists(executeInfo.commandBuffers.size());
 
-		for (size_t i = 0; auto & cmdBuffer : commandBuffer)
+		for (size_t i = 0; auto & cmdBuffer : executeInfo.commandBuffers)
 		{
 			cmdLists[i] = cmdBuffer->As<D3D12CommandBuffer>()->GetCommandData().commandList;
 			i++;
 		}
 
-		auto& currentFenceData = commandBuffer.front()->As<D3D12CommandBuffer>()->GetFenceData();
+		auto& currentFenceData = executeInfo.commandBuffers.front()->As<D3D12CommandBuffer>()->GetFenceData();
 
 		m_commandQueue->ExecuteCommandLists(static_cast<UINT>(cmdLists.size()), cmdLists.data());
 

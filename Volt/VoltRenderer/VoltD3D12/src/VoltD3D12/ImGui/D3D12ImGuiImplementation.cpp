@@ -65,9 +65,9 @@ namespace Volt::RHI
 		s_commandBuffer->Execute();
 	}
 
-	void D3D12ImGuiImplementation::InitializeAPI()
+	void D3D12ImGuiImplementation::InitializeAPI(ImGuiContext* context)
 	{
-		ImGui_ImplGlfw_InitForVulkan(m_info.window, true);
+		ImGui_ImplGlfw_InitForVulkan(m_info.window, context, true);
 		auto device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
 
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};

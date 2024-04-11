@@ -6,6 +6,8 @@
 #include "VoltVulkan/Graphics/VulkanDeviceQueue.h"
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 
+#include "VoltVulkan/Core.h"
+
 #include <vulkan/vulkan.h>
 #include <optick.h>
 
@@ -250,6 +252,11 @@ namespace Volt::RHI
 		vkDeviceWaitIdle(m_device);
 	}
 
+	Ref<DeviceQueue> VulkanGraphicsDevice::GetDeviceQueue(QueueType queueType) const
+	{
+		return m_deviceQueues.at(queueType);
+	}
+
 	Weak<VulkanPhysicalGraphicsDevice> VulkanGraphicsDevice::GetPhysicalDevice() const
 	{
 		return m_physicalDevice;
@@ -259,4 +266,10 @@ namespace Volt::RHI
 	{
 		return m_device;
 	}
+
+	VTVK_API Ref<GraphicsDevice> CreateVulkanGraphicsDevice(const GraphicsDeviceCreateInfo& createInfo)
+	{
+		return CreateRef<VulkanGraphicsDevice>(createInfo);
+	}
 }
+

@@ -14,10 +14,13 @@ namespace Volt::RHI
 		D3D12GraphicsDevice(const GraphicsDeviceCreateInfo& info);
 		~D3D12GraphicsDevice() override;
 
+		Ref<DeviceQueue> GetDeviceQueue(QueueType queueType) const override;
+
 	protected:
 		void* GetHandleImpl() const override;
 
 	private:
+		std::unordered_map<QueueType, Ref<DeviceQueue>> m_deviceQueues;
 		ID3D12Device2* m_device;
 	};
 }

@@ -13,7 +13,7 @@ namespace Volt::RHI
 		~D3D12ImGuiImplementation() override;
 		void BeginAPI() override;
 		void EndAPI() override;
-		void InitializeAPI() override;
+		void InitializeAPI(ImGuiContext* context) override;
 		void ShutdownAPI() override;
 
 		ImTextureID GetTextureID(Ref<Image2D> image) const override;

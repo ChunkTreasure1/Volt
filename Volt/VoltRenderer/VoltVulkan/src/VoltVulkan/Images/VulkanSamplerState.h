@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
+
 #include <VoltRHI/Images/SamplerState.h>
 
 struct VkSampler_T;
@@ -18,4 +20,6 @@ namespace Volt::RHI
 	private:
 		VkSampler_T* m_sampler = nullptr;
 	};
+
+	VTVK_API Ref<SamplerState> CreateVulkanSamplerState(const SamplerStateCreateInfo& createInfo);
 }

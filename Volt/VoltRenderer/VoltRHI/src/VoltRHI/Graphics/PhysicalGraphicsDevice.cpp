@@ -14,11 +14,11 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: return CreateRef<D3D12PhysicalGraphicsDevice>(deviceInfo); break;
+			//case GraphicsAPI::D3D12: return CreateRef<D3D12PhysicalGraphicsDevice>(deviceInfo); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanPhysicalGraphicsDevice>(deviceInfo); break;
+			case GraphicsAPI::Vulkan: return CreateVulkanPhysicalDevice(deviceInfo); break;
 		}
 
 		return nullptr;

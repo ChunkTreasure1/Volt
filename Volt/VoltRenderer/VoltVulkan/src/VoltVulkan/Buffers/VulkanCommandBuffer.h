@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
 #include <VoltRHI/Buffers/CommandBuffer.h>
 
 #include <vector>
@@ -79,6 +80,7 @@ namespace Volt::RHI
 		void CopyImage(Ref<Image2D> srcImage, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height) override;
 
 		const uint32_t GetCurrentIndex() const override;
+		const QueueType GetQueueType() const override;
 
 		VkFence_T* GetCurrentFence() const;
 
@@ -119,6 +121,7 @@ namespace Volt::RHI
 		bool m_hasTimestampSupport = false;
 
 		uint32_t m_commandBufferCount = 0;
+		QueueType m_queueType;
 
 		// Queries
 		uint32_t m_timestampQueryCount = 0;
@@ -135,4 +138,7 @@ namespace Volt::RHI
 		Weak<ComputePipeline> m_currentComputePipeline;
 		Weak<Swapchain> m_swapchainTarget;
 	};
+
+	VTVK_API Ref<CommandBuffer> CreateVulkanCommandBuffer(const uint32_t count, QueueType queueType);
+	VTVK_API Ref<CommandBuffer> CreateVulkanCommandBuffer(Weak<Swapchain> swapchain);
 }

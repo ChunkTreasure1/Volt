@@ -8,10 +8,11 @@ namespace Volt::RHI
 
 	struct BufferViewSpecification
 	{
-		Weak<RHIResource> bufferResource;
+		//Weak<RHIResource> bufferResource;
+		RHIResource* bufferResource = nullptr;
 	};
 
-	class BufferView : public RHIInterface
+	class VTRHI_API BufferView : public RHIInterface
 	{
 	public:
 		~BufferView() override = default;

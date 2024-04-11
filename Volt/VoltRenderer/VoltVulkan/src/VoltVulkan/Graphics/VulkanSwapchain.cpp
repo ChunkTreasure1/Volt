@@ -129,7 +129,7 @@ namespace Volt::RHI
 		auto& frameData = m_perFrameInFlightData.at(m_currentFrame);
 		const auto deviceQueue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics);
 
-		Ref<VulkanDeviceQueue> vkQueue = deviceQueue->As<VulkanDeviceQueue>();
+		VulkanDeviceQueue& vkQueue = deviceQueue->AsRef<VulkanDeviceQueue>();
 
 		// Queue Submit
 		{
@@ -147,9 +147,9 @@ namespace Volt::RHI
 			const VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			submitInfo.pWaitDstStageMask = &waitStage;
 
-			vkQueue->AquireLock();
+			vkQueue.AquireLock();
 			VT_VK_CHECK(vkQueueSubmit(deviceQueue->GetHandle<VkQueue>(), 1, &submitInfo, frameData.fence));
-			vkQueue->ReleaseLock();
+			vkQueue.ReleaseLock();
 		}
 
 		VT_PROFILE_GPU_FLIP(m_swapchain);
@@ -166,9 +166,9 @@ namespace Volt::RHI
 			presentInfo.waitSemaphoreCount = 1;
 			presentInfo.pImageIndices = &m_currentImage;
 
-			vkQueue->AquireLock();
+			vkQueue.AquireLock();
 			VkResult presentResult = vkQueuePresentKHR(deviceQueue->GetHandle<VkQueue>(), &presentInfo);
-			vkQueue->ReleaseLock();
+			vkQueue.ReleaseLock();
 
 			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
 			{
@@ -544,5 +544,10 @@ namespace Volt::RHI
 			allocInfo.commandPool = frameData.commandPool;
 			VT_VK_CHECK(vkAllocateCommandBuffers(device->GetHandle<VkDevice>(), &allocInfo, &frameData.commandBuffer));
 		}
+	}
+
+	VTVK_API Ref<Swapchain> CreateVulkanSwapchain(GLFWwindow* glfwWindow)
+	{
+		return CreateRef<VulkanSwapchain>(glfwWindow);
 	}
 }

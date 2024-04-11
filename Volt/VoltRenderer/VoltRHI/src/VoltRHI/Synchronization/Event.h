@@ -15,7 +15,7 @@ namespace Volt::RHI
 		bool deviceOnly = false;
 	};
 
-	class Event : public RHIInterface
+	class VTRHI_API Event : public RHIInterface
 	{
 	public:
 		static Ref<Event> Create(const EventCreateInfo& createInfo);

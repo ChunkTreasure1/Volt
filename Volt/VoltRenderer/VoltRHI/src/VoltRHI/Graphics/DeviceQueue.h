@@ -7,13 +7,18 @@ namespace Volt::RHI
 {
 	class CommandBuffer;
 
-	class DeviceQueue : public RHIInterface
+	struct DeviceQueueExecuteInfo
+	{
+		std::vector<CommandBuffer*> commandBuffers;
+	};
+
+	class VTRHI_API DeviceQueue : public RHIInterface
 	{
 	public:
 		VT_DELETE_COMMON_OPERATORS(DeviceQueue);
 
 		virtual void WaitForQueue() = 0;
-		virtual void Execute(const std::vector<Ref<CommandBuffer>>& commandBuffer) = 0;
+		virtual void Execute(const DeviceQueueExecuteInfo& executeInfo) = 0;
 
 		static Ref<DeviceQueue> Create(const DeviceQueueCreateInfo& createInfo);
 

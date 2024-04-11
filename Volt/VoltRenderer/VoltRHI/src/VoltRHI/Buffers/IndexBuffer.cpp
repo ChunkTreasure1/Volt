@@ -18,24 +18,7 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanIndexBuffer>(indices); break;
-		}
-
-		return nullptr;
-	}
-
-	Ref<IndexBuffer> IndexBuffer::Create(const uint32_t* indices, uint32_t count)
-	{
-		const auto api = GraphicsContext::GetAPI();
-
-		switch (api)
-		{
-			case GraphicsAPI::D3D12:
-			case GraphicsAPI::Mock:
-			case GraphicsAPI::MoltenVk:
-				break;
-
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanIndexBuffer>(indices, count); break;
+			case GraphicsAPI::Vulkan: return CreateVulkanIndexBuffer(indices); break;
 		}
 
 		return nullptr;

@@ -1,8 +1,9 @@
 project "VoltRHI"
 	location "."
-	kind "StaticLib"
+	kind "SharedLib"
 	language "C++"
 	cppdialect "C++20"
+	staticruntime "off"
 
 	targetdir ("../../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../../bin-int/" .. outputdir .."/%{prj.name}")
@@ -37,6 +38,19 @@ project "VoltRHI"
 		"%{IncludeDir.Aftermath}"
 	}
 
+	links
+	{
+		"ImGui", -- Should not be here
+		"tracy",
+
+		"%{Library.VoltVulkan}"
+	}
+
+	postbuildcommands
+	{
+		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/VoltRHI/VoltRHI.dll" "../../../Engine/"'
+	}
+
 	filter "files:vendor/**.cpp"
 		flags {"NoPCH"}
 		warnings "off"
@@ -52,7 +66,8 @@ project "VoltRHI"
 		systemversion "latest"
 		defines 
 		{
-			"VT_PLATFORM_WINDOWS"
+			"VT_PLATFORM_WINDOWS",
+			"VTRHI_BUILD_DLL"
 		}
 
 		filter "configurations:Debug"
@@ -63,6 +78,12 @@ project "VoltRHI"
 				"VT_ENABLE_VALIDATION",
 				"VT_ENABLE_PROFILING"
 			}
+
+			links
+			{
+				"%{Library.Aftermath}"
+			}
+
 			runtime "Debug"
 			optimize "off"
 			symbols "on"
@@ -75,6 +96,11 @@ project "VoltRHI"
 				"VT_ENABLE_VALIDATION",
 				"VT_ENABLE_PROFILING",
 				"NDEBUG"
+			}
+
+			links
+			{
+				"%{Library.Aftermath}"
 			}
 
 			buildoptions { "/Ot", "/Ob2" }

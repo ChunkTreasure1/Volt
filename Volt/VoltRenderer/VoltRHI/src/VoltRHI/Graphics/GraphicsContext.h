@@ -11,22 +11,20 @@ namespace Volt::RHI
 	class GraphicsDevice;
 	class PhysicalGraphicsDevice;
 
-	class GraphicsContext : public RHIInterface
+	class VTRHI_API GraphicsContext : public RHIInterface
 	{
 	public:
 		GraphicsContext();
 		virtual ~GraphicsContext();
 
-		[[nodiscard]] static GraphicsContext& Get() { return *s_context; }
-
-		[[nodiscard]] static Ref<GraphicsDevice> GetDevice() { return s_context->m_graphicsDevice; };
-		[[nodiscard]] static Ref<PhysicalGraphicsDevice> GetPhysicalDevice() { return s_context->m_physicalDevice; };
-		[[nodiscard]] static Allocator& GetDefaultAllocator() { return *s_context->m_defaultAllocator; };
-		[[nodiscard]] static Ref<Allocator> GetTransientAllocator() { return s_context->m_transientAllocator; }
+		VT_INLINE VT_NODISCARD static GraphicsContext& Get() { return *s_context; }
+		VT_INLINE VT_NODISCARD static Ref<GraphicsDevice> GetDevice() { return s_context->GetGraphicsDevice(); };
+		VT_INLINE VT_NODISCARD static Ref<PhysicalGraphicsDevice> GetPhysicalDevice() { return s_context->GetPhysicalGraphicsDevice(); };
+		VT_INLINE VT_NODISCARD static Allocator& GetDefaultAllocator() { return s_context->GetDefaultAllocatorImpl(); };
+		VT_INLINE VT_NODISCARD static Ref<Allocator> GetTransientAllocator() { return s_context->GetTransientAllocatorImpl(); }
+		VT_INLINE VT_NODISCARD static GraphicsAPI GetAPI() { return s_graphicsAPI; }
 
 		static Ref<GraphicsContext> Create(const GraphicsContextCreateInfo& createInfo);
-		
-		static VT_NODISCARD GraphicsAPI GetAPI() { return s_graphicsAPI; }
 
 		template<typename... Args>
 		static void Log(Severity logSeverity, std::string_view message, Args&&... args);
@@ -35,17 +33,15 @@ namespace Volt::RHI
 		static void LogTagged(Severity logSeverity, std::string_view tag, std::string_view message, Args&&... args);
 
 		static void LogUnformatted(Severity logSeverity, std::string_view message);
-
 		static void DestroyResource(std::function<void()>&& function);
-
 		static void Update();
 
 	protected:
-		Ref<GraphicsDevice> m_graphicsDevice;
-		Ref<PhysicalGraphicsDevice> m_physicalDevice;
+		virtual Allocator& GetDefaultAllocatorImpl() = 0;
+		virtual Ref<Allocator> GetTransientAllocatorImpl() = 0;
 
-		Scope<Allocator> m_defaultAllocator;
-		Ref<Allocator> m_transientAllocator;
+		virtual Ref<GraphicsDevice> GetGraphicsDevice() const = 0;
+		virtual Ref<PhysicalGraphicsDevice> GetPhysicalGraphicsDevice() const = 0;
 
 	private:
 		inline static GraphicsContext* s_context;

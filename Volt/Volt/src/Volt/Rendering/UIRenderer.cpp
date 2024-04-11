@@ -681,7 +681,7 @@ namespace Volt
 				offset += 4;
 			}
 
-			textData.indexBuffer = RHI::IndexBuffer::Create(indices, TextData::MAX_INDICES);
+			textData.indexBuffer = RHI::IndexBuffer::Create(std::span<uint32_t>(indices, TextData::MAX_INDICES));
 			delete[] indices;
 		}
 	}
