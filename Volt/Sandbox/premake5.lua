@@ -166,8 +166,6 @@ project "Sandbox"
 		"%{Library.steam}",
 		"%{Library.discord}",
 
-		"%{Library.Vulkan}",
-		"%{Library.dxc}",
 		"%{Library.METIS}"
     }
 
@@ -209,16 +207,6 @@ project "Sandbox"
 		vectorextensions "AVX2"
 		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
 
-		links
-		{
-			"%{Library.ShaderC_Release}",
-			"%{Library.ShaderC_Utils_Release}",
-			"%{Library.SPIRV_Cross_Release}",
-			"%{Library.SPIRV_Cross_GLSL_Release}",
-
-			"%{Library.Aftermath}"
-		}
-
 	filter "configurations:Dist"
 		defines { "VT_DIST", "NDEBUG" }
 		runtime "Release"
@@ -227,14 +215,6 @@ project "Sandbox"
 		vectorextensions "AVX2"
 		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
 		kind "WindowedApp"
-
-        links
-		{
-			"%{Library.ShaderC_Release}",
-			"%{Library.ShaderC_Utils_Release}",
-			"%{Library.SPIRV_Cross_Release}",
-			"%{Library.SPIRV_Cross_GLSL_Release}",
-		}
 
 		postbuildcommands
 		{

@@ -121,7 +121,8 @@ project "Volt"
 	defines
 	{
 		"PX_PHYSX_STATIC_LIB",
-		"GLFW_DLL"
+		"GLFW_DLL",
+		"TRACY_IMPORTS"
 	}
 
 	filter "files:vendor/**.cpp"

@@ -43,7 +43,8 @@ project "VoltVulkan"
 	defines
 	{
 		"OPTICK_ENABLE_GPU_VULKAN",
-		"GLFW_DLL"
+		"GLFW_DLL",
+		"TRACY_IMPORTS"
 	}
 
 	links
@@ -54,9 +55,9 @@ project "VoltVulkan"
 		"GLFW",
 		"CoreUtilities",
 
+		"%{Library.dxc}",
 		"%{Library.Vulkan}",
 		"%{Library.VoltRHI}",
-		"%{Library.dxc}",
 	}
 
 	postbuildcommands

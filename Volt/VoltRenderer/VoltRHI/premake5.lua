@@ -43,6 +43,11 @@ project "VoltRHI"
 		"tracy",
 	}
 
+	defines
+	{
+		"TRACY_IMPORTS"
+	}
+
 	postbuildcommands
 	{
 		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/VoltRHI/VoltRHI.dll" "../../../Engine/"'

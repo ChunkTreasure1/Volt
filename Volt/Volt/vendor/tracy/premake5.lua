@@ -1,5 +1,5 @@
 project "tracy"
-	kind "StaticLib"
+	kind "SharedLib"
 	language "C++"
 	staticruntime "off"
 	warnings "off"
@@ -22,7 +22,13 @@ project "tracy"
 	defines
 	{
 		"TRACY_ENABLE",
-		"TRACY_ON_DEMAND"
+		"TRACY_ON_DEMAND",
+		"TRACY_EXPORTS"
+	}
+
+	postbuildcommands
+	{
+		'{COPY} "bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/tracy/tracy.dll" "../../../../Engine/"'
 	}
 
 	warnings "off"
