@@ -2,7 +2,7 @@
 #include "TextureNodes.h"
 
 #include "Volt/Asset/AssetManager.h"
-#include "Volt/RenderingNew/RendererNew.h"
+#include "Volt/Rendering/Renderer.h"
 #include "Volt/Utility/UIUtility.h"
 
 #include <Mosaic/MosaicGraph.h>

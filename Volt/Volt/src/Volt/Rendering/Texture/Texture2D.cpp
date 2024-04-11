@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "Texture2D.h"
 
-#include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
+#include "Volt/Rendering/Resources/GlobalResourceManager.h"
 
 #include <VoltRHI/Images/Image2D.h>
 

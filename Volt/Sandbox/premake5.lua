@@ -201,17 +201,6 @@ project "Sandbox"
 		symbols "on"
 		optimize "off"
 
-		links
-		{
-			"%{Library.ShaderC_Debug}",
-			"%{Library.ShaderC_Utils_Debug}",
-			"%{Library.SPIRV_Cross_Debug}",
-			"%{Library.SPIRV_Cross_GLSL_Debug}",
-			"%{Library.SPIRV_Tools_Debug}",
-
-			"%{Library.Aftermath}"
-		}
-
 	filter "configurations:Release"
 		defines { "VT_RELEASE", "NDEBUG" }
 		runtime "Release"

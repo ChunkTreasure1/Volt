@@ -20,7 +20,7 @@
 #include <Volt/Rendering/DebugRenderer.h>
 #include <Volt/Rendering/Camera/Camera.h>
 
-#include <Volt/RenderingNew/SceneRendererNew.h>
+#include <Volt/Rendering/SceneRenderer.h>
 
 #include <NavigationEditor/Tools/NavMeshDebugDrawer.h>
 #include <NavigationEditor/Builder/RecastBuilder.h>

@@ -8,7 +8,6 @@
 #include <Volt/Components/RenderingComponents.h>
 #include <Volt/Asset/AssetManager.h>
 
-#include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Rendering/Camera/Camera.h>
 

@@ -31,12 +31,12 @@
 
 #include "Volt/Math/Math.h"
 
-#include "Volt/RenderingNew/RenderScene.h"
-#include "Volt/RenderingNew/RendererNew.h"
+#include "Volt/Rendering/RenderScene.h"
+#include "Volt/Rendering/Renderer.h"
 
 #include "Volt/Rendering/RendererStructs.h"
 #include "Volt/Rendering/Camera/Camera.h"
-#include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
+#include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
 
 #include "Volt/Vision/Vision.h"
 #include "Volt/Utility/Random.h"

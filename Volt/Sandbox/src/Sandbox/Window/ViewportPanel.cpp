@@ -27,10 +27,8 @@
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Input/MouseButtonCodes.h>
 
-#include <Volt/RenderingNew/SceneRendererNew.h>
-#include <Volt/Rendering/VulkanFramebuffer.h>
+#include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Camera/Camera.h>
-#include <Volt/Rendering/Texture/Image2D.h>
 
 #include <Volt/Components/CoreComponents.h>
 #include <Volt/Components/RenderingComponents.h>
@@ -44,7 +42,7 @@
 
 #include <Navigation/Core/NavigationSystem.h>
 
-ViewportPanel::ViewportPanel(Ref<Volt::SceneRendererNew>& sceneRenderer, Ref<Volt::Scene>& editorScene, EditorCameraController* cameraController,
+ViewportPanel::ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::Scene>& editorScene, EditorCameraController* cameraController,
 	SceneState& aSceneState)
 	: EditorWindow("Viewport"), m_sceneRenderer(sceneRenderer), m_editorCameraController(cameraController), m_editorScene(editorScene),
 	m_sceneState(aSceneState), m_animatedPhysicsIcon("Editor/Textures/Icons/Physics/LampPhysicsAnim1.dds", 30)

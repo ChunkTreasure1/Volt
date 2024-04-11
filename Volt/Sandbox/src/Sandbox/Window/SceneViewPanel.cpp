@@ -28,7 +28,7 @@
 #include <Volt/ImGui/FontAwesome.h>
 #include <Volt/Net/SceneInteraction/NetActorComponent.h>
 
-#include <Volt/RenderingNew/ShapeLibrary.h>
+#include <Volt/Rendering/ShapeLibrary.h>
 
 namespace Utility
 {

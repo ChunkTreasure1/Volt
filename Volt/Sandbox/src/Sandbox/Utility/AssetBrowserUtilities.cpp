@@ -12,9 +12,6 @@
 
 #include <Volt/Components/RenderingComponents.h>
 
-#include <Volt/Rendering/Shader/Shader.h>
-#include <Volt/Rendering/Renderer.h>
-
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/MeshExporterUtilities.h>
 
@@ -131,7 +128,7 @@ namespace AssetBrowser
 			{
 				if (ImGui::MenuItem("Recompile Shader"))
 				{
-					Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(item->path);
+					/*Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(item->path);
 					if (shader->Reload(true))
 					{
 						Volt::Renderer::ReloadShader(shader);
@@ -140,7 +137,7 @@ namespace AssetBrowser
 					else
 					{
 						UI::Notify(NotificationType::Error, "Shader Compilation Failed", std::format("Shader {} failed to compile!", item->path.string()));
-					}
+					}*/
 				}
 			};
 

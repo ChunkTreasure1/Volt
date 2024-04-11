@@ -12,7 +12,7 @@
 #include "Volt/Asset/Animation/Skeleton.h"
 #include "Volt/Asset/Animation/Animation.h"
 
-#include "Volt/RenderingNew/Shader/ShaderMap.h"
+#include "Volt/Rendering/Shader/ShaderMap.h"
 
 #include "Volt/Project/ProjectManager.h"
 

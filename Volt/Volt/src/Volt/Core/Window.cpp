@@ -9,7 +9,7 @@
 #include "Volt/Utility/FileSystem.h"
 #include "Volt/Utility/DDSUtility.h"
 
-#include "Volt/RenderingNew/RendererNew.h"
+#include "Volt/Rendering/Renderer.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/Swapchain.h>

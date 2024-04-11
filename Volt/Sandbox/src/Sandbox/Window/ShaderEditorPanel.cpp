@@ -4,7 +4,6 @@
 #include "Sandbox/Utility/EditorResources.h"
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Rendering/Shader/Shader.h>
 
 ShaderEditorPanel::ShaderEditorPanel()
 	: EditorWindow("Shader Editor", true)
@@ -47,26 +46,26 @@ void ShaderEditorPanel::UpdateToolbar()
 
 	if (UI::ImageButton("##Save", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
 	{
-		if (myCurrentShader)
-		{
-			Volt::AssetManager::Get().SaveAsset(myCurrentShader);
-			UI::Notify(NotificationType::Success, "Saved Shader Definition!", std::format("Saved shader definition {0} to file!", myCurrentShader->GetName()));
-		}
+		//if (myCurrentShader)
+		//{
+		//	Volt::AssetManager::Get().SaveAsset(myCurrentShader);
+		//	UI::Notify(NotificationType::Success, "Saved Shader Definition!", std::format("Saved shader definition {0} to file!", myCurrentShader->GetName()));
+		//}
 	}
 
 	ImGui::SameLine();
 
 	if (UI::ImageButton("##Load", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
 	{
-		const std::filesystem::path shaderPath = FileSystem::OpenFileDialogue({ { "Shader Definition (*.vtsdef)", "vtsdef" }});
-		if (!shaderPath.empty() && FileSystem::Exists(shaderPath))
-		{
-			myCurrentShader = Volt::AssetManager::GetAsset<Volt::Shader>(shaderPath);
-			if (!myCurrentShader || !myCurrentShader->IsValid())
-			{
-				UI::Notify(NotificationType::Error, "Unable to open shader!", std::format("Unable to open shader definition {0}!", myCurrentShader->assetName));
-			}
-		}
+		//const std::filesystem::path shaderPath = FileSystem::OpenFileDialogue({ { "Shader Definition (*.vtsdef)", "vtsdef" }});
+		//if (!shaderPath.empty() && FileSystem::Exists(shaderPath))
+		//{
+		//	myCurrentShader = Volt::AssetManager::GetAsset<Volt::Shader>(shaderPath);
+		//	if (!myCurrentShader || !myCurrentShader->IsValid())
+		//	{
+		//		UI::Notify(NotificationType::Error, "Unable to open shader!", std::format("Unable to open shader definition {0}!", myCurrentShader->assetName));
+		//	}
+		//}
 	}
 
 	ImGui::PopStyleVar(2);
@@ -86,7 +85,7 @@ void ShaderEditorPanel::UpdateMainPanel()
 		return;
 	}
 
-	auto& textureDefs = const_cast<std::vector<Volt::ShaderTexture>&>(myCurrentShader->GetResources().shaderTextureDefinitions);
+	/*auto& textureDefs = const_cast<std::vector<Volt::ShaderTexture>&>(myCurrentShader->GetResources().shaderTextureDefinitions);
 
 	if (ImGui::Button("Add Texture"))
 	{
@@ -116,7 +115,7 @@ void ShaderEditorPanel::UpdateMainPanel()
 		UI::PopID();
 
 		ImGui::EndTable();
-	}
+	}*/
 
 	ImGui::End();
 }

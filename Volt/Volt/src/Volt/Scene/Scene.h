@@ -11,7 +11,7 @@
 
 #include "Volt/Scripting/Mono/MonoScriptFieldCache.h"
 
-#include "Volt/RenderingNew/RendererStructs.h"
+#include "Volt/Rendering/RendererStructs.h"
 
 #include <glm/glm.hpp>
 

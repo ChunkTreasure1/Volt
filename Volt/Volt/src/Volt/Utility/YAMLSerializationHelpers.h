@@ -1,8 +1,5 @@
 #pragma once
 
-#include "Volt/Rendering/Buffer/BufferLayout.h"
-#include "Volt/Rendering/Shader/Shader.h"
-
 #include "Volt/Asset/Asset.h"
 #include "Volt/Asset/TimelinePreset.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
@@ -47,57 +44,6 @@ namespace YAML
 		static bool decode(const Node& node, entt::entity& v)
 		{
 			v = static_cast<entt::entity>(node.as<uint32_t>());
-			return true;
-		};
-	};
-
-	template<>
-	struct convert<Volt::ElementType>
-	{
-		static Node encode(const Volt::ElementType& rhs)
-		{
-			Node node;
-			node.push_back((uint32_t)rhs);
-			return node;
-		};
-
-		static bool decode(const Node& node, Volt::ElementType& v)
-		{
-			v = (Volt::ElementType)node.as<uint32_t>();
-			return true;
-		};
-	};
-
-	template<>
-	struct convert<Volt::ShaderUniformType>
-	{
-		static Node encode(const Volt::ShaderUniformType& rhs)
-		{
-			Node node;
-			node.push_back((uint32_t)rhs);
-			return node;
-		};
-
-		static bool decode(const Node& node, Volt::ShaderUniformType& v)
-		{
-			v = (Volt::ShaderUniformType)node.as<uint32_t>();
-			return true;
-		};
-	};
-
-	template<>
-	struct convert<Volt::ShaderStage>
-	{
-		static Node encode(const Volt::ShaderStage& rhs)
-		{
-			Node node;
-			node.push_back((uint32_t)rhs);
-			return node;
-		};
-
-		static bool decode(const Node& node, Volt::ShaderStage& v)
-		{
-			v = (Volt::ShaderStage)node.as<uint32_t>();
 			return true;
 		};
 	};
@@ -158,23 +104,5 @@ inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::TrackType& hand
 inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::KeyframeType& handle)
 {
 	out << static_cast<uint32_t>(handle);
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::ElementType& handle)
-{
-	out << static_cast<uint32_t>(handle);
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::ShaderUniformType& type)
-{
-	out << static_cast<uint32_t>(type);
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::ShaderStage& type)
-{
-	out << static_cast<uint32_t>(type);
 	return out;
 }

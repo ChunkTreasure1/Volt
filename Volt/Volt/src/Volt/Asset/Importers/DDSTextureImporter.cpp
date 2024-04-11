@@ -2,7 +2,6 @@
 #include "DDSTextureImporter.h"
 
 #include "Volt/Rendering/Texture/Texture2D.h"
-#include "Volt/Utility/ImageUtility.h"
 
 #include <VoltRHI/Images/Image2D.h>
 #include <VoltRHI/Buffers/CommandBuffer.h>

@@ -76,22 +76,4 @@ namespace Volt
 		bool Load(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 		void Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
 	};
-
-	class PostProcessingStackImporter : public AssetImporter
-	{
-	public:
-		~PostProcessingStackImporter() override = default;
-
-		bool Load(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
-		void Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
-	};
-
-	class PostProcessingMaterialImporter : public AssetImporter
-	{
-	public:
-		~PostProcessingMaterialImporter() override = default;
-
-		bool Load(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
-		void Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
-	};
 }

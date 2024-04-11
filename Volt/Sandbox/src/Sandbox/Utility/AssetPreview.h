@@ -11,7 +11,7 @@ namespace Volt
 	}
 
 	class Scene;
-	class SceneRendererNew;
+	class SceneRenderer;
 	class Camera;
 }
 
@@ -32,5 +32,5 @@ private:
 
 	Ref<Volt::Camera> m_camera;
 	Ref<Volt::Scene> m_scene;
-	Ref<Volt::SceneRendererNew> m_sceneRenderer;
+	Ref<Volt::SceneRenderer> m_sceneRenderer;
 };

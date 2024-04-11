@@ -7,8 +7,7 @@
 
 #include <Volt/Animation/AnimationManager.h>
 
-#include <Volt/Rendering/VulkanFramebuffer.h>
-#include <Volt/RenderingNew/SceneRendererNew.h>
+#include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
 
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
@@ -173,7 +172,7 @@ void CharacterEditorPanel::OnOpen()
 		//Volt::SceneRendererSettings settings{};
 		//settings.enableGrid = true;
 
-		mySceneRenderer = CreateScope<Volt::SceneRendererNew>(spec);
+		mySceneRenderer = CreateScope<Volt::SceneRenderer>(spec);
 	}
 }
 

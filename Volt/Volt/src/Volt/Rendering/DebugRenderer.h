@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Volt/Rendering/RendererCommon.h"
-#include "Volt/Rendering/SceneRenderer.h"
 
 namespace Volt
 {
 	class Texture2D;
 	class Mesh;
+	class Material;
 	class DebugRenderer
 	{
 	public:

@@ -21,7 +21,6 @@
 #include <Volt/Asset/Mesh/Mesh.h>
 
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
-#include <Volt/Utility/ImageUtility.h>
 
 #include <stb/stb_image.h>
 #include <stb/stb_image_write.h>

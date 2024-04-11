@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Volt/Rendering/Buffer/BufferLayout.h"
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 
 #include <glm/glm.hpp>
@@ -85,24 +84,6 @@ namespace Volt
 
 		glm::uvec4 influences = { 0, 0, 0, 0 };
 		glm::vec4 weights = { 0.f, 0.f, 0.f, 0.f };
-
-		inline static const BufferLayout GetVertexLayout()
-		{
-			BufferLayout result = 
-			{
-				{ ElementType::Float3, "POSITION" },
-				
-				{ ElementType::Byte4, "NORMAL" },
-				{ ElementType::Float, "TANGENT" },
-
-				{ ElementType::Half2, "TEXCOORDS" },
-
-				{ ElementType::UShort4, "INFLUENCES" },
-				{ ElementType::Half4, "WEIGHTS" }
-			};
-
-			return result;
-		}
 	};
 
 	struct EncodedVertex
@@ -132,37 +113,12 @@ namespace Volt
 		glm::vec3 scale = glm::vec3(1.f);
 		uint32_t textureIndex = 0;
 		uint32_t id = 0;
-
-		inline static const BufferLayout GetVertexLayout()
-		{
-			BufferLayout result =
-			{
-				{ ElementType::Float4, "POSITION" },
-				{ ElementType::Float4, "COLOR" },
-				{ ElementType::Float3, "SCALE" },
-				{ ElementType::UInt, "TEXINDEX" },
-				{ ElementType::UInt, "ID" },
-			};
-
-			return result;
-		}
 	};
 
 	struct LineVertex
 	{
 		glm::vec4 position = glm::vec4(0.f);
 		glm::vec4 color = glm::vec4(1.f);
-
-		inline static const BufferLayout GetVertexLayout()
-		{
-			BufferLayout result =
-			{
-				{ ElementType::Float4, "POSITION" },
-				{ ElementType::Float4, "COLOR" },
-			};
-
-			return result;
-		}
 	};
 
 	struct TextVertex
@@ -171,18 +127,5 @@ namespace Volt
 		glm::vec4 color = glm::vec4(1.f);
 		glm::vec2 texCoords = glm::vec2(0.f);
 		uint32_t textureIndex = 0;
-
-		inline static const BufferLayout GetVertexLayout()
-		{
-			BufferLayout result =
-			{
-				{ ElementType::Float4, "POSITION" },
-				{ ElementType::Float4, "COLOR" },
-				{ ElementType::Float2, "TEXCOORDS" },
-				{ ElementType::UInt, "TEXINDEX" }
-			};
-
-			return result;
-		}
 	};
 }

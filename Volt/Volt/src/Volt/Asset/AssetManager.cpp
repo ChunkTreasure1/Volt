@@ -20,8 +20,6 @@
 #include "Volt/Asset/Serializers/NetContractSerializer.h"
 #include "Volt/Asset/Serializers/ParticlePresetSerializer.h"
 #include "Volt/Asset/Serializers/PhysicsMaterialSerializer.h"
-#include "Volt/Asset/Serializers/PostProcessingMaterialSerializer.h"
-#include "Volt/Asset/Serializers/PostProcessingStackSerializer.h"
 #include "Volt/Asset/Serializers/PrefabSerializer.h"
 #include "Volt/Asset/Serializers/SceneSerializer.h"
 #include "Volt/Asset/Serializers/ShaderDefinitionSerializer.h"
@@ -150,8 +148,6 @@ namespace Volt
 		m_assetSerializers.emplace(AssetType::Video, CreateScope<VideoSerializer>());
 		m_assetSerializers.emplace(AssetType::BehaviorGraph, CreateScope<BehaviourTreeSerializer>());
 		m_assetSerializers.emplace(AssetType::BlendSpace, CreateScope<BlendSpaceSerializer>());
-		m_assetSerializers.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackSerializer>());
-		m_assetSerializers.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialSerializer>());
 		m_assetSerializers.emplace(AssetType::NetContract, CreateScope<NetContractSerializer>());
 	}
 

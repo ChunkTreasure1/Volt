@@ -3,7 +3,8 @@
 
 #include "Volt/Log/Log.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
-#include "Volt/Rendering/Texture/Image2D.h"
+
+#include <VoltRHI/Images/Image2D.h>
 
 namespace Volt
 {
@@ -101,17 +102,16 @@ namespace Volt
 
 		// Image
 		{
-			ImageSpecification spec{};
-			spec.format = ImageFormat::RGBA;
-			spec.usage = ImageUsage::Storage;
+			RHI::ImageSpecification spec{};
+			spec.format = RHI::PixelFormat::R8G8B8A8_UNORM;
+			spec.usage = RHI::ImageUsage::Storage;
 			spec.width = myReaderState.width;
 			spec.height = myReaderState.height;
 			spec.isCubeMap = false;
 			spec.layers = 1;
 			spec.debugName = "Video Image";
-			spec.mappable = true;
 
-			myImage = Image2D::Create(spec);
+			myImage = RHI::Image2D::Create(spec);
 		}
 
 
@@ -166,9 +166,9 @@ namespace Volt
 				}
 			}
 
-			uint32_t* data = myImage->Map<uint32_t>();
-			GetFrameData(data);
-			myImage->Unmap();
+			//uint32_t* data = myImage->Map<uint32_t>();
+			//GetFrameData(data);
+			//myImage->Unmap();
 
 			myCurrentFrameTime -= 1.f / fps;
 		}

@@ -8,7 +8,7 @@
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/AssetManager.h>
 
-#include <Volt/RenderingNew/SceneRendererNew.h>
+#include <Volt/Rendering/SceneRenderer.h>
 
 #include <Volt/Components/LightComponents.h>
 #include <Volt/Components/RenderingComponents.h>
@@ -47,7 +47,7 @@ ParticleEmitterEditor::ParticleEmitterEditor()
 		//Volt::SceneRendererSettings settings{};
 		//settings.enableGrid = true;
 
-		myPreviewRenderer = CreateRef<Volt::SceneRendererNew>(spec);
+		myPreviewRenderer = CreateRef<Volt::SceneRenderer>(spec);
 	}
 }
 

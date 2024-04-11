@@ -225,8 +225,6 @@ namespace V015
 			importers.emplace(Volt::AssetType::PhysicsMaterial, CreateScope<Volt::PhysicsMaterialImporter>());
 			importers.emplace(Volt::AssetType::BehaviorGraph, CreateScope<Volt::BehaviorTreeImporter>());
 			importers.emplace(Volt::AssetType::BlendSpace, CreateScope<Volt::BlendSpaceImporter>());
-			importers.emplace(Volt::AssetType::PostProcessingStack, CreateScope<Volt::PostProcessingStackImporter>());
-			importers.emplace(Volt::AssetType::PostProcessingMaterial, CreateScope<Volt::PostProcessingMaterialImporter>());
 			importers.emplace(Volt::AssetType::NetContract, CreateScope<Volt::NetContractImporter>());
 		}
 

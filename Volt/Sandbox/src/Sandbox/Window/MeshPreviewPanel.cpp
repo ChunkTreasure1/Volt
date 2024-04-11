@@ -13,7 +13,7 @@
 
 #include <Volt/Scene/Scene.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
-#include <Volt/RenderingNew/SceneRendererNew.h>
+#include <Volt/Rendering/SceneRenderer.h>
 
 #include <Volt/Components/RenderingComponents.h>
 #include <Volt/Components/LightComponents.h>
@@ -74,7 +74,7 @@ void MeshPreviewPanel::OnOpen()
 		//settings.enableGrid = true;
 		//settings.enableOutline = true;
 
-		mySceneRenderer = CreateRef<Volt::SceneRendererNew>(spec);
+		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
 	}
 }
 

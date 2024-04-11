@@ -5,7 +5,7 @@
 #include "Volt/MosaicNodes/TextureNodes.h"
 #include "Volt/Asset/AssetManager.h"
 
-#include "Volt/RenderingNew/RendererNew.h"
+#include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 
 #include <Mosaic/MosaicNode.h>
@@ -90,7 +90,7 @@ namespace Volt
 			{
 				if (m_textures.at(i)->handle == dependencyHandle)
 				{
-					m_textures[i] = RendererNew::GetDefaultResources().whiteTexture;
+					m_textures[i] = Renderer::GetDefaultResources().whiteTexture;
 				}
 			}
 
@@ -160,7 +160,7 @@ namespace Volt
 					Ref<Texture2D> texture = AssetManager::QueueAsset<Texture2D>(textureInfo.textureHandle);
 					if (!texture)
 					{
-						texture = RendererNew::GetDefaultResources().whiteTexture;
+						texture = Renderer::GetDefaultResources().whiteTexture;
 					}
 
 					m_textures.at(textureInfo.textureIndex) = texture;

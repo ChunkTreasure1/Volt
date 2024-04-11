@@ -9,7 +9,7 @@
 #include "Volt/Asset/Rendering/Material.h"
 #include "Volt/Asset/Rendering/MaterialTable.h"
 
-#include "Volt/RenderingNew/Shader/ShaderMap.h"
+#include "Volt/Rendering/Shader/ShaderMap.h"
 
 namespace Volt
 {

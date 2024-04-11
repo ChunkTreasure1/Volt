@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Volt/Asset/Asset.h"
-#include "Volt/RenderingNew/Resources/ResourceHandle.h"
+#include "Volt/Rendering/Resources/ResourceHandle.h"
 
 #include <VoltRHI/Core/RHICommon.h>
 

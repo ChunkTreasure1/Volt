@@ -25,8 +25,6 @@
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
 #include <Volt/Asset/ParticlePreset.h>
-#include <Volt/Asset/Rendering/PostProcessingMaterial.h>
-#include <Volt/Asset/Rendering/PostProcessingStack.h>
 
 #include <Volt/Animation/BlendSpace.h>
 
@@ -34,11 +32,8 @@
 #include <Volt/Scene/Scene.h>
 #include <Volt/Project/ProjectManager.h>
 
-#include <Volt/Rendering/Shader/Shader.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
-#include <Volt/Rendering/Renderer.h>
-
-#include <Volt/RenderingNew/Shader/ShaderMap.h>
+#include <Volt/Rendering/Shader/ShaderMap.h>
 
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
@@ -1015,7 +1010,7 @@ void AssetBrowserPanel::DeleteFilesModal()
 					{
 						case Volt::AssetType::ShaderDefinition:
 						{
-							auto shader = Volt::AssetManager::GetAsset<Volt::Shader>(item->path);
+							//auto shader = Volt::AssetManager::GetAsset<Volt::Shader>(item->path);
 							//Volt::ShaderRegistry::Unregister(shader->GetName());
 							break;
 						}
@@ -1381,26 +1376,6 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		case Volt::AssetType::MonoScript:
 		{
 			UI::OpenModal("New MonoScript##assetBrowser");
-			break;
-		}
-
-		case Volt::AssetType::PostProcessingStack:
-		{
-			Ref<Volt::PostProcessingStack> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingStack>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName);
-			Volt::AssetManager::SaveAsset(postStack);
-
-			newAssetHandle = postStack->handle;
-
-			break;
-		}
-
-		case Volt::AssetType::PostProcessingMaterial:
-		{
-			//Ref<Volt::PostProcessingMaterial> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingMaterial>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName, Volt::Renderer::GetDefaultData().defaultPostProcessingShader);
-			//postStack->Initialize(Volt::Renderer::GetDefaultData().defaultPostProcessingShader);
-			//Volt::AssetManager::SaveAsset(postStack);
-
-			//newAssetHandle = postStack->handle;
 			break;
 		}
 	}

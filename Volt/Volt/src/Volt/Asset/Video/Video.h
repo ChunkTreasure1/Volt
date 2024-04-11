@@ -19,7 +19,11 @@ extern "C"
 
 namespace Volt
 {
-	class Image2D;
+	namespace RHI
+	{
+		class Image2D;
+	}
+
 	enum class VideoStatus : uint32_t
 	{
 		Stopped,
@@ -61,7 +65,7 @@ namespace Volt
 
 		void Update(float aDeltaTime);
 		inline VideoStatus GetStatus() { return myStatus; }
-		inline Ref<Image2D> GetImage() const { return myImage; }
+		inline Ref<RHI::Image2D> GetImage() const { return myImage; }
 
 		static AssetType GetStaticType() { return AssetType::Video; }
 		AssetType GetType() override { return GetStaticType(); };
@@ -74,7 +78,7 @@ namespace Volt
 		void Release();
 		bool GetFrameData(uint32_t*& aBuffer);
 
-		Ref<Image2D> myImage;
+		Ref<RHI::Image2D> myImage;
 		VideoStatus myStatus = VideoStatus::Stopped;
 
 		int32_t myNumberOfBytes = 0;

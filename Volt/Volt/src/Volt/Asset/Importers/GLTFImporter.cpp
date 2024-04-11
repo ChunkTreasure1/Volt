@@ -9,7 +9,7 @@
 
 #include "Volt/Asset/AssetManager.h"
 
-#include "Volt/RenderingNew/Shader/ShaderMap.h"
+#include "Volt/Rendering/Shader/ShaderMap.h"
 
 #define TINYGLTF_IMPLEMENTATION
 #define TINYGLTF_NO_STB_IMAGE_WRITE

@@ -32,8 +32,6 @@
 #include "Sandbox/Window/CurveGraphPanel.h"
 #include "Sandbox/Window/Timeline.h"
 #include "Sandbox/Window/ShaderEditorPanel.h"
-#include "Sandbox/Window/PostProcessingStackPanel.h"
-#include "Sandbox/Window/PostProcessingMaterialPanel.h"
 #include "Sandbox/Window/NavigationPanel.h"
 #include "Sandbox/Window/Net/NetPanel.h"
 #include "Sandbox/Window/Net/NetContractPanel.h"
@@ -67,11 +65,9 @@
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Input/Input.h>
 
-#include <Volt/Rendering/Texture/Image2D.h>
 #include <Volt/Rendering/Camera/Camera.h>
-#include <Volt/Rendering/Renderer.h>
 
-#include <Volt/RenderingNew/SceneRendererNew.h>
+#include <Volt/Rendering/SceneRenderer.h>
 
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
@@ -174,8 +170,6 @@ void Sandbox::OnAttach()
 	EditorLibrary::RegisterWithType<BlendSpaceEditorPanel>("Animation", Volt::AssetType::BlendSpace);
 	EditorLibrary::RegisterWithType<MeshPreviewPanel>("", Volt::AssetType::Mesh);
 	EditorLibrary::RegisterWithType<ShaderEditorPanel>("Shader", Volt::AssetType::ShaderDefinition);
-	EditorLibrary::RegisterWithType<PostProcessingStackPanel>("Shader", Volt::AssetType::PostProcessingStack);
-	EditorLibrary::RegisterWithType<PostProcessingMaterialPanel>("Shader", Volt::AssetType::PostProcessingMaterial);
 
 	EditorLibrary::Sort();
 
@@ -312,11 +306,11 @@ void Sandbox::SetupNewSceneData()
 		//	gameSettings.enableVolumetricFog = true;
 		//}
 
-		mySceneRenderer = CreateRef<Volt::SceneRendererNew>(spec);
+		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
 
 		if (!lowMemory)
 		{
-			myGameSceneRenderer = CreateRef<Volt::SceneRendererNew>(gameSpec);
+			myGameSceneRenderer = CreateRef<Volt::SceneRenderer>(gameSpec);
 		}
 	}
 

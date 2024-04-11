@@ -13,13 +13,10 @@
 
 #include "Volt/Rendering/DebugRenderer.h"
 #include "Volt/Rendering/UIRenderer.h"
-#include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Text/Font.h"
-#include "Volt/Asset/Rendering/PostProcessingStack.h"
-#include "Volt/Asset/Rendering/PostProcessingMaterial.h"
 
 #include "Volt/Utility/Noise.h"
 
@@ -4685,7 +4682,7 @@ namespace Volt
 #pragma endregion
 
 #pragma region PostProcessingMaterial
-	inline static void PostProcessingMaterial_SetBool(uint64_t handle, MonoString* name, bool value)
+	/*inline static void PostProcessingMaterial_SetBool(uint64_t handle, MonoString* name, bool value)
 	{
 		Ref<PostProcessingMaterial> material = AssetManager::GetAsset<PostProcessingMaterial>(handle);
 		if (!material || !material->IsValid())
@@ -4774,7 +4771,7 @@ namespace Volt
 
 		const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
 		material->SetValue(param, *value);
-	}
+	}*/
 #pragma endregion
 
 #pragma region UIRenderer
@@ -5905,13 +5902,13 @@ namespace Volt
 
 		// Post Processing Material
 		{
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetBool);
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetInt);
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetUInt);
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat);
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat2);
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat3);
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat4);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetBool);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetInt);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetUInt);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat2);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat3);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat4);
 		}
 
 		// UIRenderer

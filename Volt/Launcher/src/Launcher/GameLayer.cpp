@@ -7,10 +7,7 @@
 
 #include <Volt/Asset/AssetManager.h>
 
-#include <Volt/RenderingNew/SceneRendererNew.h>
-#include <Volt/Rendering/Texture/Image2D.h>
-
-#include <Volt/Utility/ImageUtility.h>
+#include <Volt/Rendering/SceneRenderer.h>
 
 #include <Navigation/Core/NavigationSystem.h>
 
@@ -50,7 +47,7 @@ void GameLayer::OnAttach()
 		settings.enablePostProcessing = true;
 		settings.enableVolumetricFog = true;
 
-		mySceneRenderer = CreateRef<Volt::SceneRendererNew>(spec);
+		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
 
 		myScene->SetRenderSize(spec.initialResolution.x, spec.initialResolution.y);
 	}
@@ -304,7 +301,7 @@ void GameLayer::TrySceneTransition()
 		spec.initialResolution = { myLastWidth, myLastHeight };
 
 		//Volt::SceneRendererSettings settings = mySceneRenderer->GetSettings();
-		mySceneRenderer = CreateRef<Volt::SceneRendererNew>(spec);
+		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
 	}
 
 	myScene->SetRenderSize(myLastWidth, myLastHeight);

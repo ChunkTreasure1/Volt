@@ -1,8 +1,7 @@
 #include "vtpch.h"
 #include "Mesh.h"
 
-#include "Volt/Rendering/Renderer.h"
-#include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
+#include "Volt/Rendering/Resources/GlobalResourceManager.h"
 
 #include "Volt/Asset/Rendering/Material.h"
 

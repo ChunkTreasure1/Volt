@@ -2,7 +2,6 @@
 #include "UIUtility.h"
 
 #include "Volt/Rendering/Texture/Texture2D.h"
-#include "Volt/Rendering/Texture/Image2D.h"
 
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
 

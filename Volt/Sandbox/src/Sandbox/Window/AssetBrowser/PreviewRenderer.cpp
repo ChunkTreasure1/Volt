@@ -9,8 +9,7 @@
 
 #include <Volt/Scene/Scene.h>
 
-#include <Volt/RenderingNew/SceneRendererNew.h>
-#include <Volt/Rendering/Texture/Image2D.h>
+#include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Camera/Camera.h>
 
 #include <Volt/Components/LightComponents.h>
@@ -39,7 +38,7 @@ PreviewRenderer::PreviewRenderer()
 	//Volt::SceneRendererSettings settings{};
 	//settings.enableSkybox = false;
 
-	myPreviewRenderer = CreateRef<Volt::SceneRendererNew>(spec);
+	myPreviewRenderer = CreateRef<Volt::SceneRenderer>(spec);
 }
 
 PreviewRenderer::~PreviewRenderer()

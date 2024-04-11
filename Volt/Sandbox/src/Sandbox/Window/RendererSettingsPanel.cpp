@@ -2,12 +2,12 @@
 #include "RendererSettingsPanel.h"
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/RenderingNew/SceneRendererNew.h>
-#include <Volt/RenderingNew/RendererNew.h>
+#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/Rendering/Renderer.h>
 
 #include "Sandbox/Utility/EditorUtilities.h"
 
-RendererSettingsPanel::RendererSettingsPanel(Ref<Volt::SceneRendererNew>& sceneRenderer)
+RendererSettingsPanel::RendererSettingsPanel(Ref<Volt::SceneRenderer>& sceneRenderer)
 	: EditorWindow("Renderer Settings"), mySceneRenderer(sceneRenderer)
 {
 }

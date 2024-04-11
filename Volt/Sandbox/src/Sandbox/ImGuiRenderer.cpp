@@ -16,9 +16,6 @@
 
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
-#include <Volt/Rendering/Shader/Shader.h>
-#include <Volt/Rendering/Renderer.h>
-
 #include <Volt/Utility/PremadeCommands.h>
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>

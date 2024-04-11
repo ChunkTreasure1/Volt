@@ -14,15 +14,12 @@
 #include "Volt/Asset/Prefab.h"
 #include "Volt/Asset/Video/Video.h"
 #include "Volt/Asset/TimelinePreset.h"
-#include "Volt/Asset/Rendering/PostProcessingMaterial.h"
-#include "Volt/Asset/Rendering/PostProcessingStack.h"
 
 #include "Volt/Scene/Scene.h"
 #include "Volt/Animation/BlendSpace.h"
 
 #include "Volt/Physics/PhysicsMaterial.h"
 
-#include "Volt/Rendering/Shader/Shader.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 
 #include "Volt/BehaviorTree/BehaviorTree.hpp"
@@ -60,14 +57,14 @@ namespace Volt
 		RegisterCreateFunction<BehaviorTree::Tree>(AssetType::BehaviorGraph, m_assetFactoryFunctions);
 		RegisterCreateFunction<TimelinePreset>(AssetType::Timeline, m_assetFactoryFunctions);
 		RegisterCreateFunction<NetContract>(AssetType::NetContract, m_assetFactoryFunctions);
-		RegisterCreateFunction<PostProcessingMaterial>(AssetType::PostProcessingMaterial, m_assetFactoryFunctions);
-		RegisterCreateFunction<PostProcessingStack>(AssetType::PostProcessingStack, m_assetFactoryFunctions);
 		RegisterCreateFunction<ShaderDefinition>(AssetType::ShaderDefinition, m_assetFactoryFunctions);
 	
 		m_assetFactoryFunctions[AssetType::MotionWeave] = []() { return nullptr; };
 		m_assetFactoryFunctions[AssetType::MonoScript] = []() { return nullptr; };
 		m_assetFactoryFunctions[AssetType::TextureSource] = []() { return nullptr; };
 		m_assetFactoryFunctions[AssetType::ShaderSource] = []() { return nullptr; };
+		m_assetFactoryFunctions[AssetType::PostProcessingMaterial] = []() { return nullptr; };
+		m_assetFactoryFunctions[AssetType::PostProcessingStack] = []() { return nullptr; };
 
 		VT_CORE_ASSERT(m_assetFactoryFunctions.size() == static_cast<size_t>(AssetType::Count) - 1, "All assets must have registered create functions!");
 	}

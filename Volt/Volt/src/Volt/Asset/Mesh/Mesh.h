@@ -9,8 +9,8 @@
 #include "Volt/Rendering/BoundingStructures.h"
 #include "Volt/Rendering/Mesh/MeshCommon.h"
 
-#include "Volt/RenderingNew/Resources/GlobalResource.h"
-#include "Volt/RenderingNew/GPUScene.h"
+#include "Volt/Rendering/Resources/GlobalResource.h"
+#include "Volt/Rendering/GPUScene.h"
 
 namespace Volt
 {

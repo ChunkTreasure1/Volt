@@ -7,11 +7,9 @@
 
 #include <Volt/Asset/Mesh/Mesh.h>
 
-#include <Volt/Rendering/Shape.h>
 #include <Volt/Rendering/Renderer.h>
+#include <Volt/Rendering/ShapeLibrary.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
-
-#include <Volt/Utility/ImageUtility.h>
 
 void EditorResources::Initialize()
 {
@@ -125,7 +123,7 @@ Ref<Volt::Texture2D> EditorResources::GetEditorIcon(EditorIcon icon)
 {
 	if (!myEditorIcons.contains(icon))
 	{
-		return Volt::Renderer::GetDefaultData().whiteTexture;
+		return Volt::Renderer::GetDefaultResources().whiteTexture;
 	}
 
 		return myEditorIcons.at(icon);
@@ -135,7 +133,7 @@ Ref<Volt::Mesh> EditorResources::GetEditorMesh(EditorMesh mesh)
 {
 	if (!myEditorMeshes.contains(mesh))
 	{
-		return Volt::Shape::CreateUnitCube();
+		return Volt::ShapeLibrary::GetCube();
 	}
 
 	return myEditorMeshes.at(mesh);
@@ -148,7 +146,7 @@ Ref<Volt::Texture2D> EditorResources::TryLoadIcon(const std::filesystem::path& p
 
 	if (!texture->IsValid())
 	{
-		texture = Volt::Renderer::GetDefaultData().whiteTexture;
+		texture = Volt::Renderer::GetDefaultResources().whiteTexture;
 	}
 
 	return texture;
@@ -161,7 +159,7 @@ Ref<Volt::Mesh> EditorResources::TryLoadMesh(const std::filesystem::path& path)
 	//Ref<Volt::Mesh> mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(path);
 	//if (!mesh->IsValid())
 	{
-		mesh = Volt::Shape::CreateUnitCube();
+		mesh = Volt::ShapeLibrary::GetCube();
 	}
 
 	return mesh;

@@ -7,7 +7,7 @@
 namespace Volt
 {
 	class Scene;
-	class SceneRendererNew;
+	class SceneRenderer;
 	struct SceneRendererSettings;
 }
 
@@ -24,7 +24,7 @@ public:
 
 	void LoadStartScene(); // remove
 
-	Ref<Volt::SceneRendererNew>& GetSceneRenderer() { return mySceneRenderer; }
+	Ref<Volt::SceneRenderer>& GetSceneRenderer() { return mySceneRenderer; }
 
 private:
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
@@ -38,7 +38,7 @@ private:
 
 	void TrySceneTransition();
 
-	Ref<Volt::SceneRendererNew> mySceneRenderer;
+	Ref<Volt::SceneRenderer> mySceneRenderer;
 	Ref<Volt::Scene> myScene;
 
 	Ref<Volt::Scene> myStoredScene;

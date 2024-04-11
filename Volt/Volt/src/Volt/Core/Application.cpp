@@ -10,9 +10,9 @@
 #include "Volt/Core/Layer/Layer.h"
 #include "Volt/Steam/SteamImplementation.h"
 
-#include "Volt/RenderingNew/RendererNew.h"
-#include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
-#include "Volt/RenderingNew/Shader/ShaderMap.h"
+#include "Volt/Rendering/Renderer.h"
+#include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
+#include "Volt/Rendering/Shader/ShaderMap.h"
 
 #include "Volt/Core/ScopedTimer.h"
 
@@ -112,9 +112,9 @@ namespace Volt
 		m_threadPool.Initialize(std::thread::hardware_concurrency() / 2);
 		m_assetmanager = CreateScope<AssetManager>();
 		
-		RendererNew::PreInitialize();
+		Renderer::PreInitialize();
 		ShaderMap::Initialize();
-		RendererNew::Initialize();
+		Renderer::Initialize();
 
 		//Renderer::Initialize();
 		//Renderer::LateInitialize();
@@ -210,7 +210,7 @@ namespace Volt
 		m_threadPool.Shutdown();
 
 		ShaderMap::Shutdown();
-		RendererNew::Shutdown();
+		Renderer::Shutdown();
 		FileSystem::Shutdown();
 
 		m_windowManager.DestroyWindow(m_windowHandle);
@@ -309,10 +309,10 @@ namespace Volt
 		{
 			VT_PROFILE_SCOPE("Application::Render");
 
-			RendererNew::Flush();
+			Renderer::Flush();
 			AppRenderEvent renderEvent;
 			OnEvent(renderEvent);
-			RendererNew::Update();
+			Renderer::Update();
 		}
 
 		{
@@ -352,7 +352,7 @@ namespace Volt
 		}
 
 		RenderGraphExecutionThread::WaitForFinishedExecution();
-		RendererNew::EndOfFrameUpdate();
+		Renderer::EndOfFrameUpdate();
 
 		{
 			m_windowManager.Present();
@@ -377,7 +377,7 @@ namespace Volt
 		logHook.logCallback = RHILogCallback;
 
 		RHI::ResourceManagementInfo resourceManagement{};
-		resourceManagement.resourceDeletionCallback = RendererNew::DestroyResource;
+		resourceManagement.resourceDeletionCallback = Renderer::DestroyResource;
 
 		RHI::GraphicsContextCreateInfo cinfo{};
 		cinfo.graphicsApi = RHI::GraphicsAPI::Vulkan;
