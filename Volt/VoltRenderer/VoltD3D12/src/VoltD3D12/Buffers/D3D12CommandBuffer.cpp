@@ -257,10 +257,6 @@ namespace Volt::RHI
 		return 0.0f;
 	}
 
-	void D3D12CommandBuffer::CopyImageToBackBuffer(Ref<Image2D> srcImage, Weak<Swapchain> swapchain)
-	{
-	}
-
 	void D3D12CommandBuffer::ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor)
 	{
 	}

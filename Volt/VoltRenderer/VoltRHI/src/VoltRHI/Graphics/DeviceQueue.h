@@ -6,10 +6,12 @@
 namespace Volt::RHI
 {
 	class CommandBuffer;
+	class Semaphore;
 
 	struct DeviceQueueExecuteInfo
 	{
 		std::vector<CommandBuffer*> commandBuffers;
+		std::vector<Semaphore*> signalSemaphores;
 	};
 
 	class VTRHI_API DeviceQueue : public RHIInterface

@@ -1,12 +1,26 @@
 #pragma once
 
+#ifdef VT_ENABLE_NV_AFTERMATH
+
+#include "VoltVulkan/Common/VulkanNsightAftermath.h"
+
+#endif
+
 #include <VoltRHI/Graphics/GraphicsContext.h>
 
 #include <cstdint>
 
 const char* VKResultToString(int32_t result);
 
+#ifndef VT_ENABLE_NV_AFTERMATH
+
 #define VT_VK_CHECK(x) if (x != VK_SUCCESS) { GraphicsContext::Log(Severity::Error, std::format("Vulkan Error: {0}", VKResultToString(x))); VT_RHI_DEBUGBREAK(); }
+
+#else
+
+#define VT_VK_CHECK(x) Volt::RHI::CheckWaitReturnValue(x)
+
+#endif
 
 namespace VulkanDefaults
 {

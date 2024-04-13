@@ -9,11 +9,14 @@
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
+#include <Volt/Asset/TextureSource.h>
 
 #include <Volt/Components/RenderingComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/MeshExporterUtilities.h>
+
+#include <Volt/Rendering/Texture/Texture2D.h>
 
 namespace AssetBrowser
 {
@@ -192,6 +195,22 @@ namespace AssetBrowser
 				{
 					SetMeshExport(item);
 					UI::OpenModal(std::format("Mesh Export##assetBrowser{0}", std::to_string(item->handle)));
+				}
+			};
+
+			renderFunctions[Volt::AssetType::TextureSource] = [](AssetItem* item)
+			{
+				if (ImGui::MenuItem("Import"))
+				{
+					Ref<Volt::TextureSource> importedTexture = Volt::AssetManager::GetAsset<Volt::TextureSource>(item->handle);
+					if (!importedTexture || !importedTexture->IsValid())
+					{
+						return;
+					}
+
+					Ref<Volt::Texture2D> newTexture = Volt::AssetManager::CreateAsset<Volt::Texture2D>(item->path.parent_path(), item->path.stem().string());
+					newTexture->SetImage(importedTexture->GetImage());
+					Volt::AssetManager::SaveAsset(newTexture);
 				}
 			};
 		}

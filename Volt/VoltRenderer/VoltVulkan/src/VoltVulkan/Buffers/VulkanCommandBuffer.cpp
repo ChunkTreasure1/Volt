@@ -16,6 +16,7 @@
 
 #include "VoltVulkan/Images/VulkanImage2D.h"
 #include "VoltVulkan/Buffers/VulkanStorageBuffer.h"
+#include "VoltVulkan/Synchronization/VulkanSemaphore.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
@@ -30,7 +31,6 @@
 
 #include <VoltRHI/Shader/Shader.h>
 #include <VoltRHI/Core/Profiling.h>
-#include <VoltRHI/Utility/NsightAftermathHelpers.h>
 
 #include <CoreUtilities/EnumUtils.h>
 
@@ -39,6 +39,8 @@
 #include <GFSDK_Aftermath.h>
 #include <GFSDK_Aftermath_Defines.h>
 #include <GFSDK_Aftermath_GpuCrashDump.h>
+
+#include <VoltRHI/Utility/NsightAftermathHelpers.h>
 
 #endif
 
@@ -270,7 +272,7 @@ namespace Volt::RHI
 
 		if (!m_isSwapchainTarget)
 		{
-			CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence, VK_TRUE, UINT64_MAX));
+			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence, VK_TRUE, UINT64_MAX));
 			VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence));
 			VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), currentCommandBuffer.commandPool, 0));
 		}
@@ -328,7 +330,7 @@ namespace Volt::RHI
 
 		if (!m_isSwapchainTarget)
 		{
-			CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence, VK_TRUE, UINT64_MAX));
+			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence, VK_TRUE, UINT64_MAX));
 			VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence));
 			VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), currentCommandBuffer.commandPool, 0));
 		}
@@ -379,9 +381,7 @@ namespace Volt::RHI
 		{
 			auto device = GraphicsContext::GetDevice();
 			device->GetDeviceQueue(m_queueType)->Execute({ { this } });
-
-			const uint32_t index = GetCurrentCommandBufferIndex();
-			CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(index).fence, VK_TRUE, UINT64_MAX));
+			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(m_currentCommandBufferIndex).fence, VK_TRUE, UINT64_MAX));
 		}
 
 		FetchTimestampResults();
@@ -390,7 +390,7 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::WaitForLastFence()
 	{
 		auto device = GraphicsContext::GetDevice();
-		CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(m_lastCommandBufferIndex).fence, VK_TRUE, UINT64_MAX));
+		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(m_lastCommandBufferIndex).fence, VK_TRUE, UINT64_MAX));
 	}
 
 	void VulkanCommandBuffer::WaitForFences()
@@ -402,7 +402,7 @@ namespace Volt::RHI
 		}
 
 		auto device = GraphicsContext::GetDevice();
-		CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
+		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
 	}
 
 	void VulkanCommandBuffer::SetEvent(Ref<Event> event)
@@ -677,6 +677,8 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::PushConstants(const void* data, const uint32_t size, const uint32_t offset)
 	{
+		VT_PROFILE_FUNCTION();
+
 #ifndef VT_DIST
 		if (!m_currentRenderPipeline && !m_currentComputePipeline)
 		{
@@ -715,6 +717,8 @@ namespace Volt::RHI
 
 	void AddGlobalBarrier(const ResourceBarrierInfo& barrierInfo, VkMemoryBarrier2& outBarrier)
 	{
+		VT_PROFILE_FUNCTION();
+
 		outBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
 		outBarrier.pNext = nullptr;
 		outBarrier.srcAccessMask = Utility::GetAccessFromBarrierAccess(barrierInfo.globalBarrier().srcAccess);
@@ -725,6 +729,8 @@ namespace Volt::RHI
 
 	void AddBufferBarrier(const ResourceBarrierInfo& barrierInfo, VkBufferMemoryBarrier2& outBarrier)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto& vkBuffer = barrierInfo.bufferBarrier().resource->AsRef<VulkanStorageBuffer>();
 
 		outBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
@@ -742,6 +748,8 @@ namespace Volt::RHI
 
 	void AddImageBarrier(const ResourceBarrierInfo& barrierInfo, VkImageMemoryBarrier2& outBarrier)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto& vkImage = barrierInfo.imageBarrier().resource->AsRef<VulkanImage2D>();
 		
 		outBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
@@ -809,6 +817,8 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::BeginMarker(std::string_view markerLabel, const std::array<float, 4>& markerColor)
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (Volt::RHI::vkCmdBeginDebugUtilsLabelEXT)
 		{
 			VkDebugUtilsLabelEXT markerInfo{};
@@ -826,6 +836,8 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::EndMarker()
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (Volt::RHI::vkCmdEndDebugUtilsLabelEXT)
 		{
 			const uint32_t index = GetCurrentCommandBufferIndex();
@@ -835,6 +847,8 @@ namespace Volt::RHI
 
 	const uint32_t VulkanCommandBuffer::BeginTimestamp()
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (!m_hasTimestampSupport)
 		{
 			return 0;
@@ -850,6 +864,8 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::EndTimestamp(uint32_t timestampIndex)
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (!m_hasTimestampSupport)
 		{
 			return;
@@ -861,6 +877,8 @@ namespace Volt::RHI
 
 	const float VulkanCommandBuffer::GetExecutionTime(uint32_t timestampIndex) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (!m_hasTimestampSupport)
 		{
 			return 0.f;
@@ -875,132 +893,6 @@ namespace Volt::RHI
 		}
 
 		return m_executionTimes.at(timestampsIndex).at(timestampIndex / 2);
-	}
-
-	void VulkanCommandBuffer::CopyImageToBackBuffer(Ref<Image2D> srcImage, Weak<Swapchain> targetSwapchain)
-	{
-		VulkanImage2D& vkImage = srcImage->AsRef<VulkanImage2D>();
-		VulkanSwapchain& swapchain = targetSwapchain->AsRef<VulkanSwapchain>();
-
-		VkImageBlit blitRegion{};
-		blitRegion.srcSubresource.aspectMask = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
-		blitRegion.srcSubresource.baseArrayLayer = 0;
-		blitRegion.srcSubresource.layerCount = 1;
-		blitRegion.srcSubresource.mipLevel = 0;
-
-		blitRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		blitRegion.dstSubresource.baseArrayLayer = 0;
-		blitRegion.dstSubresource.layerCount = 1;
-		blitRegion.dstSubresource.mipLevel = 0;
-
-		blitRegion.srcOffsets[0] = { 0, 0, 0 };
-		blitRegion.srcOffsets[1] = { static_cast<int32_t>(vkImage.GetWidth()), static_cast<int32_t>(vkImage.GetHeight()), 1 };
-
-		blitRegion.dstOffsets[0] = { 0, 0, 0 };
-		blitRegion.dstOffsets[1] = { static_cast<int32_t>(swapchain.GetWidth()), static_cast<int32_t>(swapchain.GetHeight()), 1 };
-
-		VkImageSubresourceRange range{};
-		range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		range.baseArrayLayer = 0;
-		range.baseMipLevel = 0;
-		range.layerCount = 1;
-		range.levelCount = 1;
-
-		const uint32_t index = GetCurrentCommandBufferIndex();
-
-		// First Transition
-		{
-			VkImageMemoryBarrier2 srcImageBarrier{};
-			srcImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-			srcImageBarrier.pNext = nullptr;
-			srcImageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
-			srcImageBarrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT | VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
-			srcImageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-			srcImageBarrier.dstAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
-			srcImageBarrier.oldLayout = static_cast<VkImageLayout>(vkImage.GetCurrentLayout());
-			srcImageBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-			srcImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			srcImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			srcImageBarrier.subresourceRange = range;
-			srcImageBarrier.image = vkImage.GetHandle<VkImage>();
-
-			VkImageMemoryBarrier2 dstImageBarrier{};
-			dstImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-			dstImageBarrier.pNext = nullptr;
-			dstImageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE;
-			dstImageBarrier.srcAccessMask = 0;
-			dstImageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-			dstImageBarrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-			dstImageBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			dstImageBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-			dstImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			dstImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			dstImageBarrier.subresourceRange = range;
-			dstImageBarrier.image = swapchain.GetCurrentVkImage();
-
-			const VkImageMemoryBarrier2 barriers[2] = { srcImageBarrier, dstImageBarrier };
-
-			VkDependencyInfo depInfo{};
-			depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
-			depInfo.pNext = nullptr;
-			depInfo.dependencyFlags = 0;
-			depInfo.memoryBarrierCount = 0;
-			depInfo.pMemoryBarriers = nullptr;
-			depInfo.bufferMemoryBarrierCount = 0;
-			depInfo.pBufferMemoryBarriers = nullptr;
-			depInfo.imageMemoryBarrierCount = 2;
-			depInfo.pImageMemoryBarriers = barriers;
-
-			vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
-		}
-
-		vkCmdBlitImage(m_commandBuffers.at(index).commandBuffer, vkImage.GetHandle<VkImage>(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, swapchain.GetCurrentVkImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_NEAREST);
-
-		// Second Transition
-		{
-			VkImageMemoryBarrier2 srcImageBarrier{};
-			srcImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-			srcImageBarrier.pNext = nullptr;
-			srcImageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-			srcImageBarrier.srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
-			srcImageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
-			srcImageBarrier.dstAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT | VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
-			srcImageBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-			srcImageBarrier.newLayout = static_cast<VkImageLayout>(vkImage.GetCurrentLayout());
-			srcImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			srcImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			srcImageBarrier.subresourceRange = range;
-			srcImageBarrier.image = vkImage.GetHandle<VkImage>();
-
-			VkImageMemoryBarrier2 dstImageBarrier{};
-			dstImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-			dstImageBarrier.pNext = nullptr;
-			dstImageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-			dstImageBarrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-			dstImageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
-			dstImageBarrier.dstAccessMask = 0;
-			dstImageBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-			dstImageBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-			dstImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			dstImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			dstImageBarrier.subresourceRange = range;
-			dstImageBarrier.image = swapchain.GetCurrentVkImage();
-
-			const VkImageMemoryBarrier2 barriers[2] = { srcImageBarrier, dstImageBarrier };
-
-			VkDependencyInfo depInfo{};
-			depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
-			depInfo.pNext = nullptr;
-			depInfo.dependencyFlags = 0;
-			depInfo.memoryBarrierCount = 0;
-			depInfo.pMemoryBarriers = nullptr;
-			depInfo.bufferMemoryBarrierCount = 0;
-			depInfo.pBufferMemoryBarriers = nullptr;
-			depInfo.imageMemoryBarrierCount = 2;
-			depInfo.pImageMemoryBarriers = barriers;
-
-			vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
-		}
 	}
 
 	void VulkanCommandBuffer::ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor)
@@ -1558,7 +1450,7 @@ namespace Volt::RHI
 				fences.emplace_back(cmdBuffer.fence);
 			}
 
-			CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
+			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
 
 			for (auto& cmdBuffer : m_commandBuffers)
 			{
@@ -1574,7 +1466,7 @@ namespace Volt::RHI
 				fences.push_back(m_swapchainTarget->AsRef<VulkanSwapchain>().GetFence(i));
 			}
 
-			CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
+			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
 		}
 
 		for (const auto& pool : m_timestampQueryPools)
@@ -1650,41 +1542,6 @@ namespace Volt::RHI
 	const uint32_t VulkanCommandBuffer::GetCurrentCommandBufferIndex() const
 	{
 		return m_currentCommandBufferIndex;
-	}
-
-	void VulkanCommandBuffer::CheckWaitReturnValue(uint32_t resultValue)
-	{
-		VkResult vkResult = static_cast<VkResult>(resultValue);
-
-#ifdef VT_ENABLE_NV_AFTERMATH
-		if (vkResult == VK_ERROR_DEVICE_LOST)
-		{
-			auto tdrTerminationTimeout = std::chrono::seconds(3);
-			auto tStart = std::chrono::steady_clock::now();
-			auto tElapsed = std::chrono::milliseconds::zero();
-
-			GFSDK_Aftermath_CrashDump_Status status = GFSDK_Aftermath_CrashDump_Status_Unknown;
-			AFTERMATH_CHECK_ERROR(GFSDK_Aftermath_GetCrashDumpStatus(&status));
-
-			while (status != GFSDK_Aftermath_CrashDump_Status_CollectingDataFailed && status != GFSDK_Aftermath_CrashDump_Status_Finished && tElapsed < tdrTerminationTimeout)
-			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(50));
-				AFTERMATH_CHECK_ERROR(GFSDK_Aftermath_GetCrashDumpStatus(&status));
-
-				auto tEnd = std::chrono::steady_clock::now();
-				tElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(tEnd - tStart);
-			}
-
-			if (status != GFSDK_Aftermath_CrashDump_Status_Finished)
-			{
-				GraphicsContext::LogTagged(Severity::Error, "[Aftermath]", "Unexpected crash dump status: {0}", static_cast<uint32_t>(status));
-			}
-
-			exit(1);
-		}
-#endif
-
-		VT_VK_CHECK(vkResult);
 	}
 
 	VkPipelineLayout_T* VulkanCommandBuffer::GetCurrentPipelineLayout()

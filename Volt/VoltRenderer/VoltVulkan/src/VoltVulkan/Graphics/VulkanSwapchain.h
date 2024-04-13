@@ -73,6 +73,8 @@ namespace Volt::RHI
 		void CreateCommandPools();
 		void CreateCommandBuffers();
 
+		void GetNextFrameIndex();
+
 		uint32_t m_currentImage = 0;
 		uint32_t m_currentFrame = 0;
 

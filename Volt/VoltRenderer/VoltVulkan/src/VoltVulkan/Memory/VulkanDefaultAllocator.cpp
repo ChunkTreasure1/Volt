@@ -31,7 +31,7 @@ namespace Volt::RHI
 			info.flags |= VMA_ALLOCATOR_CREATE_EXT_DESCRIPTOR_BUFFER_BIT;
 		}
 
-		VT_VK_CHECK(vmaCreateAllocator(&info, &m_allocator))
+		VT_VK_CHECK(vmaCreateAllocator(&info, &m_allocator));
 	}
 
 	VulkanDefaultAllocator::~VulkanDefaultAllocator()

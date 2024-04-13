@@ -71,6 +71,7 @@ namespace Volt
 	ShaderRuntimeValidator::ShaderRuntimeValidator()
 	{
 		m_errorBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(MAX_ERROR_COUNT * sizeof(uint32_t), "Error Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::GPU));
+		m_commandBuffer = RHI::CommandBuffer::Create(2);
 	}
 
 	ShaderRuntimeValidator::~ShaderRuntimeValidator()
@@ -98,12 +99,11 @@ namespace Volt
 			m_stagingBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(MAX_ERROR_COUNT * sizeof(uint32_t), "Error Staging Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU));
 		}
 
-		Ref<RHI::CommandBuffer> copyCommandBuffer = RHI::CommandBuffer::Create();
-		copyCommandBuffer->Begin();
-		copyCommandBuffer->CopyBufferRegion(m_errorBuffer->GetResource()->GetAllocation(), 0, m_stagingBuffer->GetResource()->GetAllocation(), 0, m_errorBuffer->GetResource()->GetByteSize());
-		copyCommandBuffer->ClearBuffer(m_errorBuffer->GetResource(), 0);
-		copyCommandBuffer->End();
-		copyCommandBuffer->Execute();
+		//m_commandBuffer->Begin();
+		//m_commandBuffer->CopyBufferRegion(m_errorBuffer->GetResource()->GetAllocation(), 0, m_stagingBuffer->GetResource()->GetAllocation(), 0, m_errorBuffer->GetResource()->GetByteSize());
+		//m_commandBuffer->ClearBuffer(m_errorBuffer->GetResource(), 0);
+		//m_commandBuffer->End();
+		//m_commandBuffer->ExecuteAndWait();
 	}
 
 	const ResourceHandle ShaderRuntimeValidator::GetCurrentErrorBufferHandle() const

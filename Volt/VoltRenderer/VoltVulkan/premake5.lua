@@ -44,7 +44,8 @@ project "VoltVulkan"
 	{
 		"OPTICK_ENABLE_GPU_VULKAN",
 		"GLFW_DLL",
-		"TRACY_IMPORTS"
+		"TRACY_IMPORTS",
+		"VT_ENABLE_NV_AFTERMATH"
 	}
 
 	links

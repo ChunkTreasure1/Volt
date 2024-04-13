@@ -12,6 +12,8 @@ namespace Volt::RHI
 {
 	VulkanSemaphore::VulkanSemaphore(const SemaphoreCreateInfo& info)
 	{
+		m_currentHostValue = info.initialValue;
+
 		VkSemaphoreTypeCreateInfo timelineCreateInfo{};
 		timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
 		timelineCreateInfo.pNext = nullptr;
@@ -71,5 +73,10 @@ namespace Volt::RHI
 		VT_VK_CHECK(vkGetSemaphoreCounterValue(device->GetHandle<VkDevice>(), m_semaphore, &value));
 
 		return value;
+	}
+
+	const uint64_t VulkanSemaphore::GetNextHostValue() 
+	{
+		return ++m_currentHostValue;
 	}
 }

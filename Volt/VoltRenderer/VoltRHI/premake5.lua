@@ -45,7 +45,8 @@ project "VoltRHI"
 
 	defines
 	{
-		"TRACY_IMPORTS"
+		"TRACY_IMPORTS",
+		"VT_ENABLE_NV_AFTERMATH"
 	}
 
 	postbuildcommands

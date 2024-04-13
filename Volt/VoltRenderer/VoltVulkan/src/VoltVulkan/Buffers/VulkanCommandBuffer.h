@@ -14,6 +14,7 @@ struct VkPipelineLayout_T;
 
 namespace Volt::RHI
 {
+	class Semaphore;
 	class VulkanCommandBuffer final : public CommandBuffer
 	{
 	public:
@@ -69,7 +70,6 @@ namespace Volt::RHI
 		void EndTimestamp(uint32_t timestampIndex) override;
 		const float GetExecutionTime(uint32_t timestampIndex) const override;
 
-		void CopyImageToBackBuffer(Ref<Image2D> srcImage, Weak<Swapchain> targetSwapchain) override;
 		void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) override;
 		void ClearBuffer(Ref<StorageBuffer> buffer, const uint32_t value) override;
 
@@ -98,9 +98,6 @@ namespace Volt::RHI
 
 		void CreateQueryPools();
 		void FetchTimestampResults();
-
-		// #TODO_Ivar: Maybe move somewhere else
-		void CheckWaitReturnValue(uint32_t resultValue);
 
 		VkPipelineLayout_T* GetCurrentPipelineLayout();
 		const uint32_t GetCurrentCommandBufferIndex() const;

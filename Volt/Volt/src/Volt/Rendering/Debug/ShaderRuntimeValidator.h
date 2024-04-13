@@ -8,6 +8,7 @@ namespace Volt
 	namespace RHI
 	{
 		class StorageBuffer;
+		class CommandBuffer;
 	}
 
 	class ShaderRuntimeValidator
@@ -25,6 +26,8 @@ namespace Volt
 
 		Scope<GlobalResource<RHI::StorageBuffer>> m_errorBuffer;
 		Scope<GlobalResource<RHI::StorageBuffer>> m_stagingBuffer;
+
+		Ref<RHI::CommandBuffer> m_commandBuffer;
 
 		std::vector<std::string> m_validationErrors;
 	};

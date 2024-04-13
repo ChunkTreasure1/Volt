@@ -333,7 +333,7 @@ namespace Volt
 		LoadAsset(handle, asset);
 	}
 
-	// #TODO_Ivar: This function does not seem to do what it's supposed to...
+	// #TODO_Ivar: This function does not seem to do what it's supposed to... (should we not create a new asset..?)
 	void AssetManager::SaveAssetAs(Ref<Asset> asset, const std::filesystem::path& targetFilePath)
 	{
 		auto& instance = Get();

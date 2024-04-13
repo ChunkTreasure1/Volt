@@ -316,7 +316,7 @@ namespace Volt
 		std::string cleanName = name;
 		cleanName.erase(std::remove_if(cleanName.begin(), cleanName.end(), [](char c) { return c == ':'; }), cleanName.end());
 
-		const auto& fileExtension = GetExtensionFromAssetType(T::GetStaticType());
+		const std::string fileExtension = ".vtasset";
 		const std::filesystem::path filePath = ::Utility::ReplaceCharacter((targetDir / (cleanName + fileExtension)).string(), '\\', '/');
 
 		WriteLock lockCache{ Get().m_assetCacheMutex };

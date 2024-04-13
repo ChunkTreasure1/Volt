@@ -78,7 +78,6 @@ namespace Volt::RHI
 		virtual void EndTimestamp(uint32_t timestampIndex) = 0;
 		virtual const float GetExecutionTime(uint32_t timestampIndex) const = 0;
 
-		virtual void CopyImageToBackBuffer(Ref<Image2D> srcImage, Weak<Swapchain> targetSwapchain) = 0;
 		virtual void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) = 0;
 		virtual void ClearBuffer(Ref<StorageBuffer> buffer, const uint32_t value) = 0;
 

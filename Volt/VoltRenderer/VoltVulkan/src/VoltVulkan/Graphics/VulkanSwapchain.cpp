@@ -14,6 +14,16 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
+#ifdef VT_ENABLE_NV_AFTERMATH
+
+#include <GFSDK_Aftermath.h>
+#include <GFSDK_Aftermath_Defines.h>
+#include <GFSDK_Aftermath_GpuCrashDump.h>
+
+#include <VoltRHI/Utility/NsightAftermathHelpers.h>
+
+#endif
+
 namespace Volt::RHI
 {
 	namespace Utility
@@ -100,9 +110,12 @@ namespace Volt::RHI
 		auto device = GraphicsContext::GetDevice();
 		auto& frameData = m_perFrameInFlightData.at(m_currentFrame);
 
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &frameData.fence, VK_TRUE, 1000000000));
-
+		CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &frameData.fence, VK_TRUE, 1000000000));
 		VkResult swapchainStatus = vkAcquireNextImageKHR(device->GetHandle<VkDevice>(), m_swapchain, 1000000000, frameData.presentSemaphore, nullptr, &m_currentImage);
+
+		CheckWaitReturnValue(vkResetFences(device->GetHandle<VkDevice>(), 1, &frameData.fence));
+		CheckWaitReturnValue(vkResetCommandPool(device->GetHandle<VkDevice>(), frameData.commandPool, 0));
+
 		if (swapchainStatus == VK_ERROR_OUT_OF_DATE_KHR)
 		{
 			m_swapchainNeedsRebuild = true;
@@ -112,9 +125,6 @@ namespace Volt::RHI
 		{
 			throw std::runtime_error("Failed to acquire swapchain image!");
 		}
-
-		VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &frameData.fence));
-		VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), frameData.commandPool, 0));
 	}
 
 	void VulkanSwapchain::Present()
@@ -148,7 +158,7 @@ namespace Volt::RHI
 			submitInfo.pWaitDstStageMask = &waitStage;
 
 			vkQueue.AquireLock();
-			VT_VK_CHECK(vkQueueSubmit(deviceQueue->GetHandle<VkQueue>(), 1, &submitInfo, frameData.fence));
+			CheckWaitReturnValue(vkQueueSubmit(deviceQueue->GetHandle<VkQueue>(), 1, &submitInfo, frameData.fence));
 			vkQueue.ReleaseLock();
 		}
 
@@ -170,10 +180,11 @@ namespace Volt::RHI
 			VkResult presentResult = vkQueuePresentKHR(deviceQueue->GetHandle<VkQueue>(), &presentInfo);
 			vkQueue.ReleaseLock();
 
+			GetNextFrameIndex();
+
 			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
 			{
 				m_swapchainNeedsRebuild = true;
-				m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 				return;
 			}
 			else if (presentResult != VK_SUCCESS)
@@ -182,7 +193,6 @@ namespace Volt::RHI
 			}
 		}
 
-		m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void VulkanSwapchain::Resize(const uint32_t width, const uint32_t height, bool enableVSync)
@@ -544,5 +554,10 @@ namespace Volt::RHI
 			allocInfo.commandPool = frameData.commandPool;
 			VT_VK_CHECK(vkAllocateCommandBuffers(device->GetHandle<VkDevice>(), &allocInfo, &frameData.commandBuffer));
 		}
+	}
+
+	void VulkanSwapchain::GetNextFrameIndex()
+	{
+		m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
 }

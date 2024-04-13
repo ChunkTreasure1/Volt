@@ -6,6 +6,7 @@
 #include "VoltVulkan/Graphics/VulkanGraphicsDevice.h"
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 #include "VoltVulkan/Buffers/VulkanCommandBuffer.h"
+#include "VoltVulkan/Synchronization/VulkanSemaphore.h"
 
 #include <vulkan/vulkan.h>
 
@@ -45,24 +46,46 @@ namespace Volt::RHI
 
 	void VulkanDeviceQueue::Execute(const DeviceQueueExecuteInfo& executeInfo)
 	{
-		std::vector<VkCommandBuffer> vulkanCommandBuffers;
+		std::vector<VkCommandBufferSubmitInfo> vulkanCommandBuffers;
+		vulkanCommandBuffers.reserve(executeInfo.commandBuffers.size());
+
+		std::vector<VkSemaphoreSubmitInfo> signalSemaphoreInfos{};
+		signalSemaphoreInfos.reserve(executeInfo.signalSemaphores.size());
+
 		VkFence waitFence = nullptr;
 
 		for (const auto& cmdBuffer : executeInfo.commandBuffers)
 		{
-			vulkanCommandBuffers.push_back(cmdBuffer->GetHandle<VkCommandBuffer>());
+			auto& info = vulkanCommandBuffers.emplace_back();
+			info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
+			info.pNext = nullptr;
+			info.deviceMask = 0;
+			info.commandBuffer = cmdBuffer->GetHandle<VkCommandBuffer>();
+		}
+
+		for (const auto& semaphore : executeInfo.signalSemaphores)
+		{
+			auto& info = signalSemaphoreInfos.emplace_back();
+			info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+			info.pNext = nullptr;
+			info.deviceIndex = 0;
+			info.stageMask = VK_PIPELINE_STAGE_2_NONE;
+			info.semaphore = semaphore->GetHandle<VkSemaphore>();;
+			info.value = semaphore->GetNextHostValue();
 		}
 
 		waitFence = executeInfo.commandBuffers.front()->AsRef<VulkanCommandBuffer>().GetCurrentFence();
 
-		VkSubmitInfo info{};
-		info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		info.commandBufferCount = static_cast<uint32_t>(vulkanCommandBuffers.size());
-		info.pCommandBuffers = vulkanCommandBuffers.data();
+		VkSubmitInfo2 info{};
+		info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
+		info.commandBufferInfoCount = static_cast<uint32_t>(vulkanCommandBuffers.size());
+		info.pCommandBufferInfos = vulkanCommandBuffers.data();
+		info.signalSemaphoreInfoCount = static_cast<uint32_t>(signalSemaphoreInfos.size());
+		info.pSignalSemaphoreInfos = signalSemaphoreInfos.data();
 
 		{
 			std::scoped_lock lock{ m_executeMutex };
- 			VT_VK_CHECK(vkQueueSubmit(m_queue, 1, &info, waitFence));
+ 			VT_VK_CHECK(vkQueueSubmit2(m_queue, 1, &info, waitFence));
 		}
 	}
 

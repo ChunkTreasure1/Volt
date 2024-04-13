@@ -3,6 +3,9 @@
 
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Importers/TextureImporter.h"
+#include "Volt/Asset/TextureSource.h"
+
+#include "Volt/Rendering/Texture/Texture2D.h"
 
 namespace Volt
 {
@@ -17,13 +20,17 @@ namespace Volt
 			return false;
 		}
 
-		Ref<Texture2D> destinationTexture = std::reinterpret_pointer_cast<Texture2D>(destinationAsset);
-		if (!TextureImporter::ImportTexture(filePath, *destinationTexture))
+		Ref<Texture2D> tempTex = CreateRef<Texture2D>();
+
+
+		Ref<TextureSource> destinationTexture = std::reinterpret_pointer_cast<TextureSource>(destinationAsset);
+		if (!TextureImporter::ImportTexture(filePath, *tempTex))
 		{
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
+		destinationTexture->m_image = tempTex->GetImage();
 		return true;
 	}
 }

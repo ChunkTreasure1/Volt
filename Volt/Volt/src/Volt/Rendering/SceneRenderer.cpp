@@ -71,7 +71,7 @@ namespace Volt
 	SceneRenderer::SceneRenderer(const SceneRendererSpecification& specification)
 		: m_scene(specification.scene)
 	{
-		m_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics);
+		m_commandBuffer = RHI::CommandBuffer::Create(Renderer::GetFramesInFlight(), RHI::QueueType::Graphics);
 
 		// Create render target
 		{

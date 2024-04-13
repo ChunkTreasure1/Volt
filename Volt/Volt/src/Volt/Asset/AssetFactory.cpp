@@ -14,6 +14,7 @@
 #include "Volt/Asset/Prefab.h"
 #include "Volt/Asset/Video/Video.h"
 #include "Volt/Asset/TimelinePreset.h"
+#include "Volt/Asset/TextureSource.h"
 
 #include "Volt/Scene/Scene.h"
 #include "Volt/Animation/BlendSpace.h"
@@ -42,6 +43,7 @@ namespace Volt
 		RegisterCreateFunction<Animation>(AssetType::Animation, m_assetFactoryFunctions);
 		RegisterCreateFunction<Skeleton>(AssetType::Skeleton, m_assetFactoryFunctions);
 		RegisterCreateFunction<Texture2D>(AssetType::Texture, m_assetFactoryFunctions);
+		RegisterCreateFunction<TextureSource>(AssetType::TextureSource, m_assetFactoryFunctions);
 		RegisterCreateFunction<Material>(AssetType::Material, m_assetFactoryFunctions);
 		RegisterCreateFunction<Scene>(AssetType::Scene, m_assetFactoryFunctions);
 		RegisterCreateFunction<AnimatedCharacter>(AssetType::AnimatedCharacter, m_assetFactoryFunctions);
@@ -61,7 +63,6 @@ namespace Volt
 	
 		m_assetFactoryFunctions[AssetType::MotionWeave] = []() { return nullptr; };
 		m_assetFactoryFunctions[AssetType::MonoScript] = []() { return nullptr; };
-		m_assetFactoryFunctions[AssetType::TextureSource] = []() { return nullptr; };
 		m_assetFactoryFunctions[AssetType::ShaderSource] = []() { return nullptr; };
 		m_assetFactoryFunctions[AssetType::PostProcessingMaterial] = []() { return nullptr; };
 		m_assetFactoryFunctions[AssetType::PostProcessingStack] = []() { return nullptr; };

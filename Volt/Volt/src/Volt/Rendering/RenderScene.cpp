@@ -174,7 +174,7 @@ namespace Volt
 		if (!m_invalidMaterials.empty())
 		{
 			ScatteredBufferUpload<GPUMaterialNew> bufferUpload{ m_invalidMaterials.size() };
-			
+
 			for (const auto& invalidMaterial : m_invalidMaterials)
 			{
 				auto& data = bufferUpload.AddUploadItem(invalidMaterial.index);
@@ -348,13 +348,16 @@ namespace Volt
 
 		for (const auto& texture : material->GetTextures())
 		{
-			gpuMaterial.textures[gpuMaterial.textureCount] = texture->GetResourceHandle();
-			gpuMaterial.samplers[gpuMaterial.textureCount] = Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle();
+			ResourceHandle textureHandle = ResourceHandle(0u);
+			if (texture->IsValid())
+			{
+				textureHandle = texture->GetResourceHandle();
+			}
 
+			gpuMaterial.textures[gpuMaterial.textureCount] = textureHandle;
+			gpuMaterial.samplers[gpuMaterial.textureCount] = Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle();
 			gpuMaterial.textureCount++;
 		}
-
-		VT_CORE_INFO("Tex Count: {}", gpuMaterial.textureCount);
 	}
 
 	void RenderScene::UploadGPUMeshlets()
