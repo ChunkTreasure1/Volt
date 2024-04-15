@@ -17,18 +17,31 @@ namespace Volt
 
 		m_image = RHI::Image2D::Create(imageSpec, data);
 		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_image->GetView());
+
+		std::scoped_lock lock{ s_testMutex };
+		s_registeredResourceHandles.emplace_back(m_resourceHandle);
 	}
 
 	Texture2D::Texture2D(Ref<RHI::Image2D> image)
 		: m_image(image)
 	{
 		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_image->GetView());
+	
+		std::scoped_lock lock{ s_testMutex };
+		s_registeredResourceHandles.emplace_back(m_resourceHandle);
 	}
 
 	Texture2D::~Texture2D()
 	{
 		if (m_image)
 		{
+			std::scoped_lock lock{ s_testMutex };
+			auto it = std::find(s_registeredResourceHandles.begin(), s_registeredResourceHandles.end(), m_resourceHandle);
+			if (it != s_registeredResourceHandles.end())
+			{
+				s_registeredResourceHandles.erase(it);
+			}
+
 			GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_resourceHandle);
 		}
 		
@@ -54,10 +67,22 @@ namespace Volt
 	{
 		if (m_image)
 		{
+			std::scoped_lock lock{ s_testMutex };
+			auto it = std::find(s_registeredResourceHandles.begin(), s_registeredResourceHandles.end(), m_resourceHandle);
+			if (it != s_registeredResourceHandles.end())
+			{
+				s_registeredResourceHandles.erase(it);
+			}
+
 			GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_resourceHandle);
 		}
 
 		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(image->GetView());
+		VT_CORE_WARN("Texture got handle: {}", m_resourceHandle.Get());
+
+		std::scoped_lock lock{ s_testMutex };
+		s_registeredResourceHandles.emplace_back(m_resourceHandle);
+
 		m_image = image;
 	}
 

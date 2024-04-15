@@ -24,10 +24,6 @@ namespace Volt
 
 		std::atomic_bool isExecuting;
 		std::atomic_bool isRunning;
-
-		std::vector<FunctionQueue> deletionQueue;
-		uint32_t currentFrame = 0;
-		uint32_t framesInFlight = 0;
 	};
 
 	inline static Scope<RenderGraphThreadData> s_data;
@@ -37,19 +33,15 @@ namespace Volt
 		s_data = CreateScope<RenderGraphThreadData>();
 		s_data->isRunning = true;
 
-		const uint32_t frameCount = 2;
-		s_data->deletionQueue.resize(frameCount);
-		s_data->framesInFlight = frameCount;
-
 		InitializeThread();
 	}
 
 	void RenderGraphExecutionThread::Shutdown()
 	{
 		s_data->isRunning = false;
-	
+
 		ShutdownThread();
-		
+
 		s_data = nullptr;
 	}
 
@@ -67,17 +59,6 @@ namespace Volt
 	{
 		std::unique_lock lock{ s_data->mutex };
 		s_data->waitForExecutionVariable.wait(lock, []() { return !s_data->isExecuting.load() && s_data->executionQueue.empty(); });
-	}
-
-	void RenderGraphExecutionThread::DestroyRenderGraphResource(std::function<void()>&& function)
-	{
-		if (!s_data)
-		{
-			function();
-			return;
-		}
-
-		s_data->deletionQueue.at(s_data->currentFrame).Push(std::move(function));
 	}
 
 	void RenderGraphExecutionThread::InitializeThread()
@@ -105,28 +86,18 @@ namespace Volt
 
 			if (!s_data->isRunning)
 			{
-				std::function<void()> executeFunction{};
-				while (s_data->executionQueue.try_pop(executeFunction))
-				{
-					s_data->isExecuting = true;
-					executeFunction();
-					s_data->isExecuting = false;
-				}
 				break;
 			}
 
-			s_data->deletionQueue.at(s_data->currentFrame).Flush();
-
 			std::function<void()> executeFunction{};
-			if (s_data->executionQueue.try_pop(executeFunction))
+			while (s_data->executionQueue.try_pop(executeFunction))
 			{
 				s_data->isExecuting = true;
 				executeFunction();
 				s_data->isExecuting = false;
-				s_data->waitForExecutionVariable.notify_one();
 			}
 
-			s_data->currentFrame = (s_data->currentFrame + 1) % s_data->framesInFlight;
+			s_data->waitForExecutionVariable.notify_one();
 		}
 	}
 }

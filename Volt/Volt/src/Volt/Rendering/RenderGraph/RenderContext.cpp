@@ -297,7 +297,7 @@ namespace Volt
 	{
 		m_commandBuffer->End();
 
-		GlobalResourceManager::Update();
+		GlobalResourceManager::RenderGraphUpdate();
 	
 		m_commandBuffer->ExecuteAndWait();
 		m_commandBuffer->RestartAfterFlush();

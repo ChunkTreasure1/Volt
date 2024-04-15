@@ -2,8 +2,11 @@
 
 #include "Volt/Core/UUID.h"
 #include "Volt/Utility/UniqueQueue.h"
+#include "Volt/Utility/FunctionQueue.h"
 
 #include "Volt/Rendering/Resources/ResourceHandle.h"
+
+#include "Volt/Rendering/Texture/Texture2D.h"
 
 #include <unordered_map>
 #include <vector>
@@ -65,63 +68,12 @@ namespace Volt
 
 		inline const ResourceHandle GetResourceHandle(Weak<T> resource)
 		{
+			std::scoped_lock lock{ accessMutex };
 			return resourceToHandleMap.at(resource.GetHash());
 		}
 
-		inline void RemoveResource(ResourceHandle resourceHandle)
-		{
-			std::scoped_lock lock{ accessMutex };
-
-			if (resourceHandle >= static_cast<ResourceHandle>(resources.size()))
-			{
-				return;
-			}
-
-			for (const auto& [resource, handle] : resourceToHandleMap)
-			{
-				if (handle == resourceHandle)
-				{
-					resourceToHandleMap.erase(resource);
-					break;
-				}
-			}
-
-			auto it = std::find_if(dirtyResources.begin(), dirtyResources.end(), [&](const auto& dirty) 
-			{
-				if (dirty == resources[resourceHandle])
-				{
-					return true;
-				}
-
-				return false;
-			});
-
-			if (it != dirtyResources.end())
-			{
-				dirtyResources.erase(it);
-			}
-
-			resources[resourceHandle] = Weak<T>{};
-			availiableHandles.Push(resourceHandle);
-		}
-
-		inline void RemoveResource(Weak<T> resource)
-		{
-			std::scoped_lock lock{ accessMutex };
-
-			const auto hash = resource.GetHash();
-
-			if (!resourceToHandleMap.contains(hash))
-			{
-				return;
-			}
-
-			const ResourceHandle resourceHandle = resourceToHandleMap.at(hash);
-
-			resources[resourceHandle.Get()] = Weak<T>{};
-			resourceToHandleMap.erase(hash);
-			availiableHandles.Push(resourceHandle);
-		}
+		void RemoveResource(ResourceHandle resourceHandle);
+		void RemoveResource(Weak<T> resource);
 
 		inline void MarkAsDirty(ResourceHandle handle)
 		{
@@ -172,6 +124,14 @@ namespace Volt
 		std::vector<Weak<T>> dirtyResources;
 
 		std::mutex accessMutex;
+	
+		private:
+			friend class GlobalResourceManager;
+
+			inline const ResourceHandle GetResourceHandleUnlocked(Weak<T> resource)
+			{
+				return resourceToHandleMap.at(resource.GetHash());
+			}
 	};
 
 	class GlobalResourceManager
@@ -198,13 +158,18 @@ namespace Volt
 		template<typename T, ResourceSpecialization SPECIALIZATION = ResourceSpecialization::None>
 		static void MarkAsDirty(ResourceHandle handle);
  		
-		static void Update();
+		static void RenderGraphUpdate();
+		static void Update(); // Should be called from the main update loop
+		static void QueueHandleRemoval(std::function<void()>&& func);
+
 		inline static Ref<RHI::DescriptorTable> GetDescriptorTable() { return s_globalDescriptorTable; }
 	private:
 		template<typename T, ResourceSpecialization SPECIALIZATION = ResourceSpecialization::None>
 		static ResourceContainer<T, SPECIALIZATION>& GetResourceContainer();
 
+		inline static std::vector<FunctionQueue> s_destructionQueue;
 		inline static Ref<RHI::DescriptorTable> s_globalDescriptorTable;
+		inline static uint32_t s_frameNumber = 0;
 
 		GlobalResourceManager() = delete;
 	};
@@ -256,5 +221,70 @@ namespace Volt
 	{
 		static ResourceContainer<T, SPECIALIZATION> resourceContainer;
 		return resourceContainer;
+	}
+
+	template<typename T, ResourceSpecialization SPECIALIZATION>
+	inline void ResourceContainer<T, SPECIALIZATION>::RemoveResource(Weak<T> resource)
+	{
+		std::scoped_lock lock{ accessMutex };
+
+		const auto hash = resource.GetHash();
+
+		if (!resourceToHandleMap.contains(hash))
+		{
+			return;
+		}
+
+		const ResourceHandle resourceHandle = resourceToHandleMap.at(hash);
+
+		resources[resourceHandle.Get()] = Weak<T>{};
+		resourceToHandleMap.erase(hash);
+		GlobalResourceManager::QueueHandleRemoval([this, resourceHandle]()
+		{
+			std::scoped_lock lock{ accessMutex };
+			availiableHandles.Push(resourceHandle);
+		});
+	}
+
+	template<typename T, ResourceSpecialization SPECIALIZATION>
+	inline void ResourceContainer<T, SPECIALIZATION>::RemoveResource(ResourceHandle resourceHandle)
+	{
+		std::scoped_lock lock{ accessMutex };
+
+		if (resourceHandle >= static_cast<ResourceHandle>(resources.size()))
+		{
+			return;
+		}
+
+		for (const auto& [resource, handle] : resourceToHandleMap)
+		{
+			if (handle == resourceHandle)
+			{
+				resourceToHandleMap.erase(resource);
+				break;
+			}
+		}
+
+		auto it = std::find_if(dirtyResources.begin(), dirtyResources.end(), [&](const auto& dirty)
+		{
+			if (dirty == resources[resourceHandle])
+			{
+				return true;
+			}
+
+			return false;
+		});
+
+		if (it != dirtyResources.end())
+		{
+			dirtyResources.erase(it);
+		}
+
+		resources[resourceHandle] = Weak<T>{};
+		GlobalResourceManager::QueueHandleRemoval([this, resourceHandle]()
+		{
+			std::scoped_lock lock{ accessMutex };
+			availiableHandles.Push(resourceHandle);
+		});
 	}
 }

@@ -99,11 +99,11 @@ namespace Volt
 			m_stagingBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(MAX_ERROR_COUNT * sizeof(uint32_t), "Error Staging Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU));
 		}
 
-		//m_commandBuffer->Begin();
-		//m_commandBuffer->CopyBufferRegion(m_errorBuffer->GetResource()->GetAllocation(), 0, m_stagingBuffer->GetResource()->GetAllocation(), 0, m_errorBuffer->GetResource()->GetByteSize());
-		//m_commandBuffer->ClearBuffer(m_errorBuffer->GetResource(), 0);
-		//m_commandBuffer->End();
-		//m_commandBuffer->ExecuteAndWait();
+		m_commandBuffer->Begin();
+		m_commandBuffer->CopyBufferRegion(m_errorBuffer->GetResource()->GetAllocation(), 0, m_stagingBuffer->GetResource()->GetAllocation(), 0, m_errorBuffer->GetResource()->GetByteSize());
+		m_commandBuffer->ClearBuffer(m_errorBuffer->GetResource(), 0);
+		m_commandBuffer->End();
+		m_commandBuffer->Execute();
 	}
 
 	const ResourceHandle ShaderRuntimeValidator::GetCurrentErrorBufferHandle() const

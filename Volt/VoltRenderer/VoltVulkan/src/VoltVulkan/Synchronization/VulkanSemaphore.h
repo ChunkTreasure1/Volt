@@ -15,13 +15,11 @@ namespace Volt::RHI
 		void Signal(const uint64_t signalValue) override;
 		void Wait(const uint64_t waitValue) override;
 		const uint64_t GetValue() const override;
-		const uint64_t GetNextHostValue() override;
 
 	protected:
 		void* GetHandleImpl() const override;
 
 	private:
 		VkSemaphore_T* m_semaphore = nullptr;
-		uint64_t m_currentHostValue = 0;
 	};
 }

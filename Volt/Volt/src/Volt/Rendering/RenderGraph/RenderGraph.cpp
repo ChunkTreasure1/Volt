@@ -603,7 +603,7 @@ namespace Volt
 
 		m_commandBuffer->End();
 
-		GlobalResourceManager::Update();
+		GlobalResourceManager::RenderGraphUpdate();
 
 		m_commandBuffer->Execute();
 
@@ -617,46 +617,43 @@ namespace Volt
 
 	void RenderGraph::DestroyResources()
 	{
-		RenderGraphExecutionThread::DestroyRenderGraphResource([usedImages = m_usedGlobalImageResourceHandles, usedBuffers = m_usedGlobalBufferResourceHandles, passConstantsBuffer = m_passConstantsBufferResourceHandle]()
+		for (const auto& resource : m_usedGlobalImageResourceHandles)
 		{
-			for (const auto& resource : usedImages)
+			if (resource.specialization == ResourceSpecialization::Texture1D)
 			{
-				if (resource.specialization == ResourceSpecialization::Texture1D)
-				{
-					GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture1D>(resource.handle);
-				}
-				else if (resource.specialization == ResourceSpecialization::Texture2D)
-				{
-					GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(resource.handle);
-				}
-				else if (resource.specialization == ResourceSpecialization::Texture3D)
-				{
-					GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture3D>(resource.handle);
-				}
-				else if (resource.specialization == ResourceSpecialization::Texture2DArray)
-				{
-					GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2DArray>(resource.handle);
-				}
-				else if (resource.specialization == ResourceSpecialization::TextureCube)
-				{
-					GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::TextureCube>(resource.handle);
-				}
+				GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture1D>(resource.handle);
 			}
-
-			for (const auto& resource : usedBuffers)
+			else if (resource.specialization == ResourceSpecialization::Texture2D)
 			{
-				if (resource.specialization == ResourceSpecialization::UniformBuffer)
-				{
-					GlobalResourceManager::UnregisterResource<RHI::StorageBuffer, ResourceSpecialization::UniformBuffer>(resource.handle);
-				}
-				else
-				{
-					GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(resource.handle);
-				}
+				GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(resource.handle);
 			}
+			else if (resource.specialization == ResourceSpecialization::Texture3D)
+			{
+				GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture3D>(resource.handle);
+			}
+			else if (resource.specialization == ResourceSpecialization::Texture2DArray)
+			{
+				GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2DArray>(resource.handle);
+			}
+			else if (resource.specialization == ResourceSpecialization::TextureCube)
+			{
+				GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::TextureCube>(resource.handle);
+			}
+		}
 
-			GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(passConstantsBuffer);
-		});
+		for (const auto& resource : m_usedGlobalBufferResourceHandles)
+		{
+			if (resource.specialization == ResourceSpecialization::UniformBuffer)
+			{
+				GlobalResourceManager::UnregisterResource<RHI::StorageBuffer, ResourceSpecialization::UniformBuffer>(resource.handle);
+			}
+			else
+			{
+				GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(resource.handle);
+			}
+		}
+
+		GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(m_passConstantsBufferResourceHandle);
 
 		for (const auto& alloc : m_temporaryAllocations)
 		{

@@ -27,6 +27,8 @@ namespace Volt
 	static constexpr uint32_t RWTEXTURE2DARRAY_BINDING = 11;
 	static constexpr uint32_t TEXTURE2DARRAY_BINDING = 12;
 
+	static constexpr uint32_t FRAME_COUNT = 2;
+
 	void GlobalResourceManager::Initialize()
 	{
 		RHI::DescriptorTableCreateInfo info{};
@@ -41,6 +43,7 @@ namespace Volt
 		info.isGlobal = true;
 
 		s_globalDescriptorTable = RHI::DescriptorTable::Create(info);
+		s_destructionQueue.resize(FRAME_COUNT);
 	}
 
 	void GlobalResourceManager::Shutdown()
@@ -48,7 +51,7 @@ namespace Volt
 		s_globalDescriptorTable = nullptr;
 	}
 
-	void GlobalResourceManager::Update()
+	void GlobalResourceManager::RenderGraphUpdate()
 	{
 		// Uniform Buffers
 		{
@@ -57,7 +60,7 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, UNIFORMBUFFER_BINDING, resources.GetResourceHandle(resource).Get());
+				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, UNIFORMBUFFER_BINDING, resources.GetResourceHandleUnlocked(resource).Get());
 			}
 
 			resources.ClearDirty();
@@ -70,8 +73,8 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, BYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource).Get());
-				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, RWBYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource).Get());
+				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, BYTEADDRESSBUFFER_BINDING, resources.GetResourceHandleUnlocked(resource).Get());
+				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, RWBYTEADDRESSBUFFER_BINDING, resources.GetResourceHandleUnlocked(resource).Get());
 			}
 
 			resources.ClearDirty();
@@ -84,11 +87,11 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE1D_BINDING, resources.GetResourceHandle(resource).Get());
+				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE1D_BINDING, resources.GetResourceHandleUnlocked(resource).Get());
 
 				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
 				{
-					s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE1D_BINDING, resources.GetResourceHandle(resource).Get());
+					s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE1D_BINDING, resources.GetResourceHandleUnlocked(resource).Get());
 				}
 			}
 
@@ -102,11 +105,11 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
+				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandleUnlocked(resource).Get());
 			
 				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
 				{
-					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
+					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2D_BINDING, resources.GetResourceHandleUnlocked(resource).Get());
 				}
 			}
 
@@ -120,7 +123,7 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURECUBE_BINDING, resources.GetResourceHandle(resource).Get());
+				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURECUBE_BINDING, resources.GetResourceHandleUnlocked(resource).Get());
 			}
 
 			resources.ClearDirty();
@@ -133,11 +136,11 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				//res_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2DARRAY_BINDING, resources.GetResourceHandle(resource).Get());
+				//res_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2DARRAY_BINDING, resources.GetResourceHandleUnlocked(resource).Get());
 
 				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
 				{
-					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2DARRAY_BINDING, resources.GetResourceHandle(resource).Get());
+					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2DARRAY_BINDING, resources.GetResourceHandleUnlocked(resource).Get());
 				}
 			}
 
@@ -146,7 +149,6 @@ namespace Volt
 
 		// Image3D
 		{
-
 		}
 
 		// Samplers
@@ -156,12 +158,23 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetSamplerState(resource, 0, SAMPLERSTATES_BINDING, resources.GetResourceHandle(resource).Get());
+				s_globalDescriptorTable->SetSamplerState(resource, 0, SAMPLERSTATES_BINDING, resources.GetResourceHandleUnlocked(resource).Get());
 			}
 
 			resources.ClearDirty();
 		}
 
 		s_globalDescriptorTable->Update();
+	}
+
+	void GlobalResourceManager::Update()
+	{
+		s_destructionQueue.at(s_frameNumber).Flush();
+		s_frameNumber = (s_frameNumber + 1) % FRAME_COUNT;
+	}
+
+	void GlobalResourceManager::QueueHandleRemoval(std::function<void()>&& func)
+	{
+		s_destructionQueue.at(s_frameNumber).Push(std::move(func));
 	}
 }

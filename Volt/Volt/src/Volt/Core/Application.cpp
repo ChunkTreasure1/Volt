@@ -354,6 +354,7 @@ namespace Volt
 		}
 
 		RenderGraphExecutionThread::WaitForFinishedExecution();
+		GlobalResourceManager::Update();
 		Renderer::EndOfFrameUpdate();
 
 		{
