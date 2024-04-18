@@ -17,6 +17,7 @@ namespace Volt
 
 		void* data = nullptr;
 		bool isHDR = false;
+		bool is16Bit = false;
 
 		stbi_set_flip_vertically_on_load(0);
 		if (stbi_is_hdr(path.string().c_str()))
@@ -29,11 +30,20 @@ namespace Volt
 			data = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
 		}
 
+		is16Bit = stbi_is_16_bit(path.string().c_str());
+
 		RHI::PixelFormat format = RHI::PixelFormat::R8G8B8A8_UNORM;
 
 		if (isHDR)
 		{
-			format = RHI::PixelFormat::R16G16B16A16_SFLOAT;
+			if (is16Bit)
+			{
+				format = RHI::PixelFormat::R16G16B16A16_SFLOAT;
+			}
+			else
+			{
+				format = RHI::PixelFormat::R32G32B32A32_SFLOAT;
+			}
 		}
 
 		RHI::ImageSpecification imageSpec{};

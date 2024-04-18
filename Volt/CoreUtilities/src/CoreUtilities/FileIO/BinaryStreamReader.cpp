@@ -3,9 +3,10 @@
 
 #include "zlib.h"
 
+constexpr size_t compressionEncodingHeaderSize = sizeof(uint32_t) + sizeof(uint8_t) + sizeof(size_t);
+
 BinaryStreamReader::BinaryStreamReader(const std::filesystem::path& filePath)
 {
-	constexpr size_t compressionEncodingHeaderSize = sizeof(uint32_t) + sizeof(uint8_t) + sizeof(size_t);
 	constexpr uint32_t MAGIC = 5121;
 
 	std::ifstream stream(filePath, std::ios::in | std::ios::binary);
@@ -52,6 +53,8 @@ BinaryStreamReader::BinaryStreamReader(const std::filesystem::path& filePath)
 		// Decompress automatically removes compression encoding header
 		m_currentOffset += compressionEncodingHeaderSize;
 	}
+
+	m_compressed = isCompressed;
 }
 
 void BinaryStreamReader::ReadData(void* outData, const TypeHeader& serializedTypeHeader, const TypeHeader& constructedTypeHeader)
@@ -64,7 +67,6 @@ void BinaryStreamReader::ReadData(void* outData, const TypeHeader& serializedTyp
 bool BinaryStreamReader::Decompress(size_t compressedDataOffset)
 {
 	constexpr uint32_t CHUNK_SIZE = 16384;
-	constexpr size_t compressionEncodingHeaderSize = sizeof(uint32_t) + sizeof(uint8_t) + sizeof(size_t);
 
 	z_stream stream;
 	stream.zalloc = Z_NULL;
@@ -152,6 +154,11 @@ void BinaryStreamReader::Read(void* data)
 
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 	ReadData(data, serializedTypeHeader, typeHeader);
+}
+
+void BinaryStreamReader::ResetHead()
+{
+	m_currentOffset = m_compressed ? 0 : compressionEncodingHeaderSize;
 }
 
 TypeHeader BinaryStreamReader::ReadTypeHeader()

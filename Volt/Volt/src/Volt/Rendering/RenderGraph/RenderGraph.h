@@ -117,6 +117,7 @@ namespace Volt
 		inline static constexpr RenderGraphResourceHandle INVALID_RESOURCE_HANDLE = std::numeric_limits<RenderGraphResourceHandle>::max();
 
 		void ExecuteInternal();
+		void InsertStandaloneMarkers(const uint32_t passIndex);
 		void DestroyResources();
 		void AllocateConstantsBuffer();
 

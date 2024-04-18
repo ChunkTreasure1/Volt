@@ -29,7 +29,11 @@ namespace Volt
 		void DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLMemoryStreamReader& streamReader) const;
 		void DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLMemoryStreamReader& streamReader) const;
 
+		void LoadWorldCell(const Ref<Scene>& scene, const WorldCell& worldCell) const;
+
 		static SceneSerializer& Get() { return *s_instance; }
+
+		inline static constexpr uint32_t ENTITY_MAGIC_VAL = 1515;
 
 	private:
 		inline static SceneSerializer* s_instance = nullptr;

@@ -25,8 +25,6 @@
 
 namespace Volt
 {
-	inline static constexpr uint32_t ENTITY_MAGIC_VAL = 1515;
-
 	template<typename T>
 	void RegisterSerializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLMemoryStreamWriter&, const uint8_t*, const size_t)>>& outTypes)
 	{
@@ -451,6 +449,123 @@ namespace Volt
 			});
 			streamReader.ExitScope();
 		});
+	}
+
+	void SceneSerializer::LoadWorldCell(const Ref<Scene>& scene, const WorldCell& worldCell) const
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (worldCell.isLoaded)
+		{
+			VT_CORE_WARN("[SceneImporter]: World Cell is already loaded!");
+			return;
+		}
+
+		if (worldCell.cellEntities.empty())
+		{
+			VT_CORE_WARN("[SceneImporter]: Unable to load World Cell which contains zero entities!");
+			return;
+		}
+
+		const auto& metadata = AssetManager::GetMetadataFromHandle(scene->handle);
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
+		const std::filesystem::path sceneDirectory = filePath.parent_path();
+
+		std::filesystem::path layersFolderPath = sceneDirectory / "Entities";
+		if (!std::filesystem::exists(layersFolderPath))
+		{
+			return;
+		}
+
+		std::vector<std::filesystem::path> entityPaths;
+
+		for (const auto& it : std::filesystem::directory_iterator(layersFolderPath))
+		{
+			if (!it.is_directory() && it.path().extension().string() == ".vtasset")
+			{
+				entityPaths.emplace_back(it.path());
+			}
+		}
+
+		for (int32_t i = static_cast<int32_t>(entityPaths.size()) - 1; i >= 0; i--)
+		{
+			const auto& path = entityPaths.at(i);
+
+			const std::string stem = path.stem().string();
+			uint32_t entityId = std::stoul(stem);
+			auto it = std::ranges::find(worldCell.cellEntities, EntityID(entityId));
+
+			if (it == worldCell.cellEntities.end())
+			{
+				entityPaths.erase(entityPaths.begin() + i);
+			}
+		}
+
+		if (entityPaths.empty())
+		{
+			return;
+		}
+
+		const uint32_t iterationCount = static_cast<uint32_t>(entityPaths.size());
+
+		std::vector<Ref<Scene>> dummyScenes{};
+		dummyScenes.resize(iterationCount);
+
+		auto futures = Algo::ForEachParallelLockable([&dummyScenes, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
+		{
+			Ref<Scene> dummyScene = CreateRef<Scene>();
+			dummyScenes[threadIdx] = dummyScene;
+
+			const auto& path = entityPaths.at(i);
+
+			BinaryStreamReader streamReader{ path };
+			if (!streamReader.IsStreamValid())
+			{
+				return;
+			}
+
+			uint32_t magicVal = 0;
+			streamReader.Read(magicVal);
+
+			if (magicVal != ENTITY_MAGIC_VAL)
+			{
+				VT_CORE_ERROR("[SceneSerializer]: File is not a valid entity!");
+				return;
+			}
+
+			Buffer buffer{};
+			streamReader.Read(buffer);
+
+			YAMLMemoryStreamReader yamlStreamReader{};
+			if (!yamlStreamReader.ConsumeBuffer(buffer))
+			{
+				return;
+			}
+
+			DeserializeEntity(dummyScene, metadata, yamlStreamReader);
+		},
+		static_cast<uint32_t>(entityPaths.size()));
+
+		for (auto& f : futures)
+		{
+			f.wait();
+		}
+
+		for (const auto& dummyScene : dummyScenes)
+		{
+			if (!dummyScene)
+			{
+				continue;
+			}
+
+			for (const auto& entity : dummyScene->GetAllEntities())
+			{
+				Entity realEntity = scene->CreateEntityWithUUID(entity.GetID());
+				Entity::Copy(entity, realEntity, Volt::EntityCopyFlags::None);
+
+				scene->GetWorldEngineMutable().OnEntityMoved(realEntity);
+			}
+		}
 	}
 
 	void SceneSerializer::SerializeWorldEngine(const Ref<Scene>& scene, YAMLMemoryStreamWriter& streamWriter) const

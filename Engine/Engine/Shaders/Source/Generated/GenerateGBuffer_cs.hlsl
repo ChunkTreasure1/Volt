@@ -106,9 +106,9 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
 
     const float4 clipPositions[] =
     {
-        mul(viewData.viewProjection, worldPositions[0]),
-        mul(viewData.viewProjection, worldPositions[1]),
-        mul(viewData.viewProjection, worldPositions[2])
+        mul(viewData.projection, mul(viewData.view, worldPositions[0])),
+        mul(viewData.projection, mul(viewData.view, worldPositions[1])),
+        mul(viewData.projection, mul(viewData.view, worldPositions[2]))
     };
 
     const float2 screenPos = float2((pixelPosition.x / constants.viewSize.x) * 2.f - 1.f, -(pixelPosition.y / constants.viewSize.y) * 2.f + 1.f);
@@ -137,6 +137,8 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     resultNormal = normalize(mul(TBN, normalize(resultNormal)));
     
     float4 albedo = evaluatedMaterial.albedo;
+
+    // #TODO_Ivar: This depends on the texture format
     albedo.xyz = SRGBToLinear(albedo.xyz);
     
     const float4 materialEmissive = float4(evaluatedMaterial.metallic, evaluatedMaterial.roughness, evaluatedMaterial.emissive.x, evaluatedMaterial.emissive.y);

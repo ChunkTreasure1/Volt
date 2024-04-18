@@ -20,6 +20,9 @@ public:
 	template<typename T>
 	void Read(T& outData);
 
+	template<typename T>
+	bool TryRead(T& outData);
+
 	template<>
 	void Read(std::string& data);
 
@@ -43,6 +46,8 @@ public:
 
 	void Read(void* data);
 
+	void ResetHead();
+
 private:
 	TypeHeader ReadTypeHeader();
 	void ReadData(void* outData, const TypeHeader& serializedTypeHeader, const TypeHeader& constructedTypeHeader);
@@ -52,6 +57,7 @@ private:
 	std::vector<uint8_t> m_data;
 	size_t m_currentOffset = 0;
 	bool m_streamValid = false;
+	bool m_compressed = false;
 };
 
 template<typename T>
@@ -74,6 +80,34 @@ inline void BinaryStreamReader::Read(T& outData)
 		assert(serializedTypeHeader.baseTypeSize == typeHeader.baseTypeSize && "Base Type sizes must match!");
 		T::Deserialize(*this, outData);
 	}
+}
+
+template<typename T>
+inline bool BinaryStreamReader::TryRead(T& outData)
+{
+	constexpr size_t typeSize = sizeof(T);
+
+	TypeHeader typeHeader{};
+	typeHeader.baseTypeSize = static_cast<uint16_t>(typeSize);
+	typeHeader.totalTypeSize = static_cast<uint32_t>(typeSize);
+
+	TypeHeader serializedTypeHeader = ReadTypeHeader();
+
+	if (serializedTypeHeader.baseTypeSize != typeHeader.baseTypeSize)
+	{
+		return false;
+	}
+
+	if constexpr (std::is_trivial<T>())
+	{
+		ReadData(&outData, serializedTypeHeader, typeHeader);
+	}
+	else
+	{
+		T::Deserialize(*this, outData);
+	}
+
+	return true;
 }
 
 template<>

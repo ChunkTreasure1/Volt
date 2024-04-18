@@ -266,7 +266,7 @@ namespace Volt::RHI
 		vkCmdPipelineBarrier(vkCmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
 		commandBuffer->End();
-		commandBuffer->Execute();
+		commandBuffer->ExecuteAndWait();
 
 		m_hasGeneratedMips = true;
 	}

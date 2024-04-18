@@ -212,7 +212,10 @@ namespace Volt
 			specification.usage = RHI::ImageUsage::Texture;
 			specification.width = textureHeader.mips.front().width;
 			specification.height = textureHeader.mips.front().height;
-			specification.mips = static_cast<uint32_t>(textureHeader.mips.size());
+
+			// #TODO_Ivar: Remove and implement proper way of generating mips
+			//specification.mips = static_cast<uint32_t>(textureHeader.mips.size());
+			specification.mips = RHI::Utility::CalculateMipCount(specification.width, specification.height);
 			specification.generateMips = false;
 			specification.debugName = filePath.stem().string();
 
@@ -291,7 +294,10 @@ namespace Volt
 		}
 
 		commandBuffer->End();
-		commandBuffer->Execute();
+
+		// #TODO_Ivar: Remove and implement proper way of generating mips
+		commandBuffer->ExecuteAndWait();
+		image->GenerateMips();
 
 		texture->SetImage(image);
 

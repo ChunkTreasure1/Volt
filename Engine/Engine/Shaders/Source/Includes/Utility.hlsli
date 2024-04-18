@@ -165,7 +165,7 @@ float3 decode_tangent(float3 normal, float diamond_tangent)
     return packed_tangent.x * t1 + packed_tangent.y * t2;
 }
 
-// Gives a linear depth value between near plane and far plane
+// Returns a linear depth value between near plane and far plane
 float LinearizeDepth(const float screenDepth, in const ViewData viewData)
 {
     float depthLinearizeMul = viewData.depthUnpackConsts.x;
@@ -174,7 +174,7 @@ float LinearizeDepth(const float screenDepth, in const ViewData viewData)
     return depthLinearizeMul / (depthLinearizeAdd - screenDepth);
 }
 
-// Gives a linear depth value between near plane and far plane in range [0...1]
+// Returns a linear depth value between near plane and far plane in range [0...1]
 float LinearizeDepth01(const float screenDepth, in const ViewData viewData)
 {
     const float linearDepth = LinearizeDepth(screenDepth, viewData);

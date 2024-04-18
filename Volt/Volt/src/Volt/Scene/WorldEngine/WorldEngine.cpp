@@ -6,7 +6,7 @@
 
 #include "Volt/Components/CoreComponents.h"
 
-#include "Volt/Asset/Importers/SceneImporter.h"
+#include "Volt/Asset/Serializers/SceneSerializer.h"
 
 #include "Volt/Math/Math.h"
 
@@ -141,7 +141,7 @@ namespace Volt
 			return;
 		}
 
-		SceneImporter::Get().LoadWorldCell(m_scene->shared_from_this(), cell);
+		SceneSerializer::Get().LoadWorldCell(m_scene->shared_from_this(), cell);
 		cell.isLoaded = true;
 	}
 

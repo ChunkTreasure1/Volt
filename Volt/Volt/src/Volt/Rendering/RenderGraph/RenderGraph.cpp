@@ -525,6 +525,7 @@ namespace Volt
 		{
 			if (passNode->IsCulled())
 			{
+				InsertStandaloneMarkers(passNode->index);
 				continue;
 			}
 
@@ -562,10 +563,7 @@ namespace Volt
 
 			m_commandBuffer->EndMarker();
 
-			for (const auto& marker : m_standaloneMarkers.at(passNode->index))
-			{
-				marker(m_commandBuffer);
-			}
+			InsertStandaloneMarkers(passNode->index);
 
 			for (const auto& resourceHandle : m_surrenderableResources.at(passNode->index))
 			{
@@ -613,6 +611,14 @@ namespace Volt
 		}
 
 		DestroyResources();
+	}
+
+	void RenderGraph::InsertStandaloneMarkers(const uint32_t passIndex)
+	{
+		for (const auto& marker : m_standaloneMarkers.at(passIndex))
+		{
+			marker(m_commandBuffer);
+		}
 	}
 
 	void RenderGraph::DestroyResources()

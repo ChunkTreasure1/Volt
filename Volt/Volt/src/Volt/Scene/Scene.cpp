@@ -396,6 +396,8 @@ namespace Volt
 
 	Entity Scene::CreateEntityWithUUID(const EntityID& uuid, const std::string& tag)
 	{
+		VT_CORE_ASSERT(!m_entityRegistry.Contains(uuid), "Entity must not exist!");
+
 		entt::entity id = m_registry.create();
 
 		Entity newEntity = Entity(id, this);

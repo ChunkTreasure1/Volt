@@ -18,6 +18,8 @@
 
 #include <Volt/Rendering/Texture/Texture2D.h>
 
+#include <VoltRHI/Images/Image2D.h>
+
 namespace AssetBrowser
 {
 	const float AssetBrowserUtilities::GetBrowserItemPadding()
@@ -211,6 +213,20 @@ namespace AssetBrowser
 					Ref<Volt::Texture2D> newTexture = Volt::AssetManager::CreateAsset<Volt::Texture2D>(item->path.parent_path(), item->path.stem().string());
 					newTexture->SetImage(importedTexture->GetImage());
 					Volt::AssetManager::SaveAsset(newTexture);
+				}
+			};
+
+			renderFunctions[Volt::AssetType::Texture] = [](AssetItem* item)
+			{
+				if (ImGui::MenuItem("Generate Mips"))
+				{
+					Ref<Volt::Texture2D> texture = Volt::AssetManager::GetAsset<Volt::Texture2D>(item->handle);
+					if (!texture || !texture->IsValid())
+					{
+						return;
+					}
+
+					texture->GetImage()->GenerateMips();
 				}
 			};
 		}

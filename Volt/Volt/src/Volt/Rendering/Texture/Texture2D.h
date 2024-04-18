@@ -35,12 +35,7 @@ namespace Volt
 		static Ref<Texture2D> Create(RHI::PixelFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
 		static Ref<Texture2D> Create(Ref<RHI::Image2D> image);
 
-		static const auto GetRegisteredResourceHandles() { return s_registeredResourceHandles; }
-
 	private:
-		inline static std::mutex s_testMutex;
-		inline static std::vector<ResourceHandle> s_registeredResourceHandles;
-
 		Ref<RHI::Image2D> m_image;
 		ResourceHandle m_resourceHandle = Resource::Invalid;
 	};

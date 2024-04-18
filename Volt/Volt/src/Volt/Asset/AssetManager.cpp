@@ -103,10 +103,15 @@ namespace Volt
 		AssetManager& instance = Get();
 		auto& callbacks = instance.m_assetChangedCallbacks[assetType];
 
-		callbacks.erase(std::remove_if(callbacks.begin(), callbacks.end(), [&](const AssetChangedCallbackInfo& callbackInfo)
+		auto it = std::find_if(callbacks.begin(), callbacks.end(), [&](const AssetChangedCallbackInfo& callbackInfo) 
 		{
 			return callbackInfo.id == id;
-		}));
+		}); 
+
+		if (it != callbacks.end())
+		{
+			callbacks.erase(it);
+		}
 	}
 
 	const std::vector<AssetHandle> AssetManager::GetAllAssetsOfType(AssetType wantedAssetType)
@@ -269,6 +274,17 @@ namespace Volt
 			VT_CORE_ERROR("Failed to open file: {0}!", assetPath);
 			return;
 		}
+
+		uint32_t value = 0;
+		if (streamReader.TryRead(value))
+		{
+			if (value == SceneSerializer::ENTITY_MAGIC_VAL)
+			{
+				return;
+			}
+		}
+
+		streamReader.ResetHead();
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
 		if (serializedMetadata.magic != SerializedAssetMetadata::AssetMagic)
@@ -767,21 +783,26 @@ namespace Volt
 		}
 
 		{
-			WriteLock lock{ m_assetCacheMutex };
-			WriteLock registryMutex{ m_assetRegistryMutex };
 
 			for (const auto& handle : filesToRemove)
 			{
 				const auto metadata = GetMetadataFromHandle(handle);
 
-				if (m_assetCache.contains(handle))
 				{
-					m_assetCache.erase(handle);
+					WriteLock lock{ m_assetCacheMutex };
+					if (m_assetCache.contains(handle))
+					{
+						m_assetCache.erase(handle);
+					}
 				}
 
-				if (m_assetRegistry.contains(handle))
+
 				{
-					m_assetRegistry.erase(handle);
+					WriteLock registryMutex{ m_assetRegistryMutex };
+					if (m_assetRegistry.contains(handle))
+					{
+						m_assetRegistry.erase(handle);
+					}
 				}
 
 #ifdef VT_DEBUG

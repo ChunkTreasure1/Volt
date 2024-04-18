@@ -34,6 +34,8 @@
 #include <Volt/Components/RenderingComponents.h>
 
 #include <Volt/Scene/Entity.h>
+#include <Volt/Scene/SceneManager.h>
+#include <Volt/Asset/Serializers/SceneSerializer.h>
 #include <Volt/Utility/UIUtility.h>
 
 #include <Volt/Utility/StringUtility.h>
@@ -1087,6 +1089,12 @@ void ViewportPanel::UpdateModals()
 		}
 
 		Sandbox::Get().OpenScene(Volt::AssetManager::GetFilePathFromAssetHandle(m_sceneToOpen));
+
+		for (const auto& cell : Volt::SceneManager::GetActiveScene()->GetWorldEngine().GetCells())
+		{
+			Volt::SceneSerializer::Get().LoadWorldCell(Volt::SceneManager::GetActiveScene(), cell);
+		}
+
 		m_sceneToOpen = Volt::Asset::Null();
 	}
 }

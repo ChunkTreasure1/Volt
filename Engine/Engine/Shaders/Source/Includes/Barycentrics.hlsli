@@ -169,12 +169,12 @@ PartialDerivatives CalculateDerivatives(in float4 clipPositions[3], in float2 nd
 {
     PartialDerivatives result;
 
-    const float3 invW = 1.f / float3(clipPositions[0].w, clipPositions[1].w, clipPositions[2].w);
-    const float2 ndc0 = clipPositions[0].xy * invW[0];
-    const float2 ndc1 = clipPositions[1].xy * invW[1];
-    const float2 ndc2 = clipPositions[2].xy * invW[2];
+    const float3 invW = rcp(float3(clipPositions[0].w, clipPositions[1].w, clipPositions[2].w));
+    const float2 ndc0 = clipPositions[0].xy * invW.x;
+    const float2 ndc1 = clipPositions[1].xy * invW.y;
+    const float2 ndc2 = clipPositions[2].xy * invW.z;
 
-    const float invDet = 1.f / determinant(float2x2(ndc2 - ndc1, ndc0 - ndc1));
+    const float invDet = rcp(determinant(float2x2(ndc2 - ndc1, ndc0 - ndc1)));
     result.ddx = float3(ndc1.y - ndc2.y, ndc2.y - ndc0.y, ndc0.y - ndc1.y) * invDet * invW;
     result.ddy = float3(ndc2.x - ndc1.x, ndc0.x - ndc2.x, ndc1.x - ndc0.x) * invDet * invW;
 
@@ -185,23 +185,22 @@ PartialDerivatives CalculateDerivatives(in float4 clipPositions[3], in float2 nd
     const float interpInvW = invW.x + deltaV.x * ddxSum + deltaV.y * ddySum;
     const float interpW = 1.f / interpInvW;
 
-    result.lambda = float3
-                    (
-                        interpW * (deltaV.x * result.ddx.x + deltaV.y * result.ddy.x + invW.x),
-                        interpW * (deltaV.x * result.ddx.y + deltaV.y * result.ddy.y),
-                        interpW * (deltaV.x * result.ddx.z + deltaV.y * result.ddy.z)
-                    );
+    result.lambda.x = interpW * (invW[0] + deltaV.x * result.ddx.x + deltaV.y * result.ddy.x);
+    result.lambda.y = interpW * (0.0f    + deltaV.x * result.ddx.y + deltaV.y * result.ddy.y);
+    result.lambda.z = interpW * (0.0f    + deltaV.x * result.ddx.z + deltaV.y * result.ddy.z);
 
-    result.ddx *= 2.f / resolution.x;
-    result.ddy *= 2.f / resolution.y;
-    ddxSum *= 2.f / resolution.x;
-    ddySum *= 2.f / resolution.y;
+    const float2 twoOverRes = 2.f / resolution;
+
+    result.ddx *= twoOverRes.x;
+    result.ddy *= twoOverRes.y;
+    ddxSum *= twoOverRes.x;
+    ddySum *= twoOverRes.y;
 
     const float interpDdxW = 1.f / (interpInvW + ddxSum);
     const float interpDdyW = 1.f / (interpInvW + ddySum);
 
-    result.ddx = interpDdxW * (result.lambda * interpInvW * result.ddx) - result.lambda;
-    result.ddy = interpDdyW * (result.lambda * interpInvW * result.ddy) - result.lambda;
+    result.ddx = interpDdxW * (result.lambda * interpInvW + result.ddx) - result.lambda;
+    result.ddy = interpDdyW * (result.lambda * interpInvW + result.ddy) - result.lambda;
 
     return result;
 }
