@@ -348,7 +348,7 @@ namespace Volt
 
 				if (dirLightComp.castShadows)
 				{
-					const std::vector<float> cascades = { camera->GetFarPlane() / 50.f, camera->GetFarPlane() / 25.f, camera->GetFarPlane() / 10.f, camera->GetFarPlane() / 5.f };
+					const std::vector<float> cascades = { 25, 7500, 20000, 50000 };
 					const auto lightMatrices = Utility::CalculateCascadeMatrices(camera, dir, cascades);
 
 					for (size_t i = 0; i < lightMatrices.size(); i++)
@@ -842,6 +842,7 @@ namespace Volt
 
 		const auto& gbufferData = blackboard.Get<GBufferData>();
 		const auto& preDepthData = blackboard.Get<PreDepthData>();
+		const auto& dirShadowData = blackboard.Get<DirectionalShadowData>();
 
 		renderGraph.AddPass("Shading Pass",
 		[&](RenderGraph::Builder& builder) 
@@ -861,6 +862,7 @@ namespace Volt
 			builder.ReadResource(environmentTexturesData.radiance);
 			builder.ReadResource(lightBuffers.pointLightsBuffer);
 			builder.ReadResource(lightBuffers.spotLightsBuffer);
+			builder.ReadResource(dirShadowData.shadowTexture);
 
 			builder.SetHasSideEffect();
 			builder.SetIsComputePass();
@@ -877,18 +879,20 @@ namespace Volt
 			context.SetConstant("material"_sh, resources.GetImage2D(gbufferData.material));
 			context.SetConstant("emissive"_sh, resources.GetImage2D(gbufferData.emissive));
 			context.SetConstant("depthTexture"_sh, resources.GetImage2D(preDepthData.depth));
-			context.SetConstant("shadingMode"_sh, 6u);
+			context.SetConstant("shadingMode"_sh, 0u);
 
 			// PBR Constants
 			context.SetConstant("pbrConstants.viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant("pbrConstants.directionalLight"_sh, resources.GetBuffer(uniformBuffers.directionalLightBuffer));
 			context.SetConstant("pbrConstants.linearSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
 			context.SetConstant("pbrConstants.pointLinearClampSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureWrap::Clamp>()->GetResourceHandle());
+			context.SetConstant("pbrConstants.shadowSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureWrap::Repeat, RHI::AnisotropyLevel::None, RHI::CompareOperator::LessEqual>()->GetResourceHandle());
 			context.SetConstant("pbrConstants.BRDFLuT"_sh, resources.GetImage2D(externalImages.BRDFLuT));
 			context.SetConstant("pbrConstants.environmentIrradiance"_sh, resources.GetImage2D(environmentTexturesData.irradiance));
 			context.SetConstant("pbrConstants.environmentRadiance"_sh, resources.GetImage2D(environmentTexturesData.radiance));
 			context.SetConstant("pbrConstants.pointLights"_sh, resources.GetBuffer(lightBuffers.pointLightsBuffer));
 			context.SetConstant("pbrConstants.spotLights"_sh, resources.GetBuffer(lightBuffers.spotLightsBuffer));
+			context.SetConstant("pbrConstants.directionalShadowMap"_sh, resources.GetImage2D(dirShadowData.shadowTexture));
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1u);
 		});

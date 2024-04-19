@@ -159,6 +159,12 @@ struct RWTexture2DArrayHandle
     uint handle;
 };
 
+template<typename T>
+struct Texture2DArrayHandle
+{
+    uint handle;
+};
+
 struct SamplerStateHandle
 {
     uint handle;
@@ -179,6 +185,7 @@ namespace ResourceType
     static const uint RW_TEXTURE_3D = 10;
     static const uint RW_TEXTURE_2D_ARRAY = 11;
     static const uint SAMPLER_STATE = 12;
+    static const uint TEXTURE_2D_ARRAY = 13;
 }
 
 #ifdef ENABLE_RUNTIME_VALIDATION
@@ -242,6 +249,7 @@ struct VulkanResourceDescriptorHeapInternal
     DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture2D, ResourceType::RW_TEXTURE_2D)
     DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture3D, ResourceType::RW_TEXTURE_3D)
     DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture2DArray, ResourceType::RW_TEXTURE_2D_ARRAY)
+    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(Texture2DArray, ResourceType::TEXTURE_2D_ARRAY)
 };
 
 struct VulkanUniformResourceDescriptorHeapInternal
@@ -278,6 +286,7 @@ struct VulkanUniformResourceDescriptorHeapInternal
     DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture2D, ResourceType::RW_TEXTURE_2D)
     DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture3D, ResourceType::RW_TEXTURE_3D)
     DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture2DArray, ResourceType::RW_TEXTURE_2D_ARRAY)
+    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(Texture2DArray, ResourceType::TEXTURE_2D_ARRAY)
 };
 
 static VulkanResourceDescriptorHeapInternal g_descriptorHeap;
@@ -799,6 +808,12 @@ struct UniformTexture
         Texture2D<T> texture = UNIFORM_DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
         return texture.Sample(samplerState.Get(), location);
     }
+
+    T Sample2DArray(in TextureSampler samplerState, in float3 location, in int2 offset)
+    {
+        Texture2DArray<T> texture = UNIFORM_DESCRIPTOR_HEAP(Texture2DArrayHandle<T>, handle);
+        return texture.Sample(samplerState.Get(), location, offset);
+    }    
     
     T Sample3D(in TextureSampler samplerState, in float3 location)
     {
@@ -823,7 +838,13 @@ struct UniformTexture
         Texture2D<T> texture = UNIFORM_DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
         return texture.SampleLevel(samplerState.Get(), location, lod);
     }
-    
+
+    T SampleLevel2DArray(in TextureSampler samplerState, in float3 location, in float lod)
+    {
+        Texture2DArray<T> texture = UNIFORM_DESCRIPTOR_HEAP(Texture2DArrayHandle<T>, handle);
+        return texture.SampleLevel(samplerState.Get(), location, lod);
+    }
+
     T SampleLevel3D(in TextureSampler samplerState, in float3 location, in float lod)
     {
         Texture3D<T> texture = UNIFORM_DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);
@@ -1026,7 +1047,13 @@ struct TTexture
         Texture2D<T> texture = DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
         return texture.Sample(samplerState.Get(), location);
     }
-    
+
+    T Sample2DArray(in TextureSampler samplerState, in float3 location, in int2 offset)
+    {
+        Texture2DArray<T> texture = DESCRIPTOR_HEAP(Texture2DArrayHandle<T>, handle);
+        return texture.Sample(samplerState.Get(), location, offset);
+    }    
+
     T Sample3D(in TextureSampler samplerState, in float3 location)
     {
         Texture3D<T> texture = DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);
@@ -1051,6 +1078,12 @@ struct TTexture
         return texture.SampleLevel(samplerState.Get(), location, lod);
     }
     
+    T SampleLevel2DArray(in TextureSampler samplerState, in float3 location, in float lod)
+    {
+        Texture2DArray<T> texture = DESCRIPTOR_HEAP(Texture2DArrayHandle<T>, handle);
+        return texture.SampleLevel(samplerState.Get(), location, lod);
+    }
+
     T SampleLevel3D(in TextureSampler samplerState, in float3 location, in float lod)
     {
         Texture3D<T> texture = DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);

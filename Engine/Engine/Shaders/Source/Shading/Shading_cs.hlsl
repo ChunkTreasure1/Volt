@@ -62,7 +62,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     const float metallic = material.x;
     const float roughness = material.y;
     const float3 emissive = constants.emissive.Load2D(int3(threadId.xy, 0));
-    const float3 normal = constants.normals.Load2D(int3(threadId.xy, 0)).xyz * 2.f - 1.f;
+    const float3 normal = normalize(constants.normals.Load2D(int3(threadId.xy, 0)).xyz * 2.f - 1.f);
     
     const float pixelDepth = constants.depthTexture.Load2D(int3(threadId.xy, 0));
     const float3 worldPosition = ReconstructWorldPosition(viewData, texCoords, pixelDepth);

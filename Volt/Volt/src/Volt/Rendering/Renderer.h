@@ -53,7 +53,7 @@ namespace Volt
 		static void Update();
 		static void EndOfFrameUpdate();
 
-		template<RHI::TextureFilter min, RHI::TextureFilter mag, RHI::TextureFilter mip, RHI::TextureWrap wrapMode = RHI::TextureWrap::Repeat, RHI::AnisotropyLevel aniso = RHI::AnisotropyLevel::None>
+		template<RHI::TextureFilter min, RHI::TextureFilter mag, RHI::TextureFilter mip, RHI::TextureWrap wrapMode = RHI::TextureWrap::Repeat, RHI::AnisotropyLevel aniso = RHI::AnisotropyLevel::None, RHI::CompareOperator compareOperator = RHI::CompareOperator::None>
 		static Ref<GlobalResource<RHI::SamplerState>> GetSampler()
 		{
 			RHI::SamplerStateCreateInfo info{};
@@ -62,7 +62,7 @@ namespace Volt
 			info.mipFilter = mip;
 			info.wrapMode = wrapMode;
 			info.anisotropyLevel = aniso;
-
+			
 			return GetSamplerInternal(info);
 		}
 

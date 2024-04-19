@@ -136,7 +136,7 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				//res_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2DARRAY_BINDING, resources.GetResourceHandleUnlocked(resource).Get());
+				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2DARRAY_BINDING, resources.GetResourceHandleUnlocked(resource).Get());
 
 				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
 				{
