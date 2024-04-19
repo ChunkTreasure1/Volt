@@ -508,7 +508,7 @@ namespace Volt::RHI
 				const size_t typeSize = elementType.GetSize();
 
 				const std::string uniformName = !parentMemberName.empty() ? parentMemberName + "." + nameStr : nameStr;
-				outResult.renderGraphConstants.uniforms[uniformName] = ShaderUniform(elementType, typeSize, outResult.renderGraphConstants.size);
+				outResult.renderGraphConstants.uniforms[StringHash::Construct(uniformName)] = ShaderUniform(elementType, typeSize, outResult.renderGraphConstants.size);
 				outResult.renderGraphConstants.size += typeSize;
 			}
 

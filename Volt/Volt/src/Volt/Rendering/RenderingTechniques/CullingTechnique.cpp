@@ -17,13 +17,13 @@ namespace Volt
 	{
 	}
 
-	CullPrimitivesData CullingTechnique::Execute(Ref<Camera> camera, Ref<RenderScene> renderScene)
+	CullPrimitivesData CullingTechnique::Execute(Ref<Camera> camera, Ref<RenderScene> renderScene, const uint32_t instanceCount)
 	{
 		m_renderGraph.BeginMarker("Culling", { 0.f, 1.f, 0.f, 1.f });
 
 		auto objectsData = AddCullObjectsPass(camera, renderScene);
 		auto meshletsData = AddCullMeshletsPass(camera, renderScene, objectsData);
-		auto primitivesData = AddCullPrimitivesPass(camera, renderScene, meshletsData);
+		auto primitivesData = AddCullPrimitivesPass(camera, renderScene, meshletsData, instanceCount);
 
 		m_renderGraph.EndMarker();
 
@@ -69,13 +69,13 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("CullObjects");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("meshletCount", resources.GetBuffer(data.meshletCount));
-			context.SetConstant("meshletToObjectIdAndOffset", resources.GetBuffer(data.meshletToObjectIdAndOffset));
-			context.SetConstant("statisticsBuffer", resources.GetBuffer(data.statisticsBuffer));
-			context.SetConstant("objectDrawDataBuffer", resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
-			context.SetConstant("meshBuffer", resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
-			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
-			context.SetConstant("objectCount", commandCount);
+			context.SetConstant("meshletCount"_sh, resources.GetBuffer(data.meshletCount));
+			context.SetConstant("meshletToObjectIdAndOffset"_sh, resources.GetBuffer(data.meshletToObjectIdAndOffset));
+			context.SetConstant("statisticsBuffer"_sh, resources.GetBuffer(data.statisticsBuffer));
+			context.SetConstant("objectDrawDataBuffer"_sh, resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
+			context.SetConstant("meshBuffer"_sh, resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
+			context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("objectCount"_sh, commandCount);
 
 			const auto projection = camera->GetProjection();
 			const glm::mat4 projTranspose = glm::transpose(projection);
@@ -83,10 +83,10 @@ namespace Volt
 			const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
 			const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
 
-			context.SetConstant("frustum0", frustumX.x);
-			context.SetConstant("frustum1", frustumX.z);
-			context.SetConstant("frustum2", frustumY.y);
-			context.SetConstant("frustum3", frustumY.z);
+			context.SetConstant("frustum0"_sh, frustumX.x);
+			context.SetConstant("frustum1"_sh, frustumX.z);
+			context.SetConstant("frustum2"_sh, frustumY.y);
+			context.SetConstant("frustum3"_sh, frustumY.z);
 
 			context.Dispatch(dispatchCount, 1, 1);
 		});
@@ -130,13 +130,13 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("CullMeshlets");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("survivingMeshlets", resources.GetBuffer(data.survivingMeshlets));
-			context.SetConstant("survivingMeshletCount", resources.GetBuffer(data.survivingMeshletCount));
-			context.SetConstant("meshletCount", resources.GetBuffer(cullObjectsData.meshletCount));
-			context.SetConstant("meshletToObjectIdAndOffset", resources.GetBuffer(cullObjectsData.meshletToObjectIdAndOffset));
-			context.SetConstant("gpuMeshlets", resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
-			context.SetConstant("objectDrawDataBuffer", resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
-			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("survivingMeshlets"_sh, resources.GetBuffer(data.survivingMeshlets));
+			context.SetConstant("survivingMeshletCount"_sh, resources.GetBuffer(data.survivingMeshletCount));
+			context.SetConstant("meshletCount"_sh, resources.GetBuffer(cullObjectsData.meshletCount));
+			context.SetConstant("meshletToObjectIdAndOffset"_sh, resources.GetBuffer(cullObjectsData.meshletToObjectIdAndOffset));
+			context.SetConstant("gpuMeshlets"_sh, resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
+			context.SetConstant("objectDrawDataBuffer"_sh, resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
+			context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 
 			const auto projection = camera->GetProjection();
 			const glm::mat4 projTranspose = glm::transpose(projection);
@@ -144,10 +144,10 @@ namespace Volt
 			const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
 			const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
 
-			context.SetConstant("frustum0", frustumX.x);
-			context.SetConstant("frustum1", frustumX.z);
-			context.SetConstant("frustum2", frustumY.y);
-			context.SetConstant("frustum3", frustumY.z);
+			context.SetConstant("frustum0"_sh, frustumX.x);
+			context.SetConstant("frustum1"_sh, frustumX.z);
+			context.SetConstant("frustum2"_sh, frustumY.y);
+			context.SetConstant("frustum3"_sh, frustumY.z);
 
 			context.DispatchIndirect(argsBufferHandle, 0);
 		});
@@ -155,7 +155,7 @@ namespace Volt
 		return cullMeshletsData;
 	}
 
-	CullPrimitivesData CullingTechnique::AddCullPrimitivesPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullMeshletsData& cullMeshletsData)
+	CullPrimitivesData CullingTechnique::AddCullPrimitivesPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullMeshletsData& cullMeshletsData, const uint32_t instanceCount)
 	{
 		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
 		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();
@@ -193,7 +193,7 @@ namespace Volt
 				command.firstInstance = 0;
 				command.firstIndex = 0;
 				command.vertexOffset = 0;
-				command.instanceCount = 1;
+				command.instanceCount = instanceCount;
 				context.UploadBufferData(data.drawCommand, &command, sizeof(RHI::IndirectIndexedCommand));
 			}
 
@@ -202,14 +202,14 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("CullPrimitives");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("indexBuffer", resources.GetBuffer(data.indexBuffer));
-			context.SetConstant("drawCommand", resources.GetBuffer(data.drawCommand));
-			context.SetConstant("survivingMeshlets", resources.GetBuffer(cullMeshletsData.survivingMeshlets));
-			context.SetConstant("survivingMeshletCount", resources.GetBuffer(cullMeshletsData.survivingMeshletCount));
-			context.SetConstant("gpuMeshlets", resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
-			context.SetConstant("gpuMeshes", resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
-			context.SetConstant("objectDrawDataBuffer", resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
-			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("indexBuffer"_sh, resources.GetBuffer(data.indexBuffer));
+			context.SetConstant("drawCommand"_sh, resources.GetBuffer(data.drawCommand));
+			context.SetConstant("survivingMeshlets"_sh, resources.GetBuffer(cullMeshletsData.survivingMeshlets));
+			context.SetConstant("survivingMeshletCount"_sh, resources.GetBuffer(cullMeshletsData.survivingMeshletCount));
+			context.SetConstant("gpuMeshlets"_sh, resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
+			context.SetConstant("gpuMeshes"_sh, resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
+			context.SetConstant("objectDrawDataBuffer"_sh, resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
+			context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 
 			context.DispatchIndirect(argsBufferHandle, 0);
 		});

@@ -3,12 +3,14 @@
 #include "PBRHelpers.hlsli"
 #include "Structures.hlsli"
 #include "Resources.hlsli"
+#include "ShadowMapping.hlsli"
+
 
 struct PBRConstants
 {
     UniformBuffer<ViewData> viewData;
     
-    UniformTypedBuffer<DirectionalLight> DirectionalLight;
+    UniformTypedBuffer<DirectionalLight> directionalLight;
     UniformTypedBuffer<PointLight> pointLights;
     UniformTypedBuffer<SpotLight> spotLights;
     
@@ -230,7 +232,7 @@ float3 CalculatePBR(in PBRInput input, in PBRConstants constants)
     
     // Directional Light
     {
-        LightOutput result = CalculateDirectionalLight(constants.DirectionalLight.Load(0), dirToCamera, baseReflectivity);
+        LightOutput result = CalculateDirectionalLight(constants.directionalLight.Load(0), dirToCamera, baseReflectivity);
         lightOutput.diffuse += result.diffuse;
         lightOutput.specular += result.specular;
     }

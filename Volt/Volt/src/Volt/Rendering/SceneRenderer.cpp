@@ -19,6 +19,7 @@
 #include "Volt/Rendering/RenderingTechniques/PrefixSumTechnique.h"
 #include "Volt/Rendering/RenderingTechniques/GTAOTechnique.h"
 #include "Volt/Rendering/RenderingTechniques/CullingTechnique.h"
+#include "Volt/Rendering/RenderingTechniques/DirectionalShadowTechnique.h"
 
 #include "Volt/Rendering/RenderingUtils.h"
 #include "Volt/Rendering/ShapeLibrary.h"
@@ -172,7 +173,8 @@ namespace Volt
 			GTAOTechnique gtaoTechnique{ 0 /*m_frameIndex*/, tempSettings };
 			gtaoTechnique.AddGTAOPasses(renderGraph, rgBlackboard, camera, { m_width, m_height });
 
-			AddDirectionalShadowPass(renderGraph, rgBlackboard);
+			DirectionalShadowTechnique dirShadowTechnique{ renderGraph, rgBlackboard };
+			rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene());
 
 			AddVisibilityBufferPass(renderGraph, rgBlackboard);
 			AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
@@ -187,8 +189,9 @@ namespace Volt
 			auto& gbufferData = rgBlackboard.Add<GBufferData>();
 
 			gbufferData.albedo = renderGraph.CreateImage2D({ RHI::PixelFormat::R8G8B8A8_UNORM, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
-			gbufferData.materialEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
-			gbufferData.normalEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
+			gbufferData.normals = renderGraph.CreateImage2D({ RHI::PixelFormat::A2B10G10R10_UNORM_PACK32, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Normals" });
+			gbufferData.material = renderGraph.CreateImage2D({ RHI::PixelFormat::R8G8_UNORM, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Material" });
+			gbufferData.emissive = renderGraph.CreateImage2D({ RHI::PixelFormat::B10G11R11_UFLOAT_PACK32, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Emissive" });
 
 			renderGraph.BeginMarker("Materials");
 
@@ -235,10 +238,9 @@ namespace Volt
 		return m_frameTotalGPUAllocation.load();
 	}
 
-	void SceneRenderer::BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard)
+	void SceneRenderer::BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard, const CullPrimitivesData& cullPrimitivesData)
 	{
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
-		const auto& cullPrimitivesData = blackboard.Get<CullPrimitivesData>();
 		const auto& externalBuffers = blackboard.Get<ExternalBuffersData>();
 
 		builder.ReadResource(uniformBuffers.viewDataBuffer);
@@ -248,19 +250,18 @@ namespace Volt
 		builder.ReadResource(cullPrimitivesData.drawCommand, RenderGraphResourceState::IndirectArgument);
 	}
 
-	void SceneRenderer::RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard blackboard)
+	void SceneRenderer::RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard blackboard, const CullPrimitivesData& cullPrimitivesData)
 	{
 		const auto& externalBuffers = blackboard.Get<ExternalBuffersData>();
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
-		const auto& cullPrimitivesData = blackboard.Get<CullPrimitivesData>();
 
 		const auto gpuSceneHandle = resources.GetBuffer(externalBuffers.gpuSceneBuffer);
 		const auto viewDataHandle = resources.GetUniformBuffer(uniformBuffers.viewDataBuffer);
 
 		context.BindIndexBuffer(cullPrimitivesData.indexBuffer);
-		context.SetConstant("gpuScene", gpuSceneHandle);
-		context.SetConstant("viewData", viewDataHandle);
-		context.SetConstant("directionalLight", resources.GetBuffer(uniformBuffers.directionalLightBuffer));
+		context.SetConstant("gpuScene"_sh, gpuSceneHandle);
+		context.SetConstant("viewData"_sh, viewDataHandle);
+		context.SetConstant("directionalLight"_sh, resources.GetBuffer(uniformBuffers.directionalLightBuffer));
 
 		context.DrawIndexedIndirect(cullPrimitivesData.drawCommand, 0, 1, sizeof(RHI::IndirectIndexedCommand));
 	}
@@ -541,7 +542,7 @@ namespace Volt
 			desc.name = "Normals";
 			data.normals = builder.CreateImage2D(desc);
 
-			BuildMeshPass(builder, blackboard);
+			BuildMeshPass(builder, blackboard, blackboard.Get<CullPrimitivesData>());
 		},
 		[=](const PreDepthData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
@@ -555,51 +556,7 @@ namespace Volt
 			context.BeginRendering(info);
 			context.BindPipeline(pipeline);
 
-			RenderMeshes(context, resources, blackboard);
-
-			context.EndRendering();
-		});
-	}
-
-	void SceneRenderer::AddDirectionalShadowPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
-	{
-		blackboard.Add<DirectionalShadowData>() = renderGraph.AddPass<DirectionalShadowData>("Directional Shadow",
-		[&](RenderGraph::Builder& builder, DirectionalShadowData& data)
-		{
-			data.renderSize = { 1024, 1024 };
-
-			RenderGraphImageDesc imageDesc{};
-			imageDesc.format = RHI::PixelFormat::D32_SFLOAT;
-			imageDesc.width = data.renderSize.x;
-			imageDesc.height = data.renderSize.y;
-			imageDesc.usage = RHI::ImageUsage::Attachment;
-			imageDesc.layers = 5;
-			imageDesc.isCubeMap = false;
-			imageDesc.name = "Directional Shadow";
-
-			data.shadowTexture = builder.CreateImage2D(imageDesc);
-
-			BuildMeshPass(builder, blackboard);
-
-			builder.SetHasSideEffect();
-
-		},
-		[=](const DirectionalShadowData& data, RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			RenderingInfo info = context.CreateRenderingInfo(data.renderSize.x, data.renderSize.y, { data.shadowTexture });
-			info.renderingInfo.layerCount = DirectionalLightData::CASCADE_COUNT;
-			info.renderingInfo.depthAttachmentInfo.SetClearColor(1.f, 1.f, 1.f, 1.f);
-
-			RHI::RenderPipelineCreateInfo pipelineInfo{};
-			pipelineInfo.shader = ShaderMap::Get("DirectionalShadow");
-			pipelineInfo.depthCompareOperator = RHI::CompareOperator::LessEqual;
-
-			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
-
-			context.BeginRendering(info);
-			context.BindPipeline(pipeline);
-
-			RenderMeshes(context, resources, blackboard);
+			RenderMeshes(context, resources, blackboard, blackboard.Get<CullPrimitivesData>());
 
 			context.EndRendering();
 		});
@@ -615,7 +572,7 @@ namespace Volt
 			data.visibility = builder.CreateImage2D({ RHI::PixelFormat::R32_UINT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "VisibilityBuffer - Visibility" });
 			builder.WriteResource(preDepthHandle);
 
-			BuildMeshPass(builder, blackboard);
+			BuildMeshPass(builder, blackboard, blackboard.Get<CullPrimitivesData>());
 		},
 		[=](const VisibilityBufferData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
@@ -633,7 +590,7 @@ namespace Volt
 			context.BeginRendering(info);
 			context.BindPipeline(pipeline);
 
-			RenderMeshes(context, resources, blackboard);
+			RenderMeshes(context, resources, blackboard, blackboard.Get<CullPrimitivesData>());
 
 			context.EndRendering();
 		});
@@ -672,11 +629,11 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("GenerateMaterialCount");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("visibilityBuffer", resources.GetImage2D(visBufferData.visibility));
-			context.SetConstant("objectDrawData", resources.GetBuffer(externalBuffersData.objectDrawDataBuffer));
-			context.SetConstant("meshletsBuffer", resources.GetBuffer(externalBuffersData.gpuMeshletsBuffer));
-			context.SetConstant("materialCountsBuffer", resources.GetBuffer(data.materialCountBuffer));
-			context.SetConstant("renderSize", glm::uvec2{ m_width, m_height });
+			context.SetConstant("visibilityBuffer"_sh, resources.GetImage2D(visBufferData.visibility));
+			context.SetConstant("objectDrawData"_sh, resources.GetBuffer(externalBuffersData.objectDrawDataBuffer));
+			context.SetConstant("meshletsBuffer"_sh, resources.GetBuffer(externalBuffersData.gpuMeshletsBuffer));
+			context.SetConstant("materialCountsBuffer"_sh, resources.GetBuffer(data.materialCountBuffer));
+			context.SetConstant("renderSize"_sh, glm::uvec2{ m_width, m_height });
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1);
 		});
@@ -716,12 +673,12 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("CollectMaterialPixels");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("visibilityBuffer", resources.GetImage2D(visBufferData.visibility));
-			context.SetConstant("objectDrawData", resources.GetBuffer(externalBuffersData.objectDrawDataBuffer));
-			context.SetConstant("meshletsBuffer", resources.GetBuffer(externalBuffersData.gpuMeshletsBuffer));
-			context.SetConstant("materialStartBuffer", resources.GetBuffer(matCountData.materialStartBuffer));
-			context.SetConstant("currentMaterialCountBuffer", resources.GetBuffer(data.currentMaterialCountBuffer));
-			context.SetConstant("pixelCollectionBuffer", resources.GetBuffer(data.pixelCollectionBuffer));
+			context.SetConstant("visibilityBuffer"_sh, resources.GetImage2D(visBufferData.visibility));
+			context.SetConstant("objectDrawData"_sh, resources.GetBuffer(externalBuffersData.objectDrawDataBuffer));
+			context.SetConstant("meshletsBuffer"_sh, resources.GetBuffer(externalBuffersData.gpuMeshletsBuffer));
+			context.SetConstant("materialStartBuffer"_sh, resources.GetBuffer(matCountData.materialStartBuffer));
+			context.SetConstant("currentMaterialCountBuffer"_sh, resources.GetBuffer(data.currentMaterialCountBuffer));
+			context.SetConstant("pixelCollectionBuffer"_sh, resources.GetBuffer(data.pixelCollectionBuffer));
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1);
 		});
@@ -750,9 +707,9 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("GenerateMaterialIndirectArgs");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("materialCounts", resources.GetBuffer(matCountData.materialCountBuffer));
-			context.SetConstant("indirectArgsBuffer", resources.GetBuffer(data.materialIndirectArgsBuffer));
-			context.SetConstant("materialCount", materialCount);
+			context.SetConstant("materialCounts"_sh, resources.GetBuffer(matCountData.materialCountBuffer));
+			context.SetConstant("indirectArgsBuffer"_sh, resources.GetBuffer(data.materialIndirectArgsBuffer));
+			context.SetConstant("materialCount"_sh, materialCount);
 
 			context.Dispatch(Math::DivideRoundUp(materialCount, 32u), 1, 1);
 		});
@@ -785,8 +742,9 @@ namespace Volt
 			builder.ReadResource(uniformBuffers.viewDataBuffer);
 
 			builder.WriteResource(gbufferData.albedo);
-			builder.WriteResource(gbufferData.materialEmissive);
-			builder.WriteResource(gbufferData.normalEmissive);
+			builder.WriteResource(gbufferData.normals);
+			builder.WriteResource(gbufferData.material);
+			builder.WriteResource(gbufferData.emissive);
 
 			builder.SetIsComputePass();
 		},
@@ -795,8 +753,9 @@ namespace Volt
 			if (first)
 			{
 				context.ClearImage(gbufferData.albedo, { 0.1f, 0.1f, 0.1f, 0.f });
-				context.ClearImage(gbufferData.materialEmissive, { 0.f, 0.f, 0.f, 0.f });
-				context.ClearImage(gbufferData.normalEmissive, { 0.f, 0.f, 0.f, 0.f });
+				context.ClearImage(gbufferData.normals, { 0.f, 0.f, 0.f, 0.f });
+				context.ClearImage(gbufferData.material, { 0.f, 0.f, 0.f, 0.f });
+				context.ClearImage(gbufferData.emissive, { 0.f, 0.f, 0.f, 0.f });
 			}
 
 			auto material = renderScene->GetMaterialFromID(materialId);
@@ -809,20 +768,21 @@ namespace Volt
 
 			context.BindPipeline(pipeline);
 
-			context.SetConstant("visibilityBuffer", resources.GetImage2D(visBufferData.visibility));
-			context.SetConstant("materialCountBuffer", resources.GetBuffer(matCountData.materialCountBuffer));
-			context.SetConstant("materialStartBuffer", resources.GetBuffer(matCountData.materialStartBuffer));
-			context.SetConstant("pixelCollection", resources.GetBuffer(matPixelsData.pixelCollectionBuffer));
+			context.SetConstant("visibilityBuffer"_sh, resources.GetImage2D(visBufferData.visibility));
+			context.SetConstant("materialCountBuffer"_sh, resources.GetBuffer(matCountData.materialCountBuffer));
+			context.SetConstant("materialStartBuffer"_sh, resources.GetBuffer(matCountData.materialStartBuffer));
+			context.SetConstant("pixelCollection"_sh, resources.GetBuffer(matPixelsData.pixelCollectionBuffer));
 
-			context.SetConstant("gpuScene", resources.GetBuffer(externalBuffersData.gpuSceneBuffer));
-			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("gpuScene"_sh, resources.GetBuffer(externalBuffersData.gpuSceneBuffer));
+			context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 
-			context.SetConstant("albedo", resources.GetImage2D(gbufferData.albedo));
-			context.SetConstant("materialEmissive", resources.GetImage2D(gbufferData.materialEmissive));
-			context.SetConstant("normalEmissive", resources.GetImage2D(gbufferData.normalEmissive));
-			context.SetConstant("materialId", materialId);
+			context.SetConstant("albedo"_sh, resources.GetImage2D(gbufferData.albedo));
+			context.SetConstant("normals"_sh, resources.GetImage2D(gbufferData.normals));
+			context.SetConstant("material"_sh, resources.GetImage2D(gbufferData.material));
+			context.SetConstant("emissive"_sh, resources.GetImage2D(gbufferData.emissive));
+			context.SetConstant("materialId"_sh, materialId);
 
-			context.SetConstant("viewSize", glm::vec2(m_width, m_height));
+			context.SetConstant("viewSize"_sh, glm::vec2(m_width, m_height));
 
 			context.DispatchIndirect(indirectArgsData.materialIndirectArgsBuffer, sizeof(RHI::IndirectDispatchCommand) * materialId); // Should be offset with material ID
 		});
@@ -859,12 +819,12 @@ namespace Volt
 			context.BeginRendering(info);
 			context.BindPipeline(pipeline);
 
-			context.SetConstant("vertexPositions", resources.GetBuffer(meshVertexBufferHandle));
-			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
-			context.SetConstant("environmentTexture", resources.GetImage2D(environmentTexturesData.radiance));
-			context.SetConstant("linearSampler", Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
-			context.SetConstant("lod", 0.f);
-			context.SetConstant("intensity", 1.f);
+			context.SetConstant("vertexPositions"_sh, resources.GetBuffer(meshVertexBufferHandle));
+			context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("environmentTexture"_sh, resources.GetImage2D(environmentTexturesData.radiance));
+			context.SetConstant("linearSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
+			context.SetConstant("lod"_sh, 0.f);
+			context.SetConstant("intensity"_sh, 1.f);
 
 			context.BindIndexBuffer(indexBufferHandle);
 			context.DrawIndexed(static_cast<uint32_t>(m_skyboxMesh->GetIndexCount()), 1, 0, 0, 0);
@@ -888,8 +848,9 @@ namespace Volt
 		{
 			builder.WriteResource(finalColorData.finalColorOutput);
 			builder.ReadResource(gbufferData.albedo);
-			builder.ReadResource(gbufferData.materialEmissive);
-			builder.ReadResource(gbufferData.normalEmissive);
+			builder.ReadResource(gbufferData.normals);
+			builder.ReadResource(gbufferData.material);
+			builder.ReadResource(gbufferData.emissive);
 			builder.ReadResource(preDepthData.depth);
 
 			// PBR Constants
@@ -910,22 +871,24 @@ namespace Volt
 
 			auto pipeline = ShaderMap::GetComputePipeline("Shading");
 			context.BindPipeline(pipeline);
-			context.SetConstant("output", resources.GetImage2D(finalColorData.finalColorOutput));
-			context.SetConstant("albedo", resources.GetImage2D(gbufferData.albedo));
-			context.SetConstant("materialEmissive", resources.GetImage2D(gbufferData.materialEmissive));
-			context.SetConstant("normalEmissive", resources.GetImage2D(gbufferData.normalEmissive));
-			context.SetConstant("depthTexture", resources.GetImage2D(preDepthData.depth));
-			
+			context.SetConstant("output"_sh, resources.GetImage2D(finalColorData.finalColorOutput));
+			context.SetConstant("albedo"_sh, resources.GetImage2D(gbufferData.albedo));
+			context.SetConstant("normals"_sh, resources.GetImage2D(gbufferData.normals));
+			context.SetConstant("material"_sh, resources.GetImage2D(gbufferData.material));
+			context.SetConstant("emissive"_sh, resources.GetImage2D(gbufferData.emissive));
+			context.SetConstant("depthTexture"_sh, resources.GetImage2D(preDepthData.depth));
+			context.SetConstant("shadingMode"_sh, 6u);
+
 			// PBR Constants
-			context.SetConstant("pbrConstants.viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
-			context.SetConstant("pbrConstants.DirectionalLight", resources.GetBuffer(uniformBuffers.directionalLightBuffer));
-			context.SetConstant("pbrConstants.linearSampler", Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
-			context.SetConstant("pbrConstants.pointLinearClampSampler", Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureWrap::Clamp>()->GetResourceHandle());
-			context.SetConstant("pbrConstants.BRDFLuT", resources.GetImage2D(externalImages.BRDFLuT));
-			context.SetConstant("pbrConstants.environmentIrradiance", resources.GetImage2D(environmentTexturesData.irradiance));
-			context.SetConstant("pbrConstants.environmentRadiance", resources.GetImage2D(environmentTexturesData.radiance));
-			context.SetConstant("pbrConstants.pointLights", resources.GetBuffer(lightBuffers.pointLightsBuffer));
-			context.SetConstant("pbrConstants.spotLights", resources.GetBuffer(lightBuffers.spotLightsBuffer));
+			context.SetConstant("pbrConstants.viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("pbrConstants.directionalLight"_sh, resources.GetBuffer(uniformBuffers.directionalLightBuffer));
+			context.SetConstant("pbrConstants.linearSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
+			context.SetConstant("pbrConstants.pointLinearClampSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureWrap::Clamp>()->GetResourceHandle());
+			context.SetConstant("pbrConstants.BRDFLuT"_sh, resources.GetImage2D(externalImages.BRDFLuT));
+			context.SetConstant("pbrConstants.environmentIrradiance"_sh, resources.GetImage2D(environmentTexturesData.irradiance));
+			context.SetConstant("pbrConstants.environmentRadiance"_sh, resources.GetImage2D(environmentTexturesData.radiance));
+			context.SetConstant("pbrConstants.pointLights"_sh, resources.GetBuffer(lightBuffers.pointLightsBuffer));
+			context.SetConstant("pbrConstants.spotLights"_sh, resources.GetBuffer(lightBuffers.spotLightsBuffer));
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1u);
 		});

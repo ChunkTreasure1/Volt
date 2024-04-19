@@ -122,11 +122,11 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("ScatterUpload");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("dstBuffer", resources.GetBuffer(data.dstBuffer));
-			context.SetConstant("srcBuffer", resources.GetBuffer(data.srcBuffer));
-			context.SetConstant("scatterIndices", resources.GetBuffer(data.indicesBuffer));
-			context.SetConstant("typeSizeInUINT", static_cast<uint32_t>(sizeInUINT));
-			context.SetConstant("copyCount", data.dataCount);
+			context.SetConstant("dstBuffer"_sh, resources.GetBuffer(data.dstBuffer));
+			context.SetConstant("srcBuffer"_sh, resources.GetBuffer(data.srcBuffer));
+			context.SetConstant("scatterIndices"_sh, resources.GetBuffer(data.indicesBuffer));
+			context.SetConstant("typeSizeInUINT"_sh, static_cast<uint32_t>(sizeInUINT));
+			context.SetConstant("copyCount"_sh, data.dataCount);
 			context.Dispatch(groupSize, 1, 1);
 		});
 	}

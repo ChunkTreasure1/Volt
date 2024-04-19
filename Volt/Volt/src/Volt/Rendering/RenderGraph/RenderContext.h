@@ -8,8 +8,9 @@
 #include <VoltRHI/Core/RHICommon.h>
 #include <VoltRHI/Shader/Shader.h>
 
-#include "CoreUtilities/Profiling/Profiling.h"
-	
+#include <CoreUtilities/Profiling/Profiling.h>
+#include <CoreUtilities/StringHash.h>	
+
 #include <glm/glm.hpp>
 #include <half/half.hpp>
 
@@ -185,16 +186,16 @@ namespace Volt
 		Ref<RHI::StorageBuffer> GetReadbackBuffer(Ref<RHI::StorageBuffer> buffer);
 
 		template<typename T>
-		void SetConstant(const std::string& name, const T& data);
+		void SetConstant(const StringHash& name, const T& data);
 
 		template<>
-		void SetConstant(const std::string& name, const ResourceHandle& data);
+		void SetConstant(const StringHash& name, const ResourceHandle& data);
 
 		template<typename F>
-		void SetConstant(const std::string& name, const std::vector<F>& data);
+		void SetConstant(const StringHash& name, const std::vector<F>& data);
 
 		template<typename F, size_t COUNT>
-		void SetConstant(const std::string& name, const std::array<F, COUNT>& data);
+		void SetConstant(const StringHash& name, const std::array<F, COUNT>& data);
 
 	private:
 		friend class RenderGraph;
@@ -233,7 +234,7 @@ namespace Volt
 	};
 
 	template<typename T>
-	inline void RenderContext::SetConstant(const std::string& name, const T& data)
+	inline void RenderContext::SetConstant(const StringHash& name, const T& data)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -253,7 +254,7 @@ namespace Volt
 	}
 
 	template<typename F>
-	inline void RenderContext::SetConstant(const std::string& name, const std::vector<F>& data)
+	inline void RenderContext::SetConstant(const StringHash& name, const std::vector<F>& data)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -272,7 +273,7 @@ namespace Volt
 	}
 
 	template<typename F, size_t COUNT>
-	inline void RenderContext::SetConstant(const std::string& name, const std::array<F, COUNT>& data)
+	inline void RenderContext::SetConstant(const StringHash& name, const std::array<F, COUNT>& data)
 	{
 		VT_PROFILE_FUNCTION();
 

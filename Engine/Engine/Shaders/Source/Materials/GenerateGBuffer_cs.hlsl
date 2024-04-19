@@ -12,17 +12,18 @@
 
 struct Constants
 {
-    TTexture<uint> visibilityBuffer;
-    TypedBuffer<uint> materialCountBuffer;
-    TypedBuffer<uint> materialStartBuffer;
-    TypedBuffer<uint2> pixelCollection;
+    UniformTexture<uint> visibilityBuffer;
+    UniformTypedBuffer<uint> materialCountBuffer;
+    UniformTypedBuffer<uint> materialStartBuffer;
+    UniformTypedBuffer<uint2> pixelCollection;
     
-    TypedBuffer<GPUScene> gpuScene;
+    UniformTypedBuffer<GPUScene> gpuScene;
     UniformBuffer<ViewData> viewData;
     
-    RWTexture<float4> albedo;
-    RWTexture<float4> materialEmissive;
-    RWTexture<float4> normalEmissive;
+    UniformRWTexture<float4> albedo;
+    UniformRWTexture<float4> normals;
+    UniformRWTexture<float2> material;
+    UniformRWTexture<float3> emissive;
     
     uint materialId;
     
@@ -142,10 +143,8 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     float4 albedo = evaluatedMaterial.albedo;
     albedo.xyz = SRGBToLinear(albedo.xyz);
     
-    const float4 materialEmissive = float4(evaluatedMaterial.metallic, evaluatedMaterial.roughness, evaluatedMaterial.emissive.x, evaluatedMaterial.emissive.y);
-    const float4 normalEmissive = float4(resultNormal, evaluatedMaterial.emissive.z);
-    
     constants.albedo.Store2D(pixelPosition, albedo);
-    constants.materialEmissive.Store2D(pixelPosition, materialEmissive);
-    constants.normalEmissive.Store2D(pixelPosition, normalEmissive);
+    constants.normals.Store2D(pixelPosition, float4(resultNormal * 0.5f + 0.5f, 0.f));
+    constants.material.Store2D(pixelPosition, float2(evaluatedMaterial.metallic, evaluatedMaterial.roughness));
+    constants.emissive.Store2D(pixelPosition, evaluatedMaterial.emissive);
 }

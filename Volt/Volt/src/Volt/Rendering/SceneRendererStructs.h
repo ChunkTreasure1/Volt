@@ -103,8 +103,9 @@ namespace Volt
 	struct GBufferData
 	{
 		RenderGraphResourceHandle albedo;
-		RenderGraphResourceHandle materialEmissive;
-		RenderGraphResourceHandle normalEmissive;
+		RenderGraphResourceHandle normals;
+		RenderGraphResourceHandle material;
+		RenderGraphResourceHandle emissive;
 	};
 
 	struct FinalColorData

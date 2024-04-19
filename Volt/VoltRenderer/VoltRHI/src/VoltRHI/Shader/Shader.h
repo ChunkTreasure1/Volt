@@ -5,6 +5,8 @@
 
 #include "VoltRHI/Shader/BufferLayout.h"
 
+#include <CoreUtilities/StringHash.h>
+
 #include <vector>
 #include <filesystem>
 #include <map>
@@ -131,7 +133,7 @@ namespace Volt::RHI
 	{
 		inline bool IsValid() const { return !uniforms.empty() && size > 0; }
 
-		std::unordered_map<std::string, ShaderUniform> uniforms;
+		std::unordered_map<StringHash, ShaderUniform> uniforms;
 		size_t size = 0;
 	};
 

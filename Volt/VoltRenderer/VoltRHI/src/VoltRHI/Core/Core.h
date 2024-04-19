@@ -32,7 +32,7 @@
 #elif VT_RELEASE
 
 #define VT_RHI_DEBUGBREAK()
-#define VT_ENSURE(x)
+#define VT_ENSURE(x) if (!(x)) { VT_RHI_DEBUGBREAK(); }
 
 #define VT_ENABLE_GPU_MARKERS
 #define VT_ENABLE_COMMAND_BUFFER_VALIDATION

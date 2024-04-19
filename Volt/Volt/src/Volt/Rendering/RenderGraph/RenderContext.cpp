@@ -430,7 +430,7 @@ namespace Volt
 	}
 
 	template<>
-	void RenderContext::SetConstant(const std::string& name, const ResourceHandle& data)
+	void RenderContext::SetConstant(const StringHash& name, const ResourceHandle& data)
 	{
 		VT_PROFILE_FUNCTION();
 

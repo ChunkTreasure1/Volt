@@ -31,9 +31,9 @@ namespace Volt::RenderingUtils
 			auto pipeline = ShaderMap::GetComputePipeline("GenerateIndirectArgs");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("indirectArgs", resources.GetBuffer(data.argsBufferHandle));
-			context.SetConstant("countBuffer", resources.GetBuffer(countBuffer));
-			context.SetConstant("threadGroupSize", groupSize);
+			context.SetConstant("indirectArgs"_sh, resources.GetBuffer(data.argsBufferHandle));
+			context.SetConstant("countBuffer"_sh, resources.GetBuffer(countBuffer));
+			context.SetConstant("threadGroupSize"_sh, groupSize);
 
 			context.Dispatch(1, 1, 1);
 		});
@@ -65,9 +65,9 @@ namespace Volt::RenderingUtils
 			auto pipeline = ShaderMap::GetComputePipeline("GenerateIndirectArgsWrapped");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("indirectArgs", resources.GetBuffer(data.argsBufferHandle));
-			context.SetConstant("countBuffer", resources.GetBuffer(countBuffer));
-			context.SetConstant("groupSize", groupSize);
+			context.SetConstant("indirectArgs"_sh, resources.GetBuffer(data.argsBufferHandle));
+			context.SetConstant("countBuffer"_sh, resources.GetBuffer(countBuffer));
+			context.SetConstant("groupSize"_sh, groupSize);
 
 			context.Dispatch(1, 1, 1);
 		});
