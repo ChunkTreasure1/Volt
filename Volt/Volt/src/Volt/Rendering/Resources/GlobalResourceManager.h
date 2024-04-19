@@ -73,7 +73,6 @@ namespace Volt
 		}
 
 		void RemoveResource(ResourceHandle resourceHandle);
-		void RemoveResource(Weak<T> resource);
 
 		inline void MarkAsDirty(ResourceHandle handle)
 		{
@@ -192,7 +191,7 @@ namespace Volt
 	inline void GlobalResourceManager::UnregisterResource(Weak<T> resource)
 	{
 		auto& container = GetResourceContainer<T, SPECIALIZATION>();
-		container.RemoveResource(resource);
+		container.RemoveResource(container.GetResourceHandle(resource));
 	}
 
 	template<typename T, ResourceSpecialization SPECIALIZATION>
@@ -221,29 +220,6 @@ namespace Volt
 	{
 		static ResourceContainer<T, SPECIALIZATION> resourceContainer;
 		return resourceContainer;
-	}
-
-	template<typename T, ResourceSpecialization SPECIALIZATION>
-	inline void ResourceContainer<T, SPECIALIZATION>::RemoveResource(Weak<T> resource)
-	{
-		std::scoped_lock lock{ accessMutex };
-
-		const auto hash = resource.GetHash();
-
-		if (!resourceToHandleMap.contains(hash))
-		{
-			return;
-		}
-
-		const ResourceHandle resourceHandle = resourceToHandleMap.at(hash);
-
-		resources[resourceHandle.Get()] = Weak<T>{};
-		resourceToHandleMap.erase(hash);
-		GlobalResourceManager::QueueHandleRemoval([this, resourceHandle]()
-		{
-			std::scoped_lock lock{ accessMutex };
-			availiableHandles.Push(resourceHandle);
-		});
 	}
 
 	template<typename T, ResourceSpecialization SPECIALIZATION>

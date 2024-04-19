@@ -59,6 +59,7 @@ project "VoltVulkan"
 		"%{Library.dxc}",
 		"%{Library.Vulkan}",
 		"%{Library.VoltRHI}",
+		"%{Library.Aftermath}"
 	}
 
 	postbuildcommands
@@ -101,8 +102,6 @@ project "VoltVulkan"
 				"%{Library.SPIRV_Cross_Debug}",
 				"%{Library.SPIRV_Cross_GLSL_Debug}",
 				"%{Library.SPIRV_Tools_Debug}",
-
-				"%{Library.Aftermath}"
 			}
 
 			runtime "Debug"
@@ -125,8 +124,6 @@ project "VoltVulkan"
 				"%{Library.ShaderC_Utils_Release}",
 				"%{Library.SPIRV_Cross_Release}",
 				"%{Library.SPIRV_Cross_GLSL_Release}",
-
-				"%{Library.Aftermath}"
 			}
 
 			buildoptions { "/Ot", "/Ob2" }

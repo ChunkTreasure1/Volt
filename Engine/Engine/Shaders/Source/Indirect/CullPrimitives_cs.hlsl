@@ -20,8 +20,6 @@ struct Constants
     TypedBuffer<GPUMesh> gpuMeshes;
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
     UniformBuffer<ViewData> viewData;
-    
-    float2 renderSize;
 };
 
 [numthreads(64, 1, 1)]
@@ -78,8 +76,8 @@ void main(uint3 gid : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
     
     culled = culled || (eb.x * ec.y >= eb.y * ec.x);
     
-    float2 bmin = (min(pa, min(pb, pc)) * 0.5f + 0.5f) * constants.renderSize;
-    float2 bmax = (max(pa, max(pb, pc)) * 0.5f + 0.5f) * constants.renderSize;
+    float2 bmin = (min(pa, min(pb, pc)) * 0.5f + 0.5f) * viewData.renderSize;
+    float2 bmax = (max(pa, max(pb, pc)) * 0.5f + 0.5f) * viewData.renderSize;
     float sbprec = 1.f / 256.f;
     
     culled = culled || (round(bmin.x - sbprec) == round(bmax.x + sbprec) || round(bmin.y - sbprec) == round(bmax.y + sbprec));

@@ -41,6 +41,7 @@ project "VoltRHI"
 	{
 		"ImGui", -- Should not be here
 		"tracy",
+		"%{Library.Aftermath}"
 	}
 
 	defines
@@ -82,11 +83,6 @@ project "VoltRHI"
 				"VT_ENABLE_PROFILING"
 			}
 
-			links
-			{
-				"%{Library.Aftermath}"
-			}
-
 			runtime "Debug"
 			optimize "off"
 			symbols "on"
@@ -99,11 +95,6 @@ project "VoltRHI"
 				"VT_ENABLE_VALIDATION",
 				"VT_ENABLE_PROFILING",
 				"NDEBUG"
-			}
-
-			links
-			{
-				"%{Library.Aftermath}"
 			}
 
 			buildoptions { "/Ot", "/Ob2" }

@@ -63,7 +63,7 @@ namespace Volt::RHI
 			allocInfo.framesAlive++;
 		}
 
-		constexpr size_t MAX_FRAMES_ALIVE = 2;
+		constexpr size_t MAX_FRAMES_ALIVE = 3;
 		
 		AllocationsToRemove result{};
 

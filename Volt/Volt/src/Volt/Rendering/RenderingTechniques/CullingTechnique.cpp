@@ -1,0 +1,219 @@
+#include "vtpch.h"
+#include "CullingTechnique.h"
+
+#include "Volt/Rendering/RenderGraph/RenderGraphBlackboard.h"
+#include "Volt/Rendering/RenderGraph/RenderGraph.h"
+#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
+
+#include "Volt/Rendering/RenderScene.h"
+#include "Volt/Rendering/RenderingUtils.h"
+#include "Volt/Rendering/Shader/ShaderMap.h"
+#include "Volt/Rendering/Camera/Camera.h"
+
+namespace Volt
+{
+	CullingTechnique::CullingTechnique(RenderGraph& rg, RenderGraphBlackboard& blackboard)
+		: m_renderGraph(rg), m_blackboard(blackboard)
+	{
+	}
+
+	CullPrimitivesData CullingTechnique::Execute(Ref<Camera> camera, Ref<RenderScene> renderScene)
+	{
+		m_renderGraph.BeginMarker("Culling", { 0.f, 1.f, 0.f, 1.f });
+
+		auto objectsData = AddCullObjectsPass(camera, renderScene);
+		auto meshletsData = AddCullMeshletsPass(camera, renderScene, objectsData);
+		auto primitivesData = AddCullPrimitivesPass(camera, renderScene, meshletsData);
+
+		m_renderGraph.EndMarker();
+
+		return primitivesData;
+	}
+
+	CullObjectsData CullingTechnique::AddCullObjectsPass(Ref<Camera> camera, Ref<RenderScene> renderScene)
+	{
+		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
+		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();
+
+		CullObjectsData& data = m_renderGraph.AddPass<CullObjectsData>("Cull Objects",
+		[&](RenderGraph::Builder& builder, CullObjectsData& data)
+		{
+			{
+				const auto desc = RGUtils::CreateBufferDesc<glm::uvec2>(std::max(renderScene->GetMeshletCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Meshlet To Object ID And Offset");
+				data.meshletToObjectIdAndOffset = builder.CreateBuffer(desc);
+			}
+
+			{
+				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Meshlet Count");
+				data.meshletCount = builder.CreateBuffer(desc);
+			}
+
+			{
+				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(3, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::GPU, "Statistics");
+				data.statisticsBuffer = builder.CreateBuffer(desc);
+			}
+
+			builder.ReadResource(uniformBuffers.viewDataBuffer);
+			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
+			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
+			builder.SetIsComputePass();
+		},
+		[=](const CullObjectsData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		{
+			const uint32_t commandCount = renderScene->GetRenderObjectCount();
+			const uint32_t dispatchCount = Math::DivideRoundUp(commandCount, 256u);
+
+			context.ClearBuffer(data.meshletCount, 0);
+			context.ClearBuffer(data.statisticsBuffer, 0);
+
+			auto pipeline = ShaderMap::GetComputePipeline("CullObjects");
+
+			context.BindPipeline(pipeline);
+			context.SetConstant("meshletCount", resources.GetBuffer(data.meshletCount));
+			context.SetConstant("meshletToObjectIdAndOffset", resources.GetBuffer(data.meshletToObjectIdAndOffset));
+			context.SetConstant("statisticsBuffer", resources.GetBuffer(data.statisticsBuffer));
+			context.SetConstant("objectDrawDataBuffer", resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
+			context.SetConstant("meshBuffer", resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
+			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("objectCount", commandCount);
+
+			const auto projection = camera->GetProjection();
+			const glm::mat4 projTranspose = glm::transpose(projection);
+
+			const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
+			const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
+
+			context.SetConstant("frustum0", frustumX.x);
+			context.SetConstant("frustum1", frustumX.z);
+			context.SetConstant("frustum2", frustumY.y);
+			context.SetConstant("frustum3", frustumY.z);
+
+			context.Dispatch(dispatchCount, 1, 1);
+		});
+
+		return data;
+	}
+
+	CullMeshletsData CullingTechnique::AddCullMeshletsPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullObjectsData& cullObjectsData)
+	{
+		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
+		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();
+
+		RenderGraphResourceHandle argsBufferHandle = RenderingUtils::GenerateIndirectArgs(m_renderGraph, cullObjectsData.meshletCount, 256, "Cull Meshlets Indirect Args");
+
+		CullMeshletsData& cullMeshletsData = m_renderGraph.AddPass<CullMeshletsData>("Cull Meshlets",
+		[&](RenderGraph::Builder& builder, CullMeshletsData& data)
+		{
+			{
+				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetMeshletCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Surviving Meshlets");
+				data.survivingMeshlets = builder.CreateBuffer(desc);
+			}
+
+			{
+				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Surviving Meshlets Count");
+				data.survivingMeshletCount = builder.CreateBuffer(desc);
+			}
+
+			builder.ReadResource(uniformBuffers.viewDataBuffer);
+			builder.ReadResource(cullObjectsData.meshletCount);
+			builder.ReadResource(cullObjectsData.meshletToObjectIdAndOffset);
+			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
+			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
+			builder.ReadResource(argsBufferHandle, RenderGraphResourceState::IndirectArgument);
+
+			builder.SetIsComputePass();
+		},
+		[=](const CullMeshletsData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			context.ClearBuffer(data.survivingMeshletCount, 0);
+
+			auto pipeline = ShaderMap::GetComputePipeline("CullMeshlets");
+
+			context.BindPipeline(pipeline);
+			context.SetConstant("survivingMeshlets", resources.GetBuffer(data.survivingMeshlets));
+			context.SetConstant("survivingMeshletCount", resources.GetBuffer(data.survivingMeshletCount));
+			context.SetConstant("meshletCount", resources.GetBuffer(cullObjectsData.meshletCount));
+			context.SetConstant("meshletToObjectIdAndOffset", resources.GetBuffer(cullObjectsData.meshletToObjectIdAndOffset));
+			context.SetConstant("gpuMeshlets", resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
+			context.SetConstant("objectDrawDataBuffer", resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
+			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
+
+			const auto projection = camera->GetProjection();
+			const glm::mat4 projTranspose = glm::transpose(projection);
+
+			const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
+			const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
+
+			context.SetConstant("frustum0", frustumX.x);
+			context.SetConstant("frustum1", frustumX.z);
+			context.SetConstant("frustum2", frustumY.y);
+			context.SetConstant("frustum3", frustumY.z);
+
+			context.DispatchIndirect(argsBufferHandle, 0);
+		});
+
+		return cullMeshletsData;
+	}
+
+	CullPrimitivesData CullingTechnique::AddCullPrimitivesPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullMeshletsData& cullMeshletsData)
+	{
+		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
+		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();
+
+		RenderGraphResourceHandle argsBufferHandle = RenderingUtils::GenerateIndirectArgsWrapped(m_renderGraph, cullMeshletsData.survivingMeshletCount, 1, "Cull Primitives Indirect Args");
+
+		CullPrimitivesData& primitivesData = m_renderGraph.AddPass<CullPrimitivesData>("Cull Primitives",
+		[&](RenderGraph::Builder& builder, CullPrimitivesData& data)
+		{
+			{
+				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetIndexCount(), 1u), RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndexBuffer, RHI::MemoryUsage::GPU, "Meshlet Index Buffer");
+				data.indexBuffer = builder.CreateBuffer(desc);
+			}
+
+			{
+				const auto desc = RGUtils::CreateBufferDesc<RHI::IndirectIndexedCommand>(1, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, "Meshlet Draw Command");
+				data.drawCommand = builder.CreateBuffer(desc);
+			}
+
+			builder.ReadResource(uniformBuffers.viewDataBuffer);
+			builder.ReadResource(cullMeshletsData.survivingMeshlets);
+			builder.ReadResource(cullMeshletsData.survivingMeshletCount);
+			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
+			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
+			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
+			builder.ReadResource(argsBufferHandle, RenderGraphResourceState::IndirectArgument);
+
+			builder.SetIsComputePass();
+		},
+		[=](const CullPrimitivesData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			{
+				RHI::IndirectIndexedCommand command{};
+				command.indexCount = 0;
+				command.firstInstance = 0;
+				command.firstIndex = 0;
+				command.vertexOffset = 0;
+				command.instanceCount = 1;
+				context.UploadBufferData(data.drawCommand, &command, sizeof(RHI::IndirectIndexedCommand));
+			}
+
+			context.ClearBuffer(data.indexBuffer, 0);
+
+			auto pipeline = ShaderMap::GetComputePipeline("CullPrimitives");
+
+			context.BindPipeline(pipeline);
+			context.SetConstant("indexBuffer", resources.GetBuffer(data.indexBuffer));
+			context.SetConstant("drawCommand", resources.GetBuffer(data.drawCommand));
+			context.SetConstant("survivingMeshlets", resources.GetBuffer(cullMeshletsData.survivingMeshlets));
+			context.SetConstant("survivingMeshletCount", resources.GetBuffer(cullMeshletsData.survivingMeshletCount));
+			context.SetConstant("gpuMeshlets", resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
+			context.SetConstant("gpuMeshes", resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
+			context.SetConstant("objectDrawDataBuffer", resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
+			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
+
+			context.DispatchIndirect(argsBufferHandle, 0);
+		});
+
+		return primitivesData;
+	}
+}

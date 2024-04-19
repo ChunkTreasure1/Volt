@@ -18,7 +18,9 @@
 
 #include "Volt/Rendering/RenderingTechniques/PrefixSumTechnique.h"
 #include "Volt/Rendering/RenderingTechniques/GTAOTechnique.h"
+#include "Volt/Rendering/RenderingTechniques/CullingTechnique.h"
 
+#include "Volt/Rendering/RenderingUtils.h"
 #include "Volt/Rendering/ShapeLibrary.h"
 #include "Volt/Rendering/DrawContext.h"
 
@@ -130,10 +132,9 @@ namespace Volt
 			m_height = m_resizeHeight;
 
 			RenderGraphExecutionThread::WaitForFinishedExecution();
-			RHI::GraphicsContext::GetDevice()->GetDeviceQueue(RHI::QueueType::Graphics)->WaitForQueue();
+			//RHI::GraphicsContext::GetDevice()->GetDeviceQueue(RHI::QueueType::Graphics)->WaitForQueue();
 
 			m_outputImage->Invalidate(m_width, m_height);
-
 			m_shouldResize = false;
 		}
 
@@ -155,13 +156,8 @@ namespace Volt
 
 		if (m_scene->GetRenderScene()->GetRenderObjectCount() > 0)
 		{
-			renderGraph.BeginMarker("Culling", { 0.f, 1.f, 0.f, 1.f });
-
-			AddCullObjectsPass(renderGraph, rgBlackboard, camera);
-			AddCullMeshletsPass(renderGraph, rgBlackboard, camera);
-			AddCullPrimitivesPass(renderGraph, rgBlackboard, camera);
-
-			renderGraph.EndMarker();
+			CullingTechnique cullingTechnique{ renderGraph, rgBlackboard };
+			rgBlackboard.Add<CullPrimitivesData>() = cullingTechnique.Execute(camera, m_scene->GetRenderScene());
 		
 			//AddStatsReadbackPass(renderGraph, rgBlackboard);
 
@@ -510,265 +506,6 @@ namespace Volt
 			auto& finalColorData = blackboard.Add<FinalColorData>();
 			finalColorData.finalColorOutput = renderGraph.AddExternalImage2D(m_outputImage);
 		}
-	}
-
-	void SceneRenderer::AddCullObjectsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera)
-	{
-		auto renderScene = m_scene->GetRenderScene();
-
-		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
-		const auto& externalBuffers = blackboard.Get<ExternalBuffersData>();
-
-		blackboard.Add<CullObjectsData>() = renderGraph.AddPass<CullObjectsData>("Cull Objects",
-		[&](RenderGraph::Builder& builder, CullObjectsData& data)
-		{
-			{
-				const auto desc = RGUtils::CreateBufferDesc<glm::uvec2>(std::max(renderScene->GetMeshletCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Meshlet To Object ID And Offset");
-				data.meshletToObjectIdAndOffset = builder.CreateBuffer(desc);
-			}
-
-			{
-				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Meshlet Count");
-				data.meshletCount = builder.CreateBuffer(desc);
-			}
-
-			{
-				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(3, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::GPU, "Statistics");
-				data.statisticsBuffer = builder.CreateBuffer(desc);
-			}
-
-			builder.ReadResource(uniformBuffers.viewDataBuffer);
-			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
-			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
-			builder.SetIsComputePass();
-		},
-		[=](const CullObjectsData& data, RenderContext& context, const RenderGraphPassResources& resources) 
-		{
-			const uint32_t commandCount = renderScene->GetRenderObjectCount();
-			const uint32_t dispatchCount = Math::DivideRoundUp(commandCount, 256u);
-
-			context.ClearBuffer(data.meshletCount, 0);
-			context.ClearBuffer(data.statisticsBuffer, 0);
-
-			auto pipeline = ShaderMap::GetComputePipeline("CullObjects");
-
-			context.BindPipeline(pipeline);
-			context.SetConstant("meshletCount", resources.GetBuffer(data.meshletCount));
-			context.SetConstant("meshletToObjectIdAndOffset", resources.GetBuffer(data.meshletToObjectIdAndOffset));
-			context.SetConstant("statisticsBuffer", resources.GetBuffer(data.statisticsBuffer));
-			context.SetConstant("objectDrawDataBuffer", resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
-			context.SetConstant("meshBuffer", resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
-			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
-			context.SetConstant("objectCount", commandCount);
-
-			const auto projection = camera->GetProjection();
-			const glm::mat4 projTranspose = glm::transpose(projection);
-
-			const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
-			const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
-
-			context.SetConstant("frustum0", frustumX.x);
-			context.SetConstant("frustum1", frustumX.z);
-			context.SetConstant("frustum2", frustumY.y);
-			context.SetConstant("frustum3", frustumY.z);
-
-			context.Dispatch(dispatchCount, 1, 1);
-		});
-	}
-
-	RenderGraphResourceHandle SceneRenderer::AddGenerateIndirectArgsPass(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName)
-	{
-		struct Output
-		{
-			RenderGraphResourceHandle argsBufferHandle = 0;
-		};
-
-		RenderGraphResourceHandle outHandle = 0;
-
-		renderGraph.AddPass<Output>("Generate Indirect Args",
-		[&](RenderGraph::Builder& builder, Output& data)
-		{
-			const auto argsDesc = RGUtils::CreateBufferDesc<uint32_t>(3, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, argsBufferName);
-			data.argsBufferHandle = builder.CreateBuffer(argsDesc);
-			outHandle = data.argsBufferHandle;
-
-			builder.ReadResource (countBuffer);
-			builder.SetIsComputePass();
-		},
-		[=](const Output& data, RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			auto pipeline = ShaderMap::GetComputePipeline("GenerateIndirectArgs");
-
-			context.BindPipeline(pipeline);
-			context.SetConstant("indirectArgs", resources.GetBuffer(data.argsBufferHandle));
-			context.SetConstant("countBuffer", resources.GetBuffer(countBuffer));
-			context.SetConstant("threadGroupSize", groupSize);
-
-			context.Dispatch(1, 1, 1);
-		});
-
-		return outHandle;
-	}
-
-	RenderGraphResourceHandle SceneRenderer::AddGenerateIndirectArgsPassWrapped(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName)
-	{
-		struct Output
-		{
-			RenderGraphResourceHandle argsBufferHandle = 0;
-		};
-
-		RenderGraphResourceHandle outHandle = 0;
-
-		renderGraph.AddPass<Output>("Generate Indirect Args",
-		[&](RenderGraph::Builder& builder, Output& data)
-		{
-			const auto argsDesc = RGUtils::CreateBufferDesc<uint32_t>(3, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, argsBufferName);
-			data.argsBufferHandle = builder.CreateBuffer(argsDesc);
-			outHandle = data.argsBufferHandle;
-
-			builder.ReadResource(countBuffer);
-			builder.SetIsComputePass();
-		},
-		[=](const Output& data, RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			auto pipeline = ShaderMap::GetComputePipeline("GenerateIndirectArgsWrapped");
-
-			context.BindPipeline(pipeline);
-			context.SetConstant("indirectArgs", resources.GetBuffer(data.argsBufferHandle));
-			context.SetConstant("countBuffer", resources.GetBuffer(countBuffer));
-			context.SetConstant("groupSize", groupSize);
-
-			context.Dispatch(1, 1, 1);
-		});
-
-		return outHandle;
-	}
-
-	void SceneRenderer::AddCullMeshletsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera)
-	{
-		auto renderScene = m_scene->GetRenderScene();
-
-		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
-		const auto& cullObjectsData = blackboard.Get<CullObjectsData>();
-		const auto& externalBuffers = blackboard.Get<ExternalBuffersData>();
-
-		RenderGraphResourceHandle argsBufferHandle = AddGenerateIndirectArgsPass(renderGraph, cullObjectsData.meshletCount, 256, "Cull Meshlets Indirect Args");
-
-		blackboard.Add<CullMeshletsData>() = renderGraph.AddPass<CullMeshletsData>("Cull Meshlets",
-		[&](RenderGraph::Builder& builder, CullMeshletsData& data)
-		{
-			{
-				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetMeshletCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Surviving Meshlets");
-				data.survivingMeshlets = builder.CreateBuffer(desc);
-			}
-
-			{
-				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Surviving Meshlets Count");
-				data.survivingMeshletCount = builder.CreateBuffer(desc);
-			}
-
-			builder.ReadResource(uniformBuffers.viewDataBuffer);
-			builder.ReadResource(cullObjectsData.meshletCount);
-			builder.ReadResource(cullObjectsData.meshletToObjectIdAndOffset);
-			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
-			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
-			builder.ReadResource(argsBufferHandle, RenderGraphResourceState::IndirectArgument);
-			
-			builder.SetIsComputePass();
-		},
-		[=](const CullMeshletsData& data, RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			context.ClearBuffer(data.survivingMeshletCount, 0);
-
-			auto pipeline = ShaderMap::GetComputePipeline("CullMeshlets");
-
-			context.BindPipeline(pipeline);
-			context.SetConstant("survivingMeshlets", resources.GetBuffer(data.survivingMeshlets));
-			context.SetConstant("survivingMeshletCount", resources.GetBuffer(data.survivingMeshletCount));
-			context.SetConstant("meshletCount", resources.GetBuffer(cullObjectsData.meshletCount));
-			context.SetConstant("meshletToObjectIdAndOffset", resources.GetBuffer(cullObjectsData.meshletToObjectIdAndOffset));
-			context.SetConstant("gpuMeshlets", resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
-			context.SetConstant("objectDrawDataBuffer", resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
-			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
-
-			const auto projection = camera->GetProjection();
-			const glm::mat4 projTranspose = glm::transpose(projection);
-
-			const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
-			const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
-
-			context.SetConstant("frustum0", frustumX.x);
-			context.SetConstant("frustum1", frustumX.z);
-			context.SetConstant("frustum2", frustumY.y);
-			context.SetConstant("frustum3", frustumY.z);
-
-			context.DispatchIndirect(argsBufferHandle, 0);
-		});
-	}
-
-	void SceneRenderer::AddCullPrimitivesPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera)
-	{
-		auto renderScene = m_scene->GetRenderScene();
-
-		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
-		const auto& cullMeshletsData = blackboard.Get<CullMeshletsData>();
-		const auto& externalBuffers = blackboard.Get<ExternalBuffersData>();
-
-		RenderGraphResourceHandle argsBufferHandle = AddGenerateIndirectArgsPassWrapped(renderGraph, cullMeshletsData.survivingMeshletCount, 1, "Cull Primitives Indirect Args");
-
-		blackboard.Add<CullPrimitivesData>() = renderGraph.AddPass<CullPrimitivesData>("Cull Primitives",
-		[&](RenderGraph::Builder& builder, CullPrimitivesData& data)
-		{
-			{
-				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetIndexCount(), 1u), RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndexBuffer, RHI::MemoryUsage::GPU, "Meshlet Index Buffer");
-				data.indexBuffer = builder.CreateBuffer(desc);
-			}
-
-			{
-				const auto desc = RGUtils::CreateBufferDesc<RHI::IndirectIndexedCommand>(1, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, "Meshlet Draw Command");
-				data.drawCommand = builder.CreateBuffer(desc);
-			}
-
-			builder.ReadResource(uniformBuffers.viewDataBuffer);
-			builder.ReadResource(cullMeshletsData.survivingMeshlets);
-			builder.ReadResource(cullMeshletsData.survivingMeshletCount);
-			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
-			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
-			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
-			builder.ReadResource(argsBufferHandle, RenderGraphResourceState::IndirectArgument);
-		
-			builder.SetIsComputePass();
-		},
-		[=](const CullPrimitivesData& data, RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			{
-				RHI::IndirectIndexedCommand command{};
-				command.indexCount = 0;
-				command.firstInstance = 0;
-				command.firstIndex = 0;
-				command.vertexOffset = 0;
-				command.instanceCount = 1;
-				context.UploadBufferData(data.drawCommand, &command, sizeof(RHI::IndirectIndexedCommand));
-			}
-
-			//context.ClearBuffer(resources.GetBufferRaw(data.indexBuffer), 0);
-			context.ClearBuffer(data.indexBuffer, 0);
-
-			auto pipeline = ShaderMap::GetComputePipeline("CullPrimitives");
-
-			context.BindPipeline(pipeline);
-			context.SetConstant("indexBuffer", resources.GetBuffer(data.indexBuffer));
-			context.SetConstant("drawCommand", resources.GetBuffer(data.drawCommand));
-			context.SetConstant("survivingMeshlets", resources.GetBuffer(cullMeshletsData.survivingMeshlets));
-			context.SetConstant("survivingMeshletCount", resources.GetBuffer(cullMeshletsData.survivingMeshletCount));
-			context.SetConstant("gpuMeshlets", resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
-			context.SetConstant("gpuMeshes", resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
-			context.SetConstant("objectDrawDataBuffer", resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
-			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
-			context.SetConstant("renderSize", glm::vec2(m_width, m_height));
-
-			context.DispatchIndirect(argsBufferHandle, 0);
-		});
 	}
 
 	void SceneRenderer::AddStatsReadbackPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)

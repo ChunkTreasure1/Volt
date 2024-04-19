@@ -4,11 +4,6 @@
 
 namespace Volt
 {
-	namespace RHI
-	{
-		class ComputePipeline;
-	}
-
 	class RenderGraph;
 	class RenderGraphBlackboard;
 
