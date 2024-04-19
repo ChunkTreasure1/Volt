@@ -566,6 +566,8 @@ namespace Volt
 				scene->GetWorldEngineMutable().OnEntityMoved(realEntity);
 			}
 		}
+
+		scene->InvalidateRenderScene();
 	}
 
 	void SceneSerializer::SerializeWorldEngine(const Ref<Scene>& scene, YAMLMemoryStreamWriter& streamWriter) const
@@ -584,8 +586,8 @@ namespace Volt
 		auto& worldEngine = scene->m_worldEngine;
 
 		streamReader.EnterScope("WorldEngine");
-		worldEngine.GetSettingsMutable().cellSize = streamReader.ReadAtKey("cellSize", 256);
-		worldEngine.GetSettingsMutable().worldSize = streamReader.ReadAtKey("worldSize", glm::uvec2{ 1280 });
+		worldEngine.GetSettingsMutable().cellSize = streamReader.ReadAtKey("cellSize", 25'600);
+		worldEngine.GetSettingsMutable().worldSize = streamReader.ReadAtKey("worldSize", glm::uvec2{ 128'000 });
 		worldEngine.GenerateCells();
 		streamReader.ExitScope();
 	}

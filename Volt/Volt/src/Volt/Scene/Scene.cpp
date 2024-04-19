@@ -1378,7 +1378,7 @@ namespace Volt
 
 			meshComp.renderObjectIds.clear();
 
-			Ref<Mesh> mesh = AssetManager::QueueAsset<Mesh>(meshComp.handle);
+			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshComp.handle);
 			if (!mesh)
 			{
 				continue;
