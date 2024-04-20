@@ -7,6 +7,7 @@
 #include "Volt/Rendering/RenderGraph/Resources/RenderGraphTextureResource.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
 #include "Volt/Rendering/RendererCommon.h"
+#include "Volt/Rendering/Camera/Camera.h"
 
 #include <VoltRHI/Pipelines/RenderPipeline.h>
 
@@ -17,12 +18,19 @@ namespace Volt
 	{
 	}
 
-	DirectionalShadowData DirectionalShadowTechnique::Execute(Ref<Camera> camera, Ref<RenderScene> renderScene)
+	DirectionalShadowData DirectionalShadowTechnique::Execute(Ref<Camera> camera, Ref<RenderScene> renderScene, const DirectionalLightData& light)
 	{
 		m_renderGraph.BeginMarker("Directional Shadow");
 
+		constexpr float SIZE = 1000.f;
+
+		Ref<Camera> shadowCamera = CreateRef<Camera>(-SIZE, SIZE, -SIZE, SIZE, 1.f, 10'000.f);
+		const glm::mat4 view = glm::lookAtLH(glm::vec3(0.f) - glm::vec3(light.direction) * 1000.f, glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
+
+		shadowCamera->SetView(view);
+
 		CullingTechnique culling{ m_renderGraph, m_blackboard };
-		const CullPrimitivesData cullPrimitivesData = culling.Execute(camera, renderScene, DirectionalLightData::CASCADE_COUNT);
+		const CullPrimitivesData cullPrimitivesData = culling.Execute(shadowCamera, renderScene, CullingMode::Orthographic, 1);
 
 		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
 		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();

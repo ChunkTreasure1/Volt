@@ -32,12 +32,8 @@ struct IndirectIndexedCommand
     int vertexOffset;
     uint firstInstance;
 };
-    
-///// Rendering Structures /////
-struct CommonResourcesData
-{
-};
 
+///// Rendering Structures /////
 struct ViewData
 {
     // Camera
@@ -69,7 +65,7 @@ struct DirectionalLight
     float3 color;
     float intensity;
 
-    uint enableShadows;
+    uint castShadows;
 
     float cascadeDistances[DIRECTIONAL_SHADOW_CASCADE_COUNT];
     float4x4 viewProjections[DIRECTIONAL_SHADOW_CASCADE_COUNT];

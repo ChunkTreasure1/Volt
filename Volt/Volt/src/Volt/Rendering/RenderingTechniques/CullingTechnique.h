@@ -11,16 +11,23 @@ namespace Volt
 	class Camera;
 	class RenderScene;
 
+	enum class CullingMode : uint32_t
+	{
+		Perspective = 0,
+		Orthographic = 1,
+		None = 2
+	};
+
 	class CullingTechnique
 	{
 	public:
 		CullingTechnique(RenderGraph& rg, RenderGraphBlackboard& blackboard);
 
-		CullPrimitivesData Execute(Ref<Camera> camera, Ref<RenderScene> renderScene, const uint32_t instanceCount = 1);
+		CullPrimitivesData Execute(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode, const uint32_t instanceCount = 1);
 	
 	private:
-		CullObjectsData AddCullObjectsPass(Ref<Camera> camera, Ref<RenderScene> renderScene);
-		CullMeshletsData AddCullMeshletsPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullObjectsData& cullObjectsData);
+		CullObjectsData AddCullObjectsPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode);
+		CullMeshletsData AddCullMeshletsPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode, const CullObjectsData& cullObjectsData);
 		CullPrimitivesData AddCullPrimitivesPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullMeshletsData& cullMeshletsData, const uint32_t instanceCount);
 
 		RenderGraph& m_renderGraph;

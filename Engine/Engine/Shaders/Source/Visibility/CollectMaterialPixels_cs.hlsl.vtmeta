@@ -1,8 +1,0 @@
-Metadata:
-  assetHandle: 16709561383023777830
-  filePath: Engine/Shaders/Source/Visibility/CollectMaterialPixels_cs.hlsl
-  type: 128
-  Dependencies:
-    []
-  Properties:
-    {}

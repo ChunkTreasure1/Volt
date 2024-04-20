@@ -158,7 +158,7 @@ namespace Volt
 		if (m_scene->GetRenderScene()->GetRenderObjectCount() > 0)
 		{
 			CullingTechnique cullingTechnique{ renderGraph, rgBlackboard };
-			rgBlackboard.Add<CullPrimitivesData>() = cullingTechnique.Execute(camera, m_scene->GetRenderScene());
+			rgBlackboard.Add<CullPrimitivesData>() = cullingTechnique.Execute(camera, m_scene->GetRenderScene(), CullingMode::Perspective);
 		
 			//AddStatsReadbackPass(renderGraph, rgBlackboard);
 
@@ -174,7 +174,7 @@ namespace Volt
 			gtaoTechnique.AddGTAOPasses(renderGraph, rgBlackboard, camera, { m_width, m_height });
 
 			DirectionalShadowTechnique dirShadowTechnique{ renderGraph, rgBlackboard };
-			rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene());
+			rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene(), m_directionalLightData);
 
 			AddVisibilityBufferPass(renderGraph, rgBlackboard);
 			AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
@@ -328,8 +328,7 @@ namespace Volt
 			const auto desc = RGUtils::CreateBufferDesc<DirectionalLightData>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Directional Light Data");
 			buffersData.directionalLightBuffer = renderGraph.CreateBuffer(desc);
 
-			DirectionalLightData data{};
-			data.intensity = 0.f;
+			m_directionalLightData.intensity = 0.f;
 
 			m_scene->ForEachWithComponents<const DirectionalLightComponent, const IDComponent, const TransformComponent>([&](entt::entity id, const DirectionalLightComponent& dirLightComp, const IDComponent& idComp, const TransformComponent& comp) 
 			{
@@ -341,36 +340,41 @@ namespace Volt
 				auto entity = m_scene->GetEntityFromUUID(idComp.id);
 				const glm::vec3 dir = glm::rotate(entity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
 				
-				data.color = dirLightComp.color;
-				data.intensity = dirLightComp.intensity;
-				data.direction = { dir, 0.f };
-				data.enableShadows = static_cast<uint32_t>(dirLightComp.castShadows);
+				m_directionalLightData.color = dirLightComp.color;
+				m_directionalLightData.intensity = dirLightComp.intensity;
+				m_directionalLightData.direction = { dir, 0.f };
+				m_directionalLightData.castShadows = static_cast<uint32_t>(dirLightComp.castShadows);
 
 				if (dirLightComp.castShadows)
 				{
-					const std::vector<float> cascades = { 25, 7500, 20000, 50000 };
-					const auto lightMatrices = Utility::CalculateCascadeMatrices(camera, dir, cascades);
+					//const std::vector<float> cascades = { 25, 7500, 20000, 50000 };
+					//const auto lightMatrices = Utility::CalculateCascadeMatrices(camera, dir, cascades);
 
-					for (size_t i = 0; i < lightMatrices.size(); i++)
-					{
-						data.viewProjections[i] = lightMatrices.at(i);
-					}
+					//for (size_t i = 0; i < lightMatrices.size(); i++)
+					//{
+					//	data.viewProjections[i] = lightMatrices.at(i);
+					//}
 
-					for (size_t i = 0; i < cascades.size(); i++)
-					{
-						if (i < cascades.size())
-						{
-							data.cascadeDistances[i] = cascades.at(i);
-						}
-						else
-						{
-							data.cascadeDistances[i] = camera->GetFarPlane();
-						}
-					}
+					//for (size_t i = 0; i < cascades.size(); i++)
+					//
+					//	if (i < cascades.size())
+					//	{
+					//		data.cascadeDistances[i] = cascades.at(i);
+					//	}
+					//	else
+					//	{
+					//		data.cascadeDistances[i] = camera->GetFarPlane();
+					//	}
+					//}
+
+					const glm::vec3 lightPosition = camera->GetPosition() + dir * glm::vec3{ 0.f, 10'000, 0.f };
+					const glm::mat4 view = glm::lookAtLH(glm::vec3(0.f) - dir * 1000.f, glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
+
+					m_directionalLightData.viewProjections[0] = glm::ortho(-1000.f, 1000.f, -1000.f, 1000.f, 1.f, 10000.f) * view;
 				}
 			});
 
-			renderGraph.AddMappedBufferUpload(buffersData.directionalLightBuffer, &data, sizeof(DirectionalLightData), "Upload directional light data");
+			renderGraph.AddMappedBufferUpload(buffersData.directionalLightBuffer, &m_directionalLightData, sizeof(DirectionalLightData), "Upload directional light data");
 		}
 	}
 

@@ -1,8 +1,0 @@
-Metadata:
-  assetHandle: 15078798711064661482
-  filePath: Engine/Shaders/Source/Utility/PreDepth_ms.hlsl
-  type: 128
-  Dependencies:
-    []
-  Properties:
-    {}

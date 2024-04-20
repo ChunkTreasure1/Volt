@@ -1,8 +1,0 @@
-Metadata:
-  assetHandle: 2436815931885293595
-  filePath: Engine/Shaders/Source/Defaults/OpaqueDefault_cs.hlsl
-  type: 128
-  Dependencies:
-    []
-  Properties:
-    {}

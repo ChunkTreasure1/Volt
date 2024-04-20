@@ -860,22 +860,25 @@ namespace Volt::RHI
 		if (!isResourceType)
 		{
 			size_t tTypeOffset = str.find("_t");
-			size_t findOffset = std::string_view::npos;
+			size_t findOffset = 0;
 
 			if (tTypeOffset != std::string_view::npos)
 			{
 				findOffset = tTypeOffset;
 			}
 
-			size_t lastNumOffset = str.find_last_not_of("abcdefghijklmnopqrstuvwxyz<>[]", findOffset);
+			size_t lastNumOffset = str.find_first_not_of("abcdefghijklmnopqrstuvwxyz<>[]", findOffset);
 			if (lastNumOffset != std::string_view::npos)
 			{
 				std::string_view postfixStr = str.substr(lastNumOffset, str.size() - lastNumOffset);
-				resultType.vecsize = static_cast<uint32_t>(std::stoi(std::string(1, postfixStr[0])));
+
+				const uint32_t vecSize = static_cast<uint32_t>(std::stoi(std::string(1, postfixStr[0])));
+				resultType.vecsize = vecSize;
 
 				if (postfixStr.size() > 1)
 				{
-					resultType.columns = static_cast<uint32_t>(std::stoi(std::to_string(postfixStr[postfixStr.size() - 1])));
+					const uint32_t columnCount = static_cast<uint32_t>(std::stoi(std::string(1, postfixStr[postfixStr.size() - 1])));
+					resultType.columns = columnCount;
 				}
 			}
 		}

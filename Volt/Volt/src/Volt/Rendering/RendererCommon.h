@@ -73,7 +73,7 @@ namespace Volt
 		glm::vec3 color;
 		float intensity;
 
-		uint32_t enableShadows = 1;
+		uint32_t castShadows = 1;
 
 		float cascadeDistances[CASCADE_COUNT];
 		glm::mat4 viewProjections[CASCADE_COUNT];

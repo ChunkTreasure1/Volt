@@ -2,6 +2,7 @@
 
 #include "Vertex.hlsli"
 #include "Resources.hlsli"
+#include "BoundingVolumes.hlsli"
 
 #define MAX_LOD_COUNT 8
 
@@ -66,8 +67,7 @@ struct ObjectDrawData
     uint meshletStartOffset;
     uint padding;
     
-    float3 boundingSphereCenter;
-    float boundingSphereRadius;
+    BoundingSphere boundingSphere;
 };
 
 struct GPUScene

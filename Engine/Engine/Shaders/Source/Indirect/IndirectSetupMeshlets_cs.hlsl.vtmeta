@@ -1,8 +1,0 @@
-Metadata:
-  assetHandle: 2957097663980726471
-  filePath: Engine/Shaders/Source/Indirect/IndirectSetupMeshlets_cs.hlsl
-  type: 128
-  Dependencies:
-    []
-  Properties:
-    {}

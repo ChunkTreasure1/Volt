@@ -9,11 +9,13 @@ namespace Volt
 	class RenderScene;
 	class Camera;
 
+	struct DirectionalLightData;
+
 	class DirectionalShadowTechnique
 	{
 	public:
 		DirectionalShadowTechnique(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		DirectionalShadowData Execute(Ref<Camera> camera, Ref<RenderScene> renderScene);
+		DirectionalShadowData Execute(Ref<Camera> camera, Ref<RenderScene> renderScene, const DirectionalLightData& light);
 
 	private:
 		RenderGraph& m_renderGraph;

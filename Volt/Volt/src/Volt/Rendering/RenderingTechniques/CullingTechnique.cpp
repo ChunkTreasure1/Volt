@@ -17,12 +17,12 @@ namespace Volt
 	{
 	}
 
-	CullPrimitivesData CullingTechnique::Execute(Ref<Camera> camera, Ref<RenderScene> renderScene, const uint32_t instanceCount)
+	CullPrimitivesData CullingTechnique::Execute(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode, const uint32_t instanceCount)
 	{
 		m_renderGraph.BeginMarker("Culling", { 0.f, 1.f, 0.f, 1.f });
 
-		auto objectsData = AddCullObjectsPass(camera, renderScene);
-		auto meshletsData = AddCullMeshletsPass(camera, renderScene, objectsData);
+		auto objectsData = AddCullObjectsPass(camera, renderScene, cullingMode);
+		auto meshletsData = AddCullMeshletsPass(camera, renderScene, cullingMode, objectsData);
 		auto primitivesData = AddCullPrimitivesPass(camera, renderScene, meshletsData, instanceCount);
 
 		m_renderGraph.EndMarker();
@@ -30,9 +30,8 @@ namespace Volt
 		return primitivesData;
 	}
 
-	CullObjectsData CullingTechnique::AddCullObjectsPass(Ref<Camera> camera, Ref<RenderScene> renderScene)
+	CullObjectsData CullingTechnique::AddCullObjectsPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode)
 	{
-		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
 		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();
 
 		CullObjectsData& data = m_renderGraph.AddPass<CullObjectsData>("Cull Objects",
@@ -53,7 +52,6 @@ namespace Volt
 				data.statisticsBuffer = builder.CreateBuffer(desc);
 			}
 
-			builder.ReadResource(uniformBuffers.viewDataBuffer);
 			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
 			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
 			builder.SetIsComputePass();
@@ -74,19 +72,33 @@ namespace Volt
 			context.SetConstant("statisticsBuffer"_sh, resources.GetBuffer(data.statisticsBuffer));
 			context.SetConstant("objectDrawDataBuffer"_sh, resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
 			context.SetConstant("meshBuffer"_sh, resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
-			context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant("objectCount"_sh, commandCount);
+			context.SetConstant("cullingMode"_sh, static_cast<uint32_t>(cullingMode));
 
-			const auto projection = camera->GetProjection();
-			const glm::mat4 projTranspose = glm::transpose(projection);
+			if (cullingMode == CullingMode::Perspective)
+			{
+				const auto projection = camera->GetProjection();
+				const glm::mat4 projTranspose = glm::transpose(projection);
 
-			const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
-			const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
+				const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
+				const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
 
-			context.SetConstant("frustum0"_sh, frustumX.x);
-			context.SetConstant("frustum1"_sh, frustumX.z);
-			context.SetConstant("frustum2"_sh, frustumY.y);
-			context.SetConstant("frustum3"_sh, frustumY.z);
+				context.SetConstant("frustum0"_sh, frustumX.x);
+				context.SetConstant("frustum1"_sh, frustumX.z);
+				context.SetConstant("frustum2"_sh, frustumY.y);
+				context.SetConstant("frustum3"_sh, frustumY.z);
+			}
+			else if (cullingMode == CullingMode::Orthographic)
+			{
+				const auto frustumAABB = camera->GetOrthographicFrustum();
+
+				context.SetConstant("orthographicFrustumMin"_sh, frustumAABB.GetMin());
+				context.SetConstant("orthographicFrustumMax"_sh, frustumAABB.GetMax());
+			}
+
+			context.SetConstant("nearPlane"_sh, camera->GetNearPlane());
+			context.SetConstant("farPlane"_sh, camera->GetFarPlane());
+			context.SetConstant("viewMatrix"_sh, camera->GetView());
 
 			context.Dispatch(dispatchCount, 1, 1);
 		});
@@ -94,7 +106,7 @@ namespace Volt
 		return data;
 	}
 
-	CullMeshletsData CullingTechnique::AddCullMeshletsPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullObjectsData& cullObjectsData)
+	CullMeshletsData CullingTechnique::AddCullMeshletsPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode, const CullObjectsData& cullObjectsData)
 	{
 		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
 		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();
@@ -137,17 +149,32 @@ namespace Volt
 			context.SetConstant("gpuMeshlets"_sh, resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
 			context.SetConstant("objectDrawDataBuffer"_sh, resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
 			context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("cullingMode"_sh, static_cast<uint32_t>(cullingMode));
 
-			const auto projection = camera->GetProjection();
-			const glm::mat4 projTranspose = glm::transpose(projection);
+			if (cullingMode == CullingMode::Perspective)
+			{
+				const auto projection = camera->GetProjection();
+				const glm::mat4 projTranspose = glm::transpose(projection);
 
-			const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
-			const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
+				const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
+				const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
 
-			context.SetConstant("frustum0"_sh, frustumX.x);
-			context.SetConstant("frustum1"_sh, frustumX.z);
-			context.SetConstant("frustum2"_sh, frustumY.y);
-			context.SetConstant("frustum3"_sh, frustumY.z);
+				context.SetConstant("frustum0"_sh, frustumX.x);
+				context.SetConstant("frustum1"_sh, frustumX.z);
+				context.SetConstant("frustum2"_sh, frustumY.y);
+				context.SetConstant("frustum3"_sh, frustumY.z);
+			}
+			else if (cullingMode == CullingMode::Orthographic)
+			{
+				const auto frustumAABB = camera->GetOrthographicFrustum();
+
+				context.SetConstant("orthographicFrustumMin"_sh, frustumAABB.GetMin());
+				context.SetConstant("orthographicFrustumMax"_sh, frustumAABB.GetMax());
+			}
+
+			context.SetConstant("nearPlane"_sh, camera->GetNearPlane());
+			context.SetConstant("farPlane"_sh, camera->GetFarPlane());
+			context.SetConstant("viewMatrix"_sh, camera->GetView());
 
 			context.DispatchIndirect(argsBufferHandle, 0);
 		});

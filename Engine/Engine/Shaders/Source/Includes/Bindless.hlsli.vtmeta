@@ -1,8 +1,0 @@
-Metadata:
-  assetHandle: 15059869106028473633
-  filePath: Engine/Shaders/Source/Includes/Bindless.hlsli
-  type: 128
-  Dependencies:
-    []
-  Properties:
-    {}

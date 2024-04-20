@@ -112,5 +112,6 @@ namespace Volt
 
 		Ref<Scene> m_scene;
 		SceneEnvironment m_sceneEnvironment;
+		DirectionalLightData m_directionalLightData;
 	};
 }
