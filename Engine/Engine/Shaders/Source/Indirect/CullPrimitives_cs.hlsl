@@ -19,14 +19,17 @@ struct Constants
     TypedBuffer<Meshlet> gpuMeshlets;
     TypedBuffer<GPUMesh> gpuMeshes;
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    UniformBuffer<ViewData> viewData;
+
+    float4x4 viewMatrix;
+    float4x4 projectionMatrix;
+
+    float2 renderSize;
 };
 
 [numthreads(64, 1, 1)]
 void main(uint3 gid : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
 {
     const Constants constants = GetConstants<Constants>();
-    const ViewData viewData = constants.viewData.Load();
     
     uint groupId = UnwrapDispatchGroupId(gid);
     
@@ -58,7 +61,7 @@ void main(uint3 gid : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
     positions[2] = mesh.vertexPositionsBuffer.Load(vIndex2).position;
     
     // #TODO_Ivar: switch to viewProjection
-    const float4x4 mvp = mul(viewData.projection, mul(viewData.view, objectData.transform));
+    const float4x4 mvp = mul(constants.projectionMatrix, mul(constants.viewMatrix, objectData.transform));
     
     [unroll]
     for (uint i = 0; i < 3; ++i)
@@ -76,8 +79,8 @@ void main(uint3 gid : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
     
     culled = culled || (eb.x * ec.y >= eb.y * ec.x);
     
-    float2 bmin = (min(pa, min(pb, pc)) * 0.5f + 0.5f) * viewData.renderSize;
-    float2 bmax = (max(pa, max(pb, pc)) * 0.5f + 0.5f) * viewData.renderSize;
+    float2 bmin = (min(pa, min(pb, pc)) * 0.5f + 0.5f) * constants.renderSize;
+    float2 bmax = (max(pa, max(pb, pc)) * 0.5f + 0.5f) * constants.renderSize;
     float sbprec = 1.f / 256.f;
     
     culled = culled || (round(bmin.x - sbprec) == round(bmax.x + sbprec) || round(bmin.y - sbprec) == round(bmax.y + sbprec));

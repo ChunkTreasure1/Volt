@@ -17,13 +17,13 @@ namespace Volt
 	{
 	}
 
-	CullPrimitivesData CullingTechnique::Execute(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode, const uint32_t instanceCount)
+	CullPrimitivesData CullingTechnique::Execute(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode, const glm::vec2& renderSize, const uint32_t instanceCount)
 	{
 		m_renderGraph.BeginMarker("Culling", { 0.f, 1.f, 0.f, 1.f });
 
 		auto objectsData = AddCullObjectsPass(camera, renderScene, cullingMode);
 		auto meshletsData = AddCullMeshletsPass(camera, renderScene, cullingMode, objectsData);
-		auto primitivesData = AddCullPrimitivesPass(camera, renderScene, meshletsData, instanceCount);
+		auto primitivesData = AddCullPrimitivesPass(camera, renderScene, meshletsData, renderSize, instanceCount);
 
 		m_renderGraph.EndMarker();
 
@@ -108,7 +108,6 @@ namespace Volt
 
 	CullMeshletsData CullingTechnique::AddCullMeshletsPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode, const CullObjectsData& cullObjectsData)
 	{
-		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
 		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();
 
 		RenderGraphResourceHandle argsBufferHandle = RenderingUtils::GenerateIndirectArgs(m_renderGraph, cullObjectsData.meshletCount, 256, "Cull Meshlets Indirect Args");
@@ -126,7 +125,6 @@ namespace Volt
 				data.survivingMeshletCount = builder.CreateBuffer(desc);
 			}
 
-			builder.ReadResource(uniformBuffers.viewDataBuffer);
 			builder.ReadResource(cullObjectsData.meshletCount);
 			builder.ReadResource(cullObjectsData.meshletToObjectIdAndOffset);
 			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
@@ -148,7 +146,6 @@ namespace Volt
 			context.SetConstant("meshletToObjectIdAndOffset"_sh, resources.GetBuffer(cullObjectsData.meshletToObjectIdAndOffset));
 			context.SetConstant("gpuMeshlets"_sh, resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
 			context.SetConstant("objectDrawDataBuffer"_sh, resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
-			context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant("cullingMode"_sh, static_cast<uint32_t>(cullingMode));
 
 			if (cullingMode == CullingMode::Perspective)
@@ -182,9 +179,8 @@ namespace Volt
 		return cullMeshletsData;
 	}
 
-	CullPrimitivesData CullingTechnique::AddCullPrimitivesPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullMeshletsData& cullMeshletsData, const uint32_t instanceCount)
+	CullPrimitivesData CullingTechnique::AddCullPrimitivesPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullMeshletsData& cullMeshletsData, const glm::vec2& renderSize, const uint32_t instanceCount)
 	{
-		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
 		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();
 
 		RenderGraphResourceHandle argsBufferHandle = RenderingUtils::GenerateIndirectArgsWrapped(m_renderGraph, cullMeshletsData.survivingMeshletCount, 1, "Cull Primitives Indirect Args");
@@ -202,7 +198,6 @@ namespace Volt
 				data.drawCommand = builder.CreateBuffer(desc);
 			}
 
-			builder.ReadResource(uniformBuffers.viewDataBuffer);
 			builder.ReadResource(cullMeshletsData.survivingMeshlets);
 			builder.ReadResource(cullMeshletsData.survivingMeshletCount);
 			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
@@ -236,7 +231,9 @@ namespace Volt
 			context.SetConstant("gpuMeshlets"_sh, resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
 			context.SetConstant("gpuMeshes"_sh, resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
 			context.SetConstant("objectDrawDataBuffer"_sh, resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
-			context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("viewMatrix"_sh, camera->GetView());
+			context.SetConstant("projectionMatrix"_sh, camera->GetProjection());
+			context.SetConstant("renderSize"_sh, renderSize);
 
 			context.DispatchIndirect(argsBufferHandle, 0);
 		});

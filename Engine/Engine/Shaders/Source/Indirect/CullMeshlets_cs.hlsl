@@ -14,7 +14,6 @@ struct Constants
     
     TypedBuffer<Meshlet> gpuMeshlets;
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    UniformBuffer<ViewData> viewData;
     
     uint cullingMode;
 
@@ -30,6 +29,23 @@ struct Constants
     float3 orthographicFrustumMax;
     float4x4 viewMatrix;
 };
+
+bool IsInFrustum(in Constants constants, in float4x4 transform, in BoundingSphere sphere)
+{
+    const float3 globalScale = float3(length(transform[0]), length(transform[1]), length(transform[2]));
+    const float maxScale = max(max(globalScale.x, globalScale.y), globalScale.z);
+    sphere.radius *= maxScale;
+    
+    const float3 center = mul(constants.viewMatrix, mul(transform, float4(sphere.center, 1.f))).xyz;
+    
+    bool visible = true;
+    
+    visible = visible && center.z * constants.frustum1 - abs(center.x) * constants.frustum0 > -sphere.radius;
+    visible = visible && center.z * constants.frustum3 - abs(center.y) * constants.frustum2 > -sphere.radius;
+    visible = visible && center.z + sphere.radius > constants.nearPlane && center.z - sphere.radius < constants.farPlane;
+    
+    return true;
+}
 
 bool ConeCull(in float3 center, in float radius, float3 coneAxis, float coneCutoff, float3 cameraPosition)
 {
@@ -51,6 +67,8 @@ void main(uint threadId : SV_DispatchThreadID)
     
     const uint meshletIndex = objectData.meshletStartOffset + threadId - objectIdAndOffset.y;
     const Meshlet meshlet = constants.gpuMeshlets.Load(meshletIndex);
+
+#if 1
 
     const float3 globalScale = float3(length(objectData.transform[0]), length(objectData.transform[1]), length(objectData.transform[2]));
     const float maxScale = max(max(globalScale.x, globalScale.y), globalScale.z);
@@ -78,6 +96,10 @@ void main(uint threadId : SV_DispatchThreadID)
         aabb.max = constants.orthographicFrustumMax;
         visible = IsInFrustum_Orthographic(aabb, cullingSphere);
     }
+#else
+    BoundingSphere sphere = BoundingSphere::Construct(meshlet.boundingSphereRadius, meshlet.boundingSphereCenter);
+    bool visible = IsInFrustum(constants, objectData.transform, sphere);
+#endif
 
     //const ViewData viewData = constants.viewData.Load(0);
     //visible = visible && ConeCull(meshlet.boundingSphereCenter, meshlet.boundingSphereRadius, meshlet.cone.xyz, meshlet.cone.w, cameraData.position.xyz);

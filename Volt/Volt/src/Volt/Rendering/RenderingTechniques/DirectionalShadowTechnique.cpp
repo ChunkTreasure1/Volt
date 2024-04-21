@@ -30,7 +30,7 @@ namespace Volt
 		shadowCamera->SetView(view);
 
 		CullingTechnique culling{ m_renderGraph, m_blackboard };
-		const CullPrimitivesData cullPrimitivesData = culling.Execute(shadowCamera, renderScene, CullingMode::Orthographic, 1);
+		const CullPrimitivesData cullPrimitivesData = culling.Execute(shadowCamera, renderScene, CullingMode::Orthographic, glm::vec2{ 1024, 1024 }, 1);
 
 		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
 		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();

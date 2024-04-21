@@ -158,7 +158,7 @@ namespace Volt
 		if (m_scene->GetRenderScene()->GetRenderObjectCount() > 0)
 		{
 			CullingTechnique cullingTechnique{ renderGraph, rgBlackboard };
-			rgBlackboard.Add<CullPrimitivesData>() = cullingTechnique.Execute(camera, m_scene->GetRenderScene(), CullingMode::Perspective);
+			rgBlackboard.Add<CullPrimitivesData>() = cullingTechnique.Execute(camera, m_scene->GetRenderScene(), CullingMode::Perspective, glm::vec2{ m_width, m_height });
 		
 			//AddStatsReadbackPass(renderGraph, rgBlackboard);
 

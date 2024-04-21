@@ -119,10 +119,10 @@ LightOutput CalculateDirectionalLight(in DirectionalLight light, in float3 dirTo
     const float3 specularBRDF = CalculateSpecular(cosLi, NdotV, F, D, G);
     
     float shadow = 1.f;
-    if (light.castShadows)
-    {
-        shadow = CalculateDirectionalShadow(light);
-    }
+    //if (light.castShadows)
+    //{
+    //    shadow = CalculateDirectionalShadow(light);
+    //}
 
     LightOutput output;
     output.diffuse = diffuseBRDF * Lradiance * cosLi * shadow;

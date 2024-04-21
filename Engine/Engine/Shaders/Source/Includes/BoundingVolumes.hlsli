@@ -2,8 +2,8 @@
 
 struct BoundingSphere
 {
-    float radius;
     float3 center;
+    float radius;
 
     static BoundingSphere Construct(float inRadius, float3 inCenter)
     {
