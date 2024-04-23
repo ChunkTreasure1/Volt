@@ -20,6 +20,7 @@
 #include "Volt/Rendering/RenderingTechniques/GTAOTechnique.h"
 #include "Volt/Rendering/RenderingTechniques/CullingTechnique.h"
 #include "Volt/Rendering/RenderingTechniques/DirectionalShadowTechnique.h"
+#include "Volt/Rendering/RenderingTechniques/LightCullingTechnique.h"
 
 #include "Volt/Rendering/RenderingUtils.h"
 #include "Volt/Rendering/ShapeLibrary.h"
@@ -173,11 +174,14 @@ namespace Volt
 			GTAOTechnique gtaoTechnique{ 0 /*m_frameIndex*/, tempSettings };
 			gtaoTechnique.AddGTAOPasses(renderGraph, rgBlackboard, camera, { m_width, m_height });
 
-			DirectionalShadowTechnique dirShadowTechnique{ renderGraph, rgBlackboard };
-			rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene(), m_directionalLightData);
+			//DirectionalShadowTechnique dirShadowTechnique{ renderGraph, rgBlackboard };
+			//rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene(), m_directionalLightData);
 
 			AddVisibilityBufferPass(renderGraph, rgBlackboard);
 			AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
+
+			LightCullingTechnique lightCulling{ renderGraph, rgBlackboard };
+			auto data = lightCulling.Execute(glm::uvec2{ m_width, m_height });
 
 			PrefixSumTechnique prefixSum{ renderGraph };
 			prefixSum.Execute(rgBlackboard.Get<MaterialCountData>().materialCountBuffer, rgBlackboard.Get<MaterialCountData>().materialStartBuffer, m_scene->GetRenderScene()->GetIndividualMaterialCount());
@@ -846,7 +850,7 @@ namespace Volt
 
 		const auto& gbufferData = blackboard.Get<GBufferData>();
 		const auto& preDepthData = blackboard.Get<PreDepthData>();
-		const auto& dirShadowData = blackboard.Get<DirectionalShadowData>();
+		//const auto& dirShadowData = blackboard.Get<DirectionalShadowData>();
 
 		renderGraph.AddPass("Shading Pass",
 		[&](RenderGraph::Builder& builder) 
@@ -866,7 +870,7 @@ namespace Volt
 			builder.ReadResource(environmentTexturesData.radiance);
 			builder.ReadResource(lightBuffers.pointLightsBuffer);
 			builder.ReadResource(lightBuffers.spotLightsBuffer);
-			builder.ReadResource(dirShadowData.shadowTexture);
+			//builder.ReadResource(dirShadowData.shadowTexture);
 
 			builder.SetHasSideEffect();
 			builder.SetIsComputePass();
@@ -896,7 +900,7 @@ namespace Volt
 			context.SetConstant("pbrConstants.environmentRadiance"_sh, resources.GetImage2D(environmentTexturesData.radiance));
 			context.SetConstant("pbrConstants.pointLights"_sh, resources.GetBuffer(lightBuffers.pointLightsBuffer));
 			context.SetConstant("pbrConstants.spotLights"_sh, resources.GetBuffer(lightBuffers.spotLightsBuffer));
-			context.SetConstant("pbrConstants.directionalShadowMap"_sh, resources.GetImage2D(dirShadowData.shadowTexture));
+			//context.SetConstant("pbrConstants.directionalShadowMap"_sh, resources.GetImage2D(dirShadowData.shadowTexture));
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1u);
 		});
