@@ -128,7 +128,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
         case ShadingMode::VisualizeLightComplexity:
         {
             outputColor = CalculatePBR(pbrInput, constants.pbrConstants);
-            outputColor = outputColor * 0.2f + GetLightComplexityGradient(GetPointLightCount(constants.pbrConstants.visiblePointLights, viewData.tileCountX, pbrInput.tileId));
+            outputColor = outputColor * 0.2f + GetLightComplexityGradient(GetLightCount(constants.pbrConstants.visiblePointLights, viewData.tileCountX, pbrInput.tileId));
 
             break;
         }

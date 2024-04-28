@@ -80,6 +80,7 @@ namespace Volt
 		inline static Application& Get() { return *s_instance; }
 		inline static ThreadPool& GetThreadPool() { return Get().m_threadPool; }
 		inline static WindowManager& GetWindowManager() { return Get().m_windowManager; }
+		inline static const uint64_t GetFrameIndex() { return Get().m_frameIndex; }
 
 		inline const bool IsRuntime() const { return m_info.isRuntime; }
 		inline const ApplicationInfo& GetInfo() const { return m_info; }
@@ -115,6 +116,8 @@ namespace Volt
 		float m_currentDeltaTime = 0.f;
 		float m_lastTotalTime = 0.f;
 
+		uint64_t m_frameIndex = 0;
+
 		ApplicationInfo m_info;
 
 		LayerStack m_layerStack;
@@ -131,7 +134,6 @@ namespace Volt
 		Scope<AI::NavigationSystem> m_navigationSystem;
 
 		Scope<SteamImplementation> m_steamImplementation;
-
 		ThreadPool m_threadPool;
 	};
 

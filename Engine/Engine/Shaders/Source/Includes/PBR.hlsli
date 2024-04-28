@@ -16,6 +16,7 @@ struct PBRConstants
     UniformTypedBuffer<SpotLight> spotLights;
 
     UniformTypedBuffer<int> visiblePointLights;
+    UniformTypedBuffer<int> visibleSpotLights;
     
     TextureSampler linearSampler;
     TextureSampler pointLinearClampSampler;
@@ -51,7 +52,6 @@ static ViewData m_viewData;
 
 static TextureSampler m_shadowSampler;
 static UniformTexture<float> m_directionalShadowMap;
-
 
 float3 CalculateDiffuse(in float3 F)
 {
@@ -168,14 +168,20 @@ LightOutput CalculatePointLight(in PointLight light, float3 dirToCamera, float3 
     return output;
 }
 
-LightOutput CalculatePointLights(float3 dirToCamera, float3 baseReflectivity, uint pointLightCount)
+LightOutput CalculatePointLights(float3 dirToCamera, float3 baseReflectivity)
 {
     LightOutput output;
     output.diffuse = 0.f;
     output.specular = 0.f;
-    
-    for (uint i = 0; i < pointLightCount; i++)
+
+    for (int i = 0; i < MAX_LIGHTS_PER_TILE; i++)
     {
+        int lightIndex = GetLightBufferIndex(m_pbrConstants.visiblePointLights, m_viewData.tileCountX, i, m_pbrInput.tileId);
+        if (lightIndex == -1)
+        {
+            break;
+        }
+
         LightOutput result = CalculatePointLight(m_pbrConstants.pointLights.Load(i), dirToCamera, baseReflectivity);
         output.diffuse += result.diffuse;
         output.specular += result.specular;
@@ -265,7 +271,7 @@ float3 CalculatePBR(in PBRInput input, in PBRConstants constants)
     
     // Point lights
     {
-        LightOutput result = CalculatePointLights(dirToCamera, baseReflectivity, m_viewData.pointLightCount);
+        LightOutput result = CalculatePointLights(dirToCamera, baseReflectivity);
         lightOutput.diffuse += result.diffuse;
         lightOutput.specular += result.specular;
     }

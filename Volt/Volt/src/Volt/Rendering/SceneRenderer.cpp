@@ -1,6 +1,8 @@
 #include "vtpch.h"
 #include "SceneRenderer.h"
 
+#include "Volt/Core/Application.h"
+
 #include "Volt/Rendering/Camera/Camera.h"
 #include "Volt/Rendering/RenderScene.h"
 #include "Volt/Rendering/RendererCommon.h"
@@ -42,6 +44,7 @@
 #include "Volt/Components/CoreComponents.h"
 
 #include "Volt/Utility/ShadowMappingUtility.h"
+#include "Volt/Utility/Noise.h"
 
 #include <VoltRHI/Images/Image2D.h>
 #include <VoltRHI/Images/SamplerState.h>
@@ -130,6 +133,8 @@ namespace Volt
 			m_shouldResize = false;
 		}
 
+		camera->SetSubpixelOffset(Noise::GetTAAJitter(Application::GetFrameIndex(), { m_width, m_height }));
+
 		RenderGraphBlackboard rgBlackboard{};
 		RenderGraph renderGraph{ m_commandBuffer };
 
@@ -198,7 +203,6 @@ namespace Volt
 
 			AddSkyboxPass(renderGraph, rgBlackboard);
 			AddShadingPass(renderGraph, rgBlackboard);
-		
 		}
 
 		//AddTestUIPass(renderGraph, rgBlackboard);
@@ -214,8 +218,6 @@ namespace Volt
 
 		renderGraph.Compile();
 		renderGraph.Execute();
-
-		m_frameIndex++;
 	}
 
 	void SceneRenderer::Invalidate()
@@ -864,6 +866,7 @@ namespace Volt
 			builder.ReadResource(lightBuffers.pointLightsBuffer);
 			builder.ReadResource(lightBuffers.spotLightsBuffer);
 			builder.ReadResource(lightCullingData.visiblePointLightsBuffer);
+			builder.ReadResource(lightCullingData.visibleSpotLightsBuffer);
 			//builder.ReadResource(dirShadowData.shadowTexture);
 
 			builder.SetHasSideEffect();
@@ -895,6 +898,7 @@ namespace Volt
 			context.SetConstant("pbrConstants.pointLights"_sh, resources.GetBuffer(lightBuffers.pointLightsBuffer));
 			context.SetConstant("pbrConstants.spotLights"_sh, resources.GetBuffer(lightBuffers.spotLightsBuffer));
 			context.SetConstant("pbrConstants.visiblePointLights"_sh, resources.GetBuffer(lightCullingData.visiblePointLightsBuffer));
+			context.SetConstant("pbrConstants.visibleSpotLights"_sh, resources.GetBuffer(lightCullingData.visibleSpotLightsBuffer));
 			//context.SetConstant("pbrConstants.directionalShadowMap"_sh, resources.GetImage2D(dirShadowData.shadowTexture));
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1u);

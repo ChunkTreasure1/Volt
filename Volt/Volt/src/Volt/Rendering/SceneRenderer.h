@@ -119,7 +119,6 @@ namespace Volt
 		uint32_t m_resizeHeight = 1280;
 
 		Ref<RHI::CommandBuffer> m_commandBuffer;
-		uint64_t m_frameIndex = 0;
 		ShadingMode m_shadingMode = ShadingMode::Shaded;
 
 		std::atomic<uint64_t> m_frameTotalGPUAllocation;

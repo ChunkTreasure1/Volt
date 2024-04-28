@@ -106,7 +106,7 @@ void main(uint2 dispatchThreadId : SV_DispatchThreadID, uint groupThreadIndex : 
         float distance = 0.f;
 
         [unroll]
-        for (uint j = 0; j < 4; j++)
+        for (uint j = 0; j < 6; j++)
         {
             distance = dot(position, m_frustumPlanes[j]) + radius;
             if (distance <= 0.f)
@@ -147,7 +147,7 @@ void main(uint2 dispatchThreadId : SV_DispatchThreadID, uint groupThreadIndex : 
             }
         }
 
-        //if (distance > 0.f)
+        if (distance > 0.f)
         {
             uint lightOffset;
             InterlockedAdd(m_visibleSpotLightCount, 1, lightOffset);
@@ -160,16 +160,33 @@ void main(uint2 dispatchThreadId : SV_DispatchThreadID, uint groupThreadIndex : 
     // Put light indices into bins
     const uint offsetInBuffer = tileIndex * MAX_LIGHTS_PER_TILE;
 
-    if (groupThreadIndex == 0)
+    // Point Lights
     {
-        for (uint i = 0; i < m_visiblePointLightCount; i++)
+        const uint pointLightCount = m_visiblePointLightCount;
+
+        for (uint i = groupThreadIndex; i < pointLightCount; i += threadCount)
         {
             constants.visiblePointLightIndices.Store(offsetInBuffer + i, m_visiblePointLights[i]);
         }
 
-        if (m_visiblePointLightCount != MAX_LIGHTS_PER_TILE)
+        if (groupThreadIndex == 0 && m_visiblePointLightCount != MAX_LIGHTS_PER_TILE)
         {
-            constants.visiblePointLightIndices.Store(offsetInBuffer + m_visiblePointLightCount, -1);
+            constants.visiblePointLightIndices.Store(offsetInBuffer + pointLightCount, -1);
+        }
+    }
+
+    // Spot Lights
+    {
+        const uint spotLightCount = m_visibleSpotLightCount;
+
+        for (uint i = groupThreadIndex; i < spotLightCount; i += threadCount)
+        {
+            constants.visibleSpotLightIndices.Store(offsetInBuffer + i, m_visibleSpotLights[i]);
+        }
+
+        if (groupThreadIndex == 0 && m_visiblePointLightCount != MAX_LIGHTS_PER_TILE)
+        {
+            constants.visibleSpotLightIndices.Store(offsetInBuffer + spotLightCount, -1);
         }
     }
 }

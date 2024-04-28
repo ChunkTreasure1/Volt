@@ -46,20 +46,20 @@ struct SpotLight
     float2 padding;
 };
 
-int GetPointLightBufferIndex(UniformTypedBuffer<int> buffer, uint tileCountX, int i, uint2 tileId)
+int GetLightBufferIndex(UniformTypedBuffer<int> lightIndexBuffer, uint tileCountX, int i, uint2 tileId)
 {
     const uint index = tileId.y * tileCountX + tileId.x;
     const uint offset = index * MAX_LIGHTS_PER_TILE;
 
-    return buffer.Load(offset + i);
+    return lightIndexBuffer.Load(offset + i);
 }
 
-int GetPointLightCount(UniformTypedBuffer<int> buffer,  uint tileCountX, uint2 tileId)
+int GetLightCount(UniformTypedBuffer<int> lightIndexBuffer, uint tileCountX, uint2 tileId)
 {
     int result = 0;
     for (int i = 0; i < MAX_LIGHTS_PER_TILE; i++)
     {
-        uint lightIndex = GetPointLightBufferIndex(buffer, tileCountX, i, tileId);
+        int lightIndex = GetLightBufferIndex(lightIndexBuffer, tileCountX, i, tileId);
         if (lightIndex == -1)
         {
             break;
@@ -70,3 +70,4 @@ int GetPointLightCount(UniformTypedBuffer<int> buffer,  uint tileCountX, uint2 t
 
     return result;
 }
+

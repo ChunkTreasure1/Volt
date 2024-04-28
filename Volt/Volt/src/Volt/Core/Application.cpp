@@ -233,6 +233,8 @@ namespace Volt
 		{
 			VT_PROFILE_FRAME("Frame");
 			MainUpdate();
+
+			m_frameIndex++;
 		}
 	}
 
