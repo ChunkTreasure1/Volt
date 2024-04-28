@@ -60,6 +60,9 @@ namespace Volt
 		glm::vec2 renderSize;
 		glm::vec2 invRenderSize;
 
+		// Light Culling
+		uint32_t tileCountX;
+
 		// Temp lights
 		uint32_t pointLightCount;
 		uint32_t spotLightCount;

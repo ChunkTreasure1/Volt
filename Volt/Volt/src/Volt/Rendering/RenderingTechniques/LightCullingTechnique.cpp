@@ -22,7 +22,6 @@ namespace Volt
 		const auto& preDepthData = m_blackboard.Get<PreDepthData>();
 
 		constexpr uint32_t MAX_LIGHT_COUNT_PER_TILE = 512;
-		constexpr uint32_t TILE_SIZE = 16;
 
 		const uint32_t tileCountX = Math::DivideRoundUp(renderSize.x, TILE_SIZE);
 		const uint32_t tileCountY = Math::DivideRoundUp(renderSize.y, TILE_SIZE);
@@ -59,6 +58,7 @@ namespace Volt
 			context.SetConstant("spotLights"_sh, resources.GetBuffer(lightBuffers.spotLightsBuffer));
 			context.SetConstant("visiblePointLightIndices"_sh, resources.GetBuffer(data.visiblePointLightsBuffer));
 			context.SetConstant("visibleSpotLightIndices"_sh, resources.GetBuffer(data.visibleSpotLightsBuffer));
+			context.SetConstant("tileCount"_sh, glm::uvec2{ tileCountX, tileCountY });
 		
 			context.Dispatch(tileCountX, tileCountY, 1u);
 		});

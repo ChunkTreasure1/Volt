@@ -52,51 +52,12 @@ struct ViewData
     float2 renderSize;
     float2 invRenderSize;
     
+    // Light Culling
+    uint tileCountX;
+
     // Temp lights
     uint pointLightCount;
     uint spotLightCount;
-};
-
-#define DIRECTIONAL_SHADOW_CASCADE_COUNT 5
-
-struct DirectionalLight
-{
-    float4 direction;
-    float3 color;
-    float intensity;
-
-    uint castShadows;
-
-    float cascadeDistances[DIRECTIONAL_SHADOW_CASCADE_COUNT];
-    float4x4 viewProjections[DIRECTIONAL_SHADOW_CASCADE_COUNT];
-};
-
-struct PointLight
-{
-    float3 position;
-    float radius;
-    
-    float3 color;
-    float intensity;
-    
-    float falloff;
-    float3 padding;
-};
-
-struct SpotLight
-{
-    float3 position;
-    float angleAttenuation;
-    
-    float3 color;
-    float intensity;
-    
-    float3 direction;
-    float range;
-    
-    float angle;
-    float falloff;
-    float2 padding;
 };
 
 #endif

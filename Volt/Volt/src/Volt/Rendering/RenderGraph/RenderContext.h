@@ -200,12 +200,21 @@ namespace Volt
 	private:
 		friend class RenderGraph;
 
+		struct BoundPipelineData
+		{
+			std::unordered_map<StringHash, bool> uniformHasBeenSetMap;
+		};
+
 		void BindDescriptorTableIfRequired();
 
 		void SetPassConstantsBuffer(Weak<RHI::StorageBuffer> constantsBuffer);
 		void SetCurrentPassIndex(Weak<RenderGraphPassNodeBase> currentPassNode);
 		void SetRenderGraphInstance(RenderGraph* renderGraph);
 		void UploadConstantsData();
+
+		// Validation
+		void InitializeCurrentPipelineConstantsValidation();
+		void ValidateCurrentPipelineConstants();
 
 		const RHI::ShaderRenderGraphConstantsData& GetRenderGraphConstantsData();
 
@@ -231,6 +240,10 @@ namespace Volt
 	
 		// #TODO_Ivar: Should be changed
 		std::vector<uint8_t> m_passConstantsBufferData;
+
+#ifdef VT_DEBUG
+		BoundPipelineData m_boundPipelineData;
+#endif
 	};
 
 	template<typename T>
@@ -248,6 +261,7 @@ namespace Volt
 
 #ifdef VT_DEBUG
 		VT_ENSURE(uniform.type == TryGetTypeFromType<T>());
+		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
 #endif
 
 		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(T));
@@ -267,6 +281,7 @@ namespace Volt
 
 #ifdef VT_DEBUG
 		VT_ENSURE(uniform.type == TryGetTypeFromType<F>());
+		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
 #endif
 
 		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, data.data(), data.size() * sizeof(F));
@@ -286,6 +301,7 @@ namespace Volt
 
 #ifdef VT_DEBUG
 		VT_ENSURE(uniform.type == TryGetTypeFromType<F>());
+		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
 #endif
 
 		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, data.data(), COUNT * sizeof(F));

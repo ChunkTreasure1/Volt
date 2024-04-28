@@ -139,12 +139,15 @@ namespace Volt
 	void RenderContext::DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
 	{
 		BindDescriptorTableIfRequired();
+		ValidateCurrentPipelineConstants();
+
 		m_commandBuffer->DispatchMeshTasks(groupCountX, groupCountY, groupCountZ);
 	}
 
 	void RenderContext::DispatchMeshTasksIndirect(RenderGraphResourceHandle commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
 	{
 		BindDescriptorTableIfRequired();
+		ValidateCurrentPipelineConstants();
 
 		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(commandsBuffer);
@@ -156,6 +159,7 @@ namespace Volt
 	void RenderContext::DispatchMeshTasksIndirectCount(RenderGraphResourceHandle commandsBuffer, const size_t offset, RenderGraphResourceHandle countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
 	{
 		BindDescriptorTableIfRequired();
+		ValidateCurrentPipelineConstants();
 
 		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(commandsBuffer);
@@ -172,6 +176,7 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 
 		BindDescriptorTableIfRequired();
+		ValidateCurrentPipelineConstants();
 
 		m_commandBuffer->Dispatch(groupCountX, groupCountY, groupCountZ);
 	}
@@ -181,6 +186,7 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 
 		BindDescriptorTableIfRequired();
+		ValidateCurrentPipelineConstants();
 
 		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(commandsBuffer);
@@ -193,6 +199,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 		BindDescriptorTableIfRequired();
+		ValidateCurrentPipelineConstants();
 
 		if (maxDrawCount == 0)
 		{
@@ -211,6 +218,7 @@ namespace Volt
 	void RenderContext::DrawIndexedIndirect(RenderGraphResourceHandle commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
 	{
 		BindDescriptorTableIfRequired();
+		ValidateCurrentPipelineConstants();
 
 		if (drawCount == 0)
 		{
@@ -227,12 +235,16 @@ namespace Volt
 	void RenderContext::DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance)
 	{
 		BindDescriptorTableIfRequired();
+		ValidateCurrentPipelineConstants();
+
 		m_commandBuffer->DrawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 	}
 
 	void RenderContext::Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
 	{
 		BindDescriptorTableIfRequired();
+		ValidateCurrentPipelineConstants();
+
 		m_commandBuffer->Draw(vertexCount, instanceCount, firstVertex, firstInstance);
 	}
 
@@ -253,6 +265,8 @@ namespace Volt
 
 		m_descriptorTableIsBound = false;
 		m_currentDescriptorTable = GetOrCreateDescriptorTable(pipeline);
+	
+		InitializeCurrentPipelineConstantsValidation();
 	}
 
 	void RenderContext::BindPipeline(Ref<RHI::ComputePipeline> pipeline)
@@ -272,6 +286,8 @@ namespace Volt
 
 		m_descriptorTableIsBound = false;
 		m_currentDescriptorTable = GetOrCreateDescriptorTable(pipeline);
+
+		InitializeCurrentPipelineConstantsValidation();
 	}
 
 	void RenderContext::BindIndexBuffer(RenderGraphResourceHandle indexBuffer)
@@ -341,6 +357,32 @@ namespace Volt
 		uint8_t* mappedPtr = m_passConstantsBuffer->Map<uint8_t>();
 		memcpy_s(mappedPtr, m_passConstantsBuffer->GetSize(), m_passConstantsBufferData.data(), m_passConstantsBufferData.size());
 		m_passConstantsBuffer->Unmap();
+	}
+
+	void RenderContext::InitializeCurrentPipelineConstantsValidation()
+	{
+#ifdef VT_DEBUG
+		VT_CORE_ASSERT(m_currentRenderPipeline || m_currentComputePipeline, "A pipeline must be bound!");
+	
+		m_boundPipelineData.uniformHasBeenSetMap.clear();
+
+		const auto& currentConstants = GetRenderGraphConstantsData();
+		for (const auto& constant : currentConstants.uniforms)
+		{
+			m_boundPipelineData.uniformHasBeenSetMap[constant.first] = false;
+		}
+#endif
+	}
+
+	void RenderContext::ValidateCurrentPipelineConstants()
+	{
+#ifdef VT_DEBUG
+
+		for (const auto& [hash, value] : m_boundPipelineData.uniformHasBeenSetMap)
+		{
+			VT_CORE_ASSERT(value, "All constants must have been set!");
+		}
+#endif
 	}
 
 	const RHI::ShaderRenderGraphConstantsData& RenderContext::GetRenderGraphConstantsData()
@@ -442,6 +484,8 @@ namespace Volt
 		const auto& uniform = constantsData.uniforms.at(name);
 
 #ifdef VT_DEBUG
+		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
+
 		VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Buffer ||
 				uniform.type.baseType == RHI::ShaderUniformBaseType::RWBuffer ||
 				uniform.type.baseType == RHI::ShaderUniformBaseType::Texture ||

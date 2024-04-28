@@ -1,9 +1,7 @@
 #include "Resources.hlsli"
 #include "Common.hlsli"
 #include "Utility.hlsli"
-
-#define MAX_LIGHT_COUNT 512
-#define TILE_SIZE 16
+#include "Lights.hlsli"
 
 struct Constants
 {
@@ -25,16 +23,16 @@ groupshared uint m_visiblePointLightCount;
 groupshared uint m_visibleSpotLightCount;
 groupshared float4 m_frustumPlanes[6];
 
-groupshared uint m_visiblePointLights[MAX_LIGHT_COUNT];
-groupshared uint m_visibleSpotLights[MAX_LIGHT_COUNT];
+groupshared uint m_visiblePointLights[MAX_LIGHTS_PER_TILE];
+groupshared uint m_visibleSpotLights[MAX_LIGHTS_PER_TILE];
 
-[numthreads(TILE_SIZE, TILE_SIZE, 1)]
+[numthreads(LIGHT_CULLING_TILE_SIZE, LIGHT_CULLING_TILE_SIZE, 1)]
 void main(uint2 dispatchThreadId : SV_DispatchThreadID, uint groupThreadIndex : SV_GroupIndex, uint2 groupId : SV_GroupID)
 {
     const Constants constants = GetConstants<Constants>();
     const ViewData viewData = constants.viewData.Load();
 
-    const uint tileIndex = groupId.x * constants.tileCount.x + groupId.y;
+    const uint tileIndex = groupId.y * constants.tileCount.x + groupId.x;
 
     if (groupThreadIndex == 0)
     {
@@ -89,7 +87,7 @@ void main(uint2 dispatchThreadId : SV_DispatchThreadID, uint groupThreadIndex : 
 
     // Cull lights
 
-    const uint threadCount = TILE_SIZE * TILE_SIZE;
+    const uint threadCount = LIGHT_CULLING_TILE_SIZE * LIGHT_CULLING_TILE_SIZE;
     uint passCount = DivideRoundUp(viewData.pointLightCount, threadCount);
 
     for (uint i = 0; i < passCount; i++)
@@ -108,7 +106,7 @@ void main(uint2 dispatchThreadId : SV_DispatchThreadID, uint groupThreadIndex : 
         float distance = 0.f;
 
         [unroll]
-        for (uint j = 0; j < 6; j++)
+        for (uint j = 0; j < 4; j++)
         {
             distance = dot(position, m_frustumPlanes[j]) + radius;
             if (distance <= 0.f)
@@ -149,7 +147,7 @@ void main(uint2 dispatchThreadId : SV_DispatchThreadID, uint groupThreadIndex : 
             }
         }
 
-        if (distance > 0.f)
+        //if (distance > 0.f)
         {
             uint lightOffset;
             InterlockedAdd(m_visibleSpotLightCount, 1, lightOffset);
@@ -160,30 +158,18 @@ void main(uint2 dispatchThreadId : SV_DispatchThreadID, uint groupThreadIndex : 
     GroupMemoryBarrierWithGroupSync();
 
     // Put light indices into bins
-    const uint offsetInBuffer = tileIndex * MAX_LIGHT_COUNT;
-    if (groupThreadIndex < m_visiblePointLightCount)
+    const uint offsetInBuffer = tileIndex * MAX_LIGHTS_PER_TILE;
+
+    if (groupThreadIndex == 0)
     {
-        for (uint i = groupThreadIndex; i < m_visiblePointLightCount; i += threadCount)
+        for (uint i = 0; i < m_visiblePointLightCount; i++)
         {
             constants.visiblePointLightIndices.Store(offsetInBuffer + i, m_visiblePointLights[i]);
-
-            if (i + 1 == m_visiblePointLightCount)
-            {
-                constants.visiblePointLightIndices.Store(offsetInBuffer + i + 1, -1);
-            }
         }
-    }
 
-    if (groupThreadIndex < m_visibleSpotLightCount)
-    {
-        for (uint i = groupThreadIndex; i < m_visibleSpotLightCount; i += threadCount)
+        if (m_visiblePointLightCount != MAX_LIGHTS_PER_TILE)
         {
-            constants.visibleSpotLightIndices.Store(offsetInBuffer + i, m_visibleSpotLights[i]);
-        
-            if (i + 1 == m_visibleSpotLightCount)
-            {
-                constants.visibleSpotLightIndices.Store(offsetInBuffer + i + 1, -1);
-            }
+            constants.visiblePointLightIndices.Store(offsetInBuffer + m_visiblePointLightCount, -1);
         }
     }
 }

@@ -14,5 +14,5 @@ public:
 	void UpdateMainContent() override;
 
 private:
-	Ref<Volt::SceneRenderer>& mySceneRenderer;
+	Ref<Volt::SceneRenderer>& m_sceneRenderer;
 };

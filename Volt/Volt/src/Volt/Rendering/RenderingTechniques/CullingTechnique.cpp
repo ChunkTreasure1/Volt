@@ -56,7 +56,7 @@ namespace Volt
 			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
 			builder.SetIsComputePass();
 		},
-		[=](const CullObjectsData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](const CullObjectsData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
 			const uint32_t commandCount = renderScene->GetRenderObjectCount();
 			const uint32_t dispatchCount = Math::DivideRoundUp(commandCount, 256u);
@@ -75,26 +75,21 @@ namespace Volt
 			context.SetConstant("objectCount"_sh, commandCount);
 			context.SetConstant("cullingMode"_sh, static_cast<uint32_t>(cullingMode));
 
-			if (cullingMode == CullingMode::Perspective)
-			{
-				const auto projection = camera->GetProjection();
-				const glm::mat4 projTranspose = glm::transpose(projection);
+			const auto projection = camera->GetProjection();
+			const auto frustumAABB = camera->GetOrthographicFrustum();
 
-				const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
-				const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
+			const glm::mat4 projTranspose = glm::transpose(projection);
 
-				context.SetConstant("frustum0"_sh, frustumX.x);
-				context.SetConstant("frustum1"_sh, frustumX.z);
-				context.SetConstant("frustum2"_sh, frustumY.y);
-				context.SetConstant("frustum3"_sh, frustumY.z);
-			}
-			else if (cullingMode == CullingMode::Orthographic)
-			{
-				const auto frustumAABB = camera->GetOrthographicFrustum();
+			const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
+			const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
 
-				context.SetConstant("orthographicFrustumMin"_sh, frustumAABB.GetMin());
-				context.SetConstant("orthographicFrustumMax"_sh, frustumAABB.GetMax());
-			}
+			context.SetConstant("frustum0"_sh, frustumX.x);
+			context.SetConstant("frustum1"_sh, frustumX.z);
+			context.SetConstant("frustum2"_sh, frustumY.y);
+			context.SetConstant("frustum3"_sh, frustumY.z);
+
+			context.SetConstant("orthographicFrustumMin"_sh, frustumAABB.GetMin());
+			context.SetConstant("orthographicFrustumMax"_sh, frustumAABB.GetMax());
 
 			context.SetConstant("nearPlane"_sh, camera->GetNearPlane());
 			context.SetConstant("farPlane"_sh, camera->GetFarPlane());
@@ -148,26 +143,21 @@ namespace Volt
 			context.SetConstant("objectDrawDataBuffer"_sh, resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
 			context.SetConstant("cullingMode"_sh, static_cast<uint32_t>(cullingMode));
 
-			if (cullingMode == CullingMode::Perspective)
-			{
-				const auto projection = camera->GetProjection();
-				const glm::mat4 projTranspose = glm::transpose(projection);
+			const auto projection = camera->GetProjection();
+			const auto frustumAABB = camera->GetOrthographicFrustum();
 
-				const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
-				const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
+			const glm::mat4 projTranspose = glm::transpose(projection);
 
-				context.SetConstant("frustum0"_sh, frustumX.x);
-				context.SetConstant("frustum1"_sh, frustumX.z);
-				context.SetConstant("frustum2"_sh, frustumY.y);
-				context.SetConstant("frustum3"_sh, frustumY.z);
-			}
-			else if (cullingMode == CullingMode::Orthographic)
-			{
-				const auto frustumAABB = camera->GetOrthographicFrustum();
+			const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
+			const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
 
-				context.SetConstant("orthographicFrustumMin"_sh, frustumAABB.GetMin());
-				context.SetConstant("orthographicFrustumMax"_sh, frustumAABB.GetMax());
-			}
+			context.SetConstant("frustum0"_sh, frustumX.x);
+			context.SetConstant("frustum1"_sh, frustumX.z);
+			context.SetConstant("frustum2"_sh, frustumY.y);
+			context.SetConstant("frustum3"_sh, frustumY.z);
+
+			context.SetConstant("orthographicFrustumMin"_sh, frustumAABB.GetMin());
+			context.SetConstant("orthographicFrustumMax"_sh, frustumAABB.GetMax());
 
 			context.SetConstant("nearPlane"_sh, camera->GetNearPlane());
 			context.SetConstant("farPlane"_sh, camera->GetFarPlane());

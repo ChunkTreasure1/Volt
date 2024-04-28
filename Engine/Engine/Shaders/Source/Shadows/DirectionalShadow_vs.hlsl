@@ -1,6 +1,18 @@
 #include "CommonBuffers.hlsli"
-#include "DefaultVertexMeshlet.hlsli"
 #include "Utility.hlsli"
+#include "Resources.hlsli"
+#include "GPUScene.hlsli"
+#include "Lights.hlsli"
+
+struct Constants
+{
+    UniformTypedBuffer<GPUScene> gpuScene;
+    UniformBuffer<ViewData> viewData;
+    UniformTypedBuffer<DirectionalLight> directionalLight;
+};
+
+#define OVERRIDE_DEFAULT_CONSTANTS
+#include "DefaultVertexMeshlet.hlsli"
 
 struct Output
 {

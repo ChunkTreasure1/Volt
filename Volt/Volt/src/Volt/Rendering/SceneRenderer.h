@@ -49,12 +49,27 @@ namespace Volt
 	class SceneRenderer
 	{
 	public:
+		enum class ShadingMode : uint32_t
+		{
+			Shaded = 0,
+			Albedo = 1,
+			Normals = 2,
+			Metalness = 3,
+			Roughness = 4,
+			Emissive = 5,
+
+			VisualizeCascades = 6,
+			VisualizeLightComplexity = 7
+		};
+
 		SceneRenderer(const SceneRendererSpecification& specification);
 		~SceneRenderer();
 
 		void OnRenderEditor(Ref<Camera> camera);
 
 		void Resize(const uint32_t width, const uint32_t height);
+		inline void SetShadingMode(ShadingMode shadingMode) { m_shadingMode = shadingMode; }
+		inline ShadingMode GetShadingMode() const { return m_shadingMode; }
 
 		Ref<RHI::Image2D> GetFinalImage();
 
@@ -90,6 +105,8 @@ namespace Volt
 
 		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
+		void CreateMainRenderTarget(const uint32_t width, const uint32_t height);
+
 		Ref<RHI::Image2D> m_outputImage;
 		Ref<Mesh> m_skyboxMesh;
 
@@ -103,6 +120,7 @@ namespace Volt
 
 		Ref<RHI::CommandBuffer> m_commandBuffer;
 		uint64_t m_frameIndex = 0;
+		ShadingMode m_shadingMode = ShadingMode::Shaded;
 
 		std::atomic<uint64_t> m_frameTotalGPUAllocation;
 

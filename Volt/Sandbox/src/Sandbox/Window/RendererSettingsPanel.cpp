@@ -8,7 +8,7 @@
 #include "Sandbox/Utility/EditorUtilities.h"
 
 RendererSettingsPanel::RendererSettingsPanel(Ref<Volt::SceneRenderer>& sceneRenderer)
-	: EditorWindow("Renderer Settings"), mySceneRenderer(sceneRenderer)
+	: EditorWindow("Renderer Settings"), m_sceneRenderer(sceneRenderer)
 {
 }
 
@@ -16,7 +16,26 @@ void RendererSettingsPanel::UpdateMainContent()
 {
 	if (ImGui::Button("Invalidate Render Scene"))
 	{
-		mySceneRenderer->Invalidate();
+		m_sceneRenderer->Invalidate();
+	}
+
+	static const std::vector<std::string> strings =
+	{
+		"Shaded",
+		"Albedo",
+		"Normals",
+		"Metalness",
+		"Roughness",
+		"Emissive",
+
+		"VisualizeCascades",
+		"VisualizeLightComplexity"
+	};
+
+	int32_t currentValue = static_cast<int32_t>(m_sceneRenderer->GetShadingMode());
+	if (UI::Combo("Shading Mode", currentValue, strings))
+	{
+		m_sceneRenderer->SetShadingMode(static_cast<Volt::SceneRenderer::ShadingMode>(currentValue));
 	}
 
 	//UI::Header("Settings");

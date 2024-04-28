@@ -4,6 +4,7 @@
 #include "Structures.hlsli"
 #include "Resources.hlsli"
 #include "ShadowMapping.hlsli"
+#include "Lights.hlsli"
 
 
 struct PBRConstants
@@ -13,6 +14,8 @@ struct PBRConstants
     UniformTypedBuffer<DirectionalLight> directionalLight;
     UniformTypedBuffer<PointLight> pointLights;
     UniformTypedBuffer<SpotLight> spotLights;
+
+    UniformTypedBuffer<int> visiblePointLights;
     
     TextureSampler linearSampler;
     TextureSampler pointLinearClampSampler;
@@ -21,7 +24,7 @@ struct PBRConstants
     UniformTexture<float2> BRDFLuT;
     UniformTexture<float3> environmentIrradiance;
     UniformTexture<float3> environmentRadiance;
-    UniformTexture<float> directionalShadowMap;
+    //UniformTexture<float> directionalShadowMap;
 };
 
 struct PBRInput
@@ -33,6 +36,7 @@ struct PBRInput
     float3 emissive;
     
     float3 worldPosition;
+    uint2 tileId;
 };
 
 struct LightOutput
@@ -96,8 +100,8 @@ float CalculateDirectionalShadow(in DirectionalLight light)
 {
     const uint cascadeIndex = GetCascadeIndexFromWorldPosition(light, m_pbrInput.worldPosition, m_viewData.view);
     const float3 shadowMapCoords = GetShadowMapCoords(light.viewProjections[cascadeIndex], m_pbrInput.worldPosition);
-    const float result = CalculateDirectionalShadow_Hard(light, m_shadowSampler, m_directionalShadowMap, m_pbrInput.normal, cascadeIndex, shadowMapCoords);
-    return result;
+    //const float result = CalculateDirectionalShadow_Hard(light, m_shadowSampler, m_directionalShadowMap, m_pbrInput.normal, cascadeIndex, shadowMapCoords);
+    return 0.f;
 }
 
 LightOutput CalculateDirectionalLight(in DirectionalLight light, in float3 dirToCamera, in float3 baseReflectivity)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Structures.hlsli"
+#include "Lights.hlsli"
 
 static const float3 m_cascadeColors[DIRECTIONAL_SHADOW_CASCADE_COUNT] = 
 {

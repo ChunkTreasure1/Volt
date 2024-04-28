@@ -10,12 +10,15 @@
 static const uint VERTEX_MATERIAL_DATA_SIZE = 12;
 static const uint VERTEX_ANIMATION_DATA_SIZE = 16;
 
+#ifndef OVERRIDE_DEFAULT_CONSTANTS
+
 struct Constants
 {
-    TypedBuffer<GPUScene> gpuScene;
+    UniformTypedBuffer<GPUScene> gpuScene;
     UniformBuffer<ViewData> viewData;
-    UniformTypedBuffer<DirectionalLight> directionalLight;
 };
+
+#endif
 
 struct DefaultInput
 {

@@ -4,6 +4,7 @@
 #include "GPUScene.hlsli"
 #include "Structures.hlsli"
 #include "Utility.hlsli"
+#include "Gradients.hlsli"
 
 #include "PBR.hlsli"
 
@@ -17,6 +18,7 @@ namespace ShadingMode
     static const uint Emissive = 5;
 
     static const uint VisualizeCascades = 6;
+    static const uint VisualizeLightComplexity = 7;
 }
 
 struct Constants
@@ -74,6 +76,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     pbrInput.roughness = roughness;
     pbrInput.emissive = emissive;
     pbrInput.worldPosition = worldPosition;
+    pbrInput.tileId = threadId.xy / LIGHT_CULLING_TILE_SIZE;
     
     float3 outputColor = 1.f;
     
@@ -119,6 +122,14 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
         {
             outputColor = CalculatePBR(pbrInput, constants.pbrConstants);
             outputColor = outputColor * 0.2f + GetCascadeColorFromIndex(GetCascadeIndexFromWorldPosition(constants.pbrConstants.directionalLight.Load(0), worldPosition, viewData.view)) * 0.5f;
+            break;
+        }
+
+        case ShadingMode::VisualizeLightComplexity:
+        {
+            outputColor = CalculatePBR(pbrInput, constants.pbrConstants);
+            outputColor = outputColor * 0.2f + GetLightComplexityGradient(GetPointLightCount(constants.pbrConstants.visiblePointLights, viewData.tileCountX, pbrInput.tileId));
+
             break;
         }
 

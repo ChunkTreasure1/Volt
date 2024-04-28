@@ -77,17 +77,7 @@ namespace Volt
 	{
 		m_commandBuffer = RHI::CommandBuffer::Create(Renderer::GetFramesInFlight(), RHI::QueueType::Graphics);
 
-		// Create render target
-		{
-			RHI::ImageSpecification spec{};
-			spec.width = specification.initialResolution.x;
-			spec.height = specification.initialResolution.y;
-			spec.usage = RHI::ImageUsage::AttachmentStorage;
-			spec.generateMips = false;
-			spec.format = RHI::PixelFormat::B10G11R11_UFLOAT_PACK32;
-
-			m_outputImage = RHI::Image2D::Create(spec);
-		}
+		CreateMainRenderTarget(specification.initialResolution.x, specification.initialResolution.y);
 
 		m_sceneEnvironment.radianceMap = Renderer::GetDefaultResources().blackCubeTexture;
 		m_sceneEnvironment.irradianceMap = Renderer::GetDefaultResources().blackCubeTexture;
@@ -136,7 +126,7 @@ namespace Volt
 			RenderGraphExecutionThread::WaitForFinishedExecution();
 			//RHI::GraphicsContext::GetDevice()->GetDeviceQueue(RHI::QueueType::Graphics)->WaitForQueue();
 
-			m_outputImage->Invalidate(m_width, m_height);
+			CreateMainRenderTarget(m_width, m_height);
 			m_shouldResize = false;
 		}
 
@@ -181,7 +171,7 @@ namespace Volt
 			AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
 
 			LightCullingTechnique lightCulling{ renderGraph, rgBlackboard };
-			auto data = lightCulling.Execute(glm::uvec2{ m_width, m_height });
+			rgBlackboard.Add<LightCullingData>() = lightCulling.Execute(glm::uvec2{ m_width, m_height });
 
 			PrefixSumTechnique prefixSum{ renderGraph };
 			prefixSum.Execute(rgBlackboard.Get<MaterialCountData>().materialCountBuffer, rgBlackboard.Get<MaterialCountData>().materialStartBuffer, m_scene->GetRenderScene()->GetIndividualMaterialCount());
@@ -265,7 +255,6 @@ namespace Volt
 		context.BindIndexBuffer(cullPrimitivesData.indexBuffer);
 		context.SetConstant("gpuScene"_sh, gpuSceneHandle);
 		context.SetConstant("viewData"_sh, viewDataHandle);
-		context.SetConstant("directionalLight"_sh, resources.GetBuffer(uniformBuffers.directionalLightBuffer));
 
 		context.DrawIndexedIndirect(cullPrimitivesData.drawCommand, 0, 1, sizeof(RHI::IndirectIndexedCommand));
 	}
@@ -300,6 +289,9 @@ namespace Volt
 			}
 
 			viewData.depthUnpackConsts = { depthLinearizeMul, depthLinearizeAdd };
+
+			// Light Culling
+			viewData.tileCountX = Math::DivideRoundUp(m_width, LightCullingTechnique::TILE_SIZE);
 
 			// Render Target
 			viewData.renderSize = { m_width, m_height };
@@ -847,6 +839,7 @@ namespace Volt
 		const auto& environmentTexturesData = blackboard.Get<EnvironmentTexturesData>();
 		const auto& finalColorData = blackboard.Get<FinalColorData>();
 		const auto& lightBuffers = blackboard.Get<LightBuffersData>();
+		const auto& lightCullingData = blackboard.Get<LightCullingData>();
 
 		const auto& gbufferData = blackboard.Get<GBufferData>();
 		const auto& preDepthData = blackboard.Get<PreDepthData>();
@@ -870,6 +863,7 @@ namespace Volt
 			builder.ReadResource(environmentTexturesData.radiance);
 			builder.ReadResource(lightBuffers.pointLightsBuffer);
 			builder.ReadResource(lightBuffers.spotLightsBuffer);
+			builder.ReadResource(lightCullingData.visiblePointLightsBuffer);
 			//builder.ReadResource(dirShadowData.shadowTexture);
 
 			builder.SetHasSideEffect();
@@ -887,7 +881,7 @@ namespace Volt
 			context.SetConstant("material"_sh, resources.GetImage2D(gbufferData.material));
 			context.SetConstant("emissive"_sh, resources.GetImage2D(gbufferData.emissive));
 			context.SetConstant("depthTexture"_sh, resources.GetImage2D(preDepthData.depth));
-			context.SetConstant("shadingMode"_sh, 0u);
+			context.SetConstant("shadingMode"_sh, static_cast<uint32_t>(m_shadingMode));
 
 			// PBR Constants
 			context.SetConstant("pbrConstants.viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
@@ -900,9 +894,22 @@ namespace Volt
 			context.SetConstant("pbrConstants.environmentRadiance"_sh, resources.GetImage2D(environmentTexturesData.radiance));
 			context.SetConstant("pbrConstants.pointLights"_sh, resources.GetBuffer(lightBuffers.pointLightsBuffer));
 			context.SetConstant("pbrConstants.spotLights"_sh, resources.GetBuffer(lightBuffers.spotLightsBuffer));
+			context.SetConstant("pbrConstants.visiblePointLights"_sh, resources.GetBuffer(lightCullingData.visiblePointLightsBuffer));
 			//context.SetConstant("pbrConstants.directionalShadowMap"_sh, resources.GetImage2D(dirShadowData.shadowTexture));
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1u);
 		});
+	}
+
+	void SceneRenderer::CreateMainRenderTarget(const uint32_t width, const uint32_t height)
+	{
+		RHI::ImageSpecification spec{};
+		spec.width = width;
+		spec.height = height;
+		spec.usage = RHI::ImageUsage::AttachmentStorage;
+		spec.generateMips = false;
+		spec.format = RHI::PixelFormat::B10G11R11_UFLOAT_PACK32;
+
+		m_outputImage = RHI::Image2D::Create(spec);
 	}
 }

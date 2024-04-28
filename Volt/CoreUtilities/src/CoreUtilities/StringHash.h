@@ -18,6 +18,9 @@ struct StringHash
 
 	STRING_HASH_CONSTEXPR StringHash(const StringHash& rhs)
 		: hash(rhs.hash)
+#ifndef VT_DIST
+		, string(rhs.string)
+#endif
 	{}
 
 	STRING_HASH_CONSTEXPR StringHash(const size_t& inHash)
