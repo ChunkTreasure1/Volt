@@ -661,6 +661,8 @@ namespace Volt
 
 		GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(m_passConstantsBufferResourceHandle);
 
+		ExtractResources();
+
 		for (const auto& alloc : m_temporaryAllocations)
 		{
 			delete[] alloc;
@@ -679,6 +681,31 @@ namespace Volt
 
 		m_passConstantsBuffer = m_transientResourceSystem.AquireBuffer(m_resourceIndex++, desc);
 		m_passConstantsBufferResourceHandle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(m_passConstantsBuffer);
+	}
+
+	void RenderGraph::ExtractResources()
+	{
+		for (const auto& imageExtractionData : m_image2DExtractions)
+		{
+			if (imageExtractionData.outImagePtr == nullptr)
+			{
+				continue;
+			}
+
+			auto rawImage = GetImage2DRaw(imageExtractionData.resourceHandle);
+			*imageExtractionData.outImagePtr = rawImage;
+		}
+
+		for (const auto& bufferExtractionData : m_bufferExtractions)
+		{
+			if (bufferExtractionData.outBufferPtr == nullptr)
+			{
+				continue;
+			}
+
+			auto rawBuffer = GetBufferRaw(bufferExtractionData.resourceHandle);
+			*bufferExtractionData.outBufferPtr = rawBuffer;
+		}
 	}
 
 	RenderGraphResourceHandle RenderGraph::CreateImage2D(const RenderGraphImageDesc& textureDesc)
@@ -1115,6 +1142,16 @@ namespace Volt
 			newBarrier.accessInfo.bufferBarrier().dstStage = barrierInfo.dstStage;
 			newBarrier.accessInfo.bufferBarrier().dstAccess = barrierInfo.dstAccess;
 		}
+	}
+
+	void RenderGraph::QueueImage2DExtraction(RenderGraphResourceHandle resourceHandle, Ref<RHI::Image2D>& outImage)
+	{
+		m_image2DExtractions.emplace_back(resourceHandle, &outImage);
+	}
+
+	void RenderGraph::QueueBufferExtraction(RenderGraphResourceHandle resourceHandle, Ref<RHI::StorageBuffer>& outBuffer)
+	{
+		m_bufferExtractions.emplace_back(resourceHandle, &outBuffer);
 	}
 
 	void RenderGraph::BeginMarker(const std::string& markerName, const glm::vec4& markerColor)

@@ -13,7 +13,6 @@ namespace Volt
 
 	struct ExternalImagesData
 	{
-		RenderGraphResourceHandle outputImage;
 		RenderGraphResourceHandle black1x1Cube;
 		RenderGraphResourceHandle BRDFLuT;
 	};
@@ -108,9 +107,14 @@ namespace Volt
 		RenderGraphResourceHandle emissive;
 	};
 
-	struct FinalColorData
+	struct ShadingOutputData
 	{
-		RenderGraphResourceHandle finalColorOutput;
+		RenderGraphResourceHandle colorOutput;
+	};
+
+	struct FinalCopyData
+	{
+		RenderGraphResourceHandle output;
 	};
 
 	struct GTAOOutput
@@ -126,7 +130,6 @@ namespace Volt
 		float falloffRange = 0.615f;
 		float finalValuePower = 2.2f;
 	};
-
 
 	struct TestUIData
 	{

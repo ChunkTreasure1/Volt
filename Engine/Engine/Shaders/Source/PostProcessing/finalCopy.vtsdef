@@ -1,0 +1,5 @@
+name: "FinalCopy"
+internal: true
+paths:
+  - "Engine/Shaders/Source/PostProcessing/FinalCopy_ps.hlsl"
+  - "Engine/Shaders/Source/Utility/FullscreenTriangle_vs.hlsl"

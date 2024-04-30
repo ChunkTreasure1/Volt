@@ -1,0 +1,5 @@
+name: "TAAResolve"
+internal: true
+paths:
+  - "Engine/Shaders/Source/PostProcessing/TAA/TAAResolve_ps.hlsl"
+  - "Engine/Shaders/Source/Utility/FullscreenTriangle_vs.hlsl"

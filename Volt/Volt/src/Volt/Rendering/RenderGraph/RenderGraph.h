@@ -87,6 +87,9 @@ namespace Volt
 		void AddMappedBufferUpload(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size, std::string_view name);
 		void AddResourceBarrier(RenderGraphResourceHandle resourceHandle, const RenderGraphBarrierInfo& barrierInfo);
 
+		void QueueImage2DExtraction(RenderGraphResourceHandle resourceHandle, Ref<RHI::Image2D>& outImage);
+		void QueueBufferExtraction(RenderGraphResourceHandle resourceHandle, Ref<RHI::StorageBuffer>& outBuffer);
+
 		void BeginMarker(const std::string& markerName, const glm::vec4& markerColor = 1.f);
 		void EndMarker();
 
@@ -120,6 +123,7 @@ namespace Volt
 		void InsertStandaloneMarkers(const uint32_t passIndex);
 		void DestroyResources();
 		void AllocateConstantsBuffer();
+		void ExtractResources();
 
 		struct GlobalResourceInfo
 		{
@@ -132,6 +136,18 @@ namespace Volt
 			}
 		};
 
+		struct Image2DExtractionInfo
+		{
+			RenderGraphResourceHandle resourceHandle;
+			Ref<RHI::Image2D>* outImagePtr = nullptr;
+		};
+
+		struct BufferExtractionInfo
+		{
+			RenderGraphResourceHandle resourceHandle;
+			Ref<RHI::StorageBuffer>* outBufferPtr = nullptr;
+		};
+
 		Weak<RHI::ImageView> GetImage2DView(const RenderGraphResourceHandle resourceHandle);
 		Weak<RHI::Image2D> GetImage2DRaw(const RenderGraphResourceHandle resourceHandle);
 		Weak<RHI::StorageBuffer> GetBufferRaw(const RenderGraphResourceHandle resourceHandle);
@@ -139,6 +155,9 @@ namespace Volt
 
 		RenderGraphResourceHandle TryGetRegisteredExternalResource(Weak<RHI::RHIResource> resource);
 		void RegisterExternalResource(Weak<RHI::RHIResource> resource, RenderGraphResourceHandle handle);
+
+		std::vector<Image2DExtractionInfo> m_image2DExtractions;
+		std::vector<BufferExtractionInfo> m_bufferExtractions;
 
 		std::vector<std::vector<MarkerFunction>> m_standaloneMarkers; // Pass -> Markers
 		std::vector<std::vector<RenderGraphResourceHandle>> m_surrenderableResources; // Pass -> Resources

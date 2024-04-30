@@ -23,6 +23,7 @@
 #include "Volt/Rendering/RenderingTechniques/CullingTechnique.h"
 #include "Volt/Rendering/RenderingTechniques/DirectionalShadowTechnique.h"
 #include "Volt/Rendering/RenderingTechniques/LightCullingTechnique.h"
+#include "Volt/Rendering/RenderingTechniques/TAATechnique.h"
 
 #include "Volt/Rendering/RenderingUtils.h"
 #include "Volt/Rendering/ShapeLibrary.h"
@@ -109,7 +110,7 @@ namespace Volt
 
 	Ref<RHI::Image2D> SceneRenderer::GetFinalImage()
 	{
-		return m_outputImage;
+		return m_outputImages[Application::GetFrameIndex() % 2];
 	}
 
 	void SceneRenderer::OnRender(Ref<Camera> camera)
@@ -151,61 +152,65 @@ namespace Volt
 		UploadUniformBuffers(renderGraph, rgBlackboard, camera);
 		UploadLightBuffers(renderGraph, rgBlackboard);
 
-		if (m_scene->GetRenderScene()->GetRenderObjectCount() > 0)
+		CullingTechnique cullingTechnique{ renderGraph, rgBlackboard };
+		rgBlackboard.Add<CullPrimitivesData>() = cullingTechnique.Execute(camera, m_scene->GetRenderScene(), CullingMode::Perspective, glm::vec2{ m_width, m_height });
+
+		//AddStatsReadbackPass(renderGraph, rgBlackboard);
+
+		AddPreDepthPass(renderGraph, rgBlackboard);
+
+		GTAOSettings tempSettings{};
+		tempSettings.radius = 0.5f;
+		tempSettings.radiusMultiplier = 1.457f;
+		tempSettings.falloffRange = 0.615f;
+		tempSettings.finalValuePower = 2.2f;
+
+		GTAOTechnique gtaoTechnique{ 0 /*m_frameIndex*/, tempSettings };
+		gtaoTechnique.AddGTAOPasses(renderGraph, rgBlackboard, camera, { m_width, m_height });
+
+		//DirectionalShadowTechnique dirShadowTechnique{ renderGraph, rgBlackboard };
+		//rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene(), m_directionalLightData);
+
+		AddVisibilityBufferPass(renderGraph, rgBlackboard);
+		AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
+
+		LightCullingTechnique lightCulling{ renderGraph, rgBlackboard };
+		rgBlackboard.Add<LightCullingData>() = lightCulling.Execute(glm::uvec2{ m_width, m_height });
+
+		PrefixSumTechnique prefixSum{ renderGraph };
+		prefixSum.Execute(rgBlackboard.Get<MaterialCountData>().materialCountBuffer, rgBlackboard.Get<MaterialCountData>().materialStartBuffer, m_scene->GetRenderScene()->GetIndividualMaterialCount());
+
+		AddCollectMaterialPixelsPass(renderGraph, rgBlackboard);
+		AddGenerateMaterialIndirectArgsPass(renderGraph, rgBlackboard);
+
+		////For every material -> run compute shading shader using indirect args
+		auto& gbufferData = rgBlackboard.Add<GBufferData>();
+
+		gbufferData.albedo = renderGraph.CreateImage2D({ RHI::PixelFormat::R8G8B8A8_UNORM, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
+		gbufferData.normals = renderGraph.CreateImage2D({ RHI::PixelFormat::A2B10G10R10_UNORM_PACK32, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Normals" });
+		gbufferData.material = renderGraph.CreateImage2D({ RHI::PixelFormat::R8G8_UNORM, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Material" });
+		gbufferData.emissive = renderGraph.CreateImage2D({ RHI::PixelFormat::B10G11R11_UFLOAT_PACK32, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Emissive" });
+
+		renderGraph.BeginMarker("Materials");
+
+		for (uint32_t matId = 0; matId < m_scene->GetRenderScene()->GetIndividualMaterialCount(); matId++)
 		{
-			CullingTechnique cullingTechnique{ renderGraph, rgBlackboard };
-			rgBlackboard.Add<CullPrimitivesData>() = cullingTechnique.Execute(camera, m_scene->GetRenderScene(), CullingMode::Perspective, glm::vec2{ m_width, m_height });
-		
-			//AddStatsReadbackPass(renderGraph, rgBlackboard);
-
-			AddPreDepthPass(renderGraph, rgBlackboard);
-
-			GTAOSettings tempSettings{};
-			tempSettings.radius = 0.5f;
-			tempSettings.radiusMultiplier = 1.457f;
-			tempSettings.falloffRange = 0.615f;
-			tempSettings.finalValuePower = 2.2f;
-
-			GTAOTechnique gtaoTechnique{ 0 /*m_frameIndex*/, tempSettings };
-			gtaoTechnique.AddGTAOPasses(renderGraph, rgBlackboard, camera, { m_width, m_height });
-
-			//DirectionalShadowTechnique dirShadowTechnique{ renderGraph, rgBlackboard };
-			//rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene(), m_directionalLightData);
-
-			AddVisibilityBufferPass(renderGraph, rgBlackboard);
-			AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
-
-			LightCullingTechnique lightCulling{ renderGraph, rgBlackboard };
-			rgBlackboard.Add<LightCullingData>() = lightCulling.Execute(glm::uvec2{ m_width, m_height });
-
-			PrefixSumTechnique prefixSum{ renderGraph };
-			prefixSum.Execute(rgBlackboard.Get<MaterialCountData>().materialCountBuffer, rgBlackboard.Get<MaterialCountData>().materialStartBuffer, m_scene->GetRenderScene()->GetIndividualMaterialCount());
-			
-			AddCollectMaterialPixelsPass(renderGraph, rgBlackboard);
-			AddGenerateMaterialIndirectArgsPass(renderGraph, rgBlackboard);
-
-			////For every material -> run compute shading shader using indirect args
-			auto& gbufferData = rgBlackboard.Add<GBufferData>();
-
-			gbufferData.albedo = renderGraph.CreateImage2D({ RHI::PixelFormat::R8G8B8A8_UNORM, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
-			gbufferData.normals = renderGraph.CreateImage2D({ RHI::PixelFormat::A2B10G10R10_UNORM_PACK32, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Normals" });
-			gbufferData.material = renderGraph.CreateImage2D({ RHI::PixelFormat::R8G8_UNORM, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Material" });
-			gbufferData.emissive = renderGraph.CreateImage2D({ RHI::PixelFormat::B10G11R11_UFLOAT_PACK32, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Emissive" });
-
-			renderGraph.BeginMarker("Materials");
-
-			for (uint32_t matId = 0; matId < m_scene->GetRenderScene()->GetIndividualMaterialCount(); matId++)
-			{
-				AddGenerateGBufferPass(renderGraph, rgBlackboard, matId == 0, matId);
-			}
-
-			renderGraph.EndMarker();
-
-			AddSkyboxPass(renderGraph, rgBlackboard);
-			AddShadingPass(renderGraph, rgBlackboard);
+			AddGenerateGBufferPass(renderGraph, rgBlackboard, matId == 0, matId);
 		}
 
+		renderGraph.EndMarker();
+
+		AddSkyboxPass(renderGraph, rgBlackboard);
+		AddShadingPass(renderGraph, rgBlackboard);
+
+		TAATechnique taaTechnique{ renderGraph, rgBlackboard };
+		TAAData taaData = taaTechnique.Execute(GetPreviousFinalImage(), { m_width, m_height });
+
+		AddFinalCopyPass(renderGraph, rgBlackboard, taaData.taaOutput);
+
 		//AddTestUIPass(renderGraph, rgBlackboard);
+
+		renderGraph.QueueImage2DExtraction(rgBlackboard.Get<PreDepthData>().depth, m_previousDepthImage);
 
 		{
 			RenderGraphBarrierInfo barrier{};
@@ -213,7 +218,7 @@ namespace Volt
 			barrier.dstAccess = RHI::BarrierAccess::ShaderRead;
 			barrier.dstLayout = RHI::ImageLayout::ShaderRead;
 
-			renderGraph.AddResourceBarrier(rgBlackboard.Get<ExternalImagesData>().outputImage, barrier);
+			renderGraph.AddResourceBarrier(rgBlackboard.Get<FinalCopyData>().output, barrier);
 		}
 
 		renderGraph.Compile();
@@ -281,7 +286,7 @@ namespace Volt
 			viewData.cameraPosition = glm::vec4(camera->GetPosition(), 1.f);
 			viewData.nearPlane = camera->GetNearPlane();
 			viewData.farPlane = camera->GetFarPlane();
-			
+
 			float depthLinearizeMul = (-viewData.projection[3][2]);
 			float depthLinearizeAdd = (viewData.projection[2][2]);
 
@@ -328,7 +333,7 @@ namespace Volt
 
 			m_directionalLightData.intensity = 0.f;
 
-			m_scene->ForEachWithComponents<const DirectionalLightComponent, const IDComponent, const TransformComponent>([&](entt::entity id, const DirectionalLightComponent& dirLightComp, const IDComponent& idComp, const TransformComponent& comp) 
+			m_scene->ForEachWithComponents<const DirectionalLightComponent, const IDComponent, const TransformComponent>([&](entt::entity id, const DirectionalLightComponent& dirLightComp, const IDComponent& idComp, const TransformComponent& comp)
 			{
 				if (!comp.visible)
 				{
@@ -337,7 +342,7 @@ namespace Volt
 
 				auto entity = m_scene->GetEntityFromUUID(idComp.id);
 				const glm::vec3 dir = glm::rotate(entity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
-				
+
 				m_directionalLightData.color = dirLightComp.color;
 				m_directionalLightData.intensity = dirLightComp.intensity;
 				m_directionalLightData.direction = { dir, 0.f };
@@ -392,7 +397,7 @@ namespace Volt
 				}
 
 				auto entity = m_scene->GetEntityFromUUID(idComp.id);
-				
+
 				auto& data = pointLights.emplace_back();
 				data.position = entity.GetPosition();
 				data.radius = comp.radius;
@@ -403,7 +408,7 @@ namespace Volt
 
 			const auto desc = RGUtils::CreateBufferDesc<PointLightData>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Point light Data");
 			buffersData.pointLightsBuffer = renderGraph.CreateBuffer(desc);
-			
+
 			if (!pointLights.empty())
 			{
 				renderGraph.AddMappedBufferUpload(buffersData.pointLightsBuffer, pointLights.data(), sizeof(PointLightData) * pointLights.size(), "Upload point light data");
@@ -422,7 +427,7 @@ namespace Volt
 				}
 
 				auto entity = m_scene->GetEntityFromUUID(idComp.id);
-				
+
 				auto& data = spotLights.emplace_back();
 				data.position = entity.GetPosition();
 				data.color = comp.color;
@@ -470,7 +475,6 @@ namespace Volt
 		// Core images
 		{
 			auto& imageData = blackboard.Add<ExternalImagesData>();
-			imageData.outputImage = renderGraph.AddExternalImage2D(m_outputImage);
 			imageData.black1x1Cube = renderGraph.AddExternalImage2D(Renderer::GetDefaultResources().blackCubeTexture);
 			imageData.BRDFLuT = renderGraph.AddExternalImage2D(Renderer::GetDefaultResources().BRDFLuT);
 		}
@@ -502,12 +506,6 @@ namespace Volt
 			auto& environmentTexturesData = blackboard.Add<EnvironmentTexturesData>();
 			environmentTexturesData.irradiance = m_sceneEnvironment.irradianceMap ? renderGraph.AddExternalImage2D(m_sceneEnvironment.irradianceMap) : imageData.black1x1Cube;
 			environmentTexturesData.radiance = m_sceneEnvironment.radianceMap ? renderGraph.AddExternalImage2D(m_sceneEnvironment.radianceMap) : imageData.black1x1Cube;
-		}
-
-		// Color output
-		{
-			auto& finalColorData = blackboard.Add<FinalColorData>();
-			finalColorData.finalColorOutput = renderGraph.AddExternalImage2D(m_outputImage);
 		}
 	}
 
@@ -792,26 +790,29 @@ namespace Volt
 
 	void SceneRenderer::AddSkyboxPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		const auto& finalColorData = blackboard.Get<FinalColorData>();
 		const auto& environmentTexturesData = blackboard.Get<EnvironmentTexturesData>();
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 
 		RenderGraphResourceHandle meshVertexBufferHandle = renderGraph.AddExternalBuffer(m_skyboxMesh->GetVertexPositionsBuffer()->GetResource(), false);
 		RenderGraphResourceHandle indexBufferHandle = renderGraph.AddExternalBuffer(m_skyboxMesh->GetIndexStorageBuffer()->GetResource(), false);
 
-		renderGraph.AddPass("Skybox Pass",
-		[&](RenderGraph::Builder& builder)
+		blackboard.Add<ShadingOutputData>() = renderGraph.AddPass<ShadingOutputData>("Skybox Pass",
+		[&](RenderGraph::Builder& builder, ShadingOutputData& data)
 		{
+			{
+				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::B10G11R11_UFLOAT_PACK32>(m_width, m_height, RHI::ImageUsage::AttachmentStorage, "Shading Output");
+				data.colorOutput = builder.CreateImage2D(desc);
+			}
+
 			builder.ReadResource(environmentTexturesData.radiance);
 			builder.ReadResource(meshVertexBufferHandle);
 			builder.ReadResource(indexBufferHandle);
 			builder.ReadResource(uniformBuffers.viewDataBuffer);
-			builder.WriteResource(finalColorData.finalColorOutput);
 		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		[=](const ShadingOutputData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { finalColorData.finalColorOutput });
-			
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { data.colorOutput });
+
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
 			pipelineInfo.shader = ShaderMap::Get("Skybox");
 			pipelineInfo.cullMode = RHI::CullMode::Front;
@@ -839,7 +840,7 @@ namespace Volt
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 		const auto& externalImages = blackboard.Get<ExternalImagesData>();
 		const auto& environmentTexturesData = blackboard.Get<EnvironmentTexturesData>();
-		const auto& finalColorData = blackboard.Get<FinalColorData>();
+		const auto& shadingOutputData = blackboard.Get<ShadingOutputData>();
 		const auto& lightBuffers = blackboard.Get<LightBuffersData>();
 		const auto& lightCullingData = blackboard.Get<LightCullingData>();
 
@@ -848,9 +849,9 @@ namespace Volt
 		//const auto& dirShadowData = blackboard.Get<DirectionalShadowData>();
 
 		renderGraph.AddPass("Shading Pass",
-		[&](RenderGraph::Builder& builder) 
+		[&](RenderGraph::Builder& builder)
 		{
-			builder.WriteResource(finalColorData.finalColorOutput);
+			builder.WriteResource(shadingOutputData.colorOutput);
 			builder.ReadResource(gbufferData.albedo);
 			builder.ReadResource(gbufferData.normals);
 			builder.ReadResource(gbufferData.material);
@@ -869,7 +870,6 @@ namespace Volt
 			builder.ReadResource(lightCullingData.visibleSpotLightsBuffer);
 			//builder.ReadResource(dirShadowData.shadowTexture);
 
-			builder.SetHasSideEffect();
 			builder.SetIsComputePass();
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
@@ -878,7 +878,7 @@ namespace Volt
 
 			auto pipeline = ShaderMap::GetComputePipeline("Shading");
 			context.BindPipeline(pipeline);
-			context.SetConstant("output"_sh, resources.GetImage2D(finalColorData.finalColorOutput));
+			context.SetConstant("output"_sh, resources.GetImage2D(shadingOutputData.colorOutput));
 			context.SetConstant("albedo"_sh, resources.GetImage2D(gbufferData.albedo));
 			context.SetConstant("normals"_sh, resources.GetImage2D(gbufferData.normals));
 			context.SetConstant("material"_sh, resources.GetImage2D(gbufferData.material));
@@ -905,6 +905,36 @@ namespace Volt
 		});
 	}
 
+	void SceneRenderer::AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle srcImage)
+	{
+		blackboard.Add<FinalCopyData>() = renderGraph.AddPass<FinalCopyData>("Final Copy",
+		[&](RenderGraph::Builder& builder, FinalCopyData& data)
+		{
+			data.output = builder.AddExternalImage2D(GetFinalImage());
+			builder.WriteResource(data.output);
+			builder.ReadResource(srcImage);
+			builder.SetHasSideEffect();
+		},
+		[=](const FinalCopyData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { data.output });
+
+			RHI::RenderPipelineCreateInfo pipelineInfo;
+			pipelineInfo.shader = ShaderMap::Get("FinalCopy");
+			pipelineInfo.depthMode = RHI::DepthMode::None;
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+			context.BeginRendering(info);
+
+			RCUtils::DrawFullscreenTriangle(context, pipeline, [&](RenderContext& context)
+			{
+				context.SetConstant("finalColor"_sh, resources.GetImage2D(srcImage));
+			});
+
+			context.EndRendering();
+		});
+	}
+
 	void SceneRenderer::CreateMainRenderTarget(const uint32_t width, const uint32_t height)
 	{
 		RHI::ImageSpecification spec{};
@@ -914,6 +944,12 @@ namespace Volt
 		spec.generateMips = false;
 		spec.format = RHI::PixelFormat::B10G11R11_UFLOAT_PACK32;
 
-		m_outputImage = RHI::Image2D::Create(spec);
+		m_outputImages[0] = RHI::Image2D::Create(spec);
+		m_outputImages[1] = RHI::Image2D::Create(spec);
+	}
+
+	Ref<RHI::Image2D> SceneRenderer::GetPreviousFinalImage()
+	{
+		return m_outputImages[(Application::GetFrameIndex() - 1) % 2];
 	}
 }

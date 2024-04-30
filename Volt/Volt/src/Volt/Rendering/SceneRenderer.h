@@ -104,10 +104,15 @@ namespace Volt
 		void AddSkyboxPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle srcImage);
 
 		void CreateMainRenderTarget(const uint32_t width, const uint32_t height);
 
-		Ref<RHI::Image2D> m_outputImage;
+		Ref<RHI::Image2D> GetPreviousFinalImage();
+
+		Ref<RHI::Image2D> m_outputImages[2];
+		Ref<RHI::Image2D> m_previousDepthImage;
+
 		Ref<Mesh> m_skyboxMesh;
 
 		bool m_shouldResize = false;
