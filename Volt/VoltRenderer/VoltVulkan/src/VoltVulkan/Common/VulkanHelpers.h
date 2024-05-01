@@ -340,5 +340,7 @@ namespace Volt::RHI
 		const VkImageCreateInfo GetVkImageCreateInfo(const ImageSpecification& specification);
 		const MemoryRequirement GetImageRequirement(const VkImageCreateInfo& imageCreateInfo);
 
-	}
+		const ImageLayout GetImageLayoutFromVkImageLayout(VkImageLayout layout);
+		const VkImageLayout GetVkImageLayoutFromImageLayout(ImageLayout layout);
+}
 }

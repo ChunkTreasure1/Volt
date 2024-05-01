@@ -214,32 +214,162 @@ namespace Volt
 
 		for (const auto& pass : m_passNodes)
 		{
-			if (pass->IsCulled())
+			if (!pass->IsCulled())
 			{
-				continue;
-			}
-
-			auto writeResourceFunc = [&](const RenderGraphPassResourceAccess& access) -> void
-			{
-				ResourceUsageInfo previousUsageInfo{};
-				bool hasPreviousUsage = false;
-
-				if (!resourceUsages.at(access.handle).empty())
+				auto writeResourceFunc = [&](const RenderGraphPassResourceAccess& access) -> void
 				{
-					hasPreviousUsage = true;
-					previousUsageInfo = resourceUsages.at(access.handle).back();
-				}
+					ResourceUsageInfo previousUsageInfo{};
+					bool hasPreviousUsage = false;
 
-				ResourceUsageInfo usage;
-				usage.passIndex = pass->index;
-				usage.handle = access.handle;
+					if (!resourceUsages.at(access.handle).empty())
+					{
+						hasPreviousUsage = true;
+						previousUsageInfo = resourceUsages.at(access.handle).back();
+					}
 
-				const auto resource = m_resourceNodes.at(access.handle);
+					ResourceUsageInfo usage;
+					usage.passIndex = pass->index;
+					usage.resourceHandle = access.handle;
 
-				// Setup previous usage
+					const auto resource = m_resourceNodes.at(access.handle);
 
-				if (hasPreviousUsage)
+					// Setup previous usage
+
+					if (hasPreviousUsage)
+					{
+						if (resource->GetResourceType() == ResourceType::Image2D || resource->GetResourceType() == ResourceType::Image3D)
+						{
+							usage.accessInfo.imageBarrier().srcStage = previousUsageInfo.accessInfo.imageBarrier().dstStage;
+							usage.accessInfo.imageBarrier().srcAccess = previousUsageInfo.accessInfo.imageBarrier().dstAccess;
+							usage.accessInfo.imageBarrier().srcLayout = previousUsageInfo.accessInfo.imageBarrier().dstLayout;
+						}
+						else if (resource->GetResourceType() == ResourceType::Buffer)
+						{
+							usage.accessInfo.bufferBarrier().srcStage = previousUsageInfo.accessInfo.bufferBarrier().dstStage;
+							usage.accessInfo.bufferBarrier().srcAccess = previousUsageInfo.accessInfo.bufferBarrier().dstAccess;
+						}
+					}
+					else
+					{
+						if (resource->GetResourceType() == ResourceType::Image2D || resource->GetResourceType() == ResourceType::Image3D)
+						{
+							// If it's an unused external image, use it's own layout
+							if (resource->isExternal)
+							{
+								auto imageResource = GetImage2DRaw(access.handle);
+								previousUsageInfo.accessInfo.imageBarrier().dstLayout = imageResource->GetImageLayout();
+							}
+							else
+							{
+								previousUsageInfo.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::Undefined;
+							}
+
+							previousUsageInfo.accessInfo.type = RHI::BarrierType::Image;
+							previousUsageInfo.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::All;
+							previousUsageInfo.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::None;
+						}
+						else if (resource->GetResourceType() == ResourceType::Buffer)
+						{
+							previousUsageInfo.accessInfo.type = RHI::BarrierType::Buffer;
+							previousUsageInfo.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::All;
+							previousUsageInfo.accessInfo.bufferBarrier().dstAccess = RHI::BarrierAccess::None;
+						}
+					}
+
+					// Setup new usage
+					if (access.forcedState != RenderGraphResourceState::None)
+					{
+						Utility::SetupForcedState(access.forcedState, usage);
+					}
+					else
+					{
+						if (resource->GetResourceType() == ResourceType::Image2D || resource->GetResourceType() == ResourceType::Image3D)
+						{
+							usage.accessInfo.type = RHI::BarrierType::Image;
+
+							if (pass->isComputePass)
+							{
+								usage.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderWrite;
+								usage.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader;
+								usage.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::ShaderWrite;
+							}
+							else
+							{
+								if (resource->GetResourceType() == ResourceType::Image2D)
+								{
+									RenderGraphResourceNode<RenderGraphImage2D>& image2DNode = resource->As<RenderGraphResourceNode<RenderGraphImage2D>>();
+
+									if (RHI::Utility::IsDepthFormat(image2DNode.resourceInfo.description.format) || RHI::Utility::IsStencilFormat(image2DNode.resourceInfo.description.format))
+									{
+										usage.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::DepthStencilWrite;
+										usage.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::DepthStencil;
+										usage.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::DepthStencilWrite;
+									}
+									else
+									{
+										usage.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::RenderTarget;
+										usage.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::RenderTarget;
+										usage.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::RenderTarget;
+									}
+								}
+							}
+
+						}
+						else if (resource->GetResourceType() == ResourceType::Buffer)
+						{
+							usage.accessInfo.type = RHI::BarrierType::Buffer;
+							usage.accessInfo.bufferBarrier().offset = 0;
+
+							if (pass->isComputePass)
+							{
+								usage.accessInfo.bufferBarrier().dstAccess = RHI::BarrierAccess::ShaderWrite;
+								usage.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::ComputeShader;
+							}
+							else
+							{
+								usage.accessInfo.bufferBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
+								usage.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::VertexShader | RHI::BarrierStage::PixelShader;
+							}
+						}
+					}
+
+					if (hasPreviousUsage && Utility::IsSame(previousUsageInfo.accessInfo, usage.accessInfo, usage.accessInfo.type))
+					{
+						// Resource doesn't need a barrier
+						return;
+					}
+
+					resourceUsages.at(access.handle).emplace_back(usage);
+				};
+
+				auto readResourceFunc = [&](const RenderGraphPassResourceAccess& access)
 				{
+					ResourceUsageInfo previousUsageInfo{};
+					bool hasPreviousUsage = false;
+
+					if (!resourceUsages.at(access.handle).empty())
+					{
+						hasPreviousUsage = true;
+						previousUsageInfo = resourceUsages.at(access.handle).back();
+					}
+
+					ResourceUsageInfo usage;
+					usage.passIndex = pass->index;
+					usage.resourceHandle = access.handle;
+
+					const auto resource = m_resourceNodes.at(access.handle);
+
+					// If it's an unused external image, use it's own layout
+					if (!hasPreviousUsage && resource->isExternal)
+					{
+						if (resource->GetResourceType() == ResourceType::Image2D)
+						{
+							auto imageResource = GetImage2DRaw(access.handle);
+							previousUsageInfo.accessInfo.imageBarrier().dstLayout = imageResource->GetImageLayout();
+						}
+					}
+
+					// Setup previous usage
 					if (resource->GetResourceType() == ResourceType::Image2D || resource->GetResourceType() == ResourceType::Image3D)
 					{
 						usage.accessInfo.imageBarrier().srcStage = previousUsageInfo.accessInfo.imageBarrier().dstStage;
@@ -251,182 +381,100 @@ namespace Volt
 						usage.accessInfo.bufferBarrier().srcStage = previousUsageInfo.accessInfo.bufferBarrier().dstStage;
 						usage.accessInfo.bufferBarrier().srcAccess = previousUsageInfo.accessInfo.bufferBarrier().dstAccess;
 					}
-				}
-				else
-				{
-					if (resource->GetResourceType() == ResourceType::Image2D || resource->GetResourceType() == ResourceType::Image3D)
-					{
-						previousUsageInfo.accessInfo.type = RHI::BarrierType::Image;
-						previousUsageInfo.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::All;
-						previousUsageInfo.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::None;
-						previousUsageInfo.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::Undefined;
-					}
-					else if (resource->GetResourceType() == ResourceType::Buffer)
-					{
-						previousUsageInfo.accessInfo.type = RHI::BarrierType::Buffer;
-						previousUsageInfo.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::All;
-						previousUsageInfo.accessInfo.bufferBarrier().dstAccess = RHI::BarrierAccess::None;
-					}
-				}
 
-				// Setup new usage
-				if (access.forcedState != RenderGraphResourceState::None)
-				{
-					Utility::SetupForcedState(access.forcedState, usage);
-				}
-				else
-				{
-					if (resource->GetResourceType() == ResourceType::Image2D || resource->GetResourceType() == ResourceType::Image3D)
+					// Setup new usage
+					if (access.forcedState != RenderGraphResourceState::None)
 					{
-						usage.accessInfo.type = RHI::BarrierType::Image;
+						Utility::SetupForcedState(access.forcedState, usage);
+					}
+					else
+					{
+						if (resource->GetResourceType() == ResourceType::Image2D || resource->GetResourceType() == ResourceType::Image3D)
+						{
+							usage.accessInfo.type = RHI::BarrierType::Image;
+							usage.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
+							usage.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
 
-						if (pass->isComputePass)
-						{
-							usage.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderWrite;
-							usage.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader;
-							usage.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::ShaderWrite;
-						}
-						else
-						{
-							if (resource->GetResourceType() == ResourceType::Image2D)
+							if (pass->isComputePass)
 							{
-								RenderGraphResourceNode<RenderGraphImage2D>& image2DNode = resource->As<RenderGraphResourceNode<RenderGraphImage2D>>();
-
-								if (RHI::Utility::IsDepthFormat(image2DNode.resourceInfo.description.format) || RHI::Utility::IsStencilFormat(image2DNode.resourceInfo.description.format))
-								{
-									usage.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::DepthStencilWrite;
-									usage.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::DepthStencil;
-									usage.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::DepthStencilWrite;
-								}
-								else
-								{
-									usage.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::RenderTarget;
-									usage.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::RenderTarget;
-									usage.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::RenderTarget;
-								}
-
+								usage.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader;
+							}
+							else
+							{
+								usage.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::VertexShader | RHI::BarrierStage::PixelShader;
 							}
 						}
-
-					}
-					else if (resource->GetResourceType() == ResourceType::Buffer)
-					{
-						usage.accessInfo.type = RHI::BarrierType::Buffer;
-						usage.accessInfo.bufferBarrier().offset = 0;
-
-						if (pass->isComputePass)
+						else if (resource->GetResourceType() == ResourceType::Buffer)
 						{
-							usage.accessInfo.bufferBarrier().dstAccess = RHI::BarrierAccess::ShaderWrite;
-							usage.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::ComputeShader;
-						}
-						else
-						{
+							usage.accessInfo.type = RHI::BarrierType::Buffer;
 							usage.accessInfo.bufferBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
-							usage.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::VertexShader | RHI::BarrierStage::PixelShader;
+							usage.accessInfo.bufferBarrier().offset = 0;
+
+							if (pass->isComputePass)
+							{
+								usage.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::ComputeShader;
+							}
+							else
+							{
+								usage.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::VertexShader | RHI::BarrierStage::PixelShader;
+							}
 						}
 					}
-				}
 
-				if (hasPreviousUsage && Utility::IsSame(previousUsageInfo.accessInfo, usage.accessInfo, usage.accessInfo.type))
-				{
-					// Resource doesn't need a barrier
-					return;
-				}
-
-				resourceUsages.at(access.handle).emplace_back(usage);
-			};
-
-			auto readResourceFunc = [&](const RenderGraphPassResourceAccess& access)
-			{
-				ResourceUsageInfo previousUsageInfo{};
-				bool hasPreviousUsage = false;
-
-				if (!resourceUsages.at(access.handle).empty())
-				{
-					hasPreviousUsage = true;
-					previousUsageInfo = resourceUsages.at(access.handle).back();
-				}
-
-				ResourceUsageInfo usage;
-				usage.passIndex = pass->index;
-				usage.handle = access.handle;
-
-				const auto resource = m_resourceNodes.at(access.handle);
-
-				// Setup previous usage
-				if (resource->GetResourceType() == ResourceType::Image2D || resource->GetResourceType() == ResourceType::Image3D)
-				{
-					usage.accessInfo.imageBarrier().srcStage = previousUsageInfo.accessInfo.imageBarrier().dstStage;
-					usage.accessInfo.imageBarrier().srcAccess = previousUsageInfo.accessInfo.imageBarrier().dstAccess;
-					usage.accessInfo.imageBarrier().dstLayout = previousUsageInfo.accessInfo.imageBarrier().dstLayout;
-				}
-				else if (resource->GetResourceType() == ResourceType::Buffer)
-				{
-					usage.accessInfo.bufferBarrier().srcStage = previousUsageInfo.accessInfo.bufferBarrier().dstStage;
-					usage.accessInfo.bufferBarrier().srcAccess = previousUsageInfo.accessInfo.bufferBarrier().dstAccess;
-				}
-
-				// Setup new usage
-				if (access.forcedState != RenderGraphResourceState::None)
-				{
-					Utility::SetupForcedState(access.forcedState, usage);
-				}
-				else
-				{
-					if (resource->GetResourceType() == ResourceType::Image2D || resource->GetResourceType() == ResourceType::Image3D)
+					if (hasPreviousUsage && Utility::IsSame(previousUsageInfo.accessInfo, usage.accessInfo, usage.accessInfo.type))
 					{
-						usage.accessInfo.type = RHI::BarrierType::Image;
-						usage.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
-						usage.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
-
-						if (pass->isComputePass)
-						{
-							usage.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader;
-						}
-						else
-						{
-							usage.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::VertexShader | RHI::BarrierStage::PixelShader;
-						}
+						// Resource doesn't need a barrier
+						return;
 					}
-					else if (resource->GetResourceType() == ResourceType::Buffer)
-					{
-						usage.accessInfo.type = RHI::BarrierType::Buffer;
-						usage.accessInfo.bufferBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
-						usage.accessInfo.bufferBarrier().offset = 0;
 
-						if (pass->isComputePass)
-						{
-							usage.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::ComputeShader;
-						}
-						else
-						{
-							usage.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::VertexShader | RHI::BarrierStage::PixelShader;
-						}
-					}
-				}
+					resourceUsages.at(access.handle).emplace_back(usage);
+				};
 
-				if (hasPreviousUsage && Utility::IsSame(previousUsageInfo.accessInfo, usage.accessInfo, usage.accessInfo.type))
+				for (const auto& write : pass->resourceCreates)
 				{
-					// Resource doesn't need a barrier
-					return;
+					writeResourceFunc({ RenderGraphResourceState::None, write });
 				}
 
-				resourceUsages.at(access.handle).emplace_back(usage);
-			};
+				for (const auto& write : pass->resourceWrites)
+				{
+					writeResourceFunc(write);
+				}
 
-			for (const auto& write : pass->resourceCreates)
-			{
-				writeResourceFunc({ RenderGraphResourceState::None, write });
+				for (const auto& read : pass->resourceReads)
+				{
+					readResourceFunc(read);
+				}
 			}
 
-			for (const auto& write : pass->resourceWrites)
+			if (m_standaloneBarriers.size() > static_cast<size_t>(pass->index) && !m_standaloneBarriers.at(pass->index).empty())
 			{
-				writeResourceFunc(write);
-			}
+				for (auto& barrier : m_standaloneBarriers.at(pass->index))
+				{
+					if (barrier.accessInfo.type == RHI::BarrierType::Image)
+					{
+						if (!resourceUsages.at(barrier.resourceHandle).empty())
+						{
+							const auto& previousUsage = resourceUsages.at(barrier.resourceHandle).back();
 
-			for (const auto& read : pass->resourceReads)
-			{
-				readResourceFunc(read);
+							barrier.accessInfo.imageBarrier().srcAccess = previousUsage.accessInfo.imageBarrier().dstAccess;
+							barrier.accessInfo.imageBarrier().srcStage = previousUsage.accessInfo.imageBarrier().dstStage;
+							barrier.accessInfo.imageBarrier().srcLayout = previousUsage.accessInfo.imageBarrier().dstLayout;
+
+						}
+					}
+					else if (barrier.accessInfo.type == RHI::BarrierType::Buffer)
+					{
+						if (!resourceUsages.at(barrier.resourceHandle).empty())
+						{
+							const auto& previousUsage = resourceUsages.at(barrier.resourceHandle).back();
+
+							barrier.accessInfo.bufferBarrier().srcAccess = previousUsage.accessInfo.bufferBarrier().dstAccess;
+							barrier.accessInfo.bufferBarrier().srcStage = previousUsage.accessInfo.bufferBarrier().dstStage;
+						}
+					}
+
+					resourceUsages.at(barrier.resourceHandle).emplace_back(barrier);
+				}
 			}
 		}
 
@@ -434,7 +482,10 @@ namespace Volt
 		{
 			for (const auto& usage : resourceUsage)
 			{
-				m_resourceBarriers.at(usage.passIndex).emplace_back(usage);
+				if (usage.isPassSpecificUsage)
+				{
+					m_resourceBarriers.at(usage.passIndex).emplace_back(usage);
+				}
 			}
 		}
 	}
@@ -541,13 +592,13 @@ namespace Volt
 
 					if (barrier.type == RHI::BarrierType::Image)
 					{
-						barrier.imageBarrier().resource = GetResourceRaw(transition.handle);
-						m_resourceNodes.at(transition.handle)->currentState = { transition.accessInfo.imageBarrier().dstStage, transition.accessInfo.imageBarrier().dstAccess, transition.accessInfo.imageBarrier().dstLayout };
+						barrier.imageBarrier().resource = GetResourceRaw(transition.resourceHandle);
+						m_resourceNodes.at(transition.resourceHandle)->currentState = { transition.accessInfo.imageBarrier().dstStage, transition.accessInfo.imageBarrier().dstAccess, transition.accessInfo.imageBarrier().dstLayout };
 					}
 					else if (barrier.type == RHI::BarrierType::Buffer)
 					{
-						Utility::SetupBufferBarrier(barrier.bufferBarrier(), GetResourceRaw(transition.handle));
-						m_resourceNodes.at(transition.handle)->currentState = { transition.accessInfo.bufferBarrier().dstStage, transition.accessInfo.bufferBarrier().dstAccess, RHI::ImageLayout::Undefined };
+						Utility::SetupBufferBarrier(barrier.bufferBarrier(), GetResourceRaw(transition.resourceHandle));
+						m_resourceNodes.at(transition.resourceHandle)->currentState = { transition.accessInfo.bufferBarrier().dstStage, transition.accessInfo.bufferBarrier().dstAccess, RHI::ImageLayout::Undefined };
 					}
 				}
 
@@ -585,11 +636,11 @@ namespace Volt
 
 					if (graphBarrier.accessInfo.type == RHI::BarrierType::Image)
 					{
-						barrier.imageBarrier().resource = GetResourceRaw(graphBarrier.handle);
+						barrier.imageBarrier().resource = GetResourceRaw(graphBarrier.resourceHandle);
 					}
 					else if (graphBarrier.accessInfo.type == RHI::BarrierType::Buffer)
 					{
-						Utility::SetupBufferBarrier(barrier.bufferBarrier(), GetResourceRaw(graphBarrier.handle));
+						Utility::SetupBufferBarrier(barrier.bufferBarrier(), GetResourceRaw(graphBarrier.resourceHandle));
 					}
 				}
 			}
@@ -1103,9 +1154,6 @@ namespace Volt
 
 	void RenderGraph::AddResourceBarrier(RenderGraphResourceHandle resourceHandle, const RenderGraphBarrierInfo& barrierInfo)
 	{
-		const auto currentState = m_resourceNodes.at(resourceHandle)->currentState;
-		m_resourceNodes.at(resourceHandle)->currentState = barrierInfo;
-
 		if (m_standaloneBarriers.size() < m_passIndex)
 		{
 			m_standaloneBarriers.resize(m_passIndex);
@@ -1119,16 +1167,18 @@ namespace Volt
 		const uint32_t currentIndex = m_passIndex > 0 ? m_passIndex - 1 : 0;
 		auto& newBarrier = m_standaloneBarriers.at(currentIndex).emplace_back();
 		newBarrier.passIndex = currentIndex;
-		newBarrier.handle = resourceHandle;
+		newBarrier.resourceHandle = resourceHandle;
 
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
+
+		// Source values is being set up during the compile step
 
 		if (resourceNode->GetResourceType() == ResourceType::Image2D || resourceNode->GetResourceType() == ResourceType::Image3D)
 		{
 			newBarrier.accessInfo.type = RHI::BarrierType::Image;
-			newBarrier.accessInfo.imageBarrier().srcStage = currentState.dstStage;
-			newBarrier.accessInfo.imageBarrier().srcAccess = currentState.dstAccess;
-			newBarrier.accessInfo.imageBarrier().srcLayout = currentState.dstLayout;
+			newBarrier.accessInfo.imageBarrier().srcStage = RHI::BarrierStage::None;
+			newBarrier.accessInfo.imageBarrier().srcAccess = RHI::BarrierAccess::None;
+			newBarrier.accessInfo.imageBarrier().srcLayout = RHI::ImageLayout::Undefined;
 
 			newBarrier.accessInfo.imageBarrier().dstStage = barrierInfo.dstStage;
 			newBarrier.accessInfo.imageBarrier().dstAccess = barrierInfo.dstAccess;
@@ -1137,11 +1187,14 @@ namespace Volt
 		else if (resourceNode->GetResourceType() == ResourceType::Buffer)
 		{
 			newBarrier.accessInfo.type = RHI::BarrierType::Buffer;
-			newBarrier.accessInfo.bufferBarrier().srcStage = currentState.dstStage;
-			newBarrier.accessInfo.bufferBarrier().srcAccess = currentState.dstAccess;
+			newBarrier.accessInfo.bufferBarrier().srcStage = RHI::BarrierStage::None;
+			newBarrier.accessInfo.bufferBarrier().srcAccess = RHI::BarrierAccess::None;
+
 			newBarrier.accessInfo.bufferBarrier().dstStage = barrierInfo.dstStage;
 			newBarrier.accessInfo.bufferBarrier().dstAccess = barrierInfo.dstAccess;
 		}
+
+		newBarrier.isPassSpecificUsage = false;
 	}
 
 	void RenderGraph::QueueImage2DExtraction(RenderGraphResourceHandle resourceHandle, Ref<RHI::Image2D>& outImage)

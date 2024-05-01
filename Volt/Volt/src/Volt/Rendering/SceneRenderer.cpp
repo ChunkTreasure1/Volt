@@ -943,8 +943,11 @@ namespace Volt
 		spec.usage = RHI::ImageUsage::AttachmentStorage;
 		spec.generateMips = false;
 		spec.format = RHI::PixelFormat::B10G11R11_UFLOAT_PACK32;
+		spec.debugName = "Final Image 0";
 
 		m_outputImages[0] = RHI::Image2D::Create(spec);
+
+		spec.debugName = "Final Image 1";
 		m_outputImages[1] = RHI::Image2D::Create(spec);
 	}
 

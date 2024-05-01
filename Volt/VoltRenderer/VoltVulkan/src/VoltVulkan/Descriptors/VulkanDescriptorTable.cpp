@@ -286,7 +286,7 @@ namespace Volt::RHI
 			}
 		}
 
-		m_currentIndex++;
+		m_currentIndex = (m_currentIndex + 1) % m_descriptorPoolCount;
 	}
 
 	void VulkanDescriptorTable::SetDirty(bool state)

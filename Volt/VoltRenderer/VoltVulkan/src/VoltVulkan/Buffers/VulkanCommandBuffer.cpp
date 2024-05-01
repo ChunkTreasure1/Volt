@@ -213,27 +213,6 @@ namespace Volt::RHI
 
 			return result;
 		}
-
-		const VkImageLayout GetLayoutFromImageLayout(const ImageLayout imageLayout)
-		{
-			switch (imageLayout)
-			{
-				case ImageLayout::Undefined: return VK_IMAGE_LAYOUT_UNDEFINED;
-				case ImageLayout::Present: return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-				case ImageLayout::RenderTarget: return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				case ImageLayout::ShaderWrite: return VK_IMAGE_LAYOUT_GENERAL;
-				case ImageLayout::DepthStencilWrite: return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-				case ImageLayout::DepthStencilRead: return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-				case ImageLayout::ShaderRead: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				case ImageLayout::TransferSource: return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-				case ImageLayout::TransferDestination: return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-				case ImageLayout::VideoDecodeRead: return VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR;
-				case ImageLayout::VideoDecodeWrite: return VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR;
-			}
-		
-			VT_ENSURE(false);
-			return VK_IMAGE_LAYOUT_UNDEFINED;
-		}
 	}
 
 	VulkanCommandBuffer::VulkanCommandBuffer(const uint32_t count, QueueType queueType)
@@ -758,8 +737,8 @@ namespace Volt::RHI
 		outBarrier.dstAccessMask = Utility::GetAccessFromBarrierAccess(barrierInfo.imageBarrier().dstAccess);
 		outBarrier.srcStageMask = Utility::GetStageFromBarrierSync(barrierInfo.imageBarrier().srcStage);
 		outBarrier.dstStageMask = Utility::GetStageFromBarrierSync(barrierInfo.imageBarrier().dstStage);
-		outBarrier.oldLayout = Utility::GetLayoutFromImageLayout(barrierInfo.imageBarrier().srcLayout);
-		outBarrier.newLayout = Utility::GetLayoutFromImageLayout(barrierInfo.imageBarrier().dstLayout);
+		outBarrier.oldLayout = Utility::GetVkImageLayoutFromImageLayout(barrierInfo.imageBarrier().srcLayout);
+		outBarrier.newLayout = Utility::GetVkImageLayoutFromImageLayout(barrierInfo.imageBarrier().dstLayout);
 		outBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		outBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		outBarrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
@@ -769,7 +748,7 @@ namespace Volt::RHI
 		outBarrier.subresourceRange.levelCount = barrierInfo.imageBarrier().subResource.levelCount == std::numeric_limits<uint32_t>::max() ? VK_REMAINING_MIP_LEVELS : barrierInfo.imageBarrier().subResource.levelCount;
 		outBarrier.image = vkImage.GetHandle<VkImage>();
 
-		vkImage.SetCurrentLayout(static_cast<VulkanImage2D::ImageLayout>(outBarrier.newLayout));
+		vkImage.SetCurrentLayout(static_cast<VulkanImage2D::ImageLayoutInt>(outBarrier.newLayout));
 	}
 
 	void VulkanCommandBuffer::ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers)

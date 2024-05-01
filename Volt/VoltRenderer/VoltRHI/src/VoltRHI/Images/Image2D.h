@@ -25,6 +25,7 @@ namespace Volt::RHI
 		virtual const Ref<ImageView> GetArrayView(const int32_t mip = -1) = 0;
 
 		virtual const ImageAspect GetImageAspect() const = 0;
+		virtual const ImageLayout GetImageLayout() const = 0;
 
 		virtual const uint32_t GetWidth() const = 0;
 		virtual const uint32_t GetHeight() const = 0;

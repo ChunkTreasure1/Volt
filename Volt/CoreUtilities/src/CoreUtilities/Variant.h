@@ -12,6 +12,20 @@ public:
 		memset(m_buffer, 0, m_largestTypeSize);
 	}
 
+	Variant(const Variant& other)
+		: m_first(other.m_first)
+	{
+		memcpy_s(m_buffer, m_largestTypeSize, other.m_buffer, other.m_largestTypeSize);
+	}
+
+	Variant& operator=(const Variant& other)
+	{
+		m_first = other.m_first;
+		memcpy_s(m_buffer, m_largestTypeSize, other.m_buffer, other.m_largestTypeSize);
+
+		return *this;
+	}
+
 	~Variant() = default;
 
 	template<typename F>

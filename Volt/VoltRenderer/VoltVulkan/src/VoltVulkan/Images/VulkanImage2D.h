@@ -13,7 +13,7 @@ namespace Volt::RHI
 	class VulkanImage2D final : public Image2D
 	{
 	public:
-		using ImageLayout = uint32_t;
+		using ImageLayoutInt = uint32_t;
 
 		VulkanImage2D(const ImageSpecification& specification, const void* data);
 		VulkanImage2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data);
@@ -40,9 +40,11 @@ namespace Volt::RHI
 		const uint64_t GetDeviceAddress() const override;
 		const uint64_t GetByteSize() const override;
 
-		const ImageLayout GetCurrentLayout() const { return m_currentImageLayout; }
-		void SetCurrentLayout(ImageLayout layout) { m_currentImageLayout = layout; }
 		inline const ImageAspect GetImageAspect() const override { return m_imageAspect; }
+		inline const ImageLayout GetImageLayout() const override;
+
+		const ImageLayoutInt GetCurrentLayout() const { return m_currentImageLayout; }
+		void SetCurrentLayout(ImageLayoutInt layout) { m_currentImageLayout = layout; }
 
 		void InitializeWithData(const void* data);
 
@@ -56,7 +58,7 @@ namespace Volt::RHI
 		};
 
 		void InvalidateSwapchainImage(const SwapchainImageSpecification& specification);
-		void TransitionToLayout(ImageLayout targetLayout);
+		void TransitionToLayout(ImageLayoutInt targetLayout);
 
 		ImageSpecification m_specification;
 		SwapchainImageData m_swapchainImageData;
@@ -68,7 +70,7 @@ namespace Volt::RHI
 		bool m_allocatedUsingCustomAllocator = false;
 		bool m_isSwapchainImage = false;
 
-		ImageLayout m_currentImageLayout = 0;
+		ImageLayoutInt m_currentImageLayout = 0;
 		ImageAspect m_imageAspect = ImageAspect::None;
 
 		std::map<int32_t, std::map<int32_t, Ref<ImageView>>> m_imageViews; // Layer -> Mip -> View

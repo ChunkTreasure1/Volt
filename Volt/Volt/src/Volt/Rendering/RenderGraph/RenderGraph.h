@@ -36,8 +36,10 @@ namespace Volt
 	struct ResourceUsageInfo
 	{
 		int32_t passIndex = -1;
-		RenderGraphResourceHandle handle;
+		RenderGraphResourceHandle resourceHandle;
 		RHI::ResourceBarrierInfo accessInfo;
+
+		bool isPassSpecificUsage = true;
 	};
 
 	class RenderGraph

@@ -25,6 +25,7 @@ namespace Volt::RHI
 		const PixelFormat GetFormat() const override;
 		const ImageUsage GetUsage() const override;
 		const ImageAspect GetImageAspect() const override;
+		const ImageLayout GetImageLayout() const override;
 		const uint32_t CalculateMipCount() const override;
 		const bool IsSwapchainImage() const override;
 

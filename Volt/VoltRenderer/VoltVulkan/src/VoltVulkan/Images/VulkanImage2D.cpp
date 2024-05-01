@@ -20,7 +20,7 @@ namespace Volt::RHI
 {
 	namespace Utility
 	{
-		VkImageLayout ToVulkanLayout(const VulkanImage2D::ImageLayout layout)
+		VkImageLayout ToVulkanLayout(const VulkanImage2D::ImageLayoutInt layout)
 		{
 			return static_cast<VkImageLayout>(layout);
 		}
@@ -412,6 +412,11 @@ namespace Volt::RHI
 		return m_allocation->GetSize();
 	}
 
+	inline const ImageLayout VulkanImage2D::GetImageLayout() const
+	{
+		return Utility::GetImageLayoutFromVkImageLayout(static_cast<VkImageLayout>(m_currentImageLayout));
+	}
+
 	void VulkanImage2D::InitializeWithData(const void* data)
 	{
 		// #TODO_Ivar: Implement correct size for layer + mip
@@ -484,7 +489,7 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanImage2D::TransitionToLayout(ImageLayout targetLayout)
+	void VulkanImage2D::TransitionToLayout(ImageLayoutInt targetLayout)
 	{
 		if (m_currentImageLayout == targetLayout)
 		{

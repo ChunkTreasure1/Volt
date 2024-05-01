@@ -153,6 +153,11 @@ namespace Volt::RHI
 		return ImageAspect();
 	}
 
+	const ImageLayout D3D12Image2D::GetImageLayout() const
+	{
+		return ImageLayout();
+	}
+
 	const uint32_t D3D12Image2D::CalculateMipCount() const
 	{
 		return Utility::CalculateMipCount(GetWidth(), GetHeight());
