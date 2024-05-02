@@ -248,7 +248,8 @@ namespace Volt::RHI
 		}
 
 		auto& writeDescriptors = m_activeWriteDescriptors.at(actualIndex);
-
+		ValidateWriteDescriptors(writeDescriptors);
+	
 		auto device = GraphicsContext::GetDevice();
 		const VkWriteDescriptorSet* writeDescriptorsPtr = reinterpret_cast<const VkWriteDescriptorSet*>(writeDescriptors.data());
 
@@ -529,5 +530,26 @@ namespace Volt::RHI
 				}
 			}
 		}
+	}
+
+	void VulkanDescriptorTable::ValidateWriteDescriptors(std::span<const RHI::WriteDescriptor> descriptors)
+	{
+#ifndef VT_DIST
+		for (const auto& descriptor : descriptors)
+		{
+			VT_ENSURE(descriptor.pBufferInfo != nullptr ||
+					  descriptor.pImageInfo != nullptr ||
+					  descriptor.pTexelBufferView != nullptr);
+		
+			if (descriptor.pBufferInfo != nullptr)
+			{
+				VT_ENSURE(descriptor.pBufferInfo->buffer);
+			}
+			else if (descriptor.pImageInfo != nullptr)
+			{
+				VT_ENSURE(descriptor.pImageInfo->imageView != nullptr || descriptor.pImageInfo->sampler != nullptr);
+			}
+		}
+#endif
 	}
 }

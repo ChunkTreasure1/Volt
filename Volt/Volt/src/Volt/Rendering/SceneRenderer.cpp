@@ -110,7 +110,7 @@ namespace Volt
 
 	Ref<RHI::Image2D> SceneRenderer::GetFinalImage()
 	{
-		return m_outputImages[Application::GetFrameIndex() % 2];
+		return m_outputImage;
 	}
 
 	void SceneRenderer::OnRender(Ref<Camera> camera)
@@ -191,11 +191,13 @@ namespace Volt
 		gbufferData.material = renderGraph.CreateImage2D({ RHI::PixelFormat::R8G8_UNORM, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Material" });
 		gbufferData.emissive = renderGraph.CreateImage2D({ RHI::PixelFormat::B10G11R11_UFLOAT_PACK32, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Emissive" });
 
+		AddClearGBufferPass(renderGraph, rgBlackboard);
+
 		renderGraph.BeginMarker("Materials");
 
 		for (uint32_t matId = 0; matId < m_scene->GetRenderScene()->GetIndividualMaterialCount(); matId++)
 		{
-			AddGenerateGBufferPass(renderGraph, rgBlackboard, matId == 0, matId);
+			AddGenerateGBufferPass(renderGraph, rgBlackboard, matId);
 		}
 
 		renderGraph.EndMarker();
@@ -204,11 +206,23 @@ namespace Volt
 		AddShadingPass(renderGraph, rgBlackboard);
 
 		TAATechnique taaTechnique{ renderGraph, rgBlackboard };
-		TAAData taaData = taaTechnique.Execute(GetPreviousFinalImage(), { m_width, m_height });
+		TAAData taaData = taaTechnique.Execute(m_previousColorImage, { m_width, m_height });
 
 		AddFinalCopyPass(renderGraph, rgBlackboard, taaData.taaOutput);
 
-		//AddTestUIPass(renderGraph, rgBlackboard);
+		// Copy final image for next frame
+		{
+			RenderGraphImageDesc imageDesc{};
+			imageDesc.format = m_outputImage->GetFormat();
+			imageDesc.width = m_width;
+			imageDesc.height = m_height;
+			imageDesc.name = "Previous Frame Color";
+
+			RenderGraphResourceHandle destinationHandle = renderGraph.CreateImage2D(imageDesc);
+			RenderingUtils::CopyImage(renderGraph, rgBlackboard.Get<FinalCopyData>().output, destinationHandle, { m_width, m_height });
+
+			renderGraph.QueueImage2DExtraction(destinationHandle, m_previousColorImage);
+		}
 
 		renderGraph.QueueImage2DExtraction(rgBlackboard.Get<PreDepthData>().depth, m_previousDepthImage);
 
@@ -596,6 +610,27 @@ namespace Volt
 		});
 	}
 
+	void SceneRenderer::AddClearGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		const auto& gbufferData = blackboard.Get<GBufferData>();
+		
+		renderGraph.AddPass("Clear GBuffer",
+		[&](RenderGraph::Builder& builder) 
+		{
+			builder.WriteResource(gbufferData.albedo, RenderGraphResourceState::TransferDestination);
+			builder.WriteResource(gbufferData.normals, RenderGraphResourceState::TransferDestination);
+			builder.WriteResource(gbufferData.material, RenderGraphResourceState::TransferDestination);
+			builder.WriteResource(gbufferData.emissive, RenderGraphResourceState::TransferDestination);
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources) 
+		{
+			context.ClearImage(gbufferData.albedo, { 0.1f, 0.1f, 0.1f, 0.f });
+			context.ClearImage(gbufferData.normals, { 0.f, 0.f, 0.f, 0.f });
+			context.ClearImage(gbufferData.material, { 0.f, 0.f, 0.f, 0.f });
+			context.ClearImage(gbufferData.emissive, { 0.f, 0.f, 0.f, 0.f });
+		});
+	}
+
 	void SceneRenderer::AddGenerateMaterialCountsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		const ExternalBuffersData& externalBuffersData = blackboard.Get<ExternalBuffersData>();
@@ -715,7 +750,7 @@ namespace Volt
 		});
 	}
 
-	void SceneRenderer::AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, bool first, const uint32_t materialId)
+	void SceneRenderer::AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, const uint32_t materialId)
 	{
 		const auto& indirectArgsData = blackboard.Get<MaterialIndirectArgsData>();
 		const auto& visBufferData = blackboard.Get<VisibilityBufferData>();
@@ -750,14 +785,6 @@ namespace Volt
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			if (first)
-			{
-				context.ClearImage(gbufferData.albedo, { 0.1f, 0.1f, 0.1f, 0.f });
-				context.ClearImage(gbufferData.normals, { 0.f, 0.f, 0.f, 0.f });
-				context.ClearImage(gbufferData.material, { 0.f, 0.f, 0.f, 0.f });
-				context.ClearImage(gbufferData.emissive, { 0.f, 0.f, 0.f, 0.f });
-			}
-
 			auto material = renderScene->GetMaterialFromID(materialId);
 			auto pipeline = material->GetComputePipeline();
 
@@ -943,16 +970,8 @@ namespace Volt
 		spec.usage = RHI::ImageUsage::AttachmentStorage;
 		spec.generateMips = false;
 		spec.format = RHI::PixelFormat::B10G11R11_UFLOAT_PACK32;
-		spec.debugName = "Final Image 0";
+		spec.debugName = "Final Image";
 
-		m_outputImages[0] = RHI::Image2D::Create(spec);
-
-		spec.debugName = "Final Image 1";
-		m_outputImages[1] = RHI::Image2D::Create(spec);
-	}
-
-	Ref<RHI::Image2D> SceneRenderer::GetPreviousFinalImage()
-	{
-		return m_outputImages[(Application::GetFrameIndex() - 1) % 2];
+		m_outputImage = RHI::Image2D::Create(spec);
 	}
 }

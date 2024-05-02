@@ -16,7 +16,8 @@ namespace Volt
 		None = 0,
 		IndirectArgument,
 		IndexBuffer,
-		VertexBuffer
+		VertexBuffer,
+		TransferDestination
 	};
 
 	struct RenderGraphPassResourceAccess

@@ -11,6 +11,9 @@ struct VkSampler_T;
 struct VkImageView_T;
 struct VkBuffer_T;
 
+struct VkDescriptorImageInfo;
+struct VkDescriptorBufferInfo;
+
 namespace Volt::RHI
 {
 	struct WriteDescriptor
@@ -22,8 +25,8 @@ namespace Volt::RHI
 		uint32_t dstArrayElement = 0;
 		uint32_t descriptorCount = 0;
 		uint32_t descriptorType = 0;
-		const struct VkDescriptorImageInfo* pImageInfo;
-		const struct VkDescriptorBufferInfo* pBufferInfo;
+		const VkDescriptorImageInfo* pImageInfo;
+		const VkDescriptorBufferInfo* pBufferInfo;
 		const VkBufferView_T* pTexelBufferView;
 	};
 
@@ -77,6 +80,8 @@ namespace Volt::RHI
 
 		void BuildWriteDescriptors();
 		void InitializeInfoStructs();
+
+		void ValidateWriteDescriptors(std::span<const RHI::WriteDescriptor> descriptors);
 
 		Weak<Shader> m_shader;
 		uint32_t m_maxTotalDescriptorCount = 0;

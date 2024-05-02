@@ -96,11 +96,13 @@ namespace Volt
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
+		void AddClearGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+
 		void AddGenerateMaterialCountsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddCollectMaterialPixelsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddGenerateMaterialIndirectArgsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
-		void AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, bool first, const uint32_t materialId);
+		void AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, const uint32_t materialId);
 		void AddSkyboxPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
@@ -108,10 +110,9 @@ namespace Volt
 
 		void CreateMainRenderTarget(const uint32_t width, const uint32_t height);
 
-		Ref<RHI::Image2D> GetPreviousFinalImage();
-
-		Ref<RHI::Image2D> m_outputImages[2];
+		Ref<RHI::Image2D> m_outputImage;
 		Ref<RHI::Image2D> m_previousDepthImage;
+		Ref<RHI::Image2D> m_previousColorImage;
 
 		Ref<Mesh> m_skyboxMesh;
 

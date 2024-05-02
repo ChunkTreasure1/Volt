@@ -3,7 +3,10 @@
 
 #include "Volt/Rendering/RenderGraph/RenderGraph.h"
 #include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
+#include "Volt/Rendering/RenderGraph/RenderContextUtils.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
+
+#include <VoltRHI/Pipelines/RenderPipeline.h>
 
 namespace Volt::RenderingUtils
 {
@@ -48,14 +51,11 @@ namespace Volt::RenderingUtils
 			RenderGraphResourceHandle argsBufferHandle = 0;
 		};
 
-		RenderGraphResourceHandle outHandle = 0;
-
-		renderGraph.AddPass<Output>("Generate Indirect Args",
+		auto& data = renderGraph.AddPass<Output>("Generate Indirect Args",
 		[&](RenderGraph::Builder& builder, Output& data)
 		{
 			const auto argsDesc = RGUtils::CreateBufferDesc<uint32_t>(3, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, argsBufferName);
 			data.argsBufferHandle = builder.CreateBuffer(argsDesc);
-			outHandle = data.argsBufferHandle;
 
 			builder.ReadResource(countBuffer);
 			builder.SetIsComputePass();
@@ -72,6 +72,34 @@ namespace Volt::RenderingUtils
 			context.Dispatch(1, 1, 1);
 		});
 
-		return outHandle;
+		return data.argsBufferHandle;
+	}
+
+	void CopyImage(RenderGraph& renderGraph, RenderGraphResourceHandle sourceImage, RenderGraphResourceHandle destinationImage, const glm::uvec2& renderSize)
+	{
+		renderGraph.AddPass("Copy Image",
+		[&](RenderGraph::Builder& builder) 
+		{
+			builder.ReadResource(sourceImage);
+			builder.WriteResource(destinationImage);
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			RenderingInfo info = context.CreateRenderingInfo(renderSize.x, renderSize.y, { destinationImage });
+
+			RHI::RenderPipelineCreateInfo pipelineInfo;
+			pipelineInfo.shader = ShaderMap::Get("CopyImage");
+			pipelineInfo.depthMode = RHI::DepthMode::None;
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+		
+			context.BeginRendering(info);
+
+			RCUtils::DrawFullscreenTriangle(context, pipeline, [&](RenderContext& context)
+			{
+				context.SetConstant("color"_sh, resources.GetImage2D(sourceImage));
+			});
+
+			context.EndRendering();
+		});
 	}
 }

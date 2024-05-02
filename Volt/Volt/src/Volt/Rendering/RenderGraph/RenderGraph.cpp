@@ -39,7 +39,7 @@ namespace Volt
 			return result;
 		}
 
-		inline static void SetupForcedState(const RenderGraphResourceState state, ResourceUsageInfo& usageInfo)
+		inline static void SetupForcedState(const RenderGraphResourceState state, ResourceUsageInfo& usageInfo, ResourceType resourceType)
 		{
 			if (state == RenderGraphResourceState::IndirectArgument)
 			{
@@ -58,6 +58,16 @@ namespace Volt
 				usageInfo.accessInfo.type = RHI::BarrierType::Buffer;
 				usageInfo.accessInfo.bufferBarrier().dstAccess = RHI::BarrierAccess::VertexBuffer;
 				usageInfo.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::VertexShader;
+			}
+			else if (state == RenderGraphResourceState::TransferDestination)
+			{
+				if (resourceType == ResourceType::Image2D)
+				{
+					usageInfo.accessInfo.type = RHI::BarrierType::Image;
+					usageInfo.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
+					usageInfo.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::Copy;
+					usageInfo.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::TransferDestination;
+				}
 			}
 		}
 
@@ -279,7 +289,7 @@ namespace Volt
 					// Setup new usage
 					if (access.forcedState != RenderGraphResourceState::None)
 					{
-						Utility::SetupForcedState(access.forcedState, usage);
+						Utility::SetupForcedState(access.forcedState, usage, resource->GetResourceType());
 					}
 					else
 					{
@@ -385,7 +395,7 @@ namespace Volt
 					// Setup new usage
 					if (access.forcedState != RenderGraphResourceState::None)
 					{
-						Utility::SetupForcedState(access.forcedState, usage);
+						Utility::SetupForcedState(access.forcedState, usage, resource->GetResourceType());
 					}
 					else
 					{

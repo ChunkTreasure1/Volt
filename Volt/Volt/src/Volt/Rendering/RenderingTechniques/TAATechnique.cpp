@@ -8,6 +8,7 @@
 
 #include "Volt/Rendering/SceneRendererStructs.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
+#include "Volt/Rendering/Renderer.h"
 
 #include <VoltRHI/Pipelines/RenderPipeline.h>
 
@@ -30,7 +31,14 @@ namespace Volt
 				data.taaOutput = builder.CreateImage2D(desc);
 			}
 
-			data.previousColor = builder.AddExternalImage2D(previousColor);
+			if (!previousColor)
+			{
+				data.previousColor = builder.AddExternalImage2D(Renderer::GetDefaultResources().whiteTexture->GetImage());
+			}
+			else
+			{
+				data.previousColor = builder.AddExternalImage2D(previousColor);
+			}
 
 			builder.ReadResource(data.previousColor);
 			builder.ReadResource(shadingData.colorOutput);
