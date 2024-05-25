@@ -4,7 +4,6 @@
 #include "Volt/Rendering/RenderGraph/Resources/RenderGraphResourceHandle.h"
 #include "Volt/Rendering/RenderGraph/RenderContext.h"
 #include "Volt/Rendering/TransientResourceSystem/TransientResourceSystem.h" 
-#include "Volt/Rendering/Resources/GlobalResourceManager.h"
 
 #include "Volt/Core/Base.h"
 
@@ -127,17 +126,6 @@ namespace Volt
 		void AllocateConstantsBuffer();
 		void ExtractResources();
 
-		struct GlobalResourceInfo
-		{
-			ResourceHandle handle;
-			ResourceSpecialization specialization = ResourceSpecialization::None;
-
-			friend bool operator<(const GlobalResourceInfo& lhs, const GlobalResourceInfo& rhs)
-			{
-				return lhs.handle < rhs.handle;
-			}
-		};
-
 		struct Image2DExtractionInfo
 		{
 			RenderGraphResourceHandle resourceHandle;
@@ -171,9 +159,17 @@ namespace Volt
 		
 		std::unordered_map<Weak<RHI::RHIResource>, RenderGraphResourceHandle> m_registeredExternalResources;
 
-		std::set<GlobalResourceInfo> m_usedGlobalImageResourceHandles;
-		std::set<GlobalResourceInfo> m_usedGlobalBufferResourceHandles;
 		std::vector<uint8_t*> m_temporaryAllocations;
+
+
+		struct RegisteredImageView
+		{
+			ResourceHandle handle;
+			RHI::ImageViewType viewType;
+		};
+
+		std::vector<ResourceHandle> m_registeredBufferResources;
+		std::vector<RegisteredImageView> m_registeredImageResources;
 
 		uint32_t m_passIndex = 0;
 		RenderGraphResourceHandle m_resourceIndex = 0;

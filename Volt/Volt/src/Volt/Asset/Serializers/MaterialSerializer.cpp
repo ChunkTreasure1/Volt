@@ -205,13 +205,19 @@ namespace Volt
 
 		streamReader.ExitScope();
 
+		std::string logStr = std::format("Loaded material {0} with textures: \n", (uint64_t)metadata.handle);
+
+		// #TODO_Ivar: This should probably happen automatically while deserializing the texture nodes
+		for (const auto tex : mosaicAsset->GetTextureHandles())
+		{
+			logStr += std::format("		- {0}\n", (uint64_t)tex);
+			AssetManager::AddDependencyToAsset(metadata.handle, tex);
+		}
+
+		VT_CORE_TRACE(logStr);
+
 		// #TODO_Ivar: Should probably not happen here
 		mosaicAsset->Compile();
-		// #TODO_Ivar: Redo this in a proper way
-		for (const auto tex : mosaicAsset->GetTextures())
-		{
-			AssetManager::AddDependencyToAsset(metadata.handle, tex->handle);
-		}
 
 		return true;
 	}

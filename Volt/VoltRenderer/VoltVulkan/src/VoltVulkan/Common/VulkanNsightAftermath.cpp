@@ -22,6 +22,8 @@ namespace Volt::RHI
 
 		if (vkResult == VK_ERROR_DEVICE_LOST)
 		{
+			GraphicsContext::Log(Severity::Error, "Graphics device lost! Generating Nsight Aftermath report and closing application!");
+
 			auto tdrTerminationTimeout = std::chrono::seconds(3);
 			auto tStart = std::chrono::steady_clock::now();
 			auto tElapsed = std::chrono::milliseconds::zero();
@@ -43,7 +45,7 @@ namespace Volt::RHI
 				GraphicsContext::LogTagged(Severity::Error, "[Aftermath]", "Unexpected crash dump status: {0}", static_cast<uint32_t>(status));
 			}
 
-			exit(1);
+			// #TODO_Ivar: Add ability to trigger application shutdown
 		}
 
 		if (resultValue != VK_SUCCESS) 

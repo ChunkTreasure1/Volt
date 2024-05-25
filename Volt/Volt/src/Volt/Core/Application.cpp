@@ -111,9 +111,10 @@ namespace Volt
 		FileSystem::Initialize();
 		
 		m_threadPool.Initialize(std::thread::hardware_concurrency() / 2);
+
+		Renderer::PreInitialize();
 		m_assetmanager = CreateScope<AssetManager>();
 		
-		Renderer::PreInitialize();
 		ShaderMap::Initialize();
 		Renderer::Initialize();
 
@@ -356,7 +357,6 @@ namespace Volt
 		}
 
 		RenderGraphExecutionThread::WaitForFinishedExecution();
-		GlobalResourceManager::Update();
 		Renderer::EndOfFrameUpdate();
 
 		{

@@ -33,17 +33,14 @@ namespace Volt::RHI
 
 		void SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) override;
 		void SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) override;
+		void SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex /* = 0 */) override;
 
 		void SetImageView(std::string_view name, Ref<ImageView> view, uint32_t arrayIndex = 0) override;
 		void SetBufferView(std::string_view name, Ref<BufferView> view, uint32_t arrayIndex = 0) override;
 		void SetSamplerState(std::string_view name, Ref<SamplerState> samplerState, uint32_t arrayIndex = 0) override;
 
-		void SetBufferViews(const std::vector<Ref<BufferView>>& bufferViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset /* = 0 */) override;
-		void SetImageViews(const std::vector<Ref<ImageView>>& imageViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset /* = 0 */) override;
-
-		void SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex /* = 0 */) override;
-
 		void Update(const uint32_t index /* = 0 */) override;
+		void PrepareForRender() override;
 
 	protected:
 		friend class VulkanCommandBuffer;

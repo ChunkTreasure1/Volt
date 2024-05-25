@@ -3,7 +3,7 @@
 #include "Volt/Asset/Mesh/Mesh.h"
 
 #include "Volt/Rendering/RenderObject.h"
-#include "Volt/Rendering/Resources/GlobalResource.h"
+#include "Volt/Rendering/Resources/BindlessResource.h"
 
 #include "Volt/Rendering/RendererCommon.h"
 
@@ -51,11 +51,11 @@ namespace Volt
 		const uint32_t GetMeshID(Weak<Mesh> mesh, uint32_t subMeshIndex) const;
 		const uint32_t GetMaterialIndex(Weak<Material> material) const;
 
-		inline const GlobalResource<RHI::StorageBuffer>& GetGPUSceneBuffer() const { return *m_gpuSceneBuffer; }
-		inline const GlobalResource<RHI::StorageBuffer>& GetGPUMeshesBuffer() const { return *m_gpuMeshesBuffer; }
-		inline const GlobalResource<RHI::StorageBuffer>& GetGPUMaterialsBuffer() const { return *m_gpuMaterialsBuffer; }
-		inline const GlobalResource<RHI::StorageBuffer>& GetGPUMeshletsBuffer() const { return *m_gpuMeshletsBuffer; }
-		inline const GlobalResource<RHI::StorageBuffer>& GetObjectDrawDataBuffer() const { return *m_objectDrawDataBuffer; }
+		inline const BindlessResource<RHI::StorageBuffer>& GetGPUSceneBuffer() const { return *m_gpuSceneBuffer; }
+		inline const BindlessResource<RHI::StorageBuffer>& GetGPUMeshesBuffer() const { return *m_gpuMeshesBuffer; }
+		inline const BindlessResource<RHI::StorageBuffer>& GetGPUMaterialsBuffer() const { return *m_gpuMaterialsBuffer; }
+		inline const BindlessResource<RHI::StorageBuffer>& GetGPUMeshletsBuffer() const { return *m_gpuMeshletsBuffer; }
+		inline const BindlessResource<RHI::StorageBuffer>& GetObjectDrawDataBuffer() const { return *m_objectDrawDataBuffer; }
 
 		std::vector<RenderObject>::iterator begin() { return m_renderObjects.begin(); }
 		std::vector<RenderObject>::iterator end() { return m_renderObjects.end(); }
@@ -120,11 +120,11 @@ namespace Volt
 		// Mesh Shader rendering
 		std::vector<IndirectMeshTaskCommand> m_meshShaderCommands;
 
-		Scope<GlobalResource<RHI::StorageBuffer>> m_gpuSceneBuffer;
-		Scope<GlobalResource<RHI::StorageBuffer>> m_gpuMeshesBuffer;
-		Scope<GlobalResource<RHI::StorageBuffer>> m_gpuMaterialsBuffer;
-		Scope<GlobalResource<RHI::StorageBuffer>> m_objectDrawDataBuffer;
-		Scope<GlobalResource<RHI::StorageBuffer>> m_gpuMeshletsBuffer;
+		BindlessResourceScope<RHI::StorageBuffer> m_gpuSceneBuffer;
+		BindlessResourceScope<RHI::StorageBuffer> m_gpuMeshesBuffer;
+		BindlessResourceScope<RHI::StorageBuffer> m_gpuMaterialsBuffer;
+		BindlessResourceScope<RHI::StorageBuffer> m_objectDrawDataBuffer;
+		BindlessResourceScope<RHI::StorageBuffer> m_gpuMeshletsBuffer;
 
 		Scene* m_scene = nullptr;
 		uint32_t m_currentIndividualMeshCount = 0;

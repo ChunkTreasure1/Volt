@@ -8,6 +8,8 @@
 #include "Volt/Utility/FunctionQueue.h"
 #include "Volt/Platform/ThreadUtility.h"
 
+#include "Volt/Rendering/Resources/BindlessResourcesManager.h"
+
 #include <VoltRHI/Graphics/Swapchain.h>
 
 namespace Volt
@@ -96,6 +98,8 @@ namespace Volt
 				executeFunction();
 				s_data->isExecuting = false;
 			}
+
+			//BindlessResourcesManager::Get().PrintResources();
 
 			s_data->waitForExecutionVariable.notify_one();
 		}

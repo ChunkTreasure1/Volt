@@ -49,25 +49,27 @@ namespace Volt
 		}
 	}
 
-	void GTAOTechnique::AddGTAOPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera, const glm::uvec2& renderSize)
+	void GTAOTechnique::Execute(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		renderGraph.BeginMarker("GTAO", { 0.f, 1.f, 0.f, 1.f });
 
-		AddPrefilterDepthPass(renderGraph, blackboard, camera, renderSize);
+		AddPrefilterDepthPass(renderGraph, blackboard);
 		AddMainPass(renderGraph, blackboard);
 		AddDenoisePass(renderGraph, blackboard);
 
 		renderGraph.EndMarker();
 	}
 
-	void GTAOTechnique::AddPrefilterDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera, const glm::uvec2& renderSize)
+	void GTAOTechnique::AddPrefilterDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		constexpr uint32_t GTAO_PREFILTERED_DEPTH_MIP_COUNT = 5;
 
-		m_constants.ViewportSize = renderSize;
-		m_constants.ViewportPixelSize = { 1.f / static_cast<float>(renderSize.x), 1.f / static_cast<float>(renderSize.y) };
+		const auto& renderData = blackboard.Get<RenderData>();
 
-		const auto& projectionMatrix = camera->GetProjection();
+		m_constants.ViewportSize = renderData.renderSize;
+		m_constants.ViewportPixelSize = { 1.f / static_cast<float>(renderData.renderSize.x), 1.f / static_cast<float>(renderData.renderSize.y) };
+
+		const auto& projectionMatrix = renderData.camera->GetProjection();
 		
 		float depthLinearizeMul = (-projectionMatrix[3][2]);
 		float depthLinearizeAdd = (projectionMatrix[2][2]);
@@ -95,8 +97,8 @@ namespace Volt
 		{
 			RenderGraphImageDesc desc{};
 			desc.format = RHI::PixelFormat::R32_SFLOAT;
-			desc.width = renderSize.x;
-			desc.height = renderSize.y;
+			desc.width = renderData.renderSize.x;
+			desc.height = renderData.renderSize.y;
 			desc.usage = RHI::ImageUsage::Storage;
 			desc.mips = GTAO_PREFILTERED_DEPTH_MIP_COUNT;
 			desc.name = "GTAO Prefiltered Depth";
@@ -139,8 +141,8 @@ namespace Volt
 			context.SetConstant("constants.NoiseIndex"_sh, data.constants.NoiseIndex);
 
 
-			const uint32_t dispatchX = Math::DivideRoundUp(renderSize.x, 16u);
-			const uint32_t dispatchY = Math::DivideRoundUp(renderSize.y, 16u);
+			const uint32_t dispatchX = Math::DivideRoundUp(renderData.renderSize.x, 16u);
+			const uint32_t dispatchY = Math::DivideRoundUp(renderData.renderSize.y, 16u);
 		
 			context.Dispatch(dispatchX, dispatchY, 1);
 		});

@@ -24,6 +24,7 @@
 #include "Volt/Rendering/RenderingTechniques/DirectionalShadowTechnique.h"
 #include "Volt/Rendering/RenderingTechniques/LightCullingTechnique.h"
 #include "Volt/Rendering/RenderingTechniques/TAATechnique.h"
+#include "Volt/Rendering/RenderingTechniques/VelocityTechnique.h"
 
 #include "Volt/Rendering/RenderingUtils.h"
 #include "Volt/Rendering/ShapeLibrary.h"
@@ -144,6 +145,8 @@ namespace Volt
 			m_frameTotalGPUAllocation = totalSize;
 		});
 
+		SetupFrameData(rgBlackboard, camera);
+
 		m_scene->GetRenderScene()->Update(renderGraph);
 
 		AddExternalResources(renderGraph, rgBlackboard);
@@ -166,7 +169,7 @@ namespace Volt
 		tempSettings.finalValuePower = 2.2f;
 
 		GTAOTechnique gtaoTechnique{ 0 /*m_frameIndex*/, tempSettings };
-		gtaoTechnique.AddGTAOPasses(renderGraph, rgBlackboard, camera, { m_width, m_height });
+		gtaoTechnique.Execute(renderGraph, rgBlackboard);
 
 		//DirectionalShadowTechnique dirShadowTechnique{ renderGraph, rgBlackboard };
 		//rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene(), m_directionalLightData);
@@ -175,7 +178,7 @@ namespace Volt
 		AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
 
 		LightCullingTechnique lightCulling{ renderGraph, rgBlackboard };
-		rgBlackboard.Add<LightCullingData>() = lightCulling.Execute(glm::uvec2{ m_width, m_height });
+		rgBlackboard.Add<LightCullingData>() = lightCulling.Execute();
 
 		PrefixSumTechnique prefixSum{ renderGraph };
 		prefixSum.Execute(rgBlackboard.Get<MaterialCountData>().materialCountBuffer, rgBlackboard.Get<MaterialCountData>().materialStartBuffer, m_scene->GetRenderScene()->GetIndividualMaterialCount());
@@ -205,24 +208,27 @@ namespace Volt
 		AddSkyboxPass(renderGraph, rgBlackboard);
 		AddShadingPass(renderGraph, rgBlackboard);
 
-		TAATechnique taaTechnique{ renderGraph, rgBlackboard };
-		TAAData taaData = taaTechnique.Execute(m_previousColorImage, { m_width, m_height });
+		//VelocityTechnique velocityTechnique{ renderGraph, rgBlackboard };
+		//velocityTechnique.Execute();
 
-		AddFinalCopyPass(renderGraph, rgBlackboard, taaData.taaOutput);
+		//TAATechnique taaTechnique{ renderGraph, rgBlackboard };
+		//TAAData taaData = taaTechnique.Execute(m_previousColorImage);
+
+		AddFinalCopyPass(renderGraph, rgBlackboard, rgBlackboard.Get<ShadingOutputData>().colorOutput);
 
 		// Copy final image for next frame
-		{
-			RenderGraphImageDesc imageDesc{};
-			imageDesc.format = m_outputImage->GetFormat();
-			imageDesc.width = m_width;
-			imageDesc.height = m_height;
-			imageDesc.name = "Previous Frame Color";
+		//{
+		//	RenderGraphImageDesc imageDesc{};
+		//	imageDesc.format = m_outputImage->GetFormat();
+		//	imageDesc.width = m_width;
+		//	imageDesc.height = m_height;
+		//	imageDesc.name = "Previous Frame Color";
 
-			RenderGraphResourceHandle destinationHandle = renderGraph.CreateImage2D(imageDesc);
-			RenderingUtils::CopyImage(renderGraph, rgBlackboard.Get<FinalCopyData>().output, destinationHandle, { m_width, m_height });
+		//	RenderGraphResourceHandle destinationHandle = renderGraph.CreateImage2D(imageDesc);
+		//	RenderingUtils::CopyImage(renderGraph, rgBlackboard.Get<FinalCopyData>().output, destinationHandle, { m_width, m_height });
 
-			renderGraph.QueueImage2DExtraction(destinationHandle, m_previousColorImage);
-		}
+		//	renderGraph.QueueImage2DExtraction(destinationHandle, m_previousColorImage);
+		//}
 
 		renderGraph.QueueImage2DExtraction(rgBlackboard.Get<PreDepthData>().depth, m_previousDepthImage);
 
@@ -237,6 +243,12 @@ namespace Volt
 
 		renderGraph.Compile();
 		renderGraph.Execute();
+
+		// Setup previous frame data
+		{
+			m_previousFrameData.viewProjection = camera->GetProjection() * camera->GetView();
+			m_previousFrameData.jitter = camera->GetSubpixelOffset();
+		}
 	}
 
 	void SceneRenderer::Invalidate()
@@ -278,6 +290,15 @@ namespace Volt
 		context.SetConstant("viewData"_sh, viewDataHandle);
 
 		context.DrawIndexedIndirect(cullPrimitivesData.drawCommand, 0, 1, sizeof(RHI::IndirectIndexedCommand));
+	}
+
+	void SceneRenderer::SetupFrameData(RenderGraphBlackboard& blackboard, Ref<Camera> camera)
+	{
+		auto& data = blackboard.Add<RenderData>();
+		data.camera = camera;
+		data.renderSize = { m_width, m_height };
+	
+		blackboard.Add<PreviousFrameData>() = m_previousFrameData;
 	}
 
 	void SceneRenderer::UploadUniformBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera)

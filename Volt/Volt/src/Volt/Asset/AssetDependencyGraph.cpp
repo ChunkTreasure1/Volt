@@ -84,10 +84,10 @@ namespace Volt
 
 		const auto& node = m_graph.GetNodeFromID(m_assetNodeIds.at(handle));
 
-		for (const auto& output : node.GetOutputEdges())
+		for (const auto& output : node.GetInputEdges())
 		{
 			const auto& edge = m_graph.GetEdgeFromID(output);
-			auto nodeRes = GetAssetDependencyChain(m_graph.GetNodeFromID(edge.endNode).nodeData.handle);
+			auto nodeRes = GetAssetDependencyChain(m_graph.GetNodeFromID(edge.startNode).nodeData.handle);
 
 			for (const auto& res : nodeRes)
 			{
@@ -114,7 +114,7 @@ namespace Volt
 		for (const auto& output : node.GetInputEdges())
 		{
 			const auto& edge = m_graph.GetEdgeFromID(output);
-			auto nodeRes = GetAssetDependencyChain(m_graph.GetNodeFromID(edge.endNode).nodeData.handle);
+			auto nodeRes = GetAssetDependencyChain(m_graph.GetNodeFromID(edge.startNode).nodeData.handle);
 
 			for (const auto& res : nodeRes)
 			{

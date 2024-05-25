@@ -9,7 +9,7 @@
 #include "Volt/Rendering/BoundingStructures.h"
 #include "Volt/Rendering/Mesh/MeshCommon.h"
 
-#include "Volt/Rendering/Resources/GlobalResource.h"
+#include "Volt/Rendering/Resources/BindlessResource.h"
 #include "Volt/Rendering/GPUScene.h"
 
 namespace Volt
@@ -54,10 +54,10 @@ namespace Volt
 
 		inline const BoundingSphere& GetSubMeshBoundingSphere(const uint32_t index) const { return m_subMeshBoundingSpheres.at(index);  }
 
-		inline Ref<GlobalResource<RHI::StorageBuffer>> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
-		inline Ref<GlobalResource<RHI::StorageBuffer>> GetVertexMaterialBuffer() const { return m_vertexMaterialBuffer; }
-		inline Ref<GlobalResource<RHI::StorageBuffer>> GetVertexAnimationBuffer() const { return m_vertexAnimationBuffer; }
-		inline Ref<GlobalResource<RHI::StorageBuffer>> GetIndexStorageBuffer() const { return m_indexBuffer; }
+		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
+		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexMaterialBuffer() const { return m_vertexMaterialBuffer; }
+		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexAnimationBuffer() const { return m_vertexAnimationBuffer; }
+		inline BindlessResourceRef<RHI::StorageBuffer> GetIndexStorageBuffer() const { return m_indexBuffer; }
 
 		static AssetType GetStaticType() { return AssetType::Mesh; }
 		AssetType GetType() override { return GetStaticType(); }
@@ -102,13 +102,13 @@ namespace Volt
 
 		MaterialTable m_materialTable;
 
-		Ref<GlobalResource<RHI::StorageBuffer>> m_vertexPositionsBuffer;
-		Ref<GlobalResource<RHI::StorageBuffer>> m_vertexMaterialBuffer;
-		Ref<GlobalResource<RHI::StorageBuffer>> m_vertexAnimationBuffer;
-		Ref<GlobalResource<RHI::StorageBuffer>> m_indexBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> m_vertexPositionsBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> m_vertexMaterialBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> m_vertexAnimationBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> m_indexBuffer;
 
-		Ref<GlobalResource<RHI::StorageBuffer>> m_meshletIndexBuffer;
-		Ref<GlobalResource<RHI::StorageBuffer>> m_meshletsBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> m_meshletIndexBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> m_meshletsBuffer;
 
 		BoundingSphere m_boundingSphere;
 		BoundingBox m_boundingBox;

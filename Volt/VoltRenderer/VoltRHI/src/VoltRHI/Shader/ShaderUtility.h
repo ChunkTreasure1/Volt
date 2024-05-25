@@ -176,6 +176,10 @@ namespace Volt::RHI
 				in.seekg(0, std::ios::beg);
 				in.read(&result[0], result.size());
 			}
+			else
+			{
+				GraphicsContext::LogTagged(Severity::Error, "[Shader]", "Unable to read shader at location: {}!", path.string());
+			}
 
 			in.close();
 			return result;

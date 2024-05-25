@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Volt/Rendering/Resources/GlobalResourceManager.h"
 #include "RenderGraphResourceHandle.h"
+#include "Volt/Rendering/Resources/ResourceHandle.h"
 
 #include <VoltRHI/Core/RHICommon.h>
 

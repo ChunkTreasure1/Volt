@@ -2,8 +2,6 @@
 #include "vtpch.h"
 #include "RenderContext.h"
 
-#include "Volt/Rendering/Resources/GlobalResourceManager.h"
-
 #include "Volt/Rendering/RenderGraph/RenderGraphPass.h"
 #include "Volt/Rendering/RenderGraph/RenderGraph.h"
 #include "Volt/Rendering/Debug/ShaderRuntimeValidator.h"
@@ -313,8 +311,6 @@ namespace Volt
 	{
 		m_commandBuffer->End();
 
-		GlobalResourceManager::RenderGraphUpdate();
-	
 		m_commandBuffer->ExecuteAndWait();
 		m_commandBuffer->RestartAfterFlush();
 	}
@@ -413,7 +409,7 @@ namespace Volt
 			uint32_t constantsOffset;
 		} constantsData;
 
-		constantsData.constatsBufferIndex = GlobalResourceManager::GetResourceHandle(m_passConstantsBuffer);
+		constantsData.constatsBufferIndex = BindlessResourcesManager::Get().GetBufferHandle(m_passConstantsBuffer);
 		
 #ifndef VT_DIST
 		constantsData.shaderValidationBuffer = Renderer::GetRuntimeShaderValidator().GetCurrentErrorBufferHandle();
@@ -446,7 +442,7 @@ namespace Volt
 		//Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
 		//m_descriptorTableCache[ptr] = descriptorTable;
 
-		return GlobalResourceManager::GetDescriptorTable();
+		return BindlessResourcesManager::Get().GetDescriptorTable();
 	}
 
 	Ref<RHI::DescriptorTable> RenderContext::GetOrCreateDescriptorTable(Ref<RHI::ComputePipeline> computePipeline)
@@ -468,7 +464,7 @@ namespace Volt
 		//Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
 		//m_descriptorTableCache[ptr] = descriptorTable;
 
-		return GlobalResourceManager::GetDescriptorTable();
+		return BindlessResourcesManager::Get().GetDescriptorTable();
 	}
 
 	template<>

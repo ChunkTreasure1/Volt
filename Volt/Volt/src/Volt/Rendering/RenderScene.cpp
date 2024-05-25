@@ -9,7 +9,6 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Rendering/GPUScene.h"
 #include "Volt/Rendering/Renderer.h"
-#include "Volt/Rendering/Resources/GlobalResourceManager.h"
 #include "Volt/Rendering/Utility/ScatteredBufferUpload.h"
 #include "Volt/Rendering/Camera/Camera.h"
 
@@ -24,11 +23,11 @@ namespace Volt
 	RenderScene::RenderScene(Scene* sceneRef)
 		: m_scene(sceneRef)
 	{
-		m_gpuSceneBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(1, sizeof(GPUScene), "GPU Scene", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU));
-		m_gpuMeshesBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(1, sizeof(GPUMesh), "GPU Meshes", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU));
-		m_gpuMaterialsBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(1, sizeof(GPUMaterialNew), "GPU Materials", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU));
-		m_objectDrawDataBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(1, sizeof(ObjectDrawData), "Object Draw Data", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU));
-		m_gpuMeshletsBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(1, sizeof(Meshlet), "GPU Meshlets", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU));
+		m_gpuSceneBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(GPUScene), "GPU Scene", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
+		m_gpuMeshesBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(GPUMesh), "GPU Meshes", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
+		m_gpuMaterialsBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(GPUMaterialNew), "GPU Materials", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
+		m_objectDrawDataBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(ObjectDrawData), "Object Draw Data", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
+		m_gpuMeshletsBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(Meshlet), "GPU Meshlets", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 
 		m_materialChangedCallbackID = AssetManager::RegisterAssetChangedCallback(AssetType::Material, [&](AssetHandle handle, AssetChangedState state) 
 		{
@@ -410,23 +409,29 @@ namespace Volt
 			return;
 		}
 
-		const auto& subMesh = renderObject.mesh->GetSubMeshes().at(renderObject.subMeshIndex);
 		const size_t hash = Math::HashCombine(renderObject.mesh.GetHash(), std::hash<uint32_t>()(renderObject.subMeshIndex));
 		const uint32_t meshId = m_meshSubMeshToGPUMeshIndex.at(hash);
 
-		const glm::mat4 transform = entity.GetTransform() * subMesh.transform;
+		glm::mat4 transform = entity.GetTransform();
 
-		BoundingSphere boundingSphere = renderObject.mesh->GetSubMeshBoundingSphere(renderObject.subMeshIndex);
-		const glm::vec3 globalScale = { glm::length(transform[0]), glm::length(transform[1]), glm::length(transform[2]) };
-		const float maxScale = glm::max(glm::max(globalScale.x, globalScale.y), globalScale.z);
-		const glm::vec3 globalCenter = transform * glm::vec4(boundingSphere.center, 1.f);
+		if (renderObject.mesh->IsValid())
+		{
+			const auto& subMesh = renderObject.mesh->GetSubMeshes().at(renderObject.subMeshIndex);
+			transform = transform * subMesh.transform;
+
+			BoundingSphere boundingSphere = renderObject.mesh->GetSubMeshBoundingSphere(renderObject.subMeshIndex);
+			const glm::vec3 globalScale = { glm::length(transform[0]), glm::length(transform[1]), glm::length(transform[2]) };
+			const float maxScale = glm::max(glm::max(globalScale.x, globalScale.y), globalScale.z);
+			const glm::vec3 globalCenter = transform * glm::vec4(boundingSphere.center, 1.f);
+		
+			objectDrawData.boundingSphereCenter = globalCenter;
+			objectDrawData.boundingSphereRadius = boundingSphere.radius * maxScale;
+		}
 
 		objectDrawData.transform = transform;
 		objectDrawData.meshId = meshId;
 		objectDrawData.materialId = GetMaterialIndex(renderObject.material);
 		objectDrawData.meshletStartOffset = renderObject.meshletStartOffset;
-		objectDrawData.boundingSphereCenter = globalCenter;
-		objectDrawData.boundingSphereRadius = boundingSphere.radius * maxScale;
 	}
 
 	void RenderScene::BuildMeshCommands()

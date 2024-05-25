@@ -5,6 +5,8 @@
 #include "Volt/Rendering/RenderGraph/RenderGraph.h"
 #include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
 
+#include "Volt/Rendering/Resources/BindlessResource.h"
+
 #include "Volt/Rendering/Shader/ShaderMap.h"
 
 #include "Volt/Math/Math.h"
@@ -31,7 +33,7 @@ namespace Volt
 
 		T& AddUploadItem(size_t bufferIndex);
 		void UploadTo(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer);
-		void UploadTo(RenderGraph& renderGraph, const GlobalResource<RHI::StorageBuffer>& dstBuffer);
+		void UploadTo(RenderGraph& renderGraph, const BindlessResource<RHI::StorageBuffer>& dstBuffer);
 
 	private:
 		void UploadToInternal(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer, bool trackGlobalResource);
@@ -64,7 +66,7 @@ namespace Volt
 	}
 
 	template<IsTrivial T>
-	inline void ScatteredBufferUpload<T>::UploadTo(RenderGraph& renderGraph, const GlobalResource<RHI::StorageBuffer>& dstBuffer)
+	inline void ScatteredBufferUpload<T>::UploadTo(RenderGraph& renderGraph, const BindlessResource<RHI::StorageBuffer>& dstBuffer)
 	{
 		UploadToInternal(renderGraph, dstBuffer.GetResource(), false);
 	}

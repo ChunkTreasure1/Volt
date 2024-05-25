@@ -1,9 +1,10 @@
 #include "vtpch.h"
 #include "Texture2D.h"
 
-#include "Volt/Rendering/Resources/GlobalResourceManager.h"
+#include "Volt/Rendering/Resources/BindlessResourcesManager.h"
 
 #include <VoltRHI/Images/Image2D.h>
+#include <VoltRHI/Images/ImageView.h>
 
 namespace Volt
 {
@@ -16,20 +17,20 @@ namespace Volt
 		imageSpec.height = static_cast<uint32_t>(height);
 
 		m_image = RHI::Image2D::Create(imageSpec, data);
-		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_image->GetView());
+		m_resourceHandle = BindlessResourcesManager::Get().RegisterImageView(m_image->GetView());
 	}
 
 	Texture2D::Texture2D(Ref<RHI::Image2D> image)
 		: m_image(image)
 	{
-		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_image->GetView());
+		m_resourceHandle = BindlessResourcesManager::Get().RegisterImageView(m_image->GetView());
 	}
 
 	Texture2D::~Texture2D()
 	{
 		if (m_image)
 		{
-			GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_resourceHandle);
+			BindlessResourcesManager::Get().UnregisterImageView(m_resourceHandle, m_image->GetView()->GetViewType());
 		}
 		
 		m_image = nullptr;
@@ -54,10 +55,10 @@ namespace Volt
 	{
 		if (m_image)
 		{
-			GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_resourceHandle);
+			BindlessResourcesManager::Get().UnregisterImageView(m_resourceHandle, m_image->GetView()->GetViewType());
 		}
 
-		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(image->GetView());
+		m_resourceHandle = BindlessResourcesManager::Get().RegisterImageView(image->GetView());
 
 		m_image = image;
 	}

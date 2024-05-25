@@ -70,7 +70,7 @@ namespace Volt
 
 	ShaderRuntimeValidator::ShaderRuntimeValidator()
 	{
-		m_errorBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(MAX_ERROR_COUNT * sizeof(uint32_t), "Error Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::GPU));
+		m_errorBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(MAX_ERROR_COUNT * sizeof(uint32_t), "Error Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::GPU);
 		m_commandBuffer = RHI::CommandBuffer::Create(2);
 	}
 
@@ -96,7 +96,7 @@ namespace Volt
 		}
 		else
 		{
-			m_stagingBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(MAX_ERROR_COUNT * sizeof(uint32_t), "Error Staging Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU));
+			m_stagingBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(MAX_ERROR_COUNT * sizeof(uint32_t), "Error Staging Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
 		}
 
 		m_commandBuffer->Begin();

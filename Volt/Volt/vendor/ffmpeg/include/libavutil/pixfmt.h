@@ -314,7 +314,7 @@ enum AVPixelFormat {
 #define AV_PIX_FMT_XYZ12      AV_PIX_FMT_NE(XYZ12BE, XYZ12LE)
 
 #if FF_API_PIX_FMT
-#define PixelFormat AVPixelFormat
+//#define PixelFormat AVPixelFormat
 
 #define PIX_FMT_Y400A AV_PIX_FMT_Y400A
 #define PIX_FMT_GBR24P AV_PIX_FMT_GBR24P

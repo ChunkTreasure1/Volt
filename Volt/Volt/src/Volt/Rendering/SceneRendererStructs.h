@@ -4,11 +4,25 @@
 
 namespace Volt
 {
+	class Camera;
+
 	enum class VisibilityVisualization
 	{
 		None = 0,
 		ObjectID = 1,
 		TriangleID = 2
+	};
+
+	struct RenderData
+	{
+		Ref<Camera> camera;
+		glm::uvec2 renderSize;
+	};
+
+	struct PreviousFrameData
+	{
+		glm::mat4 viewProjection = glm::identity<glm::mat4>();
+		glm::vec2 jitter = 0.f;
 	};
 
 	struct ExternalImagesData

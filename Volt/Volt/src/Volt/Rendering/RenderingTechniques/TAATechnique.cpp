@@ -10,6 +10,8 @@
 #include "Volt/Rendering/Shader/ShaderMap.h"
 #include "Volt/Rendering/Renderer.h"
 
+#include "Volt/Rendering/Texture/Texture2D.h"
+
 #include <VoltRHI/Pipelines/RenderPipeline.h>
 
 namespace Volt
@@ -19,15 +21,16 @@ namespace Volt
 	{
 	}
 
-	TAAData TAATechnique::Execute(Ref<RHI::Image2D> previousColor, const glm::uvec2& renderSize)
+	TAAData TAATechnique::Execute(Ref<RHI::Image2D> previousColor)
 	{
 		const auto& shadingData = m_blackboard.Get<ShadingOutputData>();
+		const auto& renderData = m_blackboard.Get<RenderData>();
 
 		TAAData& data = m_renderGraph.AddPass<TAAData>("TAA",
 		[&](RenderGraph::Builder& builder, TAAData& data) 
 		{
 			{
-				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::B10G11R11_UFLOAT_PACK32>(renderSize.x, renderSize.y, RHI::ImageUsage::AttachmentStorage, "TAA Output");
+				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::B10G11R11_UFLOAT_PACK32>(renderData.renderSize.x, renderData.renderSize.y, RHI::ImageUsage::AttachmentStorage, "TAA Output");
 				data.taaOutput = builder.CreateImage2D(desc);
 			}
 
@@ -46,7 +49,7 @@ namespace Volt
 		},
 		[=](const TAAData& data, RenderContext& context, const RenderGraphPassResources& resources) 
 		{
-			RenderingInfo info = context.CreateRenderingInfo(renderSize.x, renderSize.y, { data.taaOutput });
+			RenderingInfo info = context.CreateRenderingInfo(renderData.renderSize.x, renderData.renderSize.y, { data.taaOutput });
 
 			RHI::RenderPipelineCreateInfo pipelineInfo;
 			pipelineInfo.shader = ShaderMap::Get("TAAResolve");

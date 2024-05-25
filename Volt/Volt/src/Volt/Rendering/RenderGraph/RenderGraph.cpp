@@ -8,6 +8,7 @@
 #include "Volt/Rendering/RenderGraph/RenderGraphCommon.h"
 
 #include "Volt/Rendering/Renderer.h"
+#include "Volt/Rendering/Resources/BindlessResourcesManager.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
 #include <VoltRHI/Images/ImageUtility.h>
@@ -662,7 +663,7 @@ namespace Volt
 
 		m_commandBuffer->End();
 
-		GlobalResourceManager::RenderGraphUpdate();
+		BindlessResourcesManager::Get().PrepareForRender();
 
 		m_commandBuffer->Execute();
 
@@ -684,45 +685,19 @@ namespace Volt
 
 	void RenderGraph::DestroyResources()
 	{
-		for (const auto& resource : m_usedGlobalImageResourceHandles)
-		{
-			if (resource.specialization == ResourceSpecialization::Texture1D)
-			{
-				GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture1D>(resource.handle);
-			}
-			else if (resource.specialization == ResourceSpecialization::Texture2D)
-			{
-				GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(resource.handle);
-			}
-			else if (resource.specialization == ResourceSpecialization::Texture3D)
-			{
-				GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture3D>(resource.handle);
-			}
-			else if (resource.specialization == ResourceSpecialization::Texture2DArray)
-			{
-				GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2DArray>(resource.handle);
-			}
-			else if (resource.specialization == ResourceSpecialization::TextureCube)
-			{
-				GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::TextureCube>(resource.handle);
-			}
-		}
-
-		for (const auto& resource : m_usedGlobalBufferResourceHandles)
-		{
-			if (resource.specialization == ResourceSpecialization::UniformBuffer)
-			{
-				GlobalResourceManager::UnregisterResource<RHI::StorageBuffer, ResourceSpecialization::UniformBuffer>(resource.handle);
-			}
-			else
-			{
-				GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(resource.handle);
-			}
-		}
-
-		GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(m_passConstantsBufferResourceHandle);
-
 		ExtractResources();
+
+		BindlessResourcesManager::Get().UnregisterBuffer(m_passConstantsBufferResourceHandle);
+
+		for (const auto& handle : m_registeredBufferResources)
+		{
+			BindlessResourcesManager::Get().UnregisterBuffer(handle);
+		}
+
+		for (const auto& imageViewInfo : m_registeredImageResources)
+		{
+			BindlessResourcesManager::Get().UnregisterImageView(imageViewInfo.handle, imageViewInfo.viewType);
+		}
 
 		for (const auto& alloc : m_temporaryAllocations)
 		{
@@ -741,7 +716,7 @@ namespace Volt
 		desc.name = "Render Graph Constants";
 
 		m_passConstantsBuffer = m_transientResourceSystem.AquireBuffer(m_resourceIndex++, desc);
-		m_passConstantsBufferResourceHandle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(m_passConstantsBuffer);
+		m_passConstantsBufferResourceHandle = BindlessResourcesManager::Get().RegisterBuffer(m_passConstantsBuffer);
 	}
 
 	void RenderGraph::ExtractResources()
@@ -849,29 +824,7 @@ namespace Volt
 
 		if (!view->IsSwapchainView())
 		{
-			ResourceHandle handle = Resource::Invalid;
-			ResourceSpecialization specialization = ResourceSpecialization::None;
-
-			if (view->GetViewType() == RHI::ImageViewType::View2D)
-			{
-				handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(view);
-				specialization = ResourceSpecialization::Texture2D;
-			}
-			else if (view->GetViewType() == RHI::ImageViewType::View2DArray)
-			{
-				handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2DArray>(view);
-				specialization = ResourceSpecialization::Texture2DArray;
-			}
-			else if (view->GetViewType() == RHI::ImageViewType::ViewCube)
-			{
-				handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::TextureCube>(view);
-				specialization = ResourceSpecialization::TextureCube;
-			}
-
-			if (imageDesc.trackGlobalResource)
-			{
-				m_usedGlobalImageResourceHandles.insert(GlobalResourceInfo{ handle, specialization });
-			}
+			m_registeredImageResources.emplace_back(BindlessResourcesManager::Get().RegisterImageView(view), view->GetViewType());
 		}
 
 		return view;
@@ -890,29 +843,7 @@ namespace Volt
 		// #TODO_Ivar: Move this section to it's own function
 		if (!view->IsSwapchainView())
 		{
-			ResourceHandle handle = Resource::Invalid;
-			ResourceSpecialization specialization = ResourceSpecialization::None;
-
-			if (view->GetViewType() == RHI::ImageViewType::View2D)
-			{
-				handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(view);
-				specialization = ResourceSpecialization::Texture2D;
-			}
-			else if (view->GetViewType() == RHI::ImageViewType::View2DArray)
-			{
-				handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2DArray>(view);
-				specialization = ResourceSpecialization::Texture2DArray;
-			}
-			else if (view->GetViewType() == RHI::ImageViewType::ViewCube)
-			{
-				handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::TextureCube>(view);
-				specialization = ResourceSpecialization::TextureCube;
-			}
-
-			if (imageDesc.trackGlobalResource)
-			{
-				m_usedGlobalImageResourceHandles.insert({ handle, specialization });
-			}
+			m_registeredImageResources.emplace_back(BindlessResourcesManager::Get().RegisterImageView(view), view->GetViewType());
 		}
 
 		return image;
@@ -930,29 +861,8 @@ namespace Volt
 
 		VT_ENSURE(!view->IsSwapchainView());
 
-		ResourceHandle handle = Resource::Invalid;
-		ResourceSpecialization specialization = ResourceSpecialization::None;
-
-		if (view->GetViewType() == RHI::ImageViewType::View2D)
-		{
-			handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(view);
-			specialization = ResourceSpecialization::Texture2D;
-		}
-		else if (view->GetViewType() == RHI::ImageViewType::View2DArray)
-		{
-			handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2DArray>(view);
-			specialization = ResourceSpecialization::Texture2DArray;
-		}
-		else if (view->GetViewType() == RHI::ImageViewType::ViewCube)
-		{
-			handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::TextureCube>(view);
-			specialization = ResourceSpecialization::TextureCube;
-		}
-
-		if (imageDesc.trackGlobalResource)
-		{
-			m_usedGlobalImageResourceHandles.insert(GlobalResourceInfo{ handle, specialization });
-		}
+		ResourceHandle handle = BindlessResourcesManager::Get().RegisterImageView(view);
+		m_registeredImageResources.emplace_back(handle, view->GetViewType());
 
 		return handle;
 	}
@@ -969,29 +879,8 @@ namespace Volt
 
 		VT_ENSURE(!view->IsSwapchainView());
 
-		ResourceHandle handle = Resource::Invalid;
-		ResourceSpecialization specialization = ResourceSpecialization::None;
-
-		if (view->GetViewType() == RHI::ImageViewType::View2D)
-		{
-			handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(view);
-			specialization = ResourceSpecialization::Texture2D;
-		}
-		else if (view->GetViewType() == RHI::ImageViewType::View2DArray)
-		{
-			handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2DArray>(view);
-			specialization = ResourceSpecialization::Texture2DArray;
-		}
-		else if (view->GetViewType() == RHI::ImageViewType::ViewCube)
-		{
-			handle = GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::TextureCube>(view);
-			specialization = ResourceSpecialization::TextureCube;
-		}
-
-		if (imageDesc.trackGlobalResource)
-		{
-			m_usedGlobalImageResourceHandles.insert(GlobalResourceInfo{ handle, specialization });
-		}
+		ResourceHandle handle = BindlessResourcesManager::Get().RegisterImageView(view);
+		m_registeredImageResources.emplace_back(handle, view->GetViewType());
 
 		return handle;
 	}
@@ -1004,13 +893,9 @@ namespace Volt
 		const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
 
 		auto buffer = m_transientResourceSystem.AquireBuffer(resourceHandle, bufferDesc.description);
-		auto handle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(buffer);
+		auto handle = BindlessResourcesManager::Get().RegisterBuffer(buffer);
 
-		if (bufferDesc.trackGlobalResource)
-		{
-			m_usedGlobalBufferResourceHandles.insert(GlobalResourceInfo{ handle, ResourceSpecialization::None });
-		}
-
+		m_registeredBufferResources.emplace_back(handle);
 		return handle;
 	}
 
@@ -1022,12 +907,9 @@ namespace Volt
 		const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
 
 		auto buffer = m_transientResourceSystem.AquireBuffer(resourceHandle, bufferDesc.description);
-		auto handle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(buffer);
+		auto handle = BindlessResourcesManager::Get().RegisterBuffer(buffer);
 
-		if (bufferDesc.trackGlobalResource)
-		{
-			m_usedGlobalBufferResourceHandles.insert(GlobalResourceInfo{ handle, ResourceSpecialization::None });
-		}
+		m_registeredBufferResources.emplace_back(handle);
 
 		return buffer;
 	}
@@ -1040,12 +922,9 @@ namespace Volt
 		const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphUniformBuffer>>().resourceInfo;
 
 		auto buffer = m_transientResourceSystem.AquireBuffer(resourceHandle, bufferDesc.description);
-		auto handle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer, ResourceSpecialization::UniformBuffer>(buffer);
+		auto handle = BindlessResourcesManager::Get().RegisterBuffer(buffer);
 
-		if (bufferDesc.trackGlobalResource)
-		{
-			m_usedGlobalBufferResourceHandles.insert(GlobalResourceInfo{ handle, ResourceSpecialization::UniformBuffer });
-		}
+		m_registeredBufferResources.emplace_back(handle);
 
 		return handle;
 	}

@@ -15,12 +15,12 @@ namespace Volt
 	public:
 		GTAOTechnique(uint64_t frameIndex, const GTAOSettings& settings);
 
-		void AddGTAOPasses(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera, const glm::uvec2& renderSize);
+		void Execute(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
 
 	private:
 		friend struct PrefilterDepthData;
 
-		void AddPrefilterDepthPass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera, const glm::uvec2& renderSize);
+		void AddPrefilterDepthPass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
 		void AddMainPass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
 		void AddDenoisePass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
 

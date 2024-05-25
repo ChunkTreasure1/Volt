@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "Mesh.h"
 
-#include "Volt/Rendering/Resources/GlobalResourceManager.h"
-
 #include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Math/Math.h"
@@ -393,39 +391,39 @@ namespace Volt
 		// Vertex positions
 		{
 			const auto vertexPositions = GetVertexPositions();
-			m_vertexPositionsBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexPositions.size()), sizeof(glm::vec3), "Vertex Positions - " + meshName));
+			m_vertexPositionsBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(vertexPositions.size()), sizeof(glm::vec3), "Vertex Positions - " + meshName);
 			m_vertexPositionsBuffer->GetResource()->SetData(vertexPositions.data(), vertexPositions.size() * sizeof(glm::vec3));
 		}
 
 		// Vertex material data
 		{
 			const auto vertexMaterialData = GetVertexMaterialData();
-			m_vertexMaterialBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexMaterialData.size()), sizeof(VertexMaterialData), "Vertex Material Data - " + meshName));
+			m_vertexMaterialBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(vertexMaterialData.size()), sizeof(VertexMaterialData), "Vertex Material Data - " + meshName);
 			m_vertexMaterialBuffer->GetResource()->SetData(vertexMaterialData.data(), vertexMaterialData.size() * sizeof(VertexMaterialData));
 		}
 
 		// Vertex animation data
 		{
 			const auto vertexAnimationData = GetVertexAnimationData();
-			m_vertexAnimationBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexAnimationData.size()), sizeof(VertexAnimationData), "Vertex Animation Data - " + meshName));
+			m_vertexAnimationBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(vertexAnimationData.size()), sizeof(VertexAnimationData), "Vertex Animation Data - " + meshName);
 			m_vertexAnimationBuffer->GetResource()->SetData(vertexAnimationData.data(), vertexAnimationData.size() * sizeof(VertexAnimationData));
 		}
 
 		// Indices
 		{
-			m_indexBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(m_indices.size()), sizeof(uint32_t), "Index Buffer - " + meshName, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndexBuffer));
+			m_indexBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(m_indices.size()), sizeof(uint32_t), "Index Buffer - " + meshName, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndexBuffer);
 			m_indexBuffer->GetResource()->SetData(m_indices.data(), m_indices.size() * sizeof(uint32_t));
 		}
 
 		// Meshlet Triangles
 		{
-			m_meshletIndexBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(m_meshletIndices.size()), sizeof(uint32_t), "Meshlet Indices Buffer"));
+			m_meshletIndexBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(m_meshletIndices.size()), sizeof(uint32_t), "Meshlet Indices Buffer");
 			m_meshletIndexBuffer->GetResource()->SetData(m_meshletIndices.data(), m_meshletIndices.size() * sizeof(uint32_t));
 		}
 
 		// Meshlets
 		{
-			m_meshletsBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(m_meshlets.size()), sizeof(Meshlet), "Meshlet Buffer"));
+			m_meshletsBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(m_meshlets.size()), sizeof(Meshlet), "Meshlet Buffer");
 			m_meshletsBuffer->GetResource()->SetData(m_meshlets.data(), m_meshlets.size() * sizeof(Meshlet));
 		}
 

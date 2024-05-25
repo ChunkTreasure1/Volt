@@ -4,7 +4,6 @@
 
 #include "Volt/Rendering/RendererCommon.h"
 #include "Volt/Rendering/SceneRendererStructs.h"
-#include "Volt/Rendering/Resources/GlobalResource.h"
 #include "Volt/Rendering/RendererStructs.h"
 
 // #TODO_Ivar: Maybe remove from here
@@ -84,6 +83,8 @@ namespace Volt
 		void BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard, const CullPrimitivesData& cullPrimitivesData);
 		void RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard blackboard, const CullPrimitivesData& cullPrimitivesData);
 
+		void SetupFrameData(RenderGraphBlackboard& blackboard, Ref<Camera> camera);
+
 		///// Passes //////
 		void UploadUniformBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
 		void UploadLightBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
@@ -126,6 +127,7 @@ namespace Volt
 
 		Ref<RHI::CommandBuffer> m_commandBuffer;
 		ShadingMode m_shadingMode = ShadingMode::Shaded;
+		PreviousFrameData m_previousFrameData;
 
 		std::atomic<uint64_t> m_frameTotalGPUAllocation;
 

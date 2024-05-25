@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Volt/Rendering/RendererStructs.h"
-#include "Volt/Rendering/Resources/GlobalResource.h"
+#include "Volt/Rendering/Resources/BindlessResource.h"
 
 #include "Volt/Scene/Scene.h"
 
@@ -28,6 +28,14 @@ namespace Volt
 		Ref<RHI::Image2D> blackCubeTexture;
 
 		Ref<Material> defaultMaterial;
+
+		VT_INLINE void Clear()
+		{
+			whiteTexture = nullptr;
+			BRDFLuT = nullptr;
+			blackCubeTexture = nullptr;
+			defaultMaterial = nullptr;
+		}
 	};
 
 	class Mesh;
@@ -54,7 +62,7 @@ namespace Volt
 		static void EndOfFrameUpdate();
 
 		template<RHI::TextureFilter min, RHI::TextureFilter mag, RHI::TextureFilter mip, RHI::TextureWrap wrapMode = RHI::TextureWrap::Repeat, RHI::AnisotropyLevel aniso = RHI::AnisotropyLevel::None, RHI::CompareOperator compareOperator = RHI::CompareOperator::None>
-		static Ref<GlobalResource<RHI::SamplerState>> GetSampler()
+		static BindlessResourceRef<RHI::SamplerState> GetSampler()
 		{
 			RHI::SamplerStateCreateInfo info{};
 			info.minFilter = min;
@@ -67,7 +75,7 @@ namespace Volt
 		}
 
 	private:
-		static Ref<GlobalResource<RHI::SamplerState>> GetSamplerInternal(const RHI::SamplerStateCreateInfo& samplerInfo);
+		static BindlessResourceRef<RHI::SamplerState> GetSamplerInternal(const RHI::SamplerStateCreateInfo& samplerInfo);
 		static void CreateDefaultResources();
 		static void GenerateBRDFLuT();
 

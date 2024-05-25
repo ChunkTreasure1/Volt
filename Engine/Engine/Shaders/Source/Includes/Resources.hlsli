@@ -60,7 +60,6 @@ DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(Texture2DArray, t12, space0)
 ByteAddressBuffer u_ByteAddressBuffer[] : register(t7, space0);
 RWByteAddressBuffer u_RWByteAddressBuffer[] : register(u8, space0);
 
-ByteAddressBuffer u_UniformBuffer[] : register(t9, space0);
 SamplerState u_SamplerState[] : register(s10, space0);
 
 #ifndef NO_RENDERGRAPH
@@ -232,7 +231,7 @@ struct VulkanResourceDescriptorHeapInternal
     ByteAddressBuffer operator[](UniformBufferHandle handle)
     {
         ValidateResourceAccess(GetHandleType(handle.handle), ResourceType::UNIFORM_BUFFER);
-        return u_UniformBuffer[GetHandle(handle.handle)];
+        return u_ByteAddressBuffer[GetHandle(handle.handle)];
     }
     
     SamplerState operator[](SamplerStateHandle handle)
@@ -269,7 +268,7 @@ struct VulkanUniformResourceDescriptorHeapInternal
     ByteAddressBuffer operator[](UniformBufferHandle handle)
     {
         ValidateResourceAccess(GetHandleType(handle.handle), ResourceType::UNIFORM_BUFFER);
-        return u_UniformBuffer[GetHandle(handle.handle)];
+        return u_ByteAddressBuffer[GetHandle(handle.handle)];
     }
     
     SamplerState operator[](SamplerStateHandle handle)

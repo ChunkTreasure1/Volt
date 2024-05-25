@@ -17,7 +17,7 @@ namespace Volt
 	{
 	public:
 		LightCullingTechnique(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		LightCullingData Execute(const glm::uvec2& renderSize);
+		LightCullingData Execute();
 
 		inline static constexpr uint32_t TILE_SIZE = 16;
 

@@ -42,7 +42,7 @@ namespace Volt::RHI
 	VulkanDescriptorBufferTable::VulkanDescriptorBufferTable(const DescriptorTableCreateInfo& createInfo)
 	{
 		m_shader = createInfo.shader;
-		m_descriptorBufferCount = createInfo.count;
+		m_descriptorBufferCount = 1;
 
 		// Find descriptor offsets
 		{
@@ -197,24 +197,6 @@ namespace Volt::RHI
 	{
 	}
 
-	void VulkanDescriptorBufferTable::SetBufferViews(const std::vector<Ref<BufferView>>& bufferViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset)
-	{
-		for (uint32_t index = arrayStartOffset; const auto & view : bufferViews)
-		{
-			SetBufferView(view, set, binding, index);
-			index++;
-		}
-	}
-
-	void VulkanDescriptorBufferTable::SetImageViews(const std::vector<Ref<ImageView>>& imageViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset)
-	{
-		for (uint32_t index = arrayStartOffset; const auto & view : imageViews)
-		{
-			SetImageView(view, set, binding, index);
-			index++;
-		}
-	}
-
 	void VulkanDescriptorBufferTable::SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_descriptorSetBindingOffsets.contains(set))
@@ -246,6 +228,10 @@ namespace Volt::RHI
 	void VulkanDescriptorBufferTable::Update(const uint32_t index)
 	{
 
+	}
+
+	void VulkanDescriptorBufferTable::PrepareForRender()
+	{
 	}
 
 	void* VulkanDescriptorBufferTable::GetHandleImpl() const

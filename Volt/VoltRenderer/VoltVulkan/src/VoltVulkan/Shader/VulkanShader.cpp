@@ -214,8 +214,6 @@ namespace Volt::RHI
 
 	void VulkanShader::ReflectStage(ShaderStage stage, const std::vector<uint32_t>& data)
 	{
-		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "		Reflecting stage {0}", Utility::StageToString(stage));
-
 		spirv_cross::Compiler compiler{ data };
 		const auto resources = compiler.get_shader_resources();
 
@@ -408,22 +406,25 @@ namespace Volt::RHI
 			}
 		}
 
-		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Uniform Buffers: {0}", m_perStageUBOCount[stage].count);
-		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Storage Buffers: {0}", m_perStageSSBOCount[stage].count);
-		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Storage Images: {0}", m_perStageStorageImageCount[stage].count);
-		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Images: {0}", m_perStageImageCount[stage].count);
-		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Samplers: {0}", m_perStageSamplerCount[stage].count);
+		std::string logString = "\n";
+		logString += std::format("[VulkanShader]: Reflecting stage {0}\n", Utility::StageToString(stage));
+		logString += std::format("[VulkanShader]:		Uniform Buffers: {0}\n", m_perStageUBOCount[stage].count);
+		logString += std::format("[VulkanShader]:		Storage Buffers: {0}\n", m_perStageSSBOCount[stage].count);
+		logString += std::format("[VulkanShader]:		Storage Images: {0}\n", m_perStageStorageImageCount[stage].count);
+		logString += std::format("[VulkanShader]:		Images: {0}\n", m_perStageImageCount[stage].count);
+		logString += std::format("[VulkanShader]:		Samplers: {0}\n", m_perStageSamplerCount[stage].count);
 
 		if (stage == ShaderStage::Vertex)
 		{
-			GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Vertex Layout:");
+			logString += "[VulkanShader]:		Vertex Layout:\n";
 
 			for (const auto& element : m_resources.vertexLayout.GetElements())
 			{
-				GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "				{0}: {1}", element.name, BufferLayout::GetNameFromElementType(element.type));
+				logString += std::format("[VulkanShader]:			{0}: {1}\n", element.name, BufferLayout::GetNameFromElementType(element.type));
 			}
 		}
 
+		GraphicsContext::Log(Severity::Trace, logString);
 	}
 
 	void VulkanShader::CreateDescriptorSetLayouts()

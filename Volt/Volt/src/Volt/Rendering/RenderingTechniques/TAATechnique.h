@@ -22,7 +22,7 @@ namespace Volt
 	{
 	public:
 		TAATechnique(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		TAAData Execute(Ref<RHI::Image2D> previousColor, const glm::uvec2& renderSize);
+		TAAData Execute(Ref<RHI::Image2D> previousColor);
 
 	private:
 		RenderGraph& m_renderGraph;

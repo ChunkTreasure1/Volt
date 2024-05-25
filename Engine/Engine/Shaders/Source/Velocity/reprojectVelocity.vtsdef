@@ -1,0 +1,5 @@
+name: "ReprojectVelocity"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Velocity/ReprojectVelocity_ps.hlsl"
+  - "Engine/Shaders/Source/Utility/FullscreenTriangle_vs.hlsl"

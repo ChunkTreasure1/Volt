@@ -9,11 +9,10 @@
 #include "Volt/Utility/FunctionQueue.h"
 
 #include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
-#include "Volt/Rendering/Resources/GlobalResourceManager.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
-#include "Volt/Rendering/Resources/GlobalResourceManager.h"
 #include "Volt/Rendering/Debug/ShaderRuntimeValidator.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
+#include "Volt/Rendering/Resources/BindlessResourcesManager.h"
 
 #include "Volt/Math/Math.h"
 
@@ -48,28 +47,35 @@ namespace Volt
 
 	struct RendererData
 	{
-		Ref<RHI::ShaderCompiler> shaderCompiler;
+		~RendererData()
+		{
+			defaultResources.Clear();
+			samplers.clear();
 
 #ifndef VT_DIST
-		Scope<ShaderRuntimeValidator> shaderValidator;
+			shaderValidator = nullptr;
 #endif
 
-		std::vector<FunctionQueue> deletionQueue;
-
-		std::unordered_map<size_t, Ref<GlobalResource<RHI::SamplerState>>> samplers;
-
-		DefaultResources defaultResources;
-
-		inline void Shutdown()
-		{
-			samplers.clear();
 			shaderCompiler = nullptr;
+			bindlessResourcesManager = nullptr;
 
 			for (auto& resourceQueue : deletionQueue)
 			{
 				resourceQueue.Flush();
 			}
 		}
+
+		Ref<RHI::ShaderCompiler> shaderCompiler;
+		Scope<BindlessResourcesManager> bindlessResourcesManager;
+
+#ifndef VT_DIST
+		Scope<ShaderRuntimeValidator> shaderValidator;
+#endif
+
+		std::vector<FunctionQueue> deletionQueue;
+		std::unordered_map<size_t, BindlessResourceRef<RHI::SamplerState>> samplers;
+
+		DefaultResources defaultResources;
 	};
 
 	Scope<RendererData> s_rendererData;
@@ -99,13 +105,16 @@ namespace Volt
 
 			s_rendererData->shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
 		}
+
+		// Bindless resources manager
+		{
+			s_rendererData->bindlessResourcesManager = CreateScope<BindlessResourcesManager>();
+		}
 	}
 
 	void Renderer::Initialize()
 	{
-		GlobalResourceManager::Initialize();
 		RenderGraphExecutionThread::Initialize();
-
 		CreateDefaultResources();
 
 #ifndef VT_DIST
@@ -116,9 +125,6 @@ namespace Volt
 	void Renderer::Shutdown()
 	{
 		RenderGraphExecutionThread::Shutdown();
-		GlobalResourceManager::Shutdown();
-
-		s_rendererData->Shutdown();
 		s_rendererData = nullptr;
 	}
 
@@ -273,11 +279,14 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("EnvironmentMipFilter", false);
 			RHI::DescriptorTableCreateInfo tableInfo{};
 			tableInfo.shader = pipeline->GetShader();
-			tableInfo.count = imageSpec.mips;
 
-			Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
-			descriptorTable->SetImageView("u_input", environmentUnfiltered->GetView(), 0);
-			descriptorTable->SetSamplerState("u_linearSampler", linearSampler->GetResource(), 0);
+			std::vector<Ref<RHI::DescriptorTable>> descriptorTables;
+			for (uint32_t i = 0; i < imageSpec.mips; i++)
+			{
+				descriptorTables.emplace_back(RHI::DescriptorTable::Create(tableInfo));
+				descriptorTables.back()->SetImageView("u_input", environmentUnfiltered->GetView(), 0);
+				descriptorTables.back()->SetSamplerState("u_linearSampler", linearSampler->GetResource(), 0);
+			}
 
 			struct Constants
 			{
@@ -294,10 +303,10 @@ namespace Volt
 
 				constants.roughness = roughness;
 
-				descriptorTable->SetImageView("o_output", environmentFiltered->GetArrayView(i), 0);
+				descriptorTables[i]->SetImageView("o_output", environmentFiltered->GetArrayView(i), 0);
 
 				commandBuffer->BindPipeline(pipeline);
-				commandBuffer->BindDescriptorTable(descriptorTable);
+				commandBuffer->BindDescriptorTable(descriptorTables[i]);
 				commandBuffer->PushConstants(&constants, sizeof(Constants), 0);
 				commandBuffer->Dispatch(numGroups, numGroups, 6);
 
@@ -395,23 +404,24 @@ namespace Volt
 
 	void Renderer::Update()
 	{
-		//GlobalResourceManager::Update();
 	}
 
 	void Renderer::EndOfFrameUpdate()
 	{
-#ifndef VT_DIST
-		s_rendererData->shaderValidator->Update();
+		s_rendererData->bindlessResourcesManager->Update();
 
-		const auto& frameErrors = s_rendererData->shaderValidator->GetValidationErrors();
-		for (const auto& error : frameErrors)
-		{
-			VT_CORE_ERROR(error);
-		}
+#ifndef VT_DIST
+		//s_rendererData->shaderValidator->Update();
+
+		//const auto& frameErrors = s_rendererData->shaderValidator->GetValidationErrors();
+		//for (const auto& error : frameErrors)
+		//{
+		//	VT_CORE_ERROR(error);
+		//}
 #endif
 	}
 
-	Ref<GlobalResource<RHI::SamplerState>> Renderer::GetSamplerInternal(const RHI::SamplerStateCreateInfo& samplerInfo)
+	BindlessResourceRef<RHI::SamplerState> Renderer::GetSamplerInternal(const RHI::SamplerStateCreateInfo& samplerInfo)
 	{
 		const size_t hash = Utility::GetHashFromSamplerInfo(samplerInfo);
 		if (s_rendererData->samplers.contains(hash))
@@ -419,7 +429,7 @@ namespace Volt
 			return s_rendererData->samplers.at(hash);
 		}
 
-		Ref<GlobalResource<RHI::SamplerState>> samplerState = GlobalResource<RHI::SamplerState>::Create(RHI::SamplerState::Create(samplerInfo));
+		BindlessResourceRef<RHI::SamplerState> samplerState = BindlessResource<RHI::SamplerState>::CreateRef(samplerInfo);
 		s_rendererData->samplers[hash] = samplerState;
 
 		return samplerState;

@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef VT_DIST
-#include "Volt/Rendering/Resources/GlobalResource.h"
+#include "Volt/Rendering/Resources/BindlessResource.h"
 
 namespace Volt
 {
@@ -24,8 +24,8 @@ namespace Volt
 	private:
 		void ProcessValidationBuffer(const std::vector<uint8_t>& dataBuffer);
 
-		Scope<GlobalResource<RHI::StorageBuffer>> m_errorBuffer;
-		Scope<GlobalResource<RHI::StorageBuffer>> m_stagingBuffer;
+		BindlessResourceScope<RHI::StorageBuffer> m_errorBuffer;
+		BindlessResourceScope<RHI::StorageBuffer> m_stagingBuffer;
 
 		Ref<RHI::CommandBuffer> m_commandBuffer;
 
