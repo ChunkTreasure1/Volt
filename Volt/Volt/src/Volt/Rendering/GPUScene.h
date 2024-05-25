@@ -41,7 +41,7 @@ namespace Volt
 		uint32_t meshId;
 		uint32_t materialId;
 		uint32_t meshletStartOffset;
-		uint32_t padding;
+		uint32_t entityId;
 
 		glm::vec3 boundingSphereCenter;
 		float boundingSphereRadius;

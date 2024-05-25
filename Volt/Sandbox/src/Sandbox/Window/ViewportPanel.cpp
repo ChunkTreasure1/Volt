@@ -42,6 +42,8 @@
 #include <Volt/Math/RayTriangle.h>
 #include <Volt/Math/Math.h>
 
+#include <VoltRHI/Images/Image2D.h>
+
 #include <Navigation/Core/NavigationSystem.h>
 
 ViewportPanel::ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::Scene>& editorScene, EditorCameraController* cameraController,
@@ -885,10 +887,11 @@ void ViewportPanel::HandleSingleSelect()
 
 	if (mouseX >= 0 && mouseY >= 0 && mouseX < (int32_t)perspectiveSize.x && mouseY < (int32_t)perspectiveSize.y)
 	{
-		//const auto renderScale = mySceneRenderer->GetSettings().renderScale;
+		//const auto renderScale = m_sceneRenderer->GetSettings().renderScale;
+		const float renderScale = 1.f;
 
-		//uint32_t pixelData = mySceneRenderer->GetIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX * renderScale), static_cast<uint32_t>(mouseY * renderScale));
-		/*const bool multiSelect = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);
+		uint32_t pixelData = m_sceneRenderer->GetObjectIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX * renderScale), static_cast<uint32_t>(mouseY * renderScale));
+		const bool multiSelect = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);
 		const bool deselect = Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL);
 
 		if (!multiSelect && !deselect)
@@ -917,7 +920,7 @@ void ViewportPanel::HandleSingleSelect()
 				SelectionManager::Select(entity.GetID());
 				EditorLibrary::Get<SceneViewPanel>()->HighlightEntity(entity);
 			}
-		}*/
+		}
 	}
 }
 

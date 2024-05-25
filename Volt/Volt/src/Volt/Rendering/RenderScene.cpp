@@ -430,6 +430,7 @@ namespace Volt
 
 		objectDrawData.transform = transform;
 		objectDrawData.meshId = meshId;
+		objectDrawData.entityId = entity.GetID();
 		objectDrawData.materialId = GetMaterialIndex(renderObject.material);
 		objectDrawData.meshletStartOffset = renderObject.meshletStartOffset;
 	}

@@ -1,0 +1,5 @@
+name: "ObjectID"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Editor/ObjectID_vs.hlsl"
+  - "Engine/Shaders/Source/Editor/ObjectID_ps.hlsl"

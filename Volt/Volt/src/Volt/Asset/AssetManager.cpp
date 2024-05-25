@@ -92,6 +92,8 @@ namespace Volt
 	UUID64 AssetManager::RegisterAssetChangedCallback(AssetType assetType, AssetChangedCallback&& callbackFunction)
 	{
 		AssetManager& instance = Get();
+		std::scoped_lock lock{ instance.m_assetCallbackMutex };
+		
 		UUID64 id = UUID64{};
 
 		instance.m_assetChangedCallbacks[assetType].push_back({ id, callbackFunction });
@@ -101,6 +103,8 @@ namespace Volt
 	void AssetManager::UnregisterAssetChangedCallback(AssetType assetType, UUID64 id)
 	{
 		AssetManager& instance = Get();
+		std::scoped_lock lock{ instance.m_assetCallbackMutex };
+
 		auto& callbacks = instance.m_assetChangedCallbacks[assetType];
 
 		auto it = std::find_if(callbacks.begin(), callbacks.end(), [&](const AssetChangedCallbackInfo& callbackInfo) 
@@ -314,6 +318,12 @@ namespace Volt
 
 		{
 			WriteLock lock{ m_assetRegistryMutex };
+			if (!m_assetRegistry.contains(assetHandle))
+			{
+				VT_CORE_WARN("[AssetManager] Unable to unload asset with handle {0}, it does not exist in the registry!", assetHandle);
+				return;
+			}
+
 			m_assetRegistry.at(assetHandle).isLoaded = false;
 		}
 
@@ -672,6 +682,11 @@ namespace Volt
 			const auto& callbacks = m_assetChangedCallbacks.at(type);
 			for (const auto& callback : callbacks)
 			{
+				if (!callback.callback)
+				{
+					continue;
+				}
+
 				callback.callback(assetHandle, state);
 			}
 		}

@@ -50,6 +50,7 @@ namespace Volt::RHI
 
 	protected:
 		void* GetHandleImpl() const override;
+		Buffer ReadPixelInternal(const uint32_t x, const uint32_t y, const size_t stride) override;
 
 	private:
 		struct SwapchainImageData

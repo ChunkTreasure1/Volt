@@ -114,6 +114,11 @@ namespace Volt
 		return m_outputImage;
 	}
 
+	Ref<RHI::Image2D> SceneRenderer::GetObjectIDImage()
+	{
+		return m_objectIDImage;
+	}
+
 	void SceneRenderer::OnRender(Ref<Camera> camera)
 	{
 		VT_PROFILE_FUNCTION();
@@ -161,6 +166,7 @@ namespace Volt
 		//AddStatsReadbackPass(renderGraph, rgBlackboard);
 
 		AddPreDepthPass(renderGraph, rgBlackboard);
+		AddObjectIDPass(renderGraph, rgBlackboard);
 
 		GTAOSettings tempSettings{};
 		tempSettings.radius = 0.5f;
@@ -595,6 +601,46 @@ namespace Volt
 
 			context.EndRendering();
 		});
+	}
+
+	void SceneRenderer::AddObjectIDPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		struct Data
+		{
+			RenderGraphResourceHandle objectIdHandle;
+		};
+
+		const auto preDepthHandle = blackboard.Get<PreDepthData>().depth;
+
+		Data& data = renderGraph.AddPass<Data>("Object ID Pass",
+		[&](RenderGraph::Builder& builder, Data& data) 
+		{
+			data.objectIdHandle = builder.CreateImage2D({ RHI::PixelFormat::R32_UINT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "ObjectID" });
+			builder.WriteResource(preDepthHandle);
+
+			BuildMeshPass(builder, blackboard, blackboard.Get<CullPrimitivesData>());
+		},
+		[=](const Data& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		{
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { data.objectIdHandle, preDepthHandle });
+			info.renderingInfo.depthAttachmentInfo.clearMode = RHI::ClearMode::Load;
+		
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("ObjectID");
+			pipelineInfo.depthCompareOperator = RHI::CompareOperator::Equal;
+			pipelineInfo.depthMode = RHI::DepthMode::Read;
+
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+			context.BeginRendering(info);
+			context.BindPipeline(pipeline);
+
+			RenderMeshes(context, resources, blackboard, blackboard.Get<CullPrimitivesData>());
+
+			context.EndRendering();
+		});
+
+		renderGraph.QueueImage2DExtraction(data.objectIdHandle, m_objectIDImage);
 	}
 
 	void SceneRenderer::AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)

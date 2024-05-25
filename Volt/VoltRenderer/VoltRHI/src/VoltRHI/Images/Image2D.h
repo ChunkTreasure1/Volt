@@ -2,6 +2,8 @@
 
 #include "VoltRHI/Core/RHIResource.h"
 
+#include <CoreUtilities/Buffer/Buffer.h>
+
 namespace Volt::RHI
 {
 	class ImageView;
@@ -35,12 +37,27 @@ namespace Volt::RHI
 		virtual const uint32_t CalculateMipCount() const = 0;
 		virtual const bool IsSwapchainImage() const = 0;
 
+		template<typename T>
+		VT_INLINE T ReadPixel(uint32_t x, uint32_t y);
+
 		static Ref<Image2D> Create(const ImageSpecification& specification, const void* data = nullptr);
 		static Ref<Image2D> Create(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data = nullptr);
 		static Ref<Image2D> Create(const SwapchainImageSpecification& specification);
 
 	protected:
+		virtual Buffer ReadPixelInternal(const uint32_t x, const uint32_t y, const size_t stride) = 0;
+
 		Image2D() = default;
 		~Image2D() override = default;
 	};
+
+	template<typename T>
+	VT_INLINE T Image2D::ReadPixel(uint32_t x, uint32_t y)
+	{
+		auto buffer = ReadPixelInternal(x, y, sizeof(T));
+		T value = *buffer.As<T>();
+		buffer.Release();
+
+		return value;
+	}
 }

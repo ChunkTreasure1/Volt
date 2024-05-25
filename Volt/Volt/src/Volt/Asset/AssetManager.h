@@ -189,6 +189,7 @@ namespace Volt
 
 		mutable std::shared_mutex m_assetRegistryMutex;
 		mutable std::shared_mutex m_assetCacheMutex;
+		std::mutex m_assetCallbackMutex;
 	};
 
 	template<typename T>

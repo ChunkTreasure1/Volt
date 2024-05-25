@@ -71,6 +71,7 @@ namespace Volt
 		inline ShadingMode GetShadingMode() const { return m_shadingMode; }
 
 		Ref<RHI::Image2D> GetFinalImage();
+		Ref<RHI::Image2D> GetObjectIDImage();
 
 		// #TODO_Ivar: TEMP, Should not be public!
 		void Invalidate();
@@ -95,6 +96,7 @@ namespace Volt
 		void AddStatsReadbackPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddObjectIDPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddClearGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
@@ -112,6 +114,7 @@ namespace Volt
 		void CreateMainRenderTarget(const uint32_t width, const uint32_t height);
 
 		Ref<RHI::Image2D> m_outputImage;
+		Ref<RHI::Image2D> m_objectIDImage;
 		Ref<RHI::Image2D> m_previousDepthImage;
 		Ref<RHI::Image2D> m_previousColorImage;
 

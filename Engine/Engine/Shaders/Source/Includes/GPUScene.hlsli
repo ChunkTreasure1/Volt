@@ -65,7 +65,7 @@ struct ObjectDrawData
     uint meshId;
     uint materialId;
     uint meshletStartOffset;
-    uint padding;
+    uint entityId;
     
     BoundingSphere boundingSphere;
 };
