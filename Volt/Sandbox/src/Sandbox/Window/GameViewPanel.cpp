@@ -27,8 +27,8 @@
 #include "Sandbox/EditorCommandStack.h"
 
 GameViewPanel::GameViewPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::Scene>& editorScene, SceneState& aSceneState)
-	: EditorWindow(GAMEVIEWPANEL_TITLE), mySceneRenderer(sceneRenderer), myEditorScene(editorScene),
-	mySceneState(aSceneState)
+	: EditorWindow(GAMEVIEWPANEL_TITLE), m_sceneRenderer(sceneRenderer), m_editorScene(editorScene),
+	m_sceneState(aSceneState)
 {
 	m_isOpen = true;
 	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
@@ -46,19 +46,19 @@ void GameViewPanel::UpdateMainContent()
 	auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 	auto viewportOffset = ImGui::GetWindowPos();
 
-	myPerspectiveBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-	myPerspectiveBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+	m_perspectiveBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+	m_perspectiveBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
 	ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-	if (myViewportSize != (*(glm::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y > 0)
+	if (m_viewportSize != (*(glm::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y > 0)
 	{
 		Resize({ viewportSize.x, viewportSize.y });
 	}
 
-	if (mySceneRenderer)
+	if (m_sceneRenderer)
 	{
-		//ImGui::Image(UI::GetTextureID(mySceneRenderer->GetFinalImage()), { myViewportSize.x, myViewportSize.y });
+		ImGui::Image(UI::GetTextureID(m_sceneRenderer->GetFinalImage()), { m_viewportSize.x, m_viewportSize.y });
 	}
 
 	ImGui::PopStyleColor();
@@ -78,21 +78,21 @@ void GameViewPanel::OnOpen()
 {
 	Volt::SceneRendererSpecification spec{};
 	spec.debugName = "Game Viewport";
-	spec.scene = myEditorScene;
-	mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
+	spec.scene = m_editorScene;
+	m_sceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
 }
 
 void GameViewPanel::OnClose()
 {
-	mySceneRenderer = nullptr;
+	m_sceneRenderer = nullptr;
 }
 
 glm::vec2 GameViewPanel::GetViewportLocalPosition(const glm::vec2& mousePos)
 {
 	float mx = mousePos.x;
 	float my = mousePos.y;
-	mx -= myPerspectiveBounds[0].x;
-	my -= myPerspectiveBounds[0].y;
+	mx -= m_perspectiveBounds[0].x;
+	my -= m_perspectiveBounds[0].y;
 	glm::vec2 result = { mx, my };
 
 	return result;
@@ -116,7 +116,7 @@ bool GameViewPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 
 		case VT_MOUSE_BUTTON_LEFT:
 		{
-			if (m_isHovered && mySceneState == SceneState::Play)
+			if (m_isHovered && m_sceneState == SceneState::Play)
 			{
 				Sandbox::Get().SetPlayHasMouseControl();
 			}
@@ -144,20 +144,20 @@ bool GameViewPanel::OnMouseReleased(Volt::MouseButtonReleasedEvent& e)
 
 void GameViewPanel::Resize(const glm::vec2& viewportSize)
 {
-	myViewportSize = { viewportSize.x, viewportSize.y };
+	m_viewportSize = { viewportSize.x, viewportSize.y };
 
 	if (UserSettingsManager::GetSettings().sceneSettings.use16by9)
 	{
-		if (myViewportSize.x > myViewportSize.y)
+		if (m_viewportSize.x > m_viewportSize.y)
 		{
-			myViewportSize.x = myViewportSize.y / 9 * 16;
+			m_viewportSize.x = m_viewportSize.y / 9 * 16;
 		}
 		else
 		{
-			myViewportSize.y = myViewportSize.x / 16 * 9;
+			m_viewportSize.y = m_viewportSize.x / 16 * 9;
 		}
 	}
 
-	mySceneRenderer->Resize((uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y);
-	myEditorScene->SetRenderSize((uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y);
+	m_sceneRenderer->Resize((uint32_t)m_viewportSize.x, (uint32_t)m_viewportSize.y);
+	m_editorScene->SetRenderSize((uint32_t)m_viewportSize.x, (uint32_t)m_viewportSize.y);
 }

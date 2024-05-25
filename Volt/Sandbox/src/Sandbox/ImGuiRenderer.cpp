@@ -489,7 +489,7 @@ float Sandbox::DrawTitlebar()
 	const float w = ImGui::GetContentRegionAvail().x;
 	const float titleBarDragWidth = w - buttonsAreaWidth;
 	ImGui::InvisibleButton("##titlebarDragZone", ImVec2(std::max(titleBarDragWidth, 1.0f), titlebarHeight));
-	myTitlebarHovered = ImGui::IsItemHovered();
+	m_titlebarHovered = ImGui::IsItemHovered();
 
 	ImGui::SameLine();
 
@@ -658,7 +658,7 @@ void Sandbox::DrawMenuBar()
 		{
 			if (ImGui::MenuItem("Reset layout"))
 			{
-				myShouldResetLayout = true;
+				m_shouldResetLayout = true;
 			}
 
 			if (ImGui::MenuItem("Bake NavMesh"))
@@ -759,8 +759,8 @@ void Sandbox::SaveSceneAsModal()
 		UI::PushID();
 		if (UI::BeginProperties("saveSceneAs"))
 		{
-			UI::Property("Name", mySaveSceneData.name);
-			UI::PropertyDirectory("Destination", mySaveSceneData.destinationPath);
+			UI::Property("Name", m_saveSceneData.name);
+			UI::PropertyDirectory("Destination", m_saveSceneData.destinationPath);
 
 			UI::EndProperties();
 		}
@@ -769,7 +769,7 @@ void Sandbox::SaveSceneAsModal()
 		ImGui::PushItemWidth(80.f);
 		if (ImGui::Button("Save"))
 		{
-			if (mySaveSceneData.name.empty())
+			if (m_saveSceneData.name.empty())
 			{
 				ImGui::CloseCurrentPopup();
 
@@ -780,20 +780,20 @@ void Sandbox::SaveSceneAsModal()
 				return;
 			}
 
-			const std::filesystem::path destPath = mySaveSceneData.destinationPath / mySaveSceneData.name;
+			const std::filesystem::path destPath = m_saveSceneData.destinationPath / m_saveSceneData.name;
 			if (!FileSystem::Exists(Volt::ProjectManager::GetDirectory() / destPath))
 			{
 				std::filesystem::create_directories(Volt::ProjectManager::GetDirectory() / destPath);
 			}
 
-			const auto relPath = Volt::AssetManager::Get().GetRelativePath(destPath.string() + "\\" + mySaveSceneData.name + ".vtscene");
+			const auto relPath = Volt::AssetManager::Get().GetRelativePath(destPath.string() + "\\" + m_saveSceneData.name + ".vtscene");
 			
 			//myRuntimeScene->CopyTo(myRuntimeScene);
-			myRuntimeScene->handle = {};
+			m_runtimeScene->handle = {};
 
-			Volt::AssetManager::SaveAssetAs(myRuntimeScene, relPath);
+			Volt::AssetManager::SaveAssetAs(m_runtimeScene, relPath);
 
-			UI::Notify(NotificationType::Success, "Successfully saved scene!", std::format("Scene {0} was saved successfully!", mySaveSceneData.name));
+			UI::Notify(NotificationType::Success, "Successfully saved scene!", std::format("Scene {0} was saved successfully!", m_saveSceneData.name));
 
 			SetupNewSceneData();
 			ImGui::CloseCurrentPopup();
@@ -822,11 +822,11 @@ void Sandbox::BuildGameModal()
 		UI::PushID();
 		if (UI::BeginProperties("buildData"))
 		{
-			UI::PropertyDirectory("Build Path", myBuildInfo.buildDirectory);
+			UI::PropertyDirectory("Build Path", m_buildInfo.buildDirectory);
 
 			ImGui::Separator();
 
-			for (auto& handle : myBuildInfo.sceneHandles)
+			for (auto& handle : m_buildInfo.sceneHandles)
 			{
 				EditorUtils::Property("Scene", handle, Volt::AssetType::Scene);
 			}
@@ -837,7 +837,7 @@ void Sandbox::BuildGameModal()
 
 		if (ImGui::Button("Add Scene"))
 		{
-			myBuildInfo.sceneHandles.emplace_back();
+			m_buildInfo.sceneHandles.emplace_back();
 		}
 
 		UI::PushID();
@@ -862,8 +862,8 @@ void Sandbox::BuildGameModal()
 
 			if (!abort)
 			{
-				GameBuilder::BuildGame(myBuildInfo);
-				myBuildStarted = true;
+				GameBuilder::BuildGame(m_buildInfo);
+				m_buildStarted = true;
 			}
 			ImGui::CloseCurrentPopup();
 		}

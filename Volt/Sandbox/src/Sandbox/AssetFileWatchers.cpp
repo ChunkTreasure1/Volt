@@ -13,33 +13,33 @@
 
 void Sandbox::CreateModifiedWatch()
 {
-	myFileWatcher->AddCallback(efsw::Actions::Modified, [&](const auto newPath, const auto oldPath)
+	m_fileWatcher->AddCallback(efsw::Actions::Modified, [&](const auto newPath, const auto oldPath)
 	{
 		if (newPath.extension().string() == ".nv-gpudmp" || oldPath.extension().string() == ".nv-gpudmp")
 		{
 			return;
 		}
 
-		std::scoped_lock lock(myFileWatcherMutex);
-		myFileChangeQueue.emplace_back([newPath, oldPath, this]()
+		std::scoped_lock lock(m_fileWatcherMutex);
+		m_fileChangeQueue.emplace_back([newPath, oldPath, this]()
 		{
 			auto assemblyPath = Volt::ProjectManager::GetMonoAssemblyPath();
 			if (Utility::StringContains((newPath.parent_path().filename() / newPath.filename()).string(), (assemblyPath.parent_path().filename() / assemblyPath.filename()).string()))
 			{
-				if (mySceneState == SceneState::Play)
+				if (m_sceneState == SceneState::Play)
 				{
 					Sandbox::Get().OnSceneStop();
 				}
-				else if (mySceneState == SceneState::Edit)
+				else if (m_sceneState == SceneState::Edit)
 				{
-					myRuntimeScene->ShutdownEngineScripts();
+					m_runtimeScene->ShutdownEngineScripts();
 				}
 
 				Volt::MonoScriptEngine::ReloadAssembly();
 
-				if (mySceneState == SceneState::Edit)
+				if (m_sceneState == SceneState::Edit)
 				{
-					myRuntimeScene->InitializeEngineScripts();
+					m_runtimeScene->InitializeEngineScripts();
 				}
 
 				UI::Notify(NotificationType::Success, "C# Assembly Reloaded!", "The C# assembly was reloaded successfully!");
@@ -108,10 +108,10 @@ void Sandbox::CreateModifiedWatch()
 
 void Sandbox::CreateDeleteWatch()
 {
-	myFileWatcher->AddCallback(efsw::Actions::Delete, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
+	m_fileWatcher->AddCallback(efsw::Actions::Delete, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
 	{
-		std::scoped_lock lock(myFileWatcherMutex);
-		myFileChangeQueue.emplace_back([newPath, oldPath]()
+		std::scoped_lock lock(m_fileWatcherMutex);
+		m_fileChangeQueue.emplace_back([newPath, oldPath]()
 		{
 			if (!newPath.has_extension())
 			{
@@ -134,18 +134,18 @@ void Sandbox::CreateDeleteWatch()
 
 void Sandbox::CreateAddWatch()
 {
-	myFileWatcher->AddCallback(efsw::Actions::Add, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
+	m_fileWatcher->AddCallback(efsw::Actions::Add, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
 	{
-		std::scoped_lock lock(myFileWatcherMutex);
+		std::scoped_lock lock(m_fileWatcherMutex);
 	});
 }
 
 void Sandbox::CreateMovedWatch()
 {
-	myFileWatcher->AddCallback(efsw::Actions::Moved, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
+	m_fileWatcher->AddCallback(efsw::Actions::Moved, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
 	{
-		std::scoped_lock lock(myFileWatcherMutex);
-		myFileChangeQueue.emplace_back([newPath, oldPath]()
+		std::scoped_lock lock(m_fileWatcherMutex);
+		m_fileChangeQueue.emplace_back([newPath, oldPath]()
 		{
 			if (!newPath.has_extension())
 			{

@@ -44,11 +44,11 @@ private:
 
 	void Resize(const glm::vec2& viewportSize);
 
-	Ref<Volt::SceneRenderer>& mySceneRenderer;
-	Ref<Volt::Scene>& myEditorScene;
-	SceneState& mySceneState;
+	Ref<Volt::SceneRenderer>& m_sceneRenderer;
+	Ref<Volt::Scene>& m_editorScene;
+	SceneState& m_sceneState;
 
-	glm::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
-	glm::vec2 myViewportSize = { 1280.f, 720.f };
+	glm::vec2 m_perspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
+	glm::vec2 m_viewportSize = { 1280.f, 720.f };
 };
 

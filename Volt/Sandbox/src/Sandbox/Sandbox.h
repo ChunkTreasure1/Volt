@@ -61,10 +61,10 @@ public:
 	void SetEditorHasMouseControl();
 	void SetPlayHasMouseControl();
 
-	inline static Sandbox& Get() { return *myInstance; }
+	inline static Sandbox& Get() { return *s_instance; }
 
-	Ref<Volt::SceneRenderer>& GetSceneRenderer() { return mySceneRenderer; }
-	inline const SceneState GetSceneState() const { return mySceneState; }
+	Ref<Volt::SceneRenderer>& GetSceneRenderer() { return m_sceneRenderer; }
+	inline const SceneState GetSceneState() const { return m_sceneState; }
 	
 	void NewScene();
 	void OpenScene();
@@ -80,7 +80,7 @@ private:
 	{
 		std::string name = "New Scene";
 		std::filesystem::path destinationPath = "Assets/Scenes/";
-	} mySaveSceneData;
+	} m_saveSceneData;
 
 	void SaveSceneAs();
 
@@ -128,48 +128,48 @@ private:
 	void CreateMovedWatch();
 	/////////////////////////
 
-	BuildInfo myBuildInfo;
+	BuildInfo m_buildInfo;
 
-	Ref<EditorCameraController> myEditorCameraController;
+	Ref<EditorCameraController> m_editorCameraController;
 
-	Ref<Volt::SceneRenderer> mySceneRenderer;
-	Ref<Volt::SceneRenderer> myGameSceneRenderer;
+	Ref<Volt::SceneRenderer> m_sceneRenderer;
+	Ref<Volt::SceneRenderer> m_gameSceneRenderer;
 
 	///// File watcher /////
-	Ref<FileWatcher> myFileWatcher;
-	std::mutex myFileWatcherMutex;
-	std::vector<std::function<void()>> myFileChangeQueue;
+	Ref<FileWatcher> m_fileWatcher;
+	std::mutex m_fileWatcherMutex;
+	std::vector<std::function<void()>> m_fileChangeQueue;
 	////////////////////////
 
-	Ref<Volt::Scene> myRuntimeScene;
-	Ref<Volt::Scene> myIntermediateScene;
+	Ref<Volt::Scene> m_runtimeScene;
+	Ref<Volt::Scene> m_intermediateScene;
 
-	SceneState mySceneState = SceneState::Edit;
+	SceneState m_sceneState = SceneState::Edit;
 
-	Ref<ViewportPanel> myViewportPanel;
-	Ref<GameViewPanel> myGameViewPanel;
+	Ref<ViewportPanel> m_viewportPanel;
+	Ref<GameViewPanel> m_gameViewPanel;
 
-	Ref<NavigationPanel> myNavigationPanel;
+	Ref<NavigationPanel> m_navigationPanel;
 
-	Ref<AssetBrowserPanel> myAssetBrowserPanel;
+	Ref<AssetBrowserPanel> m_assetBrowserPanel;
 
-	glm::uvec2 myViewportSize = { 1280, 720 };
-	glm::uvec2 myViewportPosition = { 0, 0 };
+	glm::uvec2 m_viewportSize = { 1280, 720 };
+	glm::uvec2 m_viewportPosition = { 0, 0 };
 
-	bool myShouldOpenSaveSceneAs = false;
-	bool myOpenShouldSaveScenePopup = false;
-	bool myShouldResetLayout = false;
-	bool myTitlebarHovered = false;
-	bool myBuildStarted = false;
-	bool myPlayHasMouseControl = false;
+	bool m_shouldOpenSaveSceneAs = false;
+	bool m_openShouldSaveScenePopup = false;
+	bool m_shouldResetLayout = false;
+	bool m_titlebarHovered = false;
+	bool m_buildStarted = false;
+	bool m_playHasMouseControl = false;
 	bool m_isInitialized = false;
 
-	bool myShouldMovePlayer = false;
-	glm::vec3 myMovePlayerToPosition = 0.f;
+	bool m_shouldMovePlayer = false;
+	glm::vec3 m_movePlayerToPosition = 0.f;
 
-	Ref<Volt::Scene> myStoredScene;
-	bool myShouldLoadNewScene = false;
-	uint32_t myAssetBrowserCount = 0;
+	Ref<Volt::Scene> m_storedScene;
+	bool m_shouldLoadNewScene = false;
+	uint32_t m_assetBrowserCount = 0;
 
-	inline static Sandbox* myInstance = nullptr;
+	inline static Sandbox* s_instance = nullptr;
 };

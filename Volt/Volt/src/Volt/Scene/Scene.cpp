@@ -768,8 +768,12 @@ namespace Volt
 
 			auto entity =  otherScene->CreateEntityWithUUID(uuid);
 			Entity::Copy(Entity{ id, this }, entity, EntityCopyFlags::None);
+
+			otherScene->GetWorldEngineMutable().OnEntityMoved(entity);
 		});
-	}
+
+		otherScene->InvalidateRenderScene();
+	} 
 
 	void Scene::Clear()
 	{
