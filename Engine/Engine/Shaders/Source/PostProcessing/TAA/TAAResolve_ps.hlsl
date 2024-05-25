@@ -5,6 +5,10 @@ struct Constants
 {
     UniformTexture<float3> currentColor;
     UniformTexture<float3> previousColor;
+
+    UniformTexture<float2> velocityTexture;
+
+    TextureSampler pointSampler;
 };
 
 struct Output
@@ -16,8 +20,10 @@ Output main(FullscreenTriangleVertex input)
 {
     const Constants constants = GetConstants<Constants>();
 
-    float3 currentColor = constants.currentColor.Load2D(int3(input.position.xy, 0));
-    float3 previousColor = constants.previousColor.Load2D(int3(input.position.xy, 0));
+    const float2 velocity = constants.velocityTexture.Sample2D(constants.pointSampler, input.uv);
+
+    float3 currentColor = constants.currentColor.Sample2D(constants.pointSampler, input.uv);
+    float3 previousColor = constants.previousColor.Sample2D(constants.pointSampler, input.uv - velocity);
 
     Output output;
     output.output = currentColor * 0.1f + previousColor * 0.9f;;

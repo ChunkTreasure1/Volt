@@ -506,8 +506,10 @@ namespace Volt
 		RenderGraphExecutionThread::ExecuteRenderGraph(std::move(*this));
 	}
 
-	RenderGraphResourceHandle RenderGraph::AddExternalImage2D(Ref<RHI::Image2D> image, bool trackGlobalResource)
+	RenderGraphResourceHandle RenderGraph::AddExternalImage2D(Ref<RHI::Image2D> image)
 	{
+		VT_ENSURE(image);
+
 		if (RenderGraphResourceHandle registeredHandle = TryGetRegisteredExternalResource(image); registeredHandle != INVALID_RESOURCE_HANDLE)
 		{
 			return registeredHandle;
@@ -518,7 +520,6 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->isExternal = true;
 		node->resourceInfo.isExternal = true;
-		node->resourceInfo.trackGlobalResource = trackGlobalResource;
 		node->resourceInfo.description.format = image->GetFormat();
 
 		m_resourceNodes.push_back(node);
@@ -529,8 +530,10 @@ namespace Volt
 		return resourceHandle;
 	}
 
-	RenderGraphResourceHandle RenderGraph::AddExternalBuffer(Ref<RHI::StorageBuffer> buffer, bool trackGlobalResource)
+	RenderGraphResourceHandle RenderGraph::AddExternalBuffer(Ref<RHI::StorageBuffer> buffer)
 	{
+		VT_ENSURE(buffer);
+
 		if (RenderGraphResourceHandle registeredHandle = TryGetRegisteredExternalResource(buffer); registeredHandle != INVALID_RESOURCE_HANDLE)
 		{
 			return registeredHandle;
@@ -541,7 +544,6 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->isExternal = true;
 		node->resourceInfo.isExternal = true;
-		node->resourceInfo.trackGlobalResource = trackGlobalResource;
 
 		m_resourceNodes.push_back(node);
 		m_transientResourceSystem.AddExternalResource(resourceHandle, std::reinterpret_pointer_cast<RHI::RHIResource>(buffer));
@@ -551,8 +553,10 @@ namespace Volt
 		return resourceHandle;
 	}
 
-	RenderGraphResourceHandle RenderGraph::AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer, bool trackGlobalResource)
+	RenderGraphResourceHandle RenderGraph::AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer)
 	{
+		VT_ENSURE(buffer);
+
 		if (RenderGraphResourceHandle registeredHandle = TryGetRegisteredExternalResource(buffer); registeredHandle != INVALID_RESOURCE_HANDLE)
 		{
 			return registeredHandle;
@@ -563,7 +567,6 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->isExternal = true;
 		node->resourceInfo.isExternal = true;
-		node->resourceInfo.trackGlobalResource = trackGlobalResource;
 
 		m_resourceNodes.push_back(node);
 		m_transientResourceSystem.AddExternalResource(resourceHandle, std::reinterpret_pointer_cast<RHI::RHIResource>(buffer));
@@ -1154,19 +1157,19 @@ namespace Volt
 		return resourceId;
 	}
 
-	RenderGraphResourceHandle RenderGraph::Builder::AddExternalImage2D(Ref<RHI::Image2D> image, bool trackGlobalResource)
+	RenderGraphResourceHandle RenderGraph::Builder::AddExternalImage2D(Ref<RHI::Image2D> image)
 	{
-		return m_renderGraph.AddExternalImage2D(image, trackGlobalResource);
+		return m_renderGraph.AddExternalImage2D(image);
 	}
 
-	RenderGraphResourceHandle RenderGraph::Builder::AddExternalBuffer(Ref<RHI::StorageBuffer> buffer, bool trackGlobalResource)
+	RenderGraphResourceHandle RenderGraph::Builder::AddExternalBuffer(Ref<RHI::StorageBuffer> buffer)
 	{
-		return m_renderGraph.AddExternalBuffer(buffer, trackGlobalResource);
+		return m_renderGraph.AddExternalBuffer(buffer);
 	}
 
-	RenderGraphResourceHandle RenderGraph::Builder::AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer, bool trackGlobalResource)
+	RenderGraphResourceHandle RenderGraph::Builder::AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer)
 	{
-		return m_renderGraph.AddExternalUniformBuffer(buffer, trackGlobalResource);
+		return m_renderGraph.AddExternalUniformBuffer(buffer);
 	}
 
 	void RenderGraph::Builder::ReadResource(RenderGraphResourceHandle handle, RenderGraphResourceState forceState)

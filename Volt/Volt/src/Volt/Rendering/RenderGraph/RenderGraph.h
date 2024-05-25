@@ -60,10 +60,10 @@ namespace Volt
 			RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc);
 			RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
 
-			RenderGraphResourceHandle AddExternalImage2D(Ref<RHI::Image2D> image, bool trackGlobalResource = true);
-			//RenderGraphResourceHandle AddExternalImage3D(Ref<RHI::Image3D> image, bool trackGlobalResource = true);
-			RenderGraphResourceHandle AddExternalBuffer(Ref<RHI::StorageBuffer> buffer, bool trackGlobalResource = true);
-			RenderGraphResourceHandle AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer, bool trackGlobalResource = true);
+			RenderGraphResourceHandle AddExternalImage2D(Ref<RHI::Image2D> image);
+			//RenderGraphResourceHandle AddExternalImage3D(Ref<RHI::Image3D> image);
+			RenderGraphResourceHandle AddExternalBuffer(Ref<RHI::StorageBuffer> buffer);
+			RenderGraphResourceHandle AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer);
 
 			void SetHasSideEffect();
 			void SetIsComputePass();
@@ -96,10 +96,10 @@ namespace Volt
 
 		void SetTotalAllocatedSizeCallback(TotalAllocatedSizeCallback&& callback);
 
-		RenderGraphResourceHandle AddExternalImage2D(Ref<RHI::Image2D> image, bool trackGlobalResource = true);
-		//RenderGraphResourceHandle AddExternalImage3D(Ref<RHI::Image3D> image, bool trackGlobalResource = true);
-		RenderGraphResourceHandle AddExternalBuffer(Ref<RHI::StorageBuffer> buffer, bool trackGlobalResource = true);
-		RenderGraphResourceHandle AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer, bool trackGlobalResource = true);
+		RenderGraphResourceHandle AddExternalImage2D(Ref<RHI::Image2D> image);
+		//RenderGraphResourceHandle AddExternalImage3D(Ref<RHI::Image3D> image);
+		RenderGraphResourceHandle AddExternalBuffer(Ref<RHI::StorageBuffer> buffer);
+		RenderGraphResourceHandle AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer);
 
 		RenderGraphResourceHandle CreateImage2D(const RenderGraphImageDesc& textureDesc);
 		RenderGraphResourceHandle CreateImage3D(const RenderGraphImageDesc& textureDesc);

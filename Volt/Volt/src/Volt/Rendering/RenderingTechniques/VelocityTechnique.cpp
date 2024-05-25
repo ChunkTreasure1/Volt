@@ -59,7 +59,7 @@ namespace Volt
 
 			RCUtils::DrawFullscreenTriangle(context, pipeline, [&](RenderContext& context)
 			{
-				context.SetConstant("inverseViewProjection"_sh, glm::inverse(renderData.camera->GetProjection() * renderData.camera->GetView()));
+				context.SetConstant("inverseViewProjection"_sh, glm::inverse(renderData.camera->GetNonJitteredProjection() * renderData.camera->GetView()));
 				context.SetConstant("previousViewProjection"_sh, previousData.viewProjection);
 				context.SetConstant("renderSize"_sh, glm::vec2(renderData.renderSize));
 				context.SetConstant("invRenderSize"_sh, 1.f / glm::vec2(renderData.renderSize));

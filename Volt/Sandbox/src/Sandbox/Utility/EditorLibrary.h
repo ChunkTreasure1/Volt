@@ -20,6 +20,7 @@ public:
 
 	static void Clear();
 	static void Sort();
+	static Ref<EditorWindow> GetPanel(const std::string& panelName);
 
 	template<typename T, typename ...Args>
 	static Ref<T> RegisterWithType(const std::string& category, Volt::AssetType assetType, Args&& ...args);

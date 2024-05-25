@@ -36,7 +36,7 @@ namespace Volt
 		void UploadTo(RenderGraph& renderGraph, const BindlessResource<RHI::StorageBuffer>& dstBuffer);
 
 	private:
-		void UploadToInternal(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer, bool trackGlobalResource);
+		void UploadToInternal(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer);
 
 		std::vector<T> m_data;
 		std::vector<uint32_t> m_dataIndices;
@@ -62,17 +62,17 @@ namespace Volt
 	template<IsTrivial T>
 	inline void ScatteredBufferUpload<T>::UploadTo(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer)
 	{
-		UploadToInternal(renderGraph, dstBuffer, true);
+		UploadToInternal(renderGraph, dstBuffer);
 	}
 
 	template<IsTrivial T>
 	inline void ScatteredBufferUpload<T>::UploadTo(RenderGraph& renderGraph, const BindlessResource<RHI::StorageBuffer>& dstBuffer)
 	{
-		UploadToInternal(renderGraph, dstBuffer.GetResource(), false);
+		UploadToInternal(renderGraph, dstBuffer.GetResource());
 	}
 
 	template<IsTrivial T>
-	inline void ScatteredBufferUpload<T>::UploadToInternal(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer, bool trackGlobalResource)
+	inline void ScatteredBufferUpload<T>::UploadToInternal(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer)
 	{
 		if (m_data.empty())
 		{
@@ -99,7 +99,7 @@ namespace Volt
 		}
 
 		{
-			data.dstBuffer = renderGraph.AddExternalBuffer(dstBuffer, trackGlobalResource);
+			data.dstBuffer = renderGraph.AddExternalBuffer(dstBuffer);
 			data.dataCount = static_cast<uint32_t>(m_data.size());
 		}
 

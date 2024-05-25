@@ -173,6 +173,8 @@ void Sandbox::OnAttach()
 
 	EditorLibrary::Sort();
 
+	UserSettingsManager::SetupPanels();
+
 	myFileWatcher = CreateRef<FileWatcher>();
 	CreateWatches();
 
@@ -223,7 +225,6 @@ void Sandbox::OnAttach()
 
 	Volt::DiscordSDK::UpdateRichPresence();
 
-	myRuntimeScene->InitializeEngineScripts();
 	m_isInitialized = true;
 }
 

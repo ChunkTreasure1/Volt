@@ -21,7 +21,7 @@ namespace Volt
 	{
 	}
 
-	TAAData TAATechnique::Execute(Ref<RHI::Image2D> previousColor)
+	TAAData TAATechnique::Execute(Ref<RHI::Image2D> previousColor, RenderGraphResourceHandle velocityTexture)
 	{
 		const auto& shadingData = m_blackboard.Get<ShadingOutputData>();
 		const auto& renderData = m_blackboard.Get<RenderData>();
@@ -43,6 +43,7 @@ namespace Volt
 				data.previousColor = builder.AddExternalImage2D(previousColor);
 			}
 
+			builder.ReadResource(velocityTexture);
 			builder.ReadResource(data.previousColor);
 			builder.ReadResource(shadingData.colorOutput);
 
@@ -62,6 +63,8 @@ namespace Volt
 			{
 				context.SetConstant("currentColor"_sh, resources.GetImage2D(shadingData.colorOutput));
 				context.SetConstant("previousColor"_sh, resources.GetImage2D(data.previousColor));
+				context.SetConstant("velocityTexture"_sh, resources.GetImage2D(velocityTexture));
+				context.SetConstant("pointSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest>()->GetResourceHandle());
 			});
 
 			context.EndRendering();

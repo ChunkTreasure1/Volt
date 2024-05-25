@@ -186,6 +186,18 @@ namespace Volt
 		m_bottom = bottom;
 	}
 
+	const glm::mat4 Camera::GetNonJitteredProjection() const
+	{
+		if (m_reversed)
+		{
+			return glm::perspective(glm::radians(m_fieldOfView), m_aspecRatio, m_farPlane, m_nearPlane);
+		}
+		else
+		{
+			return glm::perspective(glm::radians(m_fieldOfView), m_aspecRatio, m_nearPlane, m_farPlane);
+		}
+	}
+
 	glm::vec3 Camera::GetUp() const
 	{
 		return glm::rotate(GetOrientation(), glm::vec3{ 0.f, 1.f, 0.f });

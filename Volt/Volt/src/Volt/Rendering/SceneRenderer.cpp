@@ -135,7 +135,7 @@ namespace Volt
 			m_shouldResize = false;
 		}
 
-		camera->SetSubpixelOffset(Noise::GetTAAJitter(Application::GetFrameIndex(), { m_width, m_height }));
+		//camera->SetSubpixelOffset(Noise::GetTAAJitter(Application::GetFrameIndex(), { m_width, m_height }));
 
 		RenderGraphBlackboard rgBlackboard{};
 		RenderGraph renderGraph{ m_commandBuffer };
@@ -208,27 +208,27 @@ namespace Volt
 		AddSkyboxPass(renderGraph, rgBlackboard);
 		AddShadingPass(renderGraph, rgBlackboard);
 
-		//VelocityTechnique velocityTechnique{ renderGraph, rgBlackboard };
-		//velocityTechnique.Execute();
+		VelocityTechnique velocityTechnique{ renderGraph, rgBlackboard };
+		RenderGraphResourceHandle velocityTexture = velocityTechnique.Execute();
 
-		//TAATechnique taaTechnique{ renderGraph, rgBlackboard };
-		//TAAData taaData = taaTechnique.Execute(m_previousColorImage);
+		TAATechnique taaTechnique{ renderGraph, rgBlackboard };
+		TAAData taaData = taaTechnique.Execute(m_previousColorImage, velocityTexture);
 
 		AddFinalCopyPass(renderGraph, rgBlackboard, rgBlackboard.Get<ShadingOutputData>().colorOutput);
 
 		// Copy final image for next frame
-		//{
-		//	RenderGraphImageDesc imageDesc{};
-		//	imageDesc.format = m_outputImage->GetFormat();
-		//	imageDesc.width = m_width;
-		//	imageDesc.height = m_height;
-		//	imageDesc.name = "Previous Frame Color";
+		{
+			RenderGraphImageDesc imageDesc{};
+			imageDesc.format = m_outputImage->GetFormat();
+			imageDesc.width = m_width;
+			imageDesc.height = m_height;
+			imageDesc.name = "Previous Frame Color";
 
-		//	RenderGraphResourceHandle destinationHandle = renderGraph.CreateImage2D(imageDesc);
-		//	RenderingUtils::CopyImage(renderGraph, rgBlackboard.Get<FinalCopyData>().output, destinationHandle, { m_width, m_height });
+			RenderGraphResourceHandle destinationHandle = renderGraph.CreateImage2D(imageDesc);
+			RenderingUtils::CopyImage(renderGraph, rgBlackboard.Get<FinalCopyData>().output, destinationHandle, { m_width, m_height });
 
-		//	renderGraph.QueueImage2DExtraction(destinationHandle, m_previousColorImage);
-		//}
+			renderGraph.QueueImage2DExtraction(destinationHandle, m_previousColorImage);
+		}
 
 		renderGraph.QueueImage2DExtraction(rgBlackboard.Get<PreDepthData>().depth, m_previousDepthImage);
 
@@ -246,7 +246,7 @@ namespace Volt
 
 		// Setup previous frame data
 		{
-			m_previousFrameData.viewProjection = camera->GetProjection() * camera->GetView();
+			m_previousFrameData.viewProjection = camera->GetNonJitteredProjection() * camera->GetView();
 			m_previousFrameData.jitter = camera->GetSubpixelOffset();
 		}
 	}
@@ -517,10 +517,10 @@ namespace Volt
 		// Core buffers
 		{
 			auto& bufferData = blackboard.Add<ExternalBuffersData>();
-			bufferData.objectDrawDataBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetObjectDrawDataBuffer().GetResource(), false);
-			bufferData.gpuMeshesBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetGPUMeshesBuffer().GetResource(), false);
-			bufferData.gpuMeshletsBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetGPUMeshletsBuffer().GetResource(), false);
-			bufferData.gpuSceneBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetGPUSceneBuffer().GetResource(), false);
+			bufferData.objectDrawDataBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetObjectDrawDataBuffer().GetResource());
+			bufferData.gpuMeshesBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetGPUMeshesBuffer().GetResource());
+			bufferData.gpuMeshletsBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetGPUMeshletsBuffer().GetResource());
+			bufferData.gpuSceneBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetGPUSceneBuffer().GetResource());
 		}
 
 		// Environment map
@@ -841,8 +841,8 @@ namespace Volt
 		const auto& environmentTexturesData = blackboard.Get<EnvironmentTexturesData>();
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 
-		RenderGraphResourceHandle meshVertexBufferHandle = renderGraph.AddExternalBuffer(m_skyboxMesh->GetVertexPositionsBuffer()->GetResource(), false);
-		RenderGraphResourceHandle indexBufferHandle = renderGraph.AddExternalBuffer(m_skyboxMesh->GetIndexStorageBuffer()->GetResource(), false);
+		RenderGraphResourceHandle meshVertexBufferHandle = renderGraph.AddExternalBuffer(m_skyboxMesh->GetVertexPositionsBuffer()->GetResource());
+		RenderGraphResourceHandle indexBufferHandle = renderGraph.AddExternalBuffer(m_skyboxMesh->GetIndexStorageBuffer()->GetResource());
 
 		blackboard.Add<ShadingOutputData>() = renderGraph.AddPass<ShadingOutputData>("Skybox Pass",
 		[&](RenderGraph::Builder& builder, ShadingOutputData& data)

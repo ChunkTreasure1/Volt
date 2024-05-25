@@ -23,6 +23,15 @@ Output main(FullscreenTriangleVertex input)
     const Constants constants = GetConstants<Constants>();
 
     const float pixelDepth = constants.depthTexture.Sample2D(constants.pointSampler, input.uv);
+    
+    if (pixelDepth < 0.00001f)
+    {
+        Output output;
+        output.output = 0.f;
+        
+        return output;
+    }
+
     const float x = input.uv.x * 2.f - 1.f;
     const float y = input.uv.y * 2.f - 1.f;
 
