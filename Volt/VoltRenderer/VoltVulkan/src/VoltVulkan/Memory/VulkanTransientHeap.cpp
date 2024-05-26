@@ -46,6 +46,7 @@ namespace Volt::RHI
 	Ref<Allocation> VulkanTransientHeap::CreateBuffer(const TransientBufferCreateInfo& createInfo)
 	{
 		VT_PROFILE_FUNCTION();
+		VT_ENSURE((m_createInfo.flags & TransientHeapFlags::AllowBuffers) != TransientHeapFlags::None);
 
 		auto device = GraphicsContext::GetDevice();
 
@@ -90,6 +91,7 @@ namespace Volt::RHI
 	Ref<Allocation> VulkanTransientHeap::CreateImage(const TransientImageCreateInfo& createInfo)
 	{
 		VT_PROFILE_FUNCTION();
+		VT_ENSURE((m_createInfo.flags & TransientHeapFlags::AllowTextures) != TransientHeapFlags::None);
 
 		auto device = GraphicsContext::GetDevice();
 		const auto& imageSpecification = createInfo.imageSpecification;

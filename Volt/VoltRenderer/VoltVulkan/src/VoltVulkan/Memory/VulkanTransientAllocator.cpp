@@ -26,9 +26,6 @@ namespace Volt::RHI
 
 	VulkanTransientAllocator::~VulkanTransientAllocator()
 	{
-		m_bufferHeaps.clear();
-		m_imageHeaps.clear();
-
 		for (const auto& imageAlloc : m_allocationCache.GetImageAllocations())
 		{
 			DestroyImageInternal(imageAlloc.allocation);
@@ -38,6 +35,9 @@ namespace Volt::RHI
 		{
 			DestroyBufferInternal(bufferAlloc.allocation);
 		}
+
+		m_bufferHeaps.clear();
+		m_imageHeaps.clear();
 	}
 
 	Ref<Allocation> VulkanTransientAllocator::CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage)
@@ -91,9 +91,9 @@ namespace Volt::RHI
 
 		Ref<Allocation> result;
 
-		for (const auto& heap : m_bufferHeaps)
+		for (const auto& heap : m_imageHeaps)
 		{
-			if (heap->IsAllocationSupported(memoryRequirement.size, TransientHeapFlags::AllowBuffers))
+			if (heap->IsAllocationSupported(memoryRequirement.size, TransientHeapFlags::AllowTextures))
 			{
 				result = heap->CreateImage(info);
 			}
@@ -136,7 +136,7 @@ namespace Volt::RHI
 		{
 			TransientHeapCreateInfo info{};
 			info.pageSize = 128 * 1024 * 1024;
-			info.flags = TransientHeapFlags::AllowTextures;
+			info.flags = TransientHeapFlags::AllowTextures | TransientHeapFlags::AllowRenderTargets;
 			m_imageHeaps.push_back(TransientHeap::Create(info));
 		}
 	}
@@ -162,7 +162,7 @@ namespace Volt::RHI
 		}
 		else
 		{
-			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocation]", "Unable to destroy buffer with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocator]", "Unable to destroy buffer with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
 			DestroyOrphanBuffer(allocation);
 		}
 	}
@@ -173,7 +173,7 @@ namespace Volt::RHI
 
 		Ref<TransientHeap> parentHeap;
 
-		for (const auto& heap : m_bufferHeaps)
+		for (const auto& heap : m_imageHeaps)
 		{
 			if (heap->GetHeapID() == allocation->GetHeapID())
 			{
@@ -188,7 +188,7 @@ namespace Volt::RHI
 		}
 		else
 		{
-			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocation]", "Unable to destroy image with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocator]", "Unable to destroy image with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
 			DestroyOrphanImage(allocation);
 		}
 	}
