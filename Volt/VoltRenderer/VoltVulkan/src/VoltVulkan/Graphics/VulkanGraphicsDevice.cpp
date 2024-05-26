@@ -249,6 +249,7 @@ namespace Volt::RHI
 
 	void VulkanGraphicsDevice::WaitForIdle()
 	{
+		// #TODO_Ivar: Must be externally synced with all queues
 		vkDeviceWaitIdle(m_device);
 	}
 

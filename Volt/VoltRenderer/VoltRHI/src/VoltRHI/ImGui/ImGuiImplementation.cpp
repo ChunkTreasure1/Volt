@@ -1,7 +1,7 @@
 #include "rhipch.h"
 #include "ImGuiImplementation.h"
 
-#include "VoltRHI/Graphics/GraphicsContext.h"
+#include "VoltRHI/RHILog.h"
 #include "VoltRHI/Core/Core.h"
 #include "VoltRHI/Core/Profiling.h"
 #include "VoltRHI/RHIProxy.h"
@@ -37,12 +37,12 @@ namespace Volt::RHI
 
 		if (!std::filesystem::exists(userIniPath))
 		{
-			GraphicsContext::Log(Severity::Warning, "[ImGui] User ini file not found! Copying default!");
+			RHILog::Log(LogSeverity::Warning, "[ImGui] User ini file not found! Copying default!");
 
 			std::filesystem::create_directories(userIniPath.parent_path());
 			if (!std::filesystem::exists(defaultIniPath))
 			{
-				GraphicsContext::Log(Severity::Error, "[ImGui] Unable to find default ini file!");
+				RHILog::Log(LogSeverity::Error, "[ImGui] Unable to find default ini file!");
 				return "imgui.ini";
 			}
 			std::filesystem::copy(defaultIniPath, userIniPath.parent_path());

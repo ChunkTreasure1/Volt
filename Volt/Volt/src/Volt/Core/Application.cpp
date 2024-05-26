@@ -39,20 +39,20 @@
 
 namespace Volt
 {
-	inline static void RHILogCallback(RHI::Severity severity, std::string_view msg)
+	inline static void RHILogCallback(RHI::LogSeverity severity, std::string_view msg)
 	{
 		switch (severity)
 		{
-			case RHI::Severity::Trace:
+			case RHI::LogSeverity::Trace:
 				VT_CORE_TRACE(msg);
 				break;
-			case RHI::Severity::Info:
+			case RHI::LogSeverity::Info:
 				VT_CORE_INFO(msg);
 				break;
-			case RHI::Severity::Warning:
+			case RHI::LogSeverity::Warning:
 				VT_CORE_WARN(msg);
 				break;
-			case RHI::Severity::Error:
+			case RHI::LogSeverity::Error:
 				VT_CORE_ERROR(msg);
 				break;
 		}
@@ -377,21 +377,30 @@ namespace Volt
 
 	void Application::CreateGraphicsContext()
 	{
-		RHI::LogHookInfo logHook{};
-		logHook.enabled = true;
-		logHook.logCallback = RHILogCallback;
-
-		RHI::ResourceManagementInfo resourceManagement{};
-		resourceManagement.resourceDeletionCallback = Renderer::DestroyResource;
-
 		RHI::GraphicsContextCreateInfo cinfo{};
 		cinfo.graphicsApi = RHI::GraphicsAPI::Vulkan;
-		cinfo.loghookInfo = logHook;
-		cinfo.resourceManagementInfo = resourceManagement;
 
 		if (cinfo.graphicsApi == RHI::GraphicsAPI::Vulkan)
 		{
 			m_rhiProxy = RHI::CreateVulkanRHIProxy();
+		}
+
+		{
+			RHI::LogInfo logHook{};
+			logHook.enabled = true;
+			logHook.logCallback = RHILogCallback;
+
+			m_rhiProxy->SetLogInfo(logHook);
+
+			RHI::RHICallbackInfo callbackInfo{};
+			callbackInfo.resourceManagementInfo.resourceDeletionCallback = Renderer::DestroyResource;
+			callbackInfo.requestCloseEventCallback = []() 
+			{
+				WindowCloseEvent closeEvent{};
+				Application::Get().OnEvent(closeEvent);
+			};
+
+			m_rhiProxy->SetRHICallbackInfo(callbackInfo);
 		}
 
 		m_graphicsContext = RHI::GraphicsContext::Create(cinfo);

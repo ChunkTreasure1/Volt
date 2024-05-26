@@ -9,6 +9,8 @@
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
+#include <VoltRHI/RHIProxy.h>
+
 #include <vulkan/vulkan.h>
 
 namespace Volt::RHI
@@ -44,7 +46,7 @@ namespace Volt::RHI
 
 	VulkanImageView::~VulkanImageView()
 	{
-		GraphicsContext::DestroyResource([imageView = m_imageView]()
+		RHIProxy::GetInstance().DestroyResource([imageView = m_imageView]()
 		{
 			auto device = GraphicsContext::GetDevice();
 			vkDestroyImageView(device->GetHandle<VkDevice>(), imageView, nullptr);

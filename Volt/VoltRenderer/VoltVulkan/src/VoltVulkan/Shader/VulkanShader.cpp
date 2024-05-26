@@ -46,7 +46,7 @@ namespace Volt::RHI
 	{
 		if (m_specification.sourceFiles.empty())
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Trying to create a shader {0} without any sources!", m_specification.name);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Trying to create a shader {0} without any sources!", m_specification.name);
 			return;
 		}
 
@@ -144,7 +144,7 @@ namespace Volt::RHI
 
 			if (m_shaderSources.find(stage) != m_shaderSources.end())
 			{
-				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Multiple shaders of same stage defined in file {0}!", path.string().c_str());
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Multiple shaders of same stage defined in file {0}!", path.string().c_str());
 				continue;
 			}
 
@@ -202,7 +202,7 @@ namespace Volt::RHI
 
 	void VulkanShader::ReflectAllStages(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderData)
 	{
-		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "Reflecting {0}", m_specification.name);
+		RHILog::LogTagged(LogSeverity::Trace, "[VulkanShader]", "Reflecting {0}", m_specification.name);
 		for (const auto& [stage, data] : shaderData)
 		{
 			ReflectStage(stage, data);
@@ -233,12 +233,12 @@ namespace Volt::RHI
 
 			if (!TryAddShaderBinding(name, set, binding))
 			{
-				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
 			}
 
 			if (name == "$Globals")
 			{
-				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Shader {0} seems to have incorrectly defined global variables!", m_specification.name);
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Shader {0} seems to have incorrectly defined global variables!", m_specification.name);
 				continue;
 			}
 
@@ -267,7 +267,7 @@ namespace Volt::RHI
 
 			if (!TryAddShaderBinding(name, set, binding))
 			{
-				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
 			}
 
 			const bool firstEntry = !m_resources.storageBuffers[set].contains(binding);
@@ -303,7 +303,7 @@ namespace Volt::RHI
 
 			if (!TryAddShaderBinding(name, set, binding))
 			{
-				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
 			}
 
 			const bool firstEntry = !m_resources.storageImages[set].contains(binding);
@@ -338,7 +338,7 @@ namespace Volt::RHI
 
 			if (!TryAddShaderBinding(name, set, binding))
 			{
-				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
 			}
 
 			const bool firstEntry = !m_resources.images[set].contains(binding);
@@ -372,7 +372,7 @@ namespace Volt::RHI
 
 			if (!TryAddShaderBinding(name, set, binding))
 			{
-				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
 			}
 
 			auto& shaderSampler = m_resources.samplers[set][binding];
@@ -424,7 +424,7 @@ namespace Volt::RHI
 			}
 		}
 
-		GraphicsContext::Log(Severity::Trace, logString);
+		RHILog::Log(LogSeverity::Trace, logString);
 	}
 
 	void VulkanShader::CreateDescriptorSetLayouts()

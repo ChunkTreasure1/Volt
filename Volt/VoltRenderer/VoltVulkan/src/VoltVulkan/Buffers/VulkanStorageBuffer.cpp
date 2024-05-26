@@ -11,6 +11,8 @@
 #include <VoltRHI/Memory/MemoryCommon.h>
 #include <VoltRHI/Memory/Allocation.h>
 
+#include <VoltRHI/RHIProxy.h>
+
 namespace Volt::RHI
 {
 	VulkanStorageBuffer::VulkanStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
@@ -102,7 +104,7 @@ namespace Volt::RHI
 		cmdBuffer->End();
 		cmdBuffer->Execute();
 
-		GraphicsContext::DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = stagingAllocation]()
+		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = stagingAllocation]()
 		{
 			if (allocatedUsingCustomAllocator)
 			{
@@ -134,7 +136,7 @@ namespace Volt::RHI
 
 		commandBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
 
-		GraphicsContext::DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = stagingAllocation]()
+		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = stagingAllocation]()
 		{
 			if (allocatedUsingCustomAllocator)
 			{
@@ -212,7 +214,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		GraphicsContext::DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
+		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
 		{
 			if (allocatedUsingCustomAllocator)
 			{

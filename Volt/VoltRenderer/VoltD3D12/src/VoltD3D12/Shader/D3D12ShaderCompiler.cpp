@@ -133,7 +133,7 @@ namespace Volt::RHI
 			hr = compileResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(pErrors.GetAddressOf()), &wide);
 			if (pErrors && pErrors->GetStringLength() > 0)
 			{
-				GraphicsContext::LogTagged(Severity::Error, "[D3D12 Shader]", (char*)pErrors->GetBufferPointer());
+				RHILog::LogTagged(LogSeverity::Error, "[D3D12 Shader]", (char*)pErrors->GetBufferPointer());
 			}
 
 			return ShaderCompiler::CompilationResult::Failure;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VoltRHI/Core/RHICommon.h"
+#include "VoltRHI/RHILog.h"
 
 #include <CoreUtilities/Core.h>
 
@@ -66,10 +67,18 @@ namespace Volt::RHI
 	struct SemaphoreCreateInfo;
 	struct ImGuiCreateInfo;
 
+	struct RHICallbackInfo
+	{
+		ResourceManagementInfo resourceManagementInfo;
+		std::function<void()> requestCloseEventCallback;
+	};
+
 	class VTRHI_API RHIProxy
 	{
 	public:
-		virtual ~RHIProxy() = default;
+		virtual ~RHIProxy();
+
+		void SetLogInfo(const LogInfo& logInfo);
 
 		virtual Ref<BufferView> CreateBufferView(const BufferViewSpecification& specification) const = 0;
 
@@ -115,11 +124,18 @@ namespace Volt::RHI
 
 		virtual Ref<ImGuiImplementation> CreateImGuiImplementation(const ImGuiCreateInfo& createInfo) const = 0;
 		
+		virtual void SetRHICallbackInfo(const RHICallbackInfo& callbackInfo) = 0;
+
+		virtual void DestroyResource(std::function<void()>&& function) = 0;
+		virtual void RequestApplicationClose() = 0;
+
 		static RHIProxy& GetInstance() { return *s_instance; }
 
 	protected:
 		inline static RHIProxy* s_instance = nullptr;
 
-		RHIProxy() = default;
+		Scope<RHILog> m_logger;
+
+		RHIProxy();
 	};
 }

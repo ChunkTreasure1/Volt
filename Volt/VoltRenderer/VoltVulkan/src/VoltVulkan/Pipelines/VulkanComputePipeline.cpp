@@ -9,6 +9,8 @@
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
+#include <VoltRHI/RHIProxy.h>
+
 #include <vulkan/vulkan.h>
 
 namespace Volt::RHI
@@ -112,7 +114,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		GraphicsContext::DestroyResource([pipeline = m_pipeline, pipelineLayout = m_pipelineLayout]()
+		RHIProxy::GetInstance().DestroyResource([pipeline = m_pipeline, pipelineLayout = m_pipelineLayout]()
 		{
 			auto device = GraphicsContext::GetDevice();
 			vkDestroyPipeline(device->GetHandle<VkDevice>(), pipeline, nullptr);

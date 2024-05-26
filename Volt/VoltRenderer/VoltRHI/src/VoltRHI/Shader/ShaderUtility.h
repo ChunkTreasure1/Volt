@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VoltRHI/Graphics/GraphicsContext.h"
+#include "VoltRHI/RHILog.h"
 
 #include <filesystem>
 #include <fstream>
@@ -178,7 +179,7 @@ namespace Volt::RHI
 			}
 			else
 			{
-				GraphicsContext::LogTagged(Severity::Error, "[Shader]", "Unable to read shader at location: {}!", path.string());
+				RHILog::LogTagged(LogSeverity::Error, "[Shader]", "Unable to read shader at location: {}!", path.string());
 			}
 
 			in.close();

@@ -55,6 +55,13 @@ namespace Volt::RHI
 		Ref<Semaphore> CreateSemaphore(const SemaphoreCreateInfo& createInfo) const override;
 	
 		Ref<ImGuiImplementation> CreateImGuiImplementation(const ImGuiCreateInfo& createInfo) const override;
+
+		void SetRHICallbackInfo(const RHICallbackInfo& callbackInfo) override;
+		void DestroyResource(std::function<void()>&& function) override;
+		void RequestApplicationClose() override;
+
+	private:
+		RHICallbackInfo m_callbackInfo;
 	};
 
 	VTVK_API Ref<RHIProxy> CreateVulkanRHIProxy();

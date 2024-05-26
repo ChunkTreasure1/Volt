@@ -42,7 +42,7 @@ namespace Volt::RHI
 		Unknown
 	};
 
-	enum class Severity
+	enum class LogSeverity
 	{
 		Trace,
 		Info,
@@ -586,9 +586,9 @@ namespace Volt::RHI
 
 	// --- structures --- \\
 
-	struct LogHookInfo
+	struct LogInfo
 	{
-		std::function<void(Severity, std::string_view)> logCallback;
+		std::function<void(LogSeverity, std::string_view)> logCallback;
 		bool enabled = false;
 	};
 
@@ -629,9 +629,6 @@ namespace Volt::RHI
 		GraphicsAPI graphicsApi;
 		PhysicalDeviceCreateInfo physicalDeviceInfo;
 		GraphicsDeviceCreateInfo graphicsDeviceInfo;
-
-		LogHookInfo loghookInfo;
-		ResourceManagementInfo resourceManagementInfo;
 	};
 
 	struct DeviceQueueCreateInfo

@@ -9,6 +9,7 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
 #include <VoltRHI/Memory/Allocation.h>
+#include <VoltRHI/RHIProxy.h>
 
 namespace Volt::RHI
 {
@@ -25,7 +26,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		GraphicsContext::DestroyResource([allocation = m_allocation]() 
+		RHIProxy::GetInstance().DestroyResource([allocation = m_allocation]() 
 		{
 			GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
 		});
@@ -78,7 +79,7 @@ namespace Volt::RHI
 
 		if (m_allocation)
 		{
-			GraphicsContext::DestroyResource([allocation = m_allocation]() 
+			RHIProxy::GetInstance().DestroyResource([allocation = m_allocation]() 
 			{
 				GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
 			});

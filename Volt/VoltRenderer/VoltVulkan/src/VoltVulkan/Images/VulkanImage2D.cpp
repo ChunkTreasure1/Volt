@@ -16,6 +16,8 @@
 #include <VoltRHI/Memory/Allocator.h>
 #include <VoltRHI/Memory/Allocation.h>
 
+#include <VoltRHI/RHIProxy.h>
+
 namespace Volt::RHI
 {
 	namespace Utility
@@ -152,7 +154,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		GraphicsContext::DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
+		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
 		{
 			if (allocatedUsingCustomAllocator)
 			{

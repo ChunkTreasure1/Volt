@@ -661,7 +661,7 @@ namespace Volt::RHI
 #ifndef VT_DIST
 		if (!m_currentRenderPipeline && !m_currentComputePipeline)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanCommandBuffer]", "Unable to push constants as no pipeline is currently bound!");
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanCommandBuffer]", "Unable to push constants as no pipeline is currently bound!");
 		}
 #endif
 

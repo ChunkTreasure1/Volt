@@ -1,7 +1,7 @@
 #include <rhipch.h>
 #include "ShaderPreProcessor.h"
 
-#include "VoltRHI/Graphics/GraphicsContext.h"
+#include "VoltRHI/RHILog.h"
 
 #define ARRAYSIZE(array) (sizeof(array) / sizeof(array[0]))
 
@@ -215,7 +215,7 @@ namespace Volt::RHI
 		const size_t entryPointLocation = processedSource.find(entryPoint);
 		if (entryPointLocation == std::string::npos)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[ShaderPreProcessor]", "Unable to find Entry Point {0} in shader!", entryPoint);
+			RHILog::LogTagged(LogSeverity::Error, "[ShaderPreProcessor]", "Unable to find Entry Point {0} in shader!", entryPoint);
 			return false;
 		}
 
@@ -324,7 +324,7 @@ namespace Volt::RHI
 		const size_t entryPointLocation = processedSource.find(entryPoint);
 		if (entryPointLocation == std::string::npos)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[ShaderPreProcessor]", "Unable to find Entry Point {0} in shader!", entryPoint);
+			RHILog::LogTagged(LogSeverity::Error, "[ShaderPreProcessor]", "Unable to find Entry Point {0} in shader!", entryPoint);
 			return false;
 		}
 
@@ -953,7 +953,7 @@ namespace Volt::RHI
 			return PixelFormat::R16G16B16A16_SFLOAT;
 		}
 
-		GraphicsContext::LogTagged(Severity::Error, "ShaderPreProcessor", "Unable to translate type {0} into any format!", str);
+		RHILog::LogTagged(LogSeverity::Error, "ShaderPreProcessor", "Unable to translate type {0} into any format!", str);
 		return PixelFormat::UNDEFINED;
 	}
 
@@ -1198,7 +1198,7 @@ namespace Volt::RHI
 			return PixelFormat::D32_SFLOAT_S8_UINT;
 		}
 
-		GraphicsContext::LogTagged(Severity::Error, "ShaderPreProcessor", "Unable to translate layout qualifier {0} into any format!", tempStr);
+		RHILog::LogTagged(LogSeverity::Error, "ShaderPreProcessor", "Unable to translate layout qualifier {0} into any format!", tempStr);
 		return PixelFormat::UNDEFINED;
 	}
 }

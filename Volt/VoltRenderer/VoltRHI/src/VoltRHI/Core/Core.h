@@ -42,6 +42,6 @@
 
 #define VT_RHI_DEBUGBREAK()
 #define VT_ENSURE(x)
-
+#define VT_ENABLE_NV_AFTERMATH
 
 #endif

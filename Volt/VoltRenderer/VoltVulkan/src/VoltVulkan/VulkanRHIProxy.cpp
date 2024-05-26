@@ -198,6 +198,31 @@ namespace Volt::RHI
 		return CreateRef<VulkanImGuiImplementation>(createInfo);
 	}
 
+	void VulkanRHIProxy::SetRHICallbackInfo(const RHICallbackInfo& callbackInfo)
+	{
+		m_callbackInfo = callbackInfo;
+	}
+
+	void VulkanRHIProxy::DestroyResource(std::function<void()>&& function)
+	{
+		if (m_callbackInfo.resourceManagementInfo.resourceDeletionCallback)
+		{
+			m_callbackInfo.resourceManagementInfo.resourceDeletionCallback(std::move(function));
+		}
+		else
+		{
+			function();
+		}
+	}
+
+	void VulkanRHIProxy::RequestApplicationClose()
+	{
+		if (m_callbackInfo.requestCloseEventCallback)
+		{
+			m_callbackInfo.requestCloseEventCallback();
+		}
+	}
+
 	Ref<RHIProxy> CreateVulkanRHIProxy()
 	{
 		return CreateRef<VulkanRHIProxy>();

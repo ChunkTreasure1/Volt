@@ -13,6 +13,8 @@
 #include <VoltRHI/Core/Profiling.h>
 #include <VoltRHI/Utility/HashUtility.h>
 
+#include <VoltRHI/RHILog.h>
+
 #include <vulkan/vulkan.h>
 
 namespace Volt::RHI
@@ -65,7 +67,7 @@ namespace Volt::RHI
 
 		if (!result)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientAllocation]", "Unable to create buffer of size {0}!", size);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocation]", "Unable to create buffer of size {0}!", size);
 		}
 
 		return result;
@@ -99,7 +101,7 @@ namespace Volt::RHI
 
 		if (!result)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientAllocation]", "Unable to create image of size {0}!", memoryRequirement.size);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocation]", "Unable to create image of size {0}!", memoryRequirement.size);
 		}
 
 		return result;
@@ -160,7 +162,7 @@ namespace Volt::RHI
 		}
 		else
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientAllocation]", "Unable to destroy buffer with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocation]", "Unable to destroy buffer with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
 			DestroyOrphanBuffer(allocation);
 		}
 	}
@@ -186,7 +188,7 @@ namespace Volt::RHI
 		}
 		else
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientAllocation]", "Unable to destroy image with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocation]", "Unable to destroy image with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
 			DestroyOrphanImage(allocation);
 		}
 	}

@@ -22,6 +22,8 @@
 #include <VoltRHI/Memory/Allocation.h>
 #include <VoltRHI/Memory/MemoryUtility.h>
 
+#include <VoltRHI/RHIProxy.h>
+
 namespace Volt::RHI
 {
 	namespace Utility
@@ -311,7 +313,7 @@ namespace Volt::RHI
 
 	void VulkanDescriptorBufferTable::Release()
 	{
-		GraphicsContext::DestroyResource([descriptorBuffer = m_descriptorBuffer]()
+		RHIProxy::GetInstance().DestroyResource([descriptorBuffer = m_descriptorBuffer]()
 		{
 			if (descriptorBuffer)
 			{

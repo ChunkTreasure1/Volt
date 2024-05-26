@@ -29,6 +29,7 @@
 #include <string>
 #include <istream>
 
+#include "VoltRHI/RHILog.h"
 #include "VoltRHI/Graphics/GraphicsContext.h"
 #include <VoltRHI/Core/RHICommon.h>
 
@@ -142,5 +143,5 @@ namespace Volt
 { \
 HRESULT hr__ = (x); \
 std::string str = __FILE__; \
-if(FAILED(hr__)) {  DxException ex((long)hr__, #x, str,__LINE__); GraphicsContext::Log(Severity::Error, ex.ToString()); } } \
+if(FAILED(hr__)) {  DxException ex((long)hr__, #x, str,__LINE__); RHILog::Log(LogSeverity::Error, ex.ToString()); } } \
 

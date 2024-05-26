@@ -53,7 +53,7 @@ namespace Volt::RHI
 	VulkanShaderCompiler::VulkanShaderCompiler(const ShaderCompilerCreateInfo& createInfo)
 		: m_includeDirectories(createInfo.includeDirectories), m_macros(createInfo.initialMacros), m_flags(createInfo.flags), m_cacheDirectory(createInfo.cacheDirectory)
 	{
-		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShaderCompiler]", "Initializing VulkanShaderCompiler");
+		RHILog::LogTagged(LogSeverity::Trace, "[VulkanShaderCompiler]", "Initializing VulkanShaderCompiler");
 		DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&m_hlslCompiler));
 		DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&m_hlslUtils));
 	}
@@ -63,7 +63,7 @@ namespace Volt::RHI
 		m_hlslUtils->Release();
 		m_hlslCompiler->Release();
 
-		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShaderCompiler]", "Destroying VulkanShaderCompiler");
+		RHILog::LogTagged(LogSeverity::Trace, "[VulkanShaderCompiler]", "Destroying VulkanShaderCompiler");
 	}
 
 	ShaderCompiler::CompilationResult VulkanShaderCompiler::TryCompileImpl(const Specification& specification, Shader& shader)
@@ -237,7 +237,7 @@ namespace Volt::RHI
 				{
 					if (!result.renderGraphConstants.uniforms.contains(name) || uniform.type != result.renderGraphConstants.uniforms.at(name).type)
 					{
-						GraphicsContext::LogTagged(Severity::Error, "[VulkanShaderCompiler]", "All shader stages must have equal constant struct definition!");
+						RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "All shader stages must have equal constant struct definition!");
 					}
 				}
 			}
@@ -275,7 +275,7 @@ namespace Volt::RHI
 				error = std::format("Failed to compile. Error: {}\n", result);
 				error.append(std::format("{0}\nWhile compiling shader file: {1}", Utility::GetErrorStringFromResult(compilationResult), filepath.string()));
 
-				GraphicsContext::LogUnformatted(Severity::Error, "[VulkanShaderCompiler]: " + error);
+				RHILog::LogUnformatted(LogSeverity::Error, "[VulkanShaderCompiler]: " + error);
 
 				sourcePtr->Release();
 				compilationResult->Release();
@@ -295,7 +295,7 @@ namespace Volt::RHI
 			sourcePtr->Release();
 			compilationResult->Release();
 
-			GraphicsContext::LogUnformatted(Severity::Error, "[VulkanShaderCompiler]: " + error);
+			RHILog::LogUnformatted(LogSeverity::Error, "[VulkanShaderCompiler]: " + error);
 			return CompilationResult::Failure;
 		}
 
@@ -310,7 +310,7 @@ namespace Volt::RHI
 			std::ofstream output{ cachedPath, std::ios::binary | std::ios::out };
 			if (!output.is_open())
 			{
-				GraphicsContext::LogTagged(Severity::Error, "[VulkanShaderCompiler]", "Unable to open path {0} for writing!", cachedPath.string());
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to open path {0} for writing!", cachedPath.string());
 			}
 
 			output.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(uint32_t));
@@ -405,7 +405,7 @@ namespace Volt::RHI
 		}
 		else
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanShaderCompiler]", error);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", error);
 		}
 
 		sourcePtr->Release();

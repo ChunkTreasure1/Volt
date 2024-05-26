@@ -13,6 +13,9 @@
 #include <VoltRHI/Images/ImageView.h>
 #include <VoltRHI/Images/SamplerState.h>
 
+#include <VoltRHI/RHIProxy.h>
+#include <VoltRHI/RHILog.h>
+
 #include <CoreUtilities/Profiling/Profiling.h>
 
 #include <vulkan/vulkan.h>
@@ -51,7 +54,7 @@ namespace Volt::RHI
 	{
 		if (!m_writeDescriptorsMapping[set].contains(binding))
 		{
-			GraphicsContext::LogTagged(Severity::Warning, "[VulkanDescriptorTable]:", "Trying to assign image view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
+			RHILog::LogTagged(LogSeverity::Warning, "[VulkanDescriptorTable]:", "Trying to assign image view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
 			return;
 		}
 
@@ -90,7 +93,7 @@ namespace Volt::RHI
 	{
 		if (!m_writeDescriptorsMapping[set].contains(binding))
 		{
-			GraphicsContext::LogTagged(Severity::Warning, "[VulkanDescriptorTable]:", "Trying to assign buffer view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
+			RHILog::LogTagged(LogSeverity::Warning, "[VulkanDescriptorTable]:", "Trying to assign buffer view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
 			return;
 		}
 
@@ -132,7 +135,7 @@ namespace Volt::RHI
 	{
 		if (!m_writeDescriptorsMapping[set].contains(binding))
 		{
-			GraphicsContext::LogTagged(Severity::Warning, "[VulkanDescriptorTable]:", "Trying to assign sampler state at set {0} and binding {1}. But that is not a valid binding!", set, binding);
+			RHILog::LogTagged(LogSeverity::Warning, "[VulkanDescriptorTable]:", "Trying to assign sampler state at set {0} and binding {1}. But that is not a valid binding!", set, binding);
 			return;
 		}
 
@@ -316,7 +319,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		GraphicsContext::DestroyResource([descriptorPool = m_descriptorPool]()
+		RHIProxy::GetInstance().DestroyResource([descriptorPool = m_descriptorPool]()
 		{
 			auto device = GraphicsContext::GetDevice();
 			vkDestroyDescriptorPool(device->GetHandle<VkDevice>(), descriptorPool, nullptr);

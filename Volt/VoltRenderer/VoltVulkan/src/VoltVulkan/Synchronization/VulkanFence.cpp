@@ -6,6 +6,8 @@
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
+#include <VoltRHI/RHIProxy.h>
+
 #include <vulkan/vulkan.h>
 
 namespace Volt::RHI
@@ -23,7 +25,7 @@ namespace Volt::RHI
 
 	VulkanFence::~VulkanFence()
 	{
-		GraphicsContext::DestroyResource([fence = m_fence]()
+		RHIProxy::GetInstance().DestroyResource([fence = m_fence]()
 		{
 			auto device = GraphicsContext::GetDevice();
 			vkDestroyFence(device->GetHandle<VkDevice>(), fence, nullptr);

@@ -12,6 +12,8 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Memory/Allocator.h>
 
+#include <VoltRHI/RHILog.h>
+
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
@@ -56,16 +58,16 @@ namespace Volt::RHI
 			switch (messageSeverity)
 			{
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-					GraphicsContext::LogUnformatted(Severity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					RHILog::LogUnformatted(LogSeverity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-					GraphicsContext::LogUnformatted(Severity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					RHILog::LogUnformatted(LogSeverity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-					GraphicsContext::LogUnformatted(Severity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					RHILog::LogUnformatted(LogSeverity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-					GraphicsContext::LogUnformatted(Severity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					RHILog::LogUnformatted(LogSeverity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 			}
 
@@ -186,7 +188,7 @@ namespace Volt::RHI
 		const bool validationLayerSupported = CheckValidationLayerSupport();
 		if (!validationLayerSupported)
 		{
-			GraphicsContext::Log(Severity::Error, "[GraphicsContext] Validation layers requested but not supported!");
+			RHILog::Log(LogSeverity::Error, "[GraphicsContext] Validation layers requested but not supported!");
 		}
 #endif
 

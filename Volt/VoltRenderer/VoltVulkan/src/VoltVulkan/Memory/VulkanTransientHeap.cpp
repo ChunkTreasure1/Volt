@@ -10,6 +10,7 @@
 #include <VoltRHI/Graphics/DeviceQueue.h>
 #include <VoltRHI/Memory/MemoryUtility.h>
 #include <VoltRHI/Core/Profiling.h>
+#include <VoltRHI/RHILog.h>
 
 #include <vulkan/vulkan.h>
 
@@ -52,7 +53,7 @@ namespace Volt::RHI
 
 		if (blockAlloc.size == 0)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientHeap]", "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientHeap]", "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
 			return nullptr;
 		}
 
@@ -99,7 +100,7 @@ namespace Volt::RHI
 
 		if (blockAlloc.size == 0)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientHeap]", "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientHeap]", "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
 			return nullptr;
 		}
 
@@ -374,7 +375,7 @@ namespace Volt::RHI
 		int32_t memoryTypeIndex = physicalDevice.GetMemoryTypeIndex(m_memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		if (memoryTypeIndex == -1)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientHeap]", "Unable to find memory type index from bits {0}!", m_memoryRequirements.memoryTypeBits);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientHeap]", "Unable to find memory type index from bits {0}!", m_memoryRequirements.memoryTypeBits);
 			return;
 		}
 
@@ -449,7 +450,7 @@ namespace Volt::RHI
 		int32_t memoryTypeIndex = physicalDevice.GetMemoryTypeIndex(m_memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		if (memoryTypeIndex == -1)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientHeap]", "Unable to find memory type index from bits {0}!", m_memoryRequirements.memoryTypeBits);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientHeap]", "Unable to find memory type index from bits {0}!", m_memoryRequirements.memoryTypeBits);
 			return;
 		}
 
