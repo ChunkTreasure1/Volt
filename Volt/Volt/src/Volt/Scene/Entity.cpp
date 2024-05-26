@@ -577,7 +577,7 @@ namespace Volt
 				continue;
 			}
 
-			CopyComponent(reinterpret_cast<const uint8_t*>(storage.get(srcEntity)), componentData, 0, componentDesc);
+			CopyComponent(reinterpret_cast<const uint8_t*>(storage.get(srcEntity)), componentData, 0, componentDesc, dstEntity);
 		}
 
 		CopyMonoScripts(srcEntity, dstEntity);
@@ -609,7 +609,7 @@ namespace Volt
 		return newEntity;
 	}
 
-	void Entity::CopyComponent(const uint8_t* srcData, uint8_t* dstData, const size_t offset, const IComponentTypeDesc* compDesc)
+	void Entity::CopyComponent(const uint8_t* srcData, uint8_t* dstData, const size_t offset, const IComponentTypeDesc* compDesc, Entity dstEntity)
 	{
 		for (const auto& member : compDesc->GetMembers())
 		{
@@ -625,7 +625,7 @@ namespace Volt
 					case ValueType::Component:
 					{
 						const IComponentTypeDesc* memberCompDesc = reinterpret_cast<const IComponentTypeDesc*>(member.typeDesc);
-						CopyComponent(srcData, dstData, offset + member.offset, memberCompDesc);
+						CopyComponent(srcData, dstData, offset + member.offset, memberCompDesc, dstEntity);
 						break;
 					}
 
@@ -643,6 +643,8 @@ namespace Volt
 				member.copyFunction(&dstData[offset + member.offset], &srcData[offset + member.offset]);
 			}
 		}
+
+		compDesc->OnComponentCopied(&dstData[offset], dstEntity);
 	}
 
 	void Entity::CopyMonoScripts(Entity srcEntity, Entity dstEntity)

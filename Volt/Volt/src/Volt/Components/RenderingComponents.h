@@ -22,6 +22,7 @@ namespace Volt
 		[[nodiscard]] inline const AssetHandle& GetHandle() const { return handle; }
 
 		static void OnMemberChanged(MeshComponent& data, Entity entity);
+		static void OnComponentCopied(MeshComponent& data, Entity entity);
 
 		static void ReflectType(TypeDesc<MeshComponent>& reflect)
 		{
@@ -30,6 +31,7 @@ namespace Volt
 			reflect.AddMember(&MeshComponent::handle, "handle", "Mesh", "", Asset::Null(), AssetType::Mesh);
 			reflect.AddMember(&MeshComponent::materials, "materials", "Materials", "", std::vector<AssetHandle>{}, AssetType::Material);
 			reflect.SetOnMemberChangedCallback(&MeshComponent::OnMemberChanged);
+			reflect.SetOnComponentCopiedCallback(&MeshComponent::OnComponentCopied);
 		}
 
 		REGISTER_COMPONENT(MeshComponent);

@@ -50,6 +50,7 @@ namespace Volt
 
 		const uint32_t GetMeshID(Weak<Mesh> mesh, uint32_t subMeshIndex) const;
 		const uint32_t GetMaterialIndex(Weak<Material> material) const;
+		const uint32_t GetMeshIndex(Weak<Mesh> mesh) const;
 
 		inline const BindlessResource<RHI::StorageBuffer>& GetGPUSceneBuffer() const { return *m_gpuSceneBuffer; }
 		inline const BindlessResource<RHI::StorageBuffer>& GetGPUMeshesBuffer() const { return *m_gpuMeshesBuffer; }
@@ -79,6 +80,7 @@ namespace Volt
 		void BuildGPUMaterial(Weak<Material> material, GPUMaterialNew& gpuMaterial);
 
 		void BuildGPUMeshes(std::vector<GPUMesh>& gpuMeshes);
+
 		void BuildObjectDrawData(std::vector<ObjectDrawData>& objectDrawData);
 		void BuildSinlgeObjectDrawData(ObjectDrawData& objectDrawData, const RenderObject& renderObject);
 

@@ -147,6 +147,7 @@ namespace Volt
 		[[nodiscard]] virtual const ComponentMember* FindMemberByName(std::string_view name) const = 0;
 		
 		virtual void OnMemberChanged(void* objectPtr, Entity entity) const = 0;
+		virtual void OnComponentCopied(void* objectPtr, Entity entity) const = 0;
 	};
 
 	class IEnumTypeDesc : public CommonTypeDesc<ValueType::Enum>
@@ -313,6 +314,7 @@ namespace Volt
 		[[nodiscard]] inline const bool IsHidden() const override { return m_isHidden; }
 
 		void OnMemberChanged(void* objectPtr, Entity entity) const override;
+		void OnComponentCopied(void* objectPtr, Entity entity) const override;
 
 		[[nodiscard]] ComponentMember* FindMemberByOffset(const ptrdiff_t offset) override;
 		[[nodiscard]] ComponentMember* FindMemberByName(std::string_view name) override;
@@ -373,6 +375,11 @@ namespace Volt
 			m_onMemberChangedCallback = std::move(func);
 		}
 
+		void SetOnComponentCopiedCallback(std::function<void(T&, Entity)>&& func)
+		{
+			m_onComponentCopiedCallback = std::move(func);
+		}
+
 	private:
 		std::vector<ComponentMember> m_members;
 
@@ -382,6 +389,7 @@ namespace Volt
 
 		bool m_isHidden = false;
 		std::function<void(T& component, Entity entity)> m_onMemberChangedCallback;
+		std::function<void(T& component, Entity entity)> m_onComponentCopiedCallback;
 	};
 
 	template<Enum T>
@@ -436,6 +444,15 @@ namespace Volt
 		if (m_onMemberChangedCallback)
 		{
 			m_onMemberChangedCallback(*reinterpret_cast<T*>(objectPtr), entity);
+		}
+	}
+
+	template<typename T>
+	inline void ComponentTypeDesc<T>::OnComponentCopied(void* objectPtr, Entity entity) const
+	{
+		if (m_onComponentCopiedCallback)
+		{
+			m_onComponentCopiedCallback(*reinterpret_cast<T*>(objectPtr), entity);
 		}
 	}
 

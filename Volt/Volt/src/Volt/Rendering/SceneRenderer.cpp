@@ -224,16 +224,16 @@ namespace Volt
 
 		// Copy final image for next frame
 		{
-			RenderGraphImageDesc imageDesc{};
-			imageDesc.format = m_outputImage->GetFormat();
-			imageDesc.width = m_width;
-			imageDesc.height = m_height;
-			imageDesc.name = "Previous Frame Color";
+			//RenderGraphImageDesc imageDesc{};
+			//imageDesc.format = m_outputImage->GetFormat();
+			//imageDesc.width = m_width;
+			//imageDesc.height = m_height;
+			//imageDesc.name = "Previous Frame Color";
 
-			RenderGraphResourceHandle destinationHandle = renderGraph.CreateImage2D(imageDesc);
-			RenderingUtils::CopyImage(renderGraph, rgBlackboard.Get<FinalCopyData>().output, destinationHandle, { m_width, m_height });
+			//RenderGraphResourceHandle destinationHandle = renderGraph.CreateImage2D(imageDesc);
+			//RenderingUtils::CopyImage(renderGraph, rgBlackboard.Get<FinalCopyData>().output, destinationHandle, { m_width, m_height });
 
-			renderGraph.QueueImage2DExtraction(destinationHandle, m_previousColorImage);
+			//renderGraph.QueueImage2DExtraction(destinationHandle, m_previousColorImage);
 		}
 
 		renderGraph.QueueImage2DExtraction(rgBlackboard.Get<PreDepthData>().depth, m_previousDepthImage);
@@ -909,7 +909,8 @@ namespace Volt
 
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
 			pipelineInfo.shader = ShaderMap::Get("Skybox");
-			pipelineInfo.cullMode = RHI::CullMode::Front;
+			pipelineInfo.cullMode = RHI::CullMode::None;
+			pipelineInfo.depthMode = RHI::DepthMode::None;
 
 			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
 

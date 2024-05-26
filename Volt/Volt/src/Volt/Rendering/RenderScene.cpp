@@ -183,6 +183,36 @@ namespace Volt
 			bufferUpload.UploadTo(renderGraph, *m_gpuMaterialsBuffer);
 			m_invalidMaterials.clear();
 		}
+
+		if (!m_invalidMeshes.empty())
+		{
+			ScatteredBufferUpload<GPUMesh> bufferUpload{ m_invalidMeshes.size() };
+
+			for (const auto& invalidMesh : m_invalidMeshes)
+			{
+				const uint32_t meshIndex = GetMeshIndex(invalidMesh.mesh);
+				if (meshIndex == std::numeric_limits<uint32_t>::max())
+				{
+					continue;
+				}
+
+				auto& data = bufferUpload.AddUploadItem(invalidMesh.index);
+
+				for (uint32_t subMeshIndex = 0; const auto & gpuMesh : invalidMesh.mesh->GetGPUMeshes())
+				{
+					data = gpuMesh;
+
+					const size_t hash = Math::HashCombine(invalidMesh.mesh.GetHash(), std::hash<uint32_t>()(subMeshIndex));
+
+					m_meshSubMeshToGPUMeshIndex[hash] = meshIndex;
+
+					const size_t assetHash = Math::HashCombine(invalidMesh.mesh->handle, std::hash<uint32_t>()(subMeshIndex));
+					m_meshIndexFromMeshAssetHash[assetHash] = meshIndex;
+
+					subMeshIndex++;
+				}
+			}
+		}
 	}
 
 	void RenderScene::SetValid()
@@ -250,7 +280,7 @@ namespace Volt
 	const uint32_t RenderScene::GetMeshID(Weak<Mesh> mesh, uint32_t subMeshIndex) const
 	{
 		const size_t hash = Math::HashCombine(mesh.GetHash(), std::hash<uint32_t>()(subMeshIndex));
-		return m_meshSubMeshToGPUMeshIndex.at(hash);
+		return m_meshSubMeshToGPUMeshIndex.contains(hash) ? m_meshSubMeshToGPUMeshIndex.at(hash) : std::numeric_limits<uint32_t>::max();
 	}
 
 	const uint32_t RenderScene::GetMaterialIndex(Weak<Material> material) const
@@ -263,6 +293,21 @@ namespace Volt
 		if (it != m_individualMaterials.end())
 		{
 			return static_cast<uint32_t>(std::distance(m_individualMaterials.begin(), it));
+		}
+
+		return std::numeric_limits<uint32_t>::max();
+	}
+
+	const uint32_t RenderScene::GetMeshIndex(Weak<Mesh> mesh) const
+	{
+		auto it = std::find_if(m_individualMeshes.begin(), m_individualMeshes.end(), [&](Weak<Mesh> lhs)
+		{
+			return lhs.Get() == mesh.Get();
+		});
+
+		if (it != m_individualMeshes.end())
+		{
+			return static_cast<uint32_t>(std::distance(m_individualMeshes.begin(), it));
 		}
 
 		return std::numeric_limits<uint32_t>::max();
@@ -410,7 +455,7 @@ namespace Volt
 		}
 
 		const size_t hash = Math::HashCombine(renderObject.mesh.GetHash(), std::hash<uint32_t>()(renderObject.subMeshIndex));
-		const uint32_t meshId = m_meshSubMeshToGPUMeshIndex.at(hash);
+		const uint32_t meshId = m_meshSubMeshToGPUMeshIndex.contains(hash) ? m_meshSubMeshToGPUMeshIndex.at(hash) : std::numeric_limits<uint32_t>::max();
 
 		glm::mat4 transform = entity.GetTransform();
 
@@ -501,6 +546,11 @@ namespace Volt
 
 			const size_t meshletStartOffset = m_sceneMeshlets.size();
 			const uint32_t meshId = GetMeshID(obj.mesh, obj.subMeshIndex);
+
+			if (meshId == std::numeric_limits<uint32_t>::max())
+			{
+				continue;
+			}
 
 			for (uint32_t meshletIdx = 0; meshletIdx < subMesh.meshletCount; meshletIdx++)
 			{

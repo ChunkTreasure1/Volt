@@ -131,7 +131,7 @@ namespace Volt
 		static Entity Duplicate(Entity srcEntity, Ref<Scene> targetScene = nullptr, Entity parent = Entity::Null(), const EntityCopyFlags copyFlags = EntityCopyFlags::None);
 
 	private:
-		static void CopyComponent(const uint8_t* srcData, uint8_t* dstData, const size_t offset, const IComponentTypeDesc* compDesc);
+		static void CopyComponent(const uint8_t* srcData, uint8_t* dstData, const size_t offset, const IComponentTypeDesc* compDesc, Entity dstEntity);
 		static void CopyMonoScripts(Entity srcEntity, Entity dstEntity);
 
 		void UpdatePhysicsTranslation(bool updateThis);
