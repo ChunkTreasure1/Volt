@@ -137,5 +137,5 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
             break;
     };
 
-    constants.output.Store2D(threadId.xy, float4(LinearToSRGB(outputColor), 1.f));
+    constants.output.Store2D(threadId.xy, float4(outputColor, 1.f));
 }

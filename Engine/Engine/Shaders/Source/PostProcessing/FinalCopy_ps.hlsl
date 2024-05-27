@@ -1,5 +1,7 @@
 #include "Vertex.hlsli"
 #include "Resources.hlsli"
+#include "ACES.hlsli"
+#include "Utility.hlsli"
 
 struct Constants
 {
@@ -16,8 +18,10 @@ Output main(FullscreenTriangleVertex input)
     const Constants constants = GetConstants<Constants>();
     float3 currentColor = constants.finalColor.Load2D(int3(input.position.xy, 0));
 
+    currentColor = ACESFitted(currentColor);
+
     Output output;
-    output.output = currentColor;
+    output.output = LinearToSRGB(currentColor);
 
     return output;
 }

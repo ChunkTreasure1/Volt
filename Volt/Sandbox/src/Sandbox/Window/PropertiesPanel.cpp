@@ -325,11 +325,11 @@ void PropertiesPanel::AddComponentPopup()
 						for (auto& ent : SelectionManager::GetSelectedEntities())
 						{
 							auto entity = myCurrentScene->GetEntityFromUUID(ent);
-							EditorUtils::MarkEntityAsEdited(entity);
 
 							if (!Volt::ComponentRegistry::Helpers::HasComponentWithGUID(compGuid, myCurrentScene->GetRegistry(), entity))
 							{
 								Volt::ComponentRegistry::Helpers::AddComponentWithGUID(compGuid, myCurrentScene->GetRegistry(), entity);
+								EditorUtils::MarkEntityAsEdited(entity);
 							}
 
 							if (newMonoScript)
@@ -339,6 +339,8 @@ void PropertiesPanel::AddComponentPopup()
 								{
 									comp.scriptIds.emplace_back();
 									comp.scriptNames.emplace_back("");
+
+									EditorUtils::MarkEntityAsEdited(entity);
 								}
 							}
 						}

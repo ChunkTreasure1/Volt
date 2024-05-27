@@ -109,7 +109,7 @@ namespace Volt
 			return;
 		}
 
-		Ref<Mesh> mesh = AssetManager::QueueAsset<Mesh>(data.handle);
+		Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(data.handle);
 		if (!mesh)
 		{
 			return;

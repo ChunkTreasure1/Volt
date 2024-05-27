@@ -734,6 +734,10 @@ void ViewportPanel::CheckDragDrop()
 			}
 
 			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::GetFilePathFromAssetHandle(handle).stem().string();
+			
+			SelectionManager::DeselectAll();
+			SelectionManager::Select(newEntity.GetID());
+
 			m_createdEntity = newEntity;
 
 			Volt::MeshComponent::OnMemberChanged(meshComp, newEntity);

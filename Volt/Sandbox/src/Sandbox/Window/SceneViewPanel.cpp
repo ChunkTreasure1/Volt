@@ -380,6 +380,9 @@ void SceneViewPanel::UpdateMainContent()
 						data->myChild = child;
 						undoData.push_back(data);
 
+						EditorUtils::MarkEntityAsEdited(child);
+						EditorUtils::MarkEntityAsEdited(child.GetParent());
+
 						m_scene->UnparentEntity(child);
 					}
 
