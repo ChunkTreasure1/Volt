@@ -40,6 +40,9 @@ namespace Volt
 		static const std::filesystem::path GetCachePath();
 		static const std::filesystem::path GetMonoAssemblyPath();
 		static const std::filesystem::path GetMonoBinariesDirectory();
+		static const std::filesystem::path GetOrCreateSettingsDirectory();
+		static const std::filesystem::path GetPhysicsSettingsPath();
+		static const std::filesystem::path GetPhysicsLayersPath();
 		static const std::filesystem::path& GetDirectory();
 
 		static const bool IsCurrentProjectDeprecated();

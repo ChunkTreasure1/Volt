@@ -14,6 +14,8 @@
 
 #include "Volt/Utility/FileSystem.h"
 
+#include "Volt/Project/ProjectManager.h"
+
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
@@ -37,13 +39,13 @@ namespace Volt
 
 	void Physics::LoadSettings()
 	{
-		if (!FileSystem::Exists(FileSystem::GetPhysicsSettingsPath()))
+		if (!FileSystem::Exists(ProjectManager::GetPhysicsSettingsPath()))
 		{
 			return;
 		}
 
 		YAMLFileStreamReader streamReader{};
-		if (!streamReader.OpenFile(FileSystem::GetPhysicsSettingsPath()))
+		if (!streamReader.OpenFile(ProjectManager::GetPhysicsSettingsPath()))
 		{
 			return;
 		}
@@ -64,12 +66,7 @@ namespace Volt
 
 	void Physics::SaveSettings()
 	{
-		if (!FileSystem::Exists(FileSystem::GetPhysicsSettingsPath().parent_path()))
-		{
-			std::filesystem::create_directories(FileSystem::GetPhysicsSettingsPath().parent_path());
-		}
-
-		YAMLFileStreamWriter streamWriter{ FileSystem::GetPhysicsSettingsPath() };
+		YAMLFileStreamWriter streamWriter{ ProjectManager::GetPhysicsSettingsPath() };
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("PhysicsSettings");
 
@@ -90,13 +87,13 @@ namespace Volt
 
 	void Physics::LoadLayers()
 	{
-		if (!FileSystem::Exists(FileSystem::GetPhysicsLayersPath()))
+		if (!FileSystem::Exists(ProjectManager::GetPhysicsLayersPath()))
 		{
 			return;
 		}
 
 		YAMLFileStreamReader streamReader{};
-		if (!streamReader.OpenFile(FileSystem::GetPhysicsLayersPath()))
+		if (!streamReader.OpenFile(ProjectManager::GetPhysicsLayersPath()))
 		{
 			return;
 		}
@@ -118,12 +115,7 @@ namespace Volt
 
 	void Physics::SaveLayers()
 	{
-		if (!FileSystem::Exists(FileSystem::GetPhysicsLayersPath().parent_path()))
-		{
-			std::filesystem::create_directories(FileSystem::GetPhysicsLayersPath().parent_path());
-		}
-
-		YAMLFileStreamWriter streamWriter{ FileSystem::GetPhysicsLayersPath() };
+		YAMLFileStreamWriter streamWriter{ ProjectManager::GetPhysicsLayersPath() };
 
 		streamWriter.BeginMap();
 		streamWriter.BeginSequence("PhysicsLayers");

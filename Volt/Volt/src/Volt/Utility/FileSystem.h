@@ -31,16 +31,6 @@ public:
 		return "User/DebugDumps/";
 	}
 
-	static std::filesystem::path GetPhysicsSettingsPath()
-	{
-		return "Engine/Physics/PhysicsSettings.yaml";
-	}
-
-	static std::filesystem::path GetPhysicsLayersPath()
-	{
-		return "Engine/Physics/PhysicsLayers.yaml";
-	}
-
 	static bool IsWriteable(const std::filesystem::path& aPath)
 	{
 		std::filesystem::file_status status = std::filesystem::status(aPath);

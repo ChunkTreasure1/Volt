@@ -148,6 +148,27 @@ namespace Volt
 		return GetDirectory() / "Binaries";
 	}
 
+	const std::filesystem::path ProjectManager::GetOrCreateSettingsDirectory()
+	{
+		const std::filesystem::path dir = GetDirectory() / "Settings";
+		if (!std::filesystem::exists(dir))
+		{
+			std::filesystem::create_directories(dir);
+		}
+
+		return dir;
+	}
+
+	const std::filesystem::path ProjectManager::GetPhysicsSettingsPath()
+	{
+		return GetOrCreateSettingsDirectory() / "PhysicsSettings.yaml";
+	}
+
+	const std::filesystem::path ProjectManager::GetPhysicsLayersPath()
+	{
+		return GetOrCreateSettingsDirectory() / "PhysicsLayers.yaml";
+	}
+
 	const std::filesystem::path& ProjectManager::GetDirectory()
 	{
 		return m_currentProject->projectDirectory;
