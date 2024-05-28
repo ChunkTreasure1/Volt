@@ -506,15 +506,17 @@ namespace Volt
 			return;
 		}
 
-		const uint32_t iterationCount = static_cast<uint32_t>(entityPaths.size());
+		const uint32_t threadCount = Algo::GetThreadCountFromIterationCount(static_cast<uint32_t>(entityPaths.size()));
 
 		std::vector<Ref<Scene>> dummyScenes{};
-		dummyScenes.resize(iterationCount);
+		dummyScenes.resize(threadCount);
 
 		auto futures = Algo::ForEachParallelLockable([&dummyScenes, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
 		{
-			Ref<Scene> dummyScene = CreateRef<Scene>();
-			dummyScenes[threadIdx] = dummyScene;
+			if (!dummyScenes[threadIdx])
+			{
+				dummyScenes[threadIdx] = CreateRef<Scene>();;	
+			}
 
 			const auto& path = entityPaths.at(i);
 
@@ -542,7 +544,7 @@ namespace Volt
 				return;
 			}
 
-			DeserializeEntity(dummyScene, metadata, yamlStreamReader);
+			DeserializeEntity(dummyScenes[threadIdx], metadata, yamlStreamReader);
 		},
 		static_cast<uint32_t>(entityPaths.size()));
 
