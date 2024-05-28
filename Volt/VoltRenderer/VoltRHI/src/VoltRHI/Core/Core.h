@@ -5,8 +5,6 @@
 #include <memory>
 #include <string>
 
-#define VT_NODISCARD [[nodiscard]]
-#define VT_INLINE __forceinline
 #define VT_DELETE_COMMON_OPERATORS(X) X(const X&) = delete; X& operator=(const X&) = delete; X(X&&) = delete; X& operator=(X&&) = delete
 
 #ifdef VTRHI_BUILD_DLL

@@ -623,8 +623,6 @@ namespace Volt
 
 	void AssetManager::RemoveAsset(AssetHandle assetHandle)
 	{
-		WriteLock lock{ m_assetRegistryMutex };
-
 		const auto metadata = GetMetadataFromHandle(assetHandle);
 		if (!metadata.IsValid())
 		{
@@ -632,6 +630,7 @@ namespace Volt
 			return;
 		}
 
+		WriteLock lock{ m_assetRegistryMutex };
 		m_assetRegistry.erase(assetHandle);
 
 		const std::filesystem::path filePath = metadata.filePath;

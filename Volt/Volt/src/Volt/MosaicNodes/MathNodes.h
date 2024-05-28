@@ -2,7 +2,7 @@
 
 #include <Mosaic/MosaicNode.h>
 
-namespace Volt
+namespace Volt::MosaicNodes
 {
 	class AddNode : public Mosaic::MosaicNode
 	{

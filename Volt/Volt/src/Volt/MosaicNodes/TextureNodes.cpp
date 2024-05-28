@@ -8,7 +8,7 @@
 #include <Mosaic/MosaicGraph.h>
 #include <Mosaic/NodeRegistry.h>
 
-namespace Volt
+namespace Volt::MosaicNodes
 {
 	static void GetCorrectedVariableName(Mosaic::ResultInfo& resultInfo, uint32_t outputIndex)
 	{

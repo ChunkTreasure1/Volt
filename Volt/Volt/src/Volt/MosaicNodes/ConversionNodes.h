@@ -6,7 +6,7 @@
 
 #include <Mosaic/FormatterExtension.h>
 
-namespace Volt
+namespace Volt::MosaicNodes
 {
 	template<typename ValueType, ValueType DEFAULT_VALUE, Mosaic::ValueBaseType BASE_TYPE, VoltGUID GUID>
 	class MakeVec3Node : public Mosaic::MosaicNode

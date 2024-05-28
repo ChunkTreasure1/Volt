@@ -77,7 +77,7 @@ namespace Volt
 		{
 			if (node.nodeData->GetGUID() == TEXTURE_NODE_GUID)
 			{
-				auto textureNode = std::reinterpret_pointer_cast<SampleTextureNode>(node.nodeData);
+				auto textureNode = std::reinterpret_pointer_cast<MosaicNodes::SampleTextureNode>(node.nodeData);
 				const auto textureInfo = textureNode->GetTextureInfo();
 				result.emplace_back(textureInfo.textureHandle);
 			}
@@ -172,7 +172,7 @@ namespace Volt
 			{
 				if (node.nodeData->GetGUID() == TEXTURE_NODE_GUID)
 				{
-					auto textureNode = std::reinterpret_pointer_cast<SampleTextureNode>(node.nodeData);
+					auto textureNode = std::reinterpret_pointer_cast<MosaicNodes::SampleTextureNode>(node.nodeData);
 					const auto textureInfo = textureNode->GetTextureInfo();
 
 					auto& texture = m_textures.at(textureInfo.textureIndex);

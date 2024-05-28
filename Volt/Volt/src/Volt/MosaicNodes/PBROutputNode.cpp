@@ -6,7 +6,7 @@
 
 #include <glm/glm.hpp>
 
-namespace Volt
+namespace Volt::MosaicNodes
 {
 	PBROutputNode::PBROutputNode(Mosaic::MosaicGraph* ownerGraph)
 		: Mosaic::MosaicNode(ownerGraph)

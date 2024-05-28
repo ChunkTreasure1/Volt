@@ -4,7 +4,7 @@
 
 #include <Mosaic/MosaicNode.h>
 
-namespace Volt
+namespace Volt::MosaicNodes
 {
 	struct TextureInfo
 	{

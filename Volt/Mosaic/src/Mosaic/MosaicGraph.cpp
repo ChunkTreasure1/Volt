@@ -50,10 +50,10 @@ namespace Mosaic
 	{
 		Scope<MosaicGraph> graph = CreateScope<MosaicGraph>();
 
-		constexpr VoltGUID Float4ContantGUID = "{D79FF174-FF12-4070-8AEB-DA3B2F2F8AF4}"_guid;
+		constexpr VoltGUID Color4ConstantGUID = "{C032E7D5-D545-4DEF-8EC4-6A3980BC41B2}"_guid;
 		constexpr VoltGUID PBROutputNodeGUID = "{343B2C0A-C4E3-41BB-8629-F9939795AC76}"_guid;
 
-		auto colorConstantNode = graph->m_graph.AddNode(NodeRegistry::CreateNode(Float4ContantGUID, graph.get()));
+		auto colorConstantNode = graph->m_graph.AddNode(NodeRegistry::CreateNode(Color4ConstantGUID, graph.get()));
 		auto pbrOutputNode = graph->m_graph.AddNode(NodeRegistry::CreateNode(PBROutputNodeGUID, graph.get()));
 
 		graph->m_graph.LinkNodes(colorConstantNode, pbrOutputNode, CreateRef<MosaicEdge>(0, 0));

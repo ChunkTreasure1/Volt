@@ -5,7 +5,7 @@
 #include <Mosaic/MosaicHelpers.h>
 #include <Mosaic/NodeRegistry.h>
 
-namespace Volt
+namespace Volt::MosaicNodes
 {
 	AddNode::AddNode(Mosaic::MosaicGraph* ownerGraph)
 		: Mosaic::MosaicNode(ownerGraph)
