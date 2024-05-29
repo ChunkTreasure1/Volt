@@ -23,6 +23,7 @@ namespace Volt
 
 		static void OnMemberChanged(MeshComponent& data, Entity entity);
 		static void OnComponentCopied(MeshComponent& data, Entity entity);
+		static void OnComponentDeserialized(MeshComponent& data, Entity entity);
 
 		static void ReflectType(TypeDesc<MeshComponent>& reflect)
 		{
@@ -32,6 +33,7 @@ namespace Volt
 			reflect.AddMember(&MeshComponent::materials, "materials", "Materials", "", std::vector<AssetHandle>{}, AssetType::Material);
 			reflect.SetOnMemberChangedCallback(&MeshComponent::OnMemberChanged);
 			reflect.SetOnComponentCopiedCallback(&MeshComponent::OnComponentCopied);
+			reflect.SetOnComponentDeserializedCallback(&MeshComponent::OnComponentDeserialized);
 		}
 
 		REGISTER_COMPONENT(MeshComponent);

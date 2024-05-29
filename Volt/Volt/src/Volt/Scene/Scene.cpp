@@ -40,6 +40,7 @@
 
 #include "Volt/Vision/Vision.h"
 #include "Volt/Utility/Random.h"
+#include "Volt/Utility/TimeUtility.h"
 
 #include "Volt/Discord/DiscordSDK.h"
 
@@ -382,6 +383,7 @@ namespace Volt
 		newEntity.GetComponent<CommonComponent>().layerId = m_sceneLayers.at(m_activeLayerIndex).id;
 		newEntity.GetComponent<CommonComponent>().randomValue = Random::Float(0.f, 1.f);
 		newEntity.GetComponent<CommonComponent>().timeSinceCreation = 0.f;
+		newEntity.GetComponent<CommonComponent>().timeCreatedID = TimeUtility::GetTimeSinceEpoch();
 
 		const auto uuid = newEntity.GetComponent<IDComponent>().id;
 
@@ -425,6 +427,7 @@ namespace Volt
 		newEntity.GetComponent<CommonComponent>().layerId = m_sceneLayers.at(m_activeLayerIndex).id;
 		newEntity.GetComponent<CommonComponent>().randomValue = Random::Float(0.f, 1.f);
 		newEntity.GetComponent<CommonComponent>().timeSinceCreation = 0.f;
+		newEntity.GetComponent<CommonComponent>().timeCreatedID = TimeUtility::GetTimeSinceEpoch();
 
 		newEntity.GetComponent<IDComponent>().id = uuid;
 
@@ -1258,9 +1261,12 @@ namespace Volt
 
 	void Scene::SortScene()
 	{
-		m_registry.sort<CommonComponent>([](const entt::entity lhs, const entt::entity rhs)
+		m_registry.sort<CommonComponent>([&](const entt::entity lhs, const entt::entity rhs)
 		{
-			return lhs < rhs;
+			const auto& lhsCommonComp = m_registry.get<CommonComponent>(lhs);
+			const auto& rhsCommonComp = m_registry.get<CommonComponent>(rhs);
+
+			return lhsCommonComp.timeCreatedID < rhsCommonComp.timeCreatedID;
 		});
 	}
 

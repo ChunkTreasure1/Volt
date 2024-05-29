@@ -24,9 +24,10 @@ namespace Volt::RHI
 
 	struct TransientBufferCreateInfo
 	{
-		uint64_t size;
-		BufferUsage usage;
-		MemoryUsage memoryUsage;
+		uint64_t size = 0;
+		size_t hash = 0;
+		BufferUsage usage = BufferUsage::None;
+		MemoryUsage memoryUsage = MemoryUsage::None;
 	};
 
 	struct TransientHeapCreateInfo
@@ -40,6 +41,7 @@ namespace Volt::RHI
 	{
 		ImageSpecification imageSpecification;
 		uint64_t size = 0;
+		size_t hash = 0;
 	};
 
 	class VTRHI_API TransientHeap : public RHIInterface

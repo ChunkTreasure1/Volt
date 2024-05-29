@@ -8,7 +8,6 @@ struct Constants
 {
     RWTypedBuffer<uint> meshletCount;
     RWTypedBuffer<uint2> meshletToObjectIdAndOffset;
-    RWTypedBuffer<uint> statisticsBuffer;
     
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
     TypedBuffer<GPUMesh> meshBuffer;
@@ -105,8 +104,6 @@ void main(uint threadId : SV_DispatchThreadID, uint groupThreadId : SV_GroupThre
     
     if (visible)
     {
-        constants.statisticsBuffer.InterlockedAdd(0, 1);
-        
         for (uint i = 0; i < meshletCount; ++i)
         {
             constants.meshletToObjectIdAndOffset.Store(laneOffset + i, uint2(threadId, laneOffset));

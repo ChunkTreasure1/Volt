@@ -339,7 +339,7 @@ namespace Volt
 					uint8_t* componentData = reinterpret_cast<uint8_t*>(voidCompPtr);
 
 					const IComponentTypeDesc* componentDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
-					DeserializeClass(componentData, 0, componentDesc, streamReader);
+					DeserializeClass(componentData, 0, componentDesc, entity, streamReader);
 					break;
 				}
 			}
@@ -916,7 +916,7 @@ namespace Volt
 		streamWriter.EndSequence();
 	}
 
-	void SceneSerializer::DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLMemoryStreamReader& streamReader) const
+	void SceneSerializer::DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, Entity dstEntity, YAMLMemoryStreamReader& streamReader) const
 	{
 		streamReader.ForEach("members", [&]()
 		{
@@ -939,7 +939,7 @@ namespace Volt
 					case ValueType::Component:
 					{
 						const IComponentTypeDesc* memberCompType = reinterpret_cast<const IComponentTypeDesc*>(componentMember->typeDesc);
-						DeserializeClass(data, offset + componentMember->offset, memberCompType, streamReader);
+						DeserializeClass(data, offset + componentMember->offset, memberCompType, dstEntity, streamReader);
 						break;
 					}
 
@@ -952,7 +952,7 @@ namespace Volt
 					case ValueType::Array:
 					{
 						const IArrayTypeDesc* arrayTypeDesc = reinterpret_cast<const IArrayTypeDesc*>(componentMember->typeDesc);
-						DeserializeArray(data, offset + componentMember->offset, arrayTypeDesc, streamReader);
+						DeserializeArray(data, offset + componentMember->offset, arrayTypeDesc, dstEntity, streamReader);
 						break;
 					}
 				}
@@ -965,9 +965,11 @@ namespace Volt
 				}
 			}
 		});
+
+		compDesc->OnComponentDeserialized(&data[offset], dstEntity);
 	}
 
-	void SceneSerializer::DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLMemoryStreamReader& streamReader) const
+	void SceneSerializer::DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, Entity dstEntity, YAMLMemoryStreamReader& streamReader) const
 	{
 		void* arrayPtr = &data[offset];
 
@@ -993,7 +995,7 @@ namespace Volt
 					case ValueType::Component:
 					{
 						const IComponentTypeDesc* compType = reinterpret_cast<const IComponentTypeDesc*>(arrayDesc->GetElementTypeDesc());
-						DeserializeClass(tempBytePtr, 0, compType, streamReader);
+						DeserializeClass(tempBytePtr, 0, compType, dstEntity, streamReader);
 						break;
 					}
 
@@ -1004,7 +1006,7 @@ namespace Volt
 					case ValueType::Array:
 					{
 						const IArrayTypeDesc* arrayTypeDesc = reinterpret_cast<const IArrayTypeDesc*>(arrayDesc->GetElementTypeDesc());
-						DeserializeArray(tempBytePtr, 0, arrayTypeDesc, streamReader);
+						DeserializeArray(tempBytePtr, 0, arrayTypeDesc, dstEntity, streamReader);
 						break;
 					}
 				}

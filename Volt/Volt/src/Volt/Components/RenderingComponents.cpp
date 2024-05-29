@@ -135,5 +135,14 @@ namespace Volt
 			auto uuid = renderScene->Register(entity.GetID(), mesh, mat, static_cast<uint32_t>(i));
 			data.renderObjectIds.emplace_back(uuid);
 		}
+
+		data.m_oldHandle = data.handle;
+		data.m_oldMaterials = data.materials;
+	}
+
+	void MeshComponent::OnComponentDeserialized(MeshComponent& data, Entity entity)
+	{
+		data.m_oldHandle = data.handle;
+		data.m_oldMaterials = data.materials;
 	}
 }

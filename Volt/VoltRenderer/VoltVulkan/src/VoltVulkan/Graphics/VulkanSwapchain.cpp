@@ -110,11 +110,11 @@ namespace Volt::RHI
 		auto device = GraphicsContext::GetDevice();
 		auto& frameData = m_perFrameInFlightData.at(m_currentFrame);
 
-		CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &frameData.fence, VK_TRUE, 1000000000));
+		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &frameData.fence, VK_TRUE, 1000000000));
 		VkResult swapchainStatus = vkAcquireNextImageKHR(device->GetHandle<VkDevice>(), m_swapchain, 1000000000, frameData.presentSemaphore, nullptr, &m_currentImage);
 
-		CheckWaitReturnValue(vkResetFences(device->GetHandle<VkDevice>(), 1, &frameData.fence));
-		CheckWaitReturnValue(vkResetCommandPool(device->GetHandle<VkDevice>(), frameData.commandPool, 0));
+		VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &frameData.fence));
+		VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), frameData.commandPool, 0));
 
 		if (swapchainStatus == VK_ERROR_OUT_OF_DATE_KHR)
 		{
@@ -158,7 +158,7 @@ namespace Volt::RHI
 			submitInfo.pWaitDstStageMask = &waitStage;
 
 			vkQueue.AquireLock();
-			CheckWaitReturnValue(vkQueueSubmit(deviceQueue->GetHandle<VkQueue>(), 1, &submitInfo, frameData.fence));
+			VT_VK_CHECK(vkQueueSubmit(deviceQueue->GetHandle<VkQueue>(), 1, &submitInfo, frameData.fence));
 			vkQueue.ReleaseLock();
 		}
 

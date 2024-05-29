@@ -50,8 +50,6 @@ namespace Volt
 	{
 		RenderGraphResourceHandle meshletToObjectIdAndOffset;
 		RenderGraphResourceHandle meshletCount;
-
-		RenderGraphResourceHandle statisticsBuffer;
 	};
 
 	struct CullMeshletsData

@@ -387,7 +387,7 @@ namespace Volt
 
 		{
 			RHI::LogInfo logHook{};
-			logHook.enabled = true;
+			logHook.enabled = false;
 			logHook.logCallback = RHILogCallback;
 
 			m_rhiProxy->SetLogInfo(logHook);

@@ -15,6 +15,6 @@ namespace Volt::MosaicNodes
 	REGISTER_NODE_TEMPLATE(ConstantInt3, (ConstantNode<glm::ivec3, 0, Mosaic::ValueBaseType::Int, 3, "{FBB241A6-8C6D-4CEB-8F4E-63A14B765FBB}"_guid>));
 	REGISTER_NODE_TEMPLATE(ConstantInt4, (ConstantNode<glm::ivec4, 0, Mosaic::ValueBaseType::Int, 4, "{271B6C2F-492D-4502-A71C-399835782446}"_guid>));
 
-	REGISTER_NODE_TEMPLATE(Color3, (ColorNode<float, 1.f, 3, "{A52F186F-07FD-4C77-80A2-436A509451FC}"_guid>));
-	REGISTER_NODE_TEMPLATE(Color4, (ColorNode<float, 1.f, 4, "{C032E7D5-D545-4DEF-8EC4-6A3980BC41B2}"_guid>));
+	REGISTER_NODE_TEMPLATE(Color3, (ColorNode<glm::vec3, 1.f, 3, "{A52F186F-07FD-4C77-80A2-436A509451FC}"_guid>));
+	REGISTER_NODE_TEMPLATE(Color4, (ColorNode<glm::vec4, 1.f, 4, "{C032E7D5-D545-4DEF-8EC4-6A3980BC41B2}"_guid>));
 }

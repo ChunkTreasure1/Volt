@@ -78,7 +78,7 @@ namespace Volt::RHI
 		vkCreateBuffer(device->GetHandle<VkDevice>(), &bufferInfo, nullptr, &buffer);
 		vkBindBufferMemory(device->GetHandle<VkDevice>(), buffer, page.handle, blockAlloc.offset);
 
-		Ref<VulkanTransientBufferAllocation> bufferAlloc = CreateRef<VulkanTransientBufferAllocation>();
+		Ref<VulkanTransientBufferAllocation> bufferAlloc = CreateRef<VulkanTransientBufferAllocation>(createInfo.hash);
 		bufferAlloc->m_memoryHandle = page.handle;
 		bufferAlloc->m_resource = buffer;
 		bufferAlloc->m_allocationBlock = blockAlloc;
@@ -120,7 +120,7 @@ namespace Volt::RHI
 			vkBindImageMemory(device->GetHandle<VkDevice>(), image, page.handle, blockAlloc.offset);
 		}
 
-		Ref<VulkanTransientImageAllocation> imageAlloc = CreateRef<VulkanTransientImageAllocation>();
+		Ref<VulkanTransientImageAllocation> imageAlloc = CreateRef<VulkanTransientImageAllocation>(createInfo.hash);
 		imageAlloc->m_memoryHandle = page.handle;
 		imageAlloc->m_resource = image;
 		imageAlloc->m_allocationBlock = blockAlloc;

@@ -9,7 +9,7 @@ static const float3 m_cascadeColors[DIRECTIONAL_SHADOW_CASCADE_COUNT] =
     float3(0.f, 1.f, 0.f),
     float3(0.f, 0.f, 1.f),
     float3(1.f, 1.f, 0.f),
-    float3(1.f, 0.f, 1.f)
+    //float3(1.f, 0.f, 1.f)
 };
 
 float3 GetShadowMapCoords(in float4x4 viewProj, in float3 worldPosition)

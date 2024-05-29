@@ -54,6 +54,7 @@ namespace Volt::RHI
 		info.size = size;
 		info.usage = usage;
 		info.memoryUsage = memoryUsage;
+		info.hash = hash;
 
 		Ref<Allocation> result;
 
@@ -62,6 +63,7 @@ namespace Volt::RHI
 			if (heap->IsAllocationSupported(size, TransientHeapFlags::AllowBuffers))
 			{
 				result = heap->CreateBuffer(info);
+				break;
 			}
 		}
 
@@ -78,7 +80,7 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		const size_t hash = Utility::GetHashFromImageSpec(imageSpecification, memoryUsage);
-		if (auto image = m_allocationCache.TryGetImageAllocationFromHash(hash))
+		if (auto image  = m_allocationCache.TryGetImageAllocationFromHash(hash))
 		{
 			return image;
 		}
@@ -88,6 +90,7 @@ namespace Volt::RHI
 		TransientImageCreateInfo info{};
 		info.imageSpecification = imageSpecification;
 		info.size = Utility::Align(memoryRequirement.size, memoryRequirement.alignment);
+		info.hash = hash;
 
 		Ref<Allocation> result;
 
@@ -96,6 +99,7 @@ namespace Volt::RHI
 			if (heap->IsAllocationSupported(memoryRequirement.size, TransientHeapFlags::AllowTextures))
 			{
 				result = heap->CreateImage(info);
+				break;
 			}
 		}
 
@@ -124,7 +128,11 @@ namespace Volt::RHI
 
 	void VulkanTransientAllocator::CreateDefaultHeaps()
 	{
+		constexpr uint32_t MAX_IMAGE_HEAP_COUNT = 2;
+		constexpr uint32_t MAX_BUFFER_HEAP_COUNT = 1;
+
 		// Buffer heap
+		for (uint32_t i = 0; i < MAX_BUFFER_HEAP_COUNT; i++)
 		{
 			TransientHeapCreateInfo info{};
 			info.pageSize = 128 * 1024 * 1024;
@@ -133,6 +141,7 @@ namespace Volt::RHI
 		}
 
 		// Image heap
+		for (uint32_t i = 0; i < MAX_IMAGE_HEAP_COUNT; i++)
 		{
 			TransientHeapCreateInfo info{};
 			info.pageSize = 128 * 1024 * 1024;

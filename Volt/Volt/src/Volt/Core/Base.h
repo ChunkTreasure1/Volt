@@ -28,6 +28,7 @@
 
 #ifdef VT_RELEASE
 #define VT_ENABLE_SHADER_DEBUG
+#define VT_DEBUGBREAK() __debugbreak()
 #define VT_PROFILE_GPU
 #define VT_OPTIMIZE_OFF __pragma(optimize("", off));
 #define VT_OPTIMIZE_ON __pragma(optimize("", on));

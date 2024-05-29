@@ -2,6 +2,8 @@
 #include "BindlessResourcesManager.h"
 
 #include "Volt/Core/Application.h"
+#include "Volt/Core/Base.h"
+#include "Volt/Rendering/RenderScene.h"
 
 #include <VoltRHI/Buffers/StorageBuffer.h>
 #include <VoltRHI/Images/Image2D.h>
@@ -84,6 +86,13 @@ namespace Volt
 
 	void BindlessResourcesManager::UnregisterBuffer(ResourceHandle handle)
 	{
+		if (handle == RenderScene::s_gpuScene.materialsBuffer || handle == RenderScene::s_gpuScene.meshesBuffer ||
+			handle == RenderScene::s_gpuScene.meshletsBuffer || handle == RenderScene::s_gpuScene.objectDrawDataBuffer || handle == RenderScene::s_gpuSceneHandle)
+		{
+			int* ptr = nullptr;
+			*ptr;
+		}
+
 		m_bufferRegistry.UnregisterResource(handle);
 	}
 

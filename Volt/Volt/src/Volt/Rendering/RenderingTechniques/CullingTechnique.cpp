@@ -47,11 +47,6 @@ namespace Volt
 				data.meshletCount = builder.CreateBuffer(desc);
 			}
 
-			{
-				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(3, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::GPU, "Statistics");
-				data.statisticsBuffer = builder.CreateBuffer(desc);
-			}
-
 			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
 			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
 			builder.SetIsComputePass();
@@ -62,14 +57,12 @@ namespace Volt
 			const uint32_t dispatchCount = Math::DivideRoundUp(commandCount, 256u);
 
 			context.ClearBuffer(data.meshletCount, 0);
-			context.ClearBuffer(data.statisticsBuffer, 0);
 
 			auto pipeline = ShaderMap::GetComputePipeline("CullObjects");
 
 			context.BindPipeline(pipeline);
 			context.SetConstant("meshletCount"_sh, resources.GetBuffer(data.meshletCount));
 			context.SetConstant("meshletToObjectIdAndOffset"_sh, resources.GetBuffer(data.meshletToObjectIdAndOffset));
-			context.SetConstant("statisticsBuffer"_sh, resources.GetBuffer(data.statisticsBuffer));
 			context.SetConstant("objectDrawDataBuffer"_sh, resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
 			context.SetConstant("meshBuffer"_sh, resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
 			context.SetConstant("objectCount"_sh, commandCount);

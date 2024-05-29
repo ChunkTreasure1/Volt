@@ -66,6 +66,7 @@ namespace Volt::RHI
 	class VulkanTransientBufferAllocation : public Allocation
 	{
 	public:
+		VulkanTransientBufferAllocation(const size_t hash);
 		~VulkanTransientBufferAllocation() override = default;
 
 		void Unmap() override;
@@ -95,6 +96,7 @@ namespace Volt::RHI
 	class VulkanTransientImageAllocation : public Allocation
 	{
 	public:
+		VulkanTransientImageAllocation(const size_t hash);
 		~VulkanTransientImageAllocation() override = default;
 
 		void Unmap() override;

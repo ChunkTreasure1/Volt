@@ -70,7 +70,7 @@ namespace Volt
 
 	struct DirectionalLightData
 	{
-		inline static constexpr uint32_t CASCADE_COUNT = 5;
+		inline static constexpr uint32_t CASCADE_COUNT = 4;
 
 		glm::vec4 direction;
 		glm::vec3 color;

@@ -103,7 +103,8 @@ namespace Volt::RHI
 			s_enabledFeatures.aftermathDiagInfo.flags =
 				VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_RESOURCE_TRACKING_BIT_NV |
 				VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_AUTOMATIC_CHECKPOINTS_BIT_NV |
-				VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_SHADER_DEBUG_INFO_BIT_NV; // #TODO_Ivar: Implement some kind of debug level
+				VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_SHADER_DEBUG_INFO_BIT_NV |
+				VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_SHADER_ERROR_REPORTING_BIT_NV; // #TODO_Ivar: Implement some kind of debug level
 
 			chainEntryPoint = &s_enabledFeatures.aftermathDiagInfo;
 #endif

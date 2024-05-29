@@ -177,8 +177,8 @@ namespace Volt
 		GTAOTechnique gtaoTechnique{ 0 /*m_frameIndex*/, tempSettings };
 		gtaoTechnique.Execute(renderGraph, rgBlackboard);
 
-		//DirectionalShadowTechnique dirShadowTechnique{ renderGraph, rgBlackboard };
-		//rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene(), m_directionalLightData);
+		DirectionalShadowTechnique dirShadowTechnique{ renderGraph, rgBlackboard };
+		rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene(), m_directionalLightData);
 
 		AddVisibilityBufferPass(renderGraph, rgBlackboard);
 		AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
@@ -391,30 +391,26 @@ namespace Volt
 
 				if (dirLightComp.castShadows)
 				{
-					//const std::vector<float> cascades = { 25, 7500, 20000, 50000 };
-					//const auto lightMatrices = Utility::CalculateCascadeMatrices(camera, dir, cascades);
+					const std::vector<float> cascades = { camera->GetFarPlane() / 50.f, camera->GetFarPlane() / 25.f, camera->GetFarPlane() / 10 };
+					const auto lightMatrices = Utility::CalculateCascadeMatrices(camera, dir, cascades);
 
-					//for (size_t i = 0; i < lightMatrices.size(); i++)
-					//{
-					//	data.viewProjections[i] = lightMatrices.at(i);
-					//}
+					for (size_t i = 0; i < lightMatrices.size(); i++)
+					{
+						m_directionalLightData.viewProjections[i] = lightMatrices.at(i);
+					}
 
-					//for (size_t i = 0; i < cascades.size(); i++)
-					//
-					//	if (i < cascades.size())
-					//	{
-					//		data.cascadeDistances[i] = cascades.at(i);
-					//	}
-					//	else
-					//	{
-					//		data.cascadeDistances[i] = camera->GetFarPlane();
-					//	}
-					//}
+					for (size_t i = 0; i < cascades.size(); i++)
+					{
 
-					const glm::vec3 lightPosition = camera->GetPosition() + dir * glm::vec3{ 0.f, 10'000, 0.f };
-					const glm::mat4 view = glm::lookAtLH(glm::vec3(0.f) - dir * 1000.f, glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
-
-					m_directionalLightData.viewProjections[0] = glm::ortho(-1000.f, 1000.f, -1000.f, 1000.f, 1.f, 10000.f) * view;
+						if (i < cascades.size())
+						{
+							m_directionalLightData.cascadeDistances[i] = cascades.at(i);
+						}
+						else
+						{
+							m_directionalLightData.cascadeDistances[i] = camera->GetFarPlane();
+						}
+					}
 				}
 			});
 
@@ -548,22 +544,6 @@ namespace Volt
 			environmentTexturesData.irradiance = m_sceneEnvironment.irradianceMap ? renderGraph.AddExternalImage2D(m_sceneEnvironment.irradianceMap) : imageData.black1x1Cube;
 			environmentTexturesData.radiance = m_sceneEnvironment.radianceMap ? renderGraph.AddExternalImage2D(m_sceneEnvironment.radianceMap) : imageData.black1x1Cube;
 		}
-	}
-
-	void SceneRenderer::AddStatsReadbackPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
-	{
-		const auto& objectCullData = blackboard.Get<CullObjectsData>();
-
-		renderGraph.AddPass("Statistics Readback",
-		[&](RenderGraph::Builder& builder)
-		{
-			builder.ReadResource(objectCullData.statisticsBuffer);
-		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			context.Flush();
-			//Ref<RHI::StorageBuffer> testBuffer = context.GetReadbackBuffer(resources.GetBufferRaw(objectCullData.statisticsBuffer));
-		});
 	}
 
 	void SceneRenderer::AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
@@ -941,7 +921,7 @@ namespace Volt
 
 		const auto& gbufferData = blackboard.Get<GBufferData>();
 		const auto& preDepthData = blackboard.Get<PreDepthData>();
-		//const auto& dirShadowData = blackboard.Get<DirectionalShadowData>();
+		const auto& dirShadowData = blackboard.Get<DirectionalShadowData>();
 
 		renderGraph.AddPass("Shading Pass",
 		[&](RenderGraph::Builder& builder)
@@ -963,7 +943,7 @@ namespace Volt
 			builder.ReadResource(lightBuffers.spotLightsBuffer);
 			builder.ReadResource(lightCullingData.visiblePointLightsBuffer);
 			builder.ReadResource(lightCullingData.visibleSpotLightsBuffer);
-			//builder.ReadResource(dirShadowData.shadowTexture);
+			builder.ReadResource(dirShadowData.shadowTexture);
 
 			builder.SetIsComputePass();
 		},
@@ -994,7 +974,7 @@ namespace Volt
 			context.SetConstant("pbrConstants.spotLights"_sh, resources.GetBuffer(lightBuffers.spotLightsBuffer));
 			context.SetConstant("pbrConstants.visiblePointLights"_sh, resources.GetBuffer(lightCullingData.visiblePointLightsBuffer));
 			context.SetConstant("pbrConstants.visibleSpotLights"_sh, resources.GetBuffer(lightCullingData.visibleSpotLightsBuffer));
-			//context.SetConstant("pbrConstants.directionalShadowMap"_sh, resources.GetImage2D(dirShadowData.shadowTexture));
+			context.SetConstant("pbrConstants.directionalShadowMap"_sh, resources.GetImage2D(dirShadowData.shadowTexture));
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1u);
 		});

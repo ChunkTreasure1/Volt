@@ -70,6 +70,9 @@ namespace Volt
 		inline std::span<const IndirectGPUCommandNew> GetMeshCommands() const { return m_meshCommands; }
 		inline std::span<const IndirectMeshTaskCommand> GetMeshShaderCommands() const { return m_meshShaderCommands; }
 
+		inline static GPUScene s_gpuScene;
+		inline static ResourceHandle s_gpuSceneHandle;
+
 	private:
 		void UploadGPUMeshes(std::vector<GPUMesh>& gpuMeshes);
 		void UploadObjectDrawData(std::vector<ObjectDrawData>& objectDrawData);

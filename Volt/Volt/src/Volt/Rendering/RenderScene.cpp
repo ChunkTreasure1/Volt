@@ -358,6 +358,9 @@ namespace Volt
 		gpuScene.objectDrawDataBuffer = m_objectDrawDataBuffer->GetResourceHandle();
 		gpuScene.meshletsBuffer = m_gpuMeshletsBuffer->GetResourceHandle();
 
+		s_gpuScene = gpuScene;
+		s_gpuSceneHandle = m_gpuSceneBuffer->GetResourceHandle();
+	
 		m_gpuSceneBuffer->GetResource()->SetData(&gpuScene, sizeof(GPUScene));
 	}
 

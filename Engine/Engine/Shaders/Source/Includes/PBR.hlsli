@@ -25,7 +25,7 @@ struct PBRConstants
     UniformTexture<float2> BRDFLuT;
     UniformTexture<float3> environmentIrradiance;
     UniformTexture<float3> environmentRadiance;
-    //UniformTexture<float> directionalShadowMap;
+    UniformTexture<float> directionalShadowMap;
 };
 
 struct PBRInput
@@ -51,7 +51,6 @@ static PBRConstants m_pbrConstants;
 static ViewData m_viewData;
 
 static TextureSampler m_shadowSampler;
-static UniformTexture<float> m_directionalShadowMap;
 
 float3 CalculateDiffuse(in float3 F)
 {
@@ -100,7 +99,7 @@ float CalculateDirectionalShadow(in DirectionalLight light)
 {
     const uint cascadeIndex = GetCascadeIndexFromWorldPosition(light, m_pbrInput.worldPosition, m_viewData.view);
     const float3 shadowMapCoords = GetShadowMapCoords(light.viewProjections[cascadeIndex], m_pbrInput.worldPosition);
-    //const float result = CalculateDirectionalShadow_Hard(light, m_shadowSampler, m_directionalShadowMap, m_pbrInput.normal, cascadeIndex, shadowMapCoords);
+    const float result = CalculateDirectionalShadow_Hard(light, m_shadowSampler, m_pbrConstants.directionalShadowMap, m_pbrInput.normal, cascadeIndex, shadowMapCoords);
     return 0.f;
 }
 

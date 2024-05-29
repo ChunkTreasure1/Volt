@@ -93,7 +93,6 @@ namespace Volt
 		void SetupDrawContext(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		void AddStatsReadbackPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddObjectIDPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);

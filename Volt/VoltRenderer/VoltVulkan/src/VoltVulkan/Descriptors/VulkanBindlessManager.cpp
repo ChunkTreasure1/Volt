@@ -5,6 +5,7 @@
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 
 #include <VoltRHI/Graphics/GraphicsDevice.h>
+#include <VoltRHI/Graphics/GraphicsContext.h>
 
 #include <vulkan/vulkan.h>
 
