@@ -102,7 +102,7 @@ namespace Volt::RHI
 	{
 	}
 
-	const Ref<ImageView> D3D12Image2D::GetView(const int32_t mip, const int32_t layer)
+	const RefPtr<ImageView> D3D12Image2D::GetView(const int32_t mip, const int32_t layer)
 	{
 		if (m_view)
 		{
@@ -118,9 +118,9 @@ namespace Volt::RHI
 		return m_view;
 	}
 
-	const Ref<ImageView> D3D12Image2D::GetArrayView(const int32_t mip)
+	const RefPtr<ImageView> D3D12Image2D::GetArrayView(const int32_t mip)
 	{
-		return Ref<ImageView>();
+		return RefPtr<ImageView>();
 	}
 
 	const uint32_t D3D12Image2D::GetWidth() const

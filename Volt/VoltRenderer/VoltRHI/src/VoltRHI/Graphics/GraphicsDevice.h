@@ -17,8 +17,8 @@ namespace Volt::RHI
 		VT_DELETE_COMMON_OPERATORS(GraphicsDevice);
 		~GraphicsDevice() override = default;
 
-		virtual Ref<DeviceQueue> GetDeviceQueue(QueueType queueType) const = 0;
-		static Ref<GraphicsDevice> Create(const GraphicsDeviceCreateInfo& deviceInfo);
+		virtual RefPtr<DeviceQueue> GetDeviceQueue(QueueType queueType) const = 0;
+		static RefPtr<GraphicsDevice> Create(const GraphicsDeviceCreateInfo& deviceInfo);
 	
 	protected:
 		GraphicsDevice();

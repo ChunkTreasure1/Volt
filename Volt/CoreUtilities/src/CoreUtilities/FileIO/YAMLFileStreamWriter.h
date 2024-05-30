@@ -2,7 +2,7 @@
 
 #include "CoreUtilities/FileIO/YAMLStreamWriter.h"
 
-class YAMLFileStreamWriter : public YAMLStreamWriter
+class VTCOREUTIL_API YAMLFileStreamWriter : public YAMLStreamWriter
 {
 public:
 	YAMLFileStreamWriter(const std::filesystem::path& targetFilePath);

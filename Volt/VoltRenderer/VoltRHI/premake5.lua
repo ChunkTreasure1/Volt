@@ -41,6 +41,7 @@ project "VoltRHI"
 	{
 		"ImGui", -- Should not be here
 		"tracy",
+		"%{Library.CoreUtilities}",
 		"%{Library.Aftermath}"
 	}
 

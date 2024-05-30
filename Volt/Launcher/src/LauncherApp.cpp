@@ -1,5 +1,4 @@
 #include "Launcher/GameLayer.h"
-#include "Launcher/TestingLayer.h"
 
 #include <Volt/EntryPoint.h>
 #include <Volt/Core/Application.h>
@@ -15,7 +14,7 @@ public:
 	LauncherApp(const Volt::ApplicationInfo& appInfo)
 		: Volt::Application(appInfo)
 	{
-		TestingLayer* testing = new TestingLayer();
+		GameLayer* testing = new GameLayer();
 		PushLayer(testing);
 	}
 

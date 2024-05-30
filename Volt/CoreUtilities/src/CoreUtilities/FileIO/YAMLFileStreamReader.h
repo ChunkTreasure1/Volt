@@ -2,7 +2,7 @@
 
 #include "CoreUtilities/FileIO/YAMLStreamReader.h"
 
-class YAMLFileStreamReader : public YAMLStreamReader
+class VTCOREUTIL_API YAMLFileStreamReader : public YAMLStreamReader
 {
 public:
 	~YAMLFileStreamReader() override = default;

@@ -1,11 +1,13 @@
 #pragma once
 
+#include "CoreUtilities/Core.h"
+
 #include <yaml-cpp/yaml.h>
 
 #include <filesystem>
 #include <functional>
 
-class YAMLStreamReader
+class VTCOREUTIL_API YAMLStreamReader
 {
 public:
 	YAMLStreamReader();

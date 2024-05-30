@@ -40,7 +40,7 @@ namespace Volt::RHI
 		SetName(specification.debugName);
 	}
 
-	VulkanImage2D::VulkanImage2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data)
+	VulkanImage2D::VulkanImage2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data)
 		: m_specification(specification), m_currentImageLayout(static_cast<uint32_t>(VK_IMAGE_LAYOUT_UNDEFINED)), m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator)
 	{
 		Invalidate(specification.width, specification.height, data);
@@ -176,7 +176,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create();
+		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 		commandBuffer->Begin();
 
 		VkCommandBuffer vkCmdBuffer = commandBuffer->GetHandle<VkCommandBuffer>();
@@ -273,7 +273,7 @@ namespace Volt::RHI
 		m_hasGeneratedMips = true;
 	}
 
-	const Ref<ImageView> VulkanImage2D::GetView(const int32_t mip, const int32_t layer)
+	const RefPtr<ImageView> VulkanImage2D::GetView(const int32_t mip, const int32_t layer)
 	{
 		if (m_imageViews.contains(layer))
 		{
@@ -316,13 +316,13 @@ namespace Volt::RHI
 
 		spec.image = this;
 
-		Ref<ImageView> view = CreateRef<VulkanImageView>(spec);
+		RefPtr<ImageView> view = RefPtr<VulkanImageView>::Create(spec);
 		m_imageViews[layer][mip] = view;
 
 		return view;
 	}
 
-	const Ref<ImageView> VulkanImage2D::GetArrayView(const int32_t mip)
+	const RefPtr<ImageView> VulkanImage2D::GetArrayView(const int32_t mip)
 	{
 		if (m_arrayImageViews.contains(mip))
 		{
@@ -337,7 +337,7 @@ namespace Volt::RHI
 		spec.viewType = ImageViewType::View2DArray;
 		spec.image = As<Image2D>();
 
-		Ref<ImageView> view = CreateRef<VulkanImageView>(spec);
+		RefPtr<ImageView> view = RefPtr<VulkanImageView>::Create(spec);
 		m_arrayImageViews[mip] = view;
 
 		return view;
@@ -424,7 +424,7 @@ namespace Volt::RHI
 		// #TODO_Ivar: Implement correct size for layer + mip
 		const VkDeviceSize bufferSize = m_specification.width * m_specification.height * Utility::GetByteSizePerPixelFromFormat(m_specification.format) * m_specification.layers;
 
-		Ref<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
+		RefPtr<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
 
 		auto* stagingData = stagingAlloc->Map<void>();
 		memcpy_s(stagingData, bufferSize, data, bufferSize);
@@ -451,7 +451,7 @@ namespace Volt::RHI
 		barrier.subresourceRange.baseArrayLayer = 0;
 		barrier.subresourceRange.baseMipLevel = 0;
 
-		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create();
+		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 
 		commandBuffer->Begin();
 		vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
@@ -498,7 +498,7 @@ namespace Volt::RHI
 		// #TODO_Ivar: Implement correct size for layer + mip
 		const VkDeviceSize bufferSize = m_specification.width * m_specification.height * Utility::GetByteSizePerPixelFromFormat(m_specification.format) * m_specification.layers;
 
-		Ref<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, BufferUsage::TransferDst, MemoryUsage::GPUToCPU);
+		RefPtr<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, BufferUsage::TransferDst, MemoryUsage::GPUToCPU);
 
 		VkImageAspectFlags aspectFlags = Utility::IsDepthFormat(m_specification.format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 		if (Utility::IsStencilFormat(m_specification.format))
@@ -521,7 +521,7 @@ namespace Volt::RHI
 		barrier.subresourceRange.baseArrayLayer = 0;
 		barrier.subresourceRange.baseMipLevel = 0;
 
-		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create();
+		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 
 		commandBuffer->Begin();
 		vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
@@ -590,7 +590,7 @@ namespace Volt::RHI
 		barrier.subresourceRange.baseArrayLayer = 0;
 		barrier.subresourceRange.baseMipLevel = 0;
 
-		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create();
+		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 
 		commandBuffer->Begin();
 		vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);

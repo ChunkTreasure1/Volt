@@ -5,7 +5,7 @@
 
 namespace Volt::RHI
 {
-	Ref<IndexBuffer> IndexBuffer::Create(std::span<uint32_t> indices)
+	RefPtr<IndexBuffer> IndexBuffer::Create(std::span<uint32_t> indices)
 	{
 		return RHIProxy::GetInstance().CreateIndexBuffer(indices);
 	}

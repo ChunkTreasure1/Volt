@@ -5,7 +5,7 @@
 
 namespace Volt::RHI
 {
-	Ref<TransientHeap> TransientHeap::Create(const TransientHeapCreateInfo& createInfo)
+	RefPtr<TransientHeap> TransientHeap::Create(const TransientHeapCreateInfo& createInfo)
 	{
 		return RHIProxy::GetInstance().CreateTransientHeap(createInfo);
 	}

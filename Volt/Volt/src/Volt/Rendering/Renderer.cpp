@@ -65,7 +65,7 @@ namespace Volt
 			}
 		}
 
-		Ref<RHI::ShaderCompiler> shaderCompiler;
+		RefPtr<RHI::ShaderCompiler> shaderCompiler;
 		Scope<BindlessResourcesManager> bindlessResourcesManager;
 
 #ifndef VT_DIST
@@ -174,13 +174,13 @@ namespace Volt
 		constexpr uint32_t IRRADIANCE_MAP_SIZE = 32;
 		constexpr uint32_t CONVERSION_THREAD_GROUP_SIZE = 32;
 
-		Ref<RHI::Image2D> environmentUnfiltered;
-		Ref<RHI::Image2D> environmentFiltered;
-		Ref<RHI::Image2D> irradianceMap;
+		RefPtr<RHI::Image2D> environmentUnfiltered;
+		RefPtr<RHI::Image2D> environmentFiltered;
+		RefPtr<RHI::Image2D> irradianceMap;
 
 		auto linearSampler = GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>();
 
-		Ref<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
+		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 		commandBuffer->Begin();
 
 		// Unfiltered - Conversion
@@ -213,7 +213,7 @@ namespace Volt
 			RHI::DescriptorTableCreateInfo tableInfo{};
 			tableInfo.shader = conversionPipeline->GetShader();
 
-			Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
+			RefPtr<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
 			descriptorTable->SetImageView("o_output", environmentUnfiltered->GetArrayView(), 0);
 			descriptorTable->SetImageView("u_equirectangularMap", environmentTexture->GetImage()->GetView(), 0);
 			descriptorTable->SetSamplerState("u_linearSampler", linearSampler->GetResource(), 0);
@@ -280,7 +280,7 @@ namespace Volt
 			RHI::DescriptorTableCreateInfo tableInfo{};
 			tableInfo.shader = pipeline->GetShader();
 
-			std::vector<Ref<RHI::DescriptorTable>> descriptorTables;
+			std::vector<RefPtr<RHI::DescriptorTable>> descriptorTables;
 			for (uint32_t i = 0; i < imageSpec.mips; i++)
 			{
 				descriptorTables.emplace_back(RHI::DescriptorTable::Create(tableInfo));
@@ -356,7 +356,7 @@ namespace Volt
 			RHI::DescriptorTableCreateInfo tableInfo{};
 			tableInfo.shader = pipeline->GetShader();
 
-			Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
+			RefPtr<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
 			descriptorTable->SetImageView("o_output", irradianceMap->GetArrayView(), 0);
 			descriptorTable->SetImageView("u_input", environmentFiltered->GetView(), 0);
 			descriptorTable->SetSamplerState("u_linearSampler", linearSampler->GetResource(), 0);
@@ -483,10 +483,10 @@ namespace Volt
 		RHI::DescriptorTableCreateInfo tableInfo{};
 		tableInfo.shader = pipeline->GetShader();
 
-		Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
+		RefPtr<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
 		descriptorTable->SetImageView("LUT", s_rendererData->defaultResources.BRDFLuT->GetView(), 0);
 		
-		Ref<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
+		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 		commandBuffer->Begin();
 
 		commandBuffer->BindPipeline(pipeline);

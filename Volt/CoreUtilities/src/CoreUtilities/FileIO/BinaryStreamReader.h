@@ -10,7 +10,7 @@
 #include <map>
 #include <unordered_map>
 
-class BinaryStreamReader
+class VTCOREUTIL_API BinaryStreamReader
 {
 public:
 	BinaryStreamReader(const std::filesystem::path& filePath);

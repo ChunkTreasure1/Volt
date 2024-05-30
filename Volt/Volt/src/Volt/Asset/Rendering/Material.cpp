@@ -25,7 +25,7 @@ namespace Volt
 		m_materialGUID = GUIDUtilities::GenerateGUID();
 	}
 
-	Material::Material(Ref<RHI::ComputePipeline> computePipeline)
+	Material::Material(RefPtr<RHI::ComputePipeline> computePipeline)
 		: m_computePipeline(computePipeline)
 	{
 	}

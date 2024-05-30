@@ -25,6 +25,6 @@ namespace Volt::RHI
 	private:
 		void Invalidate(const void* data, const uint32_t size);
 
-		Ref<Allocation> m_allocation;
+		RefPtr<Allocation> m_allocation;
 	};
 }

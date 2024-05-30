@@ -126,17 +126,17 @@ namespace Volt::RHI
 		return *m_defaultAllocator;
 	}
 
-	Ref<Allocator> VulkanGraphicsContext::GetTransientAllocatorImpl()
+	RefPtr<Allocator> VulkanGraphicsContext::GetTransientAllocatorImpl()
 	{
 		return m_transientAllocator;
 	}
 
-	Ref<GraphicsDevice> VulkanGraphicsContext::GetGraphicsDevice() const
+	RefPtr<GraphicsDevice> VulkanGraphicsContext::GetGraphicsDevice() const
 	{
 		return m_graphicsDevice;
 	}
 
-	Ref<PhysicalGraphicsDevice> VulkanGraphicsContext::GetPhysicalGraphicsDevice() const
+	RefPtr<PhysicalGraphicsDevice> VulkanGraphicsContext::GetPhysicalGraphicsDevice() const
 	{
 		return m_physicalDevice;
 	}

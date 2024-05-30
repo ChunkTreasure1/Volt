@@ -5,7 +5,7 @@
 
 namespace Volt::RHI
 {
-	Ref<VertexBuffer> VertexBuffer::Create(const uint32_t size, const void* data)
+	RefPtr<VertexBuffer> VertexBuffer::Create(const uint32_t size, const void* data)
 	{
 		return RHIProxy::GetInstance().CreateVertexBuffer(size, data);
 	}

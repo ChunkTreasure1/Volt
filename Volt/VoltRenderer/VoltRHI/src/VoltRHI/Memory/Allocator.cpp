@@ -5,7 +5,7 @@
 
 namespace Volt::RHI
 {
-	Ref<TransientAllocator> TransientAllocator::Create()
+	RefPtr<TransientAllocator> TransientAllocator::Create()
 	{
 		return RHIProxy::GetInstance().CreateTransientAllocator();
 	}

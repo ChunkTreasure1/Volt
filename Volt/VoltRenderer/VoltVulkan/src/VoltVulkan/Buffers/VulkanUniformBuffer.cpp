@@ -41,7 +41,7 @@ namespace Volt::RHI
 		m_allocation = nullptr;
 	}
 
-	Ref<BufferView> VulkanUniformBuffer::GetView()
+	RefPtr<BufferView> VulkanUniformBuffer::GetView()
 	{
 		BufferViewSpecification spec{};
 		spec.bufferResource = this;

@@ -13,7 +13,7 @@ namespace Volt::RHI
 		VulkanUniformBuffer(const uint32_t size, const void* data);
 		~VulkanUniformBuffer() override;
 
-		Ref<BufferView> GetView() override;
+		RefPtr<BufferView> GetView() override;
 		const uint32_t GetSize() const override;
 		void SetData(const void* data, const uint32_t size) override;
 		void Unmap() override;
@@ -30,6 +30,6 @@ namespace Volt::RHI
 	private:
 		uint32_t m_size = 0;
 
-		Ref<Allocation> m_allocation;
+		RefPtr<Allocation> m_allocation;
 	};
 }

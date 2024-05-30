@@ -29,7 +29,7 @@ namespace Volt::RHI
 		SetName(name);
 	}
 
-	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, Ref<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
 		: m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_name(name)
 	{
 		Invalidate(size);
@@ -69,7 +69,7 @@ namespace Volt::RHI
 		return m_size;
 	}
 
-	Weak<Allocation> VulkanStorageBuffer::GetAllocation() const
+	WeakPtr<Allocation> VulkanStorageBuffer::GetAllocation() const
 	{
 		return m_allocation;
 	}
@@ -81,7 +81,7 @@ namespace Volt::RHI
 
 	void VulkanStorageBuffer::SetData(const void* data, const size_t size)
 	{
-		Ref<Allocation> stagingAllocation = nullptr;
+		RefPtr<Allocation> stagingAllocation = nullptr;
 
 		if (m_allocatedUsingCustomAllocator)
 		{
@@ -96,7 +96,7 @@ namespace Volt::RHI
 		memcpy_s(mappedPtr, size, data, size);
 		stagingAllocation->Unmap();
 
-		const Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create();
+		RefPtr<CommandBuffer> cmdBuffer = CommandBuffer::Create();
 		cmdBuffer->Begin();
 
 		cmdBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
@@ -117,9 +117,9 @@ namespace Volt::RHI
 		});
 	}
 
-	void VulkanStorageBuffer::SetData(Ref<CommandBuffer> commandBuffer, const void* data, const size_t size)
+	void VulkanStorageBuffer::SetData(RefPtr<CommandBuffer> commandBuffer, const void* data, const size_t size)
 	{
-		Ref<Allocation> stagingAllocation = nullptr;
+		RefPtr<Allocation> stagingAllocation = nullptr;
 
 		if (m_allocatedUsingCustomAllocator)
 		{
@@ -149,13 +149,18 @@ namespace Volt::RHI
 		});
 	}
 
-	Ref<BufferView> VulkanStorageBuffer::GetView()
+	RefPtr<BufferView> VulkanStorageBuffer::GetView()
 	{
+		if (m_view)
+		{
+			return m_view;
+		}
+
 		BufferViewSpecification spec{};
 		spec.bufferResource = this;
 
-		Ref<BufferView> bufferView = BufferView::Create(spec);
-		return bufferView;
+		m_view = BufferView::Create(spec);
+		return m_view;
 	}
 
 	void VulkanStorageBuffer::SetName(std::string_view name)

@@ -32,11 +32,11 @@ namespace Volt
 		ScatteredBufferUpload(const size_t uploadCount);
 
 		T& AddUploadItem(size_t bufferIndex);
-		void UploadTo(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer);
+		void UploadTo(RenderGraph& renderGraph, RefPtr<RHI::StorageBuffer> dstBuffer);
 		void UploadTo(RenderGraph& renderGraph, const BindlessResource<RHI::StorageBuffer>& dstBuffer);
 
 	private:
-		void UploadToInternal(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer);
+		void UploadToInternal(RenderGraph& renderGraph, RefPtr<RHI::StorageBuffer> dstBuffer);
 
 		std::vector<T> m_data;
 		std::vector<uint32_t> m_dataIndices;
@@ -60,7 +60,7 @@ namespace Volt
 	}
 
 	template<IsTrivial T>
-	inline void ScatteredBufferUpload<T>::UploadTo(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer)
+	inline void ScatteredBufferUpload<T>::UploadTo(RenderGraph& renderGraph, RefPtr<RHI::StorageBuffer> dstBuffer)
 	{
 		UploadToInternal(renderGraph, dstBuffer);
 	}
@@ -72,7 +72,7 @@ namespace Volt
 	}
 
 	template<IsTrivial T>
-	inline void ScatteredBufferUpload<T>::UploadToInternal(RenderGraph& renderGraph, Ref<RHI::StorageBuffer> dstBuffer)
+	inline void ScatteredBufferUpload<T>::UploadToInternal(RenderGraph& renderGraph, RefPtr<RHI::StorageBuffer> dstBuffer)
 	{
 		if (m_data.empty())
 		{

@@ -18,7 +18,7 @@ namespace Volt::RHI
 		virtual void Wait(const uint64_t waitValue) = 0;
 		virtual const uint64_t GetValue() const = 0;
 
-		static Ref<Semaphore> Create(const SemaphoreCreateInfo& createInfo);
+		static RefPtr<Semaphore> Create(const SemaphoreCreateInfo& createInfo);
 
 	protected:	
 		Semaphore() = default;

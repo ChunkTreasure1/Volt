@@ -6,10 +6,12 @@
 #include "Volt/Rendering/RenderScene.h"
 
 #include <VoltRHI/Buffers/StorageBuffer.h>
+#include <VoltRHI/Buffers/BufferView.h>
 #include <VoltRHI/Images/Image2D.h>
 #include <VoltRHI/Images/ImageView.h>
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 #include <VoltRHI/Shader/Shader.h>
+#include <VoltRHI/Images/SamplerState.h>
 #include <VoltRHI/RHIProxy.h>
 
 namespace Volt
@@ -53,34 +55,36 @@ namespace Volt
 		s_instance = nullptr;
 	}
 
-	ResourceHandle BindlessResourcesManager::RegisterBuffer(Weak<RHI::StorageBuffer> storageBuffer)
+	ResourceHandle BindlessResourcesManager::RegisterBuffer(WeakPtr<RHI::StorageBuffer> storageBuffer)
 	{
-		return m_bufferRegistry.RegisterResource(storageBuffer.GetSharedPtr());
+		return m_bufferRegistry.RegisterResource(storageBuffer);
 	}
 
-	ResourceHandle BindlessResourcesManager::RegisterImageView(Weak<RHI::ImageView> imageView)
+	ResourceHandle BindlessResourcesManager::RegisterImageView(WeakPtr<RHI::ImageView> imageView)
 	{
 		const auto viewType = imageView->GetViewType();
 
 		if (viewType == RHI::ImageViewType::View2D)
 		{
-			return m_image2DRegistry.RegisterResource(imageView.GetSharedPtr(), imageView->GetImageUsage());
+			return m_image2DRegistry.RegisterResource(imageView, imageView->GetImageUsage());
 		}
 		else if (viewType == RHI::ImageViewType::View2DArray)
 		{
-			return m_image2DArrayRegistry.RegisterResource(imageView.GetSharedPtr(), imageView->GetImageUsage());
+			return m_image2DArrayRegistry.RegisterResource(imageView, imageView->GetImageUsage());
 		}
 		else if (viewType == RHI::ImageViewType::ViewCube)
 		{
-			return m_imageCubeRegistry.RegisterResource(imageView.GetSharedPtr(), imageView->GetImageUsage());
+			return m_imageCubeRegistry.RegisterResource(imageView, imageView->GetImageUsage());
 		}
 
 		VT_CORE_ASSERT(false, "Resource type not implemented!");
 		return Resource::Invalid;
 	}
 
-	ResourceHandle BindlessResourcesManager::RegisterSamplerState(Weak<RHI::SamplerState> samplerState)
+	ResourceHandle BindlessResourcesManager::RegisterSamplerState(WeakPtr<RHI::SamplerState> samplerState)
 	{
+		WeakPtr<RHI::RHIInterface> inter(samplerState);
+
 		return m_samplerRegistry.RegisterResource(samplerState);
 	}
 
@@ -119,7 +123,7 @@ namespace Volt
 		m_samplerRegistry.UnregisterResource(handle);
 	}
 
-	ResourceHandle BindlessResourcesManager::GetBufferHandle(Weak<RHI::StorageBuffer> storageBuffer)
+	ResourceHandle BindlessResourcesManager::GetBufferHandle(WeakPtr<RHI::StorageBuffer> storageBuffer)
 	{
 		return m_bufferRegistry.GetResourceHandle(storageBuffer);
 	}
@@ -311,7 +315,7 @@ namespace Volt
 		m_dirtyResources.clear();
 	}
 
-	ResourceHandle ResourceRegistry::RegisterResource(Weak<RHI::RHIInterface> resource, RHI::ImageUsage imageUsage)
+	ResourceHandle ResourceRegistry::RegisterResource(WeakPtr<RHI::RHIInterface> resource, RHI::ImageUsage imageUsage)
 	{
 		std::scoped_lock lock{ m_mutex };
 
@@ -389,7 +393,7 @@ namespace Volt
 			});
 	}
 
-	ResourceHandle ResourceRegistry::GetResourceHandle(Weak<RHI::RHIInterface> resource)
+	ResourceHandle ResourceRegistry::GetResourceHandle(WeakPtr<RHI::RHIInterface> resource)
 	{
 		return m_resourceHashToHandle.at(resource.GetHash());
 	}

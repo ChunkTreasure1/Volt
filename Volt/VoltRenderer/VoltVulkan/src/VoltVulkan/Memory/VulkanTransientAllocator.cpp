@@ -40,7 +40,7 @@ namespace Volt::RHI
 		m_imageHeaps.clear();
 	}
 
-	Ref<Allocation> VulkanTransientAllocator::CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage)
+	RefPtr<Allocation> VulkanTransientAllocator::CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -56,7 +56,7 @@ namespace Volt::RHI
 		info.memoryUsage = memoryUsage;
 		info.hash = hash;
 
-		Ref<Allocation> result;
+		RefPtr<Allocation> result;
 
 		for (const auto& heap : m_bufferHeaps)
 		{
@@ -75,7 +75,7 @@ namespace Volt::RHI
 		return result;
 	}
 
-	Ref<Allocation> VulkanTransientAllocator::CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage)
+	RefPtr<Allocation> VulkanTransientAllocator::CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -92,7 +92,7 @@ namespace Volt::RHI
 		info.size = Utility::Align(memoryRequirement.size, memoryRequirement.alignment);
 		info.hash = hash;
 
-		Ref<Allocation> result;
+		RefPtr<Allocation> result;
 
 		for (const auto& heap : m_imageHeaps)
 		{
@@ -111,12 +111,12 @@ namespace Volt::RHI
 		return result;
 	}
 
-	void VulkanTransientAllocator::DestroyBuffer(Ref<Allocation> allocation)
+	void VulkanTransientAllocator::DestroyBuffer(RefPtr<Allocation> allocation)
 	{
 		m_allocationCache.QueueBufferAllocationForRemoval(allocation);
 	}
 
-	void VulkanTransientAllocator::DestroyImage(Ref<Allocation> allocation)
+	void VulkanTransientAllocator::DestroyImage(RefPtr<Allocation> allocation)
 	{
 		m_allocationCache.QueueImageAllocationForRemoval(allocation);
 	}
@@ -150,11 +150,11 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanTransientAllocator::DestroyBufferInternal(Ref<Allocation> allocation)
+	void VulkanTransientAllocator::DestroyBufferInternal(RefPtr<Allocation> allocation)
 	{
 		VT_PROFILE_FUNCTION();
 
-		Ref<TransientHeap> parentHeap;
+		RefPtr<TransientHeap> parentHeap;
 
 		for (const auto& heap : m_bufferHeaps)
 		{
@@ -176,11 +176,11 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanTransientAllocator::DestroyImageInternal(Ref<Allocation> allocation)
+	void VulkanTransientAllocator::DestroyImageInternal(RefPtr<Allocation> allocation)
 	{
 		VT_PROFILE_FUNCTION();
 
-		Ref<TransientHeap> parentHeap;
+		RefPtr<TransientHeap> parentHeap;
 
 		for (const auto& heap : m_imageHeaps)
 		{
@@ -202,13 +202,13 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanTransientAllocator::DestroyOrphanBuffer(Ref<Allocation> allocation)
+	void VulkanTransientAllocator::DestroyOrphanBuffer(RefPtr<Allocation> allocation)
 	{
 		auto device = GraphicsContext::GetDevice();
 		vkDestroyBuffer(device->GetHandle<VkDevice>(), allocation->GetResourceHandle<VkBuffer>(), nullptr);
 	}
 
-	void VulkanTransientAllocator::DestroyOrphanImage(Ref<Allocation> allocation)
+	void VulkanTransientAllocator::DestroyOrphanImage(RefPtr<Allocation> allocation)
 	{
 		auto device = GraphicsContext::GetDevice();
 		vkDestroyImage(device->GetHandle<VkDevice>(), allocation->GetResourceHandle<VkImage>(), nullptr);

@@ -137,3 +137,4 @@ Library["METIS"] = "%{LibraryDir.METIS}/metis.lib"
 
 Library["VoltVulkan"] = "%{LibraryDir.Volt}/VoltVulkan/VoltVulkan.lib"
 Library["VoltRHI"] = "%{LibraryDir.Volt}/VoltRHI/VoltRHI.lib"
+Library["CoreUtilities"] = "%{LibraryDir.Volt}/CoreUtilities/CoreUtilities.lib"

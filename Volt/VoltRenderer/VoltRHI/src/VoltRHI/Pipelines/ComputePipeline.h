@@ -10,9 +10,9 @@ namespace Volt::RHI
 	{
 	public:
 		virtual void Invalidate() = 0;
-		virtual Ref<Shader> GetShader() const = 0;
+		virtual RefPtr<Shader> GetShader() const = 0;
 
-		static Ref<ComputePipeline> Create(Ref<Shader> shader, bool useGlobalResources = true);
+		static RefPtr<ComputePipeline> Create(RefPtr<Shader> shader, bool useGlobalResources = true);
 
 	protected:
 		ComputePipeline() = default;

@@ -71,7 +71,7 @@ namespace Volt
 	void TextureSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<Texture2D> texture = std::reinterpret_pointer_cast<Texture2D>(asset);
-		Ref<RHI::Image2D> image = texture->GetImage();
+		RefPtr<RHI::Image2D> image = texture->GetImage();
 
 		TextureHeader header{};
 		header.format = image->GetFormat();
@@ -86,8 +86,8 @@ namespace Volt
 		{
 			const size_t maxSize = image->GetWidth() * image->GetHeight() * RHI::Utility::GetByteSizePerPixelFromFormat(image->GetFormat());
 
-			Ref<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
-			Ref<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(maxSize, RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
+			RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
+			RefPtr<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(maxSize, RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
 
 			commandBuffer->Begin();
 
@@ -202,8 +202,8 @@ namespace Volt
 
 		Ref<Texture2D> texture = std::reinterpret_pointer_cast<Texture2D>(destinationAsset);
 
-		Ref<RHI::Image2D> image;
-		Ref<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
+		RefPtr<RHI::Image2D> image;
+		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 
 		// Create image
 		{
@@ -222,7 +222,7 @@ namespace Volt
 			image = RHI::Image2D::Create(specification);
 		}
 
-		Ref<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(textureHeader.mips.front().dataSize, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPU);
+		RefPtr<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(textureHeader.mips.front().dataSize, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPU);
 
 		// Map memory
 		{

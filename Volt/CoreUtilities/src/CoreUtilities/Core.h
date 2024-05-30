@@ -5,6 +5,12 @@
 #define VT_NODISCARD [[nodiscard]]
 #define VT_INLINE __forceinline
 
+#ifdef VTCOREUTIL_BUILD_DLL
+#define VTCOREUTIL_API __declspec(dllexport)
+#else
+#define VTCOREUTIL_API __declspec(dllimport)
+#endif
+
 ///// Helper Defines /////
 #define VT_SETUP_ENUM_CLASS_OPERATORS(enumType) \
 	inline           enumType& operator|=(enumType& Lhs, enumType Rhs) { return Lhs = (enumType)((__underlying_type(enumType))Lhs | (__underlying_type(enumType))Rhs); } \

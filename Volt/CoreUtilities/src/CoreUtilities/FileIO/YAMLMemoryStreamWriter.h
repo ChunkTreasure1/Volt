@@ -3,7 +3,7 @@
 #include "CoreUtilities/FileIO/YAMLStreamWriter.h"
 #include "CoreUtilities/Buffer/Buffer.h"
 
-class YAMLMemoryStreamWriter : public YAMLStreamWriter
+class VTCOREUTIL_API YAMLMemoryStreamWriter : public YAMLStreamWriter
 {
 public:
 	~YAMLMemoryStreamWriter() = default;

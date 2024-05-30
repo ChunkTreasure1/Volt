@@ -30,7 +30,7 @@ namespace Volt::RHI
 	{
 	}
 
-	Ref<Shader> D3D12RenderPipeline::GetShader() const
+	RefPtr<Shader> D3D12RenderPipeline::GetShader() const
 	{
 		return m_createInfo.shader;
 	}

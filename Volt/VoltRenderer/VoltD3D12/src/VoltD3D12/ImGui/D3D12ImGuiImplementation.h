@@ -16,7 +16,7 @@ namespace Volt::RHI
 		void InitializeAPI(ImGuiContext* context) override;
 		void ShutdownAPI() override;
 
-		ImTextureID GetTextureID(Ref<Image2D> image) const override;
+		ImTextureID GetTextureID(RefPtr<Image2D> image) const override;
 		ImFont* AddFont(const std::filesystem::path& fontPath, float pixelSize) override;
 
 	protected:

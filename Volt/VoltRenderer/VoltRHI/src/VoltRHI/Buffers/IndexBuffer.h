@@ -10,7 +10,7 @@ namespace Volt::RHI
 	public:
 		virtual const uint32_t GetCount() const = 0;
 
-		static Ref<IndexBuffer> Create(std::span<uint32_t> indices);
+		static RefPtr<IndexBuffer> Create(std::span<uint32_t> indices);
 
 	protected:
 		IndexBuffer() = default;

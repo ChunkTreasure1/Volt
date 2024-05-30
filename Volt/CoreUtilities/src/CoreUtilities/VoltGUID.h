@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CoreUtilities/Core.h"
+
 #include <cstdint>
 #include <xhash>
 

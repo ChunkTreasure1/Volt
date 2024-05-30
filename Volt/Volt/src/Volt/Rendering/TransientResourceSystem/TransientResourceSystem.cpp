@@ -25,13 +25,43 @@ namespace Volt
 		m_allocatedResources.clear(); 
 	}
 
-	Weak<RHI::Image2D> TransientResourceSystem::AquireImage2D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
+	WeakPtr<RHI::Image2D> TransientResourceSystem::AquireImage2D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
+	{
+		return AquireImage2DRef(resourceHandle, imageDesc);
+	}
+
+	WeakPtr<RHI::StorageBuffer> TransientResourceSystem::AquireBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
+	{
+		return AquireBufferRef(resourceHandle, bufferDesc);
+	}
+
+	WeakPtr<RHI::UniformBuffer> TransientResourceSystem::AquireUniformBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
 	{
 		VT_PROFILE_FUNCTION();
 
 		if (m_allocatedResources.contains(resourceHandle))
 		{
-			return std::reinterpret_pointer_cast<RHI::Image2D>(m_allocatedResources.at(resourceHandle).resource);
+			return m_allocatedResources.at(resourceHandle).resource;
+		}
+
+		RefPtr<RHI::UniformBuffer> buffer = RHI::UniformBuffer::Create(static_cast<uint32_t>(bufferDesc.size));
+
+		ResourceInfo info{};
+		info.resource = buffer;
+		info.isOriginal = true;
+
+		m_allocatedResources[resourceHandle] = info;
+
+		return buffer;
+	}
+
+	RefPtr<RHI::Image2D> TransientResourceSystem::AquireImage2DRef(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (m_allocatedResources.contains(resourceHandle))
+		{
+			return m_allocatedResources.at(resourceHandle).resource.As<RHI::Image2D>();
 		}
 
 		const size_t hash = Utility::GetHashFromImageDesc(imageDesc);
@@ -42,10 +72,10 @@ namespace Volt
 				RenderGraphResourceHandle surrenderedHandle = m_surrenderedResources.at(hash).back();
 				m_surrenderedResources.at(hash).pop_back();
 
-				Ref<RHI::RHIResource> resource = m_allocatedResources.at(surrenderedHandle).resource;
+				RefPtr<RHI::RHIResource> resource = m_allocatedResources.at(surrenderedHandle).resource;
 				m_allocatedResources[resourceHandle].resource = resource;
 
-				return std::reinterpret_pointer_cast<RHI::Image2D>(resource);
+				return resource.As<RHI::Image2D>();
 			}
 		}
 
@@ -62,7 +92,7 @@ namespace Volt
 		imageSpec.isCubeMap = imageDesc.isCubeMap;
 		imageSpec.initializeImage = false;
 
-		Ref<RHI::Image2D> image = RHI::Image2D::Create(imageSpec, RHI::GraphicsContext::GetTransientAllocator());
+		RefPtr<RHI::Image2D> image = RHI::Image2D::Create(imageSpec, RHI::GraphicsContext::GetTransientAllocator());
 
 		ResourceInfo info{};
 		info.resource = image;
@@ -73,13 +103,13 @@ namespace Volt
 		return image;
 	}
 
-	Weak<RHI::StorageBuffer> TransientResourceSystem::AquireBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
+	RefPtr<RHI::StorageBuffer> TransientResourceSystem::AquireBufferRef(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
 	{
 		VT_PROFILE_FUNCTION();
 
 		if (m_allocatedResources.contains(resourceHandle))
 		{
-			return std::reinterpret_pointer_cast<RHI::StorageBuffer>(m_allocatedResources.at(resourceHandle).resource);
+			return m_allocatedResources.at(resourceHandle).resource.As<RHI::StorageBuffer>();
 		}
 
 		const size_t hash = Utility::GetHashFromBufferDesc(bufferDesc);
@@ -90,35 +120,15 @@ namespace Volt
 				RenderGraphResourceHandle surrenderedHandle = m_surrenderedResources.at(hash).back();
 				m_surrenderedResources.at(hash).pop_back();
 
-				Ref<RHI::RHIResource> resource = m_allocatedResources.at(surrenderedHandle).resource;
+				RefPtr<RHI::RHIResource> resource = m_allocatedResources.at(surrenderedHandle).resource;
 				m_allocatedResources[resourceHandle].resource = resource;
 
-				return std::reinterpret_pointer_cast<RHI::StorageBuffer>(resource);
+				return resource.As<RHI::StorageBuffer>();
 			}
 		}
 
 		// #TODO_Ivar: Switch to transient allocations
-		Ref<RHI::StorageBuffer> buffer = RHI::StorageBuffer::Create(bufferDesc.size, bufferDesc.name, bufferDesc.usage, bufferDesc.memoryUsage);
-		
-		ResourceInfo info{};
-		info.resource = buffer;
-		info.isOriginal = true;
-		
-		m_allocatedResources[resourceHandle] = info;
-
-		return buffer;
-	}
-
-	Weak<RHI::UniformBuffer> TransientResourceSystem::AquireUniformBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
-	{
-		VT_PROFILE_FUNCTION();
-
-		if (m_allocatedResources.contains(resourceHandle))
-		{
-			return m_allocatedResources.at(resourceHandle).resource;
-		}
-
-		Ref<RHI::UniformBuffer> buffer = RHI::UniformBuffer::Create(static_cast<uint32_t>(bufferDesc.size));
+		RefPtr<RHI::StorageBuffer> buffer = RHI::StorageBuffer::Create(bufferDesc.size, bufferDesc.name, bufferDesc.usage, bufferDesc.memoryUsage);
 
 		ResourceInfo info{};
 		info.resource = buffer;
@@ -134,7 +144,7 @@ namespace Volt
 		m_surrenderedResources[hash].emplace_back(originalResource);
 	}
 
-	void TransientResourceSystem::AddExternalResource(RenderGraphResourceHandle resourceHandle, Ref<RHI::RHIResource> resource)
+	void TransientResourceSystem::AddExternalResource(RenderGraphResourceHandle resourceHandle, RefPtr<RHI::RHIResource> resource)
 	{
 		ResourceInfo info{};
 		info.resource = resource;

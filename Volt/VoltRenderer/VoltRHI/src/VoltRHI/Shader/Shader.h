@@ -216,7 +216,7 @@ namespace Volt::RHI
 		virtual ShaderDataBuffer GetConstantsBuffer() const = 0;
 		virtual const ShaderResourceBinding& GetResourceBindingFromName(std::string_view name) const = 0;
 
-		static Ref<Shader> Create(const ShaderSpecification& createInfo);
+		static RefPtr<Shader> Create(const ShaderSpecification& createInfo);
 
 	protected:
 		Shader() = default;

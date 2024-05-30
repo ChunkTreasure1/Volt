@@ -5,7 +5,7 @@
 
 namespace Volt::RHI
 {
-	Ref<SamplerState> SamplerState::Create(const SamplerStateCreateInfo& createInfo)
+	RefPtr<SamplerState> SamplerState::Create(const SamplerStateCreateInfo& createInfo)
 	{
 		return RHIProxy::GetInstance().CreateSamplerState(createInfo);
 	}

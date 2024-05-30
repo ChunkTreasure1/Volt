@@ -5,7 +5,7 @@
 
 namespace Volt::RHI
 {
-	Ref<RenderPipeline> RenderPipeline::Create(const RenderPipelineCreateInfo& createInfo)
+	RefPtr<RenderPipeline> RenderPipeline::Create(const RenderPipelineCreateInfo& createInfo)
 	{
 		return RHIProxy::GetInstance().CreateRenderPipeline(createInfo);
 	}

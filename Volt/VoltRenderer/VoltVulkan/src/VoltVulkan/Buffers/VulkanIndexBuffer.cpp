@@ -75,7 +75,7 @@ namespace Volt::RHI
 	{
 		VkDeviceSize bufferSize = size;
 
-		Ref<Allocation> stagingAllocation;
+		RefPtr<Allocation> stagingAllocation;
 
 		if (m_allocation)
 		{
@@ -110,7 +110,7 @@ namespace Volt::RHI
 		{
 			// Copy from staging buffer to GPU buffer
 			{
-				Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create();
+				RefPtr<CommandBuffer> cmdBuffer = CommandBuffer::Create();
 				cmdBuffer->Begin();
 
 				VkBufferCopy copy{};

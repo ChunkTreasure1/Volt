@@ -44,10 +44,10 @@ namespace Volt
 	class RenderGraph
 	{
 	public:
-		typedef std::function<void(Ref<RHI::CommandBuffer> commandBuffer)> MarkerFunction;
+		typedef std::function<void(RefPtr<RHI::CommandBuffer> commandBuffer)> MarkerFunction;
 		typedef std::function<void(const uint64_t allocatedSize)> TotalAllocatedSizeCallback;
 
-		RenderGraph(Ref<RHI::CommandBuffer> commandBuffer);
+		RenderGraph(RefPtr<RHI::CommandBuffer> commandBuffer);
 		~RenderGraph();
 
 		class Builder
@@ -60,10 +60,10 @@ namespace Volt
 			RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc);
 			RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
 
-			RenderGraphResourceHandle AddExternalImage2D(Ref<RHI::Image2D> image);
-			//RenderGraphResourceHandle AddExternalImage3D(Ref<RHI::Image3D> image);
-			RenderGraphResourceHandle AddExternalBuffer(Ref<RHI::StorageBuffer> buffer);
-			RenderGraphResourceHandle AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer);
+			RenderGraphResourceHandle AddExternalImage2D(RefPtr<RHI::Image2D> image);
+			//RenderGraphResourceHandle AddExternalImage3D(RefPtr<RHI::Image3D> image);
+			RenderGraphResourceHandle AddExternalBuffer(RefPtr<RHI::StorageBuffer> buffer);
+			RenderGraphResourceHandle AddExternalUniformBuffer(RefPtr<RHI::UniformBuffer> buffer);
 
 			void SetHasSideEffect();
 			void SetIsComputePass();
@@ -88,18 +88,18 @@ namespace Volt
 		void AddMappedBufferUpload(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size, std::string_view name);
 		void AddResourceBarrier(RenderGraphResourceHandle resourceHandle, const RenderGraphBarrierInfo& barrierInfo);
 
-		void QueueImage2DExtraction(RenderGraphResourceHandle resourceHandle, Ref<RHI::Image2D>& outImage);
-		void QueueBufferExtraction(RenderGraphResourceHandle resourceHandle, Ref<RHI::StorageBuffer>& outBuffer);
+		void QueueImage2DExtraction(RenderGraphResourceHandle resourceHandle, RefPtr<RHI::Image2D>& outImage);
+		void QueueBufferExtraction(RenderGraphResourceHandle resourceHandle, RefPtr<RHI::StorageBuffer>& outBuffer);
 
 		void BeginMarker(const std::string& markerName, const glm::vec4& markerColor = 1.f);
 		void EndMarker();
 
 		void SetTotalAllocatedSizeCallback(TotalAllocatedSizeCallback&& callback);
 
-		RenderGraphResourceHandle AddExternalImage2D(Ref<RHI::Image2D> image);
-		//RenderGraphResourceHandle AddExternalImage3D(Ref<RHI::Image3D> image);
-		RenderGraphResourceHandle AddExternalBuffer(Ref<RHI::StorageBuffer> buffer);
-		RenderGraphResourceHandle AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer);
+		RenderGraphResourceHandle AddExternalImage2D(RefPtr<RHI::Image2D> image);
+		//RenderGraphResourceHandle AddExternalImage3D(RefPtr<RHI::Image3D> image);
+		RenderGraphResourceHandle AddExternalBuffer(RefPtr<RHI::StorageBuffer> buffer);
+		RenderGraphResourceHandle AddExternalUniformBuffer(RefPtr<RHI::UniformBuffer> buffer);
 
 		RenderGraphResourceHandle CreateImage2D(const RenderGraphImageDesc& textureDesc);
 		RenderGraphResourceHandle CreateImage3D(const RenderGraphImageDesc& textureDesc);
@@ -108,7 +108,7 @@ namespace Volt
 
 		ResourceHandle GetImage2D(const RenderGraphResourceHandle resourceHandle, const uint32_t mip = 0, const uint32_t layer = 0);
 		ResourceHandle GetImage2DArray(const RenderGraphResourceHandle resourceHandle, const uint32_t mip = 0);
-		//Ref<RHI::Image3D> GetImage3D(const RenderGraphResourceHandle resourceHandle); // #TODO: Implement Image3D first
+		//RefPtr<RHI::Image3D> GetImage3D(const RenderGraphResourceHandle resourceHandle); // #TODO: Implement Image3D first
 		ResourceHandle GetBuffer(const RenderGraphResourceHandle resourceHandle);
 		ResourceHandle GetUniformBuffer(const RenderGraphResourceHandle resourceHandle);
 
@@ -129,22 +129,25 @@ namespace Volt
 		struct Image2DExtractionInfo
 		{
 			RenderGraphResourceHandle resourceHandle;
-			Ref<RHI::Image2D>* outImagePtr = nullptr;
+			RefPtr<RHI::Image2D>* outImagePtr = nullptr;
 		};
 
 		struct BufferExtractionInfo
 		{
 			RenderGraphResourceHandle resourceHandle;
-			Ref<RHI::StorageBuffer>* outBufferPtr = nullptr;
+			RefPtr<RHI::StorageBuffer>* outBufferPtr = nullptr;
 		};
 
-		Weak<RHI::ImageView> GetImage2DView(const RenderGraphResourceHandle resourceHandle);
-		Weak<RHI::Image2D> GetImage2DRaw(const RenderGraphResourceHandle resourceHandle);
-		Weak<RHI::StorageBuffer> GetBufferRaw(const RenderGraphResourceHandle resourceHandle);
-		Weak<RHI::RHIResource> GetResourceRaw(const RenderGraphResourceHandle resourceHandle);
+		WeakPtr<RHI::ImageView> GetImage2DView(const RenderGraphResourceHandle resourceHandle);
+		WeakPtr<RHI::Image2D> GetImage2DRaw(const RenderGraphResourceHandle resourceHandle);
+		WeakPtr<RHI::StorageBuffer> GetBufferRaw(const RenderGraphResourceHandle resourceHandle);
+		WeakPtr<RHI::RHIResource> GetResourceRaw(const RenderGraphResourceHandle resourceHandle);
 
-		RenderGraphResourceHandle TryGetRegisteredExternalResource(Weak<RHI::RHIResource> resource);
-		void RegisterExternalResource(Weak<RHI::RHIResource> resource, RenderGraphResourceHandle handle);
+		RefPtr<RHI::Image2D> GetImage2DRawRef(const RenderGraphResourceHandle resourceHandle);
+		RefPtr<RHI::StorageBuffer> GetBufferRawRef(const RenderGraphResourceHandle resourceHandle);
+
+		RenderGraphResourceHandle TryGetRegisteredExternalResource(WeakPtr<RHI::RHIResource> resource);
+		void RegisterExternalResource(WeakPtr<RHI::RHIResource> resource, RenderGraphResourceHandle handle);
 
 		std::vector<Image2DExtractionInfo> m_image2DExtractions;
 		std::vector<BufferExtractionInfo> m_bufferExtractions;
@@ -157,7 +160,7 @@ namespace Volt
 		std::vector<std::vector<ResourceUsageInfo>> m_resourceBarriers; // Pass -> Transitions
 		std::vector<std::vector<ResourceUsageInfo>> m_standaloneBarriers;
 		
-		std::unordered_map<Weak<RHI::RHIResource>, RenderGraphResourceHandle> m_registeredExternalResources;
+		std::unordered_map<WeakPtr<RHI::RHIResource>, RenderGraphResourceHandle> m_registeredExternalResources;
 
 		std::vector<uint8_t*> m_temporaryAllocations;
 
@@ -174,8 +177,8 @@ namespace Volt
 		uint32_t m_passIndex = 0;
 		RenderGraphResourceHandle m_resourceIndex = 0;
 
-		Weak<RHI::CommandBuffer> m_commandBuffer;
-		Weak<RHI::StorageBuffer> m_passConstantsBuffer;
+		RefPtr<RHI::CommandBuffer> m_commandBuffer;
+		WeakPtr<RHI::StorageBuffer> m_passConstantsBuffer;
 		ResourceHandle m_passConstantsBufferResourceHandle = Resource::Invalid;
 
 		TransientResourceSystem m_transientResourceSystem;

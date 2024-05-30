@@ -70,8 +70,8 @@ namespace Volt
 		inline void SetShadingMode(ShadingMode shadingMode) { m_shadingMode = shadingMode; }
 		inline ShadingMode GetShadingMode() const { return m_shadingMode; }
 
-		Ref<RHI::Image2D> GetFinalImage();
-		Ref<RHI::Image2D> GetObjectIDImage();
+		RefPtr<RHI::Image2D> GetFinalImage();
+		RefPtr<RHI::Image2D> GetObjectIDImage();
 
 		// #TODO_Ivar: TEMP, Should not be public!
 		void Invalidate();
@@ -112,10 +112,10 @@ namespace Volt
 
 		void CreateMainRenderTarget(const uint32_t width, const uint32_t height);
 
-		Ref<RHI::Image2D> m_outputImage;
-		Ref<RHI::Image2D> m_objectIDImage;
-		Ref<RHI::Image2D> m_previousDepthImage;
-		Ref<RHI::Image2D> m_previousColorImage;
+		RefPtr<RHI::Image2D> m_outputImage;
+		RefPtr<RHI::Image2D> m_objectIDImage;
+		RefPtr<RHI::Image2D> m_previousDepthImage;
+		RefPtr<RHI::Image2D> m_previousColorImage;
 
 		Ref<Mesh> m_skyboxMesh;
 
@@ -127,7 +127,7 @@ namespace Volt
 		uint32_t m_resizeWidth = 1280;
 		uint32_t m_resizeHeight = 1280;
 
-		Ref<RHI::CommandBuffer> m_commandBuffer;
+		RefPtr<RHI::CommandBuffer> m_commandBuffer;
 		ShadingMode m_shadingMode = ShadingMode::Shaded;
 		PreviousFrameData m_previousFrameData;
 

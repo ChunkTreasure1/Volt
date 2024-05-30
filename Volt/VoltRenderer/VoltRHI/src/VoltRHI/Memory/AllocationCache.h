@@ -3,6 +3,7 @@
 #include "VoltRHI/Core/Core.h"
 
 #include <CoreUtilities/Core.h>
+#include <CoreUtilities/Pointers/RefPtr.h>
 
 namespace Volt::RHI
 {
@@ -10,23 +11,23 @@ namespace Volt::RHI
 	
 	struct AllocationContainer
 	{
-		Ref<Allocation> allocation;
+		RefPtr<Allocation> allocation;
 		size_t framesAlive = 0;
 	};
 	
 	struct AllocationsToRemove
 	{
-		std::vector<Ref<Allocation>> imageAllocations;
-		std::vector<Ref<Allocation>> bufferAllocations;
+		std::vector<RefPtr<Allocation>> imageAllocations;
+		std::vector<RefPtr<Allocation>> bufferAllocations;
 	};
 
 	class VTRHI_API AllocationCache
 	{
 	public:
-		Ref<Allocation> TryGetImageAllocationFromHash(const size_t hash);
-		Ref<Allocation> TryGetBufferAllocationFromHash(const size_t hash);
-		void QueueImageAllocationForRemoval(Ref<Allocation> alloc);
-		void QueueBufferAllocationForRemoval(Ref<Allocation> alloc);
+		RefPtr<Allocation> TryGetImageAllocationFromHash(const size_t hash);
+		RefPtr<Allocation> TryGetBufferAllocationFromHash(const size_t hash);
+		void QueueImageAllocationForRemoval(RefPtr<Allocation> alloc);
+		void QueueBufferAllocationForRemoval(RefPtr<Allocation> alloc);
 		AllocationsToRemove UpdateAndGetAllocationsToDestroy();
 
 		inline const auto& GetImageAllocations() const { return m_imageAllocations; }

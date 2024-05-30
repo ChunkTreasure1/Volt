@@ -23,21 +23,23 @@ namespace Volt
 		TransientResourceSystem();
 		~TransientResourceSystem();
 
-		Weak<RHI::Image2D> AquireImage2D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
-		//Ref<RHI::Image3D> AquireImage3D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
-		Weak<RHI::StorageBuffer> AquireBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
-		Weak<RHI::UniformBuffer> AquireUniformBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
+		WeakPtr<RHI::Image2D> AquireImage2D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
+		//RefPtr<RHI::Image3D> AquireImage3D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
+		WeakPtr<RHI::StorageBuffer> AquireBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
+		WeakPtr<RHI::UniformBuffer> AquireUniformBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
+
+		RefPtr<RHI::Image2D> AquireImage2DRef(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
+		RefPtr<RHI::StorageBuffer> AquireBufferRef(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
 
 		void SurrenderResource(RenderGraphResourceHandle originalResource, size_t hash);
-
-		void AddExternalResource(RenderGraphResourceHandle resourceHandle, Ref<RHI::RHIResource> resource);
+		void AddExternalResource(RenderGraphResourceHandle resourceHandle, RefPtr<RHI::RHIResource> resource);
 
 		const uint64_t GetTotalAllocatedSize() const;
 
 	private:
 		struct ResourceInfo
 		{
-			Ref<RHI::RHIResource> resource;
+			RefPtr<RHI::RHIResource> resource;
 			bool isOriginal = false;
 		};
 

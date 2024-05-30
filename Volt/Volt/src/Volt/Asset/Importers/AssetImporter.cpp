@@ -210,7 +210,7 @@ namespace Volt
 	//			}
 	//		}
 
-	//		Ref<RHI::Shader> shader = ShaderMap::Get("VisibilityBuffer");
+	//		RefPtr<RHI::Shader> shader = ShaderMap::Get("VisibilityBuffer");
 	//		if (!shader)
 	//		{
 	//			shader = ShaderMap::Get("VisibilityBuffer");

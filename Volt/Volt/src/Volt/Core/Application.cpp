@@ -58,6 +58,13 @@ namespace Volt
 		}
 	}
 
+	class TestRefCounted : public RefCounted
+	{
+	public:
+		void Test() { VT_CORE_INFO("Test from {}!", (void*)this); }
+	private:
+	};
+
 	Application::Application(const ApplicationInfo& info)
 		: m_frameTimer(100)
 	{

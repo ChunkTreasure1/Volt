@@ -1,6 +1,7 @@
 #pragma once
 
 #include <VoltRHI/Descriptors/DescriptorTable.h>
+#include <CoreUtilities/Pointers/WeakPtr.h>
 
 struct VkDescriptorPool_T;
 struct VkDescriptorSet_T;
@@ -49,13 +50,13 @@ namespace Volt::RHI
 		VulkanDescriptorTable(const DescriptorTableCreateInfo& createInfo);
 		~VulkanDescriptorTable() override;
 
-		void SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0 ) override;
-		void SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) override;
-		void SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex /* = 0 */) override;
+		void SetImageView(WeakPtr<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0 ) override;
+		void SetBufferView(WeakPtr<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) override;
+		void SetSamplerState(WeakPtr<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex /* = 0 */) override;
 
-		void SetImageView(std::string_view name, Ref<ImageView> view, uint32_t arrayIndex = 0) override;
-		void SetBufferView(std::string_view name, Ref<BufferView> view, uint32_t arrayIndex = 0) override;
-		void SetSamplerState(std::string_view name, Ref<SamplerState> samplerState, uint32_t arrayIndex = 0) override;
+		void SetImageView(std::string_view name, WeakPtr<ImageView> view, uint32_t arrayIndex = 0) override;
+		void SetBufferView(std::string_view name, WeakPtr<BufferView> view, uint32_t arrayIndex = 0) override;
+		void SetSamplerState(std::string_view name, WeakPtr<SamplerState> samplerState, uint32_t arrayIndex = 0) override;
 
 		void Update(const uint32_t index = 0) override;
 		void PrepareForRender() override;
@@ -79,7 +80,7 @@ namespace Volt::RHI
 
 		void InitilizeWriteDescriptor(WriteDescriptor2& writeDescriptor, const uint32_t binding, const uint32_t descriptorType, VkDescriptorSet_T* dstDescriptorSet);
 
-		Weak<Shader> m_shader;
+		WeakPtr<Shader> m_shader;
 		bool m_isGlobal = false;
 		bool m_isDirty = false;
 

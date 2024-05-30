@@ -12,7 +12,7 @@
 
 namespace Volt::RHI
 {
-	static Ref<CommandBuffer> s_commandBuffer;
+	static RefPtr<CommandBuffer> s_commandBuffer;
 
 	D3D12ImGuiImplementation::D3D12ImGuiImplementation(const ImGuiCreateInfo& createInfo)
 	{
@@ -89,7 +89,7 @@ namespace Volt::RHI
 		ImGui_ImplDX12_Shutdown();
 	}
 
-	ImTextureID D3D12ImGuiImplementation::GetTextureID(Ref<Image2D> image) const
+	ImTextureID D3D12ImGuiImplementation::GetTextureID(RefPtr<Image2D> image) const
 	{
 		return nullptr;
 	}

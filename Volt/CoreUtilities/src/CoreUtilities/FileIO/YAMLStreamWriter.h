@@ -1,11 +1,12 @@
 #pragma once
 
 #include "CoreUtilities/FileIO/SerializationHelpers.h"
+#include "CoreUtilities/Core.h"
 
 #include <yaml-cpp/yaml.h>
 #include <filesystem>
 
-class YAMLStreamWriter
+class VTCOREUTIL_API YAMLStreamWriter
 {
 public:
 	virtual ~YAMLStreamWriter() = default;

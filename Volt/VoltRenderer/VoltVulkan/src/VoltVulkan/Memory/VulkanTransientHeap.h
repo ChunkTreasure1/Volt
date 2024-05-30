@@ -40,11 +40,11 @@ namespace Volt::RHI
 		VulkanTransientHeap(const TransientHeapCreateInfo& info);
 		~VulkanTransientHeap() override;
 
-		Ref<Allocation> CreateBuffer(const TransientBufferCreateInfo& createInfo) override;
-		Ref<Allocation> CreateImage(const TransientImageCreateInfo& createInfo) override;
+		RefPtr<Allocation> CreateBuffer(const TransientBufferCreateInfo& createInfo) override;
+		RefPtr<Allocation> CreateImage(const TransientImageCreateInfo& createInfo) override;
 			
-		void ForfeitBuffer(Ref<Allocation> allocation) override;
-		void ForfeitImage(Ref<Allocation> allocation) override;
+		void ForfeitBuffer(RefPtr<Allocation> allocation) override;
+		void ForfeitImage(RefPtr<Allocation> allocation) override;
 
 		const bool IsAllocationSupported(const uint64_t size, TransientHeapFlags heapFlags) const override;
 		const UUID64 GetHeapID() const override;

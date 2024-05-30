@@ -71,7 +71,7 @@ namespace Volt::RHI
 		Release();
 	}
 
-	void VulkanDescriptorBufferTable::SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	void VulkanDescriptorBufferTable::SetImageView(WeakPtr<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_descriptorSetBindingOffsets.contains(set))
 		{
@@ -117,7 +117,7 @@ namespace Volt::RHI
 		vkGetDescriptorEXT(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &imageDescriptorInfo, descriptorTypeSize, descriptorPtr);
 	}
 
-	void VulkanDescriptorBufferTable::SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	void VulkanDescriptorBufferTable::SetBufferView(WeakPtr<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_descriptorSetBindingOffsets.contains(set))
 		{
@@ -173,7 +173,7 @@ namespace Volt::RHI
 		vkGetDescriptorEXT(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &bufferDescriptorInfo, descriptorTypeSize, descriptorPtr);
 	}
 
-	void VulkanDescriptorBufferTable::SetImageView(std::string_view name, Ref<ImageView> view, uint32_t arrayIndex)
+	void VulkanDescriptorBufferTable::SetImageView(std::string_view name, WeakPtr<ImageView> view, uint32_t arrayIndex)
 	{
 		const auto& binding = m_shader->GetResourceBindingFromName(name);
 		if (!binding.IsValid())
@@ -184,7 +184,7 @@ namespace Volt::RHI
 		SetImageView(view, binding.set, binding.binding, arrayIndex);
 	}
 
-	void VulkanDescriptorBufferTable::SetBufferView(std::string_view name, Ref<BufferView> view, uint32_t arrayIndex)
+	void VulkanDescriptorBufferTable::SetBufferView(std::string_view name, WeakPtr<BufferView> view, uint32_t arrayIndex)
 	{
 		const auto& binding = m_shader->GetResourceBindingFromName(name);
 		if (!binding.IsValid())
@@ -195,11 +195,11 @@ namespace Volt::RHI
 		SetBufferView(view, binding.set, binding.binding, arrayIndex);
 	}
 
-	void VulkanDescriptorBufferTable::SetSamplerState(std::string_view name, Ref<SamplerState> samplerState, uint32_t arrayIndex)
+	void VulkanDescriptorBufferTable::SetSamplerState(std::string_view name, WeakPtr<SamplerState> samplerState, uint32_t arrayIndex)
 	{
 	}
 
-	void VulkanDescriptorBufferTable::SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	void VulkanDescriptorBufferTable::SetSamplerState(WeakPtr<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_descriptorSetBindingOffsets.contains(set))
 		{

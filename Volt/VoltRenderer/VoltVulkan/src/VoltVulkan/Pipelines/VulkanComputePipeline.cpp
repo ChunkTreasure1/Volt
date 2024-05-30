@@ -15,7 +15,7 @@
 
 namespace Volt::RHI
 {
-	VulkanComputePipeline::VulkanComputePipeline(Ref<Shader> shader, bool useGlobalResources)
+	VulkanComputePipeline::VulkanComputePipeline(RefPtr<Shader> shader, bool useGlobalResources)
 		: m_shader(shader), m_useGlobalResouces(useGlobalResources)
 	{
 		Invalidate();
@@ -97,7 +97,7 @@ namespace Volt::RHI
 		}
 	}
 
-	Ref<Shader> VulkanComputePipeline::GetShader() const
+	RefPtr<Shader> VulkanComputePipeline::GetShader() const
 	{
 		return m_shader;
 	}

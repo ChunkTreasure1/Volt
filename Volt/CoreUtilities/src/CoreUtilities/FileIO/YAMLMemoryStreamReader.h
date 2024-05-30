@@ -4,7 +4,7 @@
 
 class Buffer;
 
-class YAMLMemoryStreamReader : public YAMLStreamReader
+class VTCOREUTIL_API YAMLMemoryStreamReader : public YAMLStreamReader
 {
 public:
 	~YAMLMemoryStreamReader() override = default;

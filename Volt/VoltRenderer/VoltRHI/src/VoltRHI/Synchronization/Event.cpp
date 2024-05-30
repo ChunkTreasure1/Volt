@@ -5,7 +5,7 @@
 
 namespace Volt::RHI
 {
-	Ref<Event> Event::Create(const EventCreateInfo& createInfo)
+	RefPtr<Event> Event::Create(const EventCreateInfo& createInfo)
 	{
 		return RHIProxy::GetInstance().CreateEvent(createInfo);
 	}

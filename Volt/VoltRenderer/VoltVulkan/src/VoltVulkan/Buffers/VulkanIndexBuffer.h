@@ -24,7 +24,7 @@ namespace Volt::RHI
 	private:
 		void SetData(const void* data, const uint32_t size);
 
-		Ref<Allocation> m_allocation;
+		RefPtr<Allocation> m_allocation;
 
 		uint32_t m_count = 0;
 	};

@@ -55,7 +55,7 @@ namespace Volt
 		}
 	}
 
-	Ref<RHI::Shader> ShaderMap::Get(const std::string& name)
+	RefPtr<RHI::Shader> ShaderMap::Get(const std::string& name)
 	{
 		if (!s_shaderMap.contains(name))
 		{
@@ -65,7 +65,7 @@ namespace Volt
 		return s_shaderMap.at(name);
 	}
 
-	Ref<RHI::ComputePipeline> ShaderMap::GetComputePipeline(const std::string& name, bool useGlobalResouces)
+	RefPtr<RHI::ComputePipeline> ShaderMap::GetComputePipeline(const std::string& name, bool useGlobalResouces)
 	{
 		const size_t hash = Utility::GetComputeShaderHash(name);
 
@@ -74,13 +74,13 @@ namespace Volt
 			return s_computePipelineCache.at(hash);
 		}
 
-		Ref<RHI::ComputePipeline> pipeline = RHI::ComputePipeline::Create(Get(name), useGlobalResouces);
+		RefPtr<RHI::ComputePipeline> pipeline = RHI::ComputePipeline::Create(Get(name), useGlobalResouces);
 		s_computePipelineCache[hash] = pipeline;
 
 		return pipeline;
 	}
 
-	Ref<RHI::RenderPipeline> ShaderMap::GetRenderPipeline(const RHI::RenderPipelineCreateInfo& pipelineInfo)
+	RefPtr<RHI::RenderPipeline> ShaderMap::GetRenderPipeline(const RHI::RenderPipelineCreateInfo& pipelineInfo)
 	{
 		const size_t hash = Utility::GetRenderPipelineHash(pipelineInfo);
 		
@@ -89,7 +89,7 @@ namespace Volt
 			return s_renderPipelineCache.at(hash);
 		}
 
-		Ref<RHI::RenderPipeline> pipeline = RHI::RenderPipeline::Create(pipelineInfo);
+		RefPtr<RHI::RenderPipeline> pipeline = RHI::RenderPipeline::Create(pipelineInfo);
 		s_renderPipelineCache[hash] = pipeline;
 
 		return pipeline;
@@ -140,7 +140,7 @@ namespace Volt
 					specification.permutations = def->GetPermutations();
 					specification.forceCompile = true;
 
-					Ref<RHI::Shader> shader = RHI::Shader::Create(specification);
+					RefPtr<RHI::Shader> shader = RHI::Shader::Create(specification);
 					{
 						std::scoped_lock lock{ shaderMapMutex };
 						s_shaderMap[std::string(def->GetName())] = shader;
@@ -155,7 +155,7 @@ namespace Volt
 		}
 	}
 
-	void ShaderMap::RegisterShader(const std::string& name, Ref<RHI::Shader> shader)
+	void ShaderMap::RegisterShader(const std::string& name, RefPtr<RHI::Shader> shader)
 	{
 		std::scoped_lock lock{ s_registerMutex };
 		s_shaderMap[std::string(name)] = shader;

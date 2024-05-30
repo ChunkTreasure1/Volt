@@ -22,7 +22,7 @@ namespace Volt
 	{
 	public:
 		TAATechnique(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		TAAData Execute(Ref<RHI::Image2D> previousColor, RenderGraphResourceHandle velocityTexture);
+		TAAData Execute(RefPtr<RHI::Image2D> previousColor, RenderGraphResourceHandle velocityTexture);
 
 	private:
 		RenderGraph& m_renderGraph;

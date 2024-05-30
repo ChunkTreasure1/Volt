@@ -50,7 +50,7 @@ namespace Volt::RHI
 		Release();
 	}
 
-	void VulkanDescriptorTable::SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	void VulkanDescriptorTable::SetImageView(WeakPtr<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_writeDescriptorsMapping[set].contains(binding))
 		{
@@ -89,7 +89,7 @@ namespace Volt::RHI
 		description.imageLayout = Utility::GetImageLayoutFromDescriptorType(static_cast<VkDescriptorType>(m_activeWriteDescriptors.at(writeDescriptorIndex).descriptorType));
 	}
 
-	void VulkanDescriptorTable::SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	void VulkanDescriptorTable::SetBufferView(WeakPtr<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_writeDescriptorsMapping[set].contains(binding))
 		{
@@ -131,7 +131,7 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanDescriptorTable::SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	void VulkanDescriptorTable::SetSamplerState(WeakPtr<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_writeDescriptorsMapping[set].contains(binding))
 		{
@@ -168,7 +168,7 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanDescriptorTable::SetImageView(std::string_view name, Ref<ImageView> view, uint32_t arrayIndex)
+	void VulkanDescriptorTable::SetImageView(std::string_view name, WeakPtr<ImageView> view, uint32_t arrayIndex)
 	{
 		const auto& binding = m_shader->GetResourceBindingFromName(name);
 		if (!binding.IsValid())
@@ -179,7 +179,7 @@ namespace Volt::RHI
 		SetImageView(view, binding.set, binding.binding, arrayIndex);
 	}
 
-	void VulkanDescriptorTable::SetBufferView(std::string_view name, Ref<BufferView> view, uint32_t arrayIndex)
+	void VulkanDescriptorTable::SetBufferView(std::string_view name, WeakPtr<BufferView> view, uint32_t arrayIndex)
 	{
 		const auto& binding = m_shader->GetResourceBindingFromName(name);
 		if (!binding.IsValid())
@@ -190,7 +190,7 @@ namespace Volt::RHI
 		SetBufferView(view, binding.set, binding.binding, arrayIndex);
 	}
 
-	void VulkanDescriptorTable::SetSamplerState(std::string_view name, Ref<SamplerState> samplerState, uint32_t arrayIndex)
+	void VulkanDescriptorTable::SetSamplerState(std::string_view name, WeakPtr<SamplerState> samplerState, uint32_t arrayIndex)
 	{
 		const auto& binding = m_shader->GetResourceBindingFromName(name);
 		if (!binding.IsValid())

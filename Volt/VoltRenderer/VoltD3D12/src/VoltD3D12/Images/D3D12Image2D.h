@@ -17,8 +17,8 @@ namespace Volt::RHI
 		void Invalidate(const uint32_t width, const uint32_t height, const void* data) override;
 		void Release() override;
 		void GenerateMips() override;
-		const Ref<ImageView> GetView(const int32_t mip, const int32_t layer) override;
-		const Ref<ImageView> GetArrayView(const int32_t mip /* = -1 */) override;
+		const RefPtr<ImageView> GetView(const int32_t mip, const int32_t layer) override;
+		const RefPtr<ImageView> GetArrayView(const int32_t mip /* = -1 */) override;
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
 		const uint32_t GetMipCount() const override;
@@ -35,7 +35,7 @@ namespace Volt::RHI
 		const uint64_t GetByteSize() const override;
 
 	private:
-		Ref<ImageView> m_view;
+		RefPtr<ImageView> m_view;
 		ImageSpecification m_specs;
 		AllocatedImage m_image;
 	};

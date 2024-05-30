@@ -2,9 +2,12 @@
 
 #include "VoltRHI/Core/Core.h"
 
+#include <CoreUtilities/Pointers/RefCounted.h>
+#include <CoreUtilities/Pointers/RefPtr.h>
+
 namespace Volt::RHI
 {
-	class VTRHI_API RHIInterface
+	class VTRHI_API RHIInterface : public RefCounted
 	{
 	public:
 		virtual ~RHIInterface() = default;

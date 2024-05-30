@@ -3,18 +3,16 @@
 #include "Volt/Asset/Asset.h"
 
 #include <CoreUtilities/Core.h>
+
 #include <Mosaic/MosaicGraph.h>
+
+#include <VoltRHI/Pipelines/ComputePipeline.h>
+#include <VoltRHI/Images/SamplerState.h>
 
 #include <string>
 
 namespace Volt
 {
-	namespace RHI
-	{
-		class ComputePipeline;
-		class SamplerState;
-	}
-
 	enum class MaterialFlag : uint16_t
 	{
 		None = 0,
@@ -30,7 +28,7 @@ namespace Volt
 	{
 	public:
 		Material();
-		Material(Ref<RHI::ComputePipeline> computePipeline);
+		Material(RefPtr<RHI::ComputePipeline> computePipeline);
 		~Material() override = default;
 
 		void Compile();
@@ -45,9 +43,9 @@ namespace Volt
 		std::vector<AssetHandle> GetTextureHandles() const;
 
 		inline const std::vector<Ref<Texture2D>>& GetTextures() const { return m_textures; }
-		inline const std::vector<Ref<RHI::SamplerState>>& GetSamplers() const { return m_samplers; }
+		inline const std::vector<RefPtr<RHI::SamplerState>>& GetSamplers() const { return m_samplers; }
 
-		inline Ref<RHI::ComputePipeline> GetComputePipeline() const { return m_computePipeline; } // #TODO_Ivar: Used for binding, should probably be done in a different way
+		inline RefPtr<RHI::ComputePipeline> GetComputePipeline() const { return m_computePipeline; } // #TODO_Ivar: Used for binding, should probably be done in a different way
 	
 		inline Mosaic::MosaicGraph& GetGraph() { return *m_graph; }
 		inline const Mosaic::MosaicGraph& GetGraph() const { return *m_graph; }
@@ -63,9 +61,9 @@ namespace Volt
 		Scope<Mosaic::MosaicGraph> m_graph;
 
 		std::vector<Ref<Texture2D>> m_textures;
-		std::vector<Ref<RHI::SamplerState>> m_samplers;
+		std::vector<RefPtr<RHI::SamplerState>> m_samplers;
 
-		Ref<RHI::ComputePipeline> m_computePipeline;
+		RefPtr<RHI::ComputePipeline> m_computePipeline;
 
 		bool m_isEngineMaterial = false;
 		std::atomic_bool m_isDirty = false;

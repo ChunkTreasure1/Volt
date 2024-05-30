@@ -7,6 +7,10 @@
 
 #include <VoltRHI/Core/RHICommon.h>
 #include <VoltRHI/Shader/Shader.h>
+#include <VoltRHI/Pipelines/RenderPipeline.h>
+#include <VoltRHI/Pipelines/ComputePipeline.h>
+#include <VoltRHI/Buffers/IndexBuffer.h>
+#include <VoltRHI/Buffers/CommandBuffer.h>
 
 #include <CoreUtilities/Profiling/Profiling.h>
 #include <CoreUtilities/StringHash.h>	
@@ -21,10 +25,7 @@ namespace Volt
 		class CommandBuffer;
 		class StorageBuffer;
 		class VertexBuffer;
-		class IndexBuffer;
 
-		class RenderPipeline;
-		class ComputePipeline;
 		class DescriptorTable;
 
 		class BufferView;
@@ -149,7 +150,7 @@ namespace Volt
 	class RenderContext
 	{
 	public:
-		RenderContext(Ref<RHI::CommandBuffer> commandBuffer);
+		RenderContext(RefPtr<RHI::CommandBuffer> commandBuffer);
 		~RenderContext();
 
 		void BeginRendering(const RenderingInfo& renderingInfo);
@@ -175,15 +176,15 @@ namespace Volt
 		void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance);
 		void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance);
 
-		void BindPipeline(Ref<RHI::RenderPipeline> pipeline);
-		void BindPipeline(Ref<RHI::ComputePipeline> pipeline);
+		void BindPipeline(WeakPtr<RHI::RenderPipeline> pipeline);
+		void BindPipeline(WeakPtr<RHI::ComputePipeline> pipeline);
 
 		void BindIndexBuffer(RenderGraphResourceHandle indexBuffer);
-		void BindIndexBuffer(Ref<RHI::IndexBuffer> indexBuffer);
-		void BindVertexBuffers(const std::vector<Ref<RHI::VertexBuffer>>& vertexBuffers, const uint32_t firstBinding);
+		void BindIndexBuffer(WeakPtr<RHI::IndexBuffer> indexBuffer);
+		void BindVertexBuffers(const std::vector<WeakPtr<RHI::VertexBuffer>>& vertexBuffers, const uint32_t firstBinding);
 
 		void Flush();
-		Ref<RHI::StorageBuffer> GetReadbackBuffer(Ref<RHI::StorageBuffer> buffer);
+		RefPtr<RHI::StorageBuffer> GetReadbackBuffer(WeakPtr<RHI::StorageBuffer> buffer);
 
 		template<typename T>
 		void SetConstant(const StringHash& name, const T& data);
@@ -207,7 +208,7 @@ namespace Volt
 
 		void BindDescriptorTableIfRequired();
 
-		void SetPassConstantsBuffer(Weak<RHI::StorageBuffer> constantsBuffer);
+		void SetPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer);
 		void SetCurrentPassIndex(Weak<RenderGraphPassNodeBase> currentPassNode);
 		void SetRenderGraphInstance(RenderGraph* renderGraph);
 		void UploadConstantsData();
@@ -218,25 +219,25 @@ namespace Volt
 
 		const RHI::ShaderRenderGraphConstantsData& GetRenderGraphConstantsData();
 
-		Ref<RHI::DescriptorTable> GetOrCreateDescriptorTable(Ref<RHI::RenderPipeline> renderPipeline);
-		Ref<RHI::DescriptorTable> GetOrCreateDescriptorTable(Ref<RHI::ComputePipeline> computePipeline);
+		RefPtr<RHI::DescriptorTable> GetOrCreateDescriptorTable(WeakPtr<RHI::RenderPipeline> renderPipeline);
+		RefPtr<RHI::DescriptorTable> GetOrCreateDescriptorTable(WeakPtr<RHI::ComputePipeline> computePipeline);
 
 		// Internal state
 		bool m_descriptorTableIsBound = false; // This needs to be checked in every call that uses resources
 
-		Weak<RHI::RenderPipeline> m_currentRenderPipeline;
-		Weak<RHI::ComputePipeline> m_currentComputePipeline;
-		Ref<RHI::DescriptorTable> m_currentDescriptorTable;
+		WeakPtr<RHI::RenderPipeline> m_currentRenderPipeline;
+		WeakPtr<RHI::ComputePipeline> m_currentComputePipeline;
+		RefPtr<RHI::DescriptorTable> m_currentDescriptorTable;
 
-		Weak<RHI::StorageBuffer> m_passConstantsBuffer;
+		WeakPtr<RHI::StorageBuffer> m_passConstantsBuffer;
 
 		uint32_t m_currentPassIndex = 0;
 		Weak<RenderGraphPassNodeBase> m_currentPassNode;
 		RenderGraph* m_renderGraph = nullptr;
 
-		Ref<RHI::CommandBuffer> m_commandBuffer;
+		RefPtr<RHI::CommandBuffer> m_commandBuffer;
 
-		std::unordered_map<void*, Ref<RHI::DescriptorTable>> m_descriptorTableCache;
+		std::unordered_map<void*, RefPtr<RHI::DescriptorTable>> m_descriptorTableCache;
 	
 		// #TODO_Ivar: Should be changed
 		std::vector<uint8_t> m_passConstantsBufferData;

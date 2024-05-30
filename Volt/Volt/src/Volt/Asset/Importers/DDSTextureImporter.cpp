@@ -93,7 +93,7 @@ namespace Volt
 		const uint32_t width = imageData->m_width;
 		const uint32_t height = imageData->m_height;
 
-		Ref<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(size, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPU);
+		RefPtr<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(size, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPU);
 
 		// Map memory
 		{
@@ -102,8 +102,8 @@ namespace Volt
 			stagingBuffer->Unmap();
 		}
 
-		Ref<RHI::Image2D> image;
-		Ref<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
+		RefPtr<RHI::Image2D> image;
+		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 
 		// Create image
 		{

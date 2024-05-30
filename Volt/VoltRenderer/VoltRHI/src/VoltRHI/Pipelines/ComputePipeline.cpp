@@ -2,10 +2,11 @@
 #include "ComputePipeline.h"
 
 #include "VoltRHI/RHIProxy.h"
+#include "VoltRHI/Shader/Shader.h"
 
 namespace Volt::RHI
 {
-	Ref<ComputePipeline> ComputePipeline::Create(Ref<Shader> shader, bool useGlobalResources)
+	RefPtr<ComputePipeline> ComputePipeline::Create(RefPtr<Shader> shader, bool useGlobalResources)
 	{
 		return RHIProxy::GetInstance().CreateComputePipeline(shader, useGlobalResources);
 	}

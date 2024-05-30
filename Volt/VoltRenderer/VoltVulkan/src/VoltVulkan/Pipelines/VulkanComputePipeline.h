@@ -11,11 +11,11 @@ namespace Volt::RHI
 	class VulkanComputePipeline : public ComputePipeline
 	{ 
 	public:
-		VulkanComputePipeline(Ref<Shader> shader, bool useGlobalResources);
+		VulkanComputePipeline(RefPtr<Shader> shader, bool useGlobalResources);
 		~VulkanComputePipeline() override;
 
 		void Invalidate() override;
-		Ref<Shader> GetShader() const override;
+		RefPtr<Shader> GetShader() const override;
 
 		inline VkPipelineLayout_T* GetPipelineLayout() const { return m_pipelineLayout; }
 
@@ -25,7 +25,7 @@ namespace Volt::RHI
 	private:
 		void Release();
 
-		Ref<Shader> m_shader;
+		RefPtr<Shader> m_shader;
 		bool m_useGlobalResouces = false;
 
 		VkPipeline_T* m_pipeline = nullptr;

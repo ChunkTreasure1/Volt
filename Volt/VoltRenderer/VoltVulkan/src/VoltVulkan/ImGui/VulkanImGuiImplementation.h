@@ -1,9 +1,15 @@
 #pragma once
 
 #include "VoltVulkan/Core.h"
+
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
+#include <VoltRHI/Buffers/CommandBuffer.h>
+
+#include <CoreUtilities/Pointers/RefPtr.h>
 
 struct GLFWwindow;
+
+struct VkDescriptorPool_T;
 
 namespace Volt::RHI
 {
@@ -13,7 +19,7 @@ namespace Volt::RHI
 		VulkanImGuiImplementation(const ImGuiCreateInfo& createInfo);
 		~VulkanImGuiImplementation() override;
 
-		ImTextureID GetTextureID(Ref<Image2D> image) const override;
+		ImTextureID GetTextureID(RefPtr<Image2D> image) const override;
 		ImFont* AddFont(const std::filesystem::path& fontPath, float pixelSize) override;
 
 	protected:
@@ -23,11 +29,15 @@ namespace Volt::RHI
 		void InitializeAPI(ImGuiContext* context) override;
 		void ShutdownAPI() override;
 
+		void* GetHandleImpl() const override;
+
 	private:
 		void InitializeVulkanData();
 		void ReleaseVulkanData();
 	
 		GLFWwindow* m_windowPtr = nullptr;
-		Weak<Swapchain> m_swapchain;
+		WeakPtr<Swapchain> m_swapchain;
+		RefPtr<CommandBuffer> m_commandBuffer;
+		VkDescriptorPool_T* m_descriptorPool;
 	};
 }

@@ -124,9 +124,9 @@ namespace Volt
 		MultiTimer m_frameTimer;
 		WindowManager m_windowManager;
 
-		Ref<RHI::ImGuiImplementation> m_imguiImplementation;
-		Ref<RHI::GraphicsContext> m_graphicsContext;
-		Ref<RHI::RHIProxy> m_rhiProxy;
+		RefPtr<RHI::ImGuiImplementation> m_imguiImplementation;
+		RefPtr<RHI::GraphicsContext> m_graphicsContext;
+		RefPtr<RHI::RHIProxy> m_rhiProxy;
 
 		WindowHandle m_windowHandle = 0;
 		Scope<AssetManager> m_assetmanager;

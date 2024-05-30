@@ -4,6 +4,7 @@
 #include "Volt/Rendering/Resources/ResourceHandle.h"
 
 #include <VoltRHI/Core/RHICommon.h>
+#include <VoltRHI/Images/Image2D.h>
 
 namespace Volt
 {
@@ -16,7 +17,7 @@ namespace Volt
 	{
 	public:
 		Texture2D(RHI::PixelFormat format, uint32_t width, uint32_t height, const void* data);
-		Texture2D(Ref<RHI::Image2D> image);
+		Texture2D(RefPtr<RHI::Image2D> image);
 		Texture2D() = default;
 		~Texture2D() override;
 
@@ -25,18 +26,18 @@ namespace Volt
 
 		ResourceHandle GetResourceHandle() const;
 
-		inline const Ref<RHI::Image2D> GetImage() const { return m_image; }
-		void SetImage(Ref<RHI::Image2D> image);
+		inline const RefPtr<RHI::Image2D> GetImage() const { return m_image; }
+		void SetImage(RefPtr<RHI::Image2D> image);
 
 		static AssetType GetStaticType() { return AssetType::Texture; }
 		AssetType GetType() override { return GetStaticType(); }
 		uint32_t GetVersion() const override { return 1; }
 
 		static Ref<Texture2D> Create(RHI::PixelFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
-		static Ref<Texture2D> Create(Ref<RHI::Image2D> image);
+		static Ref<Texture2D> Create(RefPtr<RHI::Image2D> image);
 
 	private:
-		Ref<RHI::Image2D> m_image;
+		RefPtr<RHI::Image2D> m_image;
 		ResourceHandle m_resourceHandle = Resource::Invalid;
 	};
 }

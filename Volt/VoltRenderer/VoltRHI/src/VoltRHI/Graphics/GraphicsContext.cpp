@@ -15,7 +15,7 @@ namespace Volt::RHI
 		s_context = nullptr;
 	}
 
-	Ref<GraphicsContext> GraphicsContext::Create(const GraphicsContextCreateInfo& createInfo)
+	RefPtr<GraphicsContext> GraphicsContext::Create(const GraphicsContextCreateInfo& createInfo)
 	{
 		s_graphicsAPI = createInfo.graphicsApi;
 		return RHIProxy::GetInstance().CreateGraphicsContext(createInfo);

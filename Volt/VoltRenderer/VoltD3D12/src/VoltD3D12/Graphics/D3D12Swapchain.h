@@ -42,17 +42,15 @@ namespace Volt::RHI
 		VT_NODISCARD const uint32_t GetWidth() const override;
 		VT_NODISCARD const uint32_t GetHeight() const override;
 		VT_NODISCARD const uint32_t GetFramesInFlight() const override;
-		VT_NODISCARD Ref<Image2D> GetCurrentImage() const override;
+		VT_NODISCARD RefPtr<Image2D> GetCurrentImage() const override;
 		VT_NODISCARD const PixelFormat GetFormat() const override;
 
 	private:
 		GLFWwindow* m_windowHandle;
 		IDXGISwapChain3* m_swapchain;
 
-
 		void Build();
 		void CleanUp();
-
 
 		std::array<RenderTarget, MaxSwapchainImages> m_renderTargets = {};
 		std::array<D3D12Fence, MaxSwapchainImages> m_fences = {};

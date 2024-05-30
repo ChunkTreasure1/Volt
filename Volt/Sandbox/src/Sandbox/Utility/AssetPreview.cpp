@@ -63,7 +63,7 @@ void AssetPreview::Render()
 	//myIsRendered = true;
 }
 
-const Ref<Volt::RHI::Image2D> AssetPreview::GetPreview() const
+const RefPtr<Volt::RHI::Image2D> AssetPreview::GetPreview() const
 {
 	return nullptr; //mySceneRenderer->GetFinalImage();
 }

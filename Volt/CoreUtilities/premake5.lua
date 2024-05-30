@@ -1,8 +1,9 @@
 project "CoreUtilities"
 	location "."
-	kind "StaticLib"
+	kind "SharedLib"
 	language "C++"
 	cppdialect "C++20"
+	staticruntime "off"
 
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
@@ -42,7 +43,15 @@ project "CoreUtilities"
 
 	links
 	{
+		"YamlCPP",
+		"tracy",
+
 		"%{Library.zlib}",
+	}
+
+	postbuildcommands
+	{
+		'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox"'
 	}
 
 	filter "files:vendor/**.cpp"
@@ -72,6 +81,7 @@ project "CoreUtilities"
 		defines
 		{
 			"VT_PLATFORM_WINDOWS",
+			"VTCOREUTIL_BUILD_DLL",
 
 			"NOMINMAX",
 			"_HAS_STD_BYTE=0",
@@ -116,3 +126,8 @@ project "CoreUtilities"
 		symbols "on"
 		vectorextensions "AVX2"
 		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
+
+		postbuildcommands
+		{
+			'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../Engine"'
+		}

@@ -5,7 +5,7 @@
 
 namespace Volt::RHI
 {
-	Ref<Fence> Fence::Create(const FenceCreateInfo& createInfo)
+	RefPtr<Fence> Fence::Create(const FenceCreateInfo& createInfo)
 	{
 		const auto api = GraphicsContext::GetAPI();
 

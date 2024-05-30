@@ -27,7 +27,7 @@ namespace Volt
 		BindlessResourceScope<RHI::StorageBuffer> m_errorBuffer;
 		BindlessResourceScope<RHI::StorageBuffer> m_stagingBuffer;
 
-		Ref<RHI::CommandBuffer> m_commandBuffer;
+		RefPtr<RHI::CommandBuffer> m_commandBuffer;
 
 		std::vector<std::string> m_validationErrors;
 	};

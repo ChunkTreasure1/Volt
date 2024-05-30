@@ -4,6 +4,7 @@
 #include "Volt/Utility/FunctionQueue.h"
 
 #include <VoltRHI/Core/RHIResource.h>
+#include <VoltRHI/Descriptors/DescriptorTable.h>
 #include <CoreUtilities/Weak.h>
 
 #include <span>
@@ -15,7 +16,6 @@ namespace Volt
 		class StorageBuffer;
 		class Image2D;
 		class SamplerState;
-		class DescriptorTable;
 	}
 
 	struct RegisteredResource
@@ -24,7 +24,7 @@ namespace Volt
 		uint32_t referenceCount = 0;
 		RHI::ImageUsage imageUsage;
 
-		Weak<RHI::RHIInterface> resource;
+		WeakPtr<RHI::RHIInterface> resource;
 	};
 
 	class ResourceRegistry
@@ -32,10 +32,10 @@ namespace Volt
 	public:
 		ResourceRegistry();
 
-		ResourceHandle RegisterResource(Weak<RHI::RHIInterface> resource, RHI::ImageUsage imageUsage = RHI::ImageUsage::None);
+		ResourceHandle RegisterResource(WeakPtr<RHI::RHIInterface> resource, RHI::ImageUsage imageUsage = RHI::ImageUsage::None);
 		void UnregisterResource(ResourceHandle handle);
 
-		ResourceHandle GetResourceHandle(Weak<RHI::RHIInterface> resource);
+		ResourceHandle GetResourceHandle(WeakPtr<RHI::RHIInterface> resource);
 
 		void Update();
 		void MarkAsDirty(ResourceHandle handle);
@@ -68,15 +68,15 @@ namespace Volt
 		BindlessResourcesManager();
 		~BindlessResourcesManager();
 
-		ResourceHandle RegisterBuffer(Weak<RHI::StorageBuffer> storageBuffer);
-		ResourceHandle RegisterImageView(Weak<RHI::ImageView> image);
-		ResourceHandle RegisterSamplerState(Weak<RHI::SamplerState> samplerState);
+		ResourceHandle RegisterBuffer(WeakPtr<RHI::StorageBuffer> storageBuffer);
+		ResourceHandle RegisterImageView(WeakPtr<RHI::ImageView> image);
+		ResourceHandle RegisterSamplerState(WeakPtr<RHI::SamplerState> samplerState);
 
 		void UnregisterBuffer(ResourceHandle handle);
 		void UnregisterImageView(ResourceHandle handle, RHI::ImageViewType viewType);
 		void UnregisterSamplerState(ResourceHandle handle);
 
-		ResourceHandle GetBufferHandle(Weak<RHI::StorageBuffer> storageBuffer);
+		ResourceHandle GetBufferHandle(WeakPtr<RHI::StorageBuffer> storageBuffer);
 
 		void MarkBufferAsDirty(ResourceHandle handle);
 		void MarkImageViewAsDirty(ResourceHandle handle, RHI::ImageViewType viewType);
@@ -87,7 +87,7 @@ namespace Volt
 
 		void PrintResources();
 
-		VT_NODISCARD VT_INLINE Ref<RHI::DescriptorTable> GetDescriptorTable() const { return m_bindlessDescriptorTable; }
+		VT_NODISCARD VT_INLINE RefPtr<RHI::DescriptorTable> GetDescriptorTable() const { return m_bindlessDescriptorTable; }
 
 		VT_NODISCARD VT_INLINE static BindlessResourcesManager& Get() { return *s_instance; }
 
@@ -101,6 +101,6 @@ namespace Volt
 		ResourceRegistry m_bufferRegistry;
 		ResourceRegistry m_samplerRegistry;
 
-		Ref<RHI::DescriptorTable> m_bindlessDescriptorTable;
+		RefPtr<RHI::DescriptorTable> m_bindlessDescriptorTable;
 	};
 }

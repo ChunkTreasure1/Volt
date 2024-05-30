@@ -7,12 +7,8 @@
 #include "Volt/Rendering/Debug/ShaderRuntimeValidator.h"
 #include "Volt/Rendering/Renderer.h"
 
-#include <VoltRHI/Buffers/CommandBuffer.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
 #include <VoltRHI/Descriptors/DescriptorTable.h>
-
-#include <VoltRHI/Pipelines/ComputePipeline.h>
-#include <VoltRHI/Pipelines/RenderPipeline.h>
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 
@@ -20,7 +16,7 @@
 
 namespace Volt
 {
-	RenderContext::RenderContext(Ref<RHI::CommandBuffer> commandBuffer)
+	RenderContext::RenderContext(RefPtr<RHI::CommandBuffer> commandBuffer)
 		: m_commandBuffer(commandBuffer)
 	{
 	}
@@ -246,13 +242,13 @@ namespace Volt
 		m_commandBuffer->Draw(vertexCount, instanceCount, firstVertex, firstInstance);
 	}
 
-	void RenderContext::BindPipeline(Ref<RHI::RenderPipeline> pipeline)
+	void RenderContext::BindPipeline(WeakPtr<RHI::RenderPipeline> pipeline)
 	{
 		VT_PROFILE_FUNCTION();
 
 		m_currentComputePipeline.Reset();
 
-		if (pipeline == nullptr)
+		if (!pipeline)
 		{
 			m_currentRenderPipeline.Reset();
 			return;
@@ -267,13 +263,13 @@ namespace Volt
 		InitializeCurrentPipelineConstantsValidation();
 	}
 
-	void RenderContext::BindPipeline(Ref<RHI::ComputePipeline> pipeline)
+	void RenderContext::BindPipeline(WeakPtr<RHI::ComputePipeline> pipeline)
 	{
 		VT_PROFILE_FUNCTION();
 
 		m_currentRenderPipeline.Reset();
 
-		if (pipeline == nullptr)
+		if (!pipeline)
 		{
 			m_currentComputePipeline.Reset();
 			return;
@@ -297,12 +293,12 @@ namespace Volt
 		m_commandBuffer->BindIndexBuffer(idxBuffer);
 	}
 
-	void RenderContext::BindIndexBuffer(Ref<RHI::IndexBuffer> indexBuffer)
+	void RenderContext::BindIndexBuffer(WeakPtr<RHI::IndexBuffer> indexBuffer)
 	{
 		m_commandBuffer->BindIndexBuffer(indexBuffer);
 	}
 
-	void RenderContext::BindVertexBuffers(const std::vector<Ref<RHI::VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
+	void RenderContext::BindVertexBuffers(const std::vector<WeakPtr<RHI::VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
 	{
 		m_commandBuffer->BindVertexBuffers(vertexBuffers, firstBinding);
 	}
@@ -315,11 +311,11 @@ namespace Volt
 		m_commandBuffer->RestartAfterFlush();
 	}
 
-	Ref<RHI::StorageBuffer> RenderContext::GetReadbackBuffer(Ref<RHI::StorageBuffer> buffer)
+	RefPtr<RHI::StorageBuffer> RenderContext::GetReadbackBuffer(WeakPtr<RHI::StorageBuffer> buffer)
 	{
-		Ref<RHI::StorageBuffer> readbackBuffer = RHI::StorageBuffer::Create(buffer->GetSize(), "Readback Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
+		RefPtr<RHI::StorageBuffer> readbackBuffer = RHI::StorageBuffer::Create(buffer->GetSize(), "Readback Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
 
-		Ref<RHI::CommandBuffer> tempCommandBuffer = RHI::CommandBuffer::Create();
+		RefPtr<RHI::CommandBuffer> tempCommandBuffer = RHI::CommandBuffer::Create();
 		tempCommandBuffer->Begin();
 
 		tempCommandBuffer->CopyBufferRegion(buffer->GetAllocation(), 0, readbackBuffer->GetAllocation(), 0, buffer->GetSize());
@@ -330,7 +326,7 @@ namespace Volt
 		return readbackBuffer;
 	}
 
-	void RenderContext::SetPassConstantsBuffer(Weak<RHI::StorageBuffer> constantsBuffer)
+	void RenderContext::SetPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer)
 	{
 		m_passConstantsBuffer = constantsBuffer;
 		m_passConstantsBufferData.resize(constantsBuffer->GetSize());
@@ -423,7 +419,7 @@ namespace Volt
 		m_descriptorTableIsBound = true;
 	}
 
-	Ref<RHI::DescriptorTable> RenderContext::GetOrCreateDescriptorTable(Ref<RHI::RenderPipeline> renderPipeline)
+	RefPtr<RHI::DescriptorTable> RenderContext::GetOrCreateDescriptorTable(WeakPtr<RHI::RenderPipeline> renderPipeline)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -439,13 +435,13 @@ namespace Volt
 		//info.shader = shader;
 		//info.count = 1;
 
-		//Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
+		//RefPtr<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
 		//m_descriptorTableCache[ptr] = descriptorTable;
 
 		return BindlessResourcesManager::Get().GetDescriptorTable();
 	}
 
-	Ref<RHI::DescriptorTable> RenderContext::GetOrCreateDescriptorTable(Ref<RHI::ComputePipeline> computePipeline)
+	RefPtr<RHI::DescriptorTable> RenderContext::GetOrCreateDescriptorTable(WeakPtr<RHI::ComputePipeline> computePipeline)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -461,7 +457,7 @@ namespace Volt
 		//info.shader = shader;
 		//info.count = 1;
 
-		//Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
+		//RefPtr<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
 		//m_descriptorTableCache[ptr] = descriptorTable;
 
 		return BindlessResourcesManager::Get().GetDescriptorTable();

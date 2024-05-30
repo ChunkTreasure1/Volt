@@ -1,11 +1,13 @@
 #pragma once
 
+#include "CoreUtilities/Core.h"
+
 template<typename CT, typename... A>
-struct LambdaFunctionWrapper : public LambdaFunctionWrapper<decltype(&CT::operator())(A...)>
+struct VTCOREUTIL_API LambdaFunctionWrapper : public LambdaFunctionWrapper<decltype(&CT::operator())(A...)>
 { };
 
 template<typename C>
-struct LambdaFunctionWrapper<C>
+struct VTCOREUTIL_API LambdaFunctionWrapper<C>
 {
 public:
 	LambdaFunctionWrapper()

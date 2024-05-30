@@ -109,12 +109,12 @@ namespace Volt
 		m_shouldResize = true;
 	}
 
-	Ref<RHI::Image2D> SceneRenderer::GetFinalImage()
+	RefPtr<RHI::Image2D> SceneRenderer::GetFinalImage()
 	{
 		return m_outputImage;
 	}
 
-	Ref<RHI::Image2D> SceneRenderer::GetObjectIDImage()
+	RefPtr<RHI::Image2D> SceneRenderer::GetObjectIDImage()
 	{
 		return m_objectIDImage;
 	}

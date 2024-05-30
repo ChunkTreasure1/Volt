@@ -6,7 +6,7 @@
 #include <cassert>
 #include <filesystem>
 
-class Buffer
+class VTCOREUTIL_API Buffer
 {
 public:
 	inline Buffer(size_t aSize);

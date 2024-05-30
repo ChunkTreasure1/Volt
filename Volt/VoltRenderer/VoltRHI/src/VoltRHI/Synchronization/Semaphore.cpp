@@ -3,8 +3,8 @@
 
 namespace Volt::RHI
 {
-	Ref<Semaphore> Semaphore::Create(const SemaphoreCreateInfo& createInfo)
+	RefPtr<Semaphore> Semaphore::Create(const SemaphoreCreateInfo& createInfo)
 	{
-		return Ref<Semaphore>();
+		return RefPtr<Semaphore>();
 	}
 }

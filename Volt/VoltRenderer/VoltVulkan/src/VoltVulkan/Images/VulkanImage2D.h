@@ -16,7 +16,7 @@ namespace Volt::RHI
 		using ImageLayoutInt = uint32_t;
 
 		VulkanImage2D(const ImageSpecification& specification, const void* data);
-		VulkanImage2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data);
+		VulkanImage2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data);
 		VulkanImage2D(const SwapchainImageSpecification& specification);
 		~VulkanImage2D() override;
 
@@ -24,8 +24,8 @@ namespace Volt::RHI
 		void Release() override;
 		void GenerateMips() override;
 
-		const Ref<ImageView> GetView(const int32_t mip, const int32_t layer) override;
-		const Ref<ImageView> GetArrayView(const int32_t mip /* = -1 */) override;
+		const RefPtr<ImageView> GetView(const int32_t mip, const int32_t layer) override;
+		const RefPtr<ImageView> GetArrayView(const int32_t mip /* = -1 */) override;
 
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
@@ -64,8 +64,8 @@ namespace Volt::RHI
 		ImageSpecification m_specification;
 		SwapchainImageData m_swapchainImageData;
 
-		Ref<Allocation> m_allocation;
-		Weak<Allocator> m_customAllocator;
+		RefPtr<Allocation> m_allocation;
+		WeakPtr<Allocator> m_customAllocator;
 
 		bool m_hasGeneratedMips = false;
 		bool m_allocatedUsingCustomAllocator = false;
@@ -74,7 +74,7 @@ namespace Volt::RHI
 		ImageLayoutInt m_currentImageLayout = 0;
 		ImageAspect m_imageAspect = ImageAspect::None;
 
-		std::map<int32_t, std::map<int32_t, Ref<ImageView>>> m_imageViews; // Layer -> Mip -> View
-		std::map<int32_t, Ref<ImageView>> m_arrayImageViews;
+		std::map<int32_t, std::map<int32_t, RefPtr<ImageView>>> m_imageViews; // Layer -> Mip -> View
+		std::map<int32_t, RefPtr<ImageView>> m_arrayImageViews;
 	};
 }

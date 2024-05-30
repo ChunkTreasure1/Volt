@@ -23,17 +23,17 @@ namespace Volt::RHI
 		return *alloc;
 	}
 
-	Ref<Allocator> D3D12GraphicsContext::GetTransientAllocatorImpl()
+	RefPtr<Allocator> D3D12GraphicsContext::GetTransientAllocatorImpl()
 	{
 		return nullptr;
 	}
 
-	Ref<GraphicsDevice> D3D12GraphicsContext::GetGraphicsDevice() const
+	RefPtr<GraphicsDevice> D3D12GraphicsContext::GetGraphicsDevice() const
 	{
 		return m_graphicsDevice;
 	}
 
-	Ref<PhysicalGraphicsDevice> D3D12GraphicsContext::GetPhysicalGraphicsDevice() const
+	RefPtr<PhysicalGraphicsDevice> D3D12GraphicsContext::GetPhysicalGraphicsDevice() const
 	{
 		return m_physicalDevice;
 	}

@@ -24,8 +24,8 @@ namespace Volt
 	{
 		Ref<Texture2D> whiteTexture;
 
-		Ref<RHI::Image2D> BRDFLuT;
-		Ref<RHI::Image2D> blackCubeTexture;
+		RefPtr<RHI::Image2D> BRDFLuT;
+		RefPtr<RHI::Image2D> blackCubeTexture;
 
 		Ref<Material> defaultMaterial;
 

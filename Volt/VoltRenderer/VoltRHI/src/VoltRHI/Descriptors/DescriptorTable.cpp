@@ -5,7 +5,7 @@
 
 namespace Volt::RHI
 {
-	Ref<DescriptorTable> DescriptorTable::Create(const DescriptorTableCreateInfo& specification)
+	RefPtr<DescriptorTable> DescriptorTable::Create(const DescriptorTableCreateInfo& specification)
 	{
 		return RHIProxy::GetInstance().CreateDescriptorTable(specification);
 	}

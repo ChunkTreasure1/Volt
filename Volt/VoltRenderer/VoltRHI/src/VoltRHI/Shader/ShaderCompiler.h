@@ -58,7 +58,7 @@ namespace Volt::RHI
 		static void AddMacro(const std::string& macroName);
 		static void RemoveMacro(std::string_view macroName);
 		
-		static Ref<ShaderCompiler> Create(const ShaderCompilerCreateInfo& createInfo);
+		static RefPtr<ShaderCompiler> Create(const ShaderCompilerCreateInfo& createInfo);
 
 	protected:
 		ShaderCompiler();

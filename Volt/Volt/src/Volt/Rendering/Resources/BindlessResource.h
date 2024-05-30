@@ -26,7 +26,7 @@ namespace Volt
 		BindlessResource(const BindlessResource&) = delete;
 		BindlessResource& operator=(const BindlessResource&) = delete;
 
-		VT_INLINE BindlessResource(Ref<T> resource)
+		VT_INLINE BindlessResource(RefPtr<T> resource)
 			: m_resource(resource)
 		{
 			if constexpr (std::is_same<T, RHI::StorageBuffer>::value)
@@ -94,10 +94,10 @@ namespace Volt
 
 		VT_INLINE VT_NODISCARD bool IsValid() const { return m_resource != nullptr; }
 		VT_INLINE VT_NODISCARD ResourceHandle GetResourceHandle() const { return m_resourceHandle; }
-		VT_INLINE VT_NODISCARD Weak<T> GetResource() const { return m_resource; }
+		VT_INLINE VT_NODISCARD RefPtr<T> GetResource() const { return m_resource; }
 
 	private:
-		Ref<T> m_resource;
+		RefPtr<T> m_resource;
 		ResourceHandle m_resourceHandle = Resource::Invalid;
 	};
 

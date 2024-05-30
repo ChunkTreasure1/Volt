@@ -14,9 +14,9 @@ namespace Volt::RHI
 
 	protected:
 		Allocator& GetDefaultAllocatorImpl() override;
-		Ref<Allocator> GetTransientAllocatorImpl() override;
-		Ref<GraphicsDevice> GetGraphicsDevice() const override;
-		Ref<PhysicalGraphicsDevice> GetPhysicalGraphicsDevice() const override;
+		RefPtr<Allocator> GetTransientAllocatorImpl() override;
+		RefPtr<GraphicsDevice> GetGraphicsDevice() const override;
+		RefPtr<PhysicalGraphicsDevice> GetPhysicalGraphicsDevice() const override;
 
 		void* GetHandleImpl() const override;
 
@@ -26,11 +26,11 @@ namespace Volt::RHI
 
 		bool CreateAPIDebugging();
 
-		Ref<GraphicsDevice> m_graphicsDevice;
-		Ref<PhysicalGraphicsDevice> m_physicalDevice;
+		RefPtr<GraphicsDevice> m_graphicsDevice;
+		RefPtr<PhysicalGraphicsDevice> m_physicalDevice;
 
 		Scope<Allocator> m_defaultAllocator;
-		Ref<Allocator> m_transientAllocator;
+		RefPtr<Allocator> m_transientAllocator;
 
 		ID3D12InfoQueue* m_infoQueue;
 		ID3D12Debug* m_debug;

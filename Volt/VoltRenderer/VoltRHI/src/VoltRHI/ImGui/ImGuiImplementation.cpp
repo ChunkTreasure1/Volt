@@ -232,9 +232,9 @@ namespace Volt::RHI
 		return ImGui::GetCurrentContext();
 	}
 
-	Ref<ImGuiImplementation> ImGuiImplementation::Create(const ImGuiCreateInfo& createInfo)
+	RefPtr<ImGuiImplementation> ImGuiImplementation::Create(const ImGuiCreateInfo& createInfo)
 	{
-		Ref<ImGuiImplementation> implementation = RHIProxy::GetInstance().CreateImGuiImplementation(createInfo);
+		RefPtr<ImGuiImplementation> implementation = RHIProxy::GetInstance().CreateImGuiImplementation(createInfo);
 		implementation->Initialize();
 
 		return implementation;

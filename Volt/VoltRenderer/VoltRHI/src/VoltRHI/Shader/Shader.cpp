@@ -21,7 +21,7 @@ namespace Volt::RHI
 		m_size = size;
 	}
 
-	Ref<Shader> Shader::Create(const ShaderSpecification& createInfo)
+	RefPtr<Shader> Shader::Create(const ShaderSpecification& createInfo)
 	{
 		return RHIProxy::GetInstance().CreateShader(createInfo);
 	}

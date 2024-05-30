@@ -1,6 +1,8 @@
 #pragma once
 
 #include <CoreUtilities/Core.h>
+#include <CoreUtilities/Pointers/RefPtr.h>
+#include <CoreUtilities/Pointers/WeakPtr.h>
 
 #include <memory>
 #include <string>

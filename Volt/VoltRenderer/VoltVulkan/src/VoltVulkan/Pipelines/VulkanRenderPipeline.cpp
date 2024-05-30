@@ -305,7 +305,7 @@ namespace Volt::RHI
 		}
 	}
 
-	Ref<Shader> VulkanRenderPipeline::GetShader() const
+	RefPtr<Shader> VulkanRenderPipeline::GetShader() const
 	{
 		return m_createInfo.shader;
 	}

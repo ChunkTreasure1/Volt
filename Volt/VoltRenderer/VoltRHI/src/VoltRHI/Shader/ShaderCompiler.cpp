@@ -30,7 +30,7 @@ namespace Volt::RHI
 		s_instance->RemoveMacroImpl(macroName);
 	}
 
-	Ref<ShaderCompiler> ShaderCompiler::Create(const ShaderCompilerCreateInfo& createInfo)
+	RefPtr<ShaderCompiler> ShaderCompiler::Create(const ShaderCompilerCreateInfo& createInfo)
 	{
 		return RHIProxy::GetInstance().CreateShaderCompiler(createInfo);
 	}

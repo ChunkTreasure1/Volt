@@ -21,7 +21,7 @@ public:
 	AssetPreview(const std::filesystem::path& path);
 
 	void Render();
-	const Ref<Volt::RHI::Image2D> GetPreview() const;
+	const RefPtr<Volt::RHI::Image2D> GetPreview() const;
 	inline const bool IsRendered() const { return m_isRenderered; }
 
 private:

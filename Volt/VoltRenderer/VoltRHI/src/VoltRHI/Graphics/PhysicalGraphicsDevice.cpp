@@ -5,7 +5,7 @@
 
 namespace Volt::RHI
 {
-	Ref<PhysicalGraphicsDevice> PhysicalGraphicsDevice::Create(const PhysicalDeviceCreateInfo& deviceInfo)
+	RefPtr<PhysicalGraphicsDevice> PhysicalGraphicsDevice::Create(const PhysicalDeviceCreateInfo& deviceInfo)
 	{
 		return RHIProxy::GetInstance().CreatePhysicalGraphicsDevice(deviceInfo);
 	}

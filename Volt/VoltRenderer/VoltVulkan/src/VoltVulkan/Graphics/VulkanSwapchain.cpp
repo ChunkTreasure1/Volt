@@ -240,7 +240,7 @@ namespace Volt::RHI
 		return m_swapchainFormat;
 	}
 
-	Ref<Image2D> VulkanSwapchain::GetCurrentImage() const
+	RefPtr<Image2D> VulkanSwapchain::GetCurrentImage() const
 	{
 		const auto& data = m_perImageData.at(GetCurrentFrame());
 		return data.imageReference;

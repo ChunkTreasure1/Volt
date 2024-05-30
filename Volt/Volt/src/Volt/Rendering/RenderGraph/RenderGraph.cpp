@@ -11,8 +11,9 @@
 #include "Volt/Rendering/Resources/BindlessResourcesManager.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
-#include <VoltRHI/Images/ImageUtility.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
+#include <VoltRHI/Buffers/UniformBuffer.h>
+#include <VoltRHI/Images/ImageUtility.h>
 #include <VoltRHI/Images/ImageView.h>
 
 #include <CoreUtilities/Profiling/Profiling.h>
@@ -72,14 +73,14 @@ namespace Volt
 			}
 		}
 
-		inline static void SetupBufferBarrier(RHI::BufferBarrier& bufferBarrier, Weak<RHI::RHIResource> resource)
+		inline static void SetupBufferBarrier(RHI::BufferBarrier& bufferBarrier, WeakPtr<RHI::RHIResource> resource)
 		{
 			bufferBarrier.resource = resource;
 			bufferBarrier.size = resource->GetByteSize();
 		}
 	}
 
-	RenderGraph::RenderGraph(Ref<RHI::CommandBuffer> commandBuffer)
+	RenderGraph::RenderGraph(RefPtr<RHI::CommandBuffer> commandBuffer)
 		: m_commandBuffer(commandBuffer), m_renderContext(commandBuffer)
 	{
 	}
@@ -506,7 +507,7 @@ namespace Volt
 		RenderGraphExecutionThread::ExecuteRenderGraph(std::move(*this));
 	}
 
-	RenderGraphResourceHandle RenderGraph::AddExternalImage2D(Ref<RHI::Image2D> image)
+	RenderGraphResourceHandle RenderGraph::AddExternalImage2D(RefPtr<RHI::Image2D> image)
 	{
 		VT_ENSURE(image);
 
@@ -530,7 +531,7 @@ namespace Volt
 		return resourceHandle;
 	}
 
-	RenderGraphResourceHandle RenderGraph::AddExternalBuffer(Ref<RHI::StorageBuffer> buffer)
+	RenderGraphResourceHandle RenderGraph::AddExternalBuffer(RefPtr<RHI::StorageBuffer> buffer)
 	{
 		VT_ENSURE(buffer);
 
@@ -546,14 +547,14 @@ namespace Volt
 		node->resourceInfo.isExternal = true;
 
 		m_resourceNodes.push_back(node);
-		m_transientResourceSystem.AddExternalResource(resourceHandle, std::reinterpret_pointer_cast<RHI::RHIResource>(buffer));
+		m_transientResourceSystem.AddExternalResource(resourceHandle, buffer);
 
 		RegisterExternalResource(buffer, INVALID_RESOURCE_HANDLE);
 
 		return resourceHandle;
 	}
 
-	RenderGraphResourceHandle RenderGraph::AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer)
+	RenderGraphResourceHandle RenderGraph::AddExternalUniformBuffer(RefPtr<RHI::UniformBuffer> buffer)
 	{
 		VT_ENSURE(buffer);
 
@@ -569,7 +570,7 @@ namespace Volt
 		node->resourceInfo.isExternal = true;
 
 		m_resourceNodes.push_back(node);
-		m_transientResourceSystem.AddExternalResource(resourceHandle, std::reinterpret_pointer_cast<RHI::RHIResource>(buffer));
+		m_transientResourceSystem.AddExternalResource(resourceHandle, buffer);
 
 		RegisterExternalResource(buffer, INVALID_RESOURCE_HANDLE);
 
@@ -731,7 +732,7 @@ namespace Volt
 				continue;
 			}
 
-			auto rawImage = GetImage2DRaw(imageExtractionData.resourceHandle);
+			auto rawImage = GetImage2DRawRef(imageExtractionData.resourceHandle);
 			*imageExtractionData.outImagePtr = rawImage;
 		}
 
@@ -742,7 +743,7 @@ namespace Volt
 				continue;
 			}
 
-			auto rawBuffer = GetBufferRaw(bufferExtractionData.resourceHandle);
+			auto rawBuffer = GetBufferRawRef(bufferExtractionData.resourceHandle);
 			*bufferExtractionData.outBufferPtr = rawBuffer;
 		}
 	}
@@ -815,7 +816,7 @@ namespace Volt
 		return resourceHandle;
 	}
 
-	Weak<RHI::ImageView> RenderGraph::GetImage2DView(const RenderGraphResourceHandle resourceHandle)
+	WeakPtr<RHI::ImageView> RenderGraph::GetImage2DView(const RenderGraphResourceHandle resourceHandle)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -833,7 +834,7 @@ namespace Volt
 		return view;
 	}
 
-	Weak<RHI::Image2D> RenderGraph::GetImage2DRaw(const RenderGraphResourceHandle resourceHandle)
+	WeakPtr<RHI::Image2D> RenderGraph::GetImage2DRaw(const RenderGraphResourceHandle resourceHandle)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -902,7 +903,7 @@ namespace Volt
 		return handle;
 	}
 
-	Weak<RHI::StorageBuffer> RenderGraph::GetBufferRaw(const RenderGraphResourceHandle resourceHandle)
+	WeakPtr<RHI::StorageBuffer> RenderGraph::GetBufferRaw(const RenderGraphResourceHandle resourceHandle)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -932,7 +933,7 @@ namespace Volt
 		return handle;
 	}
 
-	Weak<RHI::RHIResource> RenderGraph::GetResourceRaw(const RenderGraphResourceHandle resourceHandle)
+	WeakPtr<RHI::RHIResource> RenderGraph::GetResourceRaw(const RenderGraphResourceHandle resourceHandle)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -943,7 +944,7 @@ namespace Volt
 
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 
-		Weak<RHI::RHIResource> result{};
+		WeakPtr<RHI::RHIResource> result{};
 
 		switch (resourceNode->GetResourceType())
 		{
@@ -978,7 +979,41 @@ namespace Volt
 		return result;
 	}
 
-	RenderGraphResourceHandle RenderGraph::TryGetRegisteredExternalResource(Weak<RHI::RHIResource> resource)
+	RefPtr<RHI::Image2D> RenderGraph::GetImage2DRawRef(const RenderGraphResourceHandle resourceHandle)
+	{
+		VT_PROFILE_FUNCTION();
+
+		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
+		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
+
+		auto image = m_transientResourceSystem.AquireImage2DRef(resourceHandle, imageDesc.description);
+		auto view = image->GetView();
+
+		// #TODO_Ivar: Move this section to it's own function
+		if (!view->IsSwapchainView())
+		{
+			m_registeredImageResources.emplace_back(BindlessResourcesManager::Get().RegisterImageView(view), view->GetViewType());
+		}
+
+		return image;
+	}
+
+	RefPtr<RHI::StorageBuffer> RenderGraph::GetBufferRawRef(const RenderGraphResourceHandle resourceHandle)
+	{
+		VT_PROFILE_FUNCTION();
+
+		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
+		const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
+
+		auto buffer = m_transientResourceSystem.AquireBufferRef(resourceHandle, bufferDesc.description);
+		auto handle = BindlessResourcesManager::Get().RegisterBuffer(buffer);
+
+		m_registeredBufferResources.emplace_back(handle);
+
+		return buffer;
+	}
+
+	RenderGraphResourceHandle RenderGraph::TryGetRegisteredExternalResource(WeakPtr<RHI::RHIResource> resource)
 	{
 		if (m_registeredExternalResources.contains(resource))
 		{
@@ -988,7 +1023,7 @@ namespace Volt
 		return INVALID_RESOURCE_HANDLE;
 	}
 
-	void RenderGraph::RegisterExternalResource(Weak<RHI::RHIResource> resource, RenderGraphResourceHandle handle)
+	void RenderGraph::RegisterExternalResource(WeakPtr<RHI::RHIResource> resource, RenderGraphResourceHandle handle)
 	{
 		m_registeredExternalResources[resource] = handle;
 	}
@@ -1089,19 +1124,19 @@ namespace Volt
 		newBarrier.isPassSpecificUsage = false;
 	}
 
-	void RenderGraph::QueueImage2DExtraction(RenderGraphResourceHandle resourceHandle, Ref<RHI::Image2D>& outImage)
+	void RenderGraph::QueueImage2DExtraction(RenderGraphResourceHandle resourceHandle, RefPtr<RHI::Image2D>& outImage)
 	{
 		m_image2DExtractions.emplace_back(resourceHandle, &outImage);
 	}
 
-	void RenderGraph::QueueBufferExtraction(RenderGraphResourceHandle resourceHandle, Ref<RHI::StorageBuffer>& outBuffer)
+	void RenderGraph::QueueBufferExtraction(RenderGraphResourceHandle resourceHandle, RefPtr<RHI::StorageBuffer>& outBuffer)
 	{
 		m_bufferExtractions.emplace_back(resourceHandle, &outBuffer);
 	}
 
 	void RenderGraph::BeginMarker(const std::string& markerName, const glm::vec4& markerColor)
 	{
-		m_standaloneMarkers[m_passIndex - 1].emplace_back([markerName, markerColor](Ref<RHI::CommandBuffer> commandBuffer)
+		m_standaloneMarkers[m_passIndex - 1].emplace_back([markerName, markerColor](RefPtr<RHI::CommandBuffer> commandBuffer)
 		{
 			commandBuffer->BeginMarker(markerName, { markerColor.x, markerColor.y, markerColor.z, markerColor.w });
 		});
@@ -1109,7 +1144,7 @@ namespace Volt
 
 	void RenderGraph::EndMarker()
 	{
-		m_standaloneMarkers[m_passIndex - 1].emplace_back([](Ref<RHI::CommandBuffer> commandBuffer)
+		m_standaloneMarkers[m_passIndex - 1].emplace_back([](RefPtr<RHI::CommandBuffer> commandBuffer)
 		{
 			commandBuffer->EndMarker();
 		});
@@ -1157,17 +1192,17 @@ namespace Volt
 		return resourceId;
 	}
 
-	RenderGraphResourceHandle RenderGraph::Builder::AddExternalImage2D(Ref<RHI::Image2D> image)
+	RenderGraphResourceHandle RenderGraph::Builder::AddExternalImage2D(RefPtr<RHI::Image2D> image)
 	{
 		return m_renderGraph.AddExternalImage2D(image);
 	}
 
-	RenderGraphResourceHandle RenderGraph::Builder::AddExternalBuffer(Ref<RHI::StorageBuffer> buffer)
+	RenderGraphResourceHandle RenderGraph::Builder::AddExternalBuffer(RefPtr<RHI::StorageBuffer> buffer)
 	{
 		return m_renderGraph.AddExternalBuffer(buffer);
 	}
 
-	RenderGraphResourceHandle RenderGraph::Builder::AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer)
+	RenderGraphResourceHandle RenderGraph::Builder::AddExternalUniformBuffer(RefPtr<RHI::UniformBuffer> buffer)
 	{
 		return m_renderGraph.AddExternalUniformBuffer(buffer);
 	}

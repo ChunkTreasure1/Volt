@@ -3,6 +3,7 @@
 
 #include <CoreUtilities/Containers/StackVector.h>
 #include <CoreUtilities/Variant.h>
+#include <CoreUtilities/Pointers/WeakPtr.h>
 
 #include <array>
 #include <functional>
@@ -621,7 +622,7 @@ namespace Volt::RHI
 
 	struct GraphicsDeviceCreateInfo
 	{
-		Ref<PhysicalGraphicsDevice> physicalDevice;
+		RefPtr<PhysicalGraphicsDevice> physicalDevice;
 	};
 
 	struct GraphicsContextCreateInfo
@@ -698,7 +699,7 @@ namespace Volt::RHI
 
 	struct AttachmentInfo
 	{
-		Weak<ImageView> view;
+		WeakPtr<ImageView> view;
 
 		ClearMode clearMode;
 
@@ -757,7 +758,7 @@ namespace Volt::RHI
 
 	struct ImageBarrier
 	{
-		Weak<RHIResource> resource;
+		WeakPtr<RHIResource> resource;
 
 		BarrierStage srcStage = BarrierStage::None;
 		BarrierStage dstStage = BarrierStage::None;
@@ -773,7 +774,7 @@ namespace Volt::RHI
 
 	struct BufferBarrier
 	{
-		Weak<RHIResource> resource;
+		WeakPtr<RHIResource> resource;
 
 		BarrierStage srcStage = BarrierStage::None;
 		BarrierStage dstStage = BarrierStage::None;

@@ -13,6 +13,6 @@ namespace Volt
 
 	namespace RCUtils
 	{
-		extern void DrawFullscreenTriangle(RenderContext& context, Weak<RHI::RenderPipeline> pipeline, const std::function<void(RenderContext& context)>& setConstantsFunc = {});
+		extern void DrawFullscreenTriangle(RenderContext& context, WeakPtr<RHI::RenderPipeline> pipeline, const std::function<void(RenderContext& context)>& setConstantsFunc = {});
 	}
 }

@@ -22,7 +22,7 @@ namespace Volt::RHI
 		virtual void WaitForQueue() = 0;
 		virtual void Execute(const DeviceQueueExecuteInfo& executeInfo) = 0;
 
-		static Ref<DeviceQueue> Create(const DeviceQueueCreateInfo& createInfo);
+		static RefPtr<DeviceQueue> Create(const DeviceQueueCreateInfo& createInfo);
 
 	protected:
 		DeviceQueue() = default;

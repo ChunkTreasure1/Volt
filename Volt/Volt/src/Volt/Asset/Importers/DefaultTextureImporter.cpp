@@ -52,7 +52,7 @@ namespace Volt
 		imageSpec.width = width;
 		imageSpec.height = height;
 
-		Ref<RHI::Image2D> image = RHI::Image2D::Create(imageSpec, data);
+		RefPtr<RHI::Image2D> image = RHI::Image2D::Create(imageSpec, data);
 		outTexture.SetImage(image);
 
 		stbi_image_free(data);

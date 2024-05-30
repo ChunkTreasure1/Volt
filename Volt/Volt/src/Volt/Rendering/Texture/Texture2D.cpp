@@ -3,7 +3,6 @@
 
 #include "Volt/Rendering/Resources/BindlessResourcesManager.h"
 
-#include <VoltRHI/Images/Image2D.h>
 #include <VoltRHI/Images/ImageView.h>
 
 namespace Volt
@@ -20,7 +19,7 @@ namespace Volt
 		m_resourceHandle = BindlessResourcesManager::Get().RegisterImageView(m_image->GetView());
 	}
 
-	Texture2D::Texture2D(Ref<RHI::Image2D> image)
+	Texture2D::Texture2D(RefPtr<RHI::Image2D> image)
 		: m_image(image)
 	{
 		m_resourceHandle = BindlessResourcesManager::Get().RegisterImageView(m_image->GetView());
@@ -51,7 +50,7 @@ namespace Volt
 		return m_resourceHandle;
 	}
 
-	void Texture2D::SetImage(Ref<RHI::Image2D> image)
+	void Texture2D::SetImage(RefPtr<RHI::Image2D> image)
 	{
 		if (m_image)
 		{
@@ -69,7 +68,7 @@ namespace Volt
 		return CreateRef<Texture2D>(format, width, height, data);
 	}
 
-	Ref<Texture2D> Texture2D::Create(Ref<RHI::Image2D> image)
+	Ref<Texture2D> Texture2D::Create(RefPtr<RHI::Image2D> image)
 	{
 		return CreateRef<Texture2D>(image);
 	}

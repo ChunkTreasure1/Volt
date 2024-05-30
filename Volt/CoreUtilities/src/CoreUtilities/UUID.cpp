@@ -32,6 +32,11 @@ void UUID64::Deserialize(BinaryStreamReader& streamReader, UUID64& outData)
 	streamReader.Read(outData.m_uuid);
 }
 
+UUID64::operator uint64_t() const
+{
+	return m_uuid;
+}
+
 UUID32::UUID32()
 	: m_uuid(s_uniformDistribution32(s_engine))
 {
@@ -50,4 +55,9 @@ void UUID32::Serialize(BinaryStreamWriter& streamWriter, const UUID32& data)
 void UUID32::Deserialize(BinaryStreamReader& streamReader, UUID32& outData)
 {
 	streamReader.Read(outData.m_uuid);
+}
+
+UUID32::operator uint32_t() const
+{
+	return m_uuid;
 }

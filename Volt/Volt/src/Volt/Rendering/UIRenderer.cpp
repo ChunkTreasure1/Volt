@@ -20,7 +20,7 @@ namespace Volt
 {
 	struct SpriteCommand
 	{
-		Ref<RHI::Image2D> image;
+		RefPtr<RHI::Image2D> image;
 		glm::vec4 color;
 		glm::vec3 position;
 		glm::vec2 scale;
@@ -30,8 +30,8 @@ namespace Volt
 
 	struct QuadData
 	{
-		Ref<RHI::VertexBuffer> vertexBuffer;
-		Ref<RHI::IndexBuffer> indexBuffer;
+		RefPtr<RHI::VertexBuffer> vertexBuffer;
+		RefPtr<RHI::IndexBuffer> indexBuffer;
 		//Ref<Material> quadMaterial;
 	};
 
@@ -54,7 +54,7 @@ namespace Volt
 		inline static constexpr uint32_t MAX_INDICES = MAX_QUADS * 6;
 
 		//Ref<VertexBufferSet> vertexBuffer;
-		Ref<RHI::IndexBuffer> indexBuffer;
+		RefPtr<RHI::IndexBuffer> indexBuffer;
 		//Ref<RenderPipeline> renderPipeline;
 
 		glm::vec4 vertices[4];
@@ -69,7 +69,7 @@ namespace Volt
 		QuadData quadData;
 		TextData textData;
 
-		Weak<RHI::Image2D> currentRenderTarget;
+		WeakPtr<RHI::Image2D> currentRenderTarget;
 		glm::mat4 currentProjection = { 1.f };
 		glm::mat4 currentView = { 1.f };
 
@@ -126,7 +126,7 @@ namespace Volt
 		s_uiRendererData = nullptr;
 	}
 
-	void UIRenderer::Begin(Ref<RHI::Image2D> renderTarget)
+	void UIRenderer::Begin(RefPtr<RHI::Image2D> renderTarget)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -245,7 +245,7 @@ namespace Volt
 		newCmd.offset = offset;
 	}
 
-	void UIRenderer::DrawSprite(Ref<RHI::Image2D> image, const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
+	void UIRenderer::DrawSprite(RefPtr<RHI::Image2D> image, const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -260,7 +260,7 @@ namespace Volt
 
 	void UIRenderer::DrawSprite(const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
 	{
-		DrawSprite(Ref<RHI::Image2D>(nullptr), position, scale, rotation, color, offset);
+		DrawSprite(RefPtr<RHI::Image2D>(nullptr), position, scale, rotation, color, offset);
 	}
 
 	static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)

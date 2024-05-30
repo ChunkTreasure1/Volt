@@ -3,6 +3,8 @@
 #include "Volt/Events/Event.h"
 #include "Volt/Core/Base.h"
 
+#include <VoltRHI/Graphics/Swapchain.h>
+
 #include <functional>
 #include <Windows.h>
 
@@ -13,12 +15,6 @@ struct GLFWcursor;
 
 namespace Volt
 {
-	namespace RHI
-	{
-		class GraphicsContext;
-		class Swapchain;
-	}
-
 	enum class WindowMode : uint32_t
 	{
 		Windowed = 0,
@@ -96,7 +92,7 @@ namespace Volt
 		inline HWND GetHWND() const { return m_windowHandle; }
 
 		inline const RHI::Swapchain& GetSwapchain() const { return *m_swapchain; }
-		inline const Weak <RHI::Swapchain> GetSwapchainPtr() const { return m_swapchain; }
+		inline const WeakPtr<RHI::Swapchain> GetSwapchainPtr() const { return m_swapchain; }
 
 		static Scope<Window> Create(const WindowProperties& aProperties = WindowProperties());
 		static void StaticInitialize();
@@ -122,7 +118,7 @@ namespace Volt
 
 		} m_data;
 
-		Ref<RHI::Swapchain> m_swapchain;
+		RefPtr<RHI::Swapchain> m_swapchain;
 
 		glm::uvec2 m_startPosition = 0;
 		glm::uvec2 m_startSize = 0;

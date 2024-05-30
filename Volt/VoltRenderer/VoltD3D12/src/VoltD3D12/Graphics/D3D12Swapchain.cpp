@@ -121,9 +121,9 @@ namespace Volt::RHI
 		return MaxSwapchainImages;
 	}
 
-	Ref<Image2D> D3D12Swapchain::GetCurrentImage() const
+	RefPtr<Image2D> D3D12Swapchain::GetCurrentImage() const
 	{
-		return Ref<Image2D>();
+		return RefPtr<Image2D>();
 	}
 
 	const PixelFormat D3D12Swapchain::GetFormat() const

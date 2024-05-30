@@ -2,6 +2,9 @@
 
 #include "VoltRHI/Core/RHIInterface.h"
 #include "VoltRHI/Core/RHICommon.h"
+#include "VoltRHI/Images/ImageView.h"
+
+#include <CoreUtilities/Pointers/WeakPtr.h>
 
 #include <span>
 
@@ -9,7 +12,6 @@ namespace Volt::RHI
 {
 	class RenderPipeline;
 	class ComputePipeline;
-	class ImageView;
 
 	class VertexBuffer;
 	class IndexBuffer;
@@ -38,31 +40,31 @@ namespace Volt::RHI
 		virtual void WaitForLastFence() = 0;
 		virtual void WaitForFences() = 0;
 
-		virtual void SetEvent(Ref<Event> event) = 0;
+		virtual void SetEvent(WeakPtr<Event> event) = 0;
 
 		virtual void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance) = 0;
 		virtual void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance) = 0;
-		virtual void DrawIndexedIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t maxDrawCount, const uint32_t stride) = 0;
-		virtual void DrawIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t maxDrawCount, const uint32_t stride) = 0;
-		virtual void DrawIndexedIndirectCount(Ref<StorageBuffer> commandsBuffer, const size_t offset, Ref<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) = 0;
-		virtual void DrawIndirectCount(Ref<StorageBuffer> commandsBuffer, const size_t offset, Ref<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) = 0;
+		virtual void DrawIndexedIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t maxDrawCount, const uint32_t stride) = 0;
+		virtual void DrawIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t maxDrawCount, const uint32_t stride) = 0;
+		virtual void DrawIndexedIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) = 0;
+		virtual void DrawIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) = 0;
 
 		virtual void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ) = 0;
-		virtual void DispatchIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset) = 0;
+		virtual void DispatchIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset) = 0;
 
 		virtual void DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ) = 0;
-		virtual void DispatchMeshTasksIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) = 0;
-		virtual void DispatchMeshTasksIndirectCount(Ref<StorageBuffer> commandsBuffer, const size_t offset, Ref<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) = 0;
+		virtual void DispatchMeshTasksIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) = 0;
+		virtual void DispatchMeshTasksIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) = 0;
 
 		virtual void SetViewports(const std::vector<Viewport>& viewports) = 0;
 		virtual void SetScissors(const std::vector<Rect2D>& scissors) = 0;
 
-		virtual void BindPipeline(Ref<RenderPipeline> pipeline) = 0;
-		virtual void BindPipeline(Ref<ComputePipeline> pipeline) = 0;
-		virtual void BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding) = 0;
-		virtual void BindIndexBuffer(Ref<IndexBuffer> indexBuffer) = 0;
-		virtual void BindIndexBuffer(Ref<StorageBuffer> indexBuffer) = 0;
-		virtual void BindDescriptorTable(Ref<DescriptorTable> descriptorTable) = 0;
+		virtual void BindPipeline(WeakPtr<RenderPipeline> pipeline) = 0;
+		virtual void BindPipeline(WeakPtr<ComputePipeline> pipeline) = 0;
+		virtual void BindVertexBuffers(const std::vector<WeakPtr<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding) = 0;
+		virtual void BindIndexBuffer(WeakPtr<IndexBuffer> indexBuffer) = 0;
+		virtual void BindIndexBuffer(WeakPtr<StorageBuffer> indexBuffer) = 0;
+		virtual void BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable) = 0;
 
 		virtual void BeginRendering(const RenderingInfo& renderingInfo) = 0;
 		virtual void EndRendering() = 0;
@@ -78,21 +80,21 @@ namespace Volt::RHI
 		virtual void EndTimestamp(uint32_t timestampIndex) = 0;
 		virtual const float GetExecutionTime(uint32_t timestampIndex) const = 0;
 
-		virtual void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) = 0;
-		virtual void ClearBuffer(Ref<StorageBuffer> buffer, const uint32_t value) = 0;
+		virtual void ClearImage(WeakPtr<Image2D> image, std::array<float, 4> clearColor) = 0;
+		virtual void ClearBuffer(WeakPtr<StorageBuffer> buffer, const uint32_t value) = 0;
 
-		virtual void UpdateBuffer(Ref<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data) = 0;
-		virtual void CopyBufferRegion(Ref<Allocation> srcResource, const size_t srcOffset, Ref<Allocation> dstResource, const size_t dstOffset, const size_t size) = 0;
-		virtual void CopyBufferToImage(Ref<Allocation> srcBuffer, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip = 0) = 0;
-		virtual void CopyImageToBuffer(Ref<Image2D> srcImage, Ref<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip) = 0;
-		virtual void CopyImage(Ref<Image2D> srcImage, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height) = 0;
+		virtual void UpdateBuffer(WeakPtr<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data) = 0;
+		virtual void CopyBufferRegion(WeakPtr<Allocation> srcResource, const size_t srcOffset, WeakPtr<Allocation> dstResource, const size_t dstOffset, const size_t size) = 0;
+		virtual void CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip = 0) = 0;
+		virtual void CopyImageToBuffer(WeakPtr<Image2D> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip) = 0;
+		virtual void CopyImage(WeakPtr<Image2D> srcImage, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height) = 0;
 
 		virtual const uint32_t GetCurrentIndex() const = 0;
 		virtual const QueueType GetQueueType() const = 0;
 
-		static Ref<CommandBuffer> Create(const uint32_t count, QueueType queueType = QueueType::Graphics);
-		static Ref<CommandBuffer> Create(Weak<Swapchain> swapchain);
-		static Ref<CommandBuffer> Create();
+		static RefPtr<CommandBuffer> Create(const uint32_t count, QueueType queueType = QueueType::Graphics);
+		static RefPtr<CommandBuffer> Create(WeakPtr<Swapchain> swapchain);
+		static RefPtr<CommandBuffer> Create();
 
 	protected:
 		CommandBuffer() = default;

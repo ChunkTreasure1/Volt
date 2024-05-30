@@ -2,6 +2,8 @@
 
 #include "Volt/Asset/Asset.h"
 
+#include <VoltRHI/Images/Image2D.h>
+
 extern "C"
 {
 #include <libavcodec/avcodec.h>
@@ -65,7 +67,7 @@ namespace Volt
 
 		void Update(float aDeltaTime);
 		inline VideoStatus GetStatus() { return myStatus; }
-		inline Ref<RHI::Image2D> GetImage() const { return myImage; }
+		inline RefPtr<RHI::Image2D> GetImage() const { return myImage; }
 
 		static AssetType GetStaticType() { return AssetType::Video; }
 		AssetType GetType() override { return GetStaticType(); };
@@ -78,7 +80,7 @@ namespace Volt
 		void Release();
 		bool GetFrameData(uint32_t*& aBuffer);
 
-		Ref<RHI::Image2D> myImage;
+		RefPtr<RHI::Image2D> myImage;
 		VideoStatus myStatus = VideoStatus::Stopped;
 
 		int32_t myNumberOfBytes = 0;

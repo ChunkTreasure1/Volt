@@ -18,7 +18,7 @@ namespace Volt::RHI
 
 		virtual void* GetHandleImpl() const override;
 		virtual void Invalidate() override;
-		Ref<Shader> GetShader() const override;
+		RefPtr<Shader> GetShader() const override;
 	private:
 		RenderPipelineCreateInfo m_createInfo;
 
