@@ -27,6 +27,8 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
+		inline static constexpr uint32_t HEAP_PAGE_SIZE = 128 * 1024 * 1024;
+
 		void CreateDefaultHeaps();
 
 		void DestroyBufferInternal(RefPtr<Allocation> allocation);
@@ -35,6 +37,9 @@ namespace Volt::RHI
 		// There are called if their parent heap has been destroyed for some reason
 		void DestroyOrphanBuffer(RefPtr<Allocation> allocation);
 		void DestroyOrphanImage(RefPtr<Allocation> allocation);
+
+		VT_NODISCARD RefPtr<TransientHeap> CreateNewImageHeap();
+		VT_NODISCARD RefPtr<TransientHeap> CreateNewBufferHeap();
 
 		std::vector<RefPtr<TransientHeap>> m_bufferHeaps;
 		std::vector<RefPtr<TransientHeap>> m_imageHeaps;

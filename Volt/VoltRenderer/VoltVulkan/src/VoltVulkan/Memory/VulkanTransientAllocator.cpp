@@ -67,6 +67,16 @@ namespace Volt::RHI
 			}
 		}
 
+		// If we were not able to allocate in the heap, we will create a new one
+		if (!result)
+		{
+			auto heap = CreateNewBufferHeap();
+			if (heap->IsAllocationSupported(size, TransientHeapFlags::AllowBuffers))
+			{
+				result = heap->CreateBuffer(info);
+			}
+		}
+
 		if (!result)
 		{
 			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocation]", "Unable to create buffer of size {0}!", size);
@@ -80,7 +90,7 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		const size_t hash = Utility::GetHashFromImageSpec(imageSpecification, memoryUsage);
-		if (auto image  = m_allocationCache.TryGetImageAllocationFromHash(hash))
+		if (auto image = m_allocationCache.TryGetImageAllocationFromHash(hash))
 		{
 			return image;
 		}
@@ -100,6 +110,16 @@ namespace Volt::RHI
 			{
 				result = heap->CreateImage(info);
 				break;
+			}
+		}
+
+		// If we were not able to allocate in the heap, we will create a new one
+		if (!result)
+		{
+			auto heap = CreateNewImageHeap();
+			if (heap->IsAllocationSupported(memoryRequirement.size, TransientHeapFlags::AllowTextures))
+			{
+				result = heap->CreateImage(info);
 			}
 		}
 
@@ -128,23 +148,18 @@ namespace Volt::RHI
 
 	void VulkanTransientAllocator::CreateDefaultHeaps()
 	{
-		constexpr uint32_t MAX_IMAGE_HEAP_COUNT = 2;
-		constexpr uint32_t MAX_BUFFER_HEAP_COUNT = 1;
-
 		// Buffer heap
-		for (uint32_t i = 0; i < MAX_BUFFER_HEAP_COUNT; i++)
 		{
 			TransientHeapCreateInfo info{};
-			info.pageSize = 128 * 1024 * 1024;
+			info.pageSize = HEAP_PAGE_SIZE;
 			info.flags = TransientHeapFlags::AllowBuffers;
 			m_bufferHeaps.push_back(TransientHeap::Create(info));
 		}
 
 		// Image heap
-		for (uint32_t i = 0; i < MAX_IMAGE_HEAP_COUNT; i++)
 		{
 			TransientHeapCreateInfo info{};
-			info.pageSize = 128 * 1024 * 1024;
+			info.pageSize = HEAP_PAGE_SIZE;
 			info.flags = TransientHeapFlags::AllowTextures | TransientHeapFlags::AllowRenderTargets;
 			m_imageHeaps.push_back(TransientHeap::Create(info));
 		}
@@ -212,6 +227,30 @@ namespace Volt::RHI
 	{
 		auto device = GraphicsContext::GetDevice();
 		vkDestroyImage(device->GetHandle<VkDevice>(), allocation->GetResourceHandle<VkImage>(), nullptr);
+	}
+
+	VT_NODISCARD RefPtr<TransientHeap> VulkanTransientAllocator::CreateNewImageHeap()
+	{
+		TransientHeapCreateInfo info{};
+		info.pageSize = HEAP_PAGE_SIZE;
+		info.flags = TransientHeapFlags::AllowTextures | TransientHeapFlags::AllowRenderTargets;
+		
+		RefPtr<TransientHeap>& heap = m_imageHeaps.emplace_back();
+		heap = TransientHeap::Create(info);
+
+		return heap;
+	}
+
+	VT_NODISCARD RefPtr<TransientHeap> VulkanTransientAllocator::CreateNewBufferHeap()
+	{
+		TransientHeapCreateInfo info{};
+		info.pageSize = HEAP_PAGE_SIZE;
+		info.flags = TransientHeapFlags::AllowBuffers;
+
+		RefPtr<TransientHeap>& heap = m_bufferHeaps.emplace_back();
+		heap = TransientHeap::Create(info);
+
+		return heap;
 	}
 
 	void VulkanTransientAllocator::Update()
