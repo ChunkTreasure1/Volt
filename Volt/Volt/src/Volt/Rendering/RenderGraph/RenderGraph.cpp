@@ -1079,6 +1079,33 @@ namespace Volt
 		m_temporaryAllocations.emplace_back(tempData);
 	}
 
+	void RenderGraph::AddStagedBufferUpload(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size, std::string_view name)
+	{
+		struct Empty
+		{
+		};
+
+		uint8_t* tempData = new uint8_t[size];
+		memcpy_s(tempData, size, data, size);
+
+		Ref<RenderGraphPassNode<Empty>> newNode = CreateRef<RenderGraphPassNode<Empty>>();
+		newNode->name = name;
+		newNode->index = m_passIndex++;
+
+		Builder tempBuilder{ *this, newNode };
+
+		newNode->executeFunction = [tempData, size, bufferHandle](const Empty&, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			context.UploadBufferData(bufferHandle, tempData, size);
+		};
+
+		m_passNodes.push_back(newNode);
+		m_resourceBarriers.emplace_back();
+		m_standaloneMarkers.emplace_back();
+
+		m_temporaryAllocations.emplace_back(tempData);
+	}
+
 	void RenderGraph::AddResourceBarrier(RenderGraphResourceHandle resourceHandle, const RenderGraphBarrierInfo& barrierInfo)
 	{
 		if (m_standaloneBarriers.size() < m_passIndex)

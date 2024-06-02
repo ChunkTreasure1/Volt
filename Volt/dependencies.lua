@@ -40,11 +40,6 @@ IncludeDir["entt"] = "%{wks.location}/Volt/vendor/entt/include"
 IncludeDir["cityhash"] = "%{wks.location}/Volt/vendor/cityhash/src"
 IncludeDir["METIS"] = "%{wks.location}/Volt/vendor/METIS/include"
 
-IncludeDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/include/"
-IncludeDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/include/"
-IncludeDir["nlohmann"] = "%{wks.location}/Sandbox/vendor/nlohmann/include/"
-IncludeDir["httplib"] = "%{wks.location}/Sandbox/vendor/cpp-httplib/include/"
-
 IncludeDir["vma"] = "%{wks.location}/Volt/vendor/vma"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 IncludeDir["shaderc_utils"] = "%{wks.location}/Volt/vendor/shaderc/libshaderc_util/include"
@@ -53,6 +48,13 @@ IncludeDir["Aftermath"] = "%{wks.location}/Volt/vendor/Aftermath/include"
 
 IncludeDir["meshoptimizer"] = "%{wks.location}/Volt/vendor/meshoptimizer/src"
 IncludeDir["zlib"] = "%{wks.location}/Volt/vendor/zlib/include"
+
+IncludeDir["unordered_dense"] = "%{wks.location}/CoreUtilities/vendor/unordered_dense/include"
+
+IncludeDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/include/"
+IncludeDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/include/"
+IncludeDir["nlohmann"] = "%{wks.location}/Sandbox/vendor/nlohmann/include/"
+IncludeDir["httplib"] = "%{wks.location}/Sandbox/vendor/cpp-httplib/include/"
 
 IncludeDir["CoreUtilities"] = "%{wks.location}/CoreUtilities/src"
 

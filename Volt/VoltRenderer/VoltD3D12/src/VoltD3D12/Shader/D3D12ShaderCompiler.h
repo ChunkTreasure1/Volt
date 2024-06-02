@@ -19,7 +19,7 @@ namespace Volt::RHI
 		// Inherited via ShaderCompiler
 	protected:
 		void* GetHandleImpl() const override;
-		CompilationResult TryCompileImpl(const Specification& specification, Shader& shader) override;
+		CompilationResultData TryCompileImpl(const Specification& specification) override;
 		void AddMacroImpl(const std::string& macroName) override;
 		void RemoveMacroImpl(std::string_view macroName) override;
 

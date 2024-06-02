@@ -276,22 +276,19 @@ namespace Volt::RHI
 			maxSets += count;
 		}
 
-		VkDescriptorPoolCreateInfo poolInfo{};
-		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
-		poolInfo.maxSets = maxSets;
-		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-		poolInfo.pPoolSizes = poolSizes.data();
+		[[maybe_unused]] auto device = GraphicsContext::GetDevice();
 
-		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle<VkDevice>(), &poolInfo, nullptr, &m_descriptorPool));
+		if (!m_isGlobal)
+		{
+			VkDescriptorPoolCreateInfo poolInfo{};
+			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+			poolInfo.maxSets = maxSets;
+			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+			poolInfo.pPoolSizes = poolSizes.data();
 
-		const auto& usedSets = vulkanShader.GetResources().usedSets;
-
-		VkDescriptorSetAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.pNext = nullptr;
-		allocInfo.descriptorSetCount = 1;
+			VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle<VkDevice>(), &poolInfo, nullptr, &m_descriptorPool));
+		}
 
 		if (m_isGlobal)
 		{
@@ -299,6 +296,13 @@ namespace Volt::RHI
 		}
 		else
 		{
+			const auto& usedSets = vulkanShader.GetResources().usedSets;
+
+			VkDescriptorSetAllocateInfo allocInfo{};
+			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			allocInfo.pNext = nullptr;
+			allocInfo.descriptorSetCount = 1;
+
 			for (const auto& set : usedSets)
 			{
 				allocInfo.descriptorPool = m_descriptorPool;

@@ -224,8 +224,8 @@ template<typename Key, typename Value>
 inline size_t BinaryStreamWriter::Write(const std::map<Key, Value>& data)
 {
 	TypeHeader header{};
-	header.baseTypeSize = sizeof(std::map<Key, Value>&data);
-	header.totalTypeSize = data.size();
+	header.baseTypeSize = sizeof(std::map<Key, Value>);
+	header.totalTypeSize = static_cast<uint32_t>(data.size());
 
 	WriteTypeHeader(header);
 
@@ -257,7 +257,7 @@ template<typename Key, typename Value>
 inline size_t BinaryStreamWriter::Write(const std::unordered_map<Key, Value>& data)
 {
 	TypeHeader header{};
-	header.baseTypeSize = sizeof(std::unordered_map<Key, Value>&data);
+	header.baseTypeSize = sizeof(std::unordered_map<Key, Value>);
 	header.totalTypeSize = data.size();
 
 	WriteData(&header, sizeof(header));

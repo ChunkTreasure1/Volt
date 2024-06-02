@@ -38,7 +38,8 @@ project "CoreUtilities"
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.tracy}",
 		"%{IncludeDir.yaml}",
-		"%{IncludeDir.zlib}"
+		"%{IncludeDir.zlib}",
+		"%{IncludeDir.unordered_dense}"
 	}
 
 	links

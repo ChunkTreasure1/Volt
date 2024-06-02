@@ -10,6 +10,13 @@ namespace Volt::RHI
 	{
 	}
 
+	ShaderDataBuffer::ShaderDataBuffer(const ShaderDataBuffer& rhs)
+	{
+		m_uniforms = rhs.m_uniforms;
+		m_size = rhs.m_size;
+		memcpy_s(m_data, m_size, rhs.m_data, rhs.m_size);
+	}
+
 	void ShaderDataBuffer::AddMember(const std::string& name, ShaderUniformType type, size_t size, size_t offset)
 	{
 		m_uniforms[name] = { type, size, offset };
@@ -19,6 +26,15 @@ namespace Volt::RHI
 	{
 		assert(size <= 128);
 		m_size = size;
+	}
+
+	ShaderDataBuffer& ShaderDataBuffer::operator=(const ShaderDataBuffer& rhs)
+	{
+		m_uniforms = rhs.m_uniforms;
+		m_size = rhs.m_size;
+		memcpy_s(m_data, m_size, rhs.m_data, rhs.m_size);
+
+		return *this;
 	}
 
 	RefPtr<Shader> Shader::Create(const ShaderSpecification& createInfo)

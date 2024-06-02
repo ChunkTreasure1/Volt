@@ -15,9 +15,9 @@ namespace Volt::RHI
 		s_instance = nullptr;
 	}
 
-	ShaderCompiler::CompilationResult ShaderCompiler::TryCompile(const Specification& specification, Shader& shader)
+	ShaderCompiler::CompilationResultData ShaderCompiler::TryCompile(const Specification& specification)
 	{
-		return s_instance->TryCompileImpl(specification, shader);
+		return s_instance->TryCompileImpl(specification);
 	}
 
 	void ShaderCompiler::AddMacro(const std::string& macroName)

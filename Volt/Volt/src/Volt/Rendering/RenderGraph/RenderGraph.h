@@ -7,6 +7,8 @@
 
 #include "Volt/Core/Base.h"
 
+#include <CoreUtilities/Containers/Map.h>
+
 #include <string_view>
 #include <functional>
 
@@ -86,6 +88,7 @@ namespace Volt
 		void AddPass(const std::string& name, std::function<void(Builder&)> createFunc, std::function<void(RenderContext&, const RenderGraphPassResources&)>&& executeFunc);
 
 		void AddMappedBufferUpload(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size, std::string_view name);
+		void AddStagedBufferUpload(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size, std::string_view name);
 		void AddResourceBarrier(RenderGraphResourceHandle resourceHandle, const RenderGraphBarrierInfo& barrierInfo);
 
 		void QueueImage2DExtraction(RenderGraphResourceHandle resourceHandle, RefPtr<RHI::Image2D>& outImage);
@@ -160,7 +163,7 @@ namespace Volt
 		std::vector<std::vector<ResourceUsageInfo>> m_resourceBarriers; // Pass -> Transitions
 		std::vector<std::vector<ResourceUsageInfo>> m_standaloneBarriers;
 		
-		std::unordered_map<WeakPtr<RHI::RHIResource>, RenderGraphResourceHandle> m_registeredExternalResources;
+		vt::map<WeakPtr<RHI::RHIResource>, RenderGraphResourceHandle> m_registeredExternalResources;
 
 		std::vector<uint8_t*> m_temporaryAllocations;
 

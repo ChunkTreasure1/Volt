@@ -74,7 +74,7 @@ namespace Volt
 	template<IsTrivial T>
 	inline void ScatteredBufferUpload<T>::UploadToInternal(RenderGraph& renderGraph, RefPtr<RHI::StorageBuffer> dstBuffer)
 	{
-		if (m_data.empty())
+		if (m_currentIndex == 0)
 		{
 			return;
 		}

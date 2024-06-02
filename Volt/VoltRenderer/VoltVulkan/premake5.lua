@@ -37,7 +37,7 @@ project "VoltVulkan"
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}",
 
-		"%{IncludeDir.Aftermath}"
+		"%{IncludeDir.Aftermath}",
 	}
 
 	defines
