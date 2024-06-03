@@ -100,6 +100,20 @@ namespace Volt::RHI
 		{
 			return baseType == rhs.baseType && vecsize == rhs.vecsize && columns == rhs.columns;
 		}
+
+		static void Serialize(BinaryStreamWriter& streamWriter, const ShaderUniformType& data)
+		{
+			streamWriter.Write(data.baseType);
+			streamWriter.Write(data.vecsize);
+			streamWriter.Write(data.columns);
+		}
+
+		static void Deserialize(BinaryStreamReader& streamReader, ShaderUniformType& outData)
+		{
+			streamReader.Read(outData.baseType);
+			streamReader.Read(outData.vecsize);
+			streamReader.Read(outData.columns);
+		}
 	};
 
 	struct VTRHI_API ShaderUniform
@@ -112,6 +126,20 @@ namespace Volt::RHI
 
 		size_t size = 0;
 		size_t offset = 0;
+
+		static void Serialize(BinaryStreamWriter& streamWriter, const ShaderUniform& data)
+		{
+			streamWriter.Write(data.type);
+			streamWriter.Write(data.size);
+			streamWriter.Write(data.offset);
+		}
+
+		static void Deserialize(BinaryStreamReader& streamReader, ShaderUniform& outData)
+		{
+			streamReader.Read(outData.type);
+			streamReader.Read(outData.size);
+			streamReader.Read(outData.offset);
+		}
 	};
 
 	class VTRHI_API ShaderDataBuffer
@@ -141,6 +169,9 @@ namespace Volt::RHI
 
 		ShaderDataBuffer& operator=(const ShaderDataBuffer& rhs);
 
+		static void Serialize(BinaryStreamWriter& streamWriter, const ShaderDataBuffer& data);
+		static void Deserialize(BinaryStreamReader& streamReader, ShaderDataBuffer& outData);
+
 	private:
 		std::unordered_map<std::string, ShaderUniform> m_uniforms;
 		uint8_t m_data[128]; // Max push constant size for all platforms are 128 bytes
@@ -152,14 +183,29 @@ namespace Volt::RHI
 		uint32_t size = 0;
 		uint32_t offset = 0;
 		ShaderStage	stageFlags = ShaderStage::None;
+
+		static void Serialize(BinaryStreamWriter& streamWriter, const ShaderConstantData& data);
+		static void Deserialize(BinaryStreamReader& streamReader, ShaderConstantData& outData);
 	};
 
 	struct VTRHI_API ShaderRenderGraphConstantsData
 	{
-		inline bool IsValid() const { return !uniforms.empty() && size > 0; }
+		VT_NODISCARD VT_INLINE bool IsValid() const { return !uniforms.empty() && size > 0; }
 
 		std::unordered_map<StringHash, ShaderUniform> uniforms;
 		size_t size = 0;
+
+		static void Serialize(BinaryStreamWriter& streamWriter, const ShaderRenderGraphConstantsData& data)
+		{
+			streamWriter.Write(data.uniforms);
+			streamWriter.Write(data.size);
+		}
+
+		static void Deserialize(BinaryStreamReader& streamReader, ShaderRenderGraphConstantsData& outData)
+		{
+			streamReader.Read(outData.uniforms);
+			streamReader.Read(outData.size);
+		}
 	};
 
 	// Representation of shader types
@@ -210,6 +256,9 @@ namespace Volt::RHI
 		uint32_t binding = std::numeric_limits<uint32_t>::max();
 
 		inline const bool IsValid() const { return set != std::numeric_limits<uint32_t>::max() && binding != std::numeric_limits<uint32_t>::max(); }
+
+		static void Serialize(BinaryStreamWriter& streamWriter, const ShaderResourceBinding& data);
+		static void Deserialize(BinaryStreamReader& streamReader, ShaderResourceBinding& outData);
 	};
 
 	struct ShaderSourceInfo

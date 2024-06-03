@@ -8,6 +8,7 @@
 #include <VoltRHI/Shader/ShaderUtility.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Shader/ShaderPreProcessor.h>
+#include <VoltRHI/Shader/ShaderCache.h>
 
 #ifdef _WIN32
 #include <wrl.h>
@@ -75,7 +76,7 @@ namespace Volt::RHI
 	}
 
 	VulkanShaderCompiler::VulkanShaderCompiler(const ShaderCompilerCreateInfo& createInfo)
-		: m_includeDirectories(createInfo.includeDirectories), m_macros(createInfo.initialMacros), m_flags(createInfo.flags), m_cacheDirectory(createInfo.cacheDirectory)
+		: m_includeDirectories(createInfo.includeDirectories), m_macros(createInfo.initialMacros), m_flags(createInfo.flags)
 	{
 		RHILog::LogTagged(LogSeverity::Trace, "[VulkanShaderCompiler]", "Initializing VulkanShaderCompiler");
 		DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&m_hlslCompiler));
@@ -95,7 +96,11 @@ namespace Volt::RHI
 		// First try and get cached shader
 		if (!specification.forceCompile)
 		{
-			
+			const auto data = ShaderCache::TryGetCachedShader(specification);
+			if (data.IsValid())
+			{
+				return data;
+			}
 		}
 
 		if (specification.shaderSourceInfo.empty())
@@ -106,6 +111,8 @@ namespace Volt::RHI
 
 		CompilationResultData result = CompileAll(specification);
 		ReflectAllStages(specification, result);
+
+		ShaderCache::CacheShader(specification, result);
 
 		return result;
 	}

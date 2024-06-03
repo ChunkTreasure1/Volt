@@ -4,13 +4,24 @@
 
 namespace Volt::RHI
 {
-	class ShaderCache
+	struct ShaderCacheCreateInfo
+	{
+		std::filesystem::path cacheDirectory;
+	};
+
+	class VTRHI_API ShaderCache
 	{
 	public:
+		ShaderCache(const ShaderCacheCreateInfo& cacheInfo);
+		~ShaderCache();
+
 		static ShaderCompiler::CompilationResultData TryGetCachedShader(const ShaderCompiler::Specification& shaderSpecification);
-		static void CacheShader(const ShaderCompiler::CompilationResultData& compilationResult);
+		static void CacheShader(const ShaderCompiler::Specification& shaderSpec, const ShaderCompiler::CompilationResultData& compilationResult);
 
 	private:
-		ShaderCache() = delete;
+		std::filesystem::path GetCachedFilePath(const ShaderCompiler::Specification& shaderSpec) const;
+
+		inline static ShaderCache* s_instance = nullptr;
+		ShaderCacheCreateInfo m_info;
 	};
 }

@@ -28,7 +28,6 @@ namespace Volt::RHI
 		std::vector<std::string> initialMacros;
 	
 		ShaderCompilerFlags flags = ShaderCompilerFlags::None;
-		std::filesystem::path cacheDirectory = "Engine/Shaders/Cache/";
 	};
 
 	class VTRHI_API ShaderCompiler : public RHIInterface
@@ -72,6 +71,8 @@ namespace Volt::RHI
 			std::map<uint32_t, std::map<uint32_t, ShaderStorageImage>> storageImages;
 			std::map<uint32_t, std::map<uint32_t, ShaderImage>> images;
 			std::map<uint32_t, std::map<uint32_t, ShaderSampler>> samplers;
+
+			VT_NODISCARD VT_INLINE bool IsValid() const { return !shaderData.empty(); }
 		};
 
 		struct Specification

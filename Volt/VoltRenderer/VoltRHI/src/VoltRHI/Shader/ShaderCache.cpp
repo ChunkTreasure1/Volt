@@ -4,8 +4,29 @@
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 #include <CoreUtilities/FileIO/BinaryStreamReader.h>
 
+#include "VoltRHI/Graphics/GraphicsContext.h"
+#include "VoltRHI/Utility/HashUtility.h"
+
 namespace Volt::RHI
 {
+	namespace Utility
+	{
+		inline static std::filesystem::path GetShaderCacheSubDirectory()
+		{
+			const auto api = GraphicsContext::GetAPI();
+			std::filesystem::path subDir;
+
+			switch (api)
+			{
+				case GraphicsAPI::Vulkan: subDir = "Vulkan"; break;
+				case GraphicsAPI::D3D12: subDir = "D3D12"; break;
+				case GraphicsAPI::MoltenVk: subDir = "MoltenVK"; break;
+			}
+
+			return { subDir };
+		}
+	}
+
 	struct SerializedShaderData
 	{
 		ShaderStage stage;
@@ -24,15 +45,115 @@ namespace Volt::RHI
 		}
 	};
 
-	ShaderCompiler::CompilationResultData ShaderCache::TryGetCachedShader(const ShaderCompiler::Specification& shaderSpecification)
+	template<typename T>
+	struct SerializedShaderResource
 	{
+		uint32_t set;
+		uint32_t binding;
 
+		T data;
 
-		return ShaderCompiler::CompilationResultData();
+		static void Serialize(BinaryStreamWriter& streamWriter, const SerializedShaderResource& data)
+		{
+			streamWriter.Write(data.set);
+			streamWriter.Write(data.binding);
+			streamWriter.Write(&data.data, sizeof(T));
+		}
+
+		static void Deserialize(BinaryStreamReader& streamReader, SerializedShaderResource& outData)
+		{
+			streamReader.Read(outData.set);
+			streamReader.Read(outData.binding);
+			streamReader.Read(&outData.data);
+		}
+	};
+
+	ShaderCache::ShaderCache(const ShaderCacheCreateInfo& cacheInfo)
+		: m_info(cacheInfo)
+	{
+		assert(s_instance == nullptr);
+		s_instance = this;
 	}
 
-	void ShaderCache::CacheShader(const ShaderCompiler::CompilationResultData& compilationResult)
+	ShaderCache::~ShaderCache()
 	{
+		s_instance = nullptr;
+	}
+
+	ShaderCompiler::CompilationResultData ShaderCache::TryGetCachedShader(const ShaderCompiler::Specification& shaderSpecification)
+	{
+		assert(s_instance);
+
+		BinaryStreamReader streamReader{ s_instance->GetCachedFilePath(shaderSpecification) };
+		if (!streamReader.IsStreamValid())
+		{
+			return {};
+		}
+
+		ShaderCompiler::CompilationResultData resultData{};
+
+		std::vector<SerializedShaderData> serializedShaderData;
+		streamReader.Read(serializedShaderData);
+
+		streamReader.Read(resultData.outputFormats);
+		
+		streamReader.Read(resultData.vertexLayout);
+		streamReader.Read(resultData.instanceLayout);
+		
+		streamReader.Read(resultData.renderGraphConstants);
+		streamReader.Read(resultData.constantsBuffer);
+		streamReader.Read(resultData.constants);
+		streamReader.Read(resultData.bindings);
+
+		std::vector<SerializedShaderResource<ShaderConstantBuffer>> uniformBuffers;
+		std::vector<SerializedShaderResource<ShaderStorageBuffer>> storageBuffers;
+		std::vector<SerializedShaderResource<ShaderStorageImage>> storageImages;
+		std::vector<SerializedShaderResource<ShaderImage>> images;
+		std::vector<SerializedShaderResource<ShaderSampler>> samplers;
+
+		streamReader.Read(uniformBuffers);
+		streamReader.Read(storageBuffers);
+		streamReader.Read(storageImages);
+		streamReader.Read(images);
+		streamReader.Read(samplers);
+
+		for (const auto& data : serializedShaderData)
+		{
+			resultData.shaderData[data.stage] = data.shaderData;
+		}
+		
+		for (const auto& data : uniformBuffers)
+		{
+			resultData.uniformBuffers[data.set][data.binding] = data.data;
+		}
+
+		for (const auto& data : storageBuffers)
+		{
+			resultData.storageBuffers[data.set][data.binding] = data.data;
+		}
+
+		for (const auto& data : storageImages)
+		{
+			resultData.storageImages[data.set][data.binding] = data.data;
+		}
+
+		for (const auto& data : images)
+		{
+			resultData.images[data.set][data.binding] = data.data;
+		}
+
+		for (const auto& data : samplers)
+		{
+			resultData.samplers[data.set][data.binding] = data.data;
+		}
+
+		return resultData;
+	}
+
+	void ShaderCache::CacheShader(const ShaderCompiler::Specification& shaderSpec, const ShaderCompiler::CompilationResultData& compilationResult)
+	{
+		assert(s_instance);
+
 		BinaryStreamWriter streamWriter{};
 
 		std::vector<SerializedShaderData> serializedShaderData;
@@ -42,30 +163,102 @@ namespace Volt::RHI
 			serializedShaderData.emplace_back(stage, shaderData);
 		}
 
-		streamWriter.Write(serializedShaderData.size());
-		
-		for (const auto& shaderData : serializedShaderData)
-		{
-			streamWriter.Write(shaderData);
-		}
+		streamWriter.Write(serializedShaderData);
 
 		// Pixel shader
-		//streamWriter.Write(compilationResult.outputFormats);
+		streamWriter.Write(compilationResult.outputFormats);
 
-		//// Vertex shader
-		//streamWriter.Write(compilationResult.vertexLayout);
-		//streamWriter.Write(compilationResult.instanceLayout);
+		// Vertex shader
+		streamWriter.Write(compilationResult.vertexLayout);
+		streamWriter.Write(compilationResult.instanceLayout);
 
-		//// Common
-		//streamWriter.Write(compilationResult.renderGraphConstants);
-		//streamWriter.Write(compilationResult.constantsBuffer);
-		//streamWriter.Write(compilationResult.constants);
+		// Common
+		streamWriter.Write(compilationResult.renderGraphConstants);
+		streamWriter.Write(compilationResult.constantsBuffer);
+		streamWriter.Write(compilationResult.constants);
 
-		//streamWriter.Write(compilationResult.bindings);
-		//streamWriter.Write(compilationResult.uniformBuffers);
-		//streamWriter.Write(compilationResult.storageBuffers);
-		//streamWriter.Write(compilationResult.storageImages);
-		//streamWriter.Write(compilationResult.images);
-		//streamWriter.Write(compilationResult.samplers);
+		streamWriter.Write(compilationResult.bindings);
+
+		std::vector<SerializedShaderResource<ShaderConstantBuffer>> uniformBuffers;
+		std::vector<SerializedShaderResource<ShaderStorageBuffer>> storageBuffers;
+		std::vector<SerializedShaderResource<ShaderStorageImage>> storageImages;
+		std::vector<SerializedShaderResource<ShaderImage>> images;
+		std::vector<SerializedShaderResource<ShaderSampler>> samplers;
+
+		for (const auto& [set, bindings] : compilationResult.uniformBuffers)
+		{
+			for (const auto& [binding, data] : bindings)
+			{
+				uniformBuffers.emplace_back(set, binding, data);
+			}
+		}
+
+		for (const auto& [set, bindings] : compilationResult.storageBuffers)
+		{
+			for (const auto& [binding, data] : bindings)
+			{
+				storageBuffers.emplace_back(set, binding, data);
+			}
+		}
+
+		for (const auto& [set, bindings] : compilationResult.storageImages)
+		{
+			for (const auto& [binding, data] : bindings)
+			{
+				storageImages.emplace_back(set, binding, data);
+			}
+		}
+
+		for (const auto& [set, bindings] : compilationResult.images)
+		{
+			for (const auto& [binding, data] : bindings)
+			{
+				images.emplace_back(set, binding, data);
+			}
+		}
+
+		for (const auto& [set, bindings] : compilationResult.samplers)
+		{
+			for (const auto& [binding, data] : bindings)
+			{
+				samplers.emplace_back(set, binding, data);
+			}
+		}
+
+		streamWriter.Write(uniformBuffers);
+		streamWriter.Write(storageBuffers);
+		streamWriter.Write(storageImages);
+		streamWriter.Write(images);
+		streamWriter.Write(samplers);
+
+		streamWriter.WriteToDisk(s_instance->GetCachedFilePath(shaderSpec), false, 0);
+	}
+
+	std::filesystem::path ShaderCache::GetCachedFilePath(const ShaderCompiler::Specification& shaderSpec) const
+	{
+		size_t hash = 0;
+		for (const auto& [stage, sourceInfo] : shaderSpec.shaderSourceInfo)
+		{
+			const size_t stageHash = std::hash<std::filesystem::path>()(sourceInfo.filepath);
+
+			if (hash == 0)
+			{
+				hash = stageHash;
+			}
+			else
+			{
+				hash = Utility::HashCombine(hash, stageHash);
+			}
+		}
+
+		const auto cacheDir = s_instance->m_info.cacheDirectory / Utility::GetShaderCacheSubDirectory();
+		const auto cachePath = cacheDir / (std::to_string(hash) + ".vtshcache");
+
+		if (!std::filesystem::exists(cacheDir))
+		{
+			std::filesystem::create_directories(cacheDir);
+		}
+
+		return cachePath;
 	}
 }

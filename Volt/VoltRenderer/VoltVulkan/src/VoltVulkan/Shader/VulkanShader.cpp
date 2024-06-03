@@ -60,8 +60,6 @@ namespace Volt::RHI
 
 	const bool VulkanShader::Reload(bool forceCompile)
 	{
-		Utility::CreateCacheDirectoryIfNeeded();
-
 		m_shaderSources.clear();
 		LoadShaderFromFiles();
 

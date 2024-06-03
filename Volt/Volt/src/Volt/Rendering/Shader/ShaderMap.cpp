@@ -5,6 +5,7 @@
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
 
 #include "Volt/Core/Application.h"
+#include "Volt/Core/ScopedTimer.h"
 
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Math/Math.h"
@@ -57,6 +58,8 @@ namespace Volt
 
 	RefPtr<RHI::Shader> ShaderMap::Get(const std::string& name)
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (!s_shaderMap.contains(name))
 		{
 			return nullptr;
@@ -67,6 +70,8 @@ namespace Volt
 
 	RefPtr<RHI::ComputePipeline> ShaderMap::GetComputePipeline(const std::string& name, bool useGlobalResouces)
 	{
+		VT_PROFILE_FUNCTION();
+
 		const size_t hash = Utility::GetComputeShaderHash(name);
 
 		if (s_computePipelineCache.contains(hash))
@@ -82,6 +87,8 @@ namespace Volt
 
 	RefPtr<RHI::RenderPipeline> ShaderMap::GetRenderPipeline(const RHI::RenderPipelineCreateInfo& pipelineInfo)
 	{
+		VT_PROFILE_FUNCTION();
+
 		const size_t hash = Utility::GetRenderPipelineHash(pipelineInfo);
 		
 		if (s_renderPipelineCache.contains(hash))
@@ -106,6 +113,10 @@ namespace Volt
 		std::vector<std::future<void>> shaderFutures;
 
 		std::mutex shaderMapMutex;
+
+		ScopedTimer timer{};
+
+		VT_CORE_INFO("[ShaderMap]: Starting shader import!");
 
 		for (const auto& searchPath : searchPaths)
 		{
@@ -138,7 +149,7 @@ namespace Volt
 					specification.name = def->GetName();
 					specification.sourceFiles = def->GetSourceFiles();
 					specification.permutations = def->GetPermutations();
-					specification.forceCompile = true;
+					specification.forceCompile = false;
 
 					RefPtr<RHI::Shader> shader = RHI::Shader::Create(specification);
 					{
@@ -153,6 +164,8 @@ namespace Volt
 		{
 			future.wait();
 		}
+
+		VT_CORE_INFO("[ShaderMap]: Shader import finished in {0} seconds!", timer.GetTime<Time::Seconds>());
 	}
 
 	void ShaderMap::RegisterShader(const std::string& name, RefPtr<RHI::Shader> shader)

@@ -6,6 +6,8 @@
 #include <VoltRHI/Pipelines/ComputePipeline.h>
 #include <VoltRHI/Shader/Shader.h>
 
+#include <CoreUtilities/Containers/Map.h>
+
 #include <unordered_map>
 #include <string>
 
@@ -32,10 +34,10 @@ namespace Volt
 		static void LoadShaders();
 		static void RegisterShader(const std::string& name, RefPtr<RHI::Shader> shader);
 
-		inline static std::unordered_map<std::string, RefPtr<RHI::Shader>> s_shaderMap;
+		inline static vt::map<std::string, RefPtr<RHI::Shader>> s_shaderMap;
 
-		inline static std::unordered_map<size_t, RefPtr<RHI::ComputePipeline>> s_computePipelineCache;
-		inline static std::unordered_map<size_t, RefPtr<RHI::RenderPipeline>> s_renderPipelineCache;
+		inline static vt::map<size_t, RefPtr<RHI::ComputePipeline>> s_computePipelineCache;
+		inline static vt::map<size_t, RefPtr<RHI::RenderPipeline>> s_renderPipelineCache;
 
 		inline static std::mutex s_registerMutex;
 	};

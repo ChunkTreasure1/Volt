@@ -256,6 +256,10 @@ inline void BinaryStreamReader::Read(std::unordered_map<Key, Value>& data)
 			TypeHeader keySerializedTypeHeader = ReadTypeHeader();
 			ReadData(&key, keySerializedTypeHeader, keyTypeHeader);
 		}
+		else if constexpr (std::is_same<Key, std::string>::value)
+		{
+			Read(key);
+		}
 		else
 		{
 			Key::Deserialize(*this, key);
@@ -270,6 +274,10 @@ inline void BinaryStreamReader::Read(std::unordered_map<Key, Value>& data)
 
 			TypeHeader valueSerializedTypeHeader = ReadTypeHeader();
 			ReadData(&value, valueSerializedTypeHeader, valueTypeHeader);
+		}
+		else if constexpr (std::is_same<Value, std::string>::value)
+		{
+			Read(value);
 		}
 		else
 		{
