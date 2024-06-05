@@ -1118,6 +1118,7 @@ namespace Volt
 		newNode->executeFunction = [tempData, size, bufferHandle, stagingBuffer](const Empty&, RenderContext& context, const RenderGraphPassResources& resources)
 		{
 			context.MappedBufferUpload(stagingBuffer, tempData, size);
+			context.CopyBuffer(stagingBuffer, bufferHandle, size);
 		};
 
 		m_passNodes.push_back(newNode);
