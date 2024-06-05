@@ -98,7 +98,7 @@ namespace Volt::RHI
 
 			if (EnumValueContainsFlag(barrierSync, BarrierStage::Copy))
 			{
-				result |= VK_PIPELINE_STAGE_2_COPY_BIT;
+				result |= VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
 			}
 
 			if (EnumValueContainsFlag(barrierSync, BarrierStage::Resolve))

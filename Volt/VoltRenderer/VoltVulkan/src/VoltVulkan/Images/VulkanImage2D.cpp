@@ -436,25 +436,52 @@ namespace Volt::RHI
 			aspectFlags |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		}
 
-		VkImageMemoryBarrier barrier{};
-		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.image = m_allocation->GetResourceHandle<VkImage>();
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.srcAccessMask = 0;
-		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		barrier.subresourceRange.aspectMask = Utility::GetVkImageAspect(m_imageAspect);
-		barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
-		barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.baseMipLevel = 0;
+		VkImageMemoryBarrier2 barrier2{};
+		barrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+		barrier2.pNext = nullptr;
+		barrier2.srcAccessMask = VK_ACCESS_2_NONE;
+		barrier2.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+		barrier2.srcStageMask = VK_PIPELINE_STAGE_2_NONE;
+		barrier2.dstStageMask = VK_PIPELINE_STAGE_2_COPY_BIT;
+		barrier2.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		barrier2.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier2.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier2.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier2.subresourceRange.aspectMask = Utility::GetVkImageAspect(m_imageAspect);
+		barrier2.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+		barrier2.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		barrier2.subresourceRange.baseArrayLayer = 0;
+		barrier2.subresourceRange.baseMipLevel = 0;
+		barrier2.image = m_allocation->GetResourceHandle<VkImage>();
+
+		VkDependencyInfo depInfo{};
+		depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+		depInfo.pNext = nullptr;
+		depInfo.dependencyFlags = 0;
+		depInfo.imageMemoryBarrierCount = 1;
+		depInfo.pImageMemoryBarriers = &barrier2;
+
+
+		//VkImageMemoryBarrier barrier{};
+		//barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		//barrier.image = m_allocation->GetResourceHandle<VkImage>();
+		//barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		//barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		//barrier.srcAccessMask = 0;
+		//barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		//barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		//barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		//barrier.subresourceRange.aspectMask = Utility::GetVkImageAspect(m_imageAspect);
+		//barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+		//barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		//barrier.subresourceRange.baseArrayLayer = 0;
+		//barrier.subresourceRange.baseMipLevel = 0;
 
 		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 
 		commandBuffer->Begin();
-		vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		//vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		vkCmdPipelineBarrier2(commandBuffer->GetHandle<VkCommandBuffer>(), &depInfo);
 
 		VkBufferImageCopy region{};
 		region.bufferOffset = 0;
@@ -471,9 +498,16 @@ namespace Volt::RHI
 
 		vkCmdCopyBufferToImage(commandBuffer->GetHandle<VkCommandBuffer>(), stagingAlloc->GetResourceHandle<VkBuffer>(), m_allocation->GetResourceHandle<VkImage>(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		barrier2.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier2.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier2.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+		barrier2.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+		barrier2.srcStageMask = VK_PIPELINE_STAGE_2_COPY_BIT;
+		barrier2.dstStageMask = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT;
+
+		vkCmdPipelineBarrier2(commandBuffer->GetHandle<VkCommandBuffer>(), &depInfo);
+
+		//vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
 		commandBuffer->End();
 		commandBuffer->ExecuteAndWait();

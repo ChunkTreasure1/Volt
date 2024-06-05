@@ -110,13 +110,16 @@ namespace Volt
 		m_commandBuffer->ClearBuffer(buffer, clearValue);
 	}
 
-	void RenderContext::UploadBufferData(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size)
+	void RenderContext::CopyBuffer(RenderGraphResourceHandle src, RenderGraphResourceHandle dst, const size_t size)
 	{
 		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
-		resourceAccess.ValidateResourceAccess(bufferHandle);
+		resourceAccess.ValidateResourceAccess(src);
+		resourceAccess.ValidateResourceAccess(dst);
 
-		const auto buffer = m_renderGraph->GetBufferRaw(bufferHandle);
-		buffer->SetData(m_commandBuffer, data, size);
+		const auto srcBuffer = m_renderGraph->GetBufferRaw(src);
+		const auto dstBuffer = m_renderGraph->GetBufferRaw(dst);
+
+		m_commandBuffer->CopyBufferRegion(srcBuffer->GetAllocation(), 0, dstBuffer->GetAllocation(), 0, size);
 	}
 
 	void RenderContext::MappedBufferUpload(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size)

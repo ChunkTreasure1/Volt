@@ -29,8 +29,8 @@ namespace Volt::RHI
 
 	struct SerializedShaderData
 	{
-		ShaderStage stage;
 		std::vector<uint32_t> shaderData;
+		ShaderStage stage;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const SerializedShaderData& data)
 		{
@@ -160,7 +160,7 @@ namespace Volt::RHI
 
 		for (const auto& [stage, shaderData] : compilationResult.shaderData)
 		{
-			serializedShaderData.emplace_back(stage, shaderData);
+			serializedShaderData.emplace_back(shaderData, stage);
 		}
 
 		streamWriter.Write(serializedShaderData);

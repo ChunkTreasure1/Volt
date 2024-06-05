@@ -685,19 +685,23 @@ namespace Volt
 
 		const auto& renderScene = m_scene->GetRenderScene();
 
+		RenderGraphResourceHandle materialCountBuffer = 0;
+		{
+			const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetIndividualMaterialCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Material Counts");
+			materialCountBuffer = renderGraph.CreateBuffer(desc);
+			renderGraph.AddClearBufferPass(materialCountBuffer, 0, "Clear Material Count");
+		}
+
 		blackboard.Add<MaterialCountData>() = renderGraph.AddPass<MaterialCountData>("Generate Material Count",
 		[&](RenderGraph::Builder& builder, MaterialCountData& data)
 		{
-			{
-				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetIndividualMaterialCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Material Counts");
-				data.materialCountBuffer = builder.CreateBuffer(desc);
-			}
-
 			{
 				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetIndividualMaterialCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Material Starts");
 				data.materialStartBuffer = builder.CreateBuffer(desc);
 			}
 
+			data.materialCountBuffer = materialCountBuffer;
+			builder.WriteResource(data.materialCountBuffer);
 			builder.ReadResource(visBufferData.visibility);
 			builder.ReadResource(externalBuffersData.objectDrawDataBuffer);
 			builder.ReadResource(externalBuffersData.gpuMeshletsBuffer);
@@ -706,8 +710,6 @@ namespace Volt
 		},
 		[=](const MaterialCountData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			context.ClearBuffer(data.materialCountBuffer, 0);
-
 			auto pipeline = ShaderMap::GetComputePipeline("GenerateMaterialCount");
 
 			context.BindPipeline(pipeline);
@@ -727,6 +729,14 @@ namespace Volt
 		const VisibilityBufferData& visBufferData = blackboard.Get<VisibilityBufferData>();
 		const MaterialCountData& matCountData = blackboard.Get<MaterialCountData>();
 
+		RenderGraphResourceHandle currentMaterialCountBuffer = 0;
+
+		{
+			const auto desc = RGUtils::CreateBufferDescGPU<uint32_t>(std::max(m_scene->GetRenderScene()->GetIndividualMaterialCount(), 1u), "Current Material Count");
+			currentMaterialCountBuffer = renderGraph.CreateBuffer(desc);
+			renderGraph.AddClearBufferPass(currentMaterialCountBuffer, 0, "Clear Current Material Count");
+		}
+
 		blackboard.Add<MaterialPixelsData>() = renderGraph.AddPass<MaterialPixelsData>("Collect Material Pixels",
 		[&](RenderGraph::Builder& builder, MaterialPixelsData& data)
 		{
@@ -735,11 +745,9 @@ namespace Volt
 				data.pixelCollectionBuffer = builder.CreateBuffer(desc);
 			}
 
-			{
-				const auto desc = RGUtils::CreateBufferDescGPU<uint32_t>(std::max(m_scene->GetRenderScene()->GetIndividualMaterialCount(), 1u), "Current Material Count");
-				data.currentMaterialCountBuffer = builder.CreateBuffer(desc);
-			}
+			data.currentMaterialCountBuffer = currentMaterialCountBuffer;
 
+			builder.WriteResource(data.currentMaterialCountBuffer);
 			builder.ReadResource(visBufferData.visibility);
 			builder.ReadResource(externalBuffersData.objectDrawDataBuffer);
 			builder.ReadResource(externalBuffersData.gpuMeshletsBuffer);
@@ -749,9 +757,6 @@ namespace Volt
 		},
 		[=](const MaterialPixelsData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			context.ClearBuffer(data.pixelCollectionBuffer, std::numeric_limits<uint32_t>::max());
-			context.ClearBuffer(data.currentMaterialCountBuffer, 0);
-
 			auto pipeline = ShaderMap::GetComputePipeline("CollectMaterialPixels");
 
 			context.BindPipeline(pipeline);
@@ -761,6 +766,7 @@ namespace Volt
 			context.SetConstant("materialStartBuffer"_sh, resources.GetBuffer(matCountData.materialStartBuffer));
 			context.SetConstant("currentMaterialCountBuffer"_sh, resources.GetBuffer(data.currentMaterialCountBuffer));
 			context.SetConstant("pixelCollectionBuffer"_sh, resources.GetBuffer(data.pixelCollectionBuffer));
+			context.SetConstant("renderSize"_sh, glm::uvec2{ m_width, m_height });
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1);
 		});
@@ -770,20 +776,24 @@ namespace Volt
 	{
 		MaterialCountData matCountData = blackboard.Get<MaterialCountData>();
 
+		RenderGraphResourceHandle materialIndirectArgsBuffer = 0;
+		{
+			const auto desc = RGUtils::CreateBufferDesc<RHI::IndirectDispatchCommand>(std::max(m_scene->GetRenderScene()->GetIndividualMaterialCount(), 1u), RHI::BufferUsage::IndirectBuffer | RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Material Indirect Args");
+			materialIndirectArgsBuffer = renderGraph.CreateBuffer(desc);
+			renderGraph.AddClearBufferPass(materialIndirectArgsBuffer, 0, "Clear Material Indirect Args Buffer");
+		}
+
 		blackboard.Add<MaterialIndirectArgsData>() = renderGraph.AddPass<MaterialIndirectArgsData>("Generate Material Indirect Args",
 		[&](RenderGraph::Builder& builder, MaterialIndirectArgsData& data)
 		{
-			{
-				const auto desc = RGUtils::CreateBufferDesc<RHI::IndirectDispatchCommand>(std::max(m_scene->GetRenderScene()->GetIndividualMaterialCount(), 1u), RHI::BufferUsage::IndirectBuffer | RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Material Indirect Args");
-				data.materialIndirectArgsBuffer = builder.CreateBuffer(desc);
-			}
+			data.materialIndirectArgsBuffer = materialIndirectArgsBuffer;
 
+			builder.WriteResource(data.materialIndirectArgsBuffer);
 			builder.ReadResource(matCountData.materialCountBuffer);
 			builder.SetIsComputePass();
 		},
 		[=](const MaterialIndirectArgsData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			context.ClearBuffer(data.materialIndirectArgsBuffer, 0);
 			const uint32_t materialCount = m_scene->GetRenderScene()->GetIndividualMaterialCount();
 
 			auto pipeline = ShaderMap::GetComputePipeline("GenerateMaterialIndirectArgs");

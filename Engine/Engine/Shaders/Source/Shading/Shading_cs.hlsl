@@ -40,9 +40,9 @@ struct Constants
 void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_GroupIndex)
 {
     const Constants constants = GetConstants<Constants>();
+    const ViewData viewData = constants.pbrConstants.viewData.Load();
 
-    uint2 size;
-    constants.output.GetDimensions(size.x, size.y);
+    uint2 size = viewData.renderSize;
     
     if (any(threadId.xy >= size))
     {
@@ -56,7 +56,6 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
         return;
     }
     
-    const ViewData viewData = constants.pbrConstants.viewData.Load();
     const float2 texCoords = float2(float(threadId.x) * viewData.invRenderSize.x, 1.f - float(threadId.y) * viewData.invRenderSize.y);
     
     const float2 material = constants.material.Load2D(int3(threadId.xy, 0));
