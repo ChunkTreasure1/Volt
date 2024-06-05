@@ -3,12 +3,15 @@
 
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 #include <CoreUtilities/FileIO/BinaryStreamReader.h>
+#include <CoreUtilities/TimeUtility.h>
 
 #include "VoltRHI/Graphics/GraphicsContext.h"
 #include "VoltRHI/Utility/HashUtility.h"
 
 namespace Volt::RHI
 {
+	constexpr uint32_t SHADER_CACHE_VERSION = 1; // Increase this when updating the shader cache format!
+
 	namespace Utility
 	{
 		inline static std::filesystem::path GetShaderCacheSubDirectory()
@@ -26,6 +29,11 @@ namespace Volt::RHI
 			return { subDir };
 		}
 	}
+
+	struct CachedShaderHeader
+	{
+		uint64_t timeSinceLastCompile;
+	};
 
 	struct SerializedShaderData
 	{
@@ -80,9 +88,15 @@ namespace Volt::RHI
 		s_instance = nullptr;
 	}
 
-	ShaderCompiler::CompilationResultData ShaderCache::TryGetCachedShader(const ShaderCompiler::Specification& shaderSpecification)
+	CachedShaderResult ShaderCache::TryGetCachedShader(const ShaderCompiler::Specification& shaderSpecification)
 	{
 		assert(s_instance);
+
+		uint64_t lastWriteTime = 0;
+		for (const auto& [stage, sourceInfo] : shaderSpecification.shaderSourceInfo)
+		{
+			lastWriteTime = std::max(lastWriteTime, TimeUtility::GetLastWriteTime(sourceInfo.filepath));
+		}
 
 		BinaryStreamReader streamReader{ s_instance->GetCachedFilePath(shaderSpecification) };
 		if (!streamReader.IsStreamValid())
@@ -90,10 +104,28 @@ namespace Volt::RHI
 			return {};
 		}
 
-		ShaderCompiler::CompilationResultData resultData{};
+		uint32_t shaderCacheVersion = 0;
+		streamReader.Read(shaderCacheVersion);
+
+		if (shaderCacheVersion != SHADER_CACHE_VERSION)
+		{
+			return {};
+		}
+
+		CachedShaderHeader cachedHeader{};
+		streamReader.Read(cachedHeader);
+
+		if (cachedHeader.timeSinceLastCompile < lastWriteTime)
+		{
+			return {};
+		}
 
 		std::vector<SerializedShaderData> serializedShaderData;
 		streamReader.Read(serializedShaderData);
+
+		CachedShaderResult result{};
+		result.timeSinceLastCompile = cachedHeader.timeSinceLastCompile;
+		ShaderCompiler::CompilationResultData& resultData = result.data;
 
 		streamReader.Read(resultData.outputFormats);
 		
@@ -147,7 +179,7 @@ namespace Volt::RHI
 			resultData.samplers[data.set][data.binding] = data.data;
 		}
 
-		return resultData;
+		return result;
 	}
 
 	void ShaderCache::CacheShader(const ShaderCompiler::Specification& shaderSpec, const ShaderCompiler::CompilationResultData& compilationResult)
@@ -155,6 +187,12 @@ namespace Volt::RHI
 		assert(s_instance);
 
 		BinaryStreamWriter streamWriter{};
+
+		CachedShaderHeader cachedShaderHeader{};
+		cachedShaderHeader.timeSinceLastCompile = TimeUtility::GetTimeSinceEpoch();
+
+		streamWriter.Write(SHADER_CACHE_VERSION);
+		streamWriter.Write(cachedShaderHeader);
 
 		std::vector<SerializedShaderData> serializedShaderData;
 

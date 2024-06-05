@@ -4,7 +4,7 @@
 #include "Volt/GameUI/UIWidget.h"
 #include "Volt/GameUI/UIComponents.h"
 
-#include "Volt/Utility/TimeUtility.h"
+#include <CoreUtilities/TimeUtility.h>
 
 namespace Volt
 {

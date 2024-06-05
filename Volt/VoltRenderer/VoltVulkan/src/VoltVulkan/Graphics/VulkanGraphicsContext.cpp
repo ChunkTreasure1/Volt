@@ -21,7 +21,7 @@
 
 namespace Volt::RHI
 {
-	static const std::vector<VkValidationFeatureEnableEXT> s_enabledValidationFeatures = { VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT, /*VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT*/};
+	static const std::vector<VkValidationFeatureEnableEXT> s_enabledValidationFeatures = { /*VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT, /*VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT*/};
 
 	namespace Utility
 	{

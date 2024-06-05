@@ -18,7 +18,7 @@ public:
 
 	inline static const uint32_t GetCurrentFileNumber() { return myCurrentFileNumber; }
 	inline static const bool IsBuilding() { return myIsBuilding; }
-	inline static float GetCurrentBuildTime() { return std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::high_resolution_clock::now() - myBuildStartTime).count(); }
+	inline static float GetCurrentBuildTime() { return std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::steady_clock::now() - myBuildStartTime).count(); }
 	static float GetBuildProgress();
 	static std::string GetCurrentFile();
 
@@ -28,7 +28,7 @@ private:
 
 	GameBuilder() = delete;
 
-	inline static std::chrono::high_resolution_clock::time_point myBuildStartTime;
+	inline static std::chrono::steady_clock::time_point myBuildStartTime;
 
 	inline static std::atomic_bool myIsBuilding = false;
 	inline static std::atomic_uint32_t myCurrentFileNumber = 0;

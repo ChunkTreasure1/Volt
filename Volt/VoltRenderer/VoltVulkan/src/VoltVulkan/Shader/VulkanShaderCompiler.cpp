@@ -10,6 +10,8 @@
 #include <VoltRHI/Shader/ShaderPreProcessor.h>
 #include <VoltRHI/Shader/ShaderCache.h>
 
+#include <CoreUtilities/TimeUtility.h>
+
 #ifdef _WIN32
 #include <wrl.h>
 #else
@@ -96,10 +98,10 @@ namespace Volt::RHI
 		// First try and get cached shader
 		if (!specification.forceCompile)
 		{
-			const auto data = ShaderCache::TryGetCachedShader(specification);
-			if (data.IsValid())
+			const auto result = ShaderCache::TryGetCachedShader(specification);
+			if (result.data.IsValid())
 			{
-				return data;
+				return result.data;
 			}
 		}
 
