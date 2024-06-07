@@ -4,6 +4,7 @@
 #include "Volt/Rendering/RenderGraph/RenderGraph.h"
 #include "Volt/Rendering/RenderGraph/RenderGraphBlackboard.h"
 #include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
+#include "Volt/Rendering/Shader/ShaderMap.h"
 #include "Volt/Rendering/Renderer.h"
 
 #include "Volt/Rendering/Utility/StagedBufferUpload.h"
@@ -20,6 +21,8 @@ namespace Volt
 	{
 		RenderGraphResourceHandle vertexBuffer = 0;
 		RenderGraphResourceHandle indexBuffer = 0;
+
+		uint32_t indexCount = 0;
 	};
 
 	struct UIVertex
@@ -35,7 +38,7 @@ namespace Volt
 	{
 		{ 0.f, 0.f, 0.f, 1.f },
 		{ 1.f, 0.f, 0.f, 1.f },
-		{ 0.f, -1.f, 0.f, 1.f },
+		{ 0.f, 1.f, 0.f, 1.f },
 		{ 1.f, 1.f, 0.f, 1.f }
 	};
 
@@ -49,8 +52,8 @@ namespace Volt
 
 	static constexpr uint32_t s_quadVertexIndices[s_quadIndexCount] =
 	{
-		0, 1, 2,
-		2, 1, 3
+		0, 2, 1,
+		2, 3, 1
 	};
 
 	UISceneRenderer::UISceneRenderer(const UISceneRendererSpecification& specification)
@@ -73,10 +76,73 @@ namespace Volt
 		RenderGraphBlackboard blackboard;
 		RenderGraph renderGraph{ m_commandBuffer };
 	
-		PrepareForRender(renderGraph, blackboard);
+		if (PrepareForRender(renderGraph, blackboard))
+		{
+			const auto& renderingData = blackboard.Get<UIRenderingData>();
+		
+			const glm::vec2 halfSize = glm::vec2{ targetImage->GetWidth(), targetImage->GetHeight() } / 2.f;
+
+			const auto projection = glm::ortho(-halfSize.x, halfSize.x, -halfSize.y, halfSize.y, 0.1f, 100.f);
+
+			struct UIPassData
+			{
+				RenderGraphResourceHandle depthImage;
+				RenderGraphResourceHandle targetImage;
+			};
+
+			renderGraph.AddPass<UIPassData>("UI Pass",
+			[&](RenderGraph::Builder& builder, UIPassData& data) 
+			{
+				{
+					const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::D32_SFLOAT>(targetImage->GetWidth(), targetImage->GetHeight(), RHI::ImageUsage::Attachment, "UI Depth");
+					data.depthImage = builder.CreateImage2D(desc);
+				}
+
+				data.targetImage = builder.AddExternalImage2D(targetImage);
+
+				builder.WriteResource(data.targetImage);
+				builder.ReadResource(renderingData.indexBuffer, RenderGraphResourceState::IndexBuffer);
+				builder.ReadResource(renderingData.vertexBuffer, RenderGraphResourceState::VertexBuffer);
+
+				builder.SetHasSideEffect();
+			},
+			[=](const UIPassData& data, RenderContext& context, const RenderGraphPassResources& resources)
+			{
+				RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { data.targetImage, data.depthImage });
+
+				RHI::RenderPipelineCreateInfo pipelineInfo{};
+				pipelineInfo.shader = ShaderMap::Get("UIMain");
+
+				auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+				context.BeginRendering(renderingInfo);
+				context.BindPipeline(pipeline);
+
+				context.BindIndexBuffer(renderingData.indexBuffer);
+				context.BindVertexBuffers({ renderingData.vertexBuffer }, 0);
+
+				context.SetConstant("viewProjection"_sh, projection);
+
+				context.DrawIndexed(renderingData.indexCount, 1, 0, 0, 0);
+				context.EndRendering();
+			});
+		}
+
+		RenderGraphResourceHandle outputImage = renderGraph.AddExternalImage2D(targetImage);
+		{
+			RenderGraphBarrierInfo barrier{};
+			barrier.dstAccess = RHI::BarrierAccess::ShaderRead;
+			barrier.dstLayout = RHI::ImageLayout::ShaderRead;
+			barrier.dstStage = RHI::BarrierStage::PixelShader;
+
+			renderGraph.AddResourceBarrier(outputImage, barrier);
+		}
+
+		renderGraph.Compile();
+		renderGraph.Execute();
 	}
 
-	void UISceneRenderer::PrepareForRender(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	bool UISceneRenderer::PrepareForRender(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -88,6 +154,13 @@ namespace Volt
 		VertexIndexCounts vertexIndexCounts = CalculateMaxVertexAndIndexCount();
 
 		auto& renderingData = blackboard.Add<UIRenderingData>();
+
+		if (vertexIndexCounts.indexCount == 0 || vertexIndexCounts.vertexCount == 0)
+		{
+			return false;
+		}
+
+		renderingData.indexCount = vertexIndexCounts.indexCount;
 
 		{
 			const auto desc = RGUtils::CreateBufferDesc<UIVertex>(vertexIndexCounts.vertexCount, RHI::BufferUsage::VertexBuffer, RHI::MemoryUsage::GPU, "UI Vertex Buffer");
@@ -116,7 +189,7 @@ namespace Volt
 				for (uint32_t i = 0; i < s_quadVertexCount; i++)
 				{
 					UIVertex& vertex = stagedVertexBufferUpload.AddUploadItem();
-					vertex.position = (s_quadVertexPositions[i] - glm::vec4{ transComp.alignment, 0.f, 0.f } + glm::vec4{ transComp.position, 0.f, 0.f }) * glm::vec4{ transComp.scale, 1.f, 1.f };
+					vertex.position = (s_quadVertexPositions[i] - glm::vec4{ transComp.alignment, 0.f, 0.f }) * glm::vec4{ transComp.size, 1.f, 1.f } + glm::vec4{ transComp.position, 10.f, 0.f };
 					vertex.texCoords = s_quadVertexTexCoords[i];
 					vertex.imageHandle = resourceHandle;
 				}
@@ -130,6 +203,8 @@ namespace Volt
 			stagedVertexBufferUpload.UploadTo(renderGraph, renderingData.vertexBuffer);
 			stagedIndexBufferUpload.UploadTo(renderGraph, renderingData.indexBuffer);
 		}
+
+		return true;
 	}
 
 	UISceneRenderer::VertexIndexCounts UISceneRenderer::CalculateMaxVertexAndIndexCount()

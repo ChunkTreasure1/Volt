@@ -301,9 +301,27 @@ namespace Volt
 		m_commandBuffer->BindIndexBuffer(indexBuffer);
 	}
 
-	void RenderContext::BindVertexBuffers(const std::vector<WeakPtr<RHI::VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
+	void RenderContext::BindVertexBuffers(const StackVector<WeakPtr<RHI::VertexBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding)
 	{
 		m_commandBuffer->BindVertexBuffers(vertexBuffers, firstBinding);
+	}
+
+	void RenderContext::BindVertexBuffers(const StackVector<RenderGraphResourceHandle, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding)
+	{
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		
+		for (const auto& buffer : vertexBuffers)
+		{
+			resourceAccess.ValidateResourceAccess(buffer);
+		}
+
+		StackVector<WeakPtr<RHI::StorageBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT> buffers{};
+		for (const auto& buffer : vertexBuffers)
+		{
+			buffers.Emplace() = m_renderGraph->GetBufferRaw(buffer);
+		}
+
+		m_commandBuffer->BindVertexBuffers(buffers, firstBinding);
 	}
 
 	void RenderContext::Flush()

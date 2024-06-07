@@ -42,6 +42,6 @@ namespace Volt
 			return;
 		}
 
-		renderGraph.AddStagedBufferUpload(dstBuffer, m_data.data(), m_data.size(), "Staged Buffer Upload");
+		renderGraph.AddStagedBufferUpload(dstBuffer, m_data.data(), m_data.size() * sizeof(T), "Staged Buffer Upload");
 	}
 }

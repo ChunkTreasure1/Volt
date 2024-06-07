@@ -18,6 +18,8 @@ namespace Volt::RHI
 
 	inline static constexpr size_t MAX_COLOR_ATTACHMENT_COUNT = 8;
 	inline static constexpr size_t MAX_ATTACHMENT_COUNT = MAX_COLOR_ATTACHMENT_COUNT + 1;
+	inline static constexpr size_t MAX_VERTEX_BUFFER_COUNT = 32;
+	inline static constexpr size_t MAX_VIEWPORT_COUNT = 16;
 
 	enum class QueueType
 	{

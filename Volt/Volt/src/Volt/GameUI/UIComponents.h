@@ -61,7 +61,7 @@ namespace Volt
 	{
 		UIAnchor anchor = UIAnchor::TopLeft;
 		glm::vec2 position = { 0.f };
-		glm::vec2 scale = { 1.f };
+		glm::vec2 size = { 100.f };
 		glm::vec2 alignment = { 0.f };
 		float rotation = 0.f;
 		int32_t zOrder = 0u;
@@ -75,7 +75,7 @@ namespace Volt
 			reflect.SetHidden();
 			reflect.AddMember(&UITransformComponent::anchor, "anchor", "Anchor", "", UIAnchor::TopLeft);
 			reflect.AddMember(&UITransformComponent::position, "position", "Position", "", glm::vec2{ 0.f });
-			reflect.AddMember(&UITransformComponent::scale, "scale", "Scale", "", glm::vec2{ 1.f });
+			reflect.AddMember(&UITransformComponent::size, "size", "Size", "", glm::vec2{ 100.f });
 			reflect.AddMember(&UITransformComponent::alignment, "alignment", "Alignment", "", glm::vec2{ 0.f });
 			reflect.AddMember(&UITransformComponent::rotation, "rotation", "Rotation", "", 0.f);
 			reflect.AddMember(&UITransformComponent::zOrder, "zorder", "Z Order", "", 0);
@@ -102,7 +102,7 @@ namespace Volt
 
 	struct UIImageComponent
 	{
-		AssetHandle imageHandle;
+		AssetHandle imageHandle = 0;
 
 		static void ReflectType(TypeDesc<UIImageComponent>& reflect)
 		{

@@ -204,14 +204,4 @@ void EditorSettingsPanel::DrawStyleSettings()
 
 void EditorSettingsPanel::DrawEditorSettings()
 {
-	auto& sceneSettings = m_editorSettings.sceneSettings;
-
-	UI::PushID();
-	if (UI::BeginProperties())
-	{
-		UI::Property("Low Memory Usage", sceneSettings.lowMemoryUsage);
-
-		UI::EndProperties();
-	}
-	UI::PopID();
 }

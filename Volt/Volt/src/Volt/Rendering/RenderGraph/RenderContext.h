@@ -181,7 +181,8 @@ namespace Volt
 
 		void BindIndexBuffer(RenderGraphResourceHandle indexBuffer);
 		void BindIndexBuffer(WeakPtr<RHI::IndexBuffer> indexBuffer);
-		void BindVertexBuffers(const std::vector<WeakPtr<RHI::VertexBuffer>>& vertexBuffers, const uint32_t firstBinding);
+		void BindVertexBuffers(const StackVector<WeakPtr<RHI::VertexBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding);
+		void BindVertexBuffers(const StackVector<RenderGraphResourceHandle, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding);
 
 		void Flush();
 		RefPtr<RHI::StorageBuffer> GetReadbackBuffer(WeakPtr<RHI::StorageBuffer> buffer);

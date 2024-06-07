@@ -46,13 +46,14 @@ namespace Volt::RHI
 		void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ) override;
 		void DispatchIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset) override;
 
-		void SetViewports(const std::vector<Viewport>& viewports) override;
-		void SetScissors(const std::vector<Rect2D>& scissors) override;
+		void SetViewports(const StackVector<Viewport, MAX_VIEWPORT_COUNT>& viewports) override;
+		void SetScissors(const StackVector<Rect2D, MAX_VIEWPORT_COUNT>& scissors) override;
 
 		void BindPipeline(WeakPtr<RenderPipeline> pipeline) override;
 		void BindPipeline(WeakPtr<ComputePipeline> pipeline) override;
 
-		void BindVertexBuffers(const std::vector<WeakPtr<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding) override;
+		void BindVertexBuffers(const StackVector<WeakPtr<VertexBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding) override;
+		void BindVertexBuffers(const StackVector<WeakPtr<StorageBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding) override;
 		void BindIndexBuffer(WeakPtr<IndexBuffer> indexBuffer) override;
 		void BindIndexBuffer(WeakPtr<StorageBuffer> indexBuffer) override;
 		void BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable) override;

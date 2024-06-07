@@ -16,17 +16,17 @@ public:
 	void Erase(const size_t index);
 
 	template<typename... Args>
-	[[nodiscard]] constexpr T& Emplace(Args&&... args);
+	constexpr T& Emplace(Args&&... args);
 
-	[[nodiscard]] constexpr const T& At(const size_t index) const;
-	[[nodiscard]] constexpr T& At(const size_t index);
-	[[nodiscard]] constexpr size_t Size() const;
-	[[nodiscard]] constexpr bool Empty() const;
-	[[nodiscard]] constexpr const T* Data() const { return m_data.data(); }
-	[[nodiscard]] constexpr T* Data() { return m_data.data(); }
+	VT_NODISCARD constexpr const T& At(const size_t index) const;
+	VT_NODISCARD constexpr T& At(const size_t index);
+	VT_NODISCARD constexpr size_t Size() const;
+	VT_NODISCARD constexpr bool Empty() const;
+	VT_NODISCARD constexpr const T* Data() const { return m_data.data(); }
+	VT_NODISCARD constexpr T* Data() { return m_data.data(); }
 
-	[[nodiscard]] const T& operator[](const size_t index) const { assert(index < m_currentSize);  return m_data[index]; }
-	[[nodiscard]] T& operator[](const size_t index) { assert(index < m_currentSize); return m_data[index]; }
+	VT_NODISCARD VT_INLINE const T& operator[](const size_t index) const { assert(index < m_currentSize);  return m_data[index]; }
+	VT_NODISCARD VT_INLINE T& operator[](const size_t index) { assert(index < m_currentSize); return m_data[index]; }
 
 	class Iterator
 	{
@@ -40,23 +40,23 @@ public:
 		{
 		}
 
-		inline T& operator*() const
+		VT_INLINE T& operator*() const
 		{
 			return *m_ptr;
 		}
 
-		inline Iterator& operator++()
+		VT_INLINE Iterator& operator++()
 		{
 			++m_ptr;
 			return *this;
 		}
 
-		[[nodiscard]] inline const bool operator!=(const Iterator& other) const
+		VT_NODISCARD VT_INLINE const bool operator!=(const Iterator& other) const
 		{
 			return m_ptr != other.m_ptr;
 		}
 
-		[[nodiscard]] inline const bool operator==(const Iterator& other) const
+		VT_NODISCARD VT_INLINE const bool operator==(const Iterator& other) const
 		{
 			return m_ptr == other.m_ptr;
 		}
@@ -65,11 +65,11 @@ public:
 		T* m_ptr;
 	};
 
-	inline Iterator begin() { return m_data.data(); }
-	inline Iterator end() { return m_data.data() + m_currentSize; }
+	VT_INLINE Iterator begin() { return m_data.data(); }
+	VT_INLINE Iterator end() { return m_data.data() + m_currentSize; }
 
-	inline const Iterator begin() const { return Iterator(m_data.data()); }
-	inline const Iterator end() const { return Iterator(m_data.data() + m_currentSize); }
+	VT_INLINE const Iterator begin() const { return Iterator(m_data.data()); }
+	VT_INLINE const Iterator end() const { return Iterator(m_data.data() + m_currentSize); }
 
 private:
 	std::array<T, MAX_SIZE> m_data;

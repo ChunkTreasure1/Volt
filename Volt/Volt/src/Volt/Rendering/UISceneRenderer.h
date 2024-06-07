@@ -31,7 +31,7 @@ namespace Volt
 			uint32_t indexCount;
 		};
 		
-		void PrepareForRender(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		bool PrepareForRender(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		VertexIndexCounts CalculateMaxVertexAndIndexCount();
 
 		Ref<UIScene> m_scene;
