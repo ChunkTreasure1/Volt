@@ -14,7 +14,7 @@ static const uint VERTEX_ANIMATION_DATA_SIZE = 16;
 
 struct Constants
 {
-    UniformTypedBuffer<GPUScene> gpuScene;
+    UniformBuffer<GPUScene> gpuScene;
     UniformBuffer<ViewData> viewData;
 };
 
@@ -42,7 +42,7 @@ struct DefaultInput
     uint GetObjectID()
     {
         const Constants constants = GetConstants<Constants>();
-        const GPUScene scene = constants.gpuScene.Load(0);
+        const GPUScene scene = constants.gpuScene.Load();
         const Meshlet meshlet = scene.meshletsBuffer.Load(GetMeshletID());
    
         return meshlet.objectId;
@@ -51,7 +51,7 @@ struct DefaultInput
     const VertexPositionData GetVertexPositionData()
     {
         const Constants constants = GetConstants<Constants>();
-        const GPUScene scene = constants.gpuScene.Load(0);
+        const GPUScene scene = constants.gpuScene.Load();
        
         const uint meshletId = GetMeshletID();
         
@@ -66,7 +66,7 @@ struct DefaultInput
     const VertexMaterialData GetVertexMaterialData()
     {
         const Constants constants = GetConstants<Constants>();
-        const GPUScene scene = constants.gpuScene.Load(0);
+        const GPUScene scene = constants.gpuScene.Load();
        
         const uint meshletId = GetMeshletID();
         
@@ -81,7 +81,7 @@ struct DefaultInput
     const float4x4 GetTransform()
     {
         const Constants constants = GetConstants < Constants > ();
-        const GPUScene scene = constants.gpuScene.Load(0);
+        const GPUScene scene = constants.gpuScene.Load();
        
         const uint meshletId = GetMeshletID();
         
@@ -93,7 +93,7 @@ struct DefaultInput
     //const GPUMesh GetMesh()
     //{
     //    const Constants constants = GetConstants<Constants>();
-    //    const GPUScene scene = constants.gpuScene.Load(0);
+    //    const GPUScene scene = constants.gpuScene.Load();
     //    const ObjectDrawData drawData = GetDrawData();
         
     //    const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
@@ -103,7 +103,7 @@ struct DefaultInput
     //const uint GetVertexIndex()
     //{
     //    const Constants constants = GetConstants<Constants>();
-    //    const GPUScene scene = constants.gpuScene.Load(0);
+    //    const GPUScene scene = constants.gpuScene.Load();
     //    const ObjectDrawData drawData = GetDrawData();
         
     //    const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);

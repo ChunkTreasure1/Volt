@@ -37,7 +37,6 @@ namespace Volt
 		RenderGraphResourceHandle objectDrawDataBuffer;
 		RenderGraphResourceHandle gpuMeshesBuffer;
 		RenderGraphResourceHandle gpuMeshletsBuffer;
-		RenderGraphResourceHandle gpuSceneBuffer;
 	};
 
 	struct EnvironmentTexturesData
@@ -69,6 +68,7 @@ namespace Volt
 	{
 		RenderGraphResourceHandle viewDataBuffer;
 		RenderGraphResourceHandle directionalLightBuffer;
+		RenderGraphResourceHandle gpuScene;
 	};
 
 	struct LightBuffersData

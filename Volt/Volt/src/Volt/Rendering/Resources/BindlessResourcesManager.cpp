@@ -90,13 +90,6 @@ namespace Volt
 
 	void BindlessResourcesManager::UnregisterBuffer(ResourceHandle handle)
 	{
-		if (handle == RenderScene::s_gpuScene.materialsBuffer || handle == RenderScene::s_gpuScene.meshesBuffer ||
-			handle == RenderScene::s_gpuScene.meshletsBuffer || handle == RenderScene::s_gpuScene.objectDrawDataBuffer || handle == RenderScene::s_gpuSceneHandle)
-		{
-			int* ptr = nullptr;
-			*ptr;
-		}
-
 		m_bufferRegistry.UnregisterResource(handle);
 	}
 
@@ -303,6 +296,7 @@ namespace Volt
 
 	void ResourceRegistry::MarkAsDirty(ResourceHandle handle)
 	{
+		std::scoped_lock lock{ m_mutex };
 		auto it = std::find(m_dirtyResources.begin(), m_dirtyResources.end(), handle);
 		if (it == m_dirtyResources.end())
 		{

@@ -6,7 +6,7 @@
 
 struct Constants
 {
-    UniformTypedBuffer<GPUScene> gpuScene;
+    UniformBuffer<GPUScene> gpuScene;
     UniformBuffer<ViewData> viewData;
     UniformTypedBuffer<DirectionalLight> directionalLight;
 };

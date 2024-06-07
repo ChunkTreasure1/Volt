@@ -15,7 +15,7 @@ struct Constants
     TypedBuffer<uint> materialStartBuffer;
     TypedBuffer<uint2> pixelCollection;
     
-    TypedBuffer<GPUScene> gpuScene;
+    UniformBuffer<GPUScene> gpuScene;
     UniformBuffer<ViewData> viewData;
     
     RWTexture<float4> albedo;
@@ -232,7 +232,7 @@ EvaluatedMaterial EvaluateMaterial(in GPUMaterial material, in MaterialEvaluatio
 void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_GroupIndex)
 {
     const Constants constants = GetConstants<Constants>();
-    const GPUScene scene = constants.gpuScene.Load(0);
+    const GPUScene scene = constants.gpuScene.Load();
     const ViewData viewData = constants.viewData.Load();
     
     if (groupThreadIndex == 0)
