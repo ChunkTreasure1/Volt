@@ -8,6 +8,8 @@
 
 #include <Volt/Project/ProjectManager.h>
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
+#include <Volt/Rendering/Shader/ShaderMap.h>
+#include <Volt/Asset/Rendering/ShaderDefinition.h>
 
 #include <Volt/Utility/UIUtility.h>
 
@@ -16,6 +18,11 @@ void Sandbox::CreateModifiedWatch()
 	m_fileWatcher->AddCallback(efsw::Actions::Modified, [&](const auto newPath, const auto oldPath)
 	{
 		if (newPath.extension().string() == ".nv-gpudmp" || oldPath.extension().string() == ".nv-gpudmp")
+		{
+			return;
+		}
+
+		if (std::filesystem::is_directory(newPath))
 		{
 			return;
 		}
@@ -59,27 +66,27 @@ void Sandbox::CreateModifiedWatch()
 
 				case Volt::AssetType::ShaderSource:
 				{
-					// #TODO_Ivar: Reimplement
-					//const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::GetRelativePath(newPath));
-					//for (const auto& asset : assets)
-					//{
-					//	Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(asset);
-					//	if (!shader || !shader->IsValid())
-					//	{
-					//		continue;
-					//	}
+					const auto dependents = Volt::AssetManager::GetAssetsDependentOn(Volt::AssetManager::GetAssetHandleFromFilePath(newPath));
 
-					//	if (shader->Reload(true))
-					//	{
-					//		UI::Notify(NotificationType::Success, "Recompiled shader!", std::format("Shader {0} was successfully recompiled!", shader->GetName()));
+					for (const auto& assetHandle : dependents)
+					{
+						const auto dependentType = Volt::AssetManager::GetAssetTypeFromHandle(assetHandle);
+						if (dependentType != Volt::AssetType::ShaderDefinition)
+						{
+							continue;
+						}
 
-					//		Volt::Renderer::ReloadShader(shader);
-					//	}
-					//	else
-					//	{
-					//		UI::Notify(NotificationType::Error, "Failed to recompile shader!", std::format("Recompilation of shader {0} failed! Check log for more info!", shader->GetName()));
-					//	}
-					//}
+						Ref<Volt::ShaderDefinition> shaderDef = Volt::AssetManager::GetAsset<Volt::ShaderDefinition>(assetHandle);
+						bool succeded = Volt::ShaderMap::ReloadShaderByName(std::string(shaderDef->GetName()));
+						if (succeded)
+						{
+							UI::Notify(NotificationType::Success, "Recompiled shader!", std::format("Shader {0} was successfully recompiled!", shaderDef->GetName()));
+						}
+						else
+						{
+							UI::Notify(NotificationType::Error, "Failed to recompile shader!", std::format("Recompilation of shader {0} failed! Check log for more info!", shaderDef->GetName()));
+						}
+					}
 					break;
 				}
 

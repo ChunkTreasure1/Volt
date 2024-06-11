@@ -56,6 +56,45 @@ namespace Volt
 		}
 	}
 
+	bool ShaderMap::ReloadShaderByName(const std::string& name)
+	{
+		if (!s_shaderMap.contains(name))
+		{
+			return false;
+		}
+
+		auto shader = s_shaderMap.at(name);
+		bool reloaded = shader->Reload(true);
+	
+		// #TODO_Ivar: Hack for finding out if it's a compute shader or not
+
+		if (reloaded)
+		{
+			if (shader->GetSourceFiles().size() == 1)
+			{
+				for (const auto& [hash, pipeline] : s_computePipelineCache)
+				{
+					if (pipeline->GetShader() == shader)
+					{
+						pipeline->Invalidate();
+					}
+				}
+			}
+			else
+			{
+				for (const auto& [hash, pipeline] : s_renderPipelineCache)
+				{
+					if (pipeline->GetShader() == shader)
+					{
+						pipeline->Invalidate();
+					}
+				}
+			}
+		}
+
+		return reloaded;
+	}
+
 	RefPtr<RHI::Shader> ShaderMap::Get(const std::string& name)
 	{
 		VT_PROFILE_FUNCTION();
@@ -110,13 +149,54 @@ namespace Volt
 			ProjectManager::GetAssetsDirectory()
 		};
 
-		std::vector<std::future<void>> shaderFutures;
-
-		std::mutex shaderMapMutex;
-
 		ScopedTimer timer{};
 
 		VT_CORE_INFO("[ShaderMap]: Starting shader import!");
+
+		for (const auto& searchPath : searchPaths)
+		{
+			for (const auto& path : std::filesystem::recursive_directory_iterator(searchPath))
+			{
+				const auto relPath = AssetManager::GetRelativePath(path.path());
+				const auto type = AssetManager::GetAssetTypeFromExtension(relPath.extension().string());
+
+				if (type != AssetType::ShaderSource)
+				{
+					continue;
+				}
+
+				if (!AssetManager::ExistsInRegistry(relPath))
+				{
+					AssetManager::Get().AddAssetToRegistry(relPath);
+				}
+
+				AssetHandle shaderHandle = AssetManager::GetAssetHandleFromFilePath(relPath);
+				if (shaderHandle == Asset::Null())
+				{
+					continue;
+				}
+
+				const auto includes = FindShaderIncludes(relPath);
+				for (const auto include : includes)
+				{
+					const auto relIncludePath = AssetManager::GetRelativePath(include);
+
+					if (!AssetManager::ExistsInRegistry(relIncludePath))
+					{
+						AssetManager::Get().AddAssetToRegistry(relIncludePath);
+					}
+
+					AssetHandle includeHandle = AssetManager::GetAssetHandleFromFilePath(relIncludePath);
+					if (includeHandle != Asset::Null())
+					{
+						AssetManager::AddDependencyToAsset(shaderHandle, includeHandle);
+					}
+				}
+			}
+		}
+
+		std::vector<std::future<void>> shaderFutures;
+		std::mutex shaderMapMutex;
 
 		for (const auto& searchPath : searchPaths)
 		{
@@ -136,14 +216,15 @@ namespace Volt
 				}
 
 				Ref<ShaderDefinition> shaderDef = AssetManager::GetAsset<ShaderDefinition>(relPath);
+				for (const auto& sourceFile : shaderDef->GetSourceFiles())
+				{
+					AssetManager::AddDependencyToAsset(shaderDef->handle, AssetManager::GetAssetHandleFromFilePath(sourceFile));
+				}
 
 				auto& threadPool = Application::GetThreadPool();
 
 				shaderFutures.emplace_back(threadPool.SubmitTask([&, def = shaderDef]() 
 				{
-					// #TODO: Fix force compile!
-					// We need to do this because the formats / input layouts are not created correctly otherwise
-
 					RHI::ShaderSpecification specification;
 					specification.entryPoint = def->GetEntryPoint();
 					specification.name = def->GetName();
@@ -166,6 +247,63 @@ namespace Volt
 		}
 
 		VT_CORE_INFO("[ShaderMap]: Shader import finished in {0} seconds!", timer.GetTime<Time::Seconds>());
+	}
+
+	std::vector<std::filesystem::path> ShaderMap::FindShaderIncludes(const std::filesystem::path& filePath)
+	{
+		constexpr const char* INCLUDE_KEYWORD = "#include";
+
+		std::ifstream input{ filePath };
+		if (!input.is_open())
+		{
+			return {};
+		}
+
+		std::string shaderString{};
+		input.seekg(0, std::ios::end);
+		shaderString.resize(input.tellg());
+		input.seekg(0, std::ios::beg);
+		input.read(&shaderString[0], shaderString.size());
+
+		input.close();
+		
+		std::vector<std::filesystem::path> resultIncludes{};
+
+		size_t offset = shaderString.find(INCLUDE_KEYWORD, 0);
+		while (offset != std::string::npos)
+		{
+			size_t openOffset = shaderString.find_first_of("\"<", offset);
+			if (openOffset == std::string::npos)
+			{
+				break;
+			}
+
+			size_t closeOffset = shaderString.find_first_of("\">", openOffset + 1);
+			if (closeOffset == std::string::npos)
+			{
+				break;
+			}
+
+			std::string includeString = shaderString.substr(openOffset + 1, closeOffset - openOffset - 1);
+
+			// Find real path
+			if (std::filesystem::exists(filePath.parent_path() / includeString))
+			{
+				resultIncludes.emplace_back(filePath.parent_path() / includeString);
+			}
+			else if (std::filesystem::exists(ProjectManager::GetEngineShaderIncludeDirectory() / includeString))
+			{
+				resultIncludes.emplace_back(ProjectManager::GetEngineShaderIncludeDirectory() / includeString);
+			}
+			else if (std::filesystem::exists(ProjectManager::GetAssetsDirectory() / includeString))
+			{
+				resultIncludes.emplace_back(ProjectManager::GetAssetsDirectory() / includeString);
+			}
+
+			offset = shaderString.find(INCLUDE_KEYWORD, offset + 1);
+		}
+
+		return resultIncludes;
 	}
 
 	void ShaderMap::RegisterShader(const std::string& name, RefPtr<RHI::Shader> shader)

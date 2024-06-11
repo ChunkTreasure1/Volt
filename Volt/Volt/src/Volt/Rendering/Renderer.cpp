@@ -99,9 +99,7 @@ namespace Volt
 			//shaderCompilerInfo.cacheDirectory = ProjectManager::GetEngineDirectory() / "Engine/Shaders/Cache";
 			shaderCompilerInfo.includeDirectories =
 			{
-				"Engine/Shaders/Source/Includes",
-				"Engine/Shaders/Source/HLSL",
-				"Engine/Shaders/Source/HLSL/Includes",
+				ProjectManager::GetEngineShaderIncludeDirectory(),
 				ProjectManager::GetAssetsDirectory()
 			};
 

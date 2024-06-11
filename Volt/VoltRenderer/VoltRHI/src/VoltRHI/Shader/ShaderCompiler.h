@@ -49,7 +49,7 @@ namespace Volt::RHI
 
 		struct CompilationResultData
 		{
-			CompilationResult result;
+			CompilationResult result = CompilationResult::Failure;
 			std::unordered_map<ShaderStage, std::vector<uint32_t>> shaderData;
 
 			// Pixel Shader

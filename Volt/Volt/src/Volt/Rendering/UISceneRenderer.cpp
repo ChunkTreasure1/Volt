@@ -8,6 +8,7 @@
 #include "Volt/Rendering/Renderer.h"
 
 #include "Volt/Rendering/Utility/StagedBufferUpload.h"
+#include "Volt/Rendering/RenderGraph/RenderContextUtils.h"
 
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
@@ -57,7 +58,7 @@ namespace Volt
 	};
 
 	UISceneRenderer::UISceneRenderer(const UISceneRendererSpecification& specification)
-		: m_scene(specification.scene)
+		: m_scene(specification.scene), m_isEditor(specification.isEditor)
 	{
 
 	}
@@ -66,7 +67,7 @@ namespace Volt
 	{
 	}
 
-	void UISceneRenderer::OnRender(RefPtr<RHI::Image2D> targetImage)
+	void UISceneRenderer::OnRender(RefPtr<RHI::Image2D> targetImage, const glm::mat4& projectionMatrix)
 	{
 		if (!m_commandBuffer)
 		{
@@ -79,16 +80,39 @@ namespace Volt
 		if (PrepareForRender(renderGraph, blackboard))
 		{
 			const auto& renderingData = blackboard.Get<UIRenderingData>();
-		
-			const glm::vec2 halfSize = glm::vec2{ targetImage->GetWidth(), targetImage->GetHeight() } / 2.f;
 
-			const auto projection = glm::ortho(-halfSize.x, halfSize.x, -halfSize.y, halfSize.y, 0.1f, 100.f);
+			RenderGraphResourceHandle targetImageHandle = renderGraph.AddExternalImage2D(targetImage);
 
 			struct UIPassData
 			{
 				RenderGraphResourceHandle depthImage;
-				RenderGraphResourceHandle targetImage;
 			};
+
+			renderGraph.AddPass("Grid Pass", 
+			[&](RenderGraph::Builder& builder) 
+			{
+				builder.WriteResource(targetImageHandle);
+				builder.SetHasSideEffect();
+			}, 
+			[=](RenderContext& context, const RenderGraphPassResources& resources) 
+			{
+				RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { targetImageHandle });
+
+				RHI::RenderPipelineCreateInfo pipelineInfo{};
+				pipelineInfo.shader = ShaderMap::Get("2DGrid");
+
+				auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+				context.BeginRendering(renderingInfo);
+
+				RCUtils::DrawFullscreenTriangle(context, pipeline, [projectionMatrix](RenderContext& context)
+				{
+					context.SetConstant("scale"_sh, 1.f);
+					context.SetConstant("inverseViewProjection"_sh, glm::inverse(projectionMatrix));
+				});
+
+				context.EndRendering();
+			});
 
 			renderGraph.AddPass<UIPassData>("UI Pass",
 			[&](RenderGraph::Builder& builder, UIPassData& data) 
@@ -98,9 +122,7 @@ namespace Volt
 					data.depthImage = builder.CreateImage2D(desc);
 				}
 
-				data.targetImage = builder.AddExternalImage2D(targetImage);
-
-				builder.WriteResource(data.targetImage);
+				builder.WriteResource(targetImageHandle);
 				builder.ReadResource(renderingData.indexBuffer, RenderGraphResourceState::IndexBuffer);
 				builder.ReadResource(renderingData.vertexBuffer, RenderGraphResourceState::VertexBuffer);
 
@@ -108,7 +130,8 @@ namespace Volt
 			},
 			[=](const UIPassData& data, RenderContext& context, const RenderGraphPassResources& resources)
 			{
-				RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { data.targetImage, data.depthImage });
+				RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { targetImageHandle, data.depthImage });
+				renderingInfo.renderingInfo.colorAttachments[0].clearMode = RHI::ClearMode::Load;
 
 				RHI::RenderPipelineCreateInfo pipelineInfo{};
 				pipelineInfo.shader = ShaderMap::Get("UIMain");
@@ -121,7 +144,7 @@ namespace Volt
 				context.BindIndexBuffer(renderingData.indexBuffer);
 				context.BindVertexBuffers({ renderingData.vertexBuffer }, 0);
 
-				context.SetConstant("viewProjection"_sh, projection);
+				context.SetConstant("viewProjection"_sh, projectionMatrix);
 
 				context.DrawIndexed(renderingData.indexCount, 1, 0, 0, 0);
 				context.EndRendering();

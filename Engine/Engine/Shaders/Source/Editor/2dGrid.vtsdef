@@ -1,0 +1,5 @@
+name: "2DGrid"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Editor/2DGrid_ps.hlsl"
+  - "Engine/Shaders/Source/Utility/FullscreenTriangle_vs.hlsl"

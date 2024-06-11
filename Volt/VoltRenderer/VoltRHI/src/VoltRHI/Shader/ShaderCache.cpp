@@ -125,6 +125,8 @@ namespace Volt::RHI
 
 		CachedShaderResult result{};
 		result.timeSinceLastCompile = cachedHeader.timeSinceLastCompile;
+		result.data.result = ShaderCompiler::CompilationResult::Success;
+
 		ShaderCompiler::CompilationResultData& resultData = result.data;
 
 		streamReader.Read(resultData.outputFormats);

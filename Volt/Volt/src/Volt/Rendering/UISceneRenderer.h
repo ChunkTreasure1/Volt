@@ -14,6 +14,8 @@ namespace Volt
 	struct UISceneRendererSpecification
 	{
 		Ref<UIScene> scene;
+
+		bool isEditor = false;
 	};
 
 	class UISceneRenderer
@@ -22,7 +24,7 @@ namespace Volt
 		UISceneRenderer(const UISceneRendererSpecification& specification);
 		~UISceneRenderer();
 
-		void OnRender(RefPtr<RHI::Image2D> targetImage);
+		void OnRender(RefPtr<RHI::Image2D> targetImage, const glm::mat4& projectionMatrix);
 
 	private:
 		struct VertexIndexCounts
@@ -33,6 +35,8 @@ namespace Volt
 		
 		bool PrepareForRender(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		VertexIndexCounts CalculateMaxVertexAndIndexCount();
+
+		bool m_isEditor = false;
 
 		Ref<UIScene> m_scene;
 		RefPtr<RHI::CommandBuffer> m_commandBuffer;

@@ -836,6 +836,16 @@ namespace Volt
 		Get().m_dependencyGraph->AddDependencyToAsset(handle, dependency);
 	}
 
+	std::vector<AssetHandle> AssetManager::GetAssetsDependentOn(AssetHandle handle)
+	{
+		if (handle == Asset::Null())
+		{
+			return {};
+		}
+
+		return Get().m_dependencyGraph->GetAssetsDependentOn(handle);
+	}
+
 	const AssetHandle AssetManager::AddAssetToRegistry(const std::filesystem::path& filePath, AssetHandle handle /*= 0*/)
 	{
 		{
@@ -860,6 +870,7 @@ namespace Volt
 			metadata.type = GetAssetTypeFromExtension(filePath.extension().string());
 		}
 
+		m_dependencyGraph->AddAssetToGraph(newHandle);
 		return newHandle;
 	}
 
@@ -886,6 +897,8 @@ namespace Volt
 			metadata.filePath = cleanFilePath;
 			metadata.type = type;
 		}
+
+		m_dependencyGraph->AddAssetToGraph(newHandle);
 	}
 
 	bool AssetManager::IsLoaded(AssetHandle handle)
@@ -1147,6 +1160,7 @@ namespace Volt
 	{
 		std::filesystem::path relativePath = path.lexically_normal();
 		std::string temp = path.string();
+
 		if (temp.find(ProjectManager::GetDirectory().string()) != std::string::npos)
 		{
 			relativePath = std::filesystem::relative(path, ProjectManager::GetDirectory());

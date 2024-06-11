@@ -98,10 +98,10 @@ namespace Volt::RHI
 		// First try and get cached shader
 		if (!specification.forceCompile)
 		{
-			const auto result = ShaderCache::TryGetCachedShader(specification);
-			if (result.data.IsValid())
+			const auto cachedResult = ShaderCache::TryGetCachedShader(specification);
+			if (cachedResult.data.IsValid())
 			{
-				return result.data;
+				return cachedResult.data;
 			}
 		}
 
@@ -112,8 +112,15 @@ namespace Volt::RHI
 		}
 
 		CompilationResultData result = CompileAll(specification);
-		ReflectAllStages(specification, result);
 
+		// If compilation fails, we try to get the cached version.
+		if (result.result != ShaderCompiler::CompilationResult::Success)
+		{
+			const auto cachedResult = ShaderCache::TryGetCachedShader(specification);
+			return cachedResult.data;
+		}
+
+		ReflectAllStages(specification, result);
 		ShaderCache::CacheShader(specification, result);
 
 		return result;
@@ -241,7 +248,7 @@ namespace Volt::RHI
 			{
 				outData.renderGraphConstants = result.renderGraphConstants;
 			}
-			else if(result.renderGraphConstants.IsValid())
+			else if (result.renderGraphConstants.IsValid())
 			{
 				for (const auto& [name, uniform] : outData.renderGraphConstants.uniforms)
 				{

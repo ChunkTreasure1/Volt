@@ -70,6 +70,7 @@ namespace Volt
 		static void UnregisterAssetChangedCallback(AssetType assetType, UUID64 id);
 
 		static void AddDependencyToAsset(AssetHandle handle, AssetHandle dependency);
+		static std::vector<AssetHandle> GetAssetsDependentOn(AssetHandle handle);
 
 		static bool IsLoaded(AssetHandle handle);
 

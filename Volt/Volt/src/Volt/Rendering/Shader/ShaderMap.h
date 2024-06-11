@@ -25,6 +25,7 @@ namespace Volt
 		static void Shutdown();
 
 		static void ReloadAll();
+		static bool ReloadShaderByName(const std::string& name);
 
 		static RefPtr<RHI::Shader> Get(const std::string& name);
 		static RefPtr<RHI::ComputePipeline> GetComputePipeline(const std::string& name, bool useGlobalResouces = true);
@@ -32,6 +33,7 @@ namespace Volt
 
 	private:
 		static void LoadShaders();
+		static std::vector<std::filesystem::path> FindShaderIncludes(const std::filesystem::path& filePath);
 		static void RegisterShader(const std::string& name, RefPtr<RHI::Shader> shader);
 
 		inline static vt::map<std::string, RefPtr<RHI::Shader>> s_shaderMap;
