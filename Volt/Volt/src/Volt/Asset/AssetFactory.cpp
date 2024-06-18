@@ -9,6 +9,7 @@
 #include "Volt/Asset/Animation/Skeleton.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
 #include "Volt/Asset/Animation/AnimationGraphAsset.h"
+#include "Volt/Asset/Animation/MotionWeaveDatabase.h"
 #include "Volt/Asset/ParticlePreset.h"
 #include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Prefab.h"
@@ -60,8 +61,8 @@ namespace Volt
 		RegisterCreateFunction<TimelinePreset>(AssetType::Timeline, m_assetFactoryFunctions);
 		RegisterCreateFunction<NetContract>(AssetType::NetContract, m_assetFactoryFunctions);
 		RegisterCreateFunction<ShaderDefinition>(AssetType::ShaderDefinition, m_assetFactoryFunctions);
-	
-		m_assetFactoryFunctions[AssetType::MotionWeave] = []() { return nullptr; };
+		RegisterCreateFunction<MotionWeaveDatabase>(AssetType::MotionWeave, m_assetFactoryFunctions);
+
 		m_assetFactoryFunctions[AssetType::MonoScript] = []() { return nullptr; };
 		m_assetFactoryFunctions[AssetType::ShaderSource] = []() { return nullptr; };
 		m_assetFactoryFunctions[AssetType::PostProcessingMaterial] = []() { return nullptr; };
