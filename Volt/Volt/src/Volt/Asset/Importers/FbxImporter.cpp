@@ -69,7 +69,7 @@ namespace Volt
 		return true;
 	}
 
-	bool FbxImporter::ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation)
+	bool FbxImporter::ImportAnimationImpl2(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation)
 	{
 		TGA::FBX::Importer::InitImporter();
 
@@ -117,7 +117,7 @@ namespace Volt
 		return true;
 	}
 
-	bool FbxImporter::ImportAnimationImpl2(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation)
+	bool FbxImporter::ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation)
 	{
 		ufbx_scene* scene = LoadScene(path);
 		if (!scene)
@@ -133,8 +133,8 @@ namespace Volt
 				continue;
 			}
 		
-			const double duration = stack->anim->time_end - stack->anim->time_end;
-			dstAnimation.m_duration = duration;
+			const double duration = stack->time_end - stack->time_begin;
+			dstAnimation.m_duration = static_cast<float>(duration);
 
 			// Find out frame count
 			size_t frameCount = bakedAnim->nodes.data[0].translation_keys.count;
@@ -164,7 +164,7 @@ namespace Volt
 				for (size_t i = 0; const auto & keyFrame : bakedNode.rotation_keys)
 				{
 					auto& trs = dstAnimation.m_frames.at(i).localTRS.at(jntIndex);
-					trs.rotation = glm::quat(keyFrame.value.w, keyFrame.value.x, keyFrame.value.y, keyFrame.value.z);
+					trs.rotation = glm::quat(static_cast<float>(keyFrame.value.w), static_cast<float>(keyFrame.value.x), static_cast<float>(keyFrame.value.y), static_cast<float>(keyFrame.value.z));
 					i++;
 				}
 

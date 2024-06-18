@@ -200,7 +200,7 @@ inline size_t BinaryStreamWriter::WriteRaw(const std::vector<F>& data)
 	header.totalTypeSize = static_cast<uint32_t>(data.size());
 
 	WriteTypeHeader(header);
-	if (!m_data.empty())
+	if (!data.empty())
 	{
 		WriteData(data.data(), data.size() * sizeof(F));
 	}
