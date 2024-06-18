@@ -7,7 +7,7 @@
 namespace Volt::RHI
 {
 	D3D12Shader::D3D12Shader(const ShaderSpecification& createInfo) 
-		: m_name(createInfo.name), m_sourceFiles(createInfo.sourceFiles)
+		: m_name(createInfo.name), m_sourceFiles(createInfo.sourceEntries)
 	{
 		Reload(createInfo.forceCompile);
 	}
@@ -57,7 +57,7 @@ namespace Volt::RHI
 		return m_resources;
 	}
 
-	const std::vector<std::filesystem::path>& D3D12Shader::GetSourceFiles() const
+	const std::vector<ShaderSourceEntry>& D3D12Shader::GetSourceEntries() const
 	{
 		return m_sourceFiles;
 	}

@@ -20,7 +20,7 @@ namespace Volt::RHI
 		const bool Reload(bool forceCompile) override;
 		std::string_view GetName() const override;
 		const ShaderResources& GetResources() const override;
-		const std::vector<std::filesystem::path>& GetSourceFiles() const override;
+		const std::vector<ShaderSourceEntry>& GetSourceEntries() const override;
 		ShaderDataBuffer GetConstantsBuffer() const override;
 		const ShaderResourceBinding& GetResourceBindingFromName(std::string_view name) const override;
 
@@ -30,7 +30,7 @@ namespace Volt::RHI
 
 		std::unordered_map<ShaderStage, IDxcBlob*> m_blobMap;
 
-		std::vector<std::filesystem::path> m_sourceFiles;
+		std::vector<ShaderSourceEntry> m_sourceFiles;
 		ShaderResources m_resources;
 	};
 }

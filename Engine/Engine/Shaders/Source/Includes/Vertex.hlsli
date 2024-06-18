@@ -13,6 +13,12 @@ struct VertexAnimationData
     float16_t4 weights;
 };
 
+struct VertexAnimationInfo
+{
+    uint16_t influenceCount;
+    uint16_t boneOffset;  
+};
+
 struct VertexPositionData
 {
     float3 position;

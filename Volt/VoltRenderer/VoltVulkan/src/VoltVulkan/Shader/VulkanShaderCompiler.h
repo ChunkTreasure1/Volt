@@ -34,7 +34,7 @@ namespace Volt::RHI
 		bool PreprocessSource(const ShaderStage shaderStage, const std::filesystem::path& filepath, std::string& outSource);
 
 		CompilationResultData CompileAll(const Specification& specification);
-		CompilationResult CompileSingle(const ShaderStage shaderStage, const std::string& source, const std::filesystem::path& filepath, const Specification& specification, CompilationResultData& outData);
+		CompilationResult CompileSingle(const ShaderStage shaderStage, const std::string& source, const ShaderSourceEntry& sourceEntry, const Specification& specification, CompilationResultData& outData);
 
 		void ReflectAllStages(const Specification& specification, CompilationResultData& inOutData);
 		void ReflectStage(ShaderStage stage, const Specification& specification, CompilationResultData& inOutData);

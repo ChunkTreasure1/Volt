@@ -1,4 +1,6 @@
 name: "EnvironmentIrradiance"
 internal: true
-paths:
-  - "Engine/Shaders/Source/Environment/EnvironmentIrradiance_cs.hlsl"
+sources:
+  - entryPoint: "main"
+    shaderStage: "cs"
+    filePath: "Engine/Shaders/Source/Environment/EnvironmentIrradiance_cs.hlsl"

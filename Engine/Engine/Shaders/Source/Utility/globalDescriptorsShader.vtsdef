@@ -1,4 +1,6 @@
 name: "GlobalDescriptorsShader"
 internal: true
-paths:
-  - "Engine/Shaders/Source/Utility/GlobalDescriptorsShader_cs.hlsl"
+sources:
+  - entryPoint: "main"
+    shaderStage: "cs"
+    filePath: "Engine/Shaders/Source/Utility/GlobalDescriptorsShader_cs.hlsl"

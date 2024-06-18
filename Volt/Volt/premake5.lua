@@ -89,6 +89,7 @@ project "Volt"
 		"%{IncludeDir.shaderc_utils}",
 
 		"%{IncludeDir.zlib}",
+		"%{IncludeDir.ufbx}"
 	}
 
 	links
@@ -106,6 +107,7 @@ project "Volt"
 		"NFD-Extended",
 		"TGAFBX",
 		"cityhash",
+		"ufbx",
 
 		"CoreUtilities",
 		"Mosaic",

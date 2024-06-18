@@ -188,7 +188,7 @@ namespace Volt
 
 		RHI::ShaderSpecification shaderSpecification;
 		shaderSpecification.name = assetName;
-		shaderSpecification.sourceFiles = { outShaderPath };
+		shaderSpecification.sourceEntries = { { "main", RHI::ShaderStage::Compute, outShaderPath}};
 		shaderSpecification.forceCompile = true;
 
 		m_computePipeline = RHI::ComputePipeline::Create(RHI::Shader::Create(shaderSpecification));

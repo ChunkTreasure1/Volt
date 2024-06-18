@@ -95,7 +95,7 @@ namespace Volt::RHI
 		uint64_t lastWriteTime = 0;
 		for (const auto& [stage, sourceInfo] : shaderSpecification.shaderSourceInfo)
 		{
-			lastWriteTime = std::max(lastWriteTime, TimeUtility::GetLastWriteTime(sourceInfo.filepath));
+			lastWriteTime = std::max(lastWriteTime, TimeUtility::GetLastWriteTime(sourceInfo.sourceEntry.filePath));
 		}
 
 		BinaryStreamReader streamReader{ s_instance->GetCachedFilePath(shaderSpecification) };
@@ -279,7 +279,7 @@ namespace Volt::RHI
 		size_t hash = 0;
 		for (const auto& [stage, sourceInfo] : shaderSpec.shaderSourceInfo)
 		{
-			const size_t stageHash = std::hash<std::filesystem::path>()(sourceInfo.filepath);
+			const size_t stageHash = Utility::HashCombine(std::hash<std::filesystem::path>()(sourceInfo.sourceEntry.filePath), std::hash<std::string>()(sourceInfo.sourceEntry.entryPoint));
 
 			if (hash == 0)
 			{

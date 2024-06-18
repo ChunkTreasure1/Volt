@@ -1,4 +1,6 @@
 name: "Shading"
 internal: true
-paths:
-  - "Engine/Shaders/Source/Shading/Shading_cs.hlsl"
+sources:
+  - entryPoint: "main"
+    shaderStage: "cs"
+    filePath: "Engine/Shaders/Source/Shading/Shading_cs.hlsl"

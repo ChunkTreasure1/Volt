@@ -31,6 +31,7 @@ namespace Volt
 		glm::vec4 position;
 		glm::vec2 texCoords;
 		ResourceHandle imageHandle = Resource::Invalid;
+		uint32_t id;
 	};
 
 	static constexpr uint32_t s_quadVertexCount = 4;
@@ -88,6 +89,12 @@ namespace Volt
 				RenderGraphResourceHandle depthImage;
 			};
 
+			struct UISelectionData
+			{
+				RenderGraphResourceHandle widgetIDImage;
+				RenderGraphResourceHandle depthImage;
+			};
+
 			renderGraph.AddPass("Grid Pass", 
 			[&](RenderGraph::Builder& builder) 
 			{
@@ -113,6 +120,47 @@ namespace Volt
 
 				context.EndRendering();
 			});
+
+			UISelectionData& selectionData = renderGraph.AddPass<UISelectionData>("UI Selection Pass",
+			[&](RenderGraph::Builder& builder, UISelectionData& data)
+			{
+				{
+					const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32_UINT>(targetImage->GetWidth(), targetImage->GetHeight(), RHI::ImageUsage::AttachmentStorage, "UI Selection");
+					data.widgetIDImage = builder.CreateImage2D(desc);
+				}
+
+				{
+					const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::D32_SFLOAT>(targetImage->GetWidth(), targetImage->GetHeight(), RHI::ImageUsage::Attachment, "UI Selection Depth");
+					data.depthImage = builder.CreateImage2D(desc);
+				}
+
+				builder.ReadResource(renderingData.indexBuffer, RenderGraphResourceState::IndexBuffer);
+				builder.ReadResource(renderingData.vertexBuffer, RenderGraphResourceState::VertexBuffer);
+
+				builder.SetHasSideEffect();
+			},
+			[=](const UISelectionData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+			{
+				RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { data.widgetIDImage, data.depthImage });
+				
+				RHI::RenderPipelineCreateInfo pipelineInfo{};
+				pipelineInfo.shader = ShaderMap::Get("UIWidgetID");
+				
+				auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+				context.BeginRendering(renderingInfo);
+				context.BindPipeline(pipeline);
+
+				context.BindIndexBuffer(renderingData.indexBuffer);
+				context.BindVertexBuffers({ renderingData.vertexBuffer }, 0);
+
+				context.SetConstant("viewProjection"_sh, projectionMatrix);
+
+				context.DrawIndexed(renderingData.indexCount, 1, 0, 0, 0);
+				context.EndRendering();
+			});
+
+			renderGraph.QueueImage2DExtraction(selectionData.widgetIDImage, m_widgetIDImage);
 
 			renderGraph.AddPass<UIPassData>("UI Pass",
 			[&](RenderGraph::Builder& builder, UIPassData& data) 
@@ -199,7 +247,7 @@ namespace Volt
 		{
 			StagedBufferUpload<UIVertex> stagedVertexBufferUpload{ vertexIndexCounts.vertexCount };
 			StagedBufferUpload<uint32_t> stagedIndexBufferUpload{ vertexIndexCounts.indexCount };
-			m_scene->ForEachWithComponents<const UITransformComponent, const UIImageComponent>([&](entt::entity handle, const UITransformComponent& transComp, const UIImageComponent& imageComp)
+			m_scene->ForEachWithComponents<const UITransformComponent, const UIImageComponent, const UIIDComponent>([&](entt::entity handle, const UITransformComponent& transComp, const UIImageComponent& imageComp, const UIIDComponent& idComp)
 			{
 				auto texture = AssetManager::GetAsset<Texture2D>(imageComp.imageHandle);
 				if (!texture || !texture->IsValid())
@@ -215,6 +263,7 @@ namespace Volt
 					vertex.position = (s_quadVertexPositions[i] - glm::vec4{ transComp.alignment, 0.f, 0.f }) * glm::vec4{ transComp.size, 1.f, 1.f } + glm::vec4{ transComp.position, 10.f, 0.f };
 					vertex.texCoords = s_quadVertexTexCoords[i];
 					vertex.imageHandle = resourceHandle;
+					vertex.id = idComp.id;
 				}
 
 				for (uint32_t i = 0; i < s_quadIndexCount; i++)

@@ -134,15 +134,15 @@ namespace Volt
 
 		physx::PxCookingParams cookingParams{ myCookingData->cookingParams };
 
-		const auto& vertices = srcMesh->GetVertices();
+		const auto& vertexContainer = srcMesh->GetVertexContainer();
 		const auto& indices = srcMesh->GetIndices();
 		const auto& submesh = srcMesh->GetSubMeshes().at(subMeshIndex);
 
 		CookingResult cookingResult = CookingResult::Failure;
 
 		convexDesc.points.count = submesh.vertexCount;
-		convexDesc.points.stride = sizeof(Vertex);
-		convexDesc.points.data = &vertices[submesh.vertexStartOffset];
+		convexDesc.points.stride = sizeof(glm::vec3);
+		convexDesc.points.data = &vertexContainer.positions[submesh.vertexStartOffset];
 		convexDesc.indices.count = submesh.indexCount / 3;
 		convexDesc.indices.data = &indices[submesh.indexStartOffset / 3];
 		convexDesc.indices.stride = sizeof(uint32_t) * 3;
@@ -178,14 +178,14 @@ namespace Volt
 		physx::PxTriangleMeshDesc triangleDesc{};
 		physx::PxCookingParams cookingParams{ myCookingData->cookingParams };
 
-		const auto& vertices = srcMesh->GetVertices();
+		const auto& vertexContainer = srcMesh->GetVertexContainer();
 		const auto& indices = srcMesh->GetIndices();
 		const auto& submesh = srcMesh->GetSubMeshes().at(subMeshIndex);
 
 		CookingResult cookingResult = CookingResult::Failure;
-		triangleDesc.points.stride = sizeof(Vertex);
+		triangleDesc.points.stride = sizeof(glm::vec3);
 		triangleDesc.points.count = submesh.vertexCount;
-		triangleDesc.points.data = &vertices[submesh.vertexStartOffset];
+		triangleDesc.points.data = &vertexContainer.positions[submesh.vertexStartOffset];
 
 		triangleDesc.triangles.stride = sizeof(uint32_t) * 3;
 		triangleDesc.triangles.count = submesh.indexCount / 3;

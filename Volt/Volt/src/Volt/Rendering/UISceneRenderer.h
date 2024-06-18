@@ -38,6 +38,7 @@ namespace Volt
 
 		bool m_isEditor = false;
 
+		RefPtr<RHI::Image2D> m_widgetIDImage;
 		Ref<UIScene> m_scene;
 		RefPtr<RHI::CommandBuffer> m_commandBuffer;
 	};

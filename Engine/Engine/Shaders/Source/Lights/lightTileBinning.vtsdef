@@ -1,4 +1,6 @@
 name: "LightTileBinning"
 internal: true
-paths:
-  - "Engine/Shaders/Source/Lights/LightTileBinning_cs.hlsl"
+sources:
+  - entryPoint: "main"
+    shaderStage: "cs"
+    filePath: "Engine/Shaders/Source/Lights/LightTileBinning_cs.hlsl"

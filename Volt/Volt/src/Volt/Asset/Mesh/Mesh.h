@@ -24,6 +24,28 @@ namespace Volt
 
 	class Material;
 
+	struct VertexContainer
+	{
+		std::vector<glm::vec3> positions;
+		std::vector<VertexMaterialData> materialData;
+		
+		std::vector<VertexAnimationInfo> vertexAnimationInfo;
+		std::vector<uint16_t> vertexBoneInfluences;
+		std::vector<uint8_t> vertexBoneWeights;
+
+		VT_INLINE size_t Size() const
+		{
+			return positions.size();
+		}
+
+		VT_INLINE void Resize(size_t size)
+		{
+			positions.resize(size);
+			materialData.resize(size);
+			vertexAnimationInfo.resize(size);
+		}
+	};
+
 	class Mesh : public Asset
 	{
 	public:
@@ -33,7 +55,6 @@ namespace Volt
 		~Mesh() override;
 
 		void Construct();
-		const std::vector<EncodedVertex> GetEncodedVertices() const;
 
 		inline const std::vector<SubMesh>& GetSubMeshes() const { return m_subMeshes; }
 		inline std::vector<SubMesh>& GetSubMeshesMutable() { return m_subMeshes; }
@@ -41,10 +62,9 @@ namespace Volt
 		inline const MaterialTable& GetMaterialTable() const { return m_materialTable; }
 		void SetMaterial(Ref<Material> material, uint32_t index);
 
-		inline const size_t GetVertexCount() const { return m_vertices.size(); }
+		inline const size_t GetVertexCount() const { return m_vertexContainer.Size(); }
 		inline const size_t GetIndexCount() const { return m_indices.size(); }
 
-		inline const std::vector<Vertex>& GetVertices() const { return m_vertices; }
 		inline const std::vector<uint32_t>& GetIndices() const { return m_indices; }
 		inline const std::vector<Meshlet>& GetMeshlets() const { return m_meshlets; }
 
@@ -56,12 +76,14 @@ namespace Volt
 
 		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
 		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexMaterialBuffer() const { return m_vertexMaterialBuffer; }
-		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexAnimationBuffer() const { return m_vertexAnimationBuffer; }
+		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexAnimationInfoBuffer() const { return m_vertexAnimationInfoBuffer; }
 		inline BindlessResourceRef<RHI::StorageBuffer> GetIndexStorageBuffer() const { return m_indexBuffer; }
+
+		VT_NODISCARD VT_INLINE const VertexContainer& GetVertexContainer() const { return m_vertexContainer; }
 
 		static AssetType GetStaticType() { return AssetType::Mesh; }
 		AssetType GetType() override { return GetStaticType(); }
-		uint32_t GetVersion() const override { return 1; }
+		uint32_t GetVersion() const override { return 2; }
 
 	private:
 		friend class FbxImporter;
@@ -71,40 +93,25 @@ namespace Volt
 		friend class VTMeshImporter;
 		friend class GLTFImporter;
 
-		struct VertexMaterialData
-		{
-			glm::vec<4, uint8_t> normal;
-			float tangent = 0.f;
-			glm::vec<2, half_float::half> texCoords = glm::vec<2, half_float::half>(0.f, 0.f);
-		};
+		VertexMaterialData GetMaterialDataFromVertex(const Vertex& vertex);
 
-		struct VertexAnimationData
-		{
-			glm::vec<4, uint16_t> influences = 0;
-			half_float::half weights[4] = { half_float::half(0.f), half_float::half(0.f), half_float::half(0.f), half_float::half(0.f) };
-		};
-
-		std::vector<std::vector<Vertex>> ExtractSubMeshVertices();
-		std::vector<std::vector<uint32_t>> ExtractSubMeshIndices();
-
-		const std::vector<glm::vec3> GetVertexPositions();
-		const std::vector<VertexMaterialData> GetVertexMaterialData();
-		const std::vector<VertexAnimationData> GetVertexAnimationData();
+		void InitializeWithVertices(const std::vector<Vertex>& vertices);
 
 		std::vector<SubMesh> m_subMeshes;
+		VertexContainer m_meshletVertexContainer;
 
-		std::vector<Vertex> m_vertices;
 		std::vector<uint32_t> m_indices;
 
 		std::vector<Meshlet> m_meshlets;
 		std::vector<uint32_t> m_meshletIndices;
-		std::vector<Vertex> m_meshletVertices;
 
 		MaterialTable m_materialTable;
 
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexPositionsBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexMaterialBuffer;
-		BindlessResourceRef<RHI::StorageBuffer> m_vertexAnimationBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> m_vertexAnimationInfoBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> m_vertexBoneInfluencesBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> m_vertexBoneWeightsBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_indexBuffer;
 
 		BindlessResourceRef<RHI::StorageBuffer> m_meshletIndexBuffer;
@@ -117,5 +124,11 @@ namespace Volt
 
 		glm::vec3 m_averageScale{ 1.f };
 		std::map<uint32_t, BoundingSphere> m_subMeshBoundingSpheres;
+
+		// Prototype vertex stuff
+		VertexContainer m_vertexContainer;
+
+		std::vector<uint16_t> m_vertexBoneInfluences;
+		std::vector<uint8_t> m_vertexBoneWeights;
 	};
 }

@@ -39,6 +39,7 @@ IncludeDir["TGAFbx"] = "%{wks.location}/Volt/vendor/TGAFbx/src"
 IncludeDir["entt"] = "%{wks.location}/Volt/vendor/entt/include"
 IncludeDir["cityhash"] = "%{wks.location}/Volt/vendor/cityhash/src"
 IncludeDir["METIS"] = "%{wks.location}/Volt/vendor/METIS/include"
+IncludeDir["ufbx"] = "%{wks.location}/Volt/vendor/ufbx"
 
 IncludeDir["vma"] = "%{wks.location}/Volt/vendor/vma"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"

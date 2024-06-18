@@ -38,8 +38,7 @@ namespace Volt::RHI
 	struct ShaderSpecification
 	{
 		std::string_view name;
-		std::string_view entryPoint;
-		std::vector<std::filesystem::path> sourceFiles;
+		std::vector<ShaderSourceEntry> sourceEntries;
 		std::vector<std::string> permutations;
 		bool forceCompile = false;
 	};
@@ -50,7 +49,7 @@ namespace Volt::RHI
 		virtual const bool Reload(bool forceCompile) = 0;
 		virtual std::string_view GetName() const = 0;
 		virtual const ShaderResources& GetResources() const = 0;
-		virtual const std::vector<std::filesystem::path>& GetSourceFiles() const = 0;
+		virtual const std::vector<ShaderSourceEntry>& GetSourceEntries() const = 0;
 		virtual ShaderDataBuffer GetConstantsBuffer() const = 0;
 		virtual const ShaderResourceBinding& GetResourceBindingFromName(std::string_view name) const = 0;
 

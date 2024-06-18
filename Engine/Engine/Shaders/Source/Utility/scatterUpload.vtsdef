@@ -1,4 +1,6 @@
 name: "ScatterUpload"
 internal: true
-paths:
-  - "Engine/Shaders/Source/Utility/ScatterUpload_cs.hlsl"
+sources:
+  - entryPoint: "main"
+    shaderStage: "cs"
+    filePath: "Engine/Shaders/Source/Utility/ScatterUpload_cs.hlsl"

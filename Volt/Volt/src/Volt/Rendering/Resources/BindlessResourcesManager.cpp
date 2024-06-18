@@ -40,7 +40,7 @@ namespace Volt
 	
 		RHI::ShaderSpecification shaderSpec{};
 		shaderSpec.name = "GlobalResourcesDescriptor";
-		shaderSpec.sourceFiles = { "Engine/Shaders/Source/Utility/GlobalDescriptorsShader_cs.hlsl" };
+		shaderSpec.sourceEntries = { { "main", RHI::ShaderStage::Compute, "Engine/Shaders/Source/Utility/GlobalDescriptorsShader_cs.hlsl" } };
 		shaderSpec.forceCompile = true;
 
 		tableInfo.shader = RHI::Shader::Create(shaderSpec);

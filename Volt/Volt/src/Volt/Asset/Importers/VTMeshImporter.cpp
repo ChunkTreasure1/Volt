@@ -53,8 +53,6 @@ namespace Volt
 		const uint32_t vertexCount = *(uint32_t*)&totalData[offset];
 		offset += sizeof(uint32_t);
 
-		dstMesh.m_vertices.resize(vertexCount);
-		memcpy_s(dstMesh.m_vertices.data(), sizeof(Vertex) * vertexCount, &totalData[offset], sizeof(Vertex) * vertexCount);
 		offset += sizeof(Vertex) * vertexCount;
 
 		const uint32_t indexCount = *(uint32_t*)&totalData[offset];

@@ -87,7 +87,7 @@ bool VertexPainterPanel::BrushUpdate()
 			auto origin = ex_cameraController->GetCamera()->GetPosition();
 			auto localRayDir = rayDir;
 
-			auto vList = mesh->GetVertices();
+			auto vList = mesh->GetVertexContainer().positions;
 			auto iList = mesh->GetIndices();
 
 			auto entTransform = currentEntity.GetTransform();
@@ -96,15 +96,15 @@ bool VertexPainterPanel::BrushUpdate()
 			{
 				for (uint32_t index = submesh.vertexStartOffset; index < submesh.vertexStartOffset + submesh.vertexCount; index++)
 				{
-					vList[index].position = entTransform * submesh.transform * glm::vec4(vList[index].position, 1);
+					vList[index] = entTransform * submesh.transform * glm::vec4(vList[index], 1);
 				}
 			}
 
 			for (int i = 0; i < iList.size(); i += 3)
 			{
-				auto p1 = vList[iList[i]].position;
-				auto p2 = vList[iList[i + 1]].position;
-				auto p3 = vList[iList[i + 2]].position;
+				auto p1 = vList[iList[i]];
+				auto p2 = vList[iList[i + 1]];
+				auto p3 = vList[iList[i + 2]];
 
 				intersectionPoint = { 0,0,0 };
 				if (Volt::rayTriangleIntersection(origin, localRayDir, p1, p2, p3, intersectionPoint))
@@ -398,11 +398,11 @@ void VertexPainterPanel::BillboardDraw()
 			{
 				for (uint32_t index = submesh.vertexStartOffset; index < submesh.vertexStartOffset + submesh.vertexCount; index++)
 				{
-					auto& vertex = mesh->GetVertices().at(index);
+					auto& vertex = mesh->GetVertexContainer().positions.at(index);
 
 					glm::vec4 vertexColor = hasPainted ? Volt::Utility::UnpackUIntToUNormFloat4(paintedEnt.GetComponent<Volt::VertexPaintedComponent>().vertexColors[index]) : 0.f;
 
-					auto vPos = glm::vec3(paintedEnt.GetTransform() * submesh.transform * glm::vec4(vertex.position, 1));
+					auto vPos = glm::vec3(paintedEnt.GetTransform() * submesh.transform * glm::vec4(vertex, 1));
 					if (!m_settings.isSelecting && glm::distance2(vPos, m_brushPosition) < m_settings.billboardRange * m_settings.billboardRange)
 					{
 						switch (m_settings.view)
@@ -525,7 +525,7 @@ bool VertexPainterPanel::AddPainted(Volt::Entity entity)
 	auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(entity.GetComponent<Volt::MeshComponent>().GetHandle());
 	auto& vpComp = entity.AddComponent<Volt::VertexPaintedComponent>();
 
-	vpComp.vertexColors = std::vector<uint32_t>(mesh->GetVertices().size(), Volt::Utility::PackUNormFloat4AsUInt({ 0.f, 0.f, 0.f, 1.f }));
+	vpComp.vertexColors = std::vector<uint32_t>(mesh->GetVertexContainer().Size(), Volt::Utility::PackUNormFloat4AsUInt({ 0.f, 0.f, 0.f, 1.f }));
 	vpComp.meshHandle = mesh->handle;
 
 	//for (auto& vertex : entity.GetComponent<Volt::VertexPaintedComponent>().vertecies)
@@ -560,8 +560,8 @@ void VertexPainterPanel::Paint(float color)
 		{
 			for (uint32_t index = submesh.vertexStartOffset; index < submesh.vertexStartOffset + submesh.vertexCount; index++)
 			{
-				auto& vertex = mesh->GetVertices().at(index);
-				auto vPos = glm::vec3(paintedEnt.GetTransform() * submesh.transform * glm::vec4(vertex.position, 1));
+				auto& vertex = mesh->GetVertexContainer().positions.at(index);
+				auto vPos = glm::vec3(paintedEnt.GetTransform() * submesh.transform * glm::vec4(vertex, 1));
 				if (glm::distance2(vPos, m_brushPosition) < m_settings.billboardRange * m_settings.billboardRange)
 				{
 					auto& currentVertexColor = vertecies[index];

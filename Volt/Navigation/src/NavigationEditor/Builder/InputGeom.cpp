@@ -29,6 +29,7 @@
 #include "RecastDebugDraw.h"
 #include "DetourNavMesh.h"
 
+#include <Volt/Rendering/Mesh/MeshCommon.h>
 #include <Volt/Log/Log.h>
 
 inline static bool intersectSegmentTriangle(const float* sp, const float* sq,
@@ -111,25 +112,30 @@ InputGeom::InputGeom(Ref<Volt::Mesh> asset) :
 	m_offMeshConCount(0),
 	m_volumeCount(0)
 {
-	auto srcVertices = asset->GetVertices();
+	auto srcVertices = asset->GetVertexContainer();
 	auto srcIndices = asset->GetIndices();
 
-	m_verts = new float[srcVertices.size() * 3];
-	m_normals = new float[srcVertices.size() * 3];
+	const size_t vertexCount = srcVertices.positions.size();
+
+	m_verts = new float[vertexCount * 3];
+	m_normals = new float[vertexCount * 3];
 	m_tris = new int[srcIndices.size()];
 
-	m_vertCount = static_cast<int32_t>(srcVertices.size());
+	m_vertCount = static_cast<int32_t>(vertexCount);
 	m_triCount = static_cast<int32_t>(srcIndices.size()) / 3;
 
-	for (uint32_t i = 0; i < srcVertices.size(); ++i)
+	for (uint32_t i = 0; i < vertexCount; ++i)
 	{
-		m_verts[(i * 3) + 0] = srcVertices[i].position.x;
-		m_verts[(i * 3) + 1] = srcVertices[i].position.y;
-		m_verts[(i * 3) + 2] = srcVertices[i].position.z;
+		m_verts[(i * 3) + 0] = srcVertices.positions[i].x;
+		m_verts[(i * 3) + 1] = srcVertices.positions[i].y;
+		m_verts[(i * 3) + 2] = srcVertices.positions[i].z;
 
-		m_normals[(i * 3) + 0] = srcVertices[i].normal.x;
-		m_normals[(i * 3) + 1] = srcVertices[i].normal.y;
-		m_normals[(i * 3) + 2] = srcVertices[i].normal.z;
+		const glm::vec2 encodedNormal = { srcVertices.materialData[i].normal.x / 255.f, srcVertices.materialData[i].normal.y / 255.f};
+		const glm::vec3 normal = Volt::Utility::OctNormalDecode(encodedNormal);
+
+		m_normals[(i * 3) + 0] = normal.x;
+		m_normals[(i * 3) + 1] = normal.y;
+		m_normals[(i * 3) + 2] = normal.z;
 	}
 
 	memcpy(m_tris, srcIndices.data(), sizeof(int) * srcIndices.size());

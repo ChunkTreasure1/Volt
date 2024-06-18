@@ -16,12 +16,6 @@ struct GPUMaterial
     uint2 padding;
 };
 
-struct GPUMeshLOD
-{
-    uint indexCount;
-    uint indexOffset;
-};
-
 struct Meshlet
 {
     uint vertexOffset;
@@ -43,9 +37,11 @@ struct GPUMesh
 {
     TypedBuffer<VertexPositionData> vertexPositionsBuffer;
     TypedBuffer<VertexMaterialData> vertexMaterialBuffer;
-    TypedBuffer<VertexAnimationData> vertexAnimationBuffer;
+    TypedBuffer<VertexAnimationInfo> vertexAnimationInfoBuffer;
+    TypedBuffer<uint16_t> vertexBoneInfluencesBuffer;
+
+    TypedBuffer<uint> vertexBoneWeightsBuffer; // packed: one element is 4 weights
     TypedBuffer<uint> indexBuffer;
-    
     TypedBuffer<uint> meshletIndexBuffer;
     TypedBuffer<Meshlet> meshletsBuffer;
     
@@ -53,9 +49,6 @@ struct GPUMesh
     uint meshletCount;
     uint meshletStartOffset;
     uint meshletIndexStartOffset;
-  
-    uint lodCount;
-    GPUMeshLOD lods[MAX_LOD_COUNT];
 };
 
 struct ObjectDrawData

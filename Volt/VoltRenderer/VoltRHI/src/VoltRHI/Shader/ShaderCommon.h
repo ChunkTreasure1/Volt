@@ -261,9 +261,16 @@ namespace Volt::RHI
 		static void Deserialize(BinaryStreamReader& streamReader, ShaderResourceBinding& outData);
 	};
 
+	struct ShaderSourceEntry
+	{
+		std::string entryPoint = "main";
+		RHI::ShaderStage shaderStage;
+		std::filesystem::path filePath;
+	};
+
 	struct ShaderSourceInfo
 	{
-		std::filesystem::path filepath;
+		ShaderSourceEntry sourceEntry;
 		std::string source;
 	};
 }

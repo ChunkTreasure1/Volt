@@ -1,5 +1,9 @@
 name: "FinalCopy"
 internal: true
-paths:
-  - "Engine/Shaders/Source/PostProcessing/FinalCopy_ps.hlsl"
-  - "Engine/Shaders/Source/Utility/FullscreenTriangle_vs.hlsl"
+sources:
+  - entryPoint: "main"
+    shaderStage: "vs"
+    filePath: "Engine/Shaders/Source/Utility/FullscreenTriangle_vs.hlsl"
+  - entryPoint: "main"
+    shaderStage: "ps"
+    filePath: "Engine/Shaders/Source/PostProcessing/FinalCopy_ps.hlsl"

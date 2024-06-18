@@ -79,12 +79,10 @@ namespace Volt::RHI
 		{
 			OptimizationLevel optimizationLevel = OptimizationLevel::Disable;
 			std::unordered_map<ShaderStage, ShaderSourceInfo> shaderSourceInfo;
-
-			std::string entryPoint = "main";
 			bool forceCompile = false;
 		};
 
-		virtual ~ShaderCompiler();;
+		virtual ~ShaderCompiler();
 
 		[[nodiscard]] static CompilationResultData TryCompile(const Specification& specification);
 		static void AddMacro(const std::string& macroName);

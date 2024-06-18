@@ -55,79 +55,11 @@ namespace Volt
 
 	bool ShaderDefinitionImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		Ref<ShaderDefinition> shaderDef = std::reinterpret_pointer_cast<ShaderDefinition>(asset);
-
-		const auto filesytemPath = AssetManager::GetFilesystemPath(metadata.filePath);
-
-		if (!std::filesystem::exists(filesytemPath))
-		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
-			asset->SetFlag(AssetFlag::Missing, true);
-			return false;
-		}
-
-		YAMLFileStreamReader streamReader{};
-		if (!streamReader.OpenFile(filesytemPath))
-		{
-			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
-			asset->SetFlag(AssetFlag::Invalid, true);
-			return false;
-		}
-
-		std::string name = streamReader.ReadAtKey("name", std::string("Unnamed"));
-		std::string entryPoint = streamReader.ReadAtKey("entryPoint", std::string("main"));
-		bool isInternal = streamReader.ReadAtKey("internal", false);
-
-		if (!streamReader.HasKey("paths"))
-		{
-			VT_CORE_ERROR("No shaders defined in shader definition {0}!", metadata.filePath);
-			asset->SetFlag(AssetFlag::Invalid, true);
-			return false;
-		}
-
-		std::vector<std::filesystem::path> paths;
-		streamReader.ForEach("paths", [&]() 
-		{
-			paths.emplace_back(streamReader.ReadValue<std::string>());
-		});
-
-		std::vector<std::string> permutationValues;
-		if (streamReader.HasKey("permutations"))
-		{
-			streamReader.ForEach("permutations", [&]() 
-			{
-				permutationValues.emplace_back(streamReader.ReadValue<std::string>());
-			});
-		}
-
-		shaderDef->m_isInternal = isInternal;
-		shaderDef->m_name = name;
-		shaderDef->m_sourceFiles = paths;
-		shaderDef->m_permutaionValues = permutationValues;
-		shaderDef->m_entryPoint = entryPoint;
-
-		return true;
+		return false;
 	}
 
 	void ShaderDefinitionImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
-		Ref<ShaderDefinition> shaderDef = std::reinterpret_pointer_cast<ShaderDefinition>(asset);
-
-		YAMLFileStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
-		streamWriter.BeginMap();
-		streamWriter.SetKey("name", shaderDef->GetName());
-		streamWriter.SetKey("entryPoint", shaderDef->GetEntryPoint());
-		streamWriter.SetKey("internal", shaderDef->IsInternal());
-
-		streamWriter.BeginSequence("paths");
-		for (const auto& path : shaderDef->GetSourceFiles())
-		{
-			streamWriter.AddValue(path);
-		}
-		streamWriter.EndSequence();
-		streamWriter.EndMap();
-
-		streamWriter.WriteToDisk();
 	}
 
 	//bool MaterialImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const

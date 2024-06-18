@@ -7,21 +7,17 @@
 
 namespace Volt
 {
-	struct GPUMeshLOD
-	{
-		uint32_t indexCount = 0;
-		uint32_t indexOffset = 0;
-	};
-
 	struct GPUMesh
 	{
 		inline static constexpr uint32_t MAX_LOD_COUNT = 8;
 
 		ResourceHandle vertexPositionsBuffer;
 		ResourceHandle vertexMaterialBuffer;
-		ResourceHandle vertexAnimationBuffer;
-		ResourceHandle indexBuffer;
+		ResourceHandle vertexAnimationInfoBuffer;
+		ResourceHandle vertexBoneInfluencesBuffer;
 
+		ResourceHandle vertexBoneWeightsBuffer;
+		ResourceHandle indexBuffer;
 		ResourceHandle meshletIndexBuffer;
 		ResourceHandle meshletsBuffer;
 
@@ -29,9 +25,6 @@ namespace Volt
 		uint32_t meshletCount;
 		uint32_t meshletStartOffset;
 		uint32_t meshletIndexStartOffset;
-
-		uint32_t lodCount = 0;
-		GPUMeshLOD lods[MAX_LOD_COUNT];
 	};
 
 	struct ObjectDrawData

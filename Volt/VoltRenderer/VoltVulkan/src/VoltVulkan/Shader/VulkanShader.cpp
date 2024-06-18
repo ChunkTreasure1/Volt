@@ -44,7 +44,7 @@ namespace Volt::RHI
 	VulkanShader::VulkanShader(const ShaderSpecification& specification)
 		: m_specification(specification)
 	{
-		if (m_specification.sourceFiles.empty())
+		if (m_specification.sourceEntries.empty())
 		{
 			RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Trying to create a shader {0} without any sources!", m_specification.name);
 			return;
@@ -108,9 +108,9 @@ namespace Volt::RHI
 		return m_resources.bindings.at(nameStr);
 	}
 
-	const std::vector<std::filesystem::path>& VulkanShader::GetSourceFiles() const
+	const std::vector<ShaderSourceEntry>& VulkanShader::GetSourceEntries() const
 	{
-		return m_specification.sourceFiles;
+		return m_specification.sourceEntries;
 	}
 
 	ShaderDataBuffer VulkanShader::GetConstantsBuffer() const
@@ -126,10 +126,10 @@ namespace Volt::RHI
 
 	void VulkanShader::LoadShaderFromFiles()
 	{
-		for (const auto& path : m_specification.sourceFiles)
+		for (const auto& entry : m_specification.sourceEntries)
 		{
-			const ShaderStage stage = Utility::GetShaderStageFromFilename(path.filename().string());
-			std::string source = Utility::ReadStringFromFile(path);
+			const ShaderStage stage = entry.shaderStage;
+			std::string source = Utility::ReadStringFromFile(entry.filePath);
 
 			if (source.empty())
 			{
@@ -138,12 +138,12 @@ namespace Volt::RHI
 
 			if (m_shaderSources.contains(stage))
 			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Multiple shaders of same stage defined in file {0}!", path.string().c_str());
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Multiple shaders of same stage defined in file {0}!", entry.filePath.string().c_str());
 				continue;
 			}
 
 			m_shaderSources[stage].source = source;
-			m_shaderSources[stage].filepath = path;
+			m_shaderSources[stage].sourceEntry = entry;
 		}
 	}
 
@@ -172,7 +172,6 @@ namespace Volt::RHI
 	{
 		ShaderCompiler::Specification compileSpec{};
 		compileSpec.forceCompile = forceCompile;
-		compileSpec.entryPoint = m_specification.entryPoint;
 		compileSpec.shaderSourceInfo = m_shaderSources;
 
 		return ShaderCompiler::TryCompile(compileSpec);

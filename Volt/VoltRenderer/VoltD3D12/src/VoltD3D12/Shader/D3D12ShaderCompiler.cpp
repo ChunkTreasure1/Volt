@@ -53,111 +53,111 @@ namespace Volt::RHI
 	}
 	ShaderCompiler::CompilationResult D3D12ShaderCompiler::CompileStage(const std::filesystem::path& path, const Specification& specification, D3D12Shader& shader)
 	{
-		auto stageflag = Utility::GetShaderStageFromFilename(path.string());
+		//auto stageflag = Utility::GetShaderStageFromFilename(path.string());
 
 
-		std::wstring wEntryPoint(specification.entryPoint.begin(), specification.entryPoint.end());
+		//std::wstring wEntryPoint(specification.entryPoint.begin(), specification.entryPoint.end());
 
-		std::vector<LPCWSTR> arguments;
-		arguments.emplace_back(L"-E");
-		arguments.emplace_back(wEntryPoint.c_str());
-
-
-		Microsoft::WRL::ComPtr<IDxcBlobEncoding> sourceBlob;
-		// Get the whole file to string.
-		std::ifstream fin(path, std::ios::binary | std::ios::ate);
-		fin.seekg(0, std::ios::end);
-		std::string file;
-		file.resize(fin.tellg());
-		fin.seekg(0, std::ios::beg);
-		fin.read(file.data(), file.size());
+		//std::vector<LPCWSTR> arguments;
+		//arguments.emplace_back(L"-E");
+		//arguments.emplace_back(wEntryPoint.c_str());
 
 
-		PreProcessorData ppData = {};
-		ppData.entryPoint = specification.entryPoint;
-		ppData.shaderStage = stageflag;
-		ppData.shaderSource = file;
-
-		PreProcessorResult ppResult = {};
-
-		if (!ShaderPreProcessor::PreProcessShaderSource(ppData, ppResult))
-		{
-			return ShaderCompiler::CompilationResult::PreprocessFailed;
-		}
-
-		file = ppResult.preProcessedResult;
-		
-		m_hlslUtils->CreateBlob(file.data(), static_cast<uint32_t>(file.size()), CP_UTF8, sourceBlob.GetAddressOf());
-		auto target = Utility::HLSLShaderProfile(stageflag);
-		arguments.push_back(L"-T");
-		arguments.push_back(target);
+		//Microsoft::WRL::ComPtr<IDxcBlobEncoding> sourceBlob;
+		//// Get the whole file to string.
+		//std::ifstream fin(path, std::ios::binary | std::ios::ate);
+		//fin.seekg(0, std::ios::end);
+		//std::string file;
+		//file.resize(fin.tellg());
+		//fin.seekg(0, std::ios::beg);
+		//fin.read(file.data(), file.size());
 
 
-		switch (specification.optimizationLevel)
-		{
-			case OptimizationLevel::Release:
-				arguments.push_back(DXC_ARG_SKIP_OPTIMIZATIONS);
-				break;
-			case OptimizationLevel::Dist:
-				arguments.push_back(DXC_ARG_SKIP_VALIDATION);
-				break;
-			case OptimizationLevel::Disable:
-				break;
-			default:
-				break;
-		}
+		//PreProcessorData ppData = {};
+		//ppData.entryPoint = specification.entryPoint;
+		//ppData.shaderStage = stageflag;
+		//ppData.shaderSource = file;
 
-		switch (m_info.flags)
-		{
-			case ShaderCompilerFlags::None:
-				break;
-			case ShaderCompilerFlags::WarningsAsErrors:
-				arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS);
-				break;
-		}
+		//PreProcessorResult ppResult = {};
 
-		arguments.push_back(DXC_ARG_PACK_MATRIX_COLUMN_MAJOR);
-		/*if (stageFlag != ShaderStageFlag::Pixel)
-		{
-			arguments.push_back(L"-fvk-invert-y");
-		}*/
+		//if (!ShaderPreProcessor::PreProcessShaderSource(ppData, ppResult))
+		//{
+		//	return ShaderCompiler::CompilationResult::PreprocessFailed;
+		//}
 
-		DxcBuffer sourceBuffer{};
-		sourceBuffer.Ptr = sourceBlob->GetBufferPointer();
-		sourceBuffer.Size = sourceBlob->GetBufferSize();
-		sourceBuffer.Encoding = 0;
-
-		Microsoft::WRL::ComPtr<IDxcResult> compileResult;
-		auto hr = m_hlslCompiler->Compile(&sourceBuffer, arguments.data(), (uint32_t)arguments.size(), nullptr, IID_PPV_ARGS(compileResult.GetAddressOf()));
-		if (FAILED(hr))
-		{
-			Microsoft::WRL::ComPtr<IDxcBlobUtf8> pErrors;
-			IDxcBlobWide* wide = nullptr;
-			hr = compileResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(pErrors.GetAddressOf()), &wide);
-			if (pErrors && pErrors->GetStringLength() > 0)
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[D3D12 Shader]", (char*)pErrors->GetBufferPointer());
-			}
-
-			return ShaderCompiler::CompilationResult::Failure;
-		}
-		
-		IDxcBlob* blob = nullptr;
-		compileResult->GetResult(&blob);
-
-		shader.m_blobMap[stageflag] = blob;
+		//file = ppResult.preProcessedResult;
+		//
+		//m_hlslUtils->CreateBlob(file.data(), static_cast<uint32_t>(file.size()), CP_UTF8, sourceBlob.GetAddressOf());
+		//auto target = Utility::HLSLShaderProfile(stageflag);
+		//arguments.push_back(L"-T");
+		//arguments.push_back(target);
 
 
-		if (stageflag == ShaderStage::Vertex)
-		{
-			shader.m_resources.vertexLayout = ppResult.vertexLayout;
-		}
+		//switch (specification.optimizationLevel)
+		//{
+		//	case OptimizationLevel::Release:
+		//		arguments.push_back(DXC_ARG_SKIP_OPTIMIZATIONS);
+		//		break;
+		//	case OptimizationLevel::Dist:
+		//		arguments.push_back(DXC_ARG_SKIP_VALIDATION);
+		//		break;
+		//	case OptimizationLevel::Disable:
+		//		break;
+		//	default:
+		//		break;
+		//}
+
+		//switch (m_info.flags)
+		//{
+		//	case ShaderCompilerFlags::None:
+		//		break;
+		//	case ShaderCompilerFlags::WarningsAsErrors:
+		//		arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS);
+		//		break;
+		//}
+
+		//arguments.push_back(DXC_ARG_PACK_MATRIX_COLUMN_MAJOR);
+		///*if (stageFlag != ShaderStageFlag::Pixel)
+		//{
+		//	arguments.push_back(L"-fvk-invert-y");
+		//}*/
+
+		//DxcBuffer sourceBuffer{};
+		//sourceBuffer.Ptr = sourceBlob->GetBufferPointer();
+		//sourceBuffer.Size = sourceBlob->GetBufferSize();
+		//sourceBuffer.Encoding = 0;
+
+		//Microsoft::WRL::ComPtr<IDxcResult> compileResult;
+		//auto hr = m_hlslCompiler->Compile(&sourceBuffer, arguments.data(), (uint32_t)arguments.size(), nullptr, IID_PPV_ARGS(compileResult.GetAddressOf()));
+		//if (FAILED(hr))
+		//{
+		//	Microsoft::WRL::ComPtr<IDxcBlobUtf8> pErrors;
+		//	IDxcBlobWide* wide = nullptr;
+		//	hr = compileResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(pErrors.GetAddressOf()), &wide);
+		//	if (pErrors && pErrors->GetStringLength() > 0)
+		//	{
+		//		RHILog::LogTagged(LogSeverity::Error, "[D3D12 Shader]", (char*)pErrors->GetBufferPointer());
+		//	}
+
+		//	return ShaderCompiler::CompilationResult::Failure;
+		//}
+		//
+		//IDxcBlob* blob = nullptr;
+		//compileResult->GetResult(&blob);
+
+		//shader.m_blobMap[stageflag] = blob;
 
 
-		if(stageflag == ShaderStage::Pixel)
-		{
-			shader.m_resources.outputFormats = ppResult.outputFormats;
-		}
+		//if (stageflag == ShaderStage::Vertex)
+		//{
+		//	shader.m_resources.vertexLayout = ppResult.vertexLayout;
+		//}
+
+
+		//if(stageflag == ShaderStage::Pixel)
+		//{
+		//	shader.m_resources.outputFormats = ppResult.outputFormats;
+		//}
 
 		return ShaderCompiler::CompilationResult::Success;
 	}

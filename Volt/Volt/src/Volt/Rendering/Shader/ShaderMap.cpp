@@ -70,7 +70,7 @@ namespace Volt
 
 		if (reloaded)
 		{
-			if (shader->GetSourceFiles().size() == 1)
+			if (shader->GetSourceEntries().size() == 1)
 			{
 				for (const auto& [hash, pipeline] : s_computePipelineCache)
 				{
@@ -216,9 +216,9 @@ namespace Volt
 				}
 
 				Ref<ShaderDefinition> shaderDef = AssetManager::GetAsset<ShaderDefinition>(relPath);
-				for (const auto& sourceFile : shaderDef->GetSourceFiles())
+				for (const auto& sourceEntry : shaderDef->GetSourceEntries())
 				{
-					AssetManager::AddDependencyToAsset(shaderDef->handle, AssetManager::GetAssetHandleFromFilePath(sourceFile));
+					AssetManager::AddDependencyToAsset(shaderDef->handle, AssetManager::GetAssetHandleFromFilePath(sourceEntry.filePath));
 				}
 
 				auto& threadPool = Application::GetThreadPool();
@@ -226,9 +226,8 @@ namespace Volt
 				shaderFutures.emplace_back(threadPool.SubmitTask([&, def = shaderDef]() 
 				{
 					RHI::ShaderSpecification specification;
-					specification.entryPoint = def->GetEntryPoint();
 					specification.name = def->GetName();
-					specification.sourceFiles = def->GetSourceFiles();
+					specification.sourceEntries = def->GetSourceEntries();
 					specification.permutations = def->GetPermutations();
 					specification.forceCompile = false;
 

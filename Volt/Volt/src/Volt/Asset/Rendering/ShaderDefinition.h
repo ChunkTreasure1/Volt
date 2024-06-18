@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Volt/Asset/Asset.h"
+#include <VoltRHI/Shader/Shader.h>
 
 namespace Volt
 {
@@ -13,21 +14,19 @@ namespace Volt
 		inline AssetType GetType() override { return GetStaticType(); }
 		inline uint32_t GetVersion() const override { return 1; }
 
-		[[nodiscard]] inline const std::vector<std::filesystem::path>& GetSourceFiles() { return m_sourceFiles; }
-		[[nodiscard]] inline const std::vector<std::string>& GetPermutations() { return m_permutaionValues; }
-		[[nodiscard]] inline std::string_view GetName() const { return m_name; }
-		[[nodiscard]] inline std::string_view GetEntryPoint() const { return m_entryPoint; }
-		[[nodiscard]] inline const bool IsInternal() const { return m_isInternal; }
+		VT_NODISCARD VT_INLINE const std::vector<RHI::ShaderSourceEntry>& GetSourceEntries() const { return m_sourceEntries; }
+		VT_NODISCARD VT_INLINE const std::vector<std::string>& GetPermutations() { return m_permutaionValues; }
+		VT_NODISCARD VT_INLINE std::string_view GetName() const { return m_name; }
+		VT_NODISCARD VT_INLINE const bool IsInternal() const { return m_isInternal; }
 
 	private:
 		friend class ShaderDefinitionImporter;
 		friend class ShaderDefinitionSerializer;
 
-		std::vector<std::filesystem::path> m_sourceFiles;
 		std::vector<std::string> m_permutaionValues;
+		std::vector<RHI::ShaderSourceEntry> m_sourceEntries;
 
 		std::string m_name;
-		std::string m_entryPoint;
 		bool m_isInternal = false;
 	};
 }

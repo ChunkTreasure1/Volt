@@ -3,12 +3,100 @@
 
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
+#include "Volt/Utility/StringUtility.h"
 
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
 
 namespace Volt
 {
+	namespace Utility
+	{
+		inline RHI::ShaderStage GetShaderStageFromString(const std::string& string)
+		{
+			std::string lowerString = ::Utility::ToLower(string);
+
+			if (lowerString == "vs")
+			{
+				return RHI::ShaderStage::Vertex;
+			}
+			else if (lowerString == "ps" || lowerString == "fs")
+			{
+				return RHI::ShaderStage::Pixel;
+			}
+			else if (lowerString == "cs")
+			{
+				return RHI::ShaderStage::Compute;
+			}
+			else if (lowerString == "gs")
+			{
+				return RHI::ShaderStage::Geometry;
+			}
+			else if (lowerString == "hs")
+			{
+				return RHI::ShaderStage::Hull;
+			}
+			else if (lowerString == "ds")
+			{
+				return RHI::ShaderStage::Domain;
+			}
+			else if (lowerString == "rgen")
+			{
+				return RHI::ShaderStage::RayGen;
+			}
+			else if (lowerString == "rmiss")
+			{
+				return RHI::ShaderStage::Miss;
+			}
+			else if (lowerString == "rchit")
+			{
+				return RHI::ShaderStage::ClosestHit;
+			}
+			else if (lowerString == "rahit")
+			{
+				return RHI::ShaderStage::AnyHit;
+			}
+			else if (lowerString == "rinter")
+			{
+				return RHI::ShaderStage::Intersection;
+			}
+			else if (lowerString == "as")
+			{
+				return RHI::ShaderStage::Amplification;
+			}
+			else if (lowerString == "ms")
+			{
+				return RHI::ShaderStage::Mesh;
+			}
+
+			VT_CORE_ASSERT(false, "Stage is not valid!");
+			return RHI::ShaderStage::Vertex;
+		}
+
+		inline constexpr std::string_view GetStringFromShaderStage(RHI::ShaderStage stage)
+		{
+			switch (stage)
+			{
+				case RHI::ShaderStage::Vertex: return "vs";
+				case RHI::ShaderStage::Pixel: return "ps";
+				case RHI::ShaderStage::Hull: return "hs";
+				case RHI::ShaderStage::Domain: return "ds";
+				case RHI::ShaderStage::Geometry: return "gs";
+				case RHI::ShaderStage::Compute: return "cs";
+				case RHI::ShaderStage::RayGen: return "rgen";
+				case RHI::ShaderStage::AnyHit: return "rahit";
+				case RHI::ShaderStage::ClosestHit: return "rchit";
+				case RHI::ShaderStage::Miss: return "rmiss";
+				case RHI::ShaderStage::Intersection: return "rinter";
+				case RHI::ShaderStage::Amplification: return "as";
+				case RHI::ShaderStage::Mesh: return "ms";
+			}
+
+			VT_CORE_ASSERT(false, "Stage is not valid!");
+			return "";
+		}
+	}
+
 	void ShaderDefinitionSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<ShaderDefinition> shaderDef = std::reinterpret_pointer_cast<ShaderDefinition>(asset);
@@ -24,13 +112,16 @@ namespace Volt
 		//
 
 		yamlStreamWriter.SetKey("name", shaderDef->GetName());
-		yamlStreamWriter.SetKey("entryPoint", shaderDef->GetEntryPoint());
 		yamlStreamWriter.SetKey("internal", shaderDef->IsInternal());
 
-		yamlStreamWriter.BeginSequence("paths");
-		for (const auto& path : shaderDef->GetSourceFiles())
+		yamlStreamWriter.BeginSequence("sources");
+		for (const auto& entry : shaderDef->GetSourceEntries())
 		{
-			yamlStreamWriter.AddValue(path);
+			yamlStreamWriter.BeginMap();
+			yamlStreamWriter.SetKey("entryPoint", entry.entryPoint);
+			yamlStreamWriter.SetKey("filePath", entry.filePath);
+			yamlStreamWriter.SetKey("shaderStage", std::string(Utility::GetStringFromShaderStage(entry.shaderStage)));
+			yamlStreamWriter.EndMap();
 		}
 		yamlStreamWriter.EndSequence();
 		yamlStreamWriter.EndMap();
@@ -66,20 +157,22 @@ namespace Volt
 		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		const std::string name = yamlStreamReader.ReadAtKey("name", std::string("Unnamed"));
-		const std::string entryPoint = yamlStreamReader.ReadAtKey("entryPoint", std::string("main"));
 		const bool isInternal = yamlStreamReader.ReadAtKey("internal", false);
 
-		if (!yamlStreamReader.HasKey("paths"))
+		if (!yamlStreamReader.HasKey("sources"))
 		{
 			VT_CORE_ERROR("No shaders defined in shader definition {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
-		std::vector<std::filesystem::path> paths;
-		yamlStreamReader.ForEach("paths", [&]()
+		std::vector<RHI::ShaderSourceEntry> entries;
+		yamlStreamReader.ForEach("sources", [&]()
 		{
-			paths.emplace_back(yamlStreamReader.ReadValue<std::string>());
+			auto& entry = entries.emplace_back();
+			entry.entryPoint = yamlStreamReader.ReadAtKey("entryPoint", std::string("main"));
+			entry.filePath = yamlStreamReader.ReadAtKey("filePath", std::filesystem::path(""));
+			entry.shaderStage = Utility::GetShaderStageFromString(yamlStreamReader.ReadAtKey("shaderStage", std::string("")));
 		});
 
 		std::vector<std::string> permutationValues;
@@ -94,9 +187,8 @@ namespace Volt
 		Ref<ShaderDefinition> shaderDef = std::reinterpret_pointer_cast<ShaderDefinition>(destinationAsset);
 		shaderDef->m_isInternal = isInternal;
 		shaderDef->m_name = name;
-		shaderDef->m_sourceFiles = paths;
+		shaderDef->m_sourceEntries = entries;
 		shaderDef->m_permutaionValues = permutationValues;
-		shaderDef->m_entryPoint = entryPoint;
 
 		return true;
 	}

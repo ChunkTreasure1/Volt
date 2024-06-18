@@ -1,5 +1,9 @@
 name: "UIMain"
 internal: true
-paths:
-  - "Engine/Shaders/Source/UI/UIMain_vs.hlsl"
-  - "Engine/Shaders/Source/UI/UIMain_ps.hlsl"
+sources:
+  - entryPoint: "main"
+    shaderStage: "vs"
+    filePath: "Engine/Shaders/Source/UI/UIMain_vs.hlsl"
+  - entryPoint: "main"
+    shaderStage: "ps"
+    filePath: "Engine/Shaders/Source/UI/UIMain_ps.hlsl"

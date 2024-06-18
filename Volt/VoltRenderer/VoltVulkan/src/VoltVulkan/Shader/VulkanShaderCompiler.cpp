@@ -150,7 +150,7 @@ namespace Volt::RHI
 
 		for (const auto& [stage, sourceInfo] : specification.shaderSourceInfo)
 		{
-			result.result = CompileSingle(stage, sourceInfo.source, sourceInfo.filepath, specification, result);
+			result.result = CompileSingle(stage, sourceInfo.source, sourceInfo.sourceEntry, specification, result);
 
 			if (result.result != ShaderCompiler::CompilationResult::Success)
 			{
@@ -167,22 +167,22 @@ namespace Volt::RHI
 		return result;
 	}
 
-	ShaderCompiler::CompilationResult VulkanShaderCompiler::CompileSingle(ShaderStage shaderStage, const std::string& source, const std::filesystem::path& filepath, const Specification& specification, CompilationResultData& outData)
+	ShaderCompiler::CompilationResult VulkanShaderCompiler::CompileSingle(ShaderStage shaderStage, const std::string& source, const ShaderSourceEntry& sourceEntry, const Specification& specification, CompilationResultData& outData)
 	{
 		auto& data = outData.shaderData[shaderStage];
 
 		std::string processedSource = source;
 
-		if (!PreprocessSource(shaderStage, filepath, processedSource))
+		if (!PreprocessSource(shaderStage, sourceEntry.filePath, processedSource))
 		{
 			return CompilationResult::PreprocessFailed;
 		}
 
-		const std::wstring wEntryPoint = Utility::ToWString(specification.entryPoint);
+		const std::wstring wEntryPoint = Utility::ToWString(sourceEntry.entryPoint);
 
 		std::vector<const wchar_t*> arguments =
 		{
-			filepath.c_str(),
+			sourceEntry.filePath.c_str(),
 			L"-E",
 			wEntryPoint.c_str(),
 			L"-T",
@@ -227,6 +227,7 @@ namespace Volt::RHI
 			PreProcessorData processingData{};
 			processingData.shaderSource = processedSource;
 			processingData.shaderStage = shaderStage;
+			processingData.entryPoint = sourceEntry.entryPoint;
 
 			PreProcessorResult result{};
 			if (!ShaderPreProcessor::PreProcessShaderSource(processingData, result))
@@ -279,7 +280,7 @@ namespace Volt::RHI
 		if (failed)
 		{
 			error = std::format("Failed to compile. Error: {}\n", result);
-			error.append(std::format("{0}\nWhile compiling shader file: {1}", Utility::GetErrorStringFromResult(compilationResult), filepath.string()));
+			error.append(std::format("{0}\nWhile compiling shader file: {1}", Utility::GetErrorStringFromResult(compilationResult), sourceEntry.filePath.string()));
 		}
 
 		if (error.empty())
@@ -290,7 +291,7 @@ namespace Volt::RHI
 			if (!shaderResult || shaderResult->GetBufferSize() == 0)
 			{
 				error = std::format("Failed to compile. Error: {}\n", result);
-				error.append(std::format("{0}\nWhile compiling shader file: {1}", Utility::GetErrorStringFromResult(compilationResult), filepath.string()));
+				error.append(std::format("{0}\nWhile compiling shader file: {1}", Utility::GetErrorStringFromResult(compilationResult), sourceEntry.filePath.string()));
 
 				RHILog::LogUnformatted(LogSeverity::Error, "[VulkanShaderCompiler]: " + error);
 
@@ -326,7 +327,7 @@ namespace Volt::RHI
 	{
 		for (const auto& [stage, data] : inOutData.shaderData)
 		{
-			RHILog::LogTagged(LogSeverity::Trace, "[VulkanShaderCompiler]", "Reflecting shader {0}", specification.shaderSourceInfo.at(stage).filepath.string());
+			RHILog::LogTagged(LogSeverity::Trace, "[VulkanShaderCompiler]", "Reflecting shader {0}", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
 			ReflectStage(stage, specification, inOutData);
 		}
 	}
@@ -357,7 +358,7 @@ namespace Volt::RHI
 
 			if (name == "$Globals")
 			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Shader {0} seems to have incorrectly defined global variables!", specification.shaderSourceInfo.at(stage).filepath.string());
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Shader {0} seems to have incorrectly defined global variables!", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
 				continue;
 			}
 

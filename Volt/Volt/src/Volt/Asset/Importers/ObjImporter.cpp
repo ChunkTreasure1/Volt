@@ -25,17 +25,20 @@ namespace Volt
 
 		for (const auto& mesh : assets)
 		{
-			for (const auto& v : mesh->GetVertices())
+			for (const auto& v : mesh->GetVertexContainer().positions)
 			{
-				SSvertices << "v " << v.position.x << " " << v.position.y << " " << v.position.z << "\n";
+				SSvertices << "v " << v.x << " " << v.y << " " << v.z << "\n";
 			}
-			for (const auto& v : mesh->GetVertices())
+			for (const auto& v : mesh->GetVertexContainer().materialData)
 			{
-				SStexCoords << "vt " << v.uv.x << " " << v.uv.y << "\n";
+				SStexCoords << "vt " << v.texCoords.x << " " << v.texCoords.y << "\n";
 			}
-			for (const auto& v : mesh->GetVertices())
+			for (const auto& v : mesh->GetVertexContainer().materialData)
 			{
-				SSnormals << "vn " << v.normal.x << " " << v.normal.y << " " << v.normal.z << "\n";
+				const glm::vec2 encodedNormal = { v.normal.x / 255.f, v.normal.y / 255.f };
+				const glm::vec3 normal = Utility::OctNormalDecode(encodedNormal);
+
+				SSnormals << "vn " << normal.x << " " << normal.y << " " << normal.z << "\n";
 			}
 
 			auto indices = mesh->GetIndices();

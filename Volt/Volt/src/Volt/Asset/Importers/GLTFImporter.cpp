@@ -103,7 +103,7 @@ namespace Volt
 			for (const tinygltf::Primitive& gltfPrimitive : mesh.primitives)
 			{
 				uint32_t firstIndex = (uint32_t)outMesh.m_indices.size();
-				uint32_t firstVertex = (uint32_t)outMesh.m_vertices.size();
+				uint32_t firstVertex = (uint32_t)outMesh.m_vertexContainer.Size();
 				uint32_t indexCount = 0;
 				size_t vertexCount = 0;
 
@@ -150,18 +150,17 @@ namespace Volt
 
 					for (size_t v = 0; v < vertexCount; v++)
 					{
-						Vertex vert{};
-						vert.position = positionBuffer ? *(glm::vec3*)&positionBuffer[v * 3] : glm::vec3();
-						vert.normal = glm::normalize(normalBuffer ? *(glm::vec3*)&normalBuffer[v * 3] : glm::vec3(0.f, 1.f, 0.f));
-						vert.uv = texCoordsBuffer ? *(glm::vec2*)&texCoordsBuffer[v * 2] : glm::vec2();
+						//Vertex vert{};
+						//vert.position = positionBuffer ? *(glm::vec3*)&positionBuffer[v * 3] : glm::vec3();
+						//vert.normal = glm::normalize(normalBuffer ? *(glm::vec3*)&normalBuffer[v * 3] : glm::vec3(0.f, 1.f, 0.f));
+						//vert.uv = texCoordsBuffer ? *(glm::vec2*)&texCoordsBuffer[v * 2] : glm::vec2();
 
-						vert.uv.y = 1.f - vert.uv.y;
+						//vert.uv.y = 1.f - vert.uv.y;
 
-						glm::vec4 tangent = tangentBuffer ? *(glm::vec4*)&tangentBuffer[v * 4] : glm::vec4();
+						//glm::vec4 tangent = tangentBuffer ? *(glm::vec4*)&tangentBuffer[v * 4] : glm::vec4();
+						//vert.tangent = glm::vec3(tangent.x, tangent.y, tangent.z);
 
-						vert.tangent = glm::vec3(tangent.x, tangent.y, tangent.z);
-
-						outMesh.m_vertices.emplace_back(vert);
+						//outMesh.m_vertices.emplace_back(vert);
 					}
 				}
 

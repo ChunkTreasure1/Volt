@@ -275,7 +275,16 @@ namespace Volt::RHI
 				newStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 				newStageInfo.stage = Utility::VoltToVulkanShaderStage(stage);
 				newStageInfo.module = stageInfo.shaderModule;
-				newStageInfo.pName = "main"; // #TODO_Ivar: Set correct entry point
+				newStageInfo.pName = "main";
+
+				for (const auto& entry : vulkanShader.GetSourceEntries())
+				{
+					if (entry.shaderStage == stage)
+					{
+						newStageInfo.pName = entry.entryPoint.c_str();
+						break;
+					}
+				}
 			}
 
 			VkGraphicsPipelineCreateInfo pipelineInfo{};

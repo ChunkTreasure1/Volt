@@ -86,19 +86,6 @@ namespace Volt
 		glm::vec4 weights = { 0.f, 0.f, 0.f, 0.f };
 	};
 
-	struct EncodedVertex
-	{
-		glm::vec3 position = 0.f;
-
-		glm::vec<4, uint8_t> normal;
-		float tangent = 0.f;
-
-		half_float::half texCoords[2] = { half_float::half(0.f), half_float::half(0.f) };
-
-		glm::vec<4, uint16_t> influences = 0;
-		half_float::half weights[4] = { half_float::half(0.f), half_float::half(0.f), half_float::half(0.f), half_float::half(0.f) };
-	};
-
 	struct SpriteVertex
 	{
 		glm::vec4 position = glm::vec4(0.f);

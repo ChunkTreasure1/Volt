@@ -77,7 +77,7 @@ namespace Volt::RHI
 			computeStageInfo.pNext = nullptr;
 			computeStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
 			computeStageInfo.module = firstStage.shaderModule;
-			computeStageInfo.pName = "main"; // #TODO_Ivar: Set correct entry point
+			computeStageInfo.pName = vulkanShader.GetSourceEntries().at(0).entryPoint.c_str();
 
 			VkComputePipelineCreateInfo info{};
 			info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;

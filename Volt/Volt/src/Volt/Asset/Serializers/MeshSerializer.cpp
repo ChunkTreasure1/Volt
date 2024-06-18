@@ -8,7 +8,7 @@
 
 namespace Volt
 {
-	struct MeshSerializationData
+	struct MeshSerializationData_V1
 	{
 		std::vector<AssetHandle> materials;
 		std::vector<Vertex> vertices;
@@ -19,7 +19,7 @@ namespace Volt
 
 		std::vector<SubMesh> subMeshes;
 
-		static void Serialize(BinaryStreamWriter& streamWriter, const MeshSerializationData& data)
+		static void Serialize(BinaryStreamWriter& streamWriter, const MeshSerializationData_V1& data)
 		{
 			streamWriter.WriteRaw(data.materials);
 			streamWriter.WriteRaw(data.vertices);
@@ -29,10 +29,46 @@ namespace Volt
 			streamWriter.Write(data.subMeshes);
 		}
 
-		static void Deserialize(BinaryStreamReader& streamReader, MeshSerializationData& outData)
+		static void Deserialize(BinaryStreamReader& streamReader, MeshSerializationData_V1& outData)
 		{
 			streamReader.ReadRaw(outData.materials);
 			streamReader.ReadRaw(outData.vertices);
+			streamReader.ReadRaw(outData.indices);
+			streamReader.Read(outData.boundingSphereCenter);
+			streamReader.Read(outData.boundingSphereRadius);
+			streamReader.Read(outData.subMeshes);
+		}
+	};
+
+	struct MeshSerializationData_V2
+	{
+		std::vector<AssetHandle> materials;
+		std::vector<glm::vec3> vertexPositions;
+		std::vector<VertexMaterialData> vertexMaterialData;
+
+		std::vector<uint32_t> indices;
+
+		glm::vec3 boundingSphereCenter;
+		float boundingSphereRadius;
+
+		std::vector<SubMesh> subMeshes;
+
+		static void Serialize(BinaryStreamWriter& streamWriter, const MeshSerializationData_V2& data)
+		{
+			streamWriter.WriteRaw(data.materials);
+			streamWriter.WriteRaw(data.vertexPositions);
+			streamWriter.WriteRaw(data.vertexMaterialData);
+			streamWriter.WriteRaw(data.indices);
+			streamWriter.Write(data.boundingSphereCenter);
+			streamWriter.Write(data.boundingSphereRadius);
+			streamWriter.Write(data.subMeshes);
+		}
+
+		static void Deserialize(BinaryStreamReader& streamReader, MeshSerializationData_V2& outData)
+		{
+			streamReader.ReadRaw(outData.materials);
+			streamReader.ReadRaw(outData.vertexPositions);
+			streamReader.ReadRaw(outData.vertexMaterialData);
 			streamReader.ReadRaw(outData.indices);
 			streamReader.Read(outData.boundingSphereCenter);
 			streamReader.Read(outData.boundingSphereRadius);
@@ -49,13 +85,16 @@ namespace Volt
 
 		const auto& tempMaterialTable = mesh->m_materialTable;
 
-		MeshSerializationData serializationData{}; 
+		MeshSerializationData_V2 serializationData{}; 
 		for (const auto& mat : tempMaterialTable)
 		{
 			serializationData.materials.emplace_back(mat);
 		}
 
-		serializationData.vertices = mesh->GetVertices();
+		const auto& vertexContainer = mesh->GetVertexContainer();
+
+		serializationData.vertexPositions = vertexContainer.positions;
+		serializationData.vertexMaterialData = vertexContainer.materialData;
 		serializationData.indices = mesh->GetIndices();
 		serializationData.boundingSphereCenter = mesh->GetBoundingSphere().center;
 		serializationData.boundingSphereRadius = mesh->GetBoundingSphere().radius;
@@ -87,26 +126,46 @@ namespace Volt
 			return false;
 		}
 
-		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
-
-		MeshSerializationData serializationData{};
-		streamReader.Read(serializationData);
-
 		Ref<Mesh> mesh = std::reinterpret_pointer_cast<Mesh>(destinationAsset);
 
-		for (uint32_t i = 0; const auto& mat : serializationData.materials)
+		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
+		if (serializedMetadata.version == 1)
 		{
-			mesh->m_materialTable.SetMaterial(mat, i);
-			AssetManager::AddDependencyToAsset(metadata.handle, mat);
-			i++;
-		}
+			MeshSerializationData_V1 serializationData{};
+			streamReader.Read(serializationData);
 
-		mesh->m_vertices = serializationData.vertices;
-		mesh->m_indices = serializationData.indices;
-		mesh->m_boundingSphere.center = serializationData.boundingSphereCenter;
-		mesh->m_boundingSphere.radius = serializationData.boundingSphereRadius;
-		mesh->m_subMeshes = serializationData.subMeshes;
+			for (uint32_t i = 0; const auto & mat : serializationData.materials)
+			{
+				mesh->m_materialTable.SetMaterial(mat, i);
+				AssetManager::AddDependencyToAsset(metadata.handle, mat);
+				i++;
+			}
+
+			mesh->InitializeWithVertices(serializationData.vertices);
+			mesh->m_indices = serializationData.indices;
+			mesh->m_boundingSphere.center = serializationData.boundingSphereCenter;
+			mesh->m_boundingSphere.radius = serializationData.boundingSphereRadius;
+			mesh->m_subMeshes = serializationData.subMeshes;
+		}
+		else
+		{
+			MeshSerializationData_V2 serializationData{};
+			streamReader.Read(serializationData);
+
+			for (uint32_t i = 0; const auto & mat : serializationData.materials)
+			{
+				mesh->m_materialTable.SetMaterial(mat, i);
+				AssetManager::AddDependencyToAsset(metadata.handle, mat);
+				i++;
+			}
+
+			mesh->m_vertexContainer.positions = serializationData.vertexPositions;
+			mesh->m_vertexContainer.materialData = serializationData.vertexMaterialData;
+			mesh->m_indices = serializationData.indices;
+			mesh->m_boundingSphere.center = serializationData.boundingSphereCenter;
+			mesh->m_boundingSphere.radius = serializationData.boundingSphereRadius;
+			mesh->m_subMeshes = serializationData.subMeshes;
+		}
 
 		for (auto& subMesh : mesh->m_subMeshes)
 		{
