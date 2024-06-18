@@ -40,7 +40,6 @@
 
 #include "Volt/Vision/Vision.h"
 #include "Volt/Utility/Random.h"
-#include "Volt/Utility/TimeUtility.h"
 
 #include "Volt/Animation/MotionWeaver.h"
 
@@ -51,6 +50,8 @@
 #include <GraphKey/Node.h>
 
 #include <Navigation/Core/NavigationSystem.h>
+
+#include <CoreUtilities/TimeUtility.h>
 
 #include <stack>
 #include <ranges>

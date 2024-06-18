@@ -60,33 +60,27 @@ namespace Volt::RHI
 
 	const bool VulkanShader::Reload(bool forceCompile)
 	{
-		Utility::CreateCacheDirectoryIfNeeded();
-
 		m_shaderSources.clear();
 		LoadShaderFromFiles();
 
-		if (!CompileOrGetBinary(forceCompile))
+		const ShaderCompiler::CompilationResultData compilationResult = CompileOrGetBinary(forceCompile);
+		if (compilationResult.result != ShaderCompiler::CompilationResult::Success)
 		{
 			return false;
 		}
 
-		auto vertexLayout = m_resources.vertexLayout;
-		auto instanceLayout = m_resources.instanceLayout;
-		auto outputFormats = m_resources.outputFormats;
-		auto renderGraphConstants = m_resources.renderGraphConstantsData;
-
 		Release();
+		CopyCompilationResults(compilationResult);
+		
+		for (const auto& [name, bindings] : m_resources.bindings)
+		{
+			m_resources.usedSets.emplace(bindings.set);
+		}
 
-		m_resources.outputFormats = outputFormats;
-		m_resources.vertexLayout = vertexLayout;
-		m_resources.instanceLayout = instanceLayout;
-		m_resources.renderGraphConstantsData = renderGraphConstants;
+		LoadAndCreateShaders(compilationResult.shaderData);
 
-		LoadAndCreateShaders(m_shaderData);
-		ReflectAllStages(m_shaderData);
-
-		m_shaderData.clear(); // Unnecessary to store old shader binary
-
+		CreateDescriptorSetLayouts();
+		CalculateDescriptorPoolSizes(compilationResult);
 		return true;
 	}
 
@@ -142,7 +136,7 @@ namespace Volt::RHI
 				continue;
 			}
 
-			if (m_shaderSources.find(stage) != m_shaderSources.end())
+			if (m_shaderSources.contains(stage))
 			{
 				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Multiple shaders of same stage defined in file {0}!", path.string().c_str());
 				continue;
@@ -174,14 +168,14 @@ namespace Volt::RHI
 		m_resources = {};
 	}
 
-	const bool VulkanShader::CompileOrGetBinary(bool forceCompile)
+	ShaderCompiler::CompilationResultData VulkanShader::CompileOrGetBinary(bool forceCompile)
 	{
 		ShaderCompiler::Specification compileSpec{};
 		compileSpec.forceCompile = forceCompile;
 		compileSpec.entryPoint = m_specification.entryPoint;
+		compileSpec.shaderSourceInfo = m_shaderSources;
 
-		ShaderCompiler::CompilationResult result = ShaderCompiler::TryCompile(compileSpec, *this);
-		return result == ShaderCompiler::CompilationResult::Success;
+		return ShaderCompiler::TryCompile(compileSpec);
 	}
 
 	void VulkanShader::LoadAndCreateShaders(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderData)
@@ -198,233 +192,6 @@ namespace Volt::RHI
 			auto& data = m_pipelineStageInfo[stage];
 			VT_VK_CHECK(vkCreateShaderModule(device->GetHandle<VkDevice>(), &moduleInfo, nullptr, &data.shaderModule));
 		}
-	}
-
-	void VulkanShader::ReflectAllStages(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderData)
-	{
-		RHILog::LogTagged(LogSeverity::Trace, "[VulkanShader]", "Reflecting {0}", m_specification.name);
-		for (const auto& [stage, data] : shaderData)
-		{
-			ReflectStage(stage, data);
-		}
-
-		CreateDescriptorSetLayouts();
-		CalculateDescriptorPoolSizes();
-	}
-
-	void VulkanShader::ReflectStage(ShaderStage stage, const std::vector<uint32_t>& data)
-	{
-		spirv_cross::Compiler compiler{ data };
-		const auto resources = compiler.get_shader_resources();
-
-		for (const auto& ubo : resources.uniform_buffers)
-		{
-			if (compiler.get_active_buffer_ranges(ubo.id).empty())
-			{
-				continue;
-			}
-
-			const auto& bufferType = compiler.get_type(ubo.base_type_id);
-
-			const size_t size = compiler.get_declared_struct_size(bufferType);
-			const uint32_t binding = compiler.get_decoration(ubo.id, spv::DecorationBinding);
-			const uint32_t set = compiler.get_decoration(ubo.id, spv::DecorationDescriptorSet);
-			const std::string& name = compiler.get_name(ubo.id);
-
-			if (!TryAddShaderBinding(name, set, binding))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
-
-			if (name == "$Globals")
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Shader {0} seems to have incorrectly defined global variables!", m_specification.name);
-				continue;
-			}
-
-			auto& buffer = m_resources.uniformBuffers[set][binding];
-			buffer.usageStages = buffer.usageStages | stage;
-			buffer.size = size;
-
-			m_perStageUBOCount[stage].count++;
-			m_resources.usedSets.emplace(set);
-		}
-
-		for (const auto& ssbo : resources.storage_buffers)
-		{
-			//if (compiler.get_active_buffer_ranges(ssbo.id).empty()) // #TODO_Ivar: Crashes for some reason when using buffer arrays
-			//{
-			//	continue;
-			//}
-
-			const auto& bufferBaseType = compiler.get_type(ssbo.base_type_id);
-			const auto& bufferType = compiler.get_type(ssbo.type_id);
-
-			const size_t size = compiler.get_declared_struct_size(bufferBaseType);
-			const uint32_t binding = compiler.get_decoration(ssbo.id, spv::DecorationBinding);
-			const uint32_t set = compiler.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
-			const std::string& name = compiler.get_name(ssbo.id);
-
-			if (!TryAddShaderBinding(name, set, binding))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
-
-			const bool firstEntry = !m_resources.storageBuffers[set].contains(binding);
-
-			auto& buffer = m_resources.storageBuffers[set][binding];
-			buffer.usageStages = buffer.usageStages | stage;
-			buffer.size = size;
-
-			if (firstEntry && !bufferType.array.empty())
-			{
-				const int32_t arraySize = static_cast<int32_t>(bufferType.array[0]);
-
-				if (arraySize == 0)
-				{
-					buffer.arraySize = -1;
-				}
-				else
-				{
-					buffer.arraySize = arraySize;
-				}
-			}
-
-			m_perStageSSBOCount[stage].count++;
-			m_resources.usedSets.emplace(set);
-		}
-
-		for (const auto& image : resources.storage_images)
-		{
-			const uint32_t binding = compiler.get_decoration(image.id, spv::DecorationBinding);
-			const uint32_t set = compiler.get_decoration(image.id, spv::DecorationDescriptorSet);
-			const auto& imageType = compiler.get_type(image.type_id);
-			const std::string& name = compiler.get_name(image.id);
-
-			if (!TryAddShaderBinding(name, set, binding))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
-
-			const bool firstEntry = !m_resources.storageImages[set].contains(binding);
-
-			auto& shaderImage = m_resources.storageImages[set][binding];
-			shaderImage.usageStages = shaderImage.usageStages | stage;
-
-			if (firstEntry && !imageType.array.empty())
-			{
-				const int32_t arraySize = static_cast<int32_t>(imageType.array[0]);
-
-				if (arraySize == 0)
-				{
-					shaderImage.arraySize = -1;
-				}
-				else
-				{
-					shaderImage.arraySize = arraySize;
-				}
-			}
-
-			m_perStageStorageImageCount[stage].count++;
-			m_resources.usedSets.emplace(set);
-		}
-
-		for (const auto& image : resources.separate_images)
-		{
-			const uint32_t binding = compiler.get_decoration(image.id, spv::DecorationBinding);
-			const uint32_t set = compiler.get_decoration(image.id, spv::DecorationDescriptorSet);
-			const auto& imageType = compiler.get_type(image.type_id);
-			const std::string& name = compiler.get_name(image.id);
-
-			if (!TryAddShaderBinding(name, set, binding))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
-
-			const bool firstEntry = !m_resources.images[set].contains(binding);
-
-			auto& shaderImage = m_resources.images[set][binding];
-			shaderImage.usageStages = shaderImage.usageStages | stage;
-
-			if (firstEntry && !imageType.array.empty())
-			{
-				const int32_t arraySize = static_cast<int32_t>(imageType.array[0]);
-
-				if (arraySize == 0)
-				{
-					shaderImage.arraySize = -1;
-				}
-				else
-				{
-					shaderImage.arraySize = arraySize;
-				}
-			}
-
-			m_perStageImageCount[stage].count++;
-			m_resources.usedSets.emplace(set);
-		}
-
-		for (const auto& sampler : resources.separate_samplers)
-		{
-			const uint32_t binding = compiler.get_decoration(sampler.id, spv::DecorationBinding);
-			const uint32_t set = compiler.get_decoration(sampler.id, spv::DecorationDescriptorSet);
-			const std::string& name = compiler.get_name(sampler.id);
-
-			if (!TryAddShaderBinding(name, set, binding))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
-
-			auto& shaderSampler = m_resources.samplers[set][binding];
-			shaderSampler.usageStages = shaderSampler.usageStages | stage;
-			m_perStageSamplerCount[stage].count++;
-			m_resources.usedSets.emplace(set);
-		}
-
-		for (const auto& pushConstant : resources.push_constant_buffers)
-		{
-			const auto& bufferType = compiler.get_type(pushConstant.base_type_id);
-			const size_t pushConstantSize = compiler.get_declared_struct_size(bufferType);
-
-			m_resources.constantsBuffer.SetSize(pushConstantSize);
-
-			m_resources.constants.size = static_cast<uint32_t>(pushConstantSize);
-			m_resources.constants.offset = 0;
-			m_resources.constants.stageFlags = m_resources.constants.stageFlags | stage;
-
-			for (uint32_t i = 0; const auto & member : bufferType.member_types)
-			{
-				const auto& memberType = compiler.get_type(member);
-				const size_t memberSize = compiler.get_declared_struct_member_size(bufferType, i);
-				const size_t memberOffset = compiler.type_struct_member_offset(bufferType, i);
-				const std::string& memberName = compiler.get_member_name(pushConstant.base_type_id, i);
-
-				const auto type = Utility::GetShaderUniformTypeFromSPIRV(memberType);
-
-				m_resources.constantsBuffer.AddMember(memberName, type, memberSize, memberOffset);
-				i++;
-			}
-		}
-
-		std::string logString = "\n";
-		logString += std::format("[VulkanShader]: Reflecting stage {0}\n", Utility::StageToString(stage));
-		logString += std::format("[VulkanShader]:		Uniform Buffers: {0}\n", m_perStageUBOCount[stage].count);
-		logString += std::format("[VulkanShader]:		Storage Buffers: {0}\n", m_perStageSSBOCount[stage].count);
-		logString += std::format("[VulkanShader]:		Storage Images: {0}\n", m_perStageStorageImageCount[stage].count);
-		logString += std::format("[VulkanShader]:		Images: {0}\n", m_perStageImageCount[stage].count);
-		logString += std::format("[VulkanShader]:		Samplers: {0}\n", m_perStageSamplerCount[stage].count);
-
-		if (stage == ShaderStage::Vertex)
-		{
-			logString += "[VulkanShader]:		Vertex Layout:\n";
-
-			for (const auto& element : m_resources.vertexLayout.GetElements())
-			{
-				logString += std::format("[VulkanShader]:			{0}: {1}\n", element.name, BufferLayout::GetNameFromElementType(element.type));
-			}
-		}
-
-		RHILog::Log(LogSeverity::Trace, logString);
 	}
 
 	void VulkanShader::CreateDescriptorSetLayouts()
@@ -598,7 +365,7 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanShader::CalculateDescriptorPoolSizes()
+	void VulkanShader::CalculateDescriptorPoolSizes(const ShaderCompiler::CompilationResultData& compilationResult)
 	{
 		uint32_t uboCount = 0;
 		uint32_t ssboCount = 0;
@@ -606,11 +373,48 @@ namespace Volt::RHI
 		uint32_t imageCount = 0;
 		uint32_t seperateSamplerCount = 0;
 
-		std::for_each(m_perStageUBOCount.begin(), m_perStageUBOCount.end(), [&](auto pair) { uboCount += pair.second.count; });
-		std::for_each(m_perStageSSBOCount.begin(), m_perStageSSBOCount.end(), [&](auto pair) { ssboCount += pair.second.count; });
-		std::for_each(m_perStageStorageImageCount.begin(), m_perStageStorageImageCount.end(), [&](auto pair) { storageImageCount += pair.second.count; });
-		std::for_each(m_perStageImageCount.begin(), m_perStageImageCount.end(), [&](auto pair) { imageCount += pair.second.count; });
-		std::for_each(m_perStageSamplerCount.begin(), m_perStageSamplerCount.end(), [&](auto pair) { seperateSamplerCount += pair.second.count; });
+		// Find counts
+		{
+			for (const auto& [set, bindings] : compilationResult.uniformBuffers)
+			{
+				for (const auto& [binding, info] : bindings)
+				{
+					uboCount += info.usageCount;
+				}
+			}
+
+			for (const auto& [set, bindings] : compilationResult.storageBuffers)
+			{
+				for (const auto& [binding, info] : bindings)
+				{
+					ssboCount += info.usageCount;
+				}
+			}
+
+			for (const auto& [set, bindings] : compilationResult.storageImages)
+			{
+				for (const auto& [binding, info] : bindings)
+				{
+					storageImageCount += info.usageCount;
+				}
+			}
+
+			for (const auto& [set, bindings] : compilationResult.images)
+			{
+				for (const auto& [binding, info] : bindings)
+				{
+					imageCount += info.usageCount;
+				}
+			}
+
+			for (const auto& [set, bindings] : compilationResult.samplers)
+			{
+				for (const auto& [binding, info] : bindings)
+				{
+					seperateSamplerCount += info.usageCount;
+				}
+			}
+		}
 
 		if (uboCount > 0)
 		{
@@ -638,15 +442,22 @@ namespace Volt::RHI
 		}
 	}
 
-	const bool VulkanShader::TryAddShaderBinding(const std::string& name, uint32_t set, uint32_t binding)
+	void VulkanShader::CopyCompilationResults(const ShaderCompiler::CompilationResultData& compilationResult)
 	{
-		if (m_resources.bindings.contains(name))
-		{
-			return false;
-		}
+		m_resources.outputFormats = compilationResult.outputFormats;
+		m_resources.vertexLayout = compilationResult.vertexLayout;
+		m_resources.instanceLayout = compilationResult.instanceLayout;
 
-		m_resources.bindings[name] = { set, binding };
+		m_resources.renderGraphConstantsData = compilationResult.renderGraphConstants;
+		m_resources.constantsBuffer = compilationResult.constantsBuffer;
+		m_resources.constants = compilationResult.constants;
 
-		return true;
+		m_resources.bindings = compilationResult.bindings;
+
+		m_resources.uniformBuffers = compilationResult.uniformBuffers;
+		m_resources.storageBuffers = compilationResult.storageBuffers;
+		m_resources.storageImages = compilationResult.storageImages;
+		m_resources.images = compilationResult.images;
+		m_resources.samplers = compilationResult.samplers;
 	}
 }

@@ -15,7 +15,7 @@ Output main(in DefaultInput input)
 
     const float4 worldPosition = mul(input.GetTransform(), float4(input.GetVertexPositionData().position, 1.f));
 
-    const GPUScene scene = constants.gpuScene.Load(0);
+    const GPUScene scene = constants.gpuScene.Load();
     const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(input.GetObjectID());
 
     Output output;

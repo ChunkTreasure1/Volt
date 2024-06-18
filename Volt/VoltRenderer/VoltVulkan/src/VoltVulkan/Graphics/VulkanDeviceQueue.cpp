@@ -71,7 +71,7 @@ namespace Volt::RHI
 			info.deviceIndex = 0;
 			info.stageMask = VK_PIPELINE_STAGE_2_NONE;
 			info.semaphore = semaphore->GetHandle<VkSemaphore>();;
-			//info.value = 0;
+			info.value = semaphore->GetValue();
 		}
 
 		waitFence = executeInfo.commandBuffers.front()->AsRef<VulkanCommandBuffer>().GetCurrentFence();

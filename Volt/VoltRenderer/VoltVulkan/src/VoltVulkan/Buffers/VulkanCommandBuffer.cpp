@@ -98,7 +98,7 @@ namespace Volt::RHI
 
 			if (EnumValueContainsFlag(barrierSync, BarrierStage::Copy))
 			{
-				result |= VK_PIPELINE_STAGE_2_COPY_BIT;
+				result |= VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
 			}
 
 			if (EnumValueContainsFlag(barrierSync, BarrierStage::Resolve))
@@ -487,20 +487,20 @@ namespace Volt::RHI
 		vkCmdDrawMeshTasksIndirectCountEXT(m_commandBuffers.at(index).commandBuffer, commandsBuffer->GetHandle<VkBuffer>(), offset, countBuffer->GetHandle<VkBuffer>(), countBufferOffset, maxDrawCount, stride);
 	}
 
-	void VulkanCommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
+	void VulkanCommandBuffer::SetViewports(const StackVector<Viewport, MAX_VIEWPORT_COUNT>& viewports)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
 
-		vkCmdSetViewport(m_commandBuffers.at(index).commandBuffer, 0, static_cast<uint32_t>(viewports.size()), reinterpret_cast<const VkViewport*>(viewports.data()));
+		vkCmdSetViewport(m_commandBuffers.at(index).commandBuffer, 0, static_cast<uint32_t>(viewports.Size()), reinterpret_cast<const VkViewport*>(viewports.Data()));
 	}
 
-	void VulkanCommandBuffer::SetScissors(const std::vector<Rect2D>& scissors)
+	void VulkanCommandBuffer::SetScissors(const StackVector<Rect2D, MAX_VIEWPORT_COUNT>& scissors)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
 
-		vkCmdSetScissor(m_commandBuffers.at(index).commandBuffer, 0, static_cast<uint32_t>(scissors.size()), reinterpret_cast<const VkRect2D*>(scissors.data()));
+		vkCmdSetScissor(m_commandBuffers.at(index).commandBuffer, 0, static_cast<uint32_t>(scissors.Size()), reinterpret_cast<const VkRect2D*>(scissors.Data()));
 	}
 
 	void VulkanCommandBuffer::BindPipeline(WeakPtr<RenderPipeline> pipeline)
@@ -539,21 +539,38 @@ namespace Volt::RHI
 		vkCmdBindPipeline(m_commandBuffers.at(index).commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->GetHandle<VkPipeline>());
 	}
 
-	void VulkanCommandBuffer::BindVertexBuffers(const std::vector<WeakPtr<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
+	void VulkanCommandBuffer::BindVertexBuffers(const StackVector<WeakPtr<VertexBuffer>, MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding)
 	{
-		std::vector<VkBuffer> vkBuffers{ vertexBuffers.size() };
-		std::vector<VkDeviceSize> offsets{};
+		StackVector<VkBuffer, MAX_VERTEX_BUFFER_COUNT> vkBuffers;
+		StackVector<VkDeviceSize, MAX_VERTEX_BUFFER_COUNT> offsets;
 
-		for (uint32_t i = 0; i < vertexBuffers.size(); i++)
+		for (size_t i = 0; i < vertexBuffers.Size(); i++)
 		{
-			vkBuffers[i] = vertexBuffers[i]->GetHandle<VkBuffer>();
-			offsets.emplace_back(0);
+			vkBuffers.Emplace() = vertexBuffers[i]->GetHandle<VkBuffer>();
+			offsets.Emplace(0u);
 		}
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
 
-		vkCmdBindVertexBuffers(m_commandBuffers.at(index).commandBuffer, firstBinding, static_cast<uint32_t>(vkBuffers.size()), vkBuffers.data(), offsets.data());
+		vkCmdBindVertexBuffers(m_commandBuffers.at(index).commandBuffer, firstBinding, static_cast<uint32_t>(vkBuffers.Size()), vkBuffers.Data(), offsets.Data());
+	}
+
+	void VulkanCommandBuffer::BindVertexBuffers(const StackVector<WeakPtr<StorageBuffer>, MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding)
+	{
+		StackVector<VkBuffer, MAX_VERTEX_BUFFER_COUNT> vkBuffers;
+		StackVector<VkDeviceSize, MAX_VERTEX_BUFFER_COUNT> offsets;
+
+		for (size_t i = 0; i < vertexBuffers.Size(); i++)
+		{
+			vkBuffers.Emplace() = vertexBuffers[i]->GetHandle<VkBuffer>();
+			offsets.Emplace(0u);
+		}
+
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
+
+		vkCmdBindVertexBuffers(m_commandBuffers.at(index).commandBuffer, firstBinding, static_cast<uint32_t>(vkBuffers.Size()), vkBuffers.Data(), offsets.Data());
 	}
 
 	void VulkanCommandBuffer::BindIndexBuffer(WeakPtr<IndexBuffer> indexBuffer)

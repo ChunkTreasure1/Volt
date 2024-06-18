@@ -90,7 +90,7 @@ namespace Volt::RHI
 		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, DescriptorImageInfo2>>> m_imageDescriptorInfos; // Set -> Binding -> Array Index
 		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, DescriptorBufferInfo2>>> m_bufferDescriptorInfos; // Set -> Binding -> Array Index
 		std::map<uint32_t, std::map<uint32_t, uint32_t>> m_writeDescriptorsMapping; // Set -> Binding
-		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, DefaultInvalid>>> m_activeWriteDescriptorsMapping; // Set -> Binding -> ArrayIndex
+		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, DefaultInvalid>>> m_activeWriteDescriptorsMapping; // Set -> Binding -> ArrayIndex 
 
 		VkDescriptorPool_T* m_descriptorPool = nullptr;
 		std::map<uint32_t, VkDescriptorSet_T*> m_descriptorSets;

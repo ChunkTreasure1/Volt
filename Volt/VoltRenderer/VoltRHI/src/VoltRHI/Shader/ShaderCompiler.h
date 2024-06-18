@@ -2,6 +2,10 @@
 
 #include "VoltRHI/Core/RHIInterface.h"
 
+#include "VoltRHI/Shader/BufferLayout.h"
+#include "VoltRHI/Shader/ShaderCommon.h"
+#include "VoltRHI/Core/RHICommon.h"
+
 #include <span>
 #include <filesystem>
 
@@ -24,7 +28,6 @@ namespace Volt::RHI
 		std::vector<std::string> initialMacros;
 	
 		ShaderCompilerFlags flags = ShaderCompilerFlags::None;
-		std::filesystem::path cacheDirectory = "Engine/Shaders/Cache/";
 	};
 
 	class VTRHI_API ShaderCompiler : public RHIInterface
@@ -44,17 +47,46 @@ namespace Volt::RHI
 			Dist,
 		};
 
+		struct CompilationResultData
+		{
+			CompilationResult result = CompilationResult::Failure;
+			std::unordered_map<ShaderStage, std::vector<uint32_t>> shaderData;
+
+			// Pixel Shader
+			std::vector<RHI::PixelFormat> outputFormats;
+			
+			// Vertex Shader
+			RHI::BufferLayout vertexLayout;
+			RHI::BufferLayout instanceLayout;
+
+			// Common
+			ShaderRenderGraphConstantsData renderGraphConstants{};
+			ShaderDataBuffer constantsBuffer{};
+			ShaderConstantData constants{};
+
+			std::unordered_map<std::string, ShaderResourceBinding> bindings;
+
+			std::map<uint32_t, std::map<uint32_t, ShaderConstantBuffer>> uniformBuffers;
+			std::map<uint32_t, std::map<uint32_t, ShaderStorageBuffer>> storageBuffers;
+			std::map<uint32_t, std::map<uint32_t, ShaderStorageImage>> storageImages;
+			std::map<uint32_t, std::map<uint32_t, ShaderImage>> images;
+			std::map<uint32_t, std::map<uint32_t, ShaderSampler>> samplers;
+
+			VT_NODISCARD VT_INLINE bool IsValid() const { return !shaderData.empty(); }
+		};
+
 		struct Specification
 		{
 			OptimizationLevel optimizationLevel = OptimizationLevel::Disable;
-		
+			std::unordered_map<ShaderStage, ShaderSourceInfo> shaderSourceInfo;
+
 			std::string entryPoint = "main";
 			bool forceCompile = false;
 		};
 
 		virtual ~ShaderCompiler();;
 
-		[[nodiscard]] static CompilationResult TryCompile(const Specification& specification, Shader& shader);
+		[[nodiscard]] static CompilationResultData TryCompile(const Specification& specification);
 		static void AddMacro(const std::string& macroName);
 		static void RemoveMacro(std::string_view macroName);
 		
@@ -64,7 +96,7 @@ namespace Volt::RHI
 		ShaderCompiler();
 
 		// Should compile shader using shader source files, result is stored in shaders internal storage
-		virtual CompilationResult TryCompileImpl(const Specification& specification, Shader& shader) = 0;
+		virtual CompilationResultData TryCompileImpl(const Specification& specification) = 0;
 		virtual void AddMacroImpl(const std::string& macroName) = 0;
 		virtual void RemoveMacroImpl(std::string_view macroName) = 0;
 

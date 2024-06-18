@@ -110,13 +110,16 @@ namespace Volt
 		m_commandBuffer->ClearBuffer(buffer, clearValue);
 	}
 
-	void RenderContext::UploadBufferData(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size)
+	void RenderContext::CopyBuffer(RenderGraphResourceHandle src, RenderGraphResourceHandle dst, const size_t size)
 	{
 		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
-		resourceAccess.ValidateResourceAccess(bufferHandle);
+		resourceAccess.ValidateResourceAccess(src);
+		resourceAccess.ValidateResourceAccess(dst);
 
-		const auto buffer = m_renderGraph->GetBufferRaw(bufferHandle);
-		buffer->SetData(m_commandBuffer, data, size);
+		const auto srcBuffer = m_renderGraph->GetBufferRaw(src);
+		const auto dstBuffer = m_renderGraph->GetBufferRaw(dst);
+
+		m_commandBuffer->CopyBufferRegion(srcBuffer->GetAllocation(), 0, dstBuffer->GetAllocation(), 0, size);
 	}
 
 	void RenderContext::MappedBufferUpload(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size)
@@ -298,9 +301,27 @@ namespace Volt
 		m_commandBuffer->BindIndexBuffer(indexBuffer);
 	}
 
-	void RenderContext::BindVertexBuffers(const std::vector<WeakPtr<RHI::VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
+	void RenderContext::BindVertexBuffers(const StackVector<WeakPtr<RHI::VertexBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding)
 	{
 		m_commandBuffer->BindVertexBuffers(vertexBuffers, firstBinding);
+	}
+
+	void RenderContext::BindVertexBuffers(const StackVector<RenderGraphResourceHandle, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding)
+	{
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		
+		for (const auto& buffer : vertexBuffers)
+		{
+			resourceAccess.ValidateResourceAccess(buffer);
+		}
+
+		StackVector<WeakPtr<RHI::StorageBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT> buffers{};
+		for (const auto& buffer : vertexBuffers)
+		{
+			buffers.Emplace() = m_renderGraph->GetBufferRaw(buffer);
+		}
+
+		m_commandBuffer->BindVertexBuffers(buffers, firstBinding);
 	}
 
 	void RenderContext::Flush()

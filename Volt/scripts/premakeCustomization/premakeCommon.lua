@@ -32,6 +32,7 @@ function AddCommonIncludeDirs()
         "%{IncludeDir.glm}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.tracy}",
+		"%{IncludeDir.unordered_dense}"
     }
 end
 

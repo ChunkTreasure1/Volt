@@ -1,5 +1,8 @@
 #pragma once
 
+#include "CoreUtilities/FileIO/BinaryStreamWriter.h"
+#include "CoreUtilities/FileIO/BinaryStreamReader.h"
+
 #include <cstdint>
 #include <xhash>
 #include <string_view>
@@ -66,6 +69,16 @@ struct StringHash
 	constexpr bool operator>=(const StringHash& rhs) const { return hash > rhs.hash; }
 
 	size_t hash;
+
+	static void Serialize(BinaryStreamWriter& streamWriter, const StringHash& data)
+	{
+		streamWriter.Write(data.hash);
+	}
+
+	static void Deserialize(BinaryStreamReader& streamReader, StringHash& outData)
+	{
+		streamReader.Read(outData.hash);
+	}
 
 #ifndef VT_DIST
 	std::string string;

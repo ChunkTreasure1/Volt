@@ -17,6 +17,7 @@
 #include "Volt/Math/Math.h"
 
 #include <VoltRHI/Shader/ShaderCompiler.h>
+#include <VoltRHI/Shader/ShaderCache.h>
 #include <VoltRHI/Images/SamplerState.h>
 #include <VoltRHI/Graphics/Swapchain.h>
 #include <VoltRHI/Images/Image2D.h>
@@ -55,7 +56,7 @@ namespace Volt
 #ifndef VT_DIST
 			shaderValidator = nullptr;
 #endif
-
+			shaderCache = nullptr;
 			shaderCompiler = nullptr;
 			bindlessResourcesManager = nullptr;
 
@@ -66,6 +67,7 @@ namespace Volt
 		}
 
 		RefPtr<RHI::ShaderCompiler> shaderCompiler;
+		Scope<RHI::ShaderCache> shaderCache;
 		Scope<BindlessResourcesManager> bindlessResourcesManager;
 
 #ifndef VT_DIST
@@ -97,13 +99,19 @@ namespace Volt
 			//shaderCompilerInfo.cacheDirectory = ProjectManager::GetEngineDirectory() / "Engine/Shaders/Cache";
 			shaderCompilerInfo.includeDirectories =
 			{
-				"Engine/Shaders/Source/Includes",
-				"Engine/Shaders/Source/HLSL",
-				"Engine/Shaders/Source/HLSL/Includes",
+				ProjectManager::GetEngineShaderIncludeDirectory(),
 				ProjectManager::GetAssetsDirectory()
 			};
 
 			s_rendererData->shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
+		}
+
+		// Create shader cache
+		{
+			RHI::ShaderCacheCreateInfo info{};
+			info.cacheDirectory = "Engine/Shaders/Cache";
+
+			s_rendererData->shaderCache = CreateScope<RHI::ShaderCache>(info);
 		}
 
 		// Bindless resources manager

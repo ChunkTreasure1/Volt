@@ -60,11 +60,7 @@ AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string
 	SetMinWindowSize({ 700.f, 300.f });
 
 	mySelectionManager = CreateRef<AssetBrowser::SelectionManager>();
-
-	if (!UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage)
-	{
-		myPreviewRenderer = CreateRef<PreviewRenderer>();
-	}
+	myPreviewRenderer = CreateRef<PreviewRenderer>();
 
 	if (!Volt::ProjectManager::GetProject().isDeprecated)
 	{
@@ -419,7 +415,7 @@ bool AssetBrowserPanel::OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent& e)
 
 bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 {
-	if (UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage || !myPreviewRenderer)
+	if (!myPreviewRenderer)
 	{
 		return false;
 	}

@@ -37,7 +37,7 @@ project "VoltVulkan"
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}",
 
-		"%{IncludeDir.Aftermath}"
+		"%{IncludeDir.Aftermath}",
 	}
 
 	defines
@@ -45,7 +45,7 @@ project "VoltVulkan"
 		"OPTICK_ENABLE_GPU_VULKAN",
 		"GLFW_DLL",
 		"TRACY_IMPORTS",
-		"VT_ENABLE_NV_AFTERMATH"
+		-- "VT_ENABLE_NV_AFTERMATH"
 	}
 
 	links

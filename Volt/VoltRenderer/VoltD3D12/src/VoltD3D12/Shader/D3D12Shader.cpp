@@ -43,8 +43,8 @@ namespace Volt::RHI
 		ShaderCompiler::Specification specs = {};
 		specs.forceCompile = forceCompile;
 
-		auto result = ShaderCompiler::TryCompile(specs, *this);
-		return result == ShaderCompiler::CompilationResult::Success;
+		auto result = ShaderCompiler::TryCompile(specs);
+		return result.result == ShaderCompiler::CompilationResult::Success;
 	}
 
 	std::string_view D3D12Shader::GetName() const

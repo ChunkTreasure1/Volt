@@ -159,9 +159,9 @@ namespace Volt
 		const RenderingInfo CreateRenderingInfo(const uint32_t width, const uint32_t height, const StackVector<RenderGraphResourceHandle, RHI::MAX_ATTACHMENT_COUNT>& attachments);
 
 		void ClearImage(RenderGraphResourceHandle handle, const glm::vec4& clearColor);
-		void ClearBuffer(RenderGraphResourceHandle handle, uint32_t clearValue);
 
-		void UploadBufferData(RenderGraphResourceHandle buffer, const void* data, const size_t size);
+		void CopyBuffer(RenderGraphResourceHandle src, RenderGraphResourceHandle dst, const size_t size);
+
 		void MappedBufferUpload(RenderGraphResourceHandle buffer, const void* data, const size_t size);
 
 		void DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ);
@@ -181,7 +181,8 @@ namespace Volt
 
 		void BindIndexBuffer(RenderGraphResourceHandle indexBuffer);
 		void BindIndexBuffer(WeakPtr<RHI::IndexBuffer> indexBuffer);
-		void BindVertexBuffers(const std::vector<WeakPtr<RHI::VertexBuffer>>& vertexBuffers, const uint32_t firstBinding);
+		void BindVertexBuffers(const StackVector<WeakPtr<RHI::VertexBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding);
+		void BindVertexBuffers(const StackVector<RenderGraphResourceHandle, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding);
 
 		void Flush();
 		RefPtr<RHI::StorageBuffer> GetReadbackBuffer(WeakPtr<RHI::StorageBuffer> buffer);
@@ -205,6 +206,8 @@ namespace Volt
 		{
 			std::unordered_map<StringHash, bool> uniformHasBeenSetMap;
 		};
+
+		void ClearBuffer(RenderGraphResourceHandle handle, uint32_t clearValue);
 
 		void BindDescriptorTableIfRequired();
 

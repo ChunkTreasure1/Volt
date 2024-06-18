@@ -34,7 +34,7 @@ project "VoltRHI"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.imgui_notify}",
 
-		"%{IncludeDir.Aftermath}"
+		"%{IncludeDir.Aftermath}",
 	}
 
 	links

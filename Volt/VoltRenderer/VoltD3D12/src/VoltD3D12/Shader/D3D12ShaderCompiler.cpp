@@ -26,19 +26,22 @@ namespace Volt::RHI
 		return nullptr;
 	}
 
-	ShaderCompiler::CompilationResult D3D12ShaderCompiler::TryCompileImpl(const Specification& specification, Shader& shader)
+	ShaderCompiler::CompilationResultData D3D12ShaderCompiler::TryCompileImpl(const Specification& specification)
 	{
-		auto d3d12shader = reinterpret_cast<D3D12Shader*>(&shader);
+		//auto d3d12shader = reinterpret_cast<D3D12Shader*>(&shader);
 
-		for (auto& path : d3d12shader->m_sourceFiles)
-		{
-			auto result = CompileStage(path, specification, *d3d12shader);
-			if (result != CompilationResult::Success)
-			{
-				return result;
-			}
-		}
-		return CompilationResult::Success;
+		CompilationResultData result;
+
+		//for (auto& path : d3d12shader->m_sourceFiles)
+		//{
+		//	auto resultState = CompileStage(path, specification, *d3d12shader);
+		//	if (resultState != CompilationResult::Success)
+		//	{
+		//		result.result = resultState;
+		//		break;
+		//	}
+		//}
+		return result;
 	}
 
 	void D3D12ShaderCompiler::AddMacroImpl(const std::string& macroName)

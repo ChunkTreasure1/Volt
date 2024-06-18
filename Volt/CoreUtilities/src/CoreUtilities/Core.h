@@ -25,6 +25,23 @@
 #define BIT(X) (1 << (X))
 //////////////////////////
 
+#ifdef VT_DEBUG
+
+#define VT_OPTIMIZE_ON
+#define VT_OPTIMIZE_OFF
+
+#elif VT_RELEASE
+
+#define VT_OPTIMIZE_OFF __pragma(optimize("", off));
+#define VT_OPTIMIZE_ON __pragma(optimize("", on));
+
+#elif VT_DIST
+
+#define VT_OPTIMIZE_OFF __pragma(optimize("", off));
+#define VT_OPTIMIZE_ON __pragma(optimize("", on));
+
+#endif
+
 template<typename T>
 using Scope = std::unique_ptr<T>;
 

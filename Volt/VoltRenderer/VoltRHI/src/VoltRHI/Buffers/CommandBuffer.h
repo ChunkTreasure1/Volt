@@ -5,6 +5,7 @@
 #include "VoltRHI/Images/ImageView.h"
 
 #include <CoreUtilities/Pointers/WeakPtr.h>
+#include <CoreUtilities/Containers/StackVector.h>
 
 #include <span>
 
@@ -56,12 +57,13 @@ namespace Volt::RHI
 		virtual void DispatchMeshTasksIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) = 0;
 		virtual void DispatchMeshTasksIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) = 0;
 
-		virtual void SetViewports(const std::vector<Viewport>& viewports) = 0;
-		virtual void SetScissors(const std::vector<Rect2D>& scissors) = 0;
+		virtual void SetViewports(const StackVector<Viewport, MAX_VIEWPORT_COUNT>& viewports) = 0;
+		virtual void SetScissors(const StackVector<Rect2D, MAX_VIEWPORT_COUNT>& scissors) = 0;
 
 		virtual void BindPipeline(WeakPtr<RenderPipeline> pipeline) = 0;
 		virtual void BindPipeline(WeakPtr<ComputePipeline> pipeline) = 0;
-		virtual void BindVertexBuffers(const std::vector<WeakPtr<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding) = 0;
+		virtual void BindVertexBuffers(const StackVector<WeakPtr<VertexBuffer>, MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding) = 0;
+		virtual void BindVertexBuffers(const StackVector<WeakPtr<StorageBuffer>, MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding) = 0;
 		virtual void BindIndexBuffer(WeakPtr<IndexBuffer> indexBuffer) = 0;
 		virtual void BindIndexBuffer(WeakPtr<StorageBuffer> indexBuffer) = 0;
 		virtual void BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable) = 0;

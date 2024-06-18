@@ -1,5 +1,8 @@
 #pragma once
 
+#include <CoreUtilities/FileIO/BinaryStreamWriter.h>
+#include <CoreUtilities/FileIO/BinaryStreamReader.h>
+
 #include <string>
 #include <vector>
 
@@ -51,6 +54,7 @@ namespace Volt::RHI
 
 	struct BufferElement
 	{
+		BufferElement() = default;
 		BufferElement(ElementType aElementType, const std::string& aName, uint32_t aArrayIndex = 0, InputUsage aUsage = InputUsage::PerVertex, uint32_t aInputSlot = 0)
 			: type(aElementType), name(aName), size(GetSizeFromType(aElementType)), arrayIndex(aArrayIndex), usage(aUsage), inputSlot(aInputSlot)
 		{
@@ -142,6 +146,28 @@ namespace Volt::RHI
 			return 0;
 		}
 
+		static void Serialize(BinaryStreamWriter& streamWriter, const BufferElement& data)
+		{
+			streamWriter.Write(data.name);
+			streamWriter.Write(data.offset);
+			streamWriter.Write(data.size);
+			streamWriter.Write(data.arrayIndex);
+			streamWriter.Write(data.inputSlot);
+			streamWriter.Write(data.type);
+			streamWriter.Write(data.usage);
+		}
+
+		static void Deserialize(BinaryStreamReader& streamReader, BufferElement& outData)
+		{
+			streamReader.Read(outData.name);
+			streamReader.Read(outData.offset);
+			streamReader.Read(outData.size);
+			streamReader.Read(outData.arrayIndex);
+			streamReader.Read(outData.inputSlot);
+			streamReader.Read(outData.type);
+			streamReader.Read(outData.usage);
+		}
+
 		std::string name;
 		size_t offset;
 
@@ -157,23 +183,23 @@ namespace Volt::RHI
 	{
 	public:
 		BufferLayout()
-			: myStride(0)
+			: m_stride(0)
 		{
 		}
 
 		BufferLayout(std::initializer_list<BufferElement> aElements)
-			: myElements(aElements), myStride(0)
+			: m_elements(aElements), m_stride(0)
 		{
 			CalculateOffsetAndStride();
 		}
 
 		BufferLayout(std::vector<BufferElement> aElements)
-			: myElements(aElements), myStride(0)
+			: m_elements(aElements), m_stride(0)
 		{
 			CalculateOffsetAndStride();
 		}
 
-		inline static std::string GetNameFromElementType(ElementType type)
+		VT_NODISCARD VT_INLINE static std::string GetNameFromElementType(ElementType type)
 		{
 			switch (type)
 			{
@@ -216,18 +242,32 @@ namespace Volt::RHI
 			return "None";
 		}
 
-		inline const uint32_t GetStride() const { return myStride; }
-		inline const std::vector<BufferElement>& GetElements() const { return myElements; }
-		inline const bool IsValid() const { return !myElements.empty(); }
+		VT_NODISCARD VT_INLINE const uint32_t GetStride() const { return m_stride; }
+		VT_NODISCARD VT_INLINE const std::vector<BufferElement>& GetElements() const { return m_elements; }
+		VT_NODISCARD VT_INLINE const bool IsValid() const { return !m_elements.empty(); }
+
+		static void Serialize(BinaryStreamWriter& streamWriter, const BufferLayout& data)
+		{
+			streamWriter.Write(data.m_elements);
+			streamWriter.Write(data.m_stride);
+		}
+
+		static void Deserialize(BinaryStreamReader& streamReader, BufferLayout& outData)
+		{
+			streamReader.Read(outData.m_elements);
+			streamReader.Read(outData.m_stride);
+
+			outData.CalculateOffsetAndStride();
+		}
 
 	private:
 		void CalculateOffsetAndStride()
 		{
 			size_t offset = 0;
 			uint32_t lastInputSlot = 0;
-			myStride = 0;
+			m_stride = 0;
 
-			for (auto& element : myElements)
+			for (auto& element : m_elements)
 			{
 				if (lastInputSlot != element.inputSlot)
 				{
@@ -236,11 +276,11 @@ namespace Volt::RHI
 				}
 				element.offset = offset;
 				offset += element.size;
-				myStride += element.size;
+				m_stride += element.size;
 			}
 		}
 
-		std::vector<BufferElement> myElements;
-		uint32_t myStride = 0;
+		std::vector<BufferElement> m_elements;
+		uint32_t m_stride = 0;
 	};
 }

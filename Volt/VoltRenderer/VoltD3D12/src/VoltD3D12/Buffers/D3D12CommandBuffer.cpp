@@ -139,14 +139,14 @@ namespace Volt::RHI
 	{
 	}
 
-	void D3D12CommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
+	void D3D12CommandBuffer::SetViewports(const StackVector<Viewport, MAX_VIEWPORT_COUNT>& viewports)
 	{
-		GetCommandData().commandList->RSSetViewports(static_cast<uint32_t>(viewports.size()), reinterpret_cast<const D3D12_VIEWPORT*>(viewports.data()));
+		GetCommandData().commandList->RSSetViewports(static_cast<uint32_t>(viewports.Size()), reinterpret_cast<const D3D12_VIEWPORT*>(viewports.Data()));
 	}
 
-	void D3D12CommandBuffer::SetScissors(const std::vector<Rect2D>& scissors)
+	void D3D12CommandBuffer::SetScissors(const StackVector<Rect2D, MAX_VIEWPORT_COUNT>& scissors)
 	{
-		GetCommandData().commandList->RSSetScissorRects(static_cast<uint32_t>(scissors.size()), reinterpret_cast<const D3D12_RECT*>(scissors.data()));
+		GetCommandData().commandList->RSSetScissorRects(static_cast<uint32_t>(scissors.Size()), reinterpret_cast<const D3D12_RECT*>(scissors.Data()));
 	}
 
 	void D3D12CommandBuffer::BindPipeline(WeakPtr<RenderPipeline> pipeline)
@@ -174,7 +174,11 @@ namespace Volt::RHI
 
 	}
 
-	void D3D12CommandBuffer::BindVertexBuffers(const std::vector<WeakPtr<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
+	void D3D12CommandBuffer::BindVertexBuffers(const StackVector<WeakPtr<VertexBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding)
+	{
+	}
+
+	void D3D12CommandBuffer::BindVertexBuffers(const StackVector<WeakPtr<StorageBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding)
 	{
 	}
 

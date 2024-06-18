@@ -88,7 +88,7 @@ project "Volt"
 		"%{IncludeDir.shaderc_glslc}",
 		"%{IncludeDir.shaderc_utils}",
 
-		"%{IncludeDir.zlib}"
+		"%{IncludeDir.zlib}",
 	}
 
 	links

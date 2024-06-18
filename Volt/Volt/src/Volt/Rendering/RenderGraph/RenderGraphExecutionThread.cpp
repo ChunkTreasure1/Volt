@@ -10,6 +10,10 @@
 
 #include "Volt/Rendering/Resources/BindlessResourcesManager.h"
 
+#include <VoltRHI/Graphics/GraphicsContext.h>
+#include <VoltRHI/Graphics/GraphicsDevice.h>
+#include <VoltRHI/Graphics/DeviceQueue.h>
+
 #include <VoltRHI/Graphics/Swapchain.h>
 
 namespace Volt
@@ -91,6 +95,8 @@ namespace Volt
 				break;
 			}
 
+			RHI::GraphicsContext::GetDevice()->GetDeviceQueue(RHI::QueueType::Graphics)->WaitForQueue();
+
 			std::function<void()> executeFunction{};
 			while (s_data->executionQueue.try_pop(executeFunction))
 			{
@@ -98,8 +104,6 @@ namespace Volt
 				executeFunction();
 				s_data->isExecuting = false;
 			}
-
-			//BindlessResourcesManager::Get().PrintResources();
 
 			s_data->waitForExecutionVariable.notify_one();
 		}

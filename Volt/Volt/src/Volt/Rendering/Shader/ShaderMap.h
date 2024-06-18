@@ -6,6 +6,8 @@
 #include <VoltRHI/Pipelines/ComputePipeline.h>
 #include <VoltRHI/Shader/Shader.h>
 
+#include <CoreUtilities/Containers/Map.h>
+
 #include <unordered_map>
 #include <string>
 
@@ -23,6 +25,7 @@ namespace Volt
 		static void Shutdown();
 
 		static void ReloadAll();
+		static bool ReloadShaderByName(const std::string& name);
 
 		static RefPtr<RHI::Shader> Get(const std::string& name);
 		static RefPtr<RHI::ComputePipeline> GetComputePipeline(const std::string& name, bool useGlobalResouces = true);
@@ -30,12 +33,13 @@ namespace Volt
 
 	private:
 		static void LoadShaders();
+		static std::vector<std::filesystem::path> FindShaderIncludes(const std::filesystem::path& filePath);
 		static void RegisterShader(const std::string& name, RefPtr<RHI::Shader> shader);
 
-		inline static std::unordered_map<std::string, RefPtr<RHI::Shader>> s_shaderMap;
+		inline static vt::map<std::string, RefPtr<RHI::Shader>> s_shaderMap;
 
-		inline static std::unordered_map<size_t, RefPtr<RHI::ComputePipeline>> s_computePipelineCache;
-		inline static std::unordered_map<size_t, RefPtr<RHI::RenderPipeline>> s_renderPipelineCache;
+		inline static vt::map<size_t, RefPtr<RHI::ComputePipeline>> s_computePipelineCache;
+		inline static vt::map<size_t, RefPtr<RHI::RenderPipeline>> s_renderPipelineCache;
 
 		inline static std::mutex s_registerMutex;
 	};

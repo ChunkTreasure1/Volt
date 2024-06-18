@@ -5,6 +5,9 @@
 #include "Volt/Core/Application.h"
 
 #include "Volt/Utility/YAMLSerializationHelpers.h"
+#include "Volt/Utility/StringUtility.h"
+
+#include "Volt/Asset/AssetManager.h"
 
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
@@ -37,7 +40,7 @@ namespace Volt
 		VT_CORE_INFO("[ProjectManager]: Loading project {0}", projectPath);
 		DeserializeProject();
 
-		m_currentEngineDirectory = FileSystem::GetEnvVariable("VOLT_PATH");
+		m_currentEngineDirectory = ::Utility::ReplaceCharacter(FileSystem::GetEnvVariable("VOLT_PATH"), '\\', '/');
 		std::filesystem::current_path(m_currentEngineDirectory);
 	}
 
@@ -101,6 +104,11 @@ namespace Volt
 	const std::filesystem::path ProjectManager::GetEngineScriptsDirectory()
 	{
 		return GetAssetsDirectory() / "Scripts/Internal";
+	}
+
+	const std::filesystem::path ProjectManager::GetEngineShaderIncludeDirectory()
+	{
+		return "Engine/Shaders/Source/Includes";
 	}
 
 	const std::filesystem::path ProjectManager::GetAssetsDirectory()

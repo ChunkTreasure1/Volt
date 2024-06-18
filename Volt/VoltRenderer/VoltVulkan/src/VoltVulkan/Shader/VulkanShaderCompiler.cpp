@@ -8,6 +8,9 @@
 #include <VoltRHI/Shader/ShaderUtility.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Shader/ShaderPreProcessor.h>
+#include <VoltRHI/Shader/ShaderCache.h>
+
+#include <CoreUtilities/TimeUtility.h>
 
 #ifdef _WIN32
 #include <wrl.h>
@@ -16,6 +19,9 @@
 #endif
 
 #include <dxc/dxcapi.h>
+
+#include <spirv_cross/spirv_glsl.hpp>
+#include <spirv-tools/libspirv.h>
 
 #include <codecvt>
 #include <locale>
@@ -48,10 +54,31 @@ namespace Volt::RHI
 
 			return output;
 		}
+
+		inline static const ShaderUniformType GetShaderUniformTypeFromSPIRV(const spirv_cross::SPIRType& type)
+		{
+			ShaderUniformType resultType;
+
+			switch (type.basetype)
+			{
+				case spirv_cross::SPIRType::Boolean: resultType.baseType = ShaderUniformBaseType::Bool; break;
+				case spirv_cross::SPIRType::UInt: resultType.baseType = ShaderUniformBaseType::UInt; break;
+				case spirv_cross::SPIRType::Int: resultType.baseType = ShaderUniformBaseType::Int; break;
+				case spirv_cross::SPIRType::Float: resultType.baseType = ShaderUniformBaseType::Float; break;
+				case spirv_cross::SPIRType::Half: resultType.baseType = ShaderUniformBaseType::Half; break;
+				case spirv_cross::SPIRType::Short: resultType.baseType = ShaderUniformBaseType::Short; break;
+				case spirv_cross::SPIRType::UShort: resultType.baseType = ShaderUniformBaseType::UShort; break;
+			}
+
+			resultType.columns = type.columns;
+			resultType.vecsize = type.vecsize;
+
+			return resultType;
+		}
 	}
 
 	VulkanShaderCompiler::VulkanShaderCompiler(const ShaderCompilerCreateInfo& createInfo)
-		: m_includeDirectories(createInfo.includeDirectories), m_macros(createInfo.initialMacros), m_flags(createInfo.flags), m_cacheDirectory(createInfo.cacheDirectory)
+		: m_includeDirectories(createInfo.includeDirectories), m_macros(createInfo.initialMacros), m_flags(createInfo.flags)
 	{
 		RHILog::LogTagged(LogSeverity::Trace, "[VulkanShaderCompiler]", "Initializing VulkanShaderCompiler");
 		DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&m_hlslCompiler));
@@ -66,9 +93,37 @@ namespace Volt::RHI
 		RHILog::LogTagged(LogSeverity::Trace, "[VulkanShaderCompiler]", "Destroying VulkanShaderCompiler");
 	}
 
-	ShaderCompiler::CompilationResult VulkanShaderCompiler::TryCompileImpl(const Specification& specification, Shader& shader)
+	ShaderCompiler::CompilationResultData VulkanShaderCompiler::TryCompileImpl(const Specification& specification)
 	{
-		return CompileAll(specification, shader);
+		// First try and get cached shader
+		if (!specification.forceCompile)
+		{
+			const auto cachedResult = ShaderCache::TryGetCachedShader(specification);
+			if (cachedResult.data.IsValid())
+			{
+				return cachedResult.data;
+			}
+		}
+
+		if (specification.shaderSourceInfo.empty())
+		{
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Trying to compile a shader without sources!");
+			return {};
+		}
+
+		CompilationResultData result = CompileAll(specification);
+
+		// If compilation fails, we try to get the cached version.
+		if (result.result != ShaderCompiler::CompilationResult::Success)
+		{
+			const auto cachedResult = ShaderCache::TryGetCachedShader(specification);
+			return cachedResult.data;
+		}
+
+		ReflectAllStages(specification, result);
+		ShaderCache::CacheShader(specification, result);
+
+		return result;
 	}
 
 	void VulkanShaderCompiler::AddMacroImpl(const std::string& macroName)
@@ -89,54 +144,32 @@ namespace Volt::RHI
 		}
 	}
 
-	ShaderCompiler::CompilationResult VulkanShaderCompiler::CompileAll(const Specification& specification, Shader& shader)
+	ShaderCompiler::CompilationResultData VulkanShaderCompiler::CompileAll(const Specification& specification)
 	{
-		VulkanShader& vulkanShader = shader.AsRef<VulkanShader>();
+		CompilationResultData result;
 
-		for (const auto& [stage, sourceData] : vulkanShader.m_shaderSources)
+		for (const auto& [stage, sourceInfo] : specification.shaderSourceInfo)
 		{
-			if (CompileSingle(stage, sourceData.source, sourceData.filepath, specification, shader) != CompilationResult::Success)
+			result.result = CompileSingle(stage, sourceInfo.source, sourceInfo.filepath, specification, result);
+
+			if (result.result != ShaderCompiler::CompilationResult::Success)
 			{
-				return CompilationResult::Failure;
+				break;
 			}
 		}
 
 		// #TODO_Ivar: This is a dumb hack for vertex only shaders
-		if (vulkanShader.m_shaderSources.contains(RHI::ShaderStage::Vertex) && !vulkanShader.m_shaderSources.contains(RHI::ShaderStage::Pixel))
+		if (specification.shaderSourceInfo.contains(RHI::ShaderStage::Vertex) && !specification.shaderSourceInfo.contains(RHI::ShaderStage::Pixel))
 		{
-			vulkanShader.m_resources.outputFormats.emplace_back(RHI::PixelFormat::D32_SFLOAT);
+			result.outputFormats.emplace_back(RHI::PixelFormat::D32_SFLOAT);
 		}
 
-		return CompilationResult::Success;
+		return result;
 	}
 
-	ShaderCompiler::CompilationResult VulkanShaderCompiler::CompileSingle(ShaderStage shaderStage, const std::string& source, const std::filesystem::path& filepath, const Specification& specification, Shader& shader)
+	ShaderCompiler::CompilationResult VulkanShaderCompiler::CompileSingle(ShaderStage shaderStage, const std::string& source, const std::filesystem::path& filepath, const Specification& specification, CompilationResultData& outData)
 	{
-		auto& vulkanShader = shader.AsRef<VulkanShader>();
-		auto& data = vulkanShader.m_shaderData[shaderStage];
-
-		const auto cacheDirectory = m_cacheDirectory / Utility::GetShaderCacheSubDirectory();
-		const auto extension = Utility::GetShaderStageCachedFileExtension(shaderStage);
-		const auto cachedPath = cacheDirectory / (filepath.filename().string() + extension);
-
-		if (!specification.forceCompile)
-		{
-			std::ifstream inStream{ cachedPath, std::ios::binary | std::ios::in | std::ios::ate };
-			if (inStream.is_open())
-			{
-				const uint64_t size = inStream.tellg();
-				data.resize(size / sizeof(uint32_t)); // We store the data as 4 byte blocks
-
-				inStream.seekg(0, std::ios::beg);
-				inStream.read(reinterpret_cast<char*>(data.data()), size);
-				inStream.close();
-			}
-		}
-
-		if (!data.empty())
-		{
-			return CompilationResult::Success;
-		}
+		auto& data = outData.shaderData[shaderStage];
 
 		std::string processedSource = source;
 
@@ -156,28 +189,12 @@ namespace Volt::RHI
 			Utility::HLSLShaderProfile(shaderStage),
 			L"-spirv",
 			L"-fspv-target-env=vulkan1.3",
-			//L"-fvk-support-nonzero-base-instance",
 			L"-HV",
 			L"2021",
 			L"-D",
 			L"__VULKAN__ ",
 			L"-enable-16bit-types",
-
 			L"-fvk-use-scalar-layout",
-			//L"-fvk-t-shift", std::to_wstring(VulkanDefaults::ShaderTRegisterOffset), L"0",
-			//L"-fvk-u-shift", std::to_wstring(VulkanDefaults::ShaderURegisterOffset), L"0",
-
-			//L"-fvk-b-shift 100 1",
-			//L"-fvk-t-shift 200 1",
-			//L"-fvk-u-shift 300 1",
-
-			//L"-fvk-b-shift 100 2",
-			//L"-fvk-t-shift 200 2",
-			//L"-fvk-u-shift 300 2",
-
-			//L"-fvk-b-shift 100 3",
-			//L"-fvk-t-shift 200 3",
-			//L"-fvk-u-shift 300 3",
 
 			DXC_ARG_PACK_MATRIX_COLUMN_MAJOR
 		};
@@ -219,21 +236,21 @@ namespace Volt::RHI
 
 			if (shaderStage == ShaderStage::Pixel)
 			{
-				vulkanShader.m_resources.outputFormats = result.outputFormats;
+				outData.outputFormats = result.outputFormats;
 			}
 			else if (shaderStage == ShaderStage::Vertex)
 			{
-				vulkanShader.m_resources.vertexLayout = result.vertexLayout;
-				vulkanShader.m_resources.instanceLayout = result.instanceLayout;
+				outData.vertexLayout = result.vertexLayout;
+				outData.instanceLayout = result.instanceLayout;
 			}
 
-			if (!vulkanShader.m_resources.renderGraphConstantsData.IsValid())
+			if (!outData.renderGraphConstants.IsValid())
 			{
-				vulkanShader.m_resources.renderGraphConstantsData = result.renderGraphConstants;
+				outData.renderGraphConstants = result.renderGraphConstants;
 			}
-			else if(result.renderGraphConstants.IsValid())
+			else if (result.renderGraphConstants.IsValid())
 			{
-				for (const auto& [name, uniform] : vulkanShader.m_resources.renderGraphConstantsData.uniforms)
+				for (const auto& [name, uniform] : outData.renderGraphConstants.uniforms)
 				{
 					if (!result.renderGraphConstants.uniforms.contains(name) || uniform.type != result.renderGraphConstants.uniforms.at(name).type)
 					{
@@ -299,28 +316,211 @@ namespace Volt::RHI
 			return CompilationResult::Failure;
 		}
 
-		// Cache shader
-		{
-			// Create the required directories if they do not exits
-			if (!std::filesystem::exists(cachedPath.parent_path()))
-			{
-				std::filesystem::create_directories(cachedPath.parent_path());
-			}
-
-			std::ofstream output{ cachedPath, std::ios::binary | std::ios::out };
-			if (!output.is_open())
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to open path {0} for writing!", cachedPath.string());
-			}
-
-			output.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(uint32_t));
-			output.close();
-		}
-
 		sourcePtr->Release();
 		compilationResult->Release();
 
 		return CompilationResult::Success;
+	}
+
+	void VulkanShaderCompiler::ReflectAllStages(const Specification& specification, CompilationResultData& inOutData)
+	{
+		for (const auto& [stage, data] : inOutData.shaderData)
+		{
+			RHILog::LogTagged(LogSeverity::Trace, "[VulkanShaderCompiler]", "Reflecting shader {0}", specification.shaderSourceInfo.at(stage).filepath.string());
+			ReflectStage(stage, specification, inOutData);
+		}
+	}
+
+	void VulkanShaderCompiler::ReflectStage(ShaderStage stage, const Specification& specification, CompilationResultData& inOutData)
+	{
+		spirv_cross::Compiler compiler{ inOutData.shaderData[stage] };
+		const auto resources = compiler.get_shader_resources();
+
+		for (const auto& ubo : resources.uniform_buffers)
+		{
+			if (compiler.get_active_buffer_ranges(ubo.id).empty())
+			{
+				continue;
+			}
+
+			const auto& bufferType = compiler.get_type(ubo.base_type_id);
+
+			const size_t size = compiler.get_declared_struct_size(bufferType);
+			const uint32_t binding = compiler.get_decoration(ubo.id, spv::DecorationBinding);
+			const uint32_t set = compiler.get_decoration(ubo.id, spv::DecorationDescriptorSet);
+			const std::string& name = compiler.get_name(ubo.id);
+
+			if (!TryAddShaderBinding(name, set, binding, inOutData))
+			{
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
+			}
+
+			if (name == "$Globals")
+			{
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Shader {0} seems to have incorrectly defined global variables!", specification.shaderSourceInfo.at(stage).filepath.string());
+				continue;
+			}
+
+			auto& buffer = inOutData.uniformBuffers[set][binding];
+			buffer.usageStages = buffer.usageStages | stage;
+			buffer.usageCount++;
+			buffer.size = size;
+		}
+
+		for (const auto& ssbo : resources.storage_buffers)
+		{
+			const auto& bufferBaseType = compiler.get_type(ssbo.base_type_id);
+			const auto& bufferType = compiler.get_type(ssbo.type_id);
+
+			const size_t size = compiler.get_declared_struct_size(bufferBaseType);
+			const uint32_t binding = compiler.get_decoration(ssbo.id, spv::DecorationBinding);
+			const uint32_t set = compiler.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
+			const std::string& name = compiler.get_name(ssbo.id);
+
+			if (!TryAddShaderBinding(name, set, binding, inOutData))
+			{
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
+			}
+
+			const bool firstEntry = !inOutData.storageBuffers[set].contains(binding);
+
+			auto& buffer = inOutData.storageBuffers[set][binding];
+			buffer.usageStages = buffer.usageStages | stage;
+			buffer.usageCount++;
+			buffer.size = size;
+
+			if (firstEntry && !bufferType.array.empty())
+			{
+				const int32_t arraySize = static_cast<int32_t>(bufferType.array[0]);
+
+				if (arraySize == 0)
+				{
+					buffer.arraySize = -1;
+				}
+				else
+				{
+					buffer.arraySize = arraySize;
+				}
+			}
+		}
+
+		for (const auto& image : resources.storage_images)
+		{
+			const uint32_t binding = compiler.get_decoration(image.id, spv::DecorationBinding);
+			const uint32_t set = compiler.get_decoration(image.id, spv::DecorationDescriptorSet);
+			const auto& imageType = compiler.get_type(image.type_id);
+			const std::string& name = compiler.get_name(image.id);
+
+			if (!TryAddShaderBinding(name, set, binding, inOutData))
+			{
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+			}
+
+			const bool firstEntry = !inOutData.storageImages[set].contains(binding);
+
+			auto& shaderImage = inOutData.storageImages[set][binding];
+			shaderImage.usageStages = shaderImage.usageStages | stage;
+			shaderImage.usageCount++;
+
+			if (firstEntry && !imageType.array.empty())
+			{
+				const int32_t arraySize = static_cast<int32_t>(imageType.array[0]);
+
+				if (arraySize == 0)
+				{
+					shaderImage.arraySize = -1;
+				}
+				else
+				{
+					shaderImage.arraySize = arraySize;
+				}
+			}
+		}
+
+		for (const auto& image : resources.separate_images)
+		{
+			const uint32_t binding = compiler.get_decoration(image.id, spv::DecorationBinding);
+			const uint32_t set = compiler.get_decoration(image.id, spv::DecorationDescriptorSet);
+			const auto& imageType = compiler.get_type(image.type_id);
+			const std::string& name = compiler.get_name(image.id);
+
+			if (!TryAddShaderBinding(name, set, binding, inOutData))
+			{
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+			}
+
+			const bool firstEntry = !inOutData.images[set].contains(binding);
+
+			auto& shaderImage = inOutData.images[set][binding];
+			shaderImage.usageStages = shaderImage.usageStages | stage;
+			shaderImage.usageCount++;
+
+			if (firstEntry && !imageType.array.empty())
+			{
+				const int32_t arraySize = static_cast<int32_t>(imageType.array[0]);
+
+				if (arraySize == 0)
+				{
+					shaderImage.arraySize = -1;
+				}
+				else
+				{
+					shaderImage.arraySize = arraySize;
+				}
+			}
+		}
+
+		for (const auto& sampler : resources.separate_samplers)
+		{
+			const uint32_t binding = compiler.get_decoration(sampler.id, spv::DecorationBinding);
+			const uint32_t set = compiler.get_decoration(sampler.id, spv::DecorationDescriptorSet);
+			const std::string& name = compiler.get_name(sampler.id);
+
+			if (!TryAddShaderBinding(name, set, binding, inOutData))
+			{
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+			}
+
+			auto& shaderSampler = inOutData.samplers[set][binding];
+			shaderSampler.usageStages = shaderSampler.usageStages | stage;
+			shaderSampler.usageCount++;
+		}
+
+		for (const auto& pushConstant : resources.push_constant_buffers)
+		{
+			const auto& bufferType = compiler.get_type(pushConstant.base_type_id);
+			const size_t pushConstantSize = compiler.get_declared_struct_size(bufferType);
+
+			inOutData.constantsBuffer.SetSize(pushConstantSize);
+
+			inOutData.constants.size = static_cast<uint32_t>(pushConstantSize);
+			inOutData.constants.offset = 0;
+			inOutData.constants.stageFlags = inOutData.constants.stageFlags | stage;
+
+			for (uint32_t i = 0; const auto & member : bufferType.member_types)
+			{
+				const auto& memberType = compiler.get_type(member);
+				const size_t memberSize = compiler.get_declared_struct_member_size(bufferType, i);
+				const size_t memberOffset = compiler.type_struct_member_offset(bufferType, i);
+				const std::string& memberName = compiler.get_member_name(pushConstant.base_type_id, i);
+
+				const auto type = Utility::GetShaderUniformTypeFromSPIRV(memberType);
+
+				inOutData.constantsBuffer.AddMember(memberName, type, memberSize, memberOffset);
+				i++;
+			}
+		}
+	}
+
+	bool VulkanShaderCompiler::TryAddShaderBinding(const std::string& name, uint32_t set, uint32_t binding, CompilationResultData& outData)
+	{
+		if (outData.bindings.contains(name))
+		{
+			return false;
+		}
+
+		outData.bindings[name] = { set, binding };
+		return true;
 	}
 
 	bool VulkanShaderCompiler::PreprocessSource(const ShaderStage shaderStage, const std::filesystem::path& filepath, std::string& outSource)

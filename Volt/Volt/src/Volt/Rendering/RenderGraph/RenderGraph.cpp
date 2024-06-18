@@ -70,6 +70,12 @@ namespace Volt
 					usageInfo.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::Copy;
 					usageInfo.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::TransferDestination;
 				}
+				else
+				{
+					usageInfo.accessInfo.type = RHI::BarrierType::Buffer;
+					usageInfo.accessInfo.bufferBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
+					usageInfo.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::Copy;
+				}
 			}
 		}
 
@@ -257,8 +263,11 @@ namespace Volt
 						}
 						else if (resource->GetResourceType() == ResourceType::Buffer)
 						{
-							usage.accessInfo.bufferBarrier().srcStage = previousUsageInfo.accessInfo.bufferBarrier().dstStage;
-							usage.accessInfo.bufferBarrier().srcAccess = previousUsageInfo.accessInfo.bufferBarrier().dstAccess;
+							const auto prevStage = previousUsageInfo.accessInfo.bufferBarrier().dstStage;
+							const auto prevAccess = previousUsageInfo.accessInfo.bufferBarrier().dstAccess;
+
+							usage.accessInfo.bufferBarrier().srcStage = prevStage;
+							usage.accessInfo.bufferBarrier().srcAccess = prevAccess;
 						}
 					}
 					else
@@ -390,8 +399,11 @@ namespace Volt
 					}
 					else if (resource->GetResourceType() == ResourceType::Buffer)
 					{
-						usage.accessInfo.bufferBarrier().srcStage = previousUsageInfo.accessInfo.bufferBarrier().dstStage;
-						usage.accessInfo.bufferBarrier().srcAccess = previousUsageInfo.accessInfo.bufferBarrier().dstAccess;
+						RHI::BarrierStage dstStage = previousUsageInfo.accessInfo.bufferBarrier().dstStage;
+						RHI::BarrierAccess dstAccess = previousUsageInfo.accessInfo.bufferBarrier().dstAccess;
+
+						usage.accessInfo.bufferBarrier().srcStage = dstStage;
+						usage.accessInfo.bufferBarrier().srcAccess = dstAccess;
 					}
 
 					// Setup new usage
@@ -1077,6 +1089,66 @@ namespace Volt
 		m_standaloneMarkers.emplace_back();
 
 		m_temporaryAllocations.emplace_back(tempData);
+	}
+
+	void RenderGraph::AddStagedBufferUpload(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size, std::string_view name)
+	{
+		struct Empty
+		{
+		};
+
+		uint8_t* tempData = new uint8_t[size];
+		memcpy_s(tempData, size, data, size);
+
+		Ref<RenderGraphPassNode<Empty>> newNode = CreateRef<RenderGraphPassNode<Empty>>();
+		newNode->name = name;
+		newNode->index = m_passIndex++;
+
+		Builder tempBuilder{ *this, newNode };
+		tempBuilder.WriteResource(bufferHandle, RenderGraphResourceState::TransferDestination);
+
+		RenderGraphBufferDesc stagingDesc{};
+		stagingDesc.memoryUsage = RHI::MemoryUsage::CPUToGPU;
+		stagingDesc.name = "Staging Buffer";
+		stagingDesc.size = size;
+		stagingDesc.usage = RHI::BufferUsage::TransferSrc;
+
+		RenderGraphResourceHandle stagingBuffer = tempBuilder.CreateBuffer(stagingDesc);
+
+		newNode->executeFunction = [tempData, size, bufferHandle, stagingBuffer](const Empty&, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			context.MappedBufferUpload(stagingBuffer, tempData, size);
+			context.CopyBuffer(stagingBuffer, bufferHandle, size);
+		};
+
+		m_passNodes.push_back(newNode);
+		m_resourceBarriers.emplace_back();
+		m_standaloneMarkers.emplace_back();
+
+		m_temporaryAllocations.emplace_back(tempData);
+	}
+
+	void RenderGraph::AddClearBufferPass(RenderGraphResourceHandle bufferHandle, const uint32_t clearValue, std::string_view name)
+	{
+		struct Empty
+		{
+		};
+
+		Ref<RenderGraphPassNode<Empty>> newNode = CreateRef<RenderGraphPassNode<Empty>>();
+		newNode->name = name;
+		newNode->index = m_passIndex++;
+
+		Builder tempBuilder{ *this, newNode };
+		tempBuilder.WriteResource(bufferHandle, RenderGraphResourceState::TransferDestination);
+
+		newNode->executeFunction = [bufferHandle, clearValue](const Empty&, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			context.ClearBuffer(bufferHandle, clearValue);
+		};
+
+		m_passNodes.push_back(newNode);
+		m_resourceBarriers.emplace_back();
+		m_standaloneMarkers.emplace_back();
 	}
 
 	void RenderGraph::AddResourceBarrier(RenderGraphResourceHandle resourceHandle, const RenderGraphBarrierInfo& barrierInfo)

@@ -1,6 +1,7 @@
 #pragma once
 
-#include <unordered_map>
+#include <CoreUtilities/Containers/Map.h>
+
 #include <typeindex>
 #include <any>
 
@@ -16,8 +17,8 @@ namespace Volt
 
 			auto typeIndex = std::type_index{ typeid(T) };
 
-			myBlackboard[typeIndex] = T{};
-			return std::any_cast<T&>(myBlackboard.at(typeIndex));
+			m_blackboard[typeIndex] = T{};
+			return std::any_cast<T&>(m_blackboard.at(typeIndex));
 		}
 
 		template<typename T>
@@ -25,8 +26,8 @@ namespace Volt
 		{
 			auto typeIndex = std::type_index{ typeid(T) };
 
-			VT_CORE_ASSERT(myBlackboard.contains(typeIndex), "Blackboard does not contain type!");
-			return std::any_cast<T&>(myBlackboard.at(typeIndex));
+			VT_CORE_ASSERT(m_blackboard.contains(typeIndex), "Blackboard does not contain type!");
+			return std::any_cast<T&>(m_blackboard.at(typeIndex));
 		}
 
 		template<typename T>
@@ -34,19 +35,19 @@ namespace Volt
 		{
 			auto typeIndex = std::type_index{ typeid(T) };
 
-			VT_CORE_ASSERT(myBlackboard.contains(typeIndex), "Blackboard does not contain type!");
-			return std::any_cast<const T&>(myBlackboard.at(typeIndex));
+			VT_CORE_ASSERT(m_blackboard.contains(typeIndex), "Blackboard does not contain type!");
+			return std::any_cast<const T&>(m_blackboard.at(typeIndex));
 		}
 
 		template<typename T>
 		inline const bool Contains() const
 		{
 			auto typeIndex = std::type_index{ typeid(T) };
-			return myBlackboard.contains(typeIndex);
+			return m_blackboard.contains(typeIndex);
 		}
 
 	private:
-		uint32_t myCurrentDataOffset = 0;
-		std::unordered_map<std::type_index, std::any> myBlackboard;
+		uint32_t m_currentDataOffset = 0;
+		std::unordered_map<std::type_index, std::any> m_blackboard;
 	};
 }

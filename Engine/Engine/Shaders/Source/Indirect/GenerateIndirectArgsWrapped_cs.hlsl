@@ -3,8 +3,8 @@
 
 struct Constants
 {
-    RWTypedBuffer<uint> indirectArgs;
-    TypedBuffer <uint> countBuffer;
+    RWUniformTypedBuffer<uint> indirectArgs;
+    UniformTypedBuffer <uint> countBuffer;
   
     uint groupSize;
 };

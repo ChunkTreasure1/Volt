@@ -170,7 +170,10 @@ inline size_t BinaryStreamWriter::Write(const std::vector<F>& data)
 
 	if constexpr (std::is_trivial_v<F>)
 	{
-		WriteData(data.data(), data.size() * sizeof(F));
+		if (data.size() > 0)
+		{
+			WriteData(data.data(), data.size() * sizeof(F));
+		}
 	}
 	else
 	{
@@ -224,8 +227,8 @@ template<typename Key, typename Value>
 inline size_t BinaryStreamWriter::Write(const std::map<Key, Value>& data)
 {
 	TypeHeader header{};
-	header.baseTypeSize = sizeof(std::map<Key, Value>&data);
-	header.totalTypeSize = data.size();
+	header.baseTypeSize = sizeof(std::map<Key, Value>);
+	header.totalTypeSize = static_cast<uint32_t>(data.size());
 
 	WriteTypeHeader(header);
 
@@ -257,8 +260,8 @@ template<typename Key, typename Value>
 inline size_t BinaryStreamWriter::Write(const std::unordered_map<Key, Value>& data)
 {
 	TypeHeader header{};
-	header.baseTypeSize = sizeof(std::unordered_map<Key, Value>&data);
-	header.totalTypeSize = data.size();
+	header.baseTypeSize = sizeof(std::unordered_map<Key, Value>);
+	header.totalTypeSize = static_cast<uint32_t>(data.size());
 
 	WriteData(&header, sizeof(header));
 
@@ -268,6 +271,10 @@ inline size_t BinaryStreamWriter::Write(const std::unordered_map<Key, Value>& da
 		{
 			WriteData(&key, sizeof(Key));
 		}
+		else if constexpr (std::is_same<Key, std::string>::value)
+		{
+			Write(key);
+		}
 		else
 		{
 			Key::Serialize(*this, key);
@@ -276,6 +283,10 @@ inline size_t BinaryStreamWriter::Write(const std::unordered_map<Key, Value>& da
 		if constexpr (std::is_trivial_v<Value>)
 		{
 			WriteData(&value, sizeof(Value));
+		}
+		else if constexpr (std::is_same<Value, std::string>::value)
+		{
+			Write(value);
 		}
 		else
 		{

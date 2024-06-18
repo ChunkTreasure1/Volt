@@ -24,6 +24,6 @@ namespace Volt
 
 		const float myResetTime;
 
-		std::chrono::high_resolution_clock::time_point myTimeAtLastAccum;
+		std::chrono::steady_clock::time_point myTimeAtLastAccum;
 	};
 }

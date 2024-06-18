@@ -41,6 +41,7 @@
 #include "Sandbox/Window/MosaicEditor/MosaicEditorPanel.h"
 #include "Sandbox/Window/SkeletonEditorPanel.h"
 #include "Sandbox/Window/AnimationEditorPanel.h"
+#include "Sandbox/Window/GameUIEditorPanel.h"
 #include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
@@ -128,9 +129,7 @@ void Sandbox::OnAttach()
 	EditorLibrary::Register<CurveGraphPanel>("Advanced");
 #endif
 
-	m_navigationPanel = EditorLibrary::Register<NavigationPanel>("Advanced", m_runtimeScene);
 	EditorLibrary::Register<PropertiesPanel>("Level Editor", m_runtimeScene, m_sceneRenderer, m_sceneState, "");
-	m_viewportPanel = EditorLibrary::Register<ViewportPanel>("Level Editor", m_sceneRenderer, m_runtimeScene, m_editorCameraController.get(), m_sceneState);
 	EditorLibrary::Register<LogPanel>("Advanced");
 	EditorLibrary::Register<SceneViewPanel>("Level Editor", m_runtimeScene, "");
 	EditorLibrary::Register<AssetRegistryPanel>("Advanced");
@@ -146,20 +145,14 @@ void Sandbox::OnAttach()
 	EditorLibrary::Register<NetContractPanel>("Advanced");
 	EditorLibrary::Register<SceneSettingsPanel>("", m_runtimeScene);
 	EditorLibrary::Register<WorldEnginePanel>("", m_runtimeScene);
+	EditorLibrary::Register<GameUIEditorPanel>("UI");
 
-	EditorLibrary::RegisterWithType<MosaicEditorPanel>("", Volt::AssetType::Material);
-
-	if (userSettings.sceneSettings.lowMemoryUsage)
-	{
-		m_gameViewPanel = EditorLibrary::Register<GameViewPanel>("Level Editor", m_sceneRenderer, m_runtimeScene, m_sceneState);
-	}
-	else
-	{
-		m_gameViewPanel = EditorLibrary::Register<GameViewPanel>("Level Editor", m_gameSceneRenderer, m_runtimeScene, m_sceneState);
-	}
-
+	m_navigationPanel = EditorLibrary::Register<NavigationPanel>("Advanced", m_runtimeScene);
+	m_viewportPanel = EditorLibrary::Register<ViewportPanel>("Level Editor", m_sceneRenderer, m_runtimeScene, m_editorCameraController.get(), m_sceneState);
+	m_gameViewPanel = EditorLibrary::Register<GameViewPanel>("Level Editor", m_gameSceneRenderer, m_runtimeScene, m_sceneState);
 	m_assetBrowserPanel = EditorLibrary::Register<AssetBrowserPanel>("", m_runtimeScene, "##Main");
 
+	EditorLibrary::RegisterWithType<MosaicEditorPanel>("", Volt::AssetType::Material);
 	EditorLibrary::RegisterWithType<CharacterEditorPanel>("Animation", Volt::AssetType::AnimatedCharacter);
 	//EditorLibrary::RegisterWithType<MaterialEditorPanel>("", , myRuntimeScene);
 	EditorLibrary::RegisterWithType<SkeletonEditorPanel>("Animation", Volt::AssetType::Skeleton);
@@ -207,7 +200,7 @@ void Sandbox::OnAttach()
 		OpenScene(userSettings.sceneSettings.lastOpenScene);
 	}
 
-	if(!m_runtimeScene)
+	if (!m_runtimeScene)
 	{
 		NewScene();
 	}
@@ -264,8 +257,6 @@ void Sandbox::SetupNewSceneData()
 
 	// Scene Renderers
 	{
-		const auto& lowMemory = UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage;
-
 		Volt::SceneRendererSpecification spec{};
 		Volt::SceneRendererSpecification gameSpec{};
 
@@ -308,11 +299,7 @@ void Sandbox::SetupNewSceneData()
 		//}
 
 		m_sceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
-
-		if (!lowMemory)
-		{
-			m_gameSceneRenderer = CreateRef<Volt::SceneRenderer>(gameSpec);
-		}
+		m_gameSceneRenderer = CreateRef<Volt::SceneRenderer>(gameSpec);
 	}
 
 	Volt::SceneManager::SetActiveScene(m_runtimeScene);
@@ -392,14 +379,12 @@ void Sandbox::OnEvent(Volt::Event& e)
 	{
 		if (m_sceneState == SceneState::Play)
 		{
-			const auto& lowMemory = UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage;
-
 			auto sceneRenderer = m_sceneRenderer;
 
-			if (!lowMemory)
-			{
-				sceneRenderer = m_gameSceneRenderer;
-			}
+			//if (!lowMemory)
+			//{
+			//	sceneRenderer = m_gameSceneRenderer;
+			//}
 			//sceneRenderer->GetSettings().renderScale = e.GetRenderScale();
 			//sceneRenderer->ApplySettings();
 		}
@@ -411,14 +396,12 @@ void Sandbox::OnEvent(Volt::Event& e)
 	{
 		if (m_sceneState == SceneState::Play)
 		{
-			const auto& lowMemory = UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage;
-
 			auto sceneRenderer = m_sceneRenderer;
 
-			if (!lowMemory)
-			{
-				sceneRenderer = m_gameSceneRenderer;
-			}
+			//if (!lowMemory)
+			//{
+			//	sceneRenderer = m_gameSceneRenderer;
+			//}
 
 			//sceneRenderer->UpdateSettings(e.GetSettings());
 			//sceneRenderer->ApplySettings();
@@ -491,7 +474,7 @@ void Sandbox::OnScenePlay()
 	{
 		m_shouldMovePlayer = false;
 
-		m_runtimeScene->ForEachWithComponents<const Volt::MonoScriptComponent>([&](const entt::entity id, const Volt::MonoScriptComponent& scriptComp) 
+		m_runtimeScene->ForEachWithComponents<const Volt::MonoScriptComponent>([&](const entt::entity id, const Volt::MonoScriptComponent& scriptComp)
 		{
 			for (const auto& name : scriptComp.scriptNames)
 			{
@@ -607,7 +590,7 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 		{
 			m_runtimeScene->ShutdownEngineScripts();
 		}
-			
+
 		const auto newScene = Volt::AssetManager::GetAsset<Volt::Scene>(path);
 		if (!newScene)
 		{
@@ -938,31 +921,14 @@ bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)
 	RenderSelection(m_editorCameraController->GetCamera());
 	RenderGizmos(m_runtimeScene, m_editorCameraController->GetCamera());
 
-	if (UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage)
+	switch (m_sceneState)
 	{
-		switch (m_sceneState)
-		{
-			case SceneState::Play:
-				//mySceneRenderer->OnRenderRuntime();
-				break;
-			case SceneState::Edit:
-			case SceneState::Pause:
-			case SceneState::Simulating:
-				m_sceneRenderer->OnRenderEditor(m_editorCameraController->GetCamera());
-				break;
-		}
-	}
-	else
-	{
-		switch (m_sceneState)
-		{
-			case SceneState::Edit:
-			case SceneState::Play:
-			case SceneState::Pause:
-			case SceneState::Simulating:
-				m_sceneRenderer->OnRenderEditor(m_editorCameraController->GetCamera());
-				break;
-		}
+		case SceneState::Edit:
+		case SceneState::Play:
+		case SceneState::Pause:
+		case SceneState::Simulating:
+			m_sceneRenderer->OnRenderEditor(m_editorCameraController->GetCamera());
+			break;
 	}
 
 	if (m_shouldLoadNewScene)

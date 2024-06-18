@@ -21,6 +21,8 @@
 
 namespace Volt::RHI
 {
+	static const std::vector<VkValidationFeatureEnableEXT> s_enabledValidationFeatures = { /*VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT, /*VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT*/};
+
 	namespace Utility
 	{
 		inline static VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger)
@@ -97,14 +99,12 @@ namespace Volt::RHI
 
 		inline static void PopulateValidationFeaturesInfo(VkValidationFeaturesEXT& outInfo, VkDebugUtilsMessengerCreateInfoEXT& debugInfo)
 		{
-			const std::vector<VkValidationFeatureEnableEXT> enabledValidationFeatures = { /*VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT, VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT */ };
-
 			outInfo.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
 			outInfo.pNext = &debugInfo;
 			outInfo.disabledValidationFeatureCount = 0;
 			outInfo.pDisabledValidationFeatures = nullptr;
-			outInfo.enabledValidationFeatureCount = static_cast<uint32_t>(enabledValidationFeatures.size());
-			outInfo.pEnabledValidationFeatures = enabledValidationFeatures.data();
+			outInfo.enabledValidationFeatureCount = static_cast<uint32_t>(s_enabledValidationFeatures.size());
+			outInfo.pEnabledValidationFeatures = s_enabledValidationFeatures.data();
 		}
 	}
 

@@ -6,13 +6,13 @@ namespace Volt
 	MultiTimer::MultiTimer(float resetTimeMilli)
 		: myResetTime(resetTimeMilli)
 	{
-		myTimeAtLastAccum = std::chrono::high_resolution_clock::now();
+		myTimeAtLastAccum = std::chrono::steady_clock::now();
 	}
 
 	void MultiTimer::Accumulate()
 	{
 		const float timeSinceLastAccum = GetTime();
-		myTimeAtLastAccum = std::chrono::high_resolution_clock::now();
+		myTimeAtLastAccum = std::chrono::steady_clock::now();
 		myAccumulation += timeSinceLastAccum;
 		myAccumulationCount++;
 		
@@ -31,6 +31,6 @@ namespace Volt
 
 	const float MultiTimer::GetTime() const
 	{
-		return std::chrono::duration<float, std::chrono::milliseconds::period>(std::chrono::high_resolution_clock::now() - myTimeAtLastAccum).count();
+		return std::chrono::duration<float, std::chrono::milliseconds::period>(std::chrono::steady_clock::now() - myTimeAtLastAccum).count();
 	}
 }

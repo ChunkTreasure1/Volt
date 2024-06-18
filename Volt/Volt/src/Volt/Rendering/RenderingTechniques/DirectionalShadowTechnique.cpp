@@ -33,7 +33,6 @@ namespace Volt
 		const CullPrimitivesData cullPrimitivesData = culling.Execute(shadowCamera, renderScene, CullingMode::None, glm::vec2{ 1024, 1024 }, DirectionalLightData::CASCADE_COUNT);
 
 		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
-		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();
 
 		DirectionalShadowData& dirShadowData = m_renderGraph.AddPass<DirectionalShadowData>("Directional Shadow",
 		[&](RenderGraph::Builder& builder, DirectionalShadowData& data)
@@ -53,7 +52,7 @@ namespace Volt
 
 			builder.ReadResource(uniformBuffers.viewDataBuffer);
 			builder.ReadResource(uniformBuffers.directionalLightBuffer);
-			builder.ReadResource(externalBuffers.gpuSceneBuffer);
+			builder.ReadResource(uniformBuffers.gpuScene);
 			builder.ReadResource(cullPrimitivesData.indexBuffer, RenderGraphResourceState::IndexBuffer);
 			builder.ReadResource(cullPrimitivesData.drawCommand, RenderGraphResourceState::IndirectArgument);
 
@@ -76,7 +75,7 @@ namespace Volt
 			context.BeginRendering(info);
 			context.BindPipeline(pipeline);
 
-			const auto gpuSceneHandle = resources.GetBuffer(externalBuffers.gpuSceneBuffer);
+			const auto gpuSceneHandle = resources.GetUniformBuffer(uniformBuffers.gpuScene);
 			const auto viewDataHandle = resources.GetUniformBuffer(uniformBuffers.viewDataBuffer);
 
 			context.BindIndexBuffer(cullPrimitivesData.indexBuffer);

@@ -46,8 +46,6 @@ struct SceneSettings
 	bool showEnvironmentProbes = false;
 	NavMeshViewMode navMeshViewMode = NavMeshViewMode::None;
 
-	bool lowMemoryUsage = false;
-
 	std::filesystem::path lastOpenScene;
 };
 

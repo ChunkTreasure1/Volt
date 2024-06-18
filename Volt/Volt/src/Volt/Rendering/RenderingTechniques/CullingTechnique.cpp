@@ -34,6 +34,13 @@ namespace Volt
 	{
 		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();
 
+		RenderGraphResourceHandle meshletCountBuffer = 0;
+		{
+			const auto desc = RGUtils::CreateBufferDesc<uint32_t>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Meshlet Count");
+			meshletCountBuffer = m_renderGraph.CreateBuffer(desc);
+			m_renderGraph.AddClearBufferPass(meshletCountBuffer, 0, "Clear Meshlet Count");
+		}
+
 		CullObjectsData& data = m_renderGraph.AddPass<CullObjectsData>("Cull Objects",
 		[&](RenderGraph::Builder& builder, CullObjectsData& data)
 		{
@@ -42,11 +49,9 @@ namespace Volt
 				data.meshletToObjectIdAndOffset = builder.CreateBuffer(desc);
 			}
 
-			{
-				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Meshlet Count");
-				data.meshletCount = builder.CreateBuffer(desc);
-			}
+			data.meshletCount = meshletCountBuffer;
 
+			builder.WriteResource(data.meshletCount);
 			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
 			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
 			builder.SetIsComputePass();
@@ -55,8 +60,6 @@ namespace Volt
 		{
 			const uint32_t commandCount = renderScene->GetRenderObjectCount();
 			const uint32_t dispatchCount = Math::DivideRoundUp(commandCount, 256u);
-
-			context.ClearBuffer(data.meshletCount, 0);
 
 			auto pipeline = ShaderMap::GetComputePipeline("CullObjects");
 
@@ -100,6 +103,13 @@ namespace Volt
 
 		RenderGraphResourceHandle argsBufferHandle = RenderingUtils::GenerateIndirectArgs(m_renderGraph, cullObjectsData.meshletCount, 256, "Cull Meshlets Indirect Args");
 
+		RenderGraphResourceHandle survivingMeshletCountBuffer = 0;
+		{
+			const auto desc = RGUtils::CreateBufferDesc<uint32_t>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Surviving Meshlets Count");
+			survivingMeshletCountBuffer = m_renderGraph.CreateBuffer(desc);
+			m_renderGraph.AddClearBufferPass(survivingMeshletCountBuffer, 0, "Clear Surviving Meshlet Count");
+		}
+
 		CullMeshletsData& cullMeshletsData = m_renderGraph.AddPass<CullMeshletsData>("Cull Meshlets",
 		[&](RenderGraph::Builder& builder, CullMeshletsData& data)
 		{
@@ -113,6 +123,9 @@ namespace Volt
 				data.survivingMeshletCount = builder.CreateBuffer(desc);
 			}
 
+			data.survivingMeshletCount = survivingMeshletCountBuffer;
+
+			builder.WriteResource(survivingMeshletCountBuffer);
 			builder.ReadResource(cullObjectsData.meshletCount);
 			builder.ReadResource(cullObjectsData.meshletToObjectIdAndOffset);
 			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
@@ -123,8 +136,6 @@ namespace Volt
 		},
 		[=](const CullMeshletsData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			context.ClearBuffer(data.survivingMeshletCount, 0);
-
 			auto pipeline = ShaderMap::GetComputePipeline("CullMeshlets");
 
 			context.BindPipeline(pipeline);
@@ -168,6 +179,22 @@ namespace Volt
 
 		RenderGraphResourceHandle argsBufferHandle = RenderingUtils::GenerateIndirectArgsWrapped(m_renderGraph, cullMeshletsData.survivingMeshletCount, 1, "Cull Primitives Indirect Args");
 
+		RenderGraphResourceHandle drawCommandBuffer = 0;
+
+		{
+			const auto desc = RGUtils::CreateBufferDesc<RHI::IndirectIndexedCommand>(1, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, "Meshlet Draw Command");
+			drawCommandBuffer = m_renderGraph.CreateBuffer(desc);
+		
+			RHI::IndirectIndexedCommand command{};
+			command.indexCount = 0;
+			command.firstInstance = 0;
+			command.firstIndex = 0;
+			command.vertexOffset = 0;
+			command.instanceCount = instanceCount;
+
+			m_renderGraph.AddStagedBufferUpload(drawCommandBuffer, &command, sizeof(RHI::IndirectIndexedCommand), "Upload indirect command");
+		}
+
 		CullPrimitivesData& primitivesData = m_renderGraph.AddPass<CullPrimitivesData>("Cull Primitives",
 		[&](RenderGraph::Builder& builder, CullPrimitivesData& data)
 		{
@@ -176,11 +203,9 @@ namespace Volt
 				data.indexBuffer = builder.CreateBuffer(desc);
 			}
 
-			{
-				const auto desc = RGUtils::CreateBufferDesc<RHI::IndirectIndexedCommand>(1, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, "Meshlet Draw Command");
-				data.drawCommand = builder.CreateBuffer(desc);
-			}
+			data.drawCommand = drawCommandBuffer;
 
+			builder.WriteResource(data.drawCommand);
 			builder.ReadResource(cullMeshletsData.survivingMeshlets);
 			builder.ReadResource(cullMeshletsData.survivingMeshletCount);
 			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
@@ -192,18 +217,6 @@ namespace Volt
 		},
 		[=](const CullPrimitivesData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			{
-				RHI::IndirectIndexedCommand command{};
-				command.indexCount = 0;
-				command.firstInstance = 0;
-				command.firstIndex = 0;
-				command.vertexOffset = 0;
-				command.instanceCount = instanceCount;
-				context.UploadBufferData(data.drawCommand, &command, sizeof(RHI::IndirectIndexedCommand));
-			}
-
-			context.ClearBuffer(data.indexBuffer, 0);
-
 			auto pipeline = ShaderMap::GetComputePipeline("CullPrimitives");
 
 			context.BindPipeline(pipeline);

@@ -54,7 +54,6 @@ void UserSettingsManager::LoadUserSettings()
 	s_editorSettings.sceneSettings.colliderViewMode = (ColliderViewMode)streamReader.ReadAtKey("colliderViewMode", 0u);
 	s_editorSettings.sceneSettings.showEnvironmentProbes = streamReader.ReadAtKey("showEnvironmentProbes", false);
 	s_editorSettings.sceneSettings.navMeshViewMode = (NavMeshViewMode)streamReader.ReadAtKey("navMeshViewMode", 0u);
-	s_editorSettings.sceneSettings.lowMemoryUsage = streamReader.ReadAtKey("lowMemoryUsage", false);
 
 	s_editorSettings.sceneSettings.lastOpenScene = streamReader.ReadAtKey("lastOpenScene", std::string());
 	streamReader.ExitScope();
@@ -147,7 +146,6 @@ void UserSettingsManager::SaveUserSettings()
 			streamWriter.SetKey("colliderViewMode", (uint32_t)s_editorSettings.sceneSettings.colliderViewMode);
 			streamWriter.SetKey("showEnvironmentProbes", s_editorSettings.sceneSettings.showEnvironmentProbes);
 			streamWriter.SetKey("navMeshViewMode", (uint32_t)s_editorSettings.sceneSettings.navMeshViewMode);
-			streamWriter.SetKey("lowMemoryUsage", s_editorSettings.sceneSettings.lowMemoryUsage);
 		}
 		streamWriter.EndMap();
 	
