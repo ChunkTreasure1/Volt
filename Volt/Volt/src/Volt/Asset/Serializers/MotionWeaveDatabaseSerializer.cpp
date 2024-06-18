@@ -16,16 +16,18 @@ namespace Volt
 	struct MotionWeaveDatabaseSerializationData
 	{
 		std::vector<SerializedAnimation> animations;
-		AssetHandle skeleton;
+		AssetHandle skeleton = Asset::Null();
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const MotionWeaveDatabaseSerializationData& data)
 		{
 			streamWriter.WriteRaw(data.animations);
+			streamWriter.Write(data.skeleton);
 		}
 
 		static void Deserialize(BinaryStreamReader& streamReader, MotionWeaveDatabaseSerializationData& outData)
 		{
 			streamReader.ReadRaw(outData.animations);
+			streamReader.Read(outData.skeleton);
 		}
 	};
 
