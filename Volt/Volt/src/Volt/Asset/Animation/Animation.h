@@ -67,8 +67,13 @@ namespace Volt
 			}
 		};
 
-		const std::vector<glm::mat4> Sample(float aStartTime, Ref<Skeleton> aSkeleton, bool looping);
+		const std::vector<glm::mat4> SampleStartTime(float aStartTime, Ref<Skeleton> aSkeleton, bool looping);
+		const std::vector<glm::mat4> Sample(float samplePercent, Ref<Skeleton> skeleton, bool looping);
 		const std::vector<glm::mat4> Sample(uint32_t frameIndex, Ref<Skeleton> aSkeleton);
+
+		static std::vector<glm::mat4> LocalPoseToGlobalMatrices(const Pose& localPose, Ref<Skeleton> aSkeleton);
+		static void BlendPoseWith(Pose& target, const Pose& poseToBlendWith, float blendFactor);
+		static Pose GetBlendedPose(const Pose& target, const Pose& poseToBlendWith, float blendFactor);
 
 		const std::vector<TRS> SampleTRS(float aStartTime, Ref<Skeleton> aSkeleton, bool looping, float speed = 1.f) const;
 		const bool IsAtEnd(float startTime, float speed);

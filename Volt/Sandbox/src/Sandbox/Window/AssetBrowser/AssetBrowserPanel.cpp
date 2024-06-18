@@ -23,6 +23,7 @@
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
+#include <Volt/Asset/Animation/MotionWeaveDatabase.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
 #include <Volt/Asset/ParticlePreset.h>
 
@@ -909,6 +910,11 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 				{
 					CreateNewAssetInCurrentDirectory(Volt::AssetType::BlendSpace);
 				}
+
+				if (ImGui::MenuItem("Motion Weave Database"))
+				{
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::MotionWeave);
+				}
 				ImGui::EndMenu();
 			}
 
@@ -1288,6 +1294,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		case Volt::AssetType::MonoScript: originalName = "idk.cs"; break;
 		case Volt::AssetType::PostProcessingStack: originalName = "PPS_NewPostStack"; break;
 		case Volt::AssetType::PostProcessingMaterial: originalName = "PPM_NewPostMaterial"; break;
+		case Volt::AssetType::MotionWeave: originalName = "MW_NewMotionWeaveDatabase"; break;
 	}
 
 	tempName = originalName;
@@ -1372,6 +1379,15 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		case Volt::AssetType::MonoScript:
 		{
 			UI::OpenModal("New MonoScript##assetBrowser");
+			break;
+		}
+
+		case Volt::AssetType::MotionWeave:
+		{
+			Ref<Volt::MotionWeaveDatabase> motionWeaveGraph = Volt::AssetManager::CreateAsset<Volt::MotionWeaveDatabase>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName);
+			Volt::AssetManager::SaveAsset(motionWeaveGraph);
+
+			newAssetHandle = motionWeaveGraph->handle;
 			break;
 		}
 	}

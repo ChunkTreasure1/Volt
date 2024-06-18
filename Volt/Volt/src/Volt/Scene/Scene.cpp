@@ -41,6 +41,8 @@
 #include "Volt/Vision/Vision.h"
 #include "Volt/Utility/Random.h"
 
+#include "Volt/Animation/MotionWeaver.h"
+
 #include "Volt/Discord/DiscordSDK.h"
 
 #include <GraphKey/TimerManager.h>
@@ -221,6 +223,11 @@ namespace Volt
 				MonoScriptEngine::OnCreateInstance(scriptComp.scriptIds[i], idComponent.id, scriptComp.scriptNames[i]);
 			}
 		});
+
+		ForEachWithComponents<MotionWeaveComponent, const MeshComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave, const MeshComponent& mesh)
+		{
+			motionWeave.MotionWeaver = MotionWeaver::Create(motionWeave.motionWeaveDatabase);
+		});
 	}
 
 	void Scene::OnRuntimeEnd()
@@ -234,6 +241,11 @@ namespace Volt
 			{
 				MonoScriptEngine::OnDestroyInstance(instId);
 			}
+		});
+
+		ForEachWithComponents<MotionWeaveComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave)
+		{
+			motionWeave.MotionWeaver = nullptr;
 		});
 
 		MonoScriptEngine::OnRuntimeEnd();
@@ -306,6 +318,11 @@ namespace Volt
 				cameraComp.camera->SetPosition(entity.GetPosition());
 				cameraComp.camera->SetRotation(glm::eulerAngles(entity.GetRotation()));
 			}
+		});
+
+		ForEachWithComponents<MotionWeaveComponent, const MeshComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave, const MeshComponent& mesh)
+		{
+			motionWeave.MotionWeaver->Update(aDeltaTime);
 		});
 
 		m_particleSystem.Update(m_registry, shared_from_this(), aDeltaTime);

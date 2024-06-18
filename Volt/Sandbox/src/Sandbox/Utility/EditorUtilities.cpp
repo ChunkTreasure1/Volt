@@ -487,7 +487,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 							Volt::AssetManager::SaveAssetAs(materialAsset, aImportData.destination.parent_path() / (materialAsset->assetName + "_mat.vtasset"));
 						}
 					}
-					
+
 					Volt::AssetManager::SaveAssetAs(importMesh->GetUnderlyingMesh(), aImportData.destination);
 					if (!succeded)
 					{
@@ -516,12 +516,10 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 				}
 				else
 				{
-					const std::filesystem::path filePath = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + ".vtsk");
+					const std::filesystem::path filePath = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + "_sk.vtasset");
 
-					//	Volt::AssetManager::Get().SaveAssetAs(skeleton, filePath);
-					//	Volt::AssetManager::Get().AddDependency(skeleton->handle, aMeshToImport);
-					//	succeded = true;
-					//}
+					Volt::AssetManager::Get().SaveAssetAs(skeleton, filePath);
+					succeded = true;
 				}
 
 				if (aImportData.importAnimation)
@@ -555,7 +553,28 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 
 				ImGui::CloseCurrentPopup();
 			}
-
+			else if (aImportData.importAnimation)
+			{
+				Ref<Volt::Skeleton> targetSkeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(aImportData.targetSkeleton);
+				if (!targetSkeleton || !targetSkeleton->IsValid())
+				{
+					UI::Notify(NotificationType::Error, "Failed to import animation!", std::format("Skeleton with handle {0} is invalid!", static_cast<uint64_t>(aImportData.targetSkeleton)));
+				}
+				else
+				{
+					Ref<Volt::Animation> animation = CreateRef<Volt::Animation>();
+					if (!Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / aMeshToImport, targetSkeleton, *animation))
+					{
+						UI::Notify(NotificationType::Error, "Failed to import animation!", std::format("Failed to import animaition from {}!", aMeshToImport.string()));
+					}
+					else
+					{
+						const std::filesystem::path filePath = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + ".vtasset");
+						Volt::AssetManager::Get().SaveAssetAs(animation, filePath);
+						succeded = true;
+					}
+				}
+			}
 			ImGui::CloseCurrentPopup();
 		}
 

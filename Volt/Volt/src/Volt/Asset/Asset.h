@@ -157,6 +157,8 @@ namespace Volt
 		{ "Blend Space", AssetType::BlendSpace },
 
 		{ "Net Contract", AssetType::NetContract },
+
+		{ "Motion Weave Database", AssetType::MotionWeave },
 	};
 
 	inline static const std::unordered_map<std::string, AssetType>& GetAssetNames()
