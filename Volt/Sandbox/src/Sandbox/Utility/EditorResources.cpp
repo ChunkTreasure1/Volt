@@ -28,6 +28,7 @@ void EditorResources::Initialize()
 		myAssetIcons[Volt::AssetType::MonoScript] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_monoscript.dds");
 		myAssetIcons[Volt::AssetType::BehaviorGraph] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_behaviorTree.dds");
 		myAssetIcons[Volt::AssetType::AnimationGraph] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_animationGraph.dds");
+		myAssetIcons[Volt::AssetType::MotionWeave] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_motionWeaveDatabase.dds");
 	}
 
 	// Editor Icons

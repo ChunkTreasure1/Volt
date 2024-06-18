@@ -28,6 +28,7 @@
 #include "Volt/Asset/Serializers/SourceTextureSerializer.h"
 #include "Volt/Asset/Serializers/TextureSerializer.h"
 #include "Volt/Asset/Serializers/VideoSerializer.h"
+#include "Volt/Asset/Serializers/MotionWeaveDatabaseSerializer.h"
 
 #include "Volt/Asset/AssetFactory.h"
 
@@ -158,6 +159,7 @@ namespace Volt
 		m_assetSerializers.emplace(AssetType::BehaviorGraph, CreateScope<BehaviourTreeSerializer>());
 		m_assetSerializers.emplace(AssetType::BlendSpace, CreateScope<BlendSpaceSerializer>());
 		m_assetSerializers.emplace(AssetType::NetContract, CreateScope<NetContractSerializer>());
+		m_assetSerializers.emplace(AssetType::MotionWeave, CreateScope<MotionWeaveDatabaseSerializer>());
 	}
 
 	void AssetManager::UpdateInternal()

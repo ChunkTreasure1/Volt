@@ -6,7 +6,7 @@
 
 namespace Volt
 {
-	const std::vector<glm::mat4> Animation::Sample(float aStartTime, Ref<Skeleton> aSkeleton, bool looping)
+	const std::vector<glm::mat4> Animation::SampleStartTime(float aStartTime, Ref<Skeleton> aSkeleton, bool looping)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -72,7 +72,7 @@ namespace Volt
 				const glm::quat rotation = glm::slerp(glm::normalize(currentLocalTransform.rotation), glm::normalize(nextLocalTransform.rotation), deltaTime);
 				const glm::vec3 scale = glm::mix(currentLocalTransform.scale, nextLocalTransform.scale, deltaTime);
 
-				resultTransform = glm::translate(glm::mat4{ 1.f }, position)* glm::mat4_cast(rotation)* glm::scale(glm::mat4{ 1.f }, scale);
+				resultTransform = glm::translate(glm::mat4{ 1.f }, position) * glm::mat4_cast(rotation) * glm::scale(glm::mat4{ 1.f }, scale);
 			}
 
 			glm::mat4 resultT = parentTransform * resultTransform;
@@ -84,6 +84,85 @@ namespace Volt
 			result[i] = result[i] * invBindPoses[i];
 		}
 
+		return result;
+	}
+
+	const std::vector<glm::mat4> Animation::Sample(float samplePercent, Ref<Skeleton> skeleton, bool looping)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (!skeleton)
+		{
+			VT_CORE_ERROR("Tried to sample animation with no skeleton");
+			return {};
+		}
+		if (samplePercent < 0.f)
+		{
+			VT_CORE_ERROR("Sample percent has to be a positive value");
+			return {};
+		}
+		if (samplePercent > 1.f)
+		{
+			VT_CORE_ERROR("Sample percent has to be a value between 0 and 1");
+			return {};
+		}
+
+		const uint32_t frameCount = static_cast<uint32_t>(m_frames.size());
+
+		if (frameCount == 0)
+		{
+			VT_CORE_ERROR("Tried to sample animation with no frames");
+			return {};
+		}
+
+		const uint32_t frameIndexBeforeTime = static_cast<uint32_t>(std::floor(samplePercent * static_cast<float>(frameCount)));
+		//if we are looping, modulus the frame index to the frame count, otherwise clamp it
+		const uint32_t frameIndexAfterTime = looping ? ((frameIndexBeforeTime + 1) % (frameCount)) : std::clamp(frameIndexBeforeTime + 1, 0u, frameCount - 1);
+		const float percentageBetweenFrames = (samplePercent * frameCount) - frameIndexBeforeTime;
+
+		std::vector<glm::mat4> result;
+		result.resize(skeleton->GetJointCount(), glm::mat4(1.f));
+
+		if (result.empty())
+		{
+			VT_CORE_ERROR("Tried to sample using a skeleton with no joints. AssetHandle: {0}", skeleton->handle);
+			return {};
+		}
+
+		//B
+		const Pose& currentFrame = m_frames.at(frameIndexBeforeTime);
+		const Pose& nextFrame = m_frames.at(frameIndexAfterTime);
+
+		const Pose blendedPose = GetBlendedPose(currentFrame, nextFrame, percentageBetweenFrames);
+		//B
+
+		const std::vector<Skeleton::Joint>& joints = skeleton->GetJoints();
+		const std::vector<glm::mat4>& invBindPose = skeleton->GetInverseBindPose();
+
+		for (size_t i = 0; i < joints.size(); i++)
+		{
+			const Skeleton::Joint& joint = joints[i];
+
+			glm::mat4 parentTransform = { 1.f };
+
+			if (joint.parentIndex >= 0)
+			{
+				parentTransform = result[joint.parentIndex];
+			}
+
+			const Animation::TRS& localTransform = blendedPose.localTRS[i];
+
+			glm::mat4 resultTransform = glm::translate(glm::mat4{ 1.f }, localTransform.position) * glm::mat4_cast(localTransform.rotation) * glm::scale(glm::mat4{ 1.f }, localTransform.scale);
+
+			glm::mat4 resultT = parentTransform * resultTransform;
+			result[i] = resultT;
+		}
+
+		for (size_t i = 0; i < result.size(); i++)
+		{
+			result[i] = result[i] * invBindPose[i];
+		}
+		
 		return result;
 	}
 
@@ -123,7 +202,7 @@ namespace Volt
 			const glm::quat rotation = glm::normalize(currentLocalTransform.rotation);
 			const glm::vec3 scale = currentLocalTransform.scale;
 
-			resultTransform = glm::translate(glm::mat4{ 1.f }, position)* glm::mat4_cast(rotation)* glm::scale(glm::mat4{ 1.f }, scale);
+			resultTransform = glm::translate(glm::mat4{ 1.f }, position) * glm::mat4_cast(rotation) * glm::scale(glm::mat4{ 1.f }, scale);
 
 			glm::mat4 resultT = parentTransform * resultTransform;
 			result[i] = resultT;
@@ -134,6 +213,61 @@ namespace Volt
 			result[i] = result[i] * invBindPoses[i];
 		}
 
+		return result;
+	}
+
+	std::vector<glm::mat4> Animation::LocalPoseToGlobalMatrices(const Pose& localPose, Ref<Skeleton> aSkeleton)
+	{
+		return std::vector<glm::mat4>();
+	}
+
+	void Animation::BlendPoseWith(Pose& target, const Pose& poseToBlendWith, float blendFactor)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (target.localTRS.size() != poseToBlendWith.localTRS.size())
+		{
+			VT_CORE_ERROR("Cannot blend poses with different joint counts");
+			return;
+		}
+
+		for (size_t i = 0; i < target.localTRS.size(); i++)
+		{
+			const auto& currentLocalTransform = target.localTRS[i];
+			const auto& nextLocalTransform = poseToBlendWith.localTRS[i];
+
+			glm::vec3 position = glm::mix(currentLocalTransform.position, nextLocalTransform.position, blendFactor);
+			glm::quat rotation = glm::slerp(currentLocalTransform.rotation, nextLocalTransform.rotation, blendFactor);
+			glm::vec3 scale = glm::mix(currentLocalTransform.scale, nextLocalTransform.scale, blendFactor);
+
+			target.localTRS[i] = { position, rotation, scale };
+		}
+	}
+
+	Animation::Pose Animation::GetBlendedPose(const Pose& target, const Pose& poseToBlendWith, float blendFactor)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (target.localTRS.size() != poseToBlendWith.localTRS.size())
+		{
+			VT_CORE_ERROR("Cannot blend poses with different joint counts");
+			return target;
+		}
+
+		Pose result;
+		result.localTRS.resize(target.localTRS.size());
+		for (size_t i = 0; i < target.localTRS.size(); i++)
+		{
+			const auto& currentLocalTransform = target.localTRS[i];
+			const auto& nextLocalTransform = poseToBlendWith.localTRS[i];
+
+			glm::vec3 position = glm::mix(currentLocalTransform.position, nextLocalTransform.position, blendFactor);
+			glm::quat rotation = glm::slerp(currentLocalTransform.rotation, nextLocalTransform.rotation, blendFactor);
+			glm::vec3 scale = glm::mix(currentLocalTransform.scale, nextLocalTransform.scale, blendFactor);
+
+			result.localTRS[i] = {position, rotation, scale};
+		}
+		
 		return result;
 	}
 
@@ -156,7 +290,7 @@ namespace Volt
 
 		currentFrameIndex = std::clamp(currentFrameIndex, 0, frameCount - 1);
 
-		const float blendValue = (fmodf(normalizedTime, 1.f) * ((float)frameCount)) - (float)currentFrameIndex;		
+		const float blendValue = (fmodf(normalizedTime, 1.f) * ((float)frameCount)) - (float)currentFrameIndex;
 
 		int32_t nextFrameIndex = currentFrameIndex + 1;
 
@@ -179,7 +313,7 @@ namespace Volt
 		const Pose& nextFrame = m_frames.at(nextFrameIndex);
 
 		const auto& joints = aSkeleton->GetJoints();
-		
+
 		if (currentFrame.localTRS.size() < joints.size())
 		{
 			return result;
@@ -253,7 +387,7 @@ namespace Volt
 	{
 		const float localTime = AnimationManager::globalClock - startTime;
 		const float normalizedTime = localTime / (m_duration / speed);
-		
+
 		if (looping)
 		{
 			return fmodf(normalizedTime, 1.f);
