@@ -10,6 +10,7 @@ namespace Volt
 	{
 		std::string name;
 		std::vector<Skeleton::Joint> joints;
+		std::unordered_map<std::string, size_t> jointNameToIndex;
 		std::vector<Skeleton::JointAttachment> jointAttachments;
 		std::vector<glm::mat4> inverseBindPose;
 		std::vector<Animation::TRS> restPose;
@@ -18,6 +19,7 @@ namespace Volt
 		{
 			streamWriter.Write(data.name);
 			streamWriter.Write(data.joints);
+			streamWriter.Write(data.jointNameToIndex);
 			streamWriter.Write(data.jointAttachments);
 			streamWriter.Write(data.inverseBindPose);
 			streamWriter.WriteRaw(data.restPose);
@@ -27,6 +29,7 @@ namespace Volt
 		{
 			streamReader.Read(outData.name);
 			streamReader.Read(outData.joints);
+			streamReader.Read(outData.jointNameToIndex);
 			streamReader.Read(outData.jointAttachments);
 			streamReader.Read(outData.inverseBindPose);
 			streamReader.ReadRaw(outData.restPose);
@@ -44,6 +47,7 @@ namespace Volt
 		serializationData.jointAttachments = skeleton->m_jointAttachments;
 		serializationData.inverseBindPose = skeleton->m_inverseBindPose;
 		serializationData.restPose = skeleton->m_restPose;
+		serializationData.jointNameToIndex = skeleton->m_jointNameToIndex;
 
 		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
 		streamWriter.Write(serializationData);
@@ -85,6 +89,7 @@ namespace Volt
 		skeleton->m_jointAttachments = serializationData.jointAttachments;
 		skeleton->m_inverseBindPose = serializationData.inverseBindPose;
 		skeleton->m_restPose = serializationData.restPose;
+		skeleton->m_jointNameToIndex = serializationData.jointNameToIndex;
 
 		return true;
 	}

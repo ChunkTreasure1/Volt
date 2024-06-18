@@ -3,8 +3,6 @@
 #include "MeshTypeImporter.h"
 #include "Volt/Rendering/Vertex.h"
 
-#include <TGAFbx.h>
-
 struct ufbx_mesh;
 struct ufbx_scene;
 struct ufbx_node;
@@ -22,7 +20,6 @@ namespace Volt
 		bool ImportMeshImpl(const std::filesystem::path& path, Mesh& destMesh) override;
 		bool ImportSkeletonImpl(const std::filesystem::path& path, Skeleton& dstSkeleton) override;
 		bool ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation) override;
-		bool ImportAnimationImpl2(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation);
 
 		void ExportMeshImpl(std::vector<Ref<Mesh>> assets, const std::filesystem::path& path) override;
 		void ExportSkeletonImpl(std::vector<Ref<Skeleton>> assets, const std::filesystem::path&) override {};

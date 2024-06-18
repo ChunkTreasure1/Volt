@@ -207,9 +207,9 @@ inline void BinaryStreamReader::Read(std::map<Key, Value>& data)
 		{
 			TypeHeader keyTypeHeader{};
 			keyTypeHeader.baseTypeSize = sizeof(Key);
+			keyTypeHeader.totalTypeSize = sizeof(Value);
 
-			TypeHeader keySerializedTypeHeader = ReadTypeHeader();
-			ReadData(&key, keySerializedTypeHeader, keyTypeHeader);
+			ReadData(&key, keyTypeHeader, keyTypeHeader);
 		}
 		else
 		{
@@ -222,6 +222,7 @@ inline void BinaryStreamReader::Read(std::map<Key, Value>& data)
 		{
 			TypeHeader valueTypeHeader{};
 			valueTypeHeader.baseTypeSize = sizeof(Value);
+			valueTypeHeader.totalTypeSize = sizeof(Value);
 
 			TypeHeader valueSerializedTypeHeader = ReadTypeHeader();
 			ReadData(&value, valueSerializedTypeHeader, valueTypeHeader);
@@ -253,8 +254,7 @@ inline void BinaryStreamReader::Read(std::unordered_map<Key, Value>& data)
 			TypeHeader keyTypeHeader{};
 			keyTypeHeader.baseTypeSize = sizeof(Key);
 
-			TypeHeader keySerializedTypeHeader = ReadTypeHeader();
-			ReadData(&key, keySerializedTypeHeader, keyTypeHeader);
+			ReadData(&key, keyTypeHeader, keyTypeHeader);
 		}
 		else if constexpr (std::is_same<Key, std::string>::value)
 		{
@@ -264,16 +264,16 @@ inline void BinaryStreamReader::Read(std::unordered_map<Key, Value>& data)
 		{
 			Key::Deserialize(*this, key);
 		}
-
+		 
 		Value value{};
 
 		if constexpr (std::is_trivial<Value>())
 		{
 			TypeHeader valueTypeHeader{};
 			valueTypeHeader.baseTypeSize = sizeof(Value);
+			valueTypeHeader.totalTypeSize = sizeof(Value);
 
-			TypeHeader valueSerializedTypeHeader = ReadTypeHeader();
-			ReadData(&value, valueSerializedTypeHeader, valueTypeHeader);
+			ReadData(&value, valueTypeHeader, valueTypeHeader);
 		}
 		else if constexpr (std::is_same<Value, std::string>::value)
 		{
@@ -284,6 +284,6 @@ inline void BinaryStreamReader::Read(std::unordered_map<Key, Value>& data)
 			Value::Deserialize(*this, value);
 		}
 
-		data.emplace(key, value);
+		data[key] = value;
 	}
 }
