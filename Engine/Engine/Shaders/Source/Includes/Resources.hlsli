@@ -344,7 +344,7 @@ struct UniformRawByteBuffer
     }
 };
 
-struct RWUniformRawByteBuffer
+struct UniformRWRawByteBuffer
 {
     ResourceHandle handle;
     
@@ -647,7 +647,7 @@ struct UniformTypedBuffer
 };
 
 template<typename T>
-struct RWUniformTypedBuffer
+struct UniformRWTypedBuffer
 {
     ResourceHandle handle;
     

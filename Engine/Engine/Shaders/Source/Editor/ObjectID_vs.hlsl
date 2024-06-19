@@ -10,12 +10,14 @@ struct Output
 
 Output main(in DefaultInput input)
 {
+    input.Initialize();
+
     const Constants constants = GetConstants<Constants>();
     const ViewData viewData = constants.viewData.Load();
 
     const float4 worldPosition = mul(input.GetTransform(), float4(input.GetVertexPositionData().position, 1.f));
 
-    const GPUScene scene = constants.gpuScene.Load();
+    const GPUScene scene = constants.gpuScene;
     const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(input.GetObjectID());
 
     Output output;

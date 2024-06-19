@@ -33,6 +33,7 @@ namespace Volt
 		const CullPrimitivesData cullPrimitivesData = culling.Execute(shadowCamera, renderScene, CullingMode::None, glm::vec2{ 1024, 1024 }, DirectionalLightData::CASCADE_COUNT);
 
 		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
+		const auto& gpuSceneData = m_blackboard.Get<GPUSceneData>();
 
 		DirectionalShadowData& dirShadowData = m_renderGraph.AddPass<DirectionalShadowData>("Directional Shadow",
 		[&](RenderGraph::Builder& builder, DirectionalShadowData& data)
@@ -50,9 +51,10 @@ namespace Volt
 
 			data.shadowTexture = builder.CreateImage2D(imageDesc);
 
+			GPUSceneData::SetupInputs(builder, gpuSceneData);
+
 			builder.ReadResource(uniformBuffers.viewDataBuffer);
 			builder.ReadResource(uniformBuffers.directionalLightBuffer);
-			builder.ReadResource(uniformBuffers.gpuScene);
 			builder.ReadResource(cullPrimitivesData.indexBuffer, RenderGraphResourceState::IndexBuffer);
 			builder.ReadResource(cullPrimitivesData.drawCommand, RenderGraphResourceState::IndirectArgument);
 
@@ -75,11 +77,12 @@ namespace Volt
 			context.BeginRendering(info);
 			context.BindPipeline(pipeline);
 
-			const auto gpuSceneHandle = resources.GetUniformBuffer(uniformBuffers.gpuScene);
 			const auto viewDataHandle = resources.GetUniformBuffer(uniformBuffers.viewDataBuffer);
 
 			context.BindIndexBuffer(cullPrimitivesData.indexBuffer);
-			context.SetConstant("gpuScene"_sh, gpuSceneHandle);
+
+			GPUSceneData::SetupConstants(context, resources, gpuSceneData);
+
 			context.SetConstant("viewData"_sh, viewDataHandle);
 			context.SetConstant("directionalLight"_sh, resources.GetBuffer(uniformBuffers.directionalLightBuffer));
 

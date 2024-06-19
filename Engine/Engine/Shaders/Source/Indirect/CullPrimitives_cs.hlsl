@@ -10,15 +10,13 @@
 
 struct Constants
 {
-    RWTypedBuffer<uint> indexBuffer;
-    RWTypedBuffer<uint> drawCommand;
+    UniformRWTypedBuffer<uint> indexBuffer;
+    UniformRWTypedBuffer<uint> drawCommand;
   
-    TypedBuffer<uint> survivingMeshlets;
-    TypedBuffer<uint> survivingMeshletCount;
+    UniformTypedBuffer<uint> survivingMeshlets;
+    UniformTypedBuffer<uint> survivingMeshletCount;
     
-    TypedBuffer<Meshlet> gpuMeshlets;
-    TypedBuffer<GPUMesh> gpuMeshes;
-    TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
+    GPUScene gpuScene;
 
     float4x4 viewMatrix;
     float4x4 projectionMatrix;
@@ -34,15 +32,15 @@ void main(uint3 gid : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
     uint groupId = UnwrapDispatchGroupId(gid);
     
     const uint meshletIndex = constants.survivingMeshlets.Load(groupId);
-    const Meshlet meshlet = constants.gpuMeshlets.Load(meshletIndex);
+    const Meshlet meshlet = constants.gpuScene.meshletsBuffer.Load(meshletIndex);
     
     if (groupThreadId >= meshlet.triangleCount)
     {
         return;
     }
     
-    const GPUMesh mesh = constants.gpuMeshes.Load(meshlet.meshId);
-    const ObjectDrawData objectData = constants.objectDrawDataBuffer.Load(meshlet.objectId);
+    const GPUMesh mesh = constants.gpuScene.meshesBuffer.Load(meshlet.meshId);
+    const ObjectDrawData objectData = constants.gpuScene.objectDrawDataBuffer.Load(meshlet.objectId);
     
     const uint triangleId = groupThreadId * 3;
     const uint index0 = mesh.meshletIndexBuffer.Load(mesh.meshletIndexStartOffset + meshlet.triangleOffset + triangleId + 0);

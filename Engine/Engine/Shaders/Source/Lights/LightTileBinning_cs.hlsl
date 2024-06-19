@@ -11,8 +11,8 @@ struct Constants
     UniformTypedBuffer<PointLight> pointLights;
     UniformTypedBuffer<SpotLight> spotLights;
 
-    RWUniformTypedBuffer<int> visiblePointLightIndices;
-    RWUniformTypedBuffer<int> visibleSpotLightIndices;
+    UniformRWTypedBuffer<int> visiblePointLightIndices;
+    UniformRWTypedBuffer<int> visibleSpotLightIndices;
  
     uint2 tileCount;
 };

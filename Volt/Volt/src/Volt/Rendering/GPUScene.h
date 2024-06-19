@@ -38,9 +38,12 @@ namespace Volt
 
 		glm::vec3 boundingSphereCenter;
 		float boundingSphereRadius;
+
+		uint32_t isAnimated;
+		uint32_t boneOffset;
 	};
 
-	struct GPUMaterialNew
+	struct GPUMaterial
 	{
 		ResourceHandle textures[16];
 		ResourceHandle samplers[16];
@@ -56,5 +59,6 @@ namespace Volt
 		ResourceHandle materialsBuffer;
 		ResourceHandle objectDrawDataBuffer;
 		ResourceHandle meshletsBuffer;
+		ResourceHandle bonesBuffer;
 	};
 }

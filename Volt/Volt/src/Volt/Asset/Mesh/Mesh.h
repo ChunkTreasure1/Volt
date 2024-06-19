@@ -31,7 +31,7 @@ namespace Volt
 		
 		std::vector<VertexAnimationInfo> vertexAnimationInfo;
 		std::vector<uint16_t> vertexBoneInfluences;
-		std::vector<uint8_t> vertexBoneWeights;
+		std::vector<float> vertexBoneWeights;
 
 		VT_INLINE size_t Size() const
 		{

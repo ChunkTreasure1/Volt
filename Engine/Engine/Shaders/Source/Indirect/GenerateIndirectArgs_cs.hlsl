@@ -3,7 +3,7 @@
 
 struct Constants
 {
-    RWUniformTypedBuffer<uint> indirectArgs;
+    UniformRWTypedBuffer<uint> indirectArgs;
     UniformTypedBuffer<uint> countBuffer;
     
     uint threadGroupSize;

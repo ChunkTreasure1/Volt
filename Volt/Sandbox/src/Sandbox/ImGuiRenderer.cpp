@@ -11,6 +11,7 @@
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Core/Application.h>
+#include <Volt/Rendering/Shader/ShaderMap.h>
 
 #include <Volt/Asset/AssetManager.h>
 
@@ -680,14 +681,7 @@ void Sandbox::DrawMenuBar()
 		{
 			if (ImGui::MenuItem("Recompile all shaders"))
 			{
-				//Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
-
-				// #TODO_Ivar: Reimplement
-				//for (const auto& [name, shader] : Volt::ShaderRegistry::GetShaderRegistry())
-				//{
-				//	shader->Reload(true);
-				//	Volt::Renderer::ReloadShader(shader);
-				//}
+				Volt::ShaderMap::ReloadAll();
 			}
 
 			if (ImGui::MenuItem("Compile C#"))

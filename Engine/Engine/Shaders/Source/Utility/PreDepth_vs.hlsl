@@ -10,6 +10,8 @@ struct Output
 
 Output main(in DefaultInput input)
 {
+    input.Initialize();
+
     const Constants constants = GetConstants<Constants>();
     const ViewData viewData = constants.viewData.Load();
     

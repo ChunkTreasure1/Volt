@@ -230,7 +230,7 @@ namespace Volt
 		std::vector<VertexAnimationInfo> vertexAnimationInfo(maxTriangles * 3);
 
 		std::vector<uint16_t> vertexBoneInfluences;
-		std::vector<uint8_t> vertexBoneWeights;
+		std::vector<float> vertexBoneWeights;
 
 		if (mesh->skin_deformers.count > 0)
 		{
@@ -262,17 +262,11 @@ namespace Volt
 				{
 					vertexAnimationInfo[i].influenceCount = static_cast<uint16_t>(numWeights);
 
-					uint8_t quantizedSum = 0;
-					for (size_t j = 0; j < weights.size() && j < std::numeric_limits<uint8_t>::max(); j++)
+					for (size_t j = 0; j < weights.size(); j++)
 					{
-						uint8_t quantizedWeight = static_cast<uint8_t>(weights[j] / totalWeight * 255.f);
-						quantizedSum += quantizedWeight;
-
 						vertexBoneInfluences[j] = influences[j];
-						vertexBoneWeights[j] = quantizedWeight;
+						vertexBoneWeights[j] = weights.at(j);
 					}
-
-					vertexBoneWeights[0] += 255 - quantizedSum;
 				}
 			}
 		}

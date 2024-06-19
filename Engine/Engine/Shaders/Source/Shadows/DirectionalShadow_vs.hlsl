@@ -6,7 +6,7 @@
 
 struct Constants
 {
-    UniformBuffer<GPUScene> gpuScene;
+    GPUScene gpuScene;
     UniformBuffer<ViewData> viewData;
     UniformTypedBuffer<DirectionalLight> directionalLight;
 };
@@ -22,6 +22,8 @@ struct Output
 
 Output main(in DefaultInput input, in uint instanceId : SV_InstanceID)
 {
+    input.Initialize();
+
     const Constants constants = GetConstants<Constants>();
     const DirectionalLight light = constants.directionalLight.Load(0);
 

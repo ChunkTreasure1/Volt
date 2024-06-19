@@ -40,7 +40,7 @@ struct GPUMesh
     TypedBuffer<VertexAnimationInfo> vertexAnimationInfoBuffer;
     TypedBuffer<uint16_t> vertexBoneInfluencesBuffer;
 
-    TypedBuffer<uint> vertexBoneWeightsBuffer; // packed: one element is 4 weights
+    TypedBuffer<float> vertexBoneWeightsBuffer; // Should be packed
     TypedBuffer<uint> indexBuffer;
     TypedBuffer<uint> meshletIndexBuffer;
     TypedBuffer<Meshlet> meshletsBuffer;
@@ -61,12 +61,16 @@ struct ObjectDrawData
     uint entityId;
     
     BoundingSphere boundingSphere;
+
+    uint isAnimated;
+    uint32_t boneOffset;
 };
 
 struct GPUScene
 {
-    TypedBuffer<GPUMesh> meshesBuffer;
-    TypedBuffer<GPUMaterial> materialsBuffer;
-    TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    TypedBuffer<Meshlet> meshletsBuffer;
+    UniformTypedBuffer<GPUMesh> meshesBuffer;
+    UniformTypedBuffer<GPUMaterial> materialsBuffer;
+    UniformTypedBuffer<ObjectDrawData> objectDrawDataBuffer;
+    UniformTypedBuffer<Meshlet> meshletsBuffer;
+    UniformTypedBuffer<float4x4> bonesBuffer;
 };

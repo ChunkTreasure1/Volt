@@ -1,10 +1,15 @@
 #pragma once
 
 #include "Volt/Rendering/RenderGraph/Resources/RenderGraphResourceHandle.h"
+#include "Volt/Rendering/RenderGraph/RenderGraph.h"
 
 namespace Volt
 {
 	class Camera;
+	class RenderContext;
+	class RenderGraphPassResources;
+	class RenderGraph;
+	class RenderGraph::Builder;
 
 	enum class VisibilityVisualization
 	{
@@ -29,14 +34,6 @@ namespace Volt
 	{
 		RenderGraphResourceHandle black1x1Cube;
 		RenderGraphResourceHandle BRDFLuT;
-	};
-
-	struct ExternalBuffersData
-	{
-		RenderGraphResourceHandle drawContextBuffer;
-		RenderGraphResourceHandle objectDrawDataBuffer;
-		RenderGraphResourceHandle gpuMeshesBuffer;
-		RenderGraphResourceHandle gpuMeshletsBuffer;
 	};
 
 	struct EnvironmentTexturesData
@@ -68,7 +65,18 @@ namespace Volt
 	{
 		RenderGraphResourceHandle viewDataBuffer;
 		RenderGraphResourceHandle directionalLightBuffer;
-		RenderGraphResourceHandle gpuScene;
+	};
+
+	struct GPUSceneData
+	{
+		RenderGraphResourceHandle meshesBuffer;
+		RenderGraphResourceHandle materialsBuffer;
+		RenderGraphResourceHandle objectDrawDataBuffer;
+		RenderGraphResourceHandle meshletsBuffer;
+		RenderGraphResourceHandle bonesBuffer;
+
+		static void SetupInputs(RenderGraph::Builder& builder, const GPUSceneData& data);
+		static void SetupConstants(RenderContext& context, const RenderGraphPassResources& resources, const GPUSceneData& data);
 	};
 
 	struct LightBuffersData
