@@ -236,11 +236,9 @@ namespace Volt
 			const auto& currentLocalTransform = target.localTRS[i];
 			const auto& nextLocalTransform = poseToBlendWith.localTRS[i];
 
-			glm::vec3 position = glm::mix(currentLocalTransform.position, nextLocalTransform.position, blendFactor);
-			glm::quat rotation = glm::slerp(currentLocalTransform.rotation, nextLocalTransform.rotation, blendFactor);
-			glm::vec3 scale = glm::mix(currentLocalTransform.scale, nextLocalTransform.scale, blendFactor);
-
-			target.localTRS[i] = { position, rotation, scale };
+			target.localTRS[i].position = glm::mix(currentLocalTransform.position, nextLocalTransform.position, blendFactor);
+			target.localTRS[i].rotation = glm::slerp(currentLocalTransform.rotation, nextLocalTransform.rotation, blendFactor);
+			target.localTRS[i].scale = glm::mix(currentLocalTransform.scale, nextLocalTransform.scale, blendFactor);
 		}
 	}
 
@@ -261,11 +259,9 @@ namespace Volt
 			const auto& currentLocalTransform = target.localTRS[i];
 			const auto& nextLocalTransform = poseToBlendWith.localTRS[i];
 
-			glm::vec3 position = glm::mix(currentLocalTransform.position, nextLocalTransform.position, blendFactor);
-			glm::quat rotation = glm::slerp(currentLocalTransform.rotation, nextLocalTransform.rotation, blendFactor);
-			glm::vec3 scale = glm::mix(currentLocalTransform.scale, nextLocalTransform.scale, blendFactor);
-
-			result.localTRS[i] = {position, rotation, scale};
+			result.localTRS[i].position = glm::mix(currentLocalTransform.position, nextLocalTransform.position, blendFactor);
+			result.localTRS[i].rotation = glm::slerp(currentLocalTransform.rotation, nextLocalTransform.rotation, blendFactor);
+			result.localTRS[i].scale = glm::mix(currentLocalTransform.scale, nextLocalTransform.scale, blendFactor);
 		}
 		
 		return result;
