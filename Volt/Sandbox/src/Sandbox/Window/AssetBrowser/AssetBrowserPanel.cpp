@@ -318,6 +318,7 @@ void AssetBrowserPanel::UpdateMainContent()
 
 	CreateNewShaderModal();
 	CreateNewMonoScriptModal();
+	CreateNewMotionWeaveDatabaseModal();
 	DeleteFilesModal();
 }
 
@@ -1384,10 +1385,9 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 		case Volt::AssetType::MotionWeave:
 		{
-			Ref<Volt::MotionWeaveDatabase> motionWeaveGraph = Volt::AssetManager::CreateAsset<Volt::MotionWeaveDatabase>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName);
-			Volt::AssetManager::SaveAsset(motionWeaveGraph);
-
-			newAssetHandle = motionWeaveGraph->handle;
+			m_NewMotionWeaveDatabaseData.name = "";
+			m_NewMotionWeaveDatabaseData.skeleton = Volt::Asset::Null();
+			UI::OpenModal("New MotionWeaveDatabase##assetBrowser");
 			break;
 		}
 	}
@@ -1655,6 +1655,47 @@ void AssetBrowserPanel::CreateNewMonoScriptModal()
 		if (ImGui::Button("Cancel"))
 		{
 			name = "";
+			ImGui::CloseCurrentPopup();
+		}
+
+		UI::EndModal();
+	}
+}
+
+void AssetBrowserPanel::CreateNewMotionWeaveDatabaseModal()
+{
+	if (UI::BeginModal("New MotionWeaveDatabase##assetBrowser"))
+	{
+		if (UI::BeginProperties("motionWeaveProp"))
+		{
+			UI::Property("Name", m_NewMotionWeaveDatabaseData.name);
+			EditorUtils::Property("Skeleton", m_NewMotionWeaveDatabaseData.skeleton, Volt::AssetType::Skeleton);
+			UI::EndProperties();
+		}
+		
+		bool canCreate = m_NewMotionWeaveDatabaseData.skeleton != Volt::Asset::Null() && !m_NewMotionWeaveDatabaseData.name.empty();
+		
+		if (!canCreate)
+		{
+			ImGui::BeginDisabled();
+		}
+		if (ImGui::Button("Create"))
+		{
+
+			Ref<Volt::MotionWeaveDatabase> motionWeaveGraph = Volt::AssetManager::CreateAsset<Volt::MotionWeaveDatabase>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), m_NewMotionWeaveDatabaseData.name, m_NewMotionWeaveDatabaseData.skeleton);
+			Volt::AssetManager::SaveAsset(motionWeaveGraph);
+			
+			ImGui::CloseCurrentPopup();
+		}
+		if (!canCreate)
+		{
+			ImGui::EndDisabled();
+			UI::SimpleToolTip("Cannot create Motion Weave Database without a name or without a skeleton");
+		}
+		ImGui::SameLine();
+
+		if (ImGui::Button("Cancel"))
+		{
 			ImGui::CloseCurrentPopup();
 		}
 

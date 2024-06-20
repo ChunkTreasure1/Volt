@@ -41,7 +41,7 @@ namespace Volt
 			serializationData.animations.emplace_back(SerializedAnimation{ anim });
 		}
 
-		serializationData.skeleton = motionWeaveDatabase->m_Skeleton;
+		serializationData.skeleton = motionWeaveDatabase->m_skeleton;
 
 		BinaryStreamWriter streamWriter{};
 		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
@@ -84,10 +84,10 @@ namespace Volt
 			motionWeaveDatabase->m_AnimationHandles.emplace_back(anim.handle);
 		}
 
-		motionWeaveDatabase->m_Skeleton = serializationData.skeleton;
+		motionWeaveDatabase->m_skeleton = serializationData.skeleton;
 
 		std::string logStr = std::format("Loaded Notion Weave Database {0} with Skeleton: {1} and Animations: \n",
-			(uint64_t)metadata.handle, (uint64_t)motionWeaveDatabase->m_Skeleton);
+			(uint64_t)metadata.handle, (uint64_t)motionWeaveDatabase->m_skeleton);
 
 		for (const auto& anim : serializationData.animations)
 		{

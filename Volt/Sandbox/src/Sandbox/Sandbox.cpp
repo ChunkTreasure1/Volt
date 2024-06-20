@@ -42,6 +42,7 @@
 #include "Sandbox/Window/SkeletonEditorPanel.h"
 #include "Sandbox/Window/AnimationEditorPanel.h"
 #include "Sandbox/Window/GameUIEditorPanel.h"
+#include "Sandbox/Window/MotionWeaveDatabasePanel.h"
 #include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
@@ -163,6 +164,7 @@ void Sandbox::OnAttach()
 	EditorLibrary::RegisterWithType<BlendSpaceEditorPanel>("Animation", Volt::AssetType::BlendSpace);
 	EditorLibrary::RegisterWithType<MeshPreviewPanel>("", Volt::AssetType::Mesh);
 	EditorLibrary::RegisterWithType<ShaderEditorPanel>("Shader", Volt::AssetType::ShaderDefinition);
+	EditorLibrary::RegisterWithType<MotionWeaveDatabasePanel>("Animation", Volt::AssetType::MotionWeave);
 
 	EditorLibrary::Sort();
 
