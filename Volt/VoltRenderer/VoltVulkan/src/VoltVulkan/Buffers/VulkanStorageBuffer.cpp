@@ -99,7 +99,26 @@ namespace Volt::RHI
 		RefPtr<CommandBuffer> cmdBuffer = CommandBuffer::Create();
 		cmdBuffer->Begin();
 
+		ResourceBarrierInfo barrier{};
+		barrier.type = BarrierType::Buffer;
+		barrier.bufferBarrier().srcStage = BarrierStage::ComputeShader | BarrierStage::VertexShader | BarrierStage::PixelShader;
+		barrier.bufferBarrier().srcAccess = BarrierAccess::None;
+		barrier.bufferBarrier().dstStage = BarrierStage::Copy;
+		barrier.bufferBarrier().dstAccess = BarrierAccess::TransferDestination;
+		barrier.bufferBarrier().offset = 0;
+		barrier.bufferBarrier().size = size;
+		barrier.bufferBarrier().resource = WeakPtr<VulkanStorageBuffer>(this);
+
+		cmdBuffer->ResourceBarrier({ barrier });
+		 
 		cmdBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
+
+		barrier.bufferBarrier().srcStage = BarrierStage::Copy;
+		barrier.bufferBarrier().srcAccess = BarrierAccess::TransferDestination;
+		barrier.bufferBarrier().dstStage = BarrierStage::ComputeShader | BarrierStage::VertexShader | BarrierStage::PixelShader;
+		barrier.bufferBarrier().dstAccess = BarrierAccess::None;
+
+		cmdBuffer->ResourceBarrier({ barrier });
 
 		cmdBuffer->End();
 		cmdBuffer->Execute();
@@ -134,7 +153,25 @@ namespace Volt::RHI
 		memcpy_s(mappedPtr, m_byteSize, data, size);
 		stagingAllocation->Unmap();
 
+		ResourceBarrierInfo barrier{};
+		barrier.bufferBarrier().srcStage = BarrierStage::All;
+		barrier.bufferBarrier().srcAccess = BarrierAccess::None;
+		barrier.bufferBarrier().dstStage = BarrierStage::Copy;
+		barrier.bufferBarrier().dstAccess = BarrierAccess::TransferDestination;
+		barrier.bufferBarrier().offset = 0;
+		barrier.bufferBarrier().size = size;
+		barrier.bufferBarrier().resource = WeakPtr<VulkanStorageBuffer>(this);
+
+		commandBuffer->ResourceBarrier({ barrier });
+
 		commandBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
+
+		barrier.bufferBarrier().srcStage = BarrierStage::Copy;
+		barrier.bufferBarrier().srcAccess = BarrierAccess::TransferDestination;
+		barrier.bufferBarrier().dstStage = BarrierStage::All;
+		barrier.bufferBarrier().dstAccess = BarrierAccess::None;
+
+		commandBuffer->ResourceBarrier({ barrier });
 
 		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = stagingAllocation]()
 		{

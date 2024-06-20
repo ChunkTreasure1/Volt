@@ -28,10 +28,11 @@ Output main(in DefaultInput input, in uint instanceId : SV_InstanceID)
     const DirectionalLight light = constants.directionalLight.Load(0);
 
     const float4x4 transform = input.GetTransform();
+    const float4x4 skinningMatrix = input.GetSkinningMatrix();
 
     Output output;
     output.target = instanceId;
-    output.position = mul(light.viewProjections[instanceId], mul(transform, float4(input.GetVertexPositionData().position, 1.f)));
+    output.position = mul(light.viewProjections[instanceId], mul(transform, mul(skinningMatrix, float4(input.GetVertexPositionData().position, 1.f))));
 
     return output;
 }

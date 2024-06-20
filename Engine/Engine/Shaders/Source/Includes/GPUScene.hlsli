@@ -63,7 +63,8 @@ struct ObjectDrawData
     BoundingSphere boundingSphere;
 
     uint isAnimated;
-    uint32_t boneOffset;
+    uint boneOffset;
+    uint2 padding;
 };
 
 struct GPUScene

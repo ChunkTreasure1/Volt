@@ -780,6 +780,8 @@ namespace Volt::RHI
 
 		for (const auto& resourceBarrier : resourceBarriers)
 		{
+			VT_ENSURE(resourceBarrier.type != BarrierType::None);
+
 			switch (resourceBarrier.type)
 			{
 				case BarrierType::Global:
