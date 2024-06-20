@@ -547,6 +547,7 @@ namespace Volt
 		objectDrawData.entityId = entity.GetID();
 		objectDrawData.materialId = GetMaterialIndex(renderObject.material);
 		objectDrawData.meshletStartOffset = renderObject.meshletStartOffset;
+		objectDrawData.isAnimated = renderObject.IsAnimated();
 	}
 
 	void RenderScene::BuildMeshCommands()

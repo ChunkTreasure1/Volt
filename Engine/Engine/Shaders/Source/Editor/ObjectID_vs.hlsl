@@ -15,7 +15,8 @@ Output main(in DefaultInput input)
     const Constants constants = GetConstants<Constants>();
     const ViewData viewData = constants.viewData.Load();
 
-    const float4 worldPosition = mul(input.GetTransform(), float4(input.GetVertexPositionData().position, 1.f));
+    const float4x4 skinningMatrix = input.GetSkinningMatrix();
+    const float4 worldPosition = mul(input.GetTransform(), mul(skinningMatrix, float4(input.GetVertexPositionData().position, 1.f)));
 
     const GPUScene scene = constants.gpuScene;
     const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(input.GetObjectID());

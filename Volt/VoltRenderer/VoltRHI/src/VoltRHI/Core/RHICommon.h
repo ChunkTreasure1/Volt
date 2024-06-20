@@ -557,7 +557,8 @@ namespace Volt::RHI
 
 	enum class BarrierType : uint64_t
 	{
-		Image = 0,
+		None = 0,
+		Image,
 		Buffer,
 		Global
 	};
@@ -776,7 +777,7 @@ namespace Volt::RHI
 	{
 		~ResourceBarrierInfo() = default;
 
-		BarrierType type = BarrierType::Global;
+		BarrierType type = BarrierType::None;
 
 		ImageBarrier& imageBarrier() { return m_barrier.Get<ImageBarrier>(); }
 		BufferBarrier& bufferBarrier() { return m_barrier.Get<BufferBarrier>(); }

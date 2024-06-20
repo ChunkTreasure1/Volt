@@ -100,7 +100,8 @@ namespace Volt::RHI
 		cmdBuffer->Begin();
 
 		ResourceBarrierInfo barrier{};
-		barrier.bufferBarrier().srcStage = BarrierStage::All;
+		barrier.type = BarrierType::Buffer;
+		barrier.bufferBarrier().srcStage = BarrierStage::ComputeShader | BarrierStage::VertexShader | BarrierStage::PixelShader;
 		barrier.bufferBarrier().srcAccess = BarrierAccess::None;
 		barrier.bufferBarrier().dstStage = BarrierStage::Copy;
 		barrier.bufferBarrier().dstAccess = BarrierAccess::TransferDestination;
@@ -109,12 +110,12 @@ namespace Volt::RHI
 		barrier.bufferBarrier().resource = WeakPtr<VulkanStorageBuffer>(this);
 
 		cmdBuffer->ResourceBarrier({ barrier });
-
+		 
 		cmdBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
 
 		barrier.bufferBarrier().srcStage = BarrierStage::Copy;
 		barrier.bufferBarrier().srcAccess = BarrierAccess::TransferDestination;
-		barrier.bufferBarrier().dstStage = BarrierStage::All;
+		barrier.bufferBarrier().dstStage = BarrierStage::ComputeShader | BarrierStage::VertexShader | BarrierStage::PixelShader;
 		barrier.bufferBarrier().dstAccess = BarrierAccess::None;
 
 		cmdBuffer->ResourceBarrier({ barrier });

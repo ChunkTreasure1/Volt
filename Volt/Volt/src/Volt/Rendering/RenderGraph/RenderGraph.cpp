@@ -289,7 +289,7 @@ namespace Volt
 							previousUsageInfo.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::All;
 							previousUsageInfo.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::None;
 						}
-						else if (resource->GetResourceType() == ResourceType::Buffer)
+						else if (resource->GetResourceType() == ResourceType::Buffer || resource->GetResourceType() == ResourceType::UniformBuffer)
 						{
 							previousUsageInfo.accessInfo.type = RHI::BarrierType::Buffer;
 							previousUsageInfo.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::All;
@@ -336,7 +336,7 @@ namespace Volt
 							}
 
 						}
-						else if (resource->GetResourceType() == ResourceType::Buffer)
+						else if (resource->GetResourceType() == ResourceType::Buffer || resource->GetResourceType() == ResourceType::UniformBuffer)
 						{
 							usage.accessInfo.type = RHI::BarrierType::Buffer;
 							usage.accessInfo.bufferBarrier().offset = 0;
@@ -393,15 +393,17 @@ namespace Volt
 					// Setup previous usage
 					if (resource->GetResourceType() == ResourceType::Image2D || resource->GetResourceType() == ResourceType::Image3D)
 					{
+						usage.accessInfo.type = RHI::BarrierType::Image;
 						usage.accessInfo.imageBarrier().srcStage = previousUsageInfo.accessInfo.imageBarrier().dstStage;
 						usage.accessInfo.imageBarrier().srcAccess = previousUsageInfo.accessInfo.imageBarrier().dstAccess;
 						usage.accessInfo.imageBarrier().srcLayout = previousUsageInfo.accessInfo.imageBarrier().dstLayout;
 					}
-					else if (resource->GetResourceType() == ResourceType::Buffer)
+					else if (resource->GetResourceType() == ResourceType::Buffer || resource->GetResourceType() == ResourceType::UniformBuffer)
 					{
 						RHI::BarrierStage dstStage = previousUsageInfo.accessInfo.bufferBarrier().dstStage;
 						RHI::BarrierAccess dstAccess = previousUsageInfo.accessInfo.bufferBarrier().dstAccess;
 
+						usage.accessInfo.type = RHI::BarrierType::Buffer;
 						usage.accessInfo.bufferBarrier().srcStage = dstStage;
 						usage.accessInfo.bufferBarrier().srcAccess = dstAccess;
 					}
@@ -428,7 +430,7 @@ namespace Volt
 								usage.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::VertexShader | RHI::BarrierStage::PixelShader;
 							}
 						}
-						else if (resource->GetResourceType() == ResourceType::Buffer)
+						else if (resource->GetResourceType() == ResourceType::Buffer || resource->GetResourceType() == ResourceType::UniformBuffer)
 						{
 							usage.accessInfo.type = RHI::BarrierType::Buffer;
 							usage.accessInfo.bufferBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;

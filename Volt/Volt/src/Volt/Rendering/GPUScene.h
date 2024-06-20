@@ -41,6 +41,7 @@ namespace Volt
 
 		uint32_t isAnimated;
 		uint32_t boneOffset;
+		glm::uvec2 padding;
 	};
 
 	struct GPUMaterial

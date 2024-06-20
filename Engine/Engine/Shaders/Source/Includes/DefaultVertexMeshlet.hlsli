@@ -93,7 +93,7 @@ struct DefaultInput
         {
             const uint16_t influence = m_gpuMesh.vertexBoneInfluencesBuffer.Load(animData.boneOffset + i);    
             const float weight = m_gpuMesh.vertexBoneWeightsBuffer.Load(animData.boneOffset + i);
-            result += mul(IDENTITY_MATRIX, weight);
+            result += mul(m_constants.gpuScene.bonesBuffer.Load(m_objectDrawData.boneOffset + influence), weight);
         }
 
         return result;            

@@ -62,17 +62,6 @@
 
 namespace Volt
 {
-	namespace Utility
-	{
-		const size_t HashMeshSubMesh(Ref<Mesh> mesh, const SubMesh& subMesh)
-		{
-			size_t result = std::hash<void*>()(mesh.get());
-			result = Math::HashCombine(result, subMesh.GetHash());
-
-			return result;
-		}
-	}
-
 	SceneRenderer::SceneRenderer(const SceneRendererSpecification& specification)
 		: m_scene(specification.scene)
 	{
