@@ -70,6 +70,7 @@ private:
 	void CreateNewAssetInCurrentDirectory(Volt::AssetType type);
 	void CreateNewShaderModal();
 	void CreateNewMonoScriptModal();
+	void CreateNewMotionWeaveDatabaseModal();
 
 	struct NewShaderData
 	{
@@ -81,6 +82,12 @@ private:
 		int32_t shaderType = 0;
 
 	} myNewShaderData;
+
+	struct NewMotionWeaveDatabaseData
+	{
+		std::string name = "New Motion Weave Database";
+		Volt::AssetHandle skeleton = Volt::Asset::Null();
+	} m_NewMotionWeaveDatabaseData;
 	//////////////////////////
 
 	Ref<Volt::Scene>& myEditorScene;

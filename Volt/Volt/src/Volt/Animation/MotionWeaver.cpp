@@ -23,7 +23,7 @@ namespace Volt
 	{
 		m_Database = database;
 
-		for (AssetHandle& handle : m_Database->GetAnimationHandles())
+		for (const AssetHandle& handle : m_Database->GetAnimationHandles())
 		{
 			m_Animations.push_back(AssetManager::GetAsset<Animation>(handle));
 		}
