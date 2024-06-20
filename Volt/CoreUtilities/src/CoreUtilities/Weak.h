@@ -51,6 +51,7 @@ public:
 	inline operator std::shared_ptr<T>() const { return m_weakPtr.lock(); }
 
 	[[nodiscard]] inline std::shared_ptr<T> GetSharedPtr() const { return m_weakPtr.lock(); }
+	[[nodiscard]] inline bool IsExpired() const { return m_weakPtr.expired(); }
 
 private:
 	std::weak_ptr<T> m_weakPtr;

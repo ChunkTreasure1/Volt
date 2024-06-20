@@ -294,8 +294,8 @@ namespace Volt
 			const auto& vertexBoneWeights = m_vertexContainer.vertexBoneWeights;
 			if (!vertexBoneWeights.empty())
 			{
-				m_vertexBoneWeightsBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(vertexBoneWeights.size()), sizeof(uint16_t), "Vertex Bone Weights - " + meshName);
-				m_vertexBoneWeightsBuffer->GetResource()->SetData(vertexBoneWeights.data(), vertexBoneWeights.size() * sizeof(uint16_t));
+				m_vertexBoneWeightsBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(vertexBoneWeights.size()), sizeof(float), "Vertex Bone Weights - " + meshName);
+				m_vertexBoneWeightsBuffer->GetResource()->SetData(vertexBoneWeights.data(), vertexBoneWeights.size() * sizeof(float));
 			}
 		}
 

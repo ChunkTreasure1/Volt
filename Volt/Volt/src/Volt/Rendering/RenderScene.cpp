@@ -23,11 +23,11 @@ namespace Volt
 	RenderScene::RenderScene(Scene* sceneRef)
 		: m_scene(sceneRef)
 	{
-		m_gpuSceneBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(GPUScene), "GPU Scene", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 		m_gpuMeshesBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(GPUMesh), "GPU Meshes", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
-		m_gpuMaterialsBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(GPUMaterialNew), "GPU Materials", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
+		m_gpuMaterialsBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(GPUMaterial), "GPU Materials", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 		m_objectDrawDataBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(ObjectDrawData), "Object Draw Data", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 		m_gpuMeshletsBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(Meshlet), "GPU Meshlets", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
+		m_gpuBonesBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(glm::mat4), "GPU Bones", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 
 		m_materialChangedCallbackID = AssetManager::RegisterAssetChangedCallback(AssetType::Material, [&](AssetHandle handle, AssetChangedState state) 
 		{
@@ -172,7 +172,7 @@ namespace Volt
 
 		if (!m_invalidMaterials.empty())
 		{
-			ScatteredBufferUpload<GPUMaterialNew> bufferUpload{ m_invalidMaterials.size() };
+			ScatteredBufferUpload<GPUMaterial> bufferUpload{ m_invalidMaterials.size() };
 
 			for (const auto& invalidMaterial : m_invalidMaterials)
 			{
@@ -252,6 +252,24 @@ namespace Volt
 		return newId;
 	}
 
+	const UUID64 RenderScene::Register(EntityID entityId, Ref<MotionWeaver> motionWeaver, Ref<Mesh> mesh, Ref<Material> material, uint32_t subMeshIndex)
+	{
+		m_isInvalid = true;
+
+		UUID64 newId = {};
+		auto& newObj = m_renderObjects.emplace_back();
+		m_animatedRenderObjects.emplace_back(newId);
+
+		newObj.id = newId;
+		newObj.entity = entityId;
+		newObj.mesh = mesh;
+		newObj.material = material;
+		newObj.subMeshIndex = subMeshIndex;
+		newObj.motionWeaver = motionWeaver;
+
+		return newId;
+	}
+
 	void RenderScene::Unregister(UUID64 id)
 	{
 		m_isInvalid = true;
@@ -261,9 +279,24 @@ namespace Volt
 			return obj.id == id;
 		});
 
+		const bool isAnimated = (*it).IsAnimated();
+
 		if (it != m_renderObjects.end())
 		{
 			m_renderObjects.erase(it);
+		}
+
+		if (isAnimated)
+		{
+			auto animIt = std::find_if(m_animatedRenderObjects.begin(), m_animatedRenderObjects.end(), [id](const auto& obj)
+			{
+				return obj == id;
+			});
+
+			if (animIt != m_animatedRenderObjects.end())
+			{
+				m_animatedRenderObjects.erase(animIt);
+			}
 		}
 	}
 
@@ -313,6 +346,17 @@ namespace Volt
 		return std::numeric_limits<uint32_t>::max();
 	}
 
+	const GPUSceneBuffers RenderScene::GetGPUSceneBuffers() const
+	{
+		GPUSceneBuffers gpuScene{};
+		gpuScene.meshesBuffer = GetGPUMeshesBuffer().GetResource();
+		gpuScene.materialsBuffer = GetGPUMaterialsBuffer().GetResource();
+		gpuScene.objectDrawDataBuffer = GetObjectDrawDataBuffer().GetResource();
+		gpuScene.meshletsBuffer = GetGPUMeshletsBuffer().GetResource();
+		gpuScene.bonesBuffer = m_gpuBonesBuffer->GetResource();
+		return gpuScene;
+	}
+
 	const RenderObject& RenderScene::GetRenderObjectFromID(UUID64 id) const
 	{
 		auto it = std::find_if(m_renderObjects.begin(), m_renderObjects.end(), [id](const auto& renderObject)
@@ -350,17 +394,6 @@ namespace Volt
 		m_objectDrawDataBuffer->GetResource()->SetData(objectDrawData.data(), sizeof(ObjectDrawData) * objectDrawData.size());
 	}
 
-	void RenderScene::UploadGPUScene()
-	{
-		GPUScene gpuScene{};
-		gpuScene.meshesBuffer = m_gpuMeshesBuffer->GetResourceHandle();
-		gpuScene.materialsBuffer = m_gpuMaterialsBuffer->GetResourceHandle();
-		gpuScene.objectDrawDataBuffer = m_objectDrawDataBuffer->GetResourceHandle();
-		gpuScene.meshletsBuffer = m_gpuMeshletsBuffer->GetResourceHandle();
-
-		m_gpuSceneBuffer->GetResource()->SetData(&gpuScene, sizeof(GPUScene));
-	}
-
 	void RenderScene::UploadGPUMaterials()
 	{
 		if (m_gpuMaterialsBuffer->GetResource()->GetCount() < static_cast<uint32_t>(m_individualMaterials.size()))
@@ -369,20 +402,20 @@ namespace Volt
 			m_gpuMaterialsBuffer->MarkAsDirty();
 		}
 
-		std::vector<GPUMaterialNew> gpuMaterials;
+		std::vector<GPUMaterial> gpuMaterials;
 
 		for (const auto& material : m_individualMaterials)
 		{
 			m_materialIndexFromAssetHandle[material->handle] = gpuMaterials.size();
 
-			GPUMaterialNew& gpuMat = gpuMaterials.emplace_back();
+			GPUMaterial& gpuMat = gpuMaterials.emplace_back();
 			BuildGPUMaterial(material, gpuMat);
 		}
 
-		m_gpuMaterialsBuffer->GetResource()->SetData(gpuMaterials.data(), sizeof(GPUMaterialNew) * gpuMaterials.size());
+		m_gpuMaterialsBuffer->GetResource()->SetData(gpuMaterials.data(), sizeof(GPUMaterial) * gpuMaterials.size());
 	}
 
-	void RenderScene::BuildGPUMaterial(Weak<Material> material, GPUMaterialNew& gpuMaterial)
+	void RenderScene::BuildGPUMaterial(Weak<Material> material, GPUMaterial& gpuMaterial)
 	{
 		gpuMaterial.textureCount = 0;
 		if (!material->IsValid())

@@ -6,6 +6,7 @@
 #include "Structures.hlsli"
 #include "Utility.hlsli"
 #include "MeshletHelpers.hlsli"
+#include "Matrix.hlsli"
 
 static const uint VERTEX_MATERIAL_DATA_SIZE = 12;
 static const uint VERTEX_ANIMATION_DATA_SIZE = 16;
@@ -14,11 +15,17 @@ static const uint VERTEX_ANIMATION_DATA_SIZE = 16;
 
 struct Constants
 {
-    UniformBuffer<GPUScene> gpuScene;
+    GPUScene gpuScene;
     UniformBuffer<ViewData> viewData;
 };
 
 #endif
+
+static Constants m_constants;
+static Meshlet m_meshlet;
+static ObjectDrawData m_objectDrawData;
+static GPUMesh m_gpuMesh;
+static uint m_index;
 
 struct DefaultInput
 {
@@ -28,7 +35,7 @@ struct DefaultInput
     {
         return UnpackTriangleID(vertexId);
     }
-    
+     
     const uint GetMeshletID()
     {
         return UnpackMeshletID(vertexId);
@@ -38,62 +45,64 @@ struct DefaultInput
     {
         return vertexId;
     }
+
+    void Initialize()
+    {
+        m_constants = GetConstants<Constants>();
+        m_meshlet = m_constants.gpuScene.meshletsBuffer.Load(GetMeshletID());
+        m_objectDrawData = m_constants.gpuScene.objectDrawDataBuffer.Load(m_meshlet.objectId);
+        m_gpuMesh = m_constants.gpuScene.meshesBuffer.Load(m_meshlet.meshId);
+    
+        m_index = m_gpuMesh.meshletIndexBuffer.Load(m_gpuMesh.meshletIndexStartOffset + m_meshlet.triangleOffset + GetTriangleID()) + m_meshlet.vertexOffset + m_gpuMesh.vertexStartOffset;
+    }
     
     uint GetObjectID()
     {
-        const Constants constants = GetConstants<Constants>();
-        const GPUScene scene = constants.gpuScene.Load();
-        const Meshlet meshlet = scene.meshletsBuffer.Load(GetMeshletID());
-   
-        return meshlet.objectId;
+        return m_meshlet.objectId;
     }
     
     const VertexPositionData GetVertexPositionData()
     {
-        const Constants constants = GetConstants<Constants>();
-        const GPUScene scene = constants.gpuScene.Load();
-       
-        const uint meshletId = GetMeshletID();
-        
-        const Meshlet meshlet = scene.meshletsBuffer.Load(meshletId);
-        const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(meshlet.objectId);
-        const GPUMesh mesh = scene.meshesBuffer.Load(meshlet.meshId);
-        
-        const uint index = mesh.meshletIndexBuffer.Load(mesh.meshletIndexStartOffset + meshlet.triangleOffset + GetTriangleID()) + meshlet.vertexOffset + mesh.vertexStartOffset;
-        return mesh.vertexPositionsBuffer.Load(index);
+        return m_gpuMesh.vertexPositionsBuffer.Load(m_index);
     }
     
     const VertexMaterialData GetVertexMaterialData()
     {
-        const Constants constants = GetConstants<Constants>();
-        const GPUScene scene = constants.gpuScene.Load();
-       
-        const uint meshletId = GetMeshletID();
-        
-        const Meshlet meshlet = scene.meshletsBuffer.Load(meshletId);
-        const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(meshlet.objectId);
-        const GPUMesh mesh = scene.meshesBuffer.Load(meshlet.meshId);
-        
-        const uint index = mesh.meshletIndexBuffer.Load(mesh.meshletIndexStartOffset + meshlet.triangleOffset + GetTriangleID()) + meshlet.vertexOffset + mesh.vertexStartOffset;
-        return mesh.vertexMaterialBuffer.Load(index);
+        return m_gpuMesh.vertexMaterialBuffer.Load(m_index);
     }
 
     const float4x4 GetTransform()
     {
-        const Constants constants = GetConstants < Constants > ();
-        const GPUScene scene = constants.gpuScene.Load();
-       
-        const uint meshletId = GetMeshletID();
-        
-        const Meshlet meshlet = scene.meshletsBuffer.Load(meshletId);
-        const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(meshlet.objectId);
-        return drawData.transform;
+        return m_objectDrawData.transform;
+    }
+
+    const float4x4 GetSkinningMatrix()
+    {
+        [branch]
+        if (!m_objectDrawData.isAnimated)
+        {
+            return IDENTITY_MATRIX;
+        }
+
+        VertexAnimationInfo animData = m_gpuMesh.vertexAnimationInfoBuffer.Load(m_index);        
+        float4x4 result = 0.f;
+
+        const uint influenceCount = animData.influenceCount;
+
+        for (uint i = 0; i < influenceCount; i++)
+        {
+            const uint16_t influence = m_gpuMesh.vertexBoneInfluencesBuffer.Load(animData.boneOffset + i);    
+            const float weight = m_gpuMesh.vertexBoneWeightsBuffer.Load(animData.boneOffset + i);
+            result += mul(IDENTITY_MATRIX, weight);
+        }
+
+        return result;            
     }
     
     //const GPUMesh GetMesh()
     //{
     //    const Constants constants = GetConstants<Constants>();
-    //    const GPUScene scene = constants.gpuScene.Load();
+    //    const GPUScene scene = constants.gpuScene;
     //    const ObjectDrawData drawData = GetDrawData();
         
     //    const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
@@ -103,7 +112,7 @@ struct DefaultInput
     //const uint GetVertexIndex()
     //{
     //    const Constants constants = GetConstants<Constants>();
-    //    const GPUScene scene = constants.gpuScene.Load();
+    //    const GPUScene scene = constants.gpuScene;
     //    const ObjectDrawData drawData = GetDrawData();
         
     //    const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);

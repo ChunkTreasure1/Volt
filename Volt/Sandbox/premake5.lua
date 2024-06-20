@@ -114,7 +114,6 @@ project "Sandbox"
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.vma}",
 
-		"%{IncludeDir.TGAFbx}",
 		"%{IncludeDir.zlib}"
 	}
 

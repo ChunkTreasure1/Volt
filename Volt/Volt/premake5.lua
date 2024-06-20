@@ -52,7 +52,6 @@ project "Volt"
 		"%{IncludeDir.TinyGLTF}",
 		"%{IncludeDir.tinyddsloader}",
 		"%{IncludeDir.imgui_notify}",
-		"%{IncludeDir.TGAFbx}",
 		"%{IncludeDir.DirectXTK}",
 		"%{IncludeDir.fmod}",
 		"%{IncludeDir.wwise}",
@@ -105,7 +104,6 @@ project "Volt"
 		"efsw-static-lib",
 		"Nexus",
 		"NFD-Extended",
-		"TGAFBX",
 		"cityhash",
 		"ufbx",
 

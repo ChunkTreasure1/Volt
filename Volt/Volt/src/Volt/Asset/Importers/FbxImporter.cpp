@@ -69,54 +69,6 @@ namespace Volt
 		return true;
 	}
 
-	bool FbxImporter::ImportAnimationImpl2(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation)
-	{
-		TGA::FBX::Importer::InitImporter();
-
-		TGA::FBX::Animation tgaAnimation;
-
-		try
-		{
-			if (!TGA::FBX::Importer::LoadAnimationW(path.wstring(), tgaAnimation))
-			{
-				return false;
-			}
-		}
-		catch (const std::exception& e)
-		{
-			VT_CORE_ERROR("[FBXImporter] Unable to import animation! Reason: {0}", e.what());
-			return false;
-		}
-
-		dstAnimation.m_framesPerSecond = static_cast<uint32_t>(tgaAnimation.FramesPerSecond);
-		dstAnimation.m_duration = static_cast<float>(tgaAnimation.Duration);
-
-		for (const auto& tgaFrame : tgaAnimation.Frames)
-		{
-			auto& newFrame = dstAnimation.m_frames.emplace_back();
-			newFrame.localTRS.resize(targetSkeleton->m_joints.size());
-
-			for (const auto& [jointName, localTQS] : tgaFrame.LocalTQS)
-			{
-				Animation::TRS animTRS{};
-				animTRS.position = { localTQS.translation[0], localTQS.translation[1], localTQS.translation[2] };
-				animTRS.rotation = { localTQS.rotation[3], localTQS.rotation[0], localTQS.rotation[1], localTQS.rotation[2] };
-				animTRS.scale = { localTQS.scale[0], localTQS.scale[1] , localTQS.scale[2] };
-
-				const int32_t jntIndex = targetSkeleton->GetJointIndexFromName(jointName);
-				if (jntIndex == -1)
-				{
-					continue;
-				}
-
-				newFrame.localTRS[jntIndex] = animTRS;
-			}
-		}
-
-		TGA::FBX::Importer::UninitImporter();
-		return true;
-	}
-
 	bool FbxImporter::ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation)
 	{
 		ufbx_scene* scene = LoadScene(path);
@@ -137,25 +89,34 @@ namespace Volt
 			dstAnimation.m_duration = static_cast<float>(duration);
 
 			// Find out frame count
-			size_t frameCount = bakedAnim->nodes.data[0].translation_keys.count;
-			dstAnimation.m_frames.resize(frameCount);
-			for (auto& frame : dstAnimation.m_frames)
-			{
-				frame.localTRS.resize(targetSkeleton->m_joints.size());
-			}
-
 			for (const auto& bakedNode : bakedAnim->nodes)
 			{
 				ufbx_node* sceneNode = scene->nodes[bakedNode.typed_id];
 
-				const int32_t jntIndex = targetSkeleton->GetJointIndexFromName(sceneNode->name.data);
+				std::string jointName = sceneNode->name.data;
+				if (size_t namePos = jointName.find_last_of(":"); namePos != std::string::npos)
+				{
+					jointName = jointName.substr(namePos + 1);
+				}
+
+				const int32_t jntIndex = targetSkeleton->GetJointIndexFromName(jointName);
 				if (jntIndex == -1)
 				{
 					continue;
 				}
 
+				if (dstAnimation.m_frames.size() < bakedNode.translation_keys.count)
+				{
+					dstAnimation.m_frames.resize(bakedNode.translation_keys.count);
+				}
+
 				for (size_t i = 0; const auto& keyFrame : bakedNode.translation_keys)
 				{
+					if (dstAnimation.m_frames.at(i).localTRS.size() < targetSkeleton->m_joints.size())
+					{
+						dstAnimation.m_frames.at(i).localTRS.resize(targetSkeleton->m_joints.size());
+					}
+
 					auto& trs = dstAnimation.m_frames.at(i).localTRS.at(jntIndex);
 					trs.position = { keyFrame.value.x, keyFrame.value.y, keyFrame.value.z };
 					i++;
@@ -163,6 +124,11 @@ namespace Volt
 
 				for (size_t i = 0; const auto & keyFrame : bakedNode.rotation_keys)
 				{
+					if (dstAnimation.m_frames.at(i).localTRS.size() < targetSkeleton->m_joints.size())
+					{
+						dstAnimation.m_frames.at(i).localTRS.resize(targetSkeleton->m_joints.size());
+					}
+
 					auto& trs = dstAnimation.m_frames.at(i).localTRS.at(jntIndex);
 					trs.rotation = glm::quat(static_cast<float>(keyFrame.value.w), static_cast<float>(keyFrame.value.x), static_cast<float>(keyFrame.value.y), static_cast<float>(keyFrame.value.z));
 					i++;
@@ -170,6 +136,11 @@ namespace Volt
 
 				for (size_t i = 0; const auto & keyFrame : bakedNode.scale_keys)
 				{
+					if (dstAnimation.m_frames.at(i).localTRS.size() < targetSkeleton->m_joints.size())
+					{
+						dstAnimation.m_frames.at(i).localTRS.resize(targetSkeleton->m_joints.size());
+					}
+
 					auto& trs = dstAnimation.m_frames.at(i).localTRS.at(jntIndex);
 					trs.scale = { keyFrame.value.x, keyFrame.value.y, keyFrame.value.z };
 					i++;
@@ -259,7 +230,7 @@ namespace Volt
 		std::vector<VertexAnimationInfo> vertexAnimationInfo(maxTriangles * 3);
 
 		std::vector<uint16_t> vertexBoneInfluences;
-		std::vector<uint8_t> vertexBoneWeights;
+		std::vector<float> vertexBoneWeights;
 
 		if (mesh->skin_deformers.count > 0)
 		{
@@ -291,17 +262,11 @@ namespace Volt
 				{
 					vertexAnimationInfo[i].influenceCount = static_cast<uint16_t>(numWeights);
 
-					uint8_t quantizedSum = 0;
-					for (size_t j = 0; j < weights.size() && j < std::numeric_limits<uint8_t>::max(); j++)
+					for (size_t j = 0; j < weights.size(); j++)
 					{
-						uint8_t quantizedWeight = static_cast<uint8_t>(weights[j] / totalWeight * 255.f);
-						quantizedSum += quantizedWeight;
-
 						vertexBoneInfluences[j] = influences[j];
-						vertexBoneWeights[j] = quantizedWeight;
+						vertexBoneWeights[j] = weights.at(j);
 					}
-
-					vertexBoneWeights[0] += 255 - quantizedSum;
 				}
 			}
 		}

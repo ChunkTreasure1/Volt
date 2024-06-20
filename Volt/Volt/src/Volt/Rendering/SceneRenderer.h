@@ -82,15 +82,13 @@ namespace Volt
 		void OnRender(Ref<Camera> camera);
 
 		void BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard, const CullPrimitivesData& cullPrimitivesData);
-		void RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard blackboard, const CullPrimitivesData& cullPrimitivesData);
+		void RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard& blackboard, const CullPrimitivesData& cullPrimitivesData);
 
 		void SetupFrameData(RenderGraphBlackboard& blackboard, Ref<Camera> camera);
 
 		///// Passes //////
 		void UploadUniformBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
 		void UploadLightBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-
-		void SetupDrawContext(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 

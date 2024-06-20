@@ -12,8 +12,7 @@ struct Constants
     TypedBuffer<uint> meshletCount;
     TypedBuffer<uint2> meshletToObjectIdAndOffset;
     
-    TypedBuffer<Meshlet> gpuMeshlets;
-    TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
+    GPUScene gpuScene;
     
     uint cullingMode;
 
@@ -63,10 +62,10 @@ void main(uint threadId : SV_DispatchThreadID)
     }
     
     const uint2 objectIdAndOffset = constants.meshletToObjectIdAndOffset.Load(threadId);
-    const ObjectDrawData objectData = constants.objectDrawDataBuffer.Load(objectIdAndOffset.x);
+    const ObjectDrawData objectData = constants.gpuScene.objectDrawDataBuffer.Load(objectIdAndOffset.x);
     
     const uint meshletIndex = objectData.meshletStartOffset + threadId - objectIdAndOffset.y;
-    const Meshlet meshlet = constants.gpuMeshlets.Load(meshletIndex);
+    const Meshlet meshlet = constants.gpuScene.meshletsBuffer.Load(meshletIndex);
 
 #if 1
 

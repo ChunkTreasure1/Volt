@@ -26,7 +26,7 @@ struct DefaultInput
     
     uint GetObjectID()
     {
-        const Constants constants = GetConstants < Constants > ();
+        const Constants constants = GetConstants<Constants>();
         const DrawContext context = constants.drawContext.Load(0);
    
         const uint objectId = context.drawToInstanceOffset.Load(drawIndex);

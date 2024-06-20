@@ -9,8 +9,7 @@ struct Constants
     RWTypedBuffer<uint> meshletCount;
     RWTypedBuffer<uint2> meshletToObjectIdAndOffset;
     
-    TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    TypedBuffer<GPUMesh> meshBuffer;
+    GPUScene gpuScene;
     
     uint objectCount;
     uint cullingMode;
@@ -58,8 +57,8 @@ void main(uint threadId : SV_DispatchThreadID, uint groupThreadId : SV_GroupThre
         return;
     }
  
-    const ObjectDrawData objectDrawData = constants.objectDrawDataBuffer.Load(threadId);
-    const GPUMesh mesh = constants.meshBuffer.Load(objectDrawData.meshId);
+    const ObjectDrawData objectDrawData = constants.gpuScene.objectDrawDataBuffer.Load(threadId);
+    const GPUMesh mesh = constants.gpuScene.meshesBuffer.Load(objectDrawData.meshId);
 
 #if 1
     bool visible = true;

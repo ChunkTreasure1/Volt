@@ -20,6 +20,16 @@ namespace Volt
 	class Scene;
 	class Material;
 	class RenderGraph;
+	class MotionWeaver;
+
+	struct GPUSceneBuffers
+	{
+		RefPtr<RHI::StorageBuffer> meshesBuffer;
+		RefPtr<RHI::StorageBuffer> materialsBuffer;
+		RefPtr<RHI::StorageBuffer> objectDrawDataBuffer;
+		RefPtr<RHI::StorageBuffer> meshletsBuffer;
+		RefPtr<RHI::StorageBuffer> bonesBuffer;
+	};
 
 	class RenderScene
 	{
@@ -35,6 +45,8 @@ namespace Volt
 		void InvalidateRenderObject(UUID64 renderObject);
 
 		const UUID64 Register(EntityID entityId, Ref<Mesh> mesh, Ref<Material> material, uint32_t subMeshIndex);
+		const UUID64 Register(EntityID entityId, Ref<MotionWeaver> motionWeaver, Ref<Mesh> mesh, Ref<Material> material, uint32_t subMeshIndex);
+
 		void Unregister(UUID64 id);
 
 		inline const bool IsInvalid() const { return m_isInvalid; }
@@ -52,7 +64,8 @@ namespace Volt
 		const uint32_t GetMaterialIndex(Weak<Material> material) const;
 		const uint32_t GetMeshIndex(Weak<Mesh> mesh) const;
 
-		inline const BindlessResource<RHI::StorageBuffer>& GetGPUSceneBuffer() const { return *m_gpuSceneBuffer; }
+		const GPUSceneBuffers GetGPUSceneBuffers() const;
+
 		inline const BindlessResource<RHI::StorageBuffer>& GetGPUMeshesBuffer() const { return *m_gpuMeshesBuffer; }
 		inline const BindlessResource<RHI::StorageBuffer>& GetGPUMaterialsBuffer() const { return *m_gpuMaterialsBuffer; }
 		inline const BindlessResource<RHI::StorageBuffer>& GetGPUMeshletsBuffer() const { return *m_gpuMeshletsBuffer; }
@@ -73,11 +86,10 @@ namespace Volt
 	private:
 		void UploadGPUMeshes(std::vector<GPUMesh>& gpuMeshes);
 		void UploadObjectDrawData(std::vector<ObjectDrawData>& objectDrawData);
-		void UploadGPUScene();
 		void UploadGPUMeshlets();
 
 		void UploadGPUMaterials();
-		void BuildGPUMaterial(Weak<Material> material, GPUMaterialNew& gpuMaterial);
+		void BuildGPUMaterial(Weak<Material> material, GPUMaterial& gpuMaterial);
 
 		void BuildGPUMeshes(std::vector<GPUMesh>& gpuMeshes);
 
@@ -89,6 +101,7 @@ namespace Volt
 
 		std::vector<Meshlet> m_sceneMeshlets;
 
+		std::vector<UUID64> m_animatedRenderObjects;
 		std::vector<RenderObject> m_renderObjects;
 		std::vector<ObjectDrawData> m_objectDrawData;
 
@@ -122,11 +135,11 @@ namespace Volt
 		// Mesh Shader rendering
 		std::vector<IndirectMeshTaskCommand> m_meshShaderCommands;
 
-		BindlessResourceScope<RHI::StorageBuffer> m_gpuSceneBuffer;
 		BindlessResourceScope<RHI::StorageBuffer> m_gpuMeshesBuffer;
 		BindlessResourceScope<RHI::StorageBuffer> m_gpuMaterialsBuffer;
 		BindlessResourceScope<RHI::StorageBuffer> m_objectDrawDataBuffer;
 		BindlessResourceScope<RHI::StorageBuffer> m_gpuMeshletsBuffer;
+		BindlessResourceScope<RHI::StorageBuffer> m_gpuBonesBuffer;
 
 		Scene* m_scene = nullptr;
 		uint32_t m_currentIndividualMeshCount = 0;

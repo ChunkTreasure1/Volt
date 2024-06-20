@@ -32,7 +32,7 @@ namespace Volt
 
 	CullObjectsData CullingTechnique::AddCullObjectsPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode)
 	{
-		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();
+		const auto& gpuSceneData = m_blackboard.Get<GPUSceneData>();
 
 		RenderGraphResourceHandle meshletCountBuffer = 0;
 		{
@@ -52,8 +52,9 @@ namespace Volt
 			data.meshletCount = meshletCountBuffer;
 
 			builder.WriteResource(data.meshletCount);
-			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
-			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
+			
+			GPUSceneData::SetupInputs(builder, gpuSceneData);
+			
 			builder.SetIsComputePass();
 		},
 		[=](const CullObjectsData& data, RenderContext& context, const RenderGraphPassResources& resources)
@@ -64,10 +65,11 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("CullObjects");
 
 			context.BindPipeline(pipeline);
+
+			GPUSceneData::SetupConstants(context, resources, gpuSceneData);
+
 			context.SetConstant("meshletCount"_sh, resources.GetBuffer(data.meshletCount));
 			context.SetConstant("meshletToObjectIdAndOffset"_sh, resources.GetBuffer(data.meshletToObjectIdAndOffset));
-			context.SetConstant("objectDrawDataBuffer"_sh, resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
-			context.SetConstant("meshBuffer"_sh, resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
 			context.SetConstant("objectCount"_sh, commandCount);
 			context.SetConstant("cullingMode"_sh, static_cast<uint32_t>(cullingMode));
 
@@ -99,7 +101,7 @@ namespace Volt
 
 	CullMeshletsData CullingTechnique::AddCullMeshletsPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode, const CullObjectsData& cullObjectsData)
 	{
-		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();
+		const auto& gpuSceneData = m_blackboard.Get<GPUSceneData>();
 
 		RenderGraphResourceHandle argsBufferHandle = RenderingUtils::GenerateIndirectArgs(m_renderGraph, cullObjectsData.meshletCount, 256, "Cull Meshlets Indirect Args");
 
@@ -126,10 +128,11 @@ namespace Volt
 			data.survivingMeshletCount = survivingMeshletCountBuffer;
 
 			builder.WriteResource(survivingMeshletCountBuffer);
+
+			GPUSceneData::SetupInputs(builder, gpuSceneData);
+
 			builder.ReadResource(cullObjectsData.meshletCount);
 			builder.ReadResource(cullObjectsData.meshletToObjectIdAndOffset);
-			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
-			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
 			builder.ReadResource(argsBufferHandle, RenderGraphResourceState::IndirectArgument);
 
 			builder.SetIsComputePass();
@@ -139,12 +142,13 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("CullMeshlets");
 
 			context.BindPipeline(pipeline);
+
+			GPUSceneData::SetupConstants(context, resources, gpuSceneData);
+
 			context.SetConstant("survivingMeshlets"_sh, resources.GetBuffer(data.survivingMeshlets));
 			context.SetConstant("survivingMeshletCount"_sh, resources.GetBuffer(data.survivingMeshletCount));
 			context.SetConstant("meshletCount"_sh, resources.GetBuffer(cullObjectsData.meshletCount));
 			context.SetConstant("meshletToObjectIdAndOffset"_sh, resources.GetBuffer(cullObjectsData.meshletToObjectIdAndOffset));
-			context.SetConstant("gpuMeshlets"_sh, resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
-			context.SetConstant("objectDrawDataBuffer"_sh, resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
 			context.SetConstant("cullingMode"_sh, static_cast<uint32_t>(cullingMode));
 
 			const auto projection = camera->GetProjection();
@@ -175,7 +179,7 @@ namespace Volt
 
 	CullPrimitivesData CullingTechnique::AddCullPrimitivesPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullMeshletsData& cullMeshletsData, const glm::vec2& renderSize, const uint32_t instanceCount)
 	{
-		const auto& externalBuffers = m_blackboard.Get<ExternalBuffersData>();
+		const auto& gpuSceneData = m_blackboard.Get<GPUSceneData>();
 
 		RenderGraphResourceHandle argsBufferHandle = RenderingUtils::GenerateIndirectArgsWrapped(m_renderGraph, cullMeshletsData.survivingMeshletCount, 1, "Cull Primitives Indirect Args");
 
@@ -206,11 +210,11 @@ namespace Volt
 			data.drawCommand = drawCommandBuffer;
 
 			builder.WriteResource(data.drawCommand);
+
+			GPUSceneData::SetupInputs(builder, gpuSceneData);
+
 			builder.ReadResource(cullMeshletsData.survivingMeshlets);
 			builder.ReadResource(cullMeshletsData.survivingMeshletCount);
-			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
-			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
-			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
 			builder.ReadResource(argsBufferHandle, RenderGraphResourceState::IndirectArgument);
 
 			builder.SetIsComputePass();
@@ -220,13 +224,13 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("CullPrimitives");
 
 			context.BindPipeline(pipeline);
+
+			GPUSceneData::SetupConstants(context, resources, gpuSceneData);
+
 			context.SetConstant("indexBuffer"_sh, resources.GetBuffer(data.indexBuffer));
 			context.SetConstant("drawCommand"_sh, resources.GetBuffer(data.drawCommand));
 			context.SetConstant("survivingMeshlets"_sh, resources.GetBuffer(cullMeshletsData.survivingMeshlets));
 			context.SetConstant("survivingMeshletCount"_sh, resources.GetBuffer(cullMeshletsData.survivingMeshletCount));
-			context.SetConstant("gpuMeshlets"_sh, resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
-			context.SetConstant("gpuMeshes"_sh, resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
-			context.SetConstant("objectDrawDataBuffer"_sh, resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
 			context.SetConstant("viewMatrix"_sh, camera->GetView());
 			context.SetConstant("projectionMatrix"_sh, camera->GetProjection());
 			context.SetConstant("renderSize"_sh, renderSize);
