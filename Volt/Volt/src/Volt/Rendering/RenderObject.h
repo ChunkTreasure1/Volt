@@ -23,7 +23,7 @@ namespace Volt
 		uint32_t vertexBufferIndex = 0;
 		uint32_t meshletStartOffset = 0;
 
-		VT_NODISCARD VT_INLINE bool IsAnimated() const { return motionWeaver != nullptr; }
+		VT_NODISCARD VT_INLINE bool IsAnimated() const { return motionWeaver != nullptr }
 	};
 
 	inline bool operator==(const RenderObject& lhs, const RenderObject& rhs) { return lhs.id == rhs.id; }

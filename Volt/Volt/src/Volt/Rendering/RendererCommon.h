@@ -6,7 +6,7 @@
 
 namespace Volt
 {
-	struct IndirectGPUCommandNew
+	struct IndirectGPUCommand
 	{
 		RHI::IndirectDrawCommand command{};
 		uint32_t objectId{};

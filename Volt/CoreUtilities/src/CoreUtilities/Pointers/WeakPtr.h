@@ -7,6 +7,22 @@ class WeakPtr
 {
 public:
 	WeakPtr() noexcept = default;
+	WeakPtr(T* ptr) noexcept
+	{
+		if (m_weakCounter)
+		{
+			m_weakCounter->Decrease();
+			m_weakCounter = nullptr;
+		}
+
+		m_object = ptr;
+		if (m_object)
+		{
+			m_weakCounter = m_object->GetWeakCounter();
+			m_weakCounter->Increase();
+		}
+	}
+
 	WeakPtr(RefPtr<T> refPtr) noexcept
 	{
 		if (m_weakCounter)

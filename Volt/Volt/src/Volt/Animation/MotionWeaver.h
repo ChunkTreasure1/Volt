@@ -21,7 +21,8 @@ namespace Volt
 		void Update(float deltaTime);
 
 		std::vector<glm::mat4x4> Sample();
-
+		
+		VT_NODISCARD VT_INLINE Weak<Skeleton> GetSkeleton() const { return m_Skeleton; }
 
 	private:
 		Ref<MotionWeaveDatabase> m_Database;

@@ -145,4 +145,9 @@ namespace Volt
 		data.m_oldHandle = data.handle;
 		data.m_oldMaterials = data.materials;
 	}
+
+	void MotionWeaveComponent::OnComponentDeserialized(MotionWeaveComponent& data, Entity entity)
+	{
+
+	}
 }

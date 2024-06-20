@@ -181,7 +181,7 @@ public:
 
 	VT_NODISCARD VT_INLINE operator bool() const { return m_object != nullptr; }
 
-	VT_INLINE RefPtr<T>& operator=(RefPtr<T>&& other)
+	VT_INLINE RefPtr<T>& operator=(RefPtr<T>&& other) noexcept
 	{
 		if (m_object)
 		{

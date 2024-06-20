@@ -118,7 +118,10 @@ inline void BinaryStreamReader::Read(std::string& data)
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 
 	data.resize(serializedTypeHeader.totalTypeSize);
-	ReadData(data.data(), serializedTypeHeader, typeHeader);
+	if (serializedTypeHeader.totalTypeSize > 0)
+	{
+		ReadData(data.data(), serializedTypeHeader, typeHeader);
+	}
 }
 
 template<>
@@ -129,7 +132,10 @@ inline void BinaryStreamReader::Read(Buffer& data)
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 
 	data.Resize(serializedTypeHeader.totalTypeSize);
-	ReadData(data.As<void>(), serializedTypeHeader, typeHeader);
+	if (serializedTypeHeader.totalTypeSize > 0)
+	{
+		ReadData(data.As<void>(), serializedTypeHeader, typeHeader);
+	}
 }
 
 template<typename F>

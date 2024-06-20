@@ -80,7 +80,7 @@ namespace Volt
 		inline const RenderObject& GetRenderObjectAt(const size_t index) const { return m_renderObjects.at(index); }
 		const RenderObject& GetRenderObjectFromID(UUID64 id) const;
 
-		inline std::span<const IndirectGPUCommandNew> GetMeshCommands() const { return m_meshCommands; }
+		inline std::span<const IndirectGPUCommand> GetMeshCommands() const { return m_meshCommands; }
 		inline std::span<const IndirectMeshTaskCommand> GetMeshShaderCommands() const { return m_meshShaderCommands; }
 
 	private:
@@ -127,10 +127,12 @@ namespace Volt
 		std::unordered_map<AssetHandle, size_t> m_materialIndexFromAssetHandle;
 		std::unordered_map<size_t, size_t> m_meshIndexFromMeshAssetHash;
 
-		std::vector<IndirectGPUCommandNew> m_meshCommands;
+		std::vector<IndirectGPUCommand> m_meshCommands;
 		std::vector<Weak<Mesh>> m_individualMeshes;
 		std::vector<Weak<Material>> m_individualMaterials;
 		std::unordered_map<size_t, uint32_t> m_meshSubMeshToGPUMeshIndex;
+
+		std::vector<glm::mat4> m_animationBufferStorage;
 
 		// Mesh Shader rendering
 		std::vector<IndirectMeshTaskCommand> m_meshShaderCommands;
@@ -144,6 +146,7 @@ namespace Volt
 		Scene* m_scene = nullptr;
 		uint32_t m_currentIndividualMeshCount = 0;
 		uint32_t m_currentIndexCount = 0;
+		uint32_t m_currentBoneCount = 0;
 
 		UUID64 m_materialChangedCallbackID;
 		UUID64 m_meshChangedCallbackID;

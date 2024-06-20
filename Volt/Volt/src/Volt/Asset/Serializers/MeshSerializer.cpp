@@ -42,11 +42,14 @@ namespace Volt
 
 	struct MeshSerializationData_V2
 	{
-		std::vector<AssetHandle> materials;
 		std::vector<glm::vec3> vertexPositions;
 		std::vector<VertexMaterialData> vertexMaterialData;
-
+		std::vector<VertexAnimationInfo> vertexAnimationInfo;
+		std::vector<uint16_t> vertexBoneInfluences;
+		std::vector<float> vertexBoneWeights;
 		std::vector<uint32_t> indices;
+
+		std::vector<AssetHandle> materials;
 
 		glm::vec3 boundingSphereCenter;
 		float boundingSphereRadius;
@@ -55,10 +58,13 @@ namespace Volt
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const MeshSerializationData_V2& data)
 		{
-			streamWriter.WriteRaw(data.materials);
 			streamWriter.WriteRaw(data.vertexPositions);
 			streamWriter.WriteRaw(data.vertexMaterialData);
+			streamWriter.WriteRaw(data.vertexAnimationInfo);
+			streamWriter.WriteRaw(data.vertexBoneInfluences);
+			streamWriter.WriteRaw(data.vertexBoneWeights);
 			streamWriter.WriteRaw(data.indices);
+			streamWriter.WriteRaw(data.materials);
 			streamWriter.Write(data.boundingSphereCenter);
 			streamWriter.Write(data.boundingSphereRadius);
 			streamWriter.Write(data.subMeshes);
@@ -66,10 +72,13 @@ namespace Volt
 
 		static void Deserialize(BinaryStreamReader& streamReader, MeshSerializationData_V2& outData)
 		{
-			streamReader.ReadRaw(outData.materials);
 			streamReader.ReadRaw(outData.vertexPositions);
 			streamReader.ReadRaw(outData.vertexMaterialData);
+			streamReader.ReadRaw(outData.vertexAnimationInfo);
+			streamReader.ReadRaw(outData.vertexBoneInfluences);
+			streamReader.ReadRaw(outData.vertexBoneWeights);
 			streamReader.ReadRaw(outData.indices);
+			streamReader.ReadRaw(outData.materials);
 			streamReader.Read(outData.boundingSphereCenter);
 			streamReader.Read(outData.boundingSphereRadius);
 			streamReader.Read(outData.subMeshes);
@@ -95,6 +104,9 @@ namespace Volt
 
 		serializationData.vertexPositions = vertexContainer.positions;
 		serializationData.vertexMaterialData = vertexContainer.materialData;
+		serializationData.vertexAnimationInfo = vertexContainer.vertexAnimationInfo;
+		serializationData.vertexBoneInfluences = vertexContainer.vertexBoneInfluences;
+		serializationData.vertexBoneWeights = vertexContainer.vertexBoneWeights;
 		serializationData.indices = mesh->GetIndices();
 		serializationData.boundingSphereCenter = mesh->GetBoundingSphere().center;
 		serializationData.boundingSphereRadius = mesh->GetBoundingSphere().radius;
@@ -161,6 +173,9 @@ namespace Volt
 
 			mesh->m_vertexContainer.positions = serializationData.vertexPositions;
 			mesh->m_vertexContainer.materialData = serializationData.vertexMaterialData;
+			mesh->m_vertexContainer.vertexAnimationInfo = serializationData.vertexAnimationInfo;
+			mesh->m_vertexContainer.vertexBoneInfluences = serializationData.vertexBoneInfluences;
+			mesh->m_vertexContainer.vertexBoneWeights = serializationData.vertexBoneWeights;
 			mesh->m_indices = serializationData.indices;
 			mesh->m_boundingSphere.center = serializationData.boundingSphereCenter;
 			mesh->m_boundingSphere.radius = serializationData.boundingSphereRadius;

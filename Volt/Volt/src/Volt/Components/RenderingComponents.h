@@ -165,7 +165,7 @@ namespace Volt
 		AssetHandle motionWeaveDatabase = Asset::Null();
 
 		Ref<MotionWeaver> MotionWeaver;
-		
+		std::vector<UUID64> renderObjectIds;
 
 		static void ReflectType(TypeDesc<MotionWeaveComponent>& reflect)
 		{

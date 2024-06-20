@@ -224,9 +224,29 @@ namespace Volt
 			}
 		});
 
-		ForEachWithComponents<MotionWeaveComponent, const MeshComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave, const MeshComponent& mesh)
+		ForEachWithComponents<MotionWeaveComponent, const MeshComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave, const MeshComponent& meshComp)
 		{
 			motionWeave.MotionWeaver = MotionWeaver::Create(motionWeave.motionWeaveDatabase);
+
+			Entity entity{ id, shared_from_this() };
+
+			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshComp.handle);
+			if (mesh && mesh->IsValid())
+			{
+				const auto& idComp = entity.GetComponent<IDComponent>();
+				const auto& materialTable = mesh->GetMaterialTable();
+
+				for (size_t i = 0; i < mesh->GetSubMeshes().size(); i++)
+				{
+					auto material = AssetManager::QueueAsset<Material>(materialTable.GetMaterial(mesh->GetSubMeshes().at(i).materialIndex));
+					if (!material->IsValid())
+					{
+					}
+
+					auto uuid = m_renderScene->Register(idComp.id, motionWeave.MotionWeaver, mesh, material, static_cast<uint32_t>(i));
+					motionWeave.renderObjectIds.emplace_back(uuid);
+				}
+			}
 		});
 	}
 
@@ -246,6 +266,10 @@ namespace Volt
 		ForEachWithComponents<MotionWeaveComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave)
 		{
 			motionWeave.MotionWeaver = nullptr;
+			for (const auto& objId : motionWeave.renderObjectIds)
+			{
+				m_renderScene->Unregister(objId);
+			}
 		});
 
 		MonoScriptEngine::OnRuntimeEnd();

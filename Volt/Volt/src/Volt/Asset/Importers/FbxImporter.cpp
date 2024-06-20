@@ -255,8 +255,12 @@ namespace Volt
 				}
 
 				vertexAnimationInfo[i].boneOffset = static_cast<uint16_t>(vertexBoneInfluences.size() + dstMesh.m_vertexBoneInfluences.size());
-				vertexBoneInfluences.resize(vertexBoneInfluences.size() + numWeights);
-				vertexBoneWeights.resize(vertexBoneInfluences.size() + numWeights);
+
+				const size_t influencesOffset = vertexBoneInfluences.size();
+				const size_t weightsOffset = vertexBoneWeights.size();
+
+				vertexBoneInfluences.resize(influencesOffset + numWeights);
+				vertexBoneWeights.resize(weightsOffset + numWeights);
 
 				if (totalWeight > 0.f)
 				{
@@ -264,8 +268,8 @@ namespace Volt
 
 					for (size_t j = 0; j < weights.size(); j++)
 					{
-						vertexBoneInfluences[j] = influences[j];
-						vertexBoneWeights[j] = weights.at(j);
+						vertexBoneInfluences[influencesOffset + j] = influences[j];
+						vertexBoneWeights[weightsOffset + j] = weights.at(j);
 					}
 				}
 			}

@@ -12,6 +12,9 @@
 #include "Volt/Rendering/Utility/ScatteredBufferUpload.h"
 #include "Volt/Rendering/Camera/Camera.h"
 
+#include "Volt/Animation/MotionWeaver.h"
+#include "Volt/Asset/Animation/Skeleton.h"
+
 #include "Volt/Math/Math.h"
 #include "Volt/Utility/Algorithms.h"
 
@@ -134,6 +137,17 @@ namespace Volt
 
 		m_objectDrawData.clear();
 		BuildObjectDrawData(m_objectDrawData);
+		
+		m_currentBoneCount = 0;
+		for (const auto& animatedObject : m_animatedRenderObjects)
+		{
+			auto& objectDrawData = m_objectDrawData.at(m_objectIndexFromRenderObjectID.at(animatedObject));
+			objectDrawData.boneOffset = m_currentBoneCount;
+		
+			const auto& renderObject = GetRenderObjectFromID(animatedObject);
+			m_currentBoneCount += static_cast<uint32_t>(renderObject.motionWeaver->GetSkeleton()->GetJointCount());
+		}
+		
 		BuildMeshletBuffer(m_objectDrawData);
 
 		UploadGPUMeshes(gpuMeshes);
@@ -212,6 +226,28 @@ namespace Volt
 					subMeshIndex++;
 				}
 			}
+		}
+
+		// Temporary animation sampling
+		m_animationBufferStorage.resize(m_currentBoneCount);
+		for (const auto& animatedObject : m_animatedRenderObjects)
+		{
+			const auto& objectDrawData = m_objectDrawData.at(m_objectIndexFromRenderObjectID.at(animatedObject));
+			const auto& renderObject = GetRenderObjectFromID(animatedObject);
+		
+			const auto sample = renderObject.motionWeaver->Sample();
+			memcpy_s(m_animationBufferStorage.data() + objectDrawData.boneOffset, sizeof(glm::mat4) * sample.size(), sample.data(), sizeof(glm::mat4) * sample.size());
+		}
+
+		if (m_currentBoneCount > 0)
+		{
+			if (m_gpuBonesBuffer->GetResource()->GetSize() < m_animationBufferStorage.size())
+			{
+				m_gpuBonesBuffer->GetResource()->Resize(static_cast<uint32_t>(m_animationBufferStorage.size()));
+			}
+
+			m_gpuBonesBuffer->GetResource()->SetData(m_animationBufferStorage.data(), m_animationBufferStorage.size() * sizeof(glm::mat4));
+			m_animationBufferStorage.clear();
 		}
 	}
 
