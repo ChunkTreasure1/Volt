@@ -389,7 +389,7 @@ namespace Volt
 		}
 		newEntity.AddComponent<CommonComponent>();
 		newEntity.AddComponent<RelationshipComponent>();
-		
+
 		auto& idComp = newEntity.AddComponent<IDComponent>();
 
 		while (m_entityRegistry.Contains(idComp.id))
@@ -770,7 +770,7 @@ namespace Volt
 		{
 			const EntityID uuid = m_registry.get<IDComponent>(id).id;
 
-			auto entity =  otherScene->CreateEntityWithUUID(uuid);
+			auto entity = otherScene->CreateEntityWithUUID(uuid);
 			Entity::Copy(Entity{ id, this }, entity, EntityCopyFlags::None);
 		});
 	}
@@ -791,7 +791,7 @@ namespace Volt
 		}
 
 		const auto tqs = GetWorldTQS(entity);
-		const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, tqs.position) * glm::mat4_cast(tqs.rotation) * glm::scale(glm::mat4{ 1.f }, tqs.scale);
+		const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, tqs.position)* glm::mat4_cast(tqs.rotation)* glm::scale(glm::mat4{ 1.f }, tqs.scale);
 
 		{
 			std::unique_lock lock{ m_cachedEntityTransformMutex };
@@ -880,7 +880,7 @@ namespace Volt
 		m_registry.on_destroy<CapsuleColliderComponent>().connect<&Scene::CapsuleColliderComponent_OnDestroy>(this);
 		m_registry.on_destroy<MeshColliderComponent>().connect<&Scene::MeshColliderComponent_OnDestroy>(this);
 		m_registry.on_destroy<MeshComponent>().connect<&Scene::MeshComponent_OnDestroy>(this);
-		
+
 	}
 
 	const bool Scene::IsRelatedTo(Entity entity, Entity otherEntity)
@@ -984,7 +984,7 @@ namespace Volt
 			{
 				Entity childEnt{ m_entityRegistry.GetHandleFromUUID(relComp.children.at(i)), this };
 				RemoveEntityInternal(childEnt, true);
-			
+
 				relComp = entity.GetComponent<RelationshipComponent>();
 			}
 		}
@@ -1159,12 +1159,17 @@ namespace Volt
 						heightMap[xVertex + zVertex * 9] = height;
 					}
 				}
+
+				landscape.heightMaps[xCell + zCell * landscape.sideCellCount] = heightMap;
 			}
 		}
-		
+
 #pragma push_macro("PixelFormat")
 #undef PixelFormat
-		landscape.heightMapTexture = Texture2D::Create(RHI::PixelFormat::R32_SFLOAT, landscape.sideCellCount * 9, landscape.sideCellCount * 9, landscape.heightMaps.data());
+		for (int i = 0; i < landscape.heightMaps.size(); i++)
+		{
+			landscape.heightMapTextures[i] = Texture2D::Create(RHI::PixelFormat::R32_SFLOAT, 9, 9, landscape.heightMaps[i].data());
+		}
 #pragma pop_macro("PixelFormat")
 
 
@@ -1403,7 +1408,7 @@ namespace Volt
 
 		return entities;
 	}
-	
+
 	void Scene::InvalidateRenderScene()
 	{
 		const auto& meshView = m_registry.view<MeshComponent, IDComponent>();

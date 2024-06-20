@@ -1,14 +1,12 @@
 #include "Resources.hlsli"
 #include "Structures.hlsli"
 
-
-#define SIDE_CELL_COUNT 1
-
 struct Output
 {
     float4 position : SV_Position;
     float3 normal : NORMAL;
     float4 color : COLOR;
+    int instanceId : INSTANCE_ID;
 };
 
 struct Input
@@ -22,6 +20,7 @@ struct Constants
     TypedBuffer<ViewData> viewData;
     TypedBuffer<TextureT<float> > heightMaps;
     TextureSampler PointSampler;
+    uint sideCellCount;
 };
 
 Texture2D<float> heightMap : register(t0);
@@ -39,19 +38,22 @@ Output main(in Input input)
     const float localXVertexPosition = (input.indexID % vertexSideCount) * vertexSpacing;
     const float localZVertexPosition = (input.indexID / vertexSideCount) * vertexSpacing;
     
-    const float localXCellPosition = (input.instanceID % SIDE_CELL_COUNT) * cellSideSize;
-    const float localZCellPosition = (input.instanceID / SIDE_CELL_COUNT) * cellSideSize;
+    const int xIndex = input.instanceID % constants.sideCellCount;
+    const int zIndex = input.instanceID / constants.sideCellCount;
+    
+    const float localXCellPosition = (xIndex) * cellSideSize;
+    const float localZCellPosition = (zIndex) * cellSideSize;
     
     const float2 localXZPosition = float2(localXCellPosition + localXVertexPosition, localZCellPosition + localZVertexPosition);
     
-    const int heightmapIndex = 0;
+    const int heightmapIndex = xIndex + zIndex * constants.sideCellCount;
     TextureT<float> heightmap = constants.heightMaps.Load(heightmapIndex);    
     
-    float chunkSideSize = SIDE_CELL_COUNT * cellSideSize;
+    float chunkSideSize = constants.sideCellCount * cellSideSize;
     const float2 uv = localXZPosition / chunkSideSize;
     const float height = heightmap.SampleLevel2D(constants.PointSampler, uv, 0);
     
-    float4 localPosition = float4(localXZPosition.x, height, localXZPosition.y, 1.f);
+    float4 localPosition = float4(localXZPosition.x, sin(((input.indexID % vertexSideCount) + xIndex * (vertexSideCount - 1)) / 10.f) + cos(((input.indexID / vertexSideCount) + zIndex * (vertexSideCount - 1)) / 10.f), localXZPosition.y, 1.f);
     float4 worldPosition = localPosition;
     
     Output output;
@@ -59,6 +61,7 @@ Output main(in Input input)
     output.color = float4(0.f, 1.f, 0.f, 1.f);
     output.normal = float3(0.f, 1.f, 0.f);
     output.normal = float3(0.f, 1.f, 0.f);
+    output.instanceId = input.instanceID;
     
     return output;
 }

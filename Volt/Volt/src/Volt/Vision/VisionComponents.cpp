@@ -1,4 +1,5 @@
 #include "vtpch.h"
+#pragma optimize("", off)
 #include "VisionComponents.h"
 
 #include <Volt/Components/CoreComponents.h>
@@ -14,7 +15,6 @@
 #include "Volt/Events/GameEvent.h"
 
 #include "Volt/Input/Input.h"
-
 void Volt::VisionCameraComponent::OnEvent(Volt::Event& e)
 {
 	Volt::EventDispatcher dispatcher{ e };
@@ -288,3 +288,4 @@ void Volt::VisionCameraComponent::TPSController(Entity& camEntity, float aDeltaT
 	}
 
 }
+#pragma optimize("", on)

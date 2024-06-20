@@ -1,3 +1,5 @@
+#include "Utility.hlsli"
+
 struct Output
 {
     [[vt::rgba16f]] float4 finalColorOutput : SV_Target0;
@@ -9,6 +11,7 @@ struct Input
     float4 position : SV_Position;
     float3 normal : NORMAL;
     float4 color : COLOR;
+    int instanceId : INSTANCE_ID;
 };
 
 Output main(Input input)
@@ -32,7 +35,8 @@ Output main(Input input)
     float3 diffuseColor = diffuseFactor * lightColor * objectColor;
     float3 ambientColor = ambientIntensity * objectColor;
 
-    float4 finalColor = float4(ambientColor + diffuseColor, 1.0);
-    output.finalColorOutput = finalColor;
+    
+    float3 finalColor = GetRandomColor(input.instanceId);
+    output.finalColorOutput = float4(finalColor, 1);
     return output;
 }

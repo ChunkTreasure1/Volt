@@ -37,6 +37,7 @@ namespace Volt::RHI
 		void SetCurrentLayout(ImageLayout layout) { m_currentImageLayout = layout; }
 		inline const ImageAspect GetImageAspect() const override { return m_imageAspect; }
 
+		void InitializeWithData(const void* data);
 	protected:
 		void* GetHandleImpl() const override;
 

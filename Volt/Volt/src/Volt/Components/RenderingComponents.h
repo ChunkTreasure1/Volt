@@ -86,10 +86,10 @@ namespace Volt
 	struct LandscapeComponent
 	{
 		bool initialized = false;
-		static constexpr uint32_t sideCellCount = 1; // HARDCODED FOR NOW, ALSO HARDCODED IN Landscape_vs
+		static constexpr uint32_t sideCellCount = 128; // HARDCODED FOR NOW, ALSO HARDCODED IN Landscape_vs
 		std::array<std::array<float, 81>, sideCellCount * sideCellCount> heightMaps;
 
-		Ref<Texture2D> heightMapTexture;
+		std::array<Ref<Texture2D>, sideCellCount * sideCellCount> heightMapTextures;
 		
 		Ref<RHI::IndexBuffer> indexBuffer;
 

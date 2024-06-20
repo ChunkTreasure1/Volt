@@ -7,7 +7,7 @@ namespace Volt
 {
 	void DiscordSDK::Init(int64_t appId, bool isOverrideable)
 	{
-		static bool s_isOverrideable = true;
+		/*static bool s_isOverrideable = true;
 		if (s_isOverrideable)
 		{
 			discord::Core* core{};
@@ -22,7 +22,7 @@ namespace Volt
 			}
 
 			s_isOverrideable = isOverrideable;
-		}
+		}*/
 	}
 
 	void DiscordSDK::Update()
