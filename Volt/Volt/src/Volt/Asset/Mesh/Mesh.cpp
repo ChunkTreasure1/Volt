@@ -140,7 +140,8 @@ namespace Volt
 			const uint32_t* indexStartPtr = &m_indices.at(subMesh.indexStartOffset);
 			const glm::vec3* vertexPositionStartPtr = &m_vertexContainer.positions.at(subMesh.vertexStartOffset);
 			const VertexMaterialData* vertexMaterialDataStartPtr = &m_vertexContainer.materialData.at(subMesh.vertexStartOffset);
-			const VertexAnimationInfo* vertexBoneInfluenceStartPtr = &m_vertexContainer.vertexAnimationInfo.at(subMesh.vertexStartOffset);
+			const VertexAnimationInfo* vertexBoneInfluenceStartPtr = &m_vertexContainer.animationInfo.at(subMesh.vertexStartOffset);
+			const VertexAnimationData* vertexAnimDataStartPtr = &m_vertexContainer.animationData.at(subMesh.vertexStartOffset);
 
 			meshopt_optimizeOverdraw(tempIndices.data(), indexStartPtr, subMesh.indexCount, &vertexPositionStartPtr[0].x, subMesh.vertexCount, sizeof(glm::vec3), 1.05f);
 			const size_t maxMeshletCount = meshopt_buildMeshletsBound(subMesh.indexCount, MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT);
@@ -169,7 +170,8 @@ namespace Volt
 			{
 				currentVertices.positions[subMeshVertexStartOffset + i] = vertexPositionStartPtr[meshletVertexRemap.at(i)];
 				currentVertices.materialData[subMeshVertexStartOffset + i] = vertexMaterialDataStartPtr[meshletVertexRemap.at(i)];
-				currentVertices.vertexAnimationInfo[subMeshVertexStartOffset + i] = vertexBoneInfluenceStartPtr[meshletVertexRemap.at(i)];
+				currentVertices.animationInfo[subMeshVertexStartOffset + i] = vertexBoneInfluenceStartPtr[meshletVertexRemap.at(i)];
+				currentVertices.animationData[subMeshVertexStartOffset + i] = vertexAnimDataStartPtr[meshletVertexRemap.at(i)];
 			}
 
 			const uint32_t subMeshIndexStartOffset = static_cast<uint32_t>(currentIndices.size());
@@ -249,7 +251,8 @@ namespace Volt
 			m_meshlets.insert(m_meshlets.end(), perThreadMeshlets.at(i).begin(), perThreadMeshlets.at(i).end());
 			finalVertexContainer.positions.insert(finalVertexContainer.positions.end(), perThreadVertices.at(i).positions.begin(), perThreadVertices.at(i).positions.end());
 			finalVertexContainer.materialData.insert(finalVertexContainer.materialData.end(), perThreadVertices.at(i).materialData.begin(), perThreadVertices.at(i).materialData.end());
-			finalVertexContainer.vertexAnimationInfo.insert(finalVertexContainer.vertexAnimationInfo.end(), perThreadVertices.at(i).vertexAnimationInfo.begin(), perThreadVertices.at(i).vertexAnimationInfo.end());
+			finalVertexContainer.animationInfo.insert(finalVertexContainer.animationInfo.end(), perThreadVertices.at(i).animationInfo.begin(), perThreadVertices.at(i).animationInfo.end());
+			finalVertexContainer.animationData.insert(finalVertexContainer.animationData.end(), perThreadVertices.at(i).animationData.begin(), perThreadVertices.at(i).animationData.end());
 			finalIndices.insert(finalIndices.end(), perThreadIndices.at(i).begin(), perThreadIndices.at(i).end());
 		}
 
@@ -274,14 +277,21 @@ namespace Volt
 
 		// Vertex animation info
 		{
-			const auto& vertexAnimationInfo = m_meshletVertexContainer.vertexAnimationInfo;
+			const auto& vertexAnimationInfo = m_meshletVertexContainer.animationInfo;
 			m_vertexAnimationInfoBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(vertexAnimationInfo.size()), sizeof(VertexAnimationInfo), "Vertex Animation Info - " + meshName);
 			m_vertexAnimationInfoBuffer->GetResource()->SetData(vertexAnimationInfo.data(), vertexAnimationInfo.size() * sizeof(VertexAnimationInfo));
 		}
 
+		// Vertex animation data
+		{
+			const auto& vertexAnimationData = m_meshletVertexContainer.animationData;
+			m_vertexAnimationDataBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(vertexAnimationData.size()), sizeof(VertexAnimationData), "Vertex Animation Data - " + meshName);
+			m_vertexAnimationDataBuffer->GetResource()->SetData(vertexAnimationData.data(), vertexAnimationData.size() * sizeof(VertexAnimationData));
+		}
+
 		// Vertex bone influences
 		{
-			const auto& vertexBoneInfluences = m_vertexContainer.vertexBoneInfluences;
+			const auto& vertexBoneInfluences = m_vertexContainer.boneInfluences;
 			if (!vertexBoneInfluences.empty())
 			{
 				m_vertexBoneInfluencesBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(vertexBoneInfluences.size()), sizeof(uint16_t), "Vertex Bone Influences - " + meshName);
@@ -291,7 +301,7 @@ namespace Volt
 
 		// Vertex bone weights
 		{
-			const auto& vertexBoneWeights = m_vertexContainer.vertexBoneWeights;
+			const auto& vertexBoneWeights = m_vertexContainer.boneWeights;
 			if (!vertexBoneWeights.empty())
 			{
 				m_vertexBoneWeightsBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(vertexBoneWeights.size()), sizeof(float), "Vertex Bone Weights - " + meshName);
@@ -327,7 +337,7 @@ namespace Volt
 			gpuMesh.meshletIndexStartOffset = subMesh.meshletIndexStartOffset;
 			gpuMesh.vertexPositionsBuffer = m_vertexPositionsBuffer->GetResourceHandle();
 			gpuMesh.vertexMaterialBuffer = m_vertexMaterialBuffer->GetResourceHandle();
-			gpuMesh.vertexAnimationInfoBuffer = m_vertexAnimationInfoBuffer->GetResourceHandle();
+			gpuMesh.vertexAnimationInfoBuffer = m_vertexAnimationDataBuffer->GetResourceHandle();
 			gpuMesh.vertexBoneWeightsBuffer = m_vertexBoneWeightsBuffer ? m_vertexBoneWeightsBuffer->GetResourceHandle() : Resource::Invalid;
 			gpuMesh.vertexBoneInfluencesBuffer = m_vertexBoneInfluencesBuffer ? m_vertexBoneInfluencesBuffer->GetResourceHandle() : Resource::Invalid;
 			gpuMesh.indexBuffer = m_indexBuffer->GetResourceHandle();

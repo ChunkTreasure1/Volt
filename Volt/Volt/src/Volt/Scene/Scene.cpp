@@ -346,7 +346,10 @@ namespace Volt
 
 		ForEachWithComponents<MotionWeaveComponent, const MeshComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave, const MeshComponent& mesh)
 		{
-			motionWeave.MotionWeaver->Update(aDeltaTime);
+			if (motionWeave.MotionWeaver)
+			{
+				motionWeave.MotionWeaver->Update(aDeltaTime);
+			}
 		});
 
 		m_particleSystem.Update(m_registry, shared_from_this(), aDeltaTime);

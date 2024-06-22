@@ -61,11 +61,13 @@ public:
 	void SetEditorHasMouseControl();
 	void SetPlayHasMouseControl();
 
-	inline static Sandbox& Get() { return *s_instance; }
+	VT_NODISCARD VT_INLINE static Sandbox& Get() { return *s_instance; }
 
 	Ref<Volt::SceneRenderer>& GetSceneRenderer() { return m_sceneRenderer; }
-	inline const SceneState GetSceneState() const { return m_sceneState; }
+	VT_NODISCARD VT_INLINE const SceneState GetSceneState() const { return m_sceneState; }
 	
+	VT_NODISCARD VT_INLINE UUID64 GetMeshImportModalID() const { return m_meshImportModal; }
+
 	void NewScene();
 	void OpenScene();
 	void OpenScene(const std::filesystem::path& path);
@@ -140,6 +142,10 @@ private:
 	std::mutex m_fileWatcherMutex;
 	std::vector<std::function<void()>> m_fileChangeQueue;
 	////////////////////////
+
+	///// Modals /////
+	UUID64 m_meshImportModal;
+	//////////////////
 
 	Ref<Volt::Scene> m_runtimeScene;
 	Ref<Volt::Scene> m_intermediateScene;

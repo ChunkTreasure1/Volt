@@ -63,8 +63,8 @@ namespace Volt
 
 	struct VertexAnimationData
 	{
-		glm::vec<4, uint16_t> influences = 0;
-		half_float::half weights[4] = { half_float::half(0.f), half_float::half(0.f), half_float::half(0.f), half_float::half(0.f) };
+		glm::uvec4 influences = 0u;
+		glm::vec4 weights = 0.f;
 	};
 
 	namespace Utility

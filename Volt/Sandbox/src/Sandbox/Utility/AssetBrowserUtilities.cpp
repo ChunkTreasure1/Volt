@@ -2,6 +2,9 @@
 #include "AssetBrowserUtilities.h"
 
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
+#include "Sandbox/UISystems/ModalSystem.h"
+#include "Sandbox/Modals/MeshImportModal.h"
+#include "Sandbox/Sandbox.h"
 
 #include <Volt/Asset/Prefab.h>
 #include <Volt/Asset/AssetManager.h>
@@ -150,13 +153,17 @@ namespace AssetBrowser
 			{
 				if (ImGui::MenuItem("Import"))
 				{
-					item->meshImportData = {};
-					item->meshImportData.destination = item->path.parent_path().string() + "\\" + item->path.stem().string() + ".vtasset";
-					item->meshToImportData.handle = item->handle;
-					item->meshToImportData.path = item->path;
-					item->meshToImportData.type = Volt::AssetType::MeshSource;
+					auto& modal = ModalSystem::GetModal<MeshImportModal>(Sandbox::Get().GetMeshImportModalID());
+					modal.SetImportMeshes({ item->path });
+					modal.Open();
 
-					UI::OpenModal("Import Mesh##assetBrowser");
+					//item->meshImportData = {};
+					//item->meshImportData.destination = item->path.parent_path().string() + "\\" + item->path.stem().string() + ".vtasset";
+					//item->meshToImportData.handle = item->handle;
+					//item->meshToImportData.path = item->path;
+					//item->meshToImportData.type = Volt::AssetType::MeshSource;
+
+					//UI::OpenModal("Import Mesh##assetBrowser");
 				}
 			};
 

@@ -1,0 +1,9 @@
+PhysicsSettings:
+  gravity: [0, -981, 0]
+  broadphaseAlgorithm: 2
+  frictionModel: 0
+  worldBoundsMin: [-100000, -100000, -100000]
+  worldBoundsMax: [100000, 100000, 100000]
+  worldBoundsSubDivisions: 2
+  solverIterations: 8
+  solverVelocityIterations: 2

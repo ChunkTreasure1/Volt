@@ -95,6 +95,7 @@ namespace Volt
 				break;
 			}
 
+			// #TODO_Ivar: This really shouldn't be here
 			RHI::GraphicsContext::GetDevice()->GetDeviceQueue(RHI::QueueType::Graphics)->WaitForQueue();
 
 			std::function<void()> executeFunction{};

@@ -18,6 +18,8 @@
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Math/Math.h"
 
+#include "Volt/Math/Math.h"
+
 #include <glm/glm.hpp>
 
 #include <ufbx.h>
@@ -35,6 +37,16 @@ namespace Volt
 				glm::vec4(matrix.m02, matrix.m12, matrix.m22, 0.f),
 				glm::vec4(matrix.m03, matrix.m13, matrix.m23, 1.f),
 			};
+		}
+
+		inline glm::vec3 GetVec(const ufbx_vec3& vec)
+		{
+			return { static_cast<float>(vec.x), static_cast<float>(vec.y), static_cast<float>(vec.z) };
+		}
+
+		inline glm::quat GetQuat(const ufbx_quat& quat)
+		{
+			return { static_cast<float>(quat.w), static_cast<float>(quat.x), static_cast<float>(quat.y), static_cast<float>(quat.z) };
 		}
 
 		inline void PrintFBXError(const ufbx_error& error, std::string_view description)
@@ -64,9 +76,8 @@ namespace Volt
 		}
 
 		ReadSkinningData(dstSkeleton, scene);
-
 		ufbx_free_scene(scene);
-		return true;
+		return true; 
 	}
 
 	bool FbxImporter::ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation)
@@ -77,23 +88,26 @@ namespace Volt
 			return false;
 		}
 
-		for (const auto* stack : scene->anim_stacks)
+		if (scene->anim_stacks.count > 0)
 		{
-			ufbx_baked_anim* bakedAnim = ufbx_bake_anim(scene, stack->anim, nullptr, nullptr);
-			if (!bakedAnim)
-			{
-				continue;
-			}
-		
-			const double duration = stack->time_end - stack->time_begin;
+			const auto* stack = scene->anim_stacks[0];
+
+			const double frameRate = scene->settings.frames_per_second;
+			float duration = (float)stack->time_end - (float)stack->time_begin;
+			size_t numFrames = static_cast<size_t>(duration * frameRate) + 1;
+
 			dstAnimation.m_duration = static_cast<float>(duration);
+			dstAnimation.m_framesPerSecond = static_cast<uint32_t>(frameRate);
 
-			// Find out frame count
-			for (const auto& bakedNode : bakedAnim->nodes)
+			dstAnimation.m_frames.resize(numFrames);
+			for (auto& frame : dstAnimation.m_frames)
 			{
-				ufbx_node* sceneNode = scene->nodes[bakedNode.typed_id];
+				frame.localTRS.resize(targetSkeleton->GetJointCount());
+			}
 
-				std::string jointName = sceneNode->name.data;
+			for (const auto* node : scene->nodes)
+			{
+				std::string jointName = node->name.data;
 				if (size_t namePos = jointName.find_last_of(":"); namePos != std::string::npos)
 				{
 					jointName = jointName.substr(namePos + 1);
@@ -105,50 +119,32 @@ namespace Volt
 					continue;
 				}
 
-				if (dstAnimation.m_frames.size() < bakedNode.translation_keys.count)
+				for (size_t i = 0; i < numFrames; i++)
 				{
-					dstAnimation.m_frames.resize(bakedNode.translation_keys.count);
-				}
-
-				for (size_t i = 0; const auto& keyFrame : bakedNode.translation_keys)
-				{
-					if (dstAnimation.m_frames.at(i).localTRS.size() < targetSkeleton->m_joints.size())
-					{
-						dstAnimation.m_frames.at(i).localTRS.resize(targetSkeleton->m_joints.size());
-					}
+					double time = stack->time_begin + static_cast<double>(i) / frameRate;
+					ufbx_transform transform = ufbx_evaluate_transform(stack->anim, node, time);
 
 					auto& trs = dstAnimation.m_frames.at(i).localTRS.at(jntIndex);
-					trs.position = { keyFrame.value.x, keyFrame.value.y, keyFrame.value.z };
-					i++;
-				}
+					trs.position = Utility::GetVec(transform.translation);
+					trs.position.x = -trs.position.x;
 
-				for (size_t i = 0; const auto & keyFrame : bakedNode.rotation_keys)
-				{
-					if (dstAnimation.m_frames.at(i).localTRS.size() < targetSkeleton->m_joints.size())
+					trs.rotation = Utility::GetQuat(transform.rotation);
+					trs.rotation.y = -trs.rotation.y;
+					trs.rotation.z = -trs.rotation.z;
+
+					trs.scale = Utility::GetVec(transform.scale);
+
+					if (i > 0)
 					{
-						dstAnimation.m_frames.at(i).localTRS.resize(targetSkeleton->m_joints.size());
+						if (glm::dot(trs.rotation, dstAnimation.m_frames.at(i).localTRS.at(jntIndex).rotation) < 0.f)
+						{
+							trs.rotation = { -trs.rotation.w, -trs.rotation.x, -trs.rotation.y, -trs.rotation.z };
+						}
 					}
-
-					auto& trs = dstAnimation.m_frames.at(i).localTRS.at(jntIndex);
-					trs.rotation = glm::quat(static_cast<float>(keyFrame.value.w), static_cast<float>(keyFrame.value.x), static_cast<float>(keyFrame.value.y), static_cast<float>(keyFrame.value.z));
-					i++;
-				}
-
-				for (size_t i = 0; const auto & keyFrame : bakedNode.scale_keys)
-				{
-					if (dstAnimation.m_frames.at(i).localTRS.size() < targetSkeleton->m_joints.size())
-					{
-						dstAnimation.m_frames.at(i).localTRS.resize(targetSkeleton->m_joints.size());
-					}
-
-					auto& trs = dstAnimation.m_frames.at(i).localTRS.at(jntIndex);
-					trs.scale = { keyFrame.value.x, keyFrame.value.y, keyFrame.value.z };
-					i++;
 				}
 			}
-
-			ufbx_free_baked_anim(bakedAnim);
 		}
+
 
 		ufbx_free_scene(scene);
 		return true;
@@ -162,7 +158,7 @@ namespace Volt
 	ufbx_scene* FbxImporter::LoadScene(const std::filesystem::path& path)
 	{
 		ufbx_load_opts options =
-		{ 
+		{
 			.load_external_files = true,
 			.ignore_missing_external_files = true,
 			.generate_missing_normals = true,
@@ -173,11 +169,14 @@ namespace Volt
 				.up = UFBX_COORDINATE_AXIS_POSITIVE_Y,
 				.front = UFBX_COORDINATE_AXIS_POSITIVE_Z,
 			},
-			.target_unit_meters = 1.f, 
+			.target_unit_meters = 0.01f,
 		};
+
+		options.space_conversion = UFBX_SPACE_CONVERSION_MODIFY_GEOMETRY;
 
 		ufbx_error error;
 		ufbx_scene* scene = ufbx_load_file(path.string().c_str(), &options, &error);
+
 		if (!scene)
 		{
 			Utility::PrintFBXError(error, "Failed to load scene");
@@ -187,7 +186,7 @@ namespace Volt
 		return scene;
 	}
 
-	void FbxImporter::ReadMesh(Mesh& dstMesh, ufbx_mesh* mesh)
+	void FbxImporter::ReadMesh(Mesh& dstMesh, Skeleton& skeleton, ufbx_mesh* mesh)
 	{
 		// Create materials
 		for (size_t i = 0; i < mesh->materials.count; i++)
@@ -223,56 +222,18 @@ namespace Volt
 		size_t maxIndexCount = mesh->max_face_triangles * 3;
 		std::vector<uint32_t> triangleIndices(maxIndexCount);
 		std::vector<uint32_t> indices(maxTriangles * 3);
-		std::vector<Vertex> vertices(maxTriangles * 3);
-
-		std::vector<glm::vec3> vertexPositions(maxTriangles * 3);
-		std::vector<VertexMaterialData> vertexMaterialData(maxTriangles * 3);
-		std::vector<VertexAnimationInfo> vertexAnimationInfo(maxTriangles * 3);
+		
+		VertexContainer vertexContainer{};
+		vertexContainer.Resize(maxTriangles * 3);
 
 		std::vector<uint16_t> vertexBoneInfluences;
 		std::vector<float> vertexBoneWeights;
 
+		ufbx_skin_deformer* skin = nullptr;
+
 		if (mesh->skin_deformers.count > 0)
 		{
-			ufbx_skin_deformer* skin = mesh->skin_deformers.data[0];
-
-			for (size_t i = 0; i < mesh->num_vertices; i++)
-			{
-				size_t numWeights = 0;
-				float totalWeight = 0.f;
-				std::vector<float> weights{};
-				std::vector<uint16_t> influences{};
-
-				ufbx_skin_vertex vertexWeights = skin->vertices.data[i];
-				for (size_t j = 0; j < vertexWeights.num_weights; j++)
-				{
-					ufbx_skin_weight weight = skin->weights.data[vertexWeights.weight_begin + j];
-					totalWeight += static_cast<float>(weight.weight);
-					influences.push_back(static_cast<uint16_t>(weight.cluster_index));
-					weights.push_back(static_cast<float>(weight.weight));
-
-					numWeights++;
-				}
-
-				vertexAnimationInfo[i].boneOffset = static_cast<uint16_t>(vertexBoneInfluences.size() + dstMesh.m_vertexBoneInfluences.size());
-
-				const size_t influencesOffset = vertexBoneInfluences.size();
-				const size_t weightsOffset = vertexBoneWeights.size();
-
-				vertexBoneInfluences.resize(influencesOffset + numWeights);
-				vertexBoneWeights.resize(weightsOffset + numWeights);
-
-				if (totalWeight > 0.f)
-				{
-					vertexAnimationInfo[i].influenceCount = static_cast<uint16_t>(numWeights);
-
-					for (size_t j = 0; j < weights.size(); j++)
-					{
-						vertexBoneInfluences[influencesOffset + j] = influences[j];
-						vertexBoneWeights[weightsOffset + j] = weights.at(j);
-					}
-				}
-			}
+			skin = mesh->skin_deformers.data[0];
 		}
 
 		for (size_t i = 0; i < mesh->material_parts.count; i++)
@@ -283,7 +244,7 @@ namespace Volt
 				continue;
 			}
 
-			size_t numIndices = 0;
+			uint32_t numIndices = 0;
 			for (size_t j = 0; j < meshPart.num_faces; j++)
 			{
 				ufbx_face face = mesh->faces.data[meshPart.face_indices.data[j]];
@@ -294,19 +255,19 @@ namespace Volt
 
 				for (size_t k = 0; k < numTris * 3; k++)
 				{
-					uint32_t index = triangleIndices[k];
-					Vertex& vertex = vertices[numIndices];
+					const uint32_t index = triangleIndices[k];
+					const uint32_t vertexIndex = mesh->vertex_indices[index];
 
 					ufbx_vec3 pos = ufbx_get_vertex_vec3(&mesh->vertex_position, index);
 					ufbx_vec3 normal = ufbx_get_vertex_vec3(&mesh->vertex_normal, index);
 					ufbx_vec3 tangent = mesh->vertex_tangent.exists ? ufbx_get_vertex_vec3(&mesh->vertex_tangent, index) : defaultTangent;
 					ufbx_vec2 uv = mesh->vertex_uv.exists ? ufbx_get_vertex_vec2(&mesh->vertex_uv, index) : defaultUV;
 
-					vertexPositions[numIndices] = { pos.x, pos.y, pos.z };
-					
+					vertexContainer.positions[numIndices] = { pos.x, pos.y, pos.z };
+
 					{
-						auto& materialData = vertexMaterialData[numIndices];
-						
+						auto& materialData = vertexContainer.materialData[numIndices];
+
 						const glm::vec3 vNormal = { normal.x, normal.y, normal.z };
 						const glm::vec3 vTangent = { tangent.x, tangent.y, tangent.z };
 
@@ -318,31 +279,77 @@ namespace Volt
 						materialData.texCoords.x = static_cast<half_float::half>(static_cast<float>(uv.x));
 						materialData.texCoords.y = static_cast<half_float::half>(static_cast<float>(uv.y));
 					}
-					
-					vertex.position = { pos.x, pos.y, pos.z };
-					vertex.normal = { normal.x, normal.y, normal.z };
-					vertex.tangent = { tangent.x, tangent.y, tangent.z };
-					vertex.uv = { uv.x, uv.y };
+
+					if (skin && skeleton.m_joints.size() > 0)
+					{
+						auto& animData = vertexContainer.animationData[numIndices];
+
+						ufbx_skin_vertex skinVertex = skin->vertices[vertexIndex];
+						const uint32_t numWeights = std::min(skinVertex.num_weights, 4u);
+
+						float totalWeight = 0.f;
+						for (uint32_t w = 0; w < numWeights; w++)
+						{
+							ufbx_skin_weight skinWeight = skin->weights[skinVertex.weight_begin + w];
+							std::string jointName = skin->clusters[skinWeight.cluster_index]->bone_node->name.data;
+							if (size_t namePos = jointName.find_last_of(":"); namePos != std::string::npos)
+							{
+								jointName = jointName.substr(namePos + 1);
+							}
+
+							animData.influences[(int)w] = static_cast<uint32_t>(skeleton.m_jointNameToIndex.at(jointName));
+							animData.weights[(int)w] = static_cast<float>(skinWeight.weight);
+
+							totalWeight += static_cast<float>(skinWeight.weight);
+						}
+
+						if (totalWeight > 0.f)
+						{
+							for (uint32_t w = 0; w < numWeights; w++)
+							{
+								animData.weights[w] /= totalWeight;
+							}
+						}
+					}
 
 					numIndices++;
 				}
 			}
 
-			ufbx_vertex_stream streams[3];
-			streams[0].data = vertexPositions.data();
-			streams[0].vertex_count = numIndices;
-			streams[0].vertex_size = sizeof(glm::vec3);
+			indices.resize(meshPart.num_triangles * 3);
 
-			streams[1].data = vertexMaterialData.data();
-			streams[1].vertex_count = numIndices;
-			streams[1].vertex_size = sizeof(VertexMaterialData);
+			std::vector<ufbx_vertex_stream> streams{};
+
+			{
+				auto& stream = streams.emplace_back();
+				stream.data = vertexContainer.positions.data();
+				stream.vertex_count = numIndices;
+				stream.vertex_size = sizeof(glm::vec3);
+			}
+
+			{
+				auto& stream = streams.emplace_back();
+				stream.data = vertexContainer.materialData.data();
+				stream.vertex_count = numIndices;
+				stream.vertex_size = sizeof(VertexMaterialData);
+			}
 			
-			streams[2].data = vertexAnimationInfo.data();
-			streams[2].vertex_count = numIndices;
-			streams[2].vertex_size = sizeof(VertexAnimationInfo);
+			{
+				auto& stream = streams.emplace_back();
+				stream.data = vertexContainer.animationInfo.data();
+				stream.vertex_count = numIndices;
+				stream.vertex_size = sizeof(VertexAnimationInfo);
+			}
 
+			{
+				auto& stream = streams.emplace_back();
+				stream.data = vertexContainer.animationData.data();
+				stream.vertex_count = numIndices;
+				stream.vertex_size = sizeof(VertexAnimationData);
+			}
+			
 			ufbx_error error;
-			size_t numVertices = ufbx_generate_indices(streams, 3, indices.data(), numIndices, nullptr, &error);
+			size_t numVertices = ufbx_generate_indices(streams.data(), streams.size(), indices.data(), indices.size(), nullptr, &error);
 			if (error.type != UFBX_ERROR_NONE)
 			{
 				Utility::PrintFBXError(error, "Failed to generate index buffer");
@@ -372,12 +379,7 @@ namespace Volt
 			}
 
 			dstMesh.m_indices.insert(dstMesh.m_indices.end(), indices.begin(), indices.begin() + numIndices);
-
-			dstMesh.m_vertexContainer.positions.insert(dstMesh.m_vertexContainer.positions.end(), vertexPositions.begin(), vertexPositions.begin() + numVertices);
-			dstMesh.m_vertexContainer.materialData.insert(dstMesh.m_vertexContainer.materialData.end(), vertexMaterialData.begin(), vertexMaterialData.begin() + numVertices);
-			dstMesh.m_vertexContainer.vertexAnimationInfo.insert(dstMesh.m_vertexContainer.vertexAnimationInfo.end(), vertexAnimationInfo.begin(), vertexAnimationInfo.begin() + numVertices);
-			dstMesh.m_vertexContainer.vertexBoneInfluences.insert(dstMesh.m_vertexContainer.vertexBoneInfluences.end(), vertexBoneInfluences.begin(), vertexBoneInfluences.end());
-			dstMesh.m_vertexContainer.vertexBoneWeights.insert(dstMesh.m_vertexContainer.vertexBoneWeights.end(), vertexBoneWeights.begin(), vertexBoneWeights.end());
+			dstMesh.m_vertexContainer.Append(vertexContainer, numVertices);
 		}
 	}
 
@@ -411,7 +413,7 @@ namespace Volt
 
 	void FbxImporter::ReadSkinningData(Skeleton& skeleton, const ufbx_scene* scene)
 	{
-		skeleton.m_inverseBindPose.resize(skeleton.m_joints.size());
+		skeleton.m_inverseBindPose.resize(skeleton.m_joints.size(), glm::identity<glm::mat4>());
 		skeleton.m_restPose.resize(skeleton.m_joints.size());
 		std::vector<glm::mat4> bindPoses(skeleton.m_joints.size(), glm::identity<glm::mat4>());
 
@@ -428,7 +430,17 @@ namespace Volt
 				size_t jointIndex = skeleton.m_jointNameToIndex[jointName];
 				bindPoses[jointIndex] = glm::transpose(Utility::GetMatrix(cluster->bind_to_world));
 
-				skeleton.m_inverseBindPose[jointIndex] = Utility::GetMatrix(cluster->geometry_to_bone);
+				glm::vec3 translation;
+				glm::vec3 scale;
+				glm::quat rotation;
+				::Math::Decompose(Utility::GetMatrix(cluster->geometry_to_bone), translation, rotation, scale);
+
+				translation.x = -translation.x;
+
+				rotation.y = -rotation.y;
+				rotation.z = -rotation.z;
+
+				skeleton.m_inverseBindPose[jointIndex] = glm::translate(glm::mat4{ 1.f }, translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4{ 1.f }, scale);
 			}
 		}
 
@@ -463,9 +475,12 @@ namespace Volt
 			return false;
 		}
 
+		Skeleton skeleton;
+		GatherSkeleton(skeleton, scene->root_node, -1);
+
 		for (size_t i = 0; i < scene->meshes.count; i++)
 		{
-			ReadMesh(destMesh, scene->meshes.data[i]);
+			ReadMesh(destMesh, skeleton, scene->meshes.data[i]);
 		}
 
 		ufbx_free_scene(scene);

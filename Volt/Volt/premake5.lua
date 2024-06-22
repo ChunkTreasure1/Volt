@@ -52,7 +52,6 @@ project "Volt"
 		"%{IncludeDir.TinyGLTF}",
 		"%{IncludeDir.tinyddsloader}",
 		"%{IncludeDir.imgui_notify}",
-		"%{IncludeDir.DirectXTK}",
 		"%{IncludeDir.fmod}",
 		"%{IncludeDir.wwise}",
 		"%{IncludeDir.cr}",
@@ -88,7 +87,7 @@ project "Volt"
 		"%{IncludeDir.shaderc_utils}",
 
 		"%{IncludeDir.zlib}",
-		"%{IncludeDir.ufbx}"
+		"%{IncludeDir.ufbx}",
 	}
 
 	links
@@ -110,7 +109,6 @@ project "Volt"
 		"CoreUtilities",
 		"Mosaic",
 
-		"DirectXTK",
 		"stb",
 		"VulkanMemoryAllocator",
 		"VoltD3D12",

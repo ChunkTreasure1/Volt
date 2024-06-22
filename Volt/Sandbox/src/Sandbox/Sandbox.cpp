@@ -45,6 +45,8 @@
 #include "Sandbox/Window/MotionWeaveDatabasePanel.h"
 #include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
+#include "Sandbox/Modals/MeshImportModal.h"
+
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorLibrary.h"
 #include "Sandbox/Utility/SelectionManager.h"
@@ -311,6 +313,8 @@ void Sandbox::SetupNewSceneData()
 
 void Sandbox::InitializeModals()
 {
+	auto& meshModal = ModalSystem::AddModal<MeshImportModal>("Import Mesh##sandbox");
+	m_meshImportModal = meshModal.GetID();
 }
 
 void Sandbox::OnDetach()

@@ -26,15 +26,9 @@ namespace Volt
 		void ExportAnimationImpl(std::vector<Ref<Animation>> assets, const std::filesystem::path&) override {};
 
 	private:
-		struct VertexDuplicateData
-		{
-			uint32_t index;
-			size_t hash;
-		};
-
 		ufbx_scene* LoadScene(const std::filesystem::path& path);
 
-		void ReadMesh(Mesh& dstMesh, ufbx_mesh* mesh);
+		void ReadMesh(Mesh& dstMesh, Skeleton& skeleton, ufbx_mesh* mesh);
 		
 		void GatherSkeleton(Skeleton& skeleton, const ufbx_node* currentNode, int32_t parentIndex);
 		void ReadSkinningData(Skeleton& skeleton, const ufbx_scene* scene);

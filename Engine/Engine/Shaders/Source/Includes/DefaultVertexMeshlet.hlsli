@@ -84,19 +84,29 @@ struct DefaultInput
             return IDENTITY_MATRIX;
         }
 
-        VertexAnimationInfo animData = m_gpuMesh.vertexAnimationInfoBuffer.Load(m_index);        
+        //VertexAnimationInfo animData = m_gpuMesh.vertexAnimationInfoBuffer.Load(m_index);        
+        //float4x4 result = 0.f;
+        //
+        //const uint influenceCount = animData.influenceCount;
+        //
+        //for (uint i = 0; i < influenceCount; i++)
+        //{
+        //    const uint16_t influence = m_gpuMesh.vertexBoneInfluencesBuffer.Load(animData.boneOffset + i);    
+        //    const float weight = m_gpuMesh.vertexBoneWeightsBuffer.Load(animData.boneOffset + i);
+        //    result += mul(m_constants.gpuScene.bonesBuffer.Load(m_objectDrawData.boneOffset + influence), weight);
+        //}
+        //
+        //return result;            
+
+        VertexAnimationData animData = m_gpuMesh.vertexAnimationInfoBuffer.Load(m_index);        
         float4x4 result = 0.f;
 
-        const uint influenceCount = animData.influenceCount;
+        result += mul(m_constants.gpuScene.bonesBuffer.Load(m_objectDrawData.boneOffset + animData.influences[0]), animData.weights[0]);
+        result += mul(m_constants.gpuScene.bonesBuffer.Load(m_objectDrawData.boneOffset + animData.influences[1]), animData.weights[1]);
+        result += mul(m_constants.gpuScene.bonesBuffer.Load(m_objectDrawData.boneOffset + animData.influences[2]), animData.weights[2]);
+        result += mul(m_constants.gpuScene.bonesBuffer.Load(m_objectDrawData.boneOffset + animData.influences[3]), animData.weights[3]);
 
-        for (uint i = 0; i < influenceCount; i++)
-        {
-            const uint16_t influence = m_gpuMesh.vertexBoneInfluencesBuffer.Load(animData.boneOffset + i);    
-            const float weight = m_gpuMesh.vertexBoneWeightsBuffer.Load(animData.boneOffset + i);
-            result += mul(m_constants.gpuScene.bonesBuffer.Load(m_objectDrawData.boneOffset + influence), weight);
-        }
-
-        return result;            
+        return result;
     }
     
     //const GPUMesh GetMesh()

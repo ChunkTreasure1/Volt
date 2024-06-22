@@ -49,6 +49,12 @@ namespace Volt
 			return;
 		}
 
+		if (!DoAssetExistInGraph(dependency))
+		{
+			VT_CORE_WARN("[AssetDependencyGraph]: Trying to add dependency not in the graph to asset!");
+			return;
+		}
+
 		m_graph.LinkNodes(m_assetNodeIds.at(handle), m_assetNodeIds.at(dependency));
 	}
 

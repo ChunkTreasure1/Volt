@@ -81,6 +81,11 @@ namespace AssetBrowser
 
 		bool extraItemsRendered = AssetBrowserUtilities::RenderAssetTypePopup(this);
 
+		if (type == Volt::AssetType::MeshSource)
+		{
+
+		}
+
 		if (extraItemsRendered)
 		{
 			ImGui::Separator();

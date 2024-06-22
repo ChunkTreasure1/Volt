@@ -9,8 +9,8 @@ struct VertexMaterialData
 
 struct VertexAnimationData
 {
-    uint16_t4 influences;
-    float16_t4 weights;
+    uint4 influences;
+    float4 weights;
 };
 
 struct VertexAnimationInfo

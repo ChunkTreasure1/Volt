@@ -37,7 +37,7 @@ struct GPUMesh
 {
     TypedBuffer<VertexPositionData> vertexPositionsBuffer;
     TypedBuffer<VertexMaterialData> vertexMaterialBuffer;
-    TypedBuffer<VertexAnimationInfo> vertexAnimationInfoBuffer;
+    TypedBuffer<VertexAnimationData> vertexAnimationInfoBuffer;
     TypedBuffer<uint16_t> vertexBoneInfluencesBuffer;
 
     TypedBuffer<float> vertexBoneWeightsBuffer; // Should be packed

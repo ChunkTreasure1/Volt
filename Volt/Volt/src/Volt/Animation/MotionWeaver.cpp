@@ -16,7 +16,13 @@ namespace Volt
 
 	Ref<MotionWeaver> Volt::MotionWeaver::Create(AssetHandle databaseHandle)
 	{
-		return CreateRef<MotionWeaver>(AssetManager::GetAsset<MotionWeaveDatabase>(databaseHandle));
+		auto asset = AssetManager::GetAsset<MotionWeaveDatabase>(databaseHandle);
+		if (!asset)
+		{
+			return nullptr;
+		}
+
+		return CreateRef<MotionWeaver>(asset);
 	}
 
 	void Volt::MotionWeaver::SetDatabase(Ref<MotionWeaveDatabase> database)
@@ -33,6 +39,11 @@ namespace Volt
 
 	void Volt::MotionWeaver::Update(float deltaTime)
 	{
+		if (m_Animations.empty())
+		{
+			return;
+		}
+
 		m_Time += deltaTime;
 		if (m_Time >= m_Animations.front()->GetDuration())
 		{
@@ -42,6 +53,11 @@ namespace Volt
 
 	std::vector<glm::mat4x4> Volt::MotionWeaver::Sample()
 	{
+		if (m_Animations.empty())
+		{
+			return {};
+		}
+
 		const float percent = m_Time / m_Animations.front()->GetDuration();
 		std::vector<glm::mat4x4> result = m_Animations.front()->Sample(percent, m_Skeleton, true);
 

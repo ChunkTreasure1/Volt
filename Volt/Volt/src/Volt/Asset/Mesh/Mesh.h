@@ -29,9 +29,11 @@ namespace Volt
 		std::vector<glm::vec3> positions;
 		std::vector<VertexMaterialData> materialData;
 		
-		std::vector<VertexAnimationInfo> vertexAnimationInfo;
-		std::vector<uint16_t> vertexBoneInfluences;
-		std::vector<float> vertexBoneWeights;
+		std::vector<VertexAnimationInfo> animationInfo;
+		std::vector<VertexAnimationData> animationData;
+
+		std::vector<uint16_t> boneInfluences;
+		std::vector<float> boneWeights;
 
 		VT_INLINE size_t Size() const
 		{
@@ -42,7 +44,20 @@ namespace Volt
 		{
 			positions.resize(size);
 			materialData.resize(size);
-			vertexAnimationInfo.resize(size);
+			animationInfo.resize(size);
+			animationData.resize(size);
+			boneInfluences.resize(size);
+			boneWeights.resize(size);
+		}
+
+		VT_INLINE void Append(const VertexContainer& other, const size_t count = 0)
+		{
+			positions.insert(positions.end(), other.positions.begin(), count > 0 ? other.positions.begin() + count : other.positions.end());
+			materialData.insert(materialData.end(), other.materialData.begin(), count > 0 ? other.materialData.begin() + count : other.materialData.end());
+			animationInfo.insert(animationInfo.end(), other.animationInfo.begin(), count > 0 ? other.animationInfo.begin() + count : other.animationInfo.end());
+			animationData.insert(animationData.end(), other.animationData.begin(), count > 0 ? other.animationData.begin() + count : other.animationData.end());
+			boneInfluences.insert(boneInfluences.end(), other.boneInfluences.begin(), other.boneInfluences.end());
+			boneWeights.insert(boneWeights.end(), other.boneWeights.begin(), other.boneWeights.end());
 		}
 	};
 
@@ -76,7 +91,7 @@ namespace Volt
 
 		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
 		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexMaterialBuffer() const { return m_vertexMaterialBuffer; }
-		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexAnimationInfoBuffer() const { return m_vertexAnimationInfoBuffer; }
+		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexAnimationInfoBuffer() const { return m_vertexAnimationDataBuffer; }
 		inline BindlessResourceRef<RHI::StorageBuffer> GetIndexStorageBuffer() const { return m_indexBuffer; }
 
 		VT_NODISCARD VT_INLINE const VertexContainer& GetVertexContainer() const { return m_vertexContainer; }
@@ -117,6 +132,8 @@ namespace Volt
 		BindlessResourceRef<RHI::StorageBuffer> m_meshletIndexBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_meshletsBuffer;
 
+		BindlessResourceRef<RHI::StorageBuffer> m_vertexAnimationDataBuffer;
+
 		BoundingSphere m_boundingSphere;
 		BoundingBox m_boundingBox;
 
@@ -127,8 +144,5 @@ namespace Volt
 
 		// Prototype vertex stuff
 		VertexContainer m_vertexContainer;
-
-		std::vector<uint16_t> m_vertexBoneInfluences;
-		std::vector<uint8_t> m_vertexBoneWeights;
 	};
 }
