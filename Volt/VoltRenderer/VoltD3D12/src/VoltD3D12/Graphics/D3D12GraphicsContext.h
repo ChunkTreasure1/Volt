@@ -1,5 +1,8 @@
 #pragma once
-#include "VoltRHI/Graphics/GraphicsContext.h"
+
+#include "VoltD3D12/Common/ComPtr.h"
+
+#include <VoltRHI/Graphics/GraphicsContext.h>
 
 struct ID3D12InfoQueue;
 struct ID3D12Debug;
@@ -21,10 +24,11 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
-		void Initalize(const GraphicsContextCreateInfo& info);
+		void Initalize();
 		void Shutdown();
 
-		bool CreateAPIDebugging();
+		void InitializeAPIValidation();
+		void InitializeDebugLayer();
 
 		RefPtr<GraphicsDevice> m_graphicsDevice;
 		RefPtr<PhysicalGraphicsDevice> m_physicalDevice;
@@ -32,7 +36,9 @@ namespace Volt::RHI
 		Scope<Allocator> m_defaultAllocator;
 		RefPtr<Allocator> m_transientAllocator;
 
-		ID3D12InfoQueue* m_infoQueue;
-		ID3D12Debug* m_debug;
+		GraphicsContextCreateInfo m_createInfo{};
+
+		ComPtr<ID3D12InfoQueue> m_infoQueue;
+		ComPtr<ID3D12Debug> m_debugInterface;
 	};
 }

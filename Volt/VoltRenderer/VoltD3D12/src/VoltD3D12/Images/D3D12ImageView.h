@@ -19,8 +19,23 @@ namespace Volt::RHI
 		const bool IsSwapchainView() const override;
 
 	private:
-		ImageViewSpecification m_specs;
-		size_t m_viewID;
-		CD3DX12_CPU_DESCRIPTOR_HANDLE* m_view = {};
+		void CreateRTVDSV();
+		void CreateSRV();
+		void CreateUAV();
+
+		ImageViewSpecification m_specification;
+
+		struct ViewData
+		{
+			size_t id;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE view;
+			bool valid = false;
+		};
+
+		ViewData m_srv;
+		ViewData m_rtvDsv;
+		ViewData m_uav;
+
+		bool m_hasDSV = false;
 	};
 }

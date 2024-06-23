@@ -1,7 +1,8 @@
 #pragma once
+
+#include <VoltRHI/Memory/Allocation.h>
 #include <VoltRHI/Images/Image2D.h>
 
-#include "VoltD3D12/Common/D3D12AllocatorForward.h"
 
 namespace Volt::RHI
 {
@@ -9,23 +10,23 @@ namespace Volt::RHI
 	{
 	public:
 		D3D12Image2D(const ImageSpecification& specification, const void* data);
-		D3D12Image2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data);
+		D3D12Image2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data);
+		D3D12Image2D(const SwapchainImageSpecification& specification);
 
 		~D3D12Image2D() override;
 
-		void* GetHandleImpl() const override;
 		void Invalidate(const uint32_t width, const uint32_t height, const void* data) override;
 		void Release() override;
 		void GenerateMips() override;
+
 		const RefPtr<ImageView> GetView(const int32_t mip, const int32_t layer) override;
 		const RefPtr<ImageView> GetArrayView(const int32_t mip /* = -1 */) override;
+		
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
 		const uint32_t GetMipCount() const override;
 		const PixelFormat GetFormat() const override;
 		const ImageUsage GetUsage() const override;
-		const ImageAspect GetImageAspect() const override;
-		const ImageLayout GetImageLayout() const override;
 		const uint32_t CalculateMipCount() const override;
 		const bool IsSwapchainImage() const override;
 
@@ -34,9 +35,25 @@ namespace Volt::RHI
 		const uint64_t GetDeviceAddress() const override;
 		const uint64_t GetByteSize() const override;
 
+		const ImageAspect GetImageAspect() const override;
+		const ImageLayout GetImageLayout() const override;
+
+	protected:
+		void* GetHandleImpl() const override;
+		Buffer ReadPixelInternal(const uint32_t x, const uint32_t y, const size_t stride) override;
+
 	private:
-		RefPtr<ImageView> m_view;
-		ImageSpecification m_specs;
-		AllocatedImage m_image;
+		void InvalidateSwapchainImage(const SwapchainImageSpecification& specification);
+
+		ImageSpecification m_specification;
+		SwapchainImageSpecification m_swapchainImageData;
+
+		RefPtr<Allocation> m_allocation;
+		RefPtr<Allocator> m_customAllocator;
+
+		bool m_allocatedUsingCustomAllocator = false;
+		bool m_isSwapchainImage = false;
+
+		std::map<int32_t, std::map<int32_t, RefPtr<ImageView>>> m_imageViews; // Layer -> Mip -> View
 	};
 }

@@ -5065,6 +5065,11 @@ namespace Volt
 
 	void MonoScriptGlue::Net_OnConnectCallback()
 	{
+		if (!MonoScriptEngine::GetCoreAssembly().assemblyImage)
+		{
+			return;
+		}
+
 		auto klass = MonoScriptClass(MonoScriptEngine::GetCoreAssembly().assemblyImage, "Volt", "Net");
 
 		auto method = klass.GetMethod("OnConnectCallback", 0);

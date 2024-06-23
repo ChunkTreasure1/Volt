@@ -50,7 +50,7 @@ project "VoltVulkan"
 
 	links
 	{
-		"ImGui", -- Should not be here
+		"ImGui",
 		"VulkanMemoryAllocator",
 		"tracy",
 		"GLFW",
@@ -65,6 +65,11 @@ project "VoltVulkan"
 	postbuildcommands
 	{
 		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox"'
+	}
+
+	postbuildcommands
+	{
+		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher"'
 	}
 
 	filter "files:vendor/**.cpp"

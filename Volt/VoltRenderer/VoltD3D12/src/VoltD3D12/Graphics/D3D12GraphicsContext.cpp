@@ -3,13 +3,14 @@
 #include "VoltD3D12/Graphics/D3D12PhysicalGraphicsDevice.h"
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 
-#include "VoltD3D12/Common/D3D12Allocator.h"
+#include "VoltD3D12/Memory/D3D12DefaultAllocator.h"
 
 namespace Volt::RHI
 {
 	D3D12GraphicsContext::D3D12GraphicsContext(const GraphicsContextCreateInfo& info)
+		: m_createInfo(info)
 	{
-		Initalize(info);
+		Initalize();
 	}
 
 	D3D12GraphicsContext::~D3D12GraphicsContext()
@@ -19,8 +20,7 @@ namespace Volt::RHI
 
 	Allocator& D3D12GraphicsContext::GetDefaultAllocatorImpl()
 	{
-		static Allocator* alloc = nullptr;
-		return *alloc;
+		return *m_defaultAllocator;
 	}
 
 	RefPtr<Allocator> D3D12GraphicsContext::GetTransientAllocatorImpl()
@@ -43,52 +43,51 @@ namespace Volt::RHI
 		return nullptr;
 	}
 
-	void D3D12GraphicsContext::Initalize(const GraphicsContextCreateInfo& info)
+	void D3D12GraphicsContext::Initalize()
 	{
-		m_physicalDevice = PhysicalGraphicsDevice::Create(info.physicalDeviceInfo);
+		m_physicalDevice = PhysicalGraphicsDevice::Create(m_createInfo.physicalDeviceInfo);
 
 		GraphicsDeviceCreateInfo deviceCreateInfo = {};
 		deviceCreateInfo.physicalDevice = m_physicalDevice;
 
-		// enable Debuging.
-		VT_D3D12_CHECK(D3D12GetDebugInterface(IID_PPV_ARGS(&m_debug)));
-		m_debug->EnableDebugLayer();
+#ifdef VT_ENABLE_VALIDATION
+		InitializeDebugLayer();
+#endif
 
 		m_graphicsDevice = GraphicsDevice::Create(deviceCreateInfo);
 
-		if (CreateAPIDebugging())
-		{
-			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
-			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
-			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, false);
+#ifdef VT_ENABLE_VALIDATION
+		InitializeAPIValidation();
+#endif
 
-			m_infoQueue->SetBreakOnCategory(D3D12_MESSAGE_CATEGORY_CLEANUP, true);
-		}
-
-		D3d12Allocator::Initialize();
+		m_defaultAllocator = DefaultAllocator::Create();
 	}
 
 	void D3D12GraphicsContext::Shutdown()
 	{
-		VT_D3D12_DELETE(m_debug);
+		m_infoQueue = nullptr;
+		m_debugInterface = nullptr;
 	}
 
-	bool D3D12GraphicsContext::CreateAPIDebugging()
+	void D3D12GraphicsContext::InitializeAPIValidation()
 	{
-		
-
-		auto d3d12GraphicsDevice = m_graphicsDevice->As<D3D12GraphicsDevice>();
-		auto d3d12Device = d3d12GraphicsDevice->GetHandle<ID3D12Device2*>();
-
 		m_infoQueue = nullptr;
 
-		auto hr = (d3d12Device->QueryInterface(&m_infoQueue));
-
-		if (FAILED(hr) || !m_infoQueue)
+		auto d3d12Device = m_graphicsDevice->GetHandle<ID3D12Device2*>();
+		auto hr = (d3d12Device->QueryInterface(m_infoQueue.ReleaseAndGetAddressOf()));
+		
+		if (SUCCEEDED(hr))
 		{
-			return false;
+			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, false);
+			m_infoQueue->SetBreakOnCategory(D3D12_MESSAGE_CATEGORY_CLEANUP, true);
 		}
+	}
 
-		return true;
+	void D3D12GraphicsContext::InitializeDebugLayer()
+	{
+		VT_D3D12_CHECK(D3D12GetDebugInterface(IID_PPV_ARGS(&m_debugInterface)));
+		m_debugInterface->EnableDebugLayer();
 	}
 }

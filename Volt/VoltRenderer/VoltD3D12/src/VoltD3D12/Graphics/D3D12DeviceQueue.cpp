@@ -17,16 +17,13 @@ namespace Volt::RHI
 
 	D3D12DeviceQueue::~D3D12DeviceQueue()
 	{
-
 		WaitForQueue();
-
-
-		DestroyCommandQueue(m_queueType);
+		m_commandQueue = nullptr;
 	}
 
 	void* D3D12DeviceQueue::GetHandleImpl() const
 	{
-		return m_commandQueue;
+		return m_commandQueue.Get();
 	}
 
 	void D3D12DeviceQueue::CreateCommandQueue(QueueType type)
@@ -37,8 +34,9 @@ namespace Volt::RHI
 
 		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 		queueDesc.Type = d3d12QueueType;
-		queueDesc.NodeMask = 0;
+		queueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
 		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+		queueDesc.NodeMask = 0;
 
 		VT_D3D12_CHECK(d3d12Device->CreateCommandQueue(&queueDesc, VT_D3D12_ID(m_commandQueue)));
 
@@ -65,17 +63,12 @@ namespace Volt::RHI
 
 	}
 
-	void D3D12DeviceQueue::DestroyCommandQueue(QueueType type)
-	{
-		VT_D3D12_DELETE(m_commandQueue);
-	}
-
 	void D3D12DeviceQueue::WaitForQueue()
 	{
 		if (m_currentFence)
 		{
-			m_commandQueue->Signal(m_currentFence, m_currentFenceValue);
-			m_commandQueue->Wait(m_currentFence, m_currentFenceValue);
+			m_commandQueue->Signal(m_currentFence.Get(), m_currentFenceValue);
+			m_commandQueue->Wait(m_currentFence.Get(), m_currentFenceValue);
 		}
 	}
 

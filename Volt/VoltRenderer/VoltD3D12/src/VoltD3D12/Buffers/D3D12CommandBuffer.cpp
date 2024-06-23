@@ -17,17 +17,19 @@
 #include "VoltD3D12/Pipelines/D3D12RenderPipeline.h"
 
 namespace Volt::RHI
-{
+{ 
 	D3D12CommandBuffer::D3D12CommandBuffer(const uint32_t count, QueueType queueType) 
-		: m_queueType(queueType)
+		: m_queueType(queueType), m_commandListCount(count)
 	{
+		Invalidate();
 		Create(count, queueType, false);
 	}
 
-	D3D12CommandBuffer::D3D12CommandBuffer(Weak<Swapchain> swapchain)
-		: m_queueType(QueueType::Graphics)
+	D3D12CommandBuffer::D3D12CommandBuffer(WeakPtr<Swapchain> swapchain)
+		: m_queueType(QueueType::Graphics), m_commandListCount(1), m_swapchainTarget(swapchain)
 	{
-		Create(1, m_queueType, true);
+		m_isSwapchainTarget = true;
+		Invalidate();
 	}
 
 	D3D12CommandBuffer::~D3D12CommandBuffer()
@@ -37,6 +39,49 @@ namespace Volt::RHI
 	void* D3D12CommandBuffer::GetHandleImpl() const
 	{
 		return nullptr;
+	}
+
+	void D3D12CommandBuffer::Invalidate()
+	{
+		auto device = GraphicsContext::GetDevice();
+		ID3D12Device2* devicePtr = device->GetHandle<ID3D12Device2*>();
+
+		auto d3d12QueueType = GetD3D12QueueType(m_queueType);
+
+		m_commandLists.resize(m_commandListCount);
+
+		for (uint32_t i = 0; i < m_commandListCount; i++)
+		{
+			auto& cmdListData = m_commandLists.at(i);
+
+			VT_D3D12_CHECK(devicePtr->CreateCommandAllocator(d3d12QueueType, VT_D3D12_ID(cmdListData.commandAllocator)));
+			VT_D3D12_CHECK(devicePtr->CreateCommandList(0, d3d12QueueType, cmdListData.commandAllocator.Get(), nullptr, VT_D3D12_ID(cmdListData.commandList)));
+			cmdListData.commandList->Close();
+
+			std::wstring name = L"Command List - ";
+
+			switch (m_queueType)
+			{
+			case Volt::RHI::QueueType::Graphics:
+				name += L"Graphics";
+				break;
+			case Volt::RHI::QueueType::Compute:
+				name += L"Compute";
+				break;
+			case Volt::RHI::QueueType::TransferCopy:
+				name += L"TransferCopy";
+				break;
+			default:
+				break;
+			}
+
+			name += L", Index " + std::to_wstring(i);
+			cmdListData.commandList->SetName(name.c_str());
+		}
+	}
+
+	void D3D12CommandBuffer::Release()
+	{
 	}
 
 	void D3D12CommandBuffer::Begin()

@@ -95,39 +95,68 @@ namespace Volt
 				case PixelFormat::A1R5G5B5_UNORM_PACK16: return DXGI_FORMAT_B5G5R5A1_UNORM;
 				case PixelFormat::R8_UNORM: return DXGI_FORMAT_R8_UNORM;
 				case PixelFormat::R8_SNORM: return DXGI_FORMAT_R8_SNORM;
-				case PixelFormat::R8_USCALED: return DXGI_FORMAT_R8_UINT;
-				case PixelFormat::R8_SSCALED: return DXGI_FORMAT_R8_SINT;
 				case PixelFormat::R8_UINT: return DXGI_FORMAT_R8_UINT;
 				case PixelFormat::R8_SINT: return DXGI_FORMAT_R8_SINT;
-				case PixelFormat::R8_SRGB: return DXGI_FORMAT_R8_UNORM; // No equivalent
 				case PixelFormat::R8G8_UNORM: return DXGI_FORMAT_R8G8_UNORM;
 				case PixelFormat::R8G8_SNORM: return DXGI_FORMAT_R8G8_SNORM;
-				case PixelFormat::R8G8_USCALED: return DXGI_FORMAT_R8G8_UINT;
-				case PixelFormat::R8G8_SSCALED: return DXGI_FORMAT_R8G8_SINT;
 				case PixelFormat::R8G8_UINT: return DXGI_FORMAT_R8G8_UINT;
 				case PixelFormat::R8G8_SINT: return DXGI_FORMAT_R8G8_SINT;
-				case PixelFormat::R8G8_SRGB: return DXGI_FORMAT_R8G8_UNORM; // No equivalent
-				case PixelFormat::R8G8B8_UNORM: return DXGI_FORMAT_UNKNOWN; // No equivalent
-				case PixelFormat::R8G8B8_SNORM: return DXGI_FORMAT_UNKNOWN; // No equivalent
-				case PixelFormat::R8G8B8_USCALED: return DXGI_FORMAT_UNKNOWN; // No equivalent
-				case PixelFormat::R8G8B8_SSCALED: return DXGI_FORMAT_UNKNOWN; // No equivalent
-				case PixelFormat::R8G8B8_UINT: return DXGI_FORMAT_UNKNOWN; // No equivalent
-				case PixelFormat::R8G8B8_SINT: return DXGI_FORMAT_UNKNOWN; // No equivalent
-				case PixelFormat::R8G8B8_SRGB: return DXGI_FORMAT_UNKNOWN; // No equivalent
-				case PixelFormat::B8G8R8_UNORM: return DXGI_FORMAT_R8G8B8A8_UNORM;
-				case PixelFormat::B8G8R8_SNORM: return DXGI_FORMAT_R8G8B8A8_SNORM;
-				case PixelFormat::B8G8R8_USCALED: return DXGI_FORMAT_R8G8B8A8_UINT;
-				case PixelFormat::B8G8R8_SSCALED: return DXGI_FORMAT_R8G8B8A8_SINT;
-				case PixelFormat::B8G8R8_UINT: return DXGI_FORMAT_R8G8B8A8_UINT;
+				case PixelFormat::R8G8B8A8_UNORM: return DXGI_FORMAT_R8G8B8A8_UNORM;
+				case PixelFormat::R8G8B8A8_SNORM: return DXGI_FORMAT_R8G8B8A8_SNORM;
+				case PixelFormat::R8G8B8A8_UINT: return DXGI_FORMAT_R8G8B8A8_UINT;
+				case PixelFormat::R8G8B8A8_SINT: return DXGI_FORMAT_R8G8B8A8_SINT;
+				case PixelFormat::B8G8R8A8_UNORM: return DXGI_FORMAT_B8G8R8A8_UNORM;
+				case PixelFormat::R16_UNORM: return DXGI_FORMAT_R16_UNORM;
+				case PixelFormat::R16_SNORM: return DXGI_FORMAT_R16_SNORM;
+				case PixelFormat::R16_UINT: return DXGI_FORMAT_R16_UINT;
+				case PixelFormat::R16_SINT: return DXGI_FORMAT_R16_SINT;
+				case PixelFormat::R16_SFLOAT: return DXGI_FORMAT_R16_FLOAT;
+				case PixelFormat::R16G16_UNORM: return DXGI_FORMAT_R16G16_UNORM;
+				case PixelFormat::R16G16_SNORM: return DXGI_FORMAT_R16G16_SNORM;
+				case PixelFormat::R16G16_UINT: return DXGI_FORMAT_R16G16_UINT;
+				case PixelFormat::R16G16_SINT: return DXGI_FORMAT_R16G16_SINT;
+				case PixelFormat::R16G16_SFLOAT: return DXGI_FORMAT_R16G16_FLOAT;
+				case PixelFormat::R16G16B16A16_UNORM: return DXGI_FORMAT_R16G16B16A16_UNORM;
+				case PixelFormat::R16G16B16A16_SNORM: return DXGI_FORMAT_R16G16B16A16_SNORM;
+				case PixelFormat::R16G16B16A16_UINT: return DXGI_FORMAT_R16G16B16A16_UINT;
+				case PixelFormat::R16G16B16A16_SINT: return DXGI_FORMAT_R16G16B16A16_SINT;
+				case PixelFormat::R16G16B16A16_SFLOAT: return DXGI_FORMAT_R16G16B16A16_FLOAT;
+				case PixelFormat::R32_UINT: return DXGI_FORMAT_R32_UINT;
+				case PixelFormat::R32_SINT: return DXGI_FORMAT_R32_SINT;
+				case PixelFormat::R32_SFLOAT: return DXGI_FORMAT_R32_FLOAT;
+				case PixelFormat::R32G32_UINT: return DXGI_FORMAT_R32G32_UINT;
+				case PixelFormat::R32G32_SINT: return DXGI_FORMAT_R32G32_SINT;
+				case PixelFormat::R32G32_SFLOAT: return DXGI_FORMAT_R32G32_FLOAT;
+				case PixelFormat::R32G32B32_UINT: return DXGI_FORMAT_R32G32B32_UINT;
+				case PixelFormat::R32G32B32_SINT: return DXGI_FORMAT_R32G32B32_SINT;
+				case PixelFormat::R32G32B32A32_UINT: return DXGI_FORMAT_R32G32B32A32_UINT;
+				case PixelFormat::R32G32B32A32_SINT: return DXGI_FORMAT_R32G32B32A32_SINT;
+				case PixelFormat::R32G32B32A32_SFLOAT: return DXGI_FORMAT_R32G32B32A32_FLOAT;
 				case PixelFormat::D16_UNORM: return DXGI_FORMAT_D16_UNORM;
 				case PixelFormat::X8_D24_UNORM_PACK32: return DXGI_FORMAT_D24_UNORM_S8_UINT;
-				case PixelFormat::D16_UNORM_S8_UINT: return DXGI_FORMAT_UNKNOWN; // No equivalent
 				case PixelFormat::D24_UNORM_S8_UINT: return DXGI_FORMAT_D24_UNORM_S8_UINT;
 				case PixelFormat::D32_SFLOAT_S8_UINT: return DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
 				case PixelFormat::D32_SFLOAT: return DXGI_FORMAT_D32_FLOAT;
-				case PixelFormat::R8G8B8A8_UNORM: return DXGI_FORMAT_R8G8B8A8_UNORM;
+
+				case PixelFormat::BC1_RGB_UNORM_BLOCK: return DXGI_FORMAT_BC1_UNORM;
+				case PixelFormat::BC1_RGB_SRGB_BLOCK: return DXGI_FORMAT_BC1_UNORM_SRGB;
+				case PixelFormat::BC1_RGBA_UNORM_BLOCK: return DXGI_FORMAT_BC1_UNORM;
+				case PixelFormat::BC1_RGBA_SRGB_BLOCK: return DXGI_FORMAT_BC1_UNORM_SRGB;
+				case PixelFormat::BC2_UNORM_BLOCK: return DXGI_FORMAT_BC2_UNORM;
+				case PixelFormat::BC2_SRGB_BLOCK: return DXGI_FORMAT_BC2_UNORM_SRGB;
+				case PixelFormat::BC3_UNORM_BLOCK: return DXGI_FORMAT_BC3_UNORM;
+				case PixelFormat::BC3_SRGB_BLOCK: return DXGI_FORMAT_BC3_UNORM_SRGB;
+				case PixelFormat::BC4_UNORM_BLOCK: return DXGI_FORMAT_BC4_UNORM;
+				case PixelFormat::BC4_SNORM_BLOCK: return DXGI_FORMAT_BC4_SNORM;
+				case PixelFormat::BC5_UNORM_BLOCK: return DXGI_FORMAT_BC5_UNORM;
+				case PixelFormat::BC5_SNORM_BLOCK: return DXGI_FORMAT_BC5_SNORM;
+				case PixelFormat::BC6H_UFLOAT_BLOCK: return DXGI_FORMAT_BC6H_UF16;
+				case PixelFormat::BC6H_SFLOAT_BLOCK: return DXGI_FORMAT_BC6H_SF16;
+				case PixelFormat::BC7_UNORM_BLOCK: return DXGI_FORMAT_BC7_UNORM;
+				case PixelFormat::BC7_SRGB_BLOCK: return DXGI_FORMAT_BC7_UNORM_SRGB;
+				case PixelFormat::B10G11R11_UFLOAT_PACK32: return DXGI_FORMAT_R11G11B10_FLOAT;
 			}
-			return {};
+			return DXGI_FORMAT_UNKNOWN;
 		}
 	}
 }
@@ -137,7 +166,7 @@ namespace Volt
 #define VT_D3D12_ID(x) IID_PPV_ARGS(&x)
 #define VT_D3D12_WRID(x) IID_PPV_ARGS(x.GetAddressOf())
 
-#define VT_D3D12_DELETE(x) if(x){ x->Release(); } 
+#define VT_D3D12_DELETE(x) if(x){ x->Release(); x = nullptr; } 
 
 #define VT_D3D12_CHECK(x) \
 { \

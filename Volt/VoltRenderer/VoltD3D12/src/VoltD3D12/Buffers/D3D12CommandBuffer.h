@@ -1,7 +1,9 @@
 #pragma once
-#include "VoltRHI/Buffers/CommandBuffer.h"
 
+#include "VoltD3D12/Common/ComPtr.h"
 #include "VoltD3D12/Common/D3D12Fence.h"
+
+#include <VoltRHI/Buffers/CommandBuffer.h>
 
 struct ID3D12Fence;
 struct ID3D12CommandAllocator;
@@ -19,10 +21,9 @@ namespace Volt::RHI
 	{
 	public:
 		D3D12CommandBuffer(const uint32_t count, QueueType queueType);
-		D3D12CommandBuffer(Weak<Swapchain> swapchain);
+		D3D12CommandBuffer(WeakPtr<Swapchain> swapchain);
 		~D3D12CommandBuffer() override;
 
-		void* GetHandleImpl() const override;
 		void Begin() override;
 		void RestartAfterFlush() override;
 		void End() override;
@@ -87,16 +88,34 @@ namespace Volt::RHI
 		D3D12Fence& GetFenceData();
 		D3D12CommandData& GetCommandData();
 
+	protected:
+		void* GetHandleImpl() const override;
+
 	private:
+		void Invalidate();
+		void Release();
+
 		void Create(const uint32_t count, QueueType queueType, bool swapchainTarget);
 
 		void IncrementIndex();
 
+		struct CommandListData
+		{
+			ComPtr<ID3D12CommandAllocator> commandAllocator;
+			ComPtr<ID3D12GraphicsCommandList> commandList;
+			ComPtr<ID3D12Fence> fence;
+		};
+
+		std::vector<CommandListData> m_commandLists;
+
 		uint32_t m_amountOfTargetsbound;
+		uint32_t m_commandListCount = 0;
 
 		std::vector<std::pair<D3D12CommandData, D3D12Fence>> m_perInternalBufferData;
 		uint32_t m_currentCommandBufferIndex = 0;
 		bool m_isSwapchainTarget = false;
 		QueueType m_queueType;
+
+		WeakPtr<Swapchain> m_swapchainTarget;
 	};
 }

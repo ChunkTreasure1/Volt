@@ -37,20 +37,20 @@ namespace Volt::RHI
 		auto d3dCommandBuffer = s_commandBuffer->As<D3D12CommandBuffer>();
 		auto cmd = d3dCommandBuffer->GetCommandData().commandList;
 
-		auto swapchain = m_info.swapchain->As<D3D12Swapchain>();
+		//auto swapchain = m_info.swapchain->As<D3D12Swapchain>();
 
 		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource = swapchain->GetResource();
+		//barrier.Transition.pResource = swapchain->GetResource();
 		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
 		cmd->ResourceBarrier(1, &barrier);
 		const float clearColor[4] = { 0,0,0, 1 };
-		cmd->ClearRenderTargetView(*swapchain->GetRenderTarget().view, clearColor, 0, nullptr);
-		cmd->OMSetRenderTargets(1, swapchain->GetRenderTarget().view, false, nullptr);
+		//cmd->ClearRenderTargetView(*swapchain->GetRenderTarget().view, clearColor, 0, nullptr);
+		//cmd->OMSetRenderTargets(1, swapchain->GetRenderTarget().view, false, nullptr);
 		cmd->SetDescriptorHeaps(1, &m_imguiDescriptorHeap);
 
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmd);

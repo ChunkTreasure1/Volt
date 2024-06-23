@@ -1,14 +1,13 @@
 #pragma once
 
 #include "VoltRHI/Core/Core.h"
+#include "VoltRHI/Memory/Allocation.h"
 
 #include <CoreUtilities/Core.h>
 #include <CoreUtilities/Pointers/RefPtr.h>
 
 namespace Volt::RHI
 {
-	class Allocation;
-	
 	struct AllocationContainer
 	{
 		RefPtr<Allocation> allocation;

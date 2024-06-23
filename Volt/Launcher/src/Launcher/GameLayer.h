@@ -24,7 +24,7 @@ public:
 
 	void LoadStartScene(); // remove
 
-	Ref<Volt::SceneRenderer>& GetSceneRenderer() { return mySceneRenderer; }
+	Ref<Volt::SceneRenderer>& GetSceneRenderer() { return m_sceneRenderer; }
 
 private:
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
@@ -38,14 +38,14 @@ private:
 
 	void TrySceneTransition();
 
-	Ref<Volt::SceneRenderer> mySceneRenderer;
-	Ref<Volt::Scene> myScene;
+	Ref<Volt::SceneRenderer> m_sceneRenderer;
+	Ref<Volt::Scene> m_scene;
 
-	Ref<Volt::Scene> myStoredScene;
-	bool isPaused = false;
+	Ref<Volt::Scene> m_storedScene;
+	bool m_isPaused = false;
 
 	// Loading
-	bool myShouldLoadNewScene = false;
-	uint32_t myLastWidth = 0;
-	uint32_t myLastHeight = 0;
+	bool m_shouldLoadNewScene = false;
+	uint32_t m_lastWidth = 0;
+	uint32_t m_lastHeight = 0;
 };

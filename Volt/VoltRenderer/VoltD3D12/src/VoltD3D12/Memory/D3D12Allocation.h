@@ -1,19 +1,22 @@
 #pragma once
 
+#include "VoltD3D12/Common/ComPtr.h"
+
 #include <VoltRHI/Memory/Allocation.h>
 
-struct VmaAllocation_T;
-struct VkBuffer_T;
-struct VkImage_T;
-struct VkDeviceMemory_T;
+struct ID3D12Resource;
+namespace D3D12MA
+{
+	class Allocation;
+}
 
 namespace Volt::RHI
 {
-	class VulkanImageAllocation final : public Allocation
+	class D3D12ImageAllocation final : public Allocation
 	{
 	public:
-		VulkanImageAllocation(const size_t hash);
-		~VulkanImageAllocation() override = default;
+		D3D12ImageAllocation(const size_t hash);
+		~D3D12ImageAllocation() override = default;
 
 		void Unmap() override;
 		VT_NODISCARD VT_INLINE const UUID64 GetHeapID() const override { return 0; }
@@ -26,21 +29,21 @@ namespace Volt::RHI
 		void* MapInternal() override;
 
 	private:
-		friend class VulkanDefaultAllocator;
+		friend class D3D12DefaultAllocator;
 
 		void* GetHandleImpl() const override;
 
-		VkImage_T* m_resource = nullptr;
-		VmaAllocation_T* m_allocation = nullptr;
+		ComPtr<ID3D12Resource> m_resource;
+		D3D12MA::Allocation* m_allocation = nullptr;
 		size_t m_allocationHash = 0;
 		uint64_t m_size = 0;
 	};
 
-	class VulkanBufferAllocation final : public Allocation
+	class D3D12BufferAllocation final : public Allocation
 	{
 	public:
-		VulkanBufferAllocation(const size_t hash);
-		~VulkanBufferAllocation() override = default;
+		D3D12BufferAllocation(const size_t hash);
+		~D3D12BufferAllocation() override = default;
 
 		void Unmap() override;
 		VT_NODISCARD VT_INLINE const UUID64 GetHeapID() const override { return 0; }
@@ -53,21 +56,21 @@ namespace Volt::RHI
 		void* MapInternal() override;
 
 	private:
-		friend class VulkanDefaultAllocator;
+		friend class D3D12DefaultAllocator;
 
 		void* GetHandleImpl() const override;
 
-		VkBuffer_T* m_resource = nullptr;
-		VmaAllocation_T* m_allocation = nullptr;
+		ComPtr<ID3D12Resource> m_resource;
+		D3D12MA::Allocation* m_allocation = nullptr;
 		size_t m_allocationHash = 0;
 		uint64_t m_size = 0;
 	};
 
-	class VulkanTransientBufferAllocation : public Allocation
+	class D3D12TransientBufferAllocation : public Allocation
 	{
 	public:
-		VulkanTransientBufferAllocation(const size_t hash);
-		~VulkanTransientBufferAllocation() override = default;
+		D3D12TransientBufferAllocation(const size_t hash);
+		~D3D12TransientBufferAllocation() override = default;
 
 		void Unmap() override;
 		VT_NODISCARD VT_INLINE const UUID64 GetHeapID() const override { return m_heapId; }
@@ -82,10 +85,10 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
-		friend class VulkanTransientHeap;
+		friend class D3D12TransientHeap;
 
-		VkBuffer_T* m_resource = nullptr;
-		VkDeviceMemory_T* m_memoryHandle = nullptr;
+		ComPtr<ID3D12Resource> m_resource;
+		//VkDeviceMemory_T* m_memoryHandle = nullptr;
 		size_t m_allocationHash = 0;
 		uint64_t m_size = 0;
 
@@ -93,11 +96,11 @@ namespace Volt::RHI
 		UUID64 m_heapId = 0;
 	};
 
-	class VulkanTransientImageAllocation : public Allocation
+	class D3D12TransientImageAllocation : public Allocation
 	{
 	public:
-		VulkanTransientImageAllocation(const size_t hash);
-		~VulkanTransientImageAllocation() override = default;
+		D3D12TransientImageAllocation(const size_t hash);
+		~D3D12TransientImageAllocation() override = default;
 
 		void Unmap() override;
 		VT_NODISCARD VT_INLINE const UUID64 GetHeapID() const override { return m_heapId; }
@@ -112,10 +115,10 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
-		friend class VulkanTransientHeap;
+		friend class D3D12TransientHeap;
 
-		VkImage_T* m_resource = nullptr;
-		VkDeviceMemory_T* m_memoryHandle = nullptr;
+		ComPtr<ID3D12Resource> m_resource;
+		//VkDeviceMemory_T* m_memoryHandle = nullptr;
 		size_t m_allocationHash = 0;
 		uint64_t m_size = 0;
 

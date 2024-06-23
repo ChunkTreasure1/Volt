@@ -15,51 +15,56 @@
 
 namespace Volt::RHI
 {
+	namespace Utility
+	{
+		inline bool GetSupportsTearing()
+		{
+			bool result = false;
+
+			ComPtr<IDXGIFactory4> factory4;
+			if (SUCCEEDED(CreateDXGIFactory1(VT_D3D12_ID(factory4))))
+			{
+				ComPtr<IDXGIFactory5> factory5;
+				if (SUCCEEDED(factory4.As(&factory5)))
+				{
+					if (FAILED(factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &result, sizeof(result))))
+					{
+						result = false;
+					}
+				}
+			}
+
+			return result;
+		}
+	}
+
 	D3D12Swapchain::D3D12Swapchain(GLFWwindow* window)
 	{
 		m_windowHandle = window;
-		m_width = 1280;
-		m_height = 720;
-		m_enableVsync = false;
-		Build();
+		Invalidate(m_width, m_height, m_enableVsync);
 	}
 
 	D3D12Swapchain::~D3D12Swapchain()
 	{
-		auto d3d12Queue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics)->As<D3D12DeviceQueue>();
-		for (auto& fence : m_fences)
-		{
-			fence.Increment();
-			d3d12Queue->Signal(fence, fence.Value());
-			fence.Wait();
-		}
-		CleanUp();
-		for (auto& target : m_renderTargets)
-		{
-			delete target.view;
-			target.view = nullptr;
-			target.hasID = false;
-		}
+		Release();
 	}
 
 	void* D3D12Swapchain::GetHandleImpl() const
 	{
-		return nullptr;
+		return m_swapchain.Get();
 	}
+
 	void D3D12Swapchain::BeginFrame()
 	{
 		m_currentImageIndex = m_swapchain->GetCurrentBackBufferIndex();
-		m_fences[m_currentImageIndex].Wait();
+		WaitForFenceValue(m_perFrameFenceValues[m_currentImageIndex]);
 	}
 
 	void D3D12Swapchain::Present()
 	{
-		m_swapchain->Present(m_enableVsync, DXGI_PRESENT_ALLOW_TEARING);
-		auto d3d12Queue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics)->As<D3D12DeviceQueue>();
-		d3d12Queue->Signal(m_fences[m_currentImageIndex], m_fences[m_currentImageIndex].Value());
-		m_fences[m_currentImageIndex].Signal();
-		m_fences[m_currentImageIndex].Increment();
+		m_perFrameFenceValues[m_currentImageIndex] = Signal(m_fenceValue);
 
+		VT_D3D12_CHECK(m_swapchain->Present(m_enableVsync, m_supportsTearing ? DXGI_PRESENT_ALLOW_TEARING : 0));
 	}
 
 	void D3D12Swapchain::Resize(const uint32_t width, const uint32_t height, bool enableVSync)
@@ -68,37 +73,22 @@ namespace Volt::RHI
 		m_height = height;
 		m_enableVsync = enableVSync;
 
-		auto d3d12Queue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics)->As<D3D12DeviceQueue>();
-
-		for (auto& fence : m_fences)
 		{
-			fence.Increment();
-			d3d12Queue->Signal(fence, fence.Value());
-			fence.Wait();
+			uint64_t fenceVal = Signal(m_fenceValue);
+			WaitForFenceValue(fenceVal);
 		}
 
-		for (auto& target : m_renderTargets)
+		for (uint32_t i = 0; i < MAX_SWAPCHAIN_IMAGES; i++)
 		{
-			VT_D3D12_DELETE(target.resource);
+			m_perImageData[i].resource.Reset();
+			m_perFrameFenceValues[i] = m_perFrameFenceValues[m_currentImageIndex];
 		}
 
-		VT_D3D12_CHECK(m_swapchain->ResizeBuffers(MaxSwapchainImages, m_width, m_height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
+		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+		VT_D3D12_CHECK(m_swapchain->GetDesc(&swapChainDesc));
+		VT_D3D12_CHECK(m_swapchain->ResizeBuffers(MAX_SWAPCHAIN_IMAGES, m_width, m_height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
 
-		for (size_t i = 0; i < MaxSwapchainImages; i++)
-		{
-			m_swapchain->GetBuffer(static_cast<UINT>(i), VT_D3D12_ID(m_renderTargets[i].resource));
-
-			auto name = L"SwapchainTarget - Flight ID[" + std::to_wstring(i) + L"]";
-			m_renderTargets[i].resource->SetName(name.c_str());
-
-			if (m_renderTargets[i].hasID)
-			{
-				D3D12DescriptorHeapManager::CreateRTVHandleFromID(*m_renderTargets[i].view, m_renderTargets[i].id);
-			}
-
-			auto d3d12Device = GraphicsContext::GetDevice()->As<D3D12GraphicsDevice>();
-			d3d12Device->GetHandle<ID3D12Device2*>()->CreateRenderTargetView(m_renderTargets[i].resource, nullptr, *m_renderTargets[i].view);
-		}
+		CreateRTVs();
 	}
 
 	VT_NODISCARD const uint32_t D3D12Swapchain::GetCurrentFrame() const
@@ -118,7 +108,7 @@ namespace Volt::RHI
 
 	const uint32_t D3D12Swapchain::GetFramesInFlight() const
 	{
-		return MaxSwapchainImages;
+		return MAX_SWAPCHAIN_IMAGES;
 	}
 
 	RefPtr<Image2D> D3D12Swapchain::GetCurrentImage() const
@@ -128,86 +118,114 @@ namespace Volt::RHI
 
 	const PixelFormat D3D12Swapchain::GetFormat() const
 	{
-		return PixelFormat();
+		return PixelFormat::R8G8B8A8_UNORM;
 	}
 
-	void D3D12Swapchain::Build()
+	void D3D12Swapchain::Invalidate(const uint32_t width, const uint32_t height, bool enableVSync)
 	{
-		auto d3d12Device = GraphicsContext::GetDevice()->As<D3D12GraphicsDevice>();
-		auto d3d12Queue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics)->As<D3D12DeviceQueue>();
-		auto d3d12PhysicalDevice = GraphicsContext::GetPhysicalDevice()->As<D3D12PhysicalGraphicsDevice>();
+		CreateSwapchain(width, height);
+		CreateRTVs();
+		CreateFence();
 
-		DXGI_SWAP_CHAIN_DESC scDesc{};
-
-		DXGI_MODE_DESC mDesc{};
-		mDesc.Width = static_cast<uint32_t>(m_width);
-		mDesc.Height = static_cast<uint32_t>(m_height);
-
-		DXGI_RATIONAL ratio{};
-
-		/*if (specs.refreshRate > 0)
+		for (uint32_t i = 0; i < MAX_SWAPCHAIN_IMAGES; i++)
 		{
-			ratio.Numerator = 1;
-			ratio.Denominator = specs.refreshRate;
-		}*/
-
-		mDesc.RefreshRate = ratio;
-		mDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		mDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-		mDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-
-		DXGI_SAMPLE_DESC sDesc{};
-		sDesc.Count = 1;
-
-		scDesc.BufferDesc = mDesc;
-		scDesc.SampleDesc = sDesc;
-		scDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		scDesc.BufferCount = MaxSwapchainImages;
-		scDesc.OutputWindow = glfwGetWin32Window(m_windowHandle); 
-		scDesc.Windowed = true;
-		scDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		scDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING | DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-
-		Microsoft::WRL::ComPtr<IDXGISwapChain> tranferSwapchain = nullptr;
-
-		auto queue = d3d12Queue->GetHandle<ID3D12CommandQueue*>();
-
-		VT_D3D12_CHECK(d3d12PhysicalDevice->GetFactory()->CreateSwapChain(queue, &scDesc, tranferSwapchain.GetAddressOf()));
-
-
-		tranferSwapchain->QueryInterface(&m_swapchain);
-
-
-		m_currentImageIndex = m_swapchain->GetCurrentBackBufferIndex();
-
-
-		for (size_t i = 0; i < MaxSwapchainImages; i++)
-		{
-			m_swapchain->GetBuffer(static_cast<UINT>(i), VT_D3D12_ID(m_renderTargets[i].resource));
-
-			auto name = L"SwapchainTarget - Flight ID[" + std::to_wstring(i) + L"]";
-			m_renderTargets[i].resource->SetName(name.c_str());
-
-			m_renderTargets[i].view = new CD3DX12_CPU_DESCRIPTOR_HANDLE;
-			m_renderTargets[i].id = D3D12DescriptorHeapManager::CreateNewRTVHandle(*m_renderTargets[i].view);
-			m_renderTargets[i].hasID = true;
-
-
-			d3d12Device->GetHandle<ID3D12Device2*>()->CreateRenderTargetView(m_renderTargets[i].resource, nullptr, *m_renderTargets[i].view);
-
-			m_fences[i].Create(QueueType::Graphics);
-			m_fences[i].Signal();
-			m_fences[i].Increment();
+			m_perFrameFenceValues[i] = 0;
 		}
 	}
 
-	void D3D12Swapchain::CleanUp()
+	void D3D12Swapchain::Release()
 	{
-		for (auto& target : m_renderTargets)
+		if (m_fenceEventHandle)
 		{
-			VT_D3D12_DELETE(target.resource);
+			::CloseHandle(m_fenceEventHandle);
 		}
+	}
 
-		VT_D3D12_DELETE(m_swapchain);
+	void D3D12Swapchain::CreateSwapchain(const uint32_t width, const uint32_t height)
+	{
+		uint32_t factoryFlags = 0;
+
+#ifdef VT_ENABLE_VALIDATION
+		factoryFlags = DXGI_CREATE_FACTORY_DEBUG;
+#endif
+
+		ComPtr<IDXGIFactory4> factory;
+		VT_D3D12_CHECK(CreateDXGIFactory2(factoryFlags, VT_D3D12_ID(factory)));
+
+		m_supportsTearing = Utility::GetSupportsTearing();
+
+		DXGI_SWAP_CHAIN_DESC1 swapchainDesc{};
+		swapchainDesc.Width = width;
+		swapchainDesc.Height = height;
+		swapchainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		swapchainDesc.Stereo = false;
+		swapchainDesc.SampleDesc = { 1, 0 };
+		swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapchainDesc.BufferCount = MAX_SWAPCHAIN_IMAGES;
+		swapchainDesc.Scaling = DXGI_SCALING_STRETCH;
+		swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+		swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+		swapchainDesc.Flags = m_supportsTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+
+		ID3D12CommandQueue* cmdQueue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics)->GetHandle<ID3D12CommandQueue*>();
+		HWND windowsWindowHandle = glfwGetWin32Window(m_windowHandle);
+
+		ComPtr<IDXGISwapChain1> swapchain1;
+		VT_D3D12_CHECK(factory->CreateSwapChainForHwnd(cmdQueue, windowsWindowHandle, &swapchainDesc, nullptr, nullptr, &swapchain1));
+		VT_D3D12_CHECK(factory->MakeWindowAssociation(windowsWindowHandle, DXGI_MWA_NO_ALT_ENTER));
+		VT_D3D12_CHECK(swapchain1.As(&m_swapchain));
+	}
+
+	void D3D12Swapchain::CreateRTVs()
+	{
+		auto d3d12Device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
+
+		for (uint32_t i = 0; i < MAX_SWAPCHAIN_IMAGES; i++)
+		{
+			ComPtr<ID3D12Resource> backBuffer;
+			m_swapchain->GetBuffer(i, VT_D3D12_ID(backBuffer));
+		
+			const std::wstring name = L"Swapchain Target - Index " + std::to_wstring(i);
+			backBuffer->SetName(name.c_str());
+
+			if (m_perImageData[i].hasID)
+			{
+				D3D12DescriptorHeapManager::CreateRTVHandleFromID(m_perImageData[i].descriptorHandle, m_perImageData[i].id);
+			}
+			
+			m_perImageData[i].descriptorHandle = {};
+			m_perImageData[i].id = D3D12DescriptorHeapManager::CreateNewRTVHandle(m_perImageData[i].descriptorHandle);
+			m_perImageData[i].resource = backBuffer;
+
+			d3d12Device->CreateRenderTargetView(backBuffer.Get(), nullptr, m_perImageData[i].descriptorHandle);
+		}
+	}
+
+	void D3D12Swapchain::CreateFence()
+	{
+		auto d3d12Device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
+		VT_D3D12_CHECK(d3d12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, VT_D3D12_ID(m_fence)));
+		
+		m_fenceEventHandle = ::CreateEvent(NULL, FALSE, FALSE, NULL);
+		assert(m_fenceEventHandle && "Failed to create fence handle!");
+	}
+	
+	uint64_t D3D12Swapchain::Signal(uint64_t& fenceValue)
+	{
+		ID3D12CommandQueue* cmdQueue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics)->GetHandle<ID3D12CommandQueue*>();
+
+		uint64_t signalValue = ++fenceValue;
+		VT_D3D12_CHECK(cmdQueue->Signal(m_fence.Get(), fenceValue));
+
+		return signalValue;
+	}
+
+	void D3D12Swapchain::WaitForFenceValue(uint64_t fenceValue)
+	{
+		if (m_fence->GetCompletedValue() < fenceValue)
+		{
+			VT_D3D12_CHECK(m_fence->SetEventOnCompletion(fenceValue, m_fenceEventHandle));
+			::WaitForSingleObject(m_fenceEventHandle, static_cast<DWORD>(UINT64_MAX));
+		}
 	}
 }

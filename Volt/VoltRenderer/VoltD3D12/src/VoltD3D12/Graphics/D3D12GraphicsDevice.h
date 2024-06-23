@@ -1,6 +1,8 @@
 #pragma once
 
-#include "VoltRHI/Graphics/GraphicsDevice.h"
+#include "VoltD3D12/Common/ComPtr.h"
+
+#include <VoltRHI/Graphics/GraphicsDevice.h>
 
 struct ID3D12Device2;
 
@@ -21,6 +23,6 @@ namespace Volt::RHI
 
 	private:
 		std::unordered_map<QueueType, RefPtr<DeviceQueue>> m_deviceQueues;
-		ID3D12Device2* m_device;
+		ComPtr<ID3D12Device2> m_device;
 	};
 }

@@ -43,6 +43,7 @@ project "Volt"
 		"../Nexus/src/",
 		"../VoltRenderer/VoltRHI/src",
 		"../VoltRenderer/VoltVulkan/src",
+		"../VoltRenderer/VoltD3D12/src",
 		"../Mosaic/src",
 		
 		"%{IncludeDir.GLFW}",
@@ -79,8 +80,6 @@ project "Volt"
 		"%{IncludeDir.detourcrowd}",
 		"%{IncludeDir.detourtilecache}",
 
-		"%{IncludeDir.vma}",
-		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.cityhash}",
 		"%{IncludeDir.METIS}",
 		"%{IncludeDir.shaderc_glslc}",

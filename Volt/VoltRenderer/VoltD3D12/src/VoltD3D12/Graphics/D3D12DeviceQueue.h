@@ -1,7 +1,10 @@
 #pragma once
 
-#include "VoltRHI/Graphics/DeviceQueue.h"
+#include "VoltD3D12/Common/ComPtr.h"
 #include "VoltD3D12/Common/D3D12Fence.h"
+
+#include <VoltRHI/Graphics/DeviceQueue.h>
+
 struct ID3D12CommandQueue;
 struct ID3D12Fence;
 
@@ -13,7 +16,7 @@ namespace Volt::RHI
 	class D3D12DeviceQueue final : public DeviceQueue
 	{
 	public:
-		D3D12DeviceQueue(const DeviceQueueCreateInfo& createInfo);
+		D3D12DeviceQueue(const DeviceQueueCreateInfo& createInfo); 
 		~D3D12DeviceQueue() override;
 
 		void WaitForQueue() override;
@@ -30,14 +33,12 @@ namespace Volt::RHI
 
 	private:
 		void CreateCommandQueue(QueueType type);
-		void DestroyCommandQueue(QueueType type);
 
-		ID3D12CommandQueue* m_commandQueue;
-
-		D3D12GraphicsDevice* m_device;
+		ComPtr<ID3D12CommandQueue> m_commandQueue;
+		D3D12GraphicsDevice* m_device = nullptr;
 
 		// this is tracked internally from the most recent fence.
-		ID3D12Fence* m_currentFence;
+		ComPtr<ID3D12Fence> m_currentFence;
 		size_t m_currentFenceValue;
 	};
 }

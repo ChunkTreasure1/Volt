@@ -30,7 +30,9 @@
 
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
+
 #include <VoltVulkan/VulkanRHIProxy.h>
+#include <VoltD3D12/D3D12RHIProxy.h>
 
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
@@ -57,13 +59,6 @@ namespace Volt
 				break;
 		}
 	}
-
-	class TestRefCounted : public RefCounted
-	{
-	public:
-		void Test() { VT_CORE_INFO("Test from {}!", (void*)this); }
-	private:
-	};
 
 	Application::Application(const ApplicationInfo& info)
 		: m_frameTimer(100)
@@ -124,9 +119,6 @@ namespace Volt
 		
 		ShaderMap::Initialize();
 		Renderer::Initialize();
-
-		//Renderer::Initialize();
-		//Renderer::LateInitialize();
 
 		//UIRenderer::Initialize();
 		//DebugRenderer::Initialize();
@@ -210,9 +202,6 @@ namespace Volt
 		//DebugRenderer::Shutdown();
 		//UIRenderer::Shutdown();
 
-		//Renderer::Shutdown();
-
-		//Amp::AudioManager::Shutdown();
 		Amp::WWiseEngine::Get().TermWwise();
 
 		m_assetmanager = nullptr;
@@ -390,6 +379,10 @@ namespace Volt
 		if (cinfo.graphicsApi == RHI::GraphicsAPI::Vulkan)
 		{
 			m_rhiProxy = RHI::CreateVulkanRHIProxy();
+		}
+		else if (cinfo.graphicsApi == RHI::GraphicsAPI::D3D12)
+		{
+			m_rhiProxy = RHI::CreateD3D12RHIProxy();
 		}
 
 		{
