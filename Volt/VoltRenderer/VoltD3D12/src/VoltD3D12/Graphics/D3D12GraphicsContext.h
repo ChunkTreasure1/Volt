@@ -28,6 +28,7 @@ namespace Volt::RHI
 		void Shutdown();
 
 		void InitializeAPIValidation();
+		void ShutdownAPIValidation();
 		void InitializeDebugLayer();
 
 		RefPtr<GraphicsDevice> m_graphicsDevice;
@@ -38,7 +39,9 @@ namespace Volt::RHI
 
 		GraphicsContextCreateInfo m_createInfo{};
 
-		ComPtr<ID3D12InfoQueue> m_infoQueue;
+		ComPtr<ID3D12InfoQueue1> m_infoQueue;
+		unsigned long m_debugCallbackId = 0;
+
 		ComPtr<ID3D12Debug> m_debugInterface;
 	};
 }

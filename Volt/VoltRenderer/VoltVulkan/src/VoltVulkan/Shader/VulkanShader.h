@@ -38,8 +38,6 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
-		friend class VulkanShaderCompiler;
-
 		struct TypeCount
 		{
 			uint32_t count = 0;

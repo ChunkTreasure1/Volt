@@ -1,24 +1,64 @@
 #include "dxpch.h"
 #include "D3D12ShaderCompiler.h"
 
-#include <dxc/dxcapi.h>
-
-#include "VoltRHI/Shader/ShaderUtility.h"
-#include "VoltRHI/Shader/ShaderPreProcessor.h"
-
 #include "VoltD3D12/Shader/D3D12Shader.h"
+#include "VoltD3D12/Shader/HLSLIncluder.h"
+
+#include <VoltRHI/Shader/ShaderUtility.h>
+#include <VoltRHI/Shader/ShaderPreProcessor.h>
+#include <VoltRHI/Shader/ShaderCache.h>
+
+#include <dxc/dxcapi.h>
 #include <d3d12shader.h>
+
+#include <ranges>
+#include <codecvt>
+#include <locale>
 
 namespace Volt::RHI
 {
-	D3D12ShaderCompiler::D3D12ShaderCompiler(const ShaderCompilerCreateInfo& createInfo) : m_info(createInfo)
+	namespace Utility
 	{
+#pragma warning( push )
+#pragma warning( disable : 4996 )
+		inline static std::wstring ToWString(const std::string& stringToConvert)
+		{
+			std::wstring wideString =
+				std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(stringToConvert);
+			return wideString;
+		}
+#pragma warning( pop )
+
+		inline static const std::string GetErrorStringFromResult(IDxcResult* result)
+		{
+			std::string output;
+
+			IDxcBlobUtf8* errors;
+			result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), nullptr);
+			if (errors && errors->GetStringLength() > 0)
+			{
+				output = (char*)errors->GetBufferPointer();
+				errors->Release();
+			}
+
+			return output;
+		}
+	}
+
+	D3D12ShaderCompiler::D3D12ShaderCompiler(const ShaderCompilerCreateInfo& createInfo) 
+		: m_includeDirectories(createInfo.includeDirectories), m_macros(createInfo.initialMacros), m_flags(createInfo.flags)
+	{
+		RHILog::LogTagged(LogSeverity::Trace, "[D3D12ShaderCompiler]", "Initializing D3D12ShaderCompiler");
 		DxcCreateInstance(CLSID_DxcUtils, VT_D3D12_ID(m_hlslUtils));
 		DxcCreateInstance(CLSID_DxcCompiler, VT_D3D12_ID(m_hlslCompiler));
 	}
 
 	D3D12ShaderCompiler::~D3D12ShaderCompiler()
 	{
+		m_hlslUtils->Release();
+		m_hlslCompiler->Release();
+
+		RHILog::LogTagged(LogSeverity::Trace, "[D3D12ShaderCompiler]", "Destroying D3D12ShaderCompiler");
 	}
 
 	void* D3D12ShaderCompiler::GetHandleImpl() const
@@ -28,137 +68,436 @@ namespace Volt::RHI
 
 	ShaderCompiler::CompilationResultData D3D12ShaderCompiler::TryCompileImpl(const Specification& specification)
 	{
-		//auto d3d12shader = reinterpret_cast<D3D12Shader*>(&shader);
+		if (!specification.forceCompile)
+		{
+			const auto cachedResult = ShaderCache::TryGetCachedShader(specification);
+			if (cachedResult.data.IsValid())
+			{
+				return cachedResult.data;
+			}
+		}
 
-		CompilationResultData result;
+		if (specification.shaderSourceInfo.empty())
+		{
+			RHILog::LogTagged(LogSeverity::Error, "[D3D12ShaderCompiler]", "Trying to compile a shader without sources!");
+			return {};
+		}
 
-		//for (auto& path : d3d12shader->m_sourceFiles)
-		//{
-		//	auto resultState = CompileStage(path, specification, *d3d12shader);
-		//	if (resultState != CompilationResult::Success)
-		//	{
-		//		result.result = resultState;
-		//		break;
-		//	}
-		//}
+		std::unordered_map<ShaderStage, ID3D12ShaderReflection*> reflectionData;
+		CompilationResultData result = CompileAll(specification, reflectionData);
+		
+		// If compilation fails, we try to get the cached version.
+		if (result.result != ShaderCompiler::CompilationResult::Success)
+		{
+			const auto cachedResult = ShaderCache::TryGetCachedShader(specification);
+			return cachedResult.data;
+		}
+
+		ReflectAllStages(specification, result, reflectionData);
+		ShaderCache::CacheShader(specification, result);
+
 		return result;
 	}
 
 	void D3D12ShaderCompiler::AddMacroImpl(const std::string& macroName)
 	{
+		if (std::find(m_macros.begin(), m_macros.end(), macroName) != m_macros.end())
+		{
+			return;
+		}
+
+		m_macros.push_back(macroName);
 	}
 
 	void D3D12ShaderCompiler::RemoveMacroImpl(std::string_view macroName)
 	{
+		if (auto it = std::find(m_macros.begin(), m_macros.end(), macroName); it != m_macros.end())
+		{
+			m_macros.erase(it);
+		}
 	}
-	ShaderCompiler::CompilationResult D3D12ShaderCompiler::CompileStage(const std::filesystem::path& path, const Specification& specification, D3D12Shader& shader)
+
+	bool D3D12ShaderCompiler::PreprocessSource(const ShaderStage shaderStage, const std::filesystem::path& filepath, std::string& outSource)
 	{
-		//auto stageflag = Utility::GetShaderStageFromFilename(path.string());
+		std::vector<std::wstring> wIncludeDirs;
+		std::vector<const wchar_t*> wcIncludeDirs;
+
+		for (const auto& includeDir : m_includeDirectories)
+		{
+			wIncludeDirs.push_back(L"-I " + includeDir.wstring());
+		}
+
+		for (const auto& includeDir : wIncludeDirs)
+		{
+			wcIncludeDirs.push_back(includeDir.c_str());
+		}
+
+		std::vector<const wchar_t*> arguments =
+		{
+			filepath.c_str(),
+			L"-P", // Preproccess
+			L"-D", L"__HLSL__",
+			L"-D", L"__D3D12__"
+		};
+
+		if ((m_flags & ShaderCompilerFlags::WarningsAsErrors) != ShaderCompilerFlags::None)
+		{
+			arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS);
+		}
+
+		for (const auto& includeDir : wcIncludeDirs)
+		{
+			arguments.push_back(includeDir);
+		}
+
+		std::vector<std::wstring> wMacros;
+		for (const auto& macro : m_macros)
+		{
+			wMacros.push_back(Utility::ToWString(macro));
+		}
+
+		if ((m_flags & ShaderCompilerFlags::EnableShaderValidator) != ShaderCompilerFlags::None)
+		{
+			wMacros.push_back(L"ENABLE_RUNTIME_VALIDATION");
+		}
+
+		for (const auto& macro : wMacros)
+		{
+			arguments.emplace_back(L"-D");
+			arguments.emplace_back(macro.c_str());
+		}
+
+		IDxcBlobEncoding* sourcePtr = nullptr;
+		m_hlslUtils->CreateBlob(outSource.c_str(), static_cast<uint32_t>(outSource.size()), CP_UTF8, &sourcePtr);
+
+		DxcBuffer sourceBuffer{};
+		sourceBuffer.Ptr = sourcePtr->GetBufferPointer();
+		sourceBuffer.Size = sourcePtr->GetBufferSize();
+		sourceBuffer.Encoding = 0;
+
+		const Scope<HLSLIncluder> includer = CreateScope<HLSLIncluder>();
+
+		IDxcResult* compilationResult = nullptr;
+		HRESULT result = m_hlslCompiler->Compile(&sourceBuffer, arguments.data(), static_cast<uint32_t>(arguments.size()), includer.get(), IID_PPV_ARGS(&compilationResult));
+
+		std::string error;
+		const bool failed = FAILED(result);
+
+		if (failed)
+		{
+			error = std::format("Failed to compile. Error {0}\n", result);
+			error.append(std::format("{0}\nWhile compiling shader file: {1}", Utility::GetErrorStringFromResult(compilationResult), filepath.string()));
+		}
+
+		if (error.empty())
+		{
+			IDxcBlob* compileResult = nullptr;
+			compilationResult->GetResult(&compileResult);
+
+			outSource = reinterpret_cast<const char*>(compileResult->GetBufferPointer());
+			compileResult->Release();
+		}
+		else
+		{
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", error);
+		}
+
+		sourcePtr->Release();
+		compilationResult->Release();
+
+		return !failed;
+	}
+
+	ShaderCompiler::CompilationResultData D3D12ShaderCompiler::CompileAll(const Specification& specification, std::unordered_map<ShaderStage, ID3D12ShaderReflection*>& outReflectionData)
+	{
+		CompilationResultData result;
+
+		for (const auto& [stage, sourceInfo] : specification.shaderSourceInfo)
+		{
+			result.result = CompileSingle(stage, sourceInfo.source, sourceInfo.sourceEntry, specification, result, &outReflectionData[stage]);
+
+			if (result.result != ShaderCompiler::CompilationResult::Success)
+			{
+				break;
+			}
+		}
+
+		// #TODO_Ivar: This is a dumb hack for vertex only shaders
+		if (specification.shaderSourceInfo.contains(RHI::ShaderStage::Vertex) && !specification.shaderSourceInfo.contains(RHI::ShaderStage::Pixel))
+		{
+			result.outputFormats.emplace_back(RHI::PixelFormat::D32_SFLOAT);
+		}
+
+		return result;
+	}
 
 
-		//std::wstring wEntryPoint(specification.entryPoint.begin(), specification.entryPoint.end());
+	ShaderCompiler::CompilationResult D3D12ShaderCompiler::CompileSingle(ShaderStage shaderStage, const std::string& source, const ShaderSourceEntry& sourceEntry, const Specification& specification, CompilationResultData& outData, ID3D12ShaderReflection** outReflectionData)
+	{
+		auto& data = outData.shaderData[shaderStage];
 
-		//std::vector<LPCWSTR> arguments;
-		//arguments.emplace_back(L"-E");
-		//arguments.emplace_back(wEntryPoint.c_str());
+		std::string processedSource = source;
 
+		if (!PreprocessSource(shaderStage, sourceEntry.filePath, processedSource))
+		{
+			return CompilationResult::PreprocessFailed;
+		}
 
-		//Microsoft::WRL::ComPtr<IDxcBlobEncoding> sourceBlob;
-		//// Get the whole file to string.
-		//std::ifstream fin(path, std::ios::binary | std::ios::ate);
-		//fin.seekg(0, std::ios::end);
-		//std::string file;
-		//file.resize(fin.tellg());
-		//fin.seekg(0, std::ios::beg);
-		//fin.read(file.data(), file.size());
+		const std::wstring wEntryPoint = Utility::ToWString(sourceEntry.entryPoint);
 
+		std::vector<const wchar_t*> arguments =
+		{
+			sourceEntry.filePath.c_str(),
+			L"-E",
+			wEntryPoint.c_str(),
+			L"-T",
+			Utility::HLSLShaderProfile(shaderStage),
+			L"-HV",
+			L"2021",
+			L"-D",
+			L"__D3D12__ ",
+			L"-enable-16bit-types",
 
-		//PreProcessorData ppData = {};
-		//ppData.entryPoint = specification.entryPoint;
-		//ppData.shaderStage = stageflag;
-		//ppData.shaderSource = file;
+			DXC_ARG_PACK_MATRIX_COLUMN_MAJOR
+		};
 
-		//PreProcessorResult ppResult = {};
+		if ((m_flags & ShaderCompilerFlags::WarningsAsErrors) != ShaderCompilerFlags::None)
+		{
+			arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS);
+		}
 
-		//if (!ShaderPreProcessor::PreProcessShaderSource(ppData, ppResult))
-		//{
-		//	return ShaderCompiler::CompilationResult::PreprocessFailed;
-		//}
+		switch (specification.optimizationLevel)
+		{
+			case ShaderCompiler::OptimizationLevel::Disable: arguments.push_back(L"-Od"); break;
+			case ShaderCompiler::OptimizationLevel::Release: arguments.push_back(L"-O1"); break;
+			case ShaderCompiler::OptimizationLevel::Dist: arguments.push_back(L"-O3"); break;
+		}
 
-		//file = ppResult.preProcessedResult;
-		//
-		//m_hlslUtils->CreateBlob(file.data(), static_cast<uint32_t>(file.size()), CP_UTF8, sourceBlob.GetAddressOf());
-		//auto target = Utility::HLSLShaderProfile(stageflag);
-		//arguments.push_back(L"-T");
-		//arguments.push_back(target);
+		if (specification.optimizationLevel != ShaderCompiler::OptimizationLevel::Dist)
+		{
+			arguments.push_back(DXC_ARG_DEBUG);
+			arguments.push_back(L"-Qembed_debug");
+		}
 
+		// Pre processing
+		{
+			PreProcessorData processingData{};
+			processingData.shaderSource = processedSource;
+			processingData.shaderStage = shaderStage;
+			processingData.entryPoint = sourceEntry.entryPoint;
 
-		//switch (specification.optimizationLevel)
-		//{
-		//	case OptimizationLevel::Release:
-		//		arguments.push_back(DXC_ARG_SKIP_OPTIMIZATIONS);
-		//		break;
-		//	case OptimizationLevel::Dist:
-		//		arguments.push_back(DXC_ARG_SKIP_VALIDATION);
-		//		break;
-		//	case OptimizationLevel::Disable:
-		//		break;
-		//	default:
-		//		break;
-		//}
+			PreProcessorResult result{};
+			if (!ShaderPreProcessor::PreProcessShaderSource(processingData, result))
+			{
+				return CompilationResult::PreprocessFailed;
+			}
 
-		//switch (m_info.flags)
-		//{
-		//	case ShaderCompilerFlags::None:
-		//		break;
-		//	case ShaderCompilerFlags::WarningsAsErrors:
-		//		arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS);
-		//		break;
-		//}
+			if (shaderStage == ShaderStage::Pixel)
+			{
+				outData.outputFormats = result.outputFormats;
+			}
+			else if (shaderStage == ShaderStage::Vertex)
+			{
+				outData.vertexLayout = result.vertexLayout;
+				outData.instanceLayout = result.instanceLayout;
+			}
 
-		//arguments.push_back(DXC_ARG_PACK_MATRIX_COLUMN_MAJOR);
-		///*if (stageFlag != ShaderStageFlag::Pixel)
-		//{
-		//	arguments.push_back(L"-fvk-invert-y");
-		//}*/
+			if (!outData.renderGraphConstants.IsValid())
+			{
+				outData.renderGraphConstants = result.renderGraphConstants;
+			}
+			else if (result.renderGraphConstants.IsValid())
+			{
+				for (const auto& [name, uniform] : outData.renderGraphConstants.uniforms)
+				{
+					if (!result.renderGraphConstants.uniforms.contains(name) || uniform.type != result.renderGraphConstants.uniforms.at(name).type)
+					{
+						RHILog::LogTagged(LogSeverity::Error, "[D3D12ShaderCompiler]", "All shader stages must have equal constant struct definition!");
+					}
+				}
+			}
 
-		//DxcBuffer sourceBuffer{};
-		//sourceBuffer.Ptr = sourceBlob->GetBufferPointer();
-		//sourceBuffer.Size = sourceBlob->GetBufferSize();
-		//sourceBuffer.Encoding = 0;
+			processedSource = result.preProcessedResult;
+		}
 
-		//Microsoft::WRL::ComPtr<IDxcResult> compileResult;
-		//auto hr = m_hlslCompiler->Compile(&sourceBuffer, arguments.data(), (uint32_t)arguments.size(), nullptr, IID_PPV_ARGS(compileResult.GetAddressOf()));
-		//if (FAILED(hr))
-		//{
-		//	Microsoft::WRL::ComPtr<IDxcBlobUtf8> pErrors;
-		//	IDxcBlobWide* wide = nullptr;
-		//	hr = compileResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(pErrors.GetAddressOf()), &wide);
-		//	if (pErrors && pErrors->GetStringLength() > 0)
-		//	{
-		//		RHILog::LogTagged(LogSeverity::Error, "[D3D12 Shader]", (char*)pErrors->GetBufferPointer());
-		//	}
+		IDxcBlobEncoding* sourcePtr = nullptr;
+		m_hlslUtils->CreateBlob(processedSource.c_str(), static_cast<uint32_t>(processedSource.size()), CP_UTF8, &sourcePtr);
 
-		//	return ShaderCompiler::CompilationResult::Failure;
-		//}
-		//
-		//IDxcBlob* blob = nullptr;
-		//compileResult->GetResult(&blob);
+		DxcBuffer sourceBuffer{};
+		sourceBuffer.Ptr = sourcePtr->GetBufferPointer();
+		sourceBuffer.Size = sourcePtr->GetBufferSize();
+		sourceBuffer.Encoding = 0;
 
-		//shader.m_blobMap[stageflag] = blob;
+		IDxcResult* compilationResult = nullptr;
+		std::string error;
 
+		HRESULT result = m_hlslCompiler->Compile(&sourceBuffer, arguments.data(), static_cast<uint32_t>(arguments.size()), nullptr, IID_PPV_ARGS(&compilationResult));
 
-		//if (stageflag == ShaderStage::Vertex)
-		//{
-		//	shader.m_resources.vertexLayout = ppResult.vertexLayout;
-		//}
+		const bool failed = FAILED(result);
+		if (failed)
+		{
+			error = std::format("Failed to compile. Error: {}\n", result);
+			error.append(std::format("{0}\nWhile compiling shader file: {1}", Utility::GetErrorStringFromResult(compilationResult), sourceEntry.filePath.string()));
+		}
 
+		if (error.empty())
+		{
+			IDxcBlob* shaderResult = nullptr;
+			compilationResult->GetResult(&shaderResult);
 
-		//if(stageflag == ShaderStage::Pixel)
-		//{
-		//	shader.m_resources.outputFormats = ppResult.outputFormats;
-		//}
+			if (!shaderResult || shaderResult->GetBufferSize() == 0)
+			{
+				error = std::format("Failed to compile. Error: {}\n", result);
+				error.append(std::format("{0}\nWhile compiling shader file: {1}", Utility::GetErrorStringFromResult(compilationResult), sourceEntry.filePath.string()));
 
-		return ShaderCompiler::CompilationResult::Success;
+				RHILog::LogUnformatted(LogSeverity::Error, "[D3D12ShaderCompiler]: " + error);
+
+				sourcePtr->Release();
+				compilationResult->Release();
+
+				return CompilationResult::Failure;
+			}
+
+			const size_t size = shaderResult->GetBufferSize();
+
+			data.resize(size / sizeof(uint32_t));
+			memcpy_s(data.data(), size, shaderResult->GetBufferPointer(), shaderResult->GetBufferSize());
+
+			// Get reflection data
+			IDxcBlob* pReflectionData;
+			compilationResult->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&pReflectionData), nullptr);
+
+			DxcBuffer reflectionBuffer{};
+			reflectionBuffer.Ptr = pReflectionData->GetBufferPointer();
+			reflectionBuffer.Size = pReflectionData->GetBufferSize();
+			reflectionBuffer.Encoding = 0;
+
+			m_hlslUtils->CreateReflection(&reflectionBuffer, IID_PPV_ARGS(outReflectionData));
+
+			pReflectionData->Release();
+			compilationResult->Release();
+			shaderResult->Release();
+		}
+		else
+		{
+			sourcePtr->Release();
+			compilationResult->Release();
+
+			RHILog::LogUnformatted(LogSeverity::Error, "[D3D12ShaderCompiler]: " + error);
+			return CompilationResult::Failure;
+		}
+
+		sourcePtr->Release();
+		compilationResult->Release();
+
+		return CompilationResult::Success;
+	}
+
+	void D3D12ShaderCompiler::ReflectAllStages(const Specification& specification, CompilationResultData& inOutData, const std::unordered_map<ShaderStage, ID3D12ShaderReflection*>& reflectionData)
+	{
+		for (const auto& [stage, data] : inOutData.shaderData)
+		{
+			RHILog::LogTagged(LogSeverity::Trace, "[D3D12ShaderCompiler]", "Reflecting shader {0}", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
+			ReflectStage(stage, specification, inOutData, reflectionData.at(stage));
+		}
+	}
+
+	void D3D12ShaderCompiler::ReflectStage(ShaderStage stage, const Specification& specification, CompilationResultData& inOutData, ID3D12ShaderReflection* reflectionData)
+	{
+		D3D12_SHADER_DESC shaderDesc{};
+		reflectionData->GetDesc(&shaderDesc);
+
+		for (uint32_t i : std::views::iota(0u, shaderDesc.BoundResources))
+		{
+			D3D12_SHADER_INPUT_BIND_DESC shaderInputBindDesc{};
+			VT_D3D12_CHECK(reflectionData->GetResourceBindingDesc(i, &shaderInputBindDesc));
+
+			const uint32_t binding = shaderInputBindDesc.BindPoint;
+			const uint32_t space = shaderInputBindDesc.Space;
+			const std::string name = shaderInputBindDesc.Name;
+
+			if (!TryAddShaderBinding(name, space, binding, inOutData))
+			{
+				RHILog::LogTagged(LogSeverity::Error, "[D3D12ShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
+			}
+
+			if (name == "$Globals")
+			{
+				RHILog::LogTagged(LogSeverity::Error, "[D3D12ShaderCompiler]", "Shader {0} seems to have incorrectly defined global variables!", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
+				continue;
+			}
+
+			if (shaderInputBindDesc.Type == D3D_SIT_CBUFFER)
+			{
+				ID3D12ShaderReflectionConstantBuffer* reflectedCB = reflectionData->GetConstantBufferByIndex(i);
+				D3D12_SHADER_BUFFER_DESC cbDesc{};
+				reflectedCB->GetDesc(&cbDesc);
+
+				const size_t size = static_cast<size_t>(cbDesc.Size);
+
+				auto& buffer = inOutData.uniformBuffers[space][binding];
+				buffer.usageStages = buffer.usageStages | stage;
+				buffer.usageCount++;
+				buffer.size = size;
+			}
+			else if (shaderInputBindDesc.Type == D3D_SIT_STRUCTURED || shaderInputBindDesc.Type == D3D_SIT_BYTEADDRESS) 
+			{
+				auto& buffer = inOutData.storageBuffers[space][binding];
+				buffer.usageStages = buffer.usageStages | stage;
+				buffer.usageCount++;
+				buffer.size = 0;
+
+				const bool firstEntry = !inOutData.storageBuffers[space].contains(binding);
+
+				if (firstEntry)
+				{
+					if (shaderInputBindDesc.BindCount == 0)
+					{
+						buffer.arraySize = -1;
+					}
+					else
+					{
+						buffer.arraySize = shaderInputBindDesc.BindCount;
+					}
+				}
+			}
+			else if (shaderInputBindDesc.Type == D3D_SIT_TEXTURE)
+			{
+				auto& shaderImage = inOutData.images[space][binding];
+				shaderImage.usageStages = shaderImage.usageStages | stage;
+				shaderImage.usageCount++;
+
+				const bool firstEntry = !inOutData.images[space].contains(binding);
+
+				if (firstEntry)
+				{
+					if (shaderInputBindDesc.BindCount == 0)
+					{
+						shaderImage.arraySize = -1;
+					}
+					else
+					{
+						shaderImage.arraySize = shaderInputBindDesc.BindCount;
+					}
+				}
+			}
+			else if (shaderInputBindDesc.Type == D3D_SIT_SAMPLER)
+			{
+				auto& shaderSampler = inOutData.samplers[space][binding];
+				shaderSampler.usageStages = shaderSampler.usageStages | stage;
+				shaderSampler.usageCount++;
+			}
+		}
+	}
+
+	bool D3D12ShaderCompiler::TryAddShaderBinding(const std::string& name, uint32_t set, uint32_t binding, CompilationResultData& outData)
+	{
+		if (outData.bindings.contains(name))
+		{
+			return false;
+		}
+
+		outData.bindings[name] = { set, binding };
+		return true;
 	}
 }

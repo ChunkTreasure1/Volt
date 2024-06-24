@@ -7,6 +7,33 @@
 
 namespace Volt::RHI
 {
+	namespace Utility
+	{
+		void LogD3D12Message(D3D12_MESSAGE_CATEGORY category, D3D12_MESSAGE_SEVERITY severity, D3D12_MESSAGE_ID id, LPCSTR pDescription, void* context)
+		{
+			switch (severity)
+			{
+				case D3D12_MESSAGE_SEVERITY_CORRUPTION:
+					RHILog::LogUnformatted(LogSeverity::Error, std::string("D3D12 Validation:") + std::string(pDescription));
+					break;
+				case D3D12_MESSAGE_SEVERITY_ERROR:
+					RHILog::LogUnformatted(LogSeverity::Error, std::string("D3D12 Validation:") + std::string(pDescription));
+					break;
+				case D3D12_MESSAGE_SEVERITY_WARNING:
+					RHILog::LogUnformatted(LogSeverity::Warning, std::string("D3D12 Validation:") + std::string(pDescription));
+					break;
+				case D3D12_MESSAGE_SEVERITY_INFO:
+					RHILog::LogUnformatted(LogSeverity::Info, std::string("D3D12 Validation:") + std::string(pDescription));
+					break;
+				case D3D12_MESSAGE_SEVERITY_MESSAGE:
+					RHILog::LogUnformatted(LogSeverity::Trace, std::string("D3D12 Validation:") + std::string(pDescription));
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
 	D3D12GraphicsContext::D3D12GraphicsContext(const GraphicsContextCreateInfo& info)
 		: m_createInfo(info)
 	{
@@ -65,7 +92,10 @@ namespace Volt::RHI
 
 	void D3D12GraphicsContext::Shutdown()
 	{
-		m_infoQueue = nullptr;
+#ifdef VT_ENABLE_VALIDATION
+		ShutdownAPIValidation();
+#endif
+
 		m_debugInterface = nullptr;
 	}
 
@@ -78,11 +108,26 @@ namespace Volt::RHI
 		
 		if (SUCCEEDED(hr))
 		{
+			m_infoQueue->RegisterMessageCallback(&Utility::LogD3D12Message, D3D12_MESSAGE_CALLBACK_FLAG_NONE, nullptr, &m_debugCallbackId);
 			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
 			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
 			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, false);
 			m_infoQueue->SetBreakOnCategory(D3D12_MESSAGE_CATEGORY_CLEANUP, true);
 		}
+		else
+		{
+			m_infoQueue = nullptr;
+		}
+	}
+
+	void D3D12GraphicsContext::ShutdownAPIValidation()
+	{
+		if (m_infoQueue)
+		{
+			m_infoQueue->UnregisterMessageCallback(m_debugCallbackId);
+		}
+
+		m_infoQueue = nullptr;
 	}
 
 	void D3D12GraphicsContext::InitializeDebugLayer()

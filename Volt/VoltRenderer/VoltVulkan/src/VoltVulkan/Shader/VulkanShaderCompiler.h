@@ -23,14 +23,6 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
-		struct ShaderStageData
-		{
-			std::filesystem::path filepath;
-			std::string source;
-		};
-
-		using ShaderSourceMap = std::unordered_map<ShaderStage, ShaderStageData>;
-
 		bool PreprocessSource(const ShaderStage shaderStage, const std::filesystem::path& filepath, std::string& outSource);
 
 		CompilationResultData CompileAll(const Specification& specification);
@@ -46,7 +38,6 @@ namespace Volt::RHI
 	
 		std::vector<std::filesystem::path> m_includeDirectories;
 		std::vector<std::string> m_macros;
-
 		ShaderCompilerFlags m_flags = ShaderCompilerFlags::None;
 		std::filesystem::path m_cacheDirectory;
 	};

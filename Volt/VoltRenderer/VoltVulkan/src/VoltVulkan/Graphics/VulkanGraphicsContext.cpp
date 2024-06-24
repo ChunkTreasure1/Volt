@@ -60,13 +60,13 @@ namespace Volt::RHI
 			switch (messageSeverity)
 			{
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-					RHILog::LogUnformatted(LogSeverity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					RHILog::LogUnformatted(LogSeverity::Trace, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-					RHILog::LogUnformatted(LogSeverity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					RHILog::LogUnformatted(LogSeverity::Info, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-					RHILog::LogUnformatted(LogSeverity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					RHILog::LogUnformatted(LogSeverity::Warning, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
 					RHILog::LogUnformatted(LogSeverity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
