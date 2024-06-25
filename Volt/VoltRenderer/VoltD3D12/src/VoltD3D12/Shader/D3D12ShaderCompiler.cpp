@@ -364,17 +364,27 @@ namespace Volt::RHI
 			memcpy_s(data.data(), size, shaderResult->GetBufferPointer(), shaderResult->GetBufferSize());
 
 			// Get reflection data
-			IDxcBlob* pReflectionData;
+			IDxcBlob* pReflectionData = nullptr;
 			compilationResult->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&pReflectionData), nullptr);
 
 			DxcBuffer reflectionBuffer{};
-			reflectionBuffer.Ptr = pReflectionData->GetBufferPointer();
-			reflectionBuffer.Size = pReflectionData->GetBufferSize();
-			reflectionBuffer.Encoding = 0;
+			if (pReflectionData)
+			{
+				reflectionBuffer.Ptr = pReflectionData->GetBufferPointer();
+				reflectionBuffer.Size = pReflectionData->GetBufferSize();
+				reflectionBuffer.Encoding = 0;
 
-			m_hlslUtils->CreateReflection(&reflectionBuffer, IID_PPV_ARGS(outReflectionData));
+				m_hlslUtils->CreateReflection(&reflectionBuffer, IID_PPV_ARGS(outReflectionData));
+				pReflectionData->Release();
+			}
+			else
+			{
+				error = std::format("Failed to compile. Error: {}\n", result);
+				error.append(std::format("{0}\nWhile compiling shader file: {1}", Utility::GetErrorStringFromResult(compilationResult), sourceEntry.filePath.string()));
 
-			pReflectionData->Release();
+				RHILog::LogUnformatted(LogSeverity::Error, "[D3D12ShaderCompiler]: " + error);
+			}
+
 			compilationResult->Release();
 			shaderResult->Release();
 		}
@@ -397,6 +407,12 @@ namespace Volt::RHI
 	{
 		for (const auto& [stage, data] : inOutData.shaderData)
 		{
+			if (!reflectionData.at(stage))
+			{
+				RHILog::LogTagged(LogSeverity::Warning, "[D3D12ShaderCompiler]", "No reflection data availiable for shader {}!", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
+				continue;
+			}
+
 			RHILog::LogTagged(LogSeverity::Trace, "[D3D12ShaderCompiler]", "Reflecting shader {0}", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
 			ReflectStage(stage, specification, inOutData, reflectionData.at(stage));
 		}
@@ -440,12 +456,14 @@ namespace Volt::RHI
 				buffer.usageCount++;
 				buffer.size = size;
 			}
-			else if (shaderInputBindDesc.Type == D3D_SIT_STRUCTURED || shaderInputBindDesc.Type == D3D_SIT_BYTEADDRESS) 
+			else if (shaderInputBindDesc.Type == D3D_SIT_STRUCTURED || shaderInputBindDesc.Type == D3D_SIT_BYTEADDRESS || 
+					 shaderInputBindDesc.Type == D3D_SIT_UAV_RWSTRUCTURED || shaderInputBindDesc.Type == D3D_SIT_UAV_RWBYTEADDRESS)
 			{
 				auto& buffer = inOutData.storageBuffers[space][binding];
 				buffer.usageStages = buffer.usageStages | stage;
 				buffer.usageCount++;
 				buffer.size = 0;
+				buffer.isWrite = (shaderInputBindDesc.Type == D3D_SIT_UAV_RWSTRUCTURED || shaderInputBindDesc.Type == D3D_SIT_UAV_RWBYTEADDRESS);
 
 				const bool firstEntry = !inOutData.storageBuffers[space].contains(binding);
 
@@ -458,6 +476,26 @@ namespace Volt::RHI
 					else
 					{
 						buffer.arraySize = shaderInputBindDesc.BindCount;
+					}
+				}
+			}
+			else if (shaderInputBindDesc.Type == D3D_SIT_UAV_RWTYPED && (shaderInputBindDesc.Dimension >= 2 && shaderInputBindDesc.Dimension <= 10)) // This is all the texutre types
+			{
+				auto& shaderImage = inOutData.storageImages[space][binding];
+				shaderImage.usageStages = shaderImage.usageStages | stage;
+				shaderImage.usageCount++;
+
+				const bool firstEntry = !inOutData.storageImages[space].contains(binding);
+
+				if (firstEntry)
+				{
+					if (shaderInputBindDesc.BindCount == 0)
+					{
+						shaderImage.arraySize = -1;
+					}
+					else
+					{
+						shaderImage.arraySize = shaderInputBindDesc.BindCount;
 					}
 				}
 			}

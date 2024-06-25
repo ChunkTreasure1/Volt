@@ -22,7 +22,7 @@
 #include "VoltD3D12/Shader/D3D12Shader.h"
 
 #include "VoltD3D12/Pipelines/D3D12RenderPipeline.h"
-#include <VoltRHI/Pipelines/ComputePipeline.h>
+#include "VoltD3D12/Pipelines/D3D12ComputePipeline.h"
 
 #include <VoltRHI/Memory/TransientHeap.h>
 #include "VoltD3D12/Memory/D3D12DefaultAllocator.h"
@@ -159,12 +159,12 @@ namespace Volt::RHI
 	
 	RefPtr<RenderPipeline> D3D12RHIProxy::CreateRenderPipeline(const RenderPipelineCreateInfo& createInfo) const
 	{
-		return RefPtr<RenderPipeline>();
+		return RefPtr<D3D12RenderPipeline>::Create(createInfo);
 	}
 	
 	RefPtr<ComputePipeline> D3D12RHIProxy::CreateComputePipeline(RefPtr<Shader> shader, bool useGlobalResources) const
 	{
-		return RefPtr<ComputePipeline>();
+		return RefPtr<D3D12ComputePipeline>::Create(shader, useGlobalResources);
 	}
 	
 	RefPtr<Shader> D3D12RHIProxy::CreateShader(const ShaderSpecification& specification) const

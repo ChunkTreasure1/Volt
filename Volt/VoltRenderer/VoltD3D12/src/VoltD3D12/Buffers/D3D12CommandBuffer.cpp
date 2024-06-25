@@ -196,22 +196,22 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::BindPipeline(WeakPtr<RenderPipeline> pipeline)
 	{
-		auto d3d12RenderPipline = pipeline->As<D3D12RenderPipeline>();
-		GetCommandData().commandList->SetGraphicsRootSignature(d3d12RenderPipline->GetRoot());
-		GetCommandData().commandList->SetPipelineState(d3d12RenderPipline->GetPSO());
-
-		D3D12_PRIMITIVE_TOPOLOGY topologyType = {};
-
-		switch (d3d12RenderPipline->GetTopology())
-		{
-			case Topology::LineList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_LINELIST; break;
-			case Topology::PatchList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_UNDEFINED; break;
-			case Topology::TriangleList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST; break;
-			case Topology::PointList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_POINTLIST; break;
-			case Topology::TriangleStrip: topologyType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP; break;
-		}
-
-		GetCommandData().commandList->IASetPrimitiveTopology(topologyType);
+		//auto d3d12RenderPipline = pipeline->As<D3D12RenderPipeline>();
+		//GetCommandData().commandList->SetGraphicsRootSignature(d3d12RenderPipline->GetRoot());
+		//GetCommandData().commandList->SetPipelineState(d3d12RenderPipline->GetPSO());
+		//
+		//D3D12_PRIMITIVE_TOPOLOGY topologyType = {};
+		//
+		//switch (d3d12RenderPipline->GetTopology())
+		//{
+		//	case Topology::LineList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_LINELIST; break;
+		//	case Topology::PatchList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_UNDEFINED; break;
+		//	case Topology::TriangleList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST; break;
+		//	case Topology::PointList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_POINTLIST; break;
+		//	case Topology::TriangleStrip: topologyType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP; break;
+		//}
+		//
+		//GetCommandData().commandList->IASetPrimitiveTopology(topologyType);
 	}
 
 	void D3D12CommandBuffer::BindPipeline(WeakPtr<ComputePipeline> pipeline)

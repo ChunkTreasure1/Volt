@@ -224,6 +224,7 @@ namespace Volt::RHI
 		int32_t arraySize = 1; // -1 Means unsized array
 		
 		uint32_t usageCount = 0;
+		bool isWrite = false;
 	};
 
 	struct ShaderStorageImage

@@ -24,6 +24,7 @@
 [numthreads(1, 1, 1)]
 void main()
 {
+#if __VULKAN__
     GET_TEXTURES_WITH_TYPES(Texture1D, 0)
     GET_TEXTURES_WITH_TYPES(Texture2D, 0)
     GET_TEXTURES_WITH_TYPES(Texture3D, 0)
@@ -63,4 +64,5 @@ void main()
     float s = Texture2D_f1.SampleLevel(samplerS, float2(0.f, 0.f), 0);
 
     buffValRW.Store<float>(0, s);
+#endif
 }
