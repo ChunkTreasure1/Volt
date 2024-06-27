@@ -36,7 +36,20 @@ namespace Volt::RHI
 
 	D3D12ImageView::~D3D12ImageView()
 	{
-		// #TODO_Ivar: return stuff
+		if (m_rtvDsvDescriptor.IsValid())
+		{
+			DescriptorUtility::FreeDescriptorPointer(m_rtvDsvDescriptor);
+		}
+
+		if (m_srvDescriptor.IsValid())
+		{
+			DescriptorUtility::FreeDescriptorPointer(m_srvDescriptor);
+		}
+
+		if (m_uavDescriptor.IsValid())
+		{
+			DescriptorUtility::FreeDescriptorPointer(m_uavDescriptor);
+		}
 	}
 
 	void* D3D12ImageView::GetHandleImpl() const
