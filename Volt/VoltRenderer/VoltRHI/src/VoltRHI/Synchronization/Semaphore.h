@@ -9,7 +9,7 @@ namespace Volt::RHI
 		uint64_t initialValue = 0;
 	};
 
-	class Semaphore : public RHIInterface
+	class VTRHI_API Semaphore : public RHIInterface
 	{
 	public:
 		virtual ~Semaphore() = default;

@@ -6,10 +6,10 @@ struct DrawData
     uint visualizationType;
 };
 
-[[vk::push_constant]] DrawData u_visData;
+PUSH_CONSTANT(DrawData, u_visData);
 
-Texture2D<uint2> u_visibilityBuffer : register(t0, space0);
-RWTexture2D<float4> o_output : register(u1, space0);
+Texture2D<uint2> u_visibilityBuffer;
+RWTexture2D<float4> o_output;
 
 static const uint VIS_NONE = 0;
 static const uint VIS_OBJECT_ID = 1;

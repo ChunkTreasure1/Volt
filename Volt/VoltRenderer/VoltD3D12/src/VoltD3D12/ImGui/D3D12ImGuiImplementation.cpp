@@ -34,8 +34,8 @@ namespace Volt::RHI
 	void D3D12ImGuiImplementation::EndAPI()
 	{
 		s_commandBuffer->Begin();
-		auto d3dCommandBuffer = s_commandBuffer->As<D3D12CommandBuffer>();
-		auto cmd = d3dCommandBuffer->GetCommandData().commandList;
+		//auto d3dCommandBuffer = s_commandBuffer->As<D3D12CommandBuffer>();
+		//auto cmd = d3dCommandBuffer->GetCommandData().commandList;
 
 		//auto swapchain = m_info.swapchain->As<D3D12Swapchain>();
 
@@ -47,18 +47,18 @@ namespace Volt::RHI
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
-		cmd->ResourceBarrier(1, &barrier);
+		//cmd->ResourceBarrier(1, &barrier);
 		const float clearColor[4] = { 0,0,0, 1 };
 		//cmd->ClearRenderTargetView(*swapchain->GetRenderTarget().view, clearColor, 0, nullptr);
 		//cmd->OMSetRenderTargets(1, swapchain->GetRenderTarget().view, false, nullptr);
-		cmd->SetDescriptorHeaps(1, &m_imguiDescriptorHeap);
+		//cmd->SetDescriptorHeaps(1, &m_imguiDescriptorHeap);
 
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmd);
+		//ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmd);
 
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
-		cmd->ResourceBarrier(1, &barrier);
+		//cmd->ResourceBarrier(1, &barrier);
 
 		s_commandBuffer->End();
 

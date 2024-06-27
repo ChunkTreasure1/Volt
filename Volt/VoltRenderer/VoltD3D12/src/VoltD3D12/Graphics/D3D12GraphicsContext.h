@@ -9,11 +9,14 @@ struct ID3D12Debug;
 
 namespace Volt::RHI
 {
+	class CPUDescriptorHeapManager;
 	class D3D12GraphicsContext final : public GraphicsContext
 	{
 	public:
 		D3D12GraphicsContext(const GraphicsContextCreateInfo& info);
 		~D3D12GraphicsContext() override;
+
+		CPUDescriptorHeapManager& GetCPUDescriptorHeapManager() const { return *m_cpuDescriptorHeapManager; }
 
 	protected:
 		Allocator& GetDefaultAllocatorImpl() override;
@@ -36,6 +39,8 @@ namespace Volt::RHI
 
 		Scope<Allocator> m_defaultAllocator;
 		RefPtr<Allocator> m_transientAllocator;
+
+		Scope<CPUDescriptorHeapManager> m_cpuDescriptorHeapManager;
 
 		GraphicsContextCreateInfo m_createInfo{};
 

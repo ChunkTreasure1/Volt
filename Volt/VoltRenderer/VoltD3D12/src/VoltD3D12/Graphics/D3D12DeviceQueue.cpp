@@ -2,7 +2,8 @@
 #include "D3D12DeviceQueue.h"
 
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
-#include <VoltD3D12/Buffers/D3D12CommandBuffer.h>
+#include "VoltD3D12/Synchronization/D3D12Semaphore.h"
+#include "VoltD3D12/Buffers/D3D12CommandBuffer.h"
 
 namespace Volt::RHI
 {
@@ -10,8 +11,6 @@ namespace Volt::RHI
 	{
 		m_queueType = createInfo.queueType;
 		m_device = reinterpret_cast<D3D12GraphicsDevice*>(createInfo.graphicsDevice);
-		m_currentFence = nullptr;
-		m_currentFenceValue = 0;
 		CreateCommandQueue(createInfo.queueType);
 	}
 
@@ -65,21 +64,6 @@ namespace Volt::RHI
 
 	void D3D12DeviceQueue::WaitForQueue()
 	{
-		if (m_currentFence)
-		{
-			m_commandQueue->Signal(m_currentFence.Get(), m_currentFenceValue);
-			m_commandQueue->Wait(m_currentFence.Get(), m_currentFenceValue);
-		}
-	}
-
-	void D3D12DeviceQueue::Wait(D3D12Fence& fence)
-	{
-		m_commandQueue->Wait(fence.Get(), fence.Value());
-	}
-
-	void D3D12DeviceQueue::Signal(D3D12Fence& fence, const size_t customID)
-	{
-		m_commandQueue->Signal(fence.Get(), customID);
 	}
 
 	void D3D12DeviceQueue::Execute(const DeviceQueueExecuteInfo& executeInfo)
@@ -94,17 +78,13 @@ namespace Volt::RHI
 
 		for (size_t i = 0; auto & cmdBuffer : executeInfo.commandBuffers)
 		{
-			cmdLists[i] = cmdBuffer->As<D3D12CommandBuffer>()->GetCommandData().commandList;
+			cmdLists[i] = cmdBuffer->GetHandle<ID3D12CommandList*>();
 			i++;
 		}
 
-		auto& currentFenceData = executeInfo.commandBuffers.front()->As<D3D12CommandBuffer>()->GetFenceData();
+		auto currentFenceData = executeInfo.commandBuffers.front()->As<D3D12CommandBuffer>()->GetCurrentSemaphore();
 
 		m_commandQueue->ExecuteCommandLists(static_cast<UINT>(cmdLists.size()), cmdLists.data());
-
-		m_commandQueue->Signal(currentFenceData.Get(), currentFenceData.Value());
-		currentFenceData.Increment();
-		m_currentFence = currentFenceData.Get();
-		m_currentFenceValue = currentFenceData.Value();
+		m_commandQueue->Signal(currentFenceData->GetHandle<ID3D12Fence*>(), currentFenceData->GetValue());
 	}
 }

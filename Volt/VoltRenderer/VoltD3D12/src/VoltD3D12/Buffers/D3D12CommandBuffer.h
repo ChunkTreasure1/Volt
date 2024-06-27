@@ -1,8 +1,8 @@
 #pragma once
 
 #include "VoltD3D12/Common/ComPtr.h"
-#include "VoltD3D12/Common/D3D12Fence.h"
 
+#include <VoltRHI/Synchronization/Semaphore.h>
 #include <VoltRHI/Buffers/CommandBuffer.h>
 
 struct ID3D12Fence;
@@ -11,12 +11,6 @@ struct ID3D12GraphicsCommandList1;
 
 namespace Volt::RHI
 {
-	struct D3D12CommandData
-	{
-		ID3D12CommandAllocator* commandAllocator;
-		ID3D12GraphicsCommandList1* commandList;
-	};
-
 	class D3D12CommandBuffer final : public CommandBuffer
 	{
 	public:
@@ -85,8 +79,7 @@ namespace Volt::RHI
 		const uint32_t GetCurrentIndex() const override;
 		const QueueType GetQueueType() const override;
 
-		D3D12Fence& GetFenceData();
-		D3D12CommandData& GetCommandData();
+		RefPtr<Semaphore> GetCurrentSemaphore() const { return m_commandLists.at(m_currentCommandListIndex).fence; }
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -95,24 +88,23 @@ namespace Volt::RHI
 		void Invalidate();
 		void Release();
 
-		void Create(const uint32_t count, QueueType queueType, bool swapchainTarget);
-
-		void IncrementIndex();
+		const uint32_t GetCurrentCommandListIndex() const;
 
 		struct CommandListData
 		{
 			ComPtr<ID3D12CommandAllocator> commandAllocator;
 			ComPtr<ID3D12GraphicsCommandList> commandList;
-			ComPtr<ID3D12Fence> fence;
+			RefPtr<Semaphore> fence;
+
+			uint64_t fenceValue;
 		};
 
 		std::vector<CommandListData> m_commandLists;
 
-		uint32_t m_amountOfTargetsbound;
 		uint32_t m_commandListCount = 0;
+		uint32_t m_currentCommandListIndex = 0;
+		uint64_t m_currentFenceValue = 0;
 
-		std::vector<std::pair<D3D12CommandData, D3D12Fence>> m_perInternalBufferData;
-		uint32_t m_currentCommandBufferIndex = 0;
 		bool m_isSwapchainTarget = false;
 		QueueType m_queueType;
 

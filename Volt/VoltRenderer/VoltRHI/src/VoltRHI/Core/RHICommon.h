@@ -563,6 +563,17 @@ namespace Volt::RHI
 		Global
 	};
 
+	static DeviceVendor VendorIDToVendor(uint32_t vendorID)
+	{
+		switch (vendorID)
+		{
+			case 0x10DE: return DeviceVendor::NVIDIA;
+			case 0x1002: return DeviceVendor::AMD;
+			case 0x8086: return DeviceVendor::Intel;
+		}
+		return DeviceVendor::Unknown;
+	}
+
 	// --- structures --- \\
 
 	struct LogInfo

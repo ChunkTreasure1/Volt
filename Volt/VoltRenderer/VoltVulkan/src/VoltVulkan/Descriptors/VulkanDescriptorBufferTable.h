@@ -40,7 +40,6 @@ namespace Volt::RHI
 		void SetBufferView(std::string_view name, WeakPtr<BufferView> view, uint32_t arrayIndex = 0) override;
 		void SetSamplerState(std::string_view name, WeakPtr<SamplerState> samplerState, uint32_t arrayIndex = 0) override;
 
-		void Update(const uint32_t index /* = 0 */) override;
 		void PrepareForRender() override;
 
 	protected:

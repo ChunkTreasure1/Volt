@@ -33,7 +33,6 @@ namespace Volt::RHI
 		virtual void SetBufferView(std::string_view name, WeakPtr<BufferView> view, uint32_t arrayIndex) = 0;
 		virtual void SetSamplerState(std::string_view name, WeakPtr<SamplerState> samplerState, uint32_t arrayIndex) = 0;
 
-		virtual void Update(const uint32_t index = 0) = 0;
 		virtual void PrepareForRender() = 0;
 
 		static RefPtr<DescriptorTable> Create(const DescriptorTableCreateInfo& specification);

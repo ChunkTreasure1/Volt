@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VoltD3D12/Common/ComPtr.h"
-#include "VoltD3D12/Common/D3D12Fence.h"
+#include "VoltD3D12/Descriptors/DescriptorCommon.h"
 
 #include <VoltRHI/Graphics/Swapchain.h>
 #include <array>
@@ -49,9 +49,7 @@ namespace Volt::RHI
 		struct PerImageData
 		{
 			ComPtr<ID3D12Resource> resource = nullptr;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE descriptorHandle = {};
-			bool hasID = false;
-			uint32_t id = 0;
+			D3D12DescriptorPointer descriptorPointer = {};
 		};
 
 		GLFWwindow* m_windowHandle;

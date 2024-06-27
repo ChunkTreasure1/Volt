@@ -2,11 +2,10 @@
 #include "D3D12ImageView.h"
 
 #include "VoltRHI/Images/ImageUtility.h"
-
 #include "VoltD3D12/Images/D3D12Image2D.h"
 
+#include "VoltD3D12/Descriptors/DescriptorUtility.h"
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
-
 #include "VoltD3D12/Common/D3D12DescriptorHeapManager.h"
 
 namespace Volt::RHI
@@ -73,8 +72,8 @@ namespace Volt::RHI
 	void D3D12ImageView::CreateRTVDSV()
 	{
 		const auto format = m_specification.image->GetFormat();
-		auto device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
-		auto resourcePtr = m_specification.image->GetHandle<ID3D12Resource*>();
+		auto* devicePtr = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
+		auto* resourcePtr = m_specification.image->GetHandle<ID3D12Resource*>();
 
 		if (Utility::IsDepthFormat(format))
 		{
@@ -88,11 +87,10 @@ namespace Volt::RHI
 				viewDesc.Texture2D.MipSlice = m_specification.baseArrayLayer;
 			}
 
-			m_rtvDsv.id = D3D12DescriptorHeapManager::CreateNewDSVHandle(m_rtvDsv.view);
-			m_rtvDsv.valid = true;
-			m_hasDSV = true;
+			m_viewUsage = D3D12ViewType::DSV;
+			m_rtvDsvDescriptor = DescriptorUtility::AllocateDescriptorPointer(D3D12DescriptorType::DSV);
 
-			device->CreateDepthStencilView(resourcePtr, &viewDesc, m_rtvDsv.view);
+			devicePtr->CreateDepthStencilView(resourcePtr, &viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE(m_rtvDsvDescriptor.GetCPUPointer()));
 		}
 		else
 		{
@@ -106,34 +104,55 @@ namespace Volt::RHI
 				viewDesc.Texture2D.PlaneSlice = m_specification.baseArrayLayer;
 			}
 
-			m_rtvDsv.id = D3D12DescriptorHeapManager::CreateNewRTVHandle(m_rtvDsv.view);
-			m_rtvDsv.valid = true;
-
-			device->CreateRenderTargetView(resourcePtr, &viewDesc, m_rtvDsv.view);
+			m_viewUsage = D3D12ViewType::RTV;
+			m_rtvDsvDescriptor = DescriptorUtility::AllocateDescriptorPointer(D3D12DescriptorType::RTV);
+		
+			devicePtr->CreateRenderTargetView(resourcePtr, &viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE(m_rtvDsvDescriptor.GetCPUPointer()));
 		}
 	}
 
 	void D3D12ImageView::CreateSRV()
 	{
-		//const auto format = m_specification.image->GetFormat();
-		//auto device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
-		////auto resourcePtr = m_specification.image->GetHandle<ID3D12Resource*>();
+		const auto format = m_specification.image->GetFormat();
+		auto* devicePtr = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
+		auto* resourcePtr = m_specification.image->GetHandle<ID3D12Resource*>();
 
-		//D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc{};
+		D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc{};
+		viewDesc.Format = ConvertFormatToD3D12Format(format);
+		viewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-		//if (m_specification.viewType == ImageViewType::View2D)
-		//{
-		//	viewDesc.Format = ConvertFormatToD3D12Format(format);
-		//	viewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		//	viewDesc.Texture2D.MostDetailedMip = m_specification.baseMipLevel;
-		//	viewDesc.Texture2D.MipLevels = m_specification.mipCount;
-		//	viewDesc.Texture2D.PlaneSlice = m_specification.baseArrayLayer;
-		//	viewDesc.Texture2D.ResourceMinLODClamp = 0.f;
-		//}
+		if (m_specification.viewType == ImageViewType::View2D)
+		{
+			viewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			viewDesc.Texture2D.MostDetailedMip = m_specification.baseMipLevel;
+			viewDesc.Texture2D.MipLevels = m_specification.mipCount;
+			viewDesc.Texture2D.PlaneSlice = m_specification.baseArrayLayer;
+			viewDesc.Texture2D.ResourceMinLODClamp = 0.f;
+		}
+
+		m_viewUsage |= D3D12ViewType::SRV;
+		m_srvDescriptor = DescriptorUtility::AllocateDescriptorPointer(D3D12DescriptorType::CBV_SRV_UAV);
+		devicePtr->CreateShaderResourceView(resourcePtr, &viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE(m_srvDescriptor.GetCPUPointer()));
 	}
 
 	void D3D12ImageView::CreateUAV()
 	{
+		const auto format = m_specification.image->GetFormat();
+		auto* devicePtr = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
+		auto* resourcePtr = m_specification.image->GetHandle<ID3D12Resource*>();
 
+		D3D12_UNORDERED_ACCESS_VIEW_DESC viewDesc{};
+		
+		if (m_specification.viewType == ImageViewType::View2D)
+		{
+			viewDesc.Format = ConvertFormatToD3D12Format(format);
+			viewDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+			viewDesc.Texture2D.MipSlice = m_specification.baseMipLevel;
+			viewDesc.Texture2D.PlaneSlice = m_specification.baseArrayLayer;
+		}
+
+		m_viewUsage |= D3D12ViewType::UAV;
+		m_uavDescriptor = DescriptorUtility::AllocateDescriptorPointer(D3D12DescriptorType::CBV_SRV_UAV);
+		devicePtr->CreateUnorderedAccessView(resourcePtr, nullptr, &viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE(m_uavDescriptor.GetCPUPointer()));
 	}
 }

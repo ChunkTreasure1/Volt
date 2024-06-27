@@ -201,11 +201,6 @@ namespace Volt::RHI
 		SetSamplerState(samplerState, binding.set, binding.binding, arrayIndex);
 	}
 
-	void VulkanDescriptorTable::Update(const uint32_t index)
-	{
-
-	}
-
 	void VulkanDescriptorTable::PrepareForRender()
 	{
 		if (!m_isDirty)
@@ -225,6 +220,8 @@ namespace Volt::RHI
 
 		m_activeWriteDescriptors.clear();
 		m_activeWriteDescriptorsMapping.clear();
+
+		m_isDirty = false;
 	}
 
 	void VulkanDescriptorTable::Bind(CommandBuffer& commandBuffer)

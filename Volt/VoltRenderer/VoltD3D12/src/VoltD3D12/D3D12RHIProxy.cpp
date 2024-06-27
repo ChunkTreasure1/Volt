@@ -7,7 +7,7 @@
 #include "VoltD3D12/Graphics/D3D12PhysicalGraphicsDevice.h"
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 
-#include <VoltRHI/Descriptors/DescriptorTable.h>
+#include "VoltD3D12/Descriptors/D3D12DescriptorTable.h"
 
 #include <VoltRHI/Buffers/UniformBuffer.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
@@ -28,10 +28,10 @@
 #include "VoltD3D12/Memory/D3D12DefaultAllocator.h"
 
 #include <VoltRHI/Images/SamplerState.h>
-#include <VoltRHI/Images/ImageView.h>
+#include "VoltD3D12/Images/D3D12ImageView.h"
 #include "VoltD3D12/Images/D3D12Image2D.h"
 
-#include <VoltRHI/Synchronization/Semaphore.h>
+#include "VoltD3D12/Synchronization/D3D12Semaphore.h"
 #include <VoltRHI/Synchronization/Fence.h>
 #include <VoltRHI/Synchronization/Event.h>
 
@@ -49,12 +49,12 @@ namespace Volt::RHI
 	
 	RefPtr<CommandBuffer> D3D12RHIProxy::CreateCommandBuffer(const uint32_t count, QueueType queueType) const
 	{
-		return RefPtr<CommandBuffer>();
+		return RefPtr<D3D12CommandBuffer>::Create(count, queueType);
 	}
 	
 	RefPtr<CommandBuffer> D3D12RHIProxy::CreateCommandBuffer(WeakPtr<Swapchain> swapchain) const
 	{
-		return RefPtr<CommandBuffer>();
+		return RefPtr<D3D12CommandBuffer>::Create(swapchain);
 	}
 	
 	RefPtr<IndexBuffer> D3D12RHIProxy::CreateIndexBuffer(std::span<const uint32_t> indices) const
@@ -89,7 +89,7 @@ namespace Volt::RHI
 	
 	RefPtr<DescriptorTable> D3D12RHIProxy::CreateDescriptorTable(const DescriptorTableCreateInfo& createInfo) const
 	{
-		return RefPtr<DescriptorTable>();
+		return RefPtr<D3D12DescriptorTable>::Create(createInfo);
 	}
 	
 	RefPtr<DeviceQueue> D3D12RHIProxy::CreateDeviceQueue(const DeviceQueueCreateInfo& createInfo) const
@@ -134,7 +134,7 @@ namespace Volt::RHI
 	
 	RefPtr<ImageView> D3D12RHIProxy::CreateImageView(const ImageViewSpecification& specification) const
 	{
-		return RefPtr<ImageView>();
+		return RefPtr<D3D12ImageView>::Create(specification);
 	}
 	
 	RefPtr<SamplerState> D3D12RHIProxy::CreateSamplerState(const SamplerStateCreateInfo& createInfo) const
@@ -189,7 +189,7 @@ namespace Volt::RHI
 	
 	RefPtr<Semaphore> D3D12RHIProxy::CreateSemaphore(const SemaphoreCreateInfo& createInfo) const
 	{
-		return RefPtr<Semaphore>();
+		return RefPtr<D3D12Semaphore>::Create(createInfo);
 	}
 	
 	RefPtr<ImGuiImplementation> D3D12RHIProxy::CreateImGuiImplementation(const ImGuiCreateInfo& createInfo) const

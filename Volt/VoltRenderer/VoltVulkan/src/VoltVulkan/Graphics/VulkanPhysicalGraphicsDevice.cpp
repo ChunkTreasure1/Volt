@@ -106,17 +106,6 @@ namespace Volt::RHI
 
 			return result;
 		}
-
-		static DeviceVendor VulkanVendorIDToVendor(uint32_t vendorID)
-		{
-			switch (vendorID)
-			{
-				case 0x10DE: return DeviceVendor::NVIDIA;
-				case 0x1002: return DeviceVendor::AMD;
-				case 0x8086: return DeviceVendor::Intel;
-			}
-			return DeviceVendor::Unknown;
-		}
 	}
 
 	VulkanPhysicalGraphicsDevice::VulkanPhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& createInfo)
@@ -225,7 +214,7 @@ namespace Volt::RHI
 		vkGetPhysicalDeviceProperties2(m_physicalDevice, &deviceProperties);
 
 		m_deviceProperties.deviceName = deviceProperties.properties.deviceName;
-		m_deviceProperties.vendor = Utility::VulkanVendorIDToVendor(deviceProperties.properties.vendorID);
+		m_deviceProperties.vendor = VendorIDToVendor(deviceProperties.properties.vendorID);
 		m_deviceProperties.hasTimestampSupport = deviceProperties.properties.limits.timestampComputeAndGraphics;
 		m_deviceProperties.timestampPeriod = deviceProperties.properties.limits.timestampPeriod;
 		m_deviceProperties.maxAnisotropyLevel = deviceProperties.properties.limits.maxSamplerAnisotropy;

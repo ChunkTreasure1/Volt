@@ -4,6 +4,7 @@
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 
 #include "VoltD3D12/Memory/D3D12DefaultAllocator.h"
+#include "VoltD3D12/Descriptors/CPUDescriptorHeapManager.h"
 
 namespace Volt::RHI
 {
@@ -88,6 +89,7 @@ namespace Volt::RHI
 #endif
 
 		m_defaultAllocator = DefaultAllocator::Create();
+		m_cpuDescriptorHeapManager = CreateScope<CPUDescriptorHeapManager>();
 	}
 
 	void D3D12GraphicsContext::Shutdown()

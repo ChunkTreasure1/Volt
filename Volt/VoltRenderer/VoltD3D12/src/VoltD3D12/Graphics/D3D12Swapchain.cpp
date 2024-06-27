@@ -13,6 +13,8 @@
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 #include "VoltD3D12/Graphics/D3D12PhysicalGraphicsDevice.h"
 
+#include "VoltD3D12/Descriptors/DescriptorUtility.h"
+
 namespace Volt::RHI
 {
 	namespace Utility
@@ -139,6 +141,11 @@ namespace Volt::RHI
 		{
 			::CloseHandle(m_fenceEventHandle);
 		}
+
+		for (const auto& data : m_perImageData)
+		{
+			DescriptorUtility::FreeDescriptorPointer(data.descriptorPointer);
+		}
 	}
 
 	void D3D12Swapchain::CreateSwapchain(const uint32_t width, const uint32_t height)
@@ -188,16 +195,14 @@ namespace Volt::RHI
 			const std::wstring name = L"Swapchain Target - Index " + std::to_wstring(i);
 			backBuffer->SetName(name.c_str());
 
-			if (m_perImageData[i].hasID)
+			if (!m_perImageData[i].descriptorPointer.IsValid())
 			{
-				D3D12DescriptorHeapManager::CreateRTVHandleFromID(m_perImageData[i].descriptorHandle, m_perImageData[i].id);
+				m_perImageData[i].descriptorPointer = DescriptorUtility::AllocateDescriptorPointer(D3D12DescriptorType::RTV);
 			}
 			
-			m_perImageData[i].descriptorHandle = {};
-			m_perImageData[i].id = D3D12DescriptorHeapManager::CreateNewRTVHandle(m_perImageData[i].descriptorHandle);
 			m_perImageData[i].resource = backBuffer;
 
-			d3d12Device->CreateRenderTargetView(backBuffer.Get(), nullptr, m_perImageData[i].descriptorHandle);
+			d3d12Device->CreateRenderTargetView(backBuffer.Get(), nullptr, D3D12_CPU_DESCRIPTOR_HANDLE(m_perImageData[i].descriptorPointer.GetCPUPointer()));
 		}
 	}
 

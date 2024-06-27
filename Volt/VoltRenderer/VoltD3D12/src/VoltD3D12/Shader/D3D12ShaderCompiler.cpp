@@ -8,6 +8,8 @@
 #include <VoltRHI/Shader/ShaderPreProcessor.h>
 #include <VoltRHI/Shader/ShaderCache.h>
 
+#include <CoreUtilities/StringUtility.h>
+
 #include <dxc/dxcapi.h>
 #include <d3d12shader.h>
 
@@ -19,16 +21,6 @@ namespace Volt::RHI
 {
 	namespace Utility
 	{
-#pragma warning( push )
-#pragma warning( disable : 4996 )
-		inline static std::wstring ToWString(const std::string& stringToConvert)
-		{
-			std::wstring wideString =
-				std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(stringToConvert);
-			return wideString;
-		}
-#pragma warning( pop )
-
 		inline static const std::string GetErrorStringFromResult(IDxcResult* result)
 		{
 			std::string output;
@@ -153,7 +145,7 @@ namespace Volt::RHI
 		std::vector<std::wstring> wMacros;
 		for (const auto& macro : m_macros)
 		{
-			wMacros.push_back(Utility::ToWString(macro));
+			wMacros.push_back(::Utility::ToWString(macro));
 		}
 
 		if ((m_flags & ShaderCompilerFlags::EnableShaderValidator) != ShaderCompilerFlags::None)
@@ -243,7 +235,7 @@ namespace Volt::RHI
 			return CompilationResult::PreprocessFailed;
 		}
 
-		const std::wstring wEntryPoint = Utility::ToWString(sourceEntry.entryPoint);
+		const std::wstring wEntryPoint = ::Utility::ToWString(sourceEntry.entryPoint);
 
 		std::vector<const wchar_t*> arguments =
 		{

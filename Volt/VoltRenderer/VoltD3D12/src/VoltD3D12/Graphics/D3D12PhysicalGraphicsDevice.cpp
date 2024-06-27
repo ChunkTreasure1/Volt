@@ -1,11 +1,21 @@
 #include "dxpch.h"
 #include "D3D12PhysicalGraphicsDevice.h"
 
+#include <CoreUtilities/StringUtility.h>
+
 namespace Volt::RHI
 {
 	D3D12PhysicalGraphicsDevice::D3D12PhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& info)
 	{
 		m_adapter = FindValidAdapter();
+		if (m_adapter)
+		{
+			DXGI_ADAPTER_DESC1 desc{};
+			m_adapter->GetDesc1(&desc);
+		
+			m_name = Utility::ToString(std::wstring(desc.Description));
+			m_vendor = VendorIDToVendor(desc.VendorId);
+		}
 	}
 
 	D3D12PhysicalGraphicsDevice::~D3D12PhysicalGraphicsDevice()
