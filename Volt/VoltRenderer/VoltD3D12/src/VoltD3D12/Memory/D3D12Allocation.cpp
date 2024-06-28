@@ -10,6 +10,7 @@ namespace Volt::RHI
 	
 	void D3D12ImageAllocation::Unmap()
 	{
+		m_resource->Unmap(0, nullptr);
 	}
 	
 	const uint64_t D3D12ImageAllocation::GetDeviceAddress() const
@@ -24,7 +25,9 @@ namespace Volt::RHI
 	
 	void* D3D12ImageAllocation::MapInternal()
 	{
-		return nullptr;
+		void* ptr = nullptr;
+		m_resource->Map(0, nullptr, &ptr);
+		return ptr;
 	}
 
 	void* D3D12ImageAllocation::GetHandleImpl() const
@@ -39,6 +42,7 @@ namespace Volt::RHI
 
 	void D3D12BufferAllocation::Unmap()
 	{
+		m_resource->Unmap(0, nullptr);
 	}
 
 	const uint64_t D3D12BufferAllocation::GetDeviceAddress() const
@@ -53,7 +57,9 @@ namespace Volt::RHI
 
 	void* D3D12BufferAllocation::MapInternal()
 	{
-		return nullptr;
+		void* ptr = nullptr;
+		m_resource->Map(0, nullptr, &ptr);
+		return ptr;
 	}
 
 	void* D3D12BufferAllocation::GetHandleImpl() const

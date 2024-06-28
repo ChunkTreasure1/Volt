@@ -14,9 +14,11 @@ namespace Volt::RHI
 	public:
 		virtual ~Semaphore() = default;
 
+		virtual void Wait() = 0;
 		virtual void Signal(const uint64_t signalValue) = 0;
-		virtual void Wait(const uint64_t waitValue) = 0;
+		
 		virtual const uint64_t GetValue() const = 0;
+		virtual const uint64_t IncrementAndGetValue() = 0;
 
 		static RefPtr<Semaphore> Create(const SemaphoreCreateInfo& createInfo);
 

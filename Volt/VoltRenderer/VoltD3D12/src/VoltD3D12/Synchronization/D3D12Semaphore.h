@@ -15,8 +15,10 @@ namespace Volt::RHI
 		~D3D12Semaphore() override;
 
 		void Signal(const uint64_t signalValue) override;
-		void Wait(const uint64_t waitValue) override;
+		void Wait() override;
+
 		const uint64_t GetValue() const override;
+		const uint64_t IncrementAndGetValue() override;
 
 	protected:
 		void* GetHandleImpl() const override;

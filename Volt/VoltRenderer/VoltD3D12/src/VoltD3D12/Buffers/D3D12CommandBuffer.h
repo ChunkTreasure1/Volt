@@ -85,6 +85,8 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
+		friend class D3D12DescriptorTable;
+
 		void Invalidate();
 		void Release();
 
@@ -95,19 +97,19 @@ namespace Volt::RHI
 			ComPtr<ID3D12CommandAllocator> commandAllocator;
 			ComPtr<ID3D12GraphicsCommandList> commandList;
 			RefPtr<Semaphore> fence;
-
-			uint64_t fenceValue;
 		};
 
 		std::vector<CommandListData> m_commandLists;
 
 		uint32_t m_commandListCount = 0;
 		uint32_t m_currentCommandListIndex = 0;
-		uint64_t m_currentFenceValue = 0;
 
 		bool m_isSwapchainTarget = false;
 		QueueType m_queueType;
 
+		// Internal state
 		WeakPtr<Swapchain> m_swapchainTarget;
+		WeakPtr<RenderPipeline> m_currentRenderPipeline;
+		WeakPtr<ComputePipeline> m_currentComputePipeline;
 	};
 }

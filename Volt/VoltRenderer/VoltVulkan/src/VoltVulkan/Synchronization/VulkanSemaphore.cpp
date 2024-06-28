@@ -50,15 +50,20 @@ namespace Volt::RHI
 		VT_VK_CHECK(vkSignalSemaphore(device->GetHandle<VkDevice>(), &signalInfo));
 	}
 
-	void VulkanSemaphore::Wait(const uint64_t waitValue)
+	void VulkanSemaphore::Wait()
 	{
+		if (m_currentValue == 0)
+		{
+			return;
+		}
+
 		VkSemaphoreWaitInfo waitInfo{};
 		waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 		waitInfo.pNext = nullptr;
 		waitInfo.flags = 0;
 		waitInfo.semaphoreCount = 1;
 		waitInfo.pSemaphores = &m_semaphore;
-		waitInfo.pValues = &waitValue;
+		waitInfo.pValues = &m_currentValue;
 
 		auto device = GraphicsContext::GetDevice();
 		VT_VK_CHECK(vkWaitSemaphores(device->GetHandle<VkDevice>(), &waitInfo, UINT64_MAX));
@@ -66,10 +71,10 @@ namespace Volt::RHI
 
 	const uint64_t VulkanSemaphore::GetValue() const
 	{
-		uint64_t value;
-		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkGetSemaphoreCounterValue(device->GetHandle<VkDevice>(), m_semaphore, &value));
-
-		return value;
+		return m_currentValue;
+	}
+	const uint64_t VulkanSemaphore::IncrementAndGetValue()
+	{
+		return ++m_currentValue;
 	}
 }

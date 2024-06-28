@@ -32,6 +32,9 @@ namespace Volt::RHI
 		VT_NODISCARD RefPtr<Image2D> GetCurrentImage() const override;
 		VT_NODISCARD const PixelFormat GetFormat() const override;
 
+		VT_NODISCARD ComPtr<ID3D12Resource> GetCurrentImageResource() const { return m_perImageData.at(m_currentImageIndex).resource; }
+		VT_NODISCARD const D3D12DescriptorPointer& GetCurrentImageResourceView() const { return m_perImageData.at(m_currentImageIndex).descriptorPointer; }
+
 	protected:
 		void* GetHandleImpl() const override;
 

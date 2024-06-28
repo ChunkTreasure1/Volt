@@ -1,7 +1,5 @@
 #pragma once
 
-#include "VoltVulkan/Core.h"
-
 #include <VoltRHI/Buffers/StorageBuffer.h>
 
 namespace Volt::RHI
@@ -9,13 +7,13 @@ namespace Volt::RHI
 	class Allocation;
 	class Allocator;
 
-	class VulkanStorageBuffer : public StorageBuffer
-	{
+	class D3D12StorageBuffer : public StorageBuffer
+	{ 
 	public:
-		VulkanStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
-		VulkanStorageBuffer(const size_t size, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
-		VulkanStorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
-		~VulkanStorageBuffer() override;
+		D3D12StorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
+		D3D12StorageBuffer(const size_t size, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
+		D3D12StorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
+		~D3D12StorageBuffer() override;
 
 		void ResizeByteSize(const size_t byteSize) override;
 		void Resize(const uint32_t size) override;
@@ -43,11 +41,11 @@ namespace Volt::RHI
 	private:
 		void Invalidate(const size_t byteSize);
 		void Release();
-
+	
 		size_t m_elementSize = 0;
 		size_t m_byteSize = 0;
 		uint32_t m_size = 0;
-
+	
 		std::string m_name;
 
 		RefPtr<BufferView> m_view;

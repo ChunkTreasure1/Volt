@@ -194,7 +194,7 @@ namespace Volt::RHI
 	
 	RefPtr<ImGuiImplementation> D3D12RHIProxy::CreateImGuiImplementation(const ImGuiCreateInfo& createInfo) const
 	{
-		return RefPtr<ImGuiImplementation>();
+		return RefPtr<D3D12ImGuiImplementation>::Create(createInfo);
 	}
 
 	void D3D12RHIProxy::SetRHICallbackInfo(const RHICallbackInfo& callbackInfo)

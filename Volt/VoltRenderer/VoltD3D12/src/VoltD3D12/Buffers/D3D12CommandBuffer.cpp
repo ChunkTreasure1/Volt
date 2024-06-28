@@ -6,6 +6,8 @@
 #include "VoltD3D12/Images/D3D12Image2D.h"
 #include "VoltD3D12/Images/D3D12ImageView.h"
 #include "VoltD3D12/Pipelines/D3D12RenderPipeline.h"
+#include "VoltD3D12/Shader/D3D12Shader.h"
+#include "VoltD3D12/Descriptors/D3D12DescriptorTable.h"
 
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Memory/Allocation.h>
@@ -87,6 +89,7 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::Release()
 	{
+		WaitForFences();
 	}
 
 	const uint32_t D3D12CommandBuffer::GetCurrentCommandListIndex() const
@@ -103,10 +106,8 @@ namespace Volt::RHI
 
 		if (!m_isSwapchainTarget)
 		{
-			currentCommandList.fence->Wait(currentCommandList.fenceValue);
+			currentCommandList.fence->Wait();
 		}
-
-		currentCommandList.fenceValue = ++m_currentFenceValue;
 
 		currentCommandList.commandAllocator->Reset();
 		currentCommandList.commandList->Reset(currentCommandList.commandAllocator.Get(), nullptr); // #TODO_Ivar: Huh?
@@ -133,7 +134,7 @@ namespace Volt::RHI
 		device->GetDeviceQueue(m_queueType)->Execute({ { this } });
 
 		const auto& cmdList = m_commandLists.at(m_currentCommandListIndex);
-		cmdList.fence->Wait(cmdList.fenceValue);
+		cmdList.fence->Wait();
 	}
 
 	void D3D12CommandBuffer::WaitForLastFence()
@@ -142,6 +143,10 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::WaitForFences()
 	{
+		for (auto& cmdList : m_commandLists)
+		{
+			cmdList.fence->Wait();
+		}
 	}
 
 	void D3D12CommandBuffer::SetEvent(WeakPtr<Event> event)
@@ -190,6 +195,8 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
 	{
+		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
+		commandData.commandList->Dispatch(groupCountX, groupCountY, groupCountZ);
 	}
 
 	void D3D12CommandBuffer::DispatchIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset)
@@ -210,6 +217,16 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::BindPipeline(WeakPtr<RenderPipeline> pipeline)
 	{
+		m_currentComputePipeline.Reset();
+
+		if (!pipeline)
+		{
+			m_currentRenderPipeline.Reset();
+			return;
+		}
+
+		m_currentRenderPipeline = pipeline;
+
 		//auto d3d12RenderPipline = pipeline->As<D3D12RenderPipeline>();
 		//GetCommandData().commandList->SetGraphicsRootSignature(d3d12RenderPipline->GetRoot());
 		//GetCommandData().commandList->SetPipelineState(d3d12RenderPipline->GetPSO());
@@ -230,7 +247,23 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::BindPipeline(WeakPtr<ComputePipeline> pipeline)
 	{
+		m_currentRenderPipeline.Reset();
 
+		if (!pipeline)
+		{
+			m_currentComputePipeline.Reset();
+			return;
+		}
+
+		m_currentComputePipeline = pipeline;
+
+		const uint32_t index = GetCurrentCommandListIndex();
+		auto& cmdList = m_commandLists.at(index).commandList;
+
+		D3D12Shader& d3d12Shader = m_currentComputePipeline->GetShader()->AsRef<D3D12Shader>();
+
+		cmdList->SetComputeRootSignature(d3d12Shader.GetRootSignature().Get());
+		cmdList->SetPipelineState(m_currentComputePipeline->GetHandle<ID3D12PipelineState*>());
 	}
 
 	void D3D12CommandBuffer::BindVertexBuffers(const StackVector<WeakPtr<VertexBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding)
@@ -251,6 +284,8 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable)
 	{
+		VT_PROFILE_FUNCTION();
+		descriptorTable->AsRef<D3D12DescriptorTable>().Bind(*this);
 	}
 
 	void D3D12CommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)

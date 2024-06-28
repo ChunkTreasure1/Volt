@@ -25,18 +25,16 @@ namespace Volt::RHI
 		m_fence->Signal(signalValue);
 	}
 
-	void D3D12Semaphore::Wait(const uint64_t waitValue)
+	void D3D12Semaphore::Wait()
 	{
 		if (m_fenceValue == 0)
 		{
 			return;
 		}
 
-		const uint64_t previousValue = m_fenceValue - 1;
-
-		if (m_fence->GetCompletedValue() < previousValue)
+		if (m_fence->GetCompletedValue() < m_fenceValue)
 		{
-			m_fence->SetEventOnCompletion(previousValue, m_windowsFenceEvent);
+			m_fence->SetEventOnCompletion(m_fenceValue, m_windowsFenceEvent);
 			::WaitForSingleObject(m_windowsFenceEvent, INFINITE);
 		}
 	}
@@ -44,6 +42,11 @@ namespace Volt::RHI
 	const uint64_t D3D12Semaphore::GetValue() const
 	{
 		return m_fenceValue;
+	}
+
+	const uint64_t D3D12Semaphore::IncrementAndGetValue()
+	{
+		return ++m_fenceValue;
 	}
 
 	void* D3D12Semaphore::GetHandleImpl() const

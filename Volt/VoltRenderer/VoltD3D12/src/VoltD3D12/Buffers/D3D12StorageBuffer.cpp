@@ -1,53 +1,52 @@
-#include "vkpch.h"
-#include "VulkanStorageBuffer.h"
-
-#include "VoltVulkan/Common/VulkanFunctions.h"
+#include "dxpch.h"
+#include "D3D12StorageBuffer.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
-#include <VoltRHI/Graphics/GraphicsDevice.h>
-#include <VoltRHI/Buffers/BufferView.h>
+
 #include <VoltRHI/Buffers/CommandBuffer.h>
+#include <VoltRHI/Buffers/BufferView.h>
 
-#include <VoltRHI/Memory/MemoryCommon.h>
 #include <VoltRHI/Memory/Allocation.h>
-
+#include <VoltRHI/Memory/MemoryCommon.h>
 #include <VoltRHI/RHIProxy.h>
+
+#include <CoreUtilities/StringUtility.h>
 
 namespace Volt::RHI
 {
-	VulkanStorageBuffer::VulkanStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
-		: m_byteSize(count * elementSize), m_size(count), m_elementSize(elementSize), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_name(name)
+	D3D12StorageBuffer::D3D12StorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+		: m_byteSize(count* elementSize), m_size(count), m_elementSize(elementSize), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_name(name)
 	{
 		Invalidate(elementSize * count);
 		SetName(name);
 	}
 
-	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	D3D12StorageBuffer::D3D12StorageBuffer(const size_t size, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
 		: m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_name(name)
 	{
 		Invalidate(size);
 		SetName(name);
 	}
 
-	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	D3D12StorageBuffer::D3D12StorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
 		: m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_name(name)
 	{
 		Invalidate(size);
 		SetName(name);
 	}
 
-	VulkanStorageBuffer::~VulkanStorageBuffer()
+	D3D12StorageBuffer::~D3D12StorageBuffer()
 	{
 		Release();
 	}
 
-	void VulkanStorageBuffer::ResizeByteSize(const size_t byteSize)
+	void D3D12StorageBuffer::ResizeByteSize(const size_t byteSize)
 	{
 		Invalidate(byteSize);
 		SetName(m_name);
 	}
 
-	void VulkanStorageBuffer::Resize(const uint32_t size)
+	void D3D12StorageBuffer::Resize(const uint32_t size)
 	{
 		const size_t newSize = size * m_elementSize;
 		Invalidate(newSize);
@@ -55,37 +54,32 @@ namespace Volt::RHI
 		SetName(m_name);
 	}
 
-	const size_t VulkanStorageBuffer::GetByteSize() const
-	{
-		return m_allocation->GetSize();
-	}
-
-	const size_t VulkanStorageBuffer::GetElementSize() const
+	const size_t D3D12StorageBuffer::GetElementSize() const
 	{
 		return m_elementSize;
 	}
 
-	const size_t VulkanStorageBuffer::GetSize() const
+	const size_t D3D12StorageBuffer::GetSize() const
 	{
 		return m_byteSize;
 	}
 
-	const uint32_t VulkanStorageBuffer::GetCount() const
+	const uint32_t D3D12StorageBuffer::GetCount() const
 	{
 		return m_size;
 	}
 
-	WeakPtr<Allocation> VulkanStorageBuffer::GetAllocation() const
+	WeakPtr<Allocation> D3D12StorageBuffer::GetAllocation() const
 	{
 		return m_allocation;
 	}
 
-	void VulkanStorageBuffer::Unmap()
+	void D3D12StorageBuffer::Unmap()
 	{
 		m_allocation->Unmap();
 	}
 
-	void VulkanStorageBuffer::SetData(const void* data, const size_t size)
+	void D3D12StorageBuffer::SetData(const void* data, const size_t size)
 	{
 		RefPtr<Allocation> stagingAllocation = nullptr;
 
@@ -113,10 +107,10 @@ namespace Volt::RHI
 		barrier.bufferBarrier().dstAccess = BarrierAccess::TransferDestination;
 		barrier.bufferBarrier().offset = 0;
 		barrier.bufferBarrier().size = size;
-		barrier.bufferBarrier().resource = WeakPtr<VulkanStorageBuffer>(this);
+		barrier.bufferBarrier().resource = WeakPtr<D3D12StorageBuffer>(this);
 
 		cmdBuffer->ResourceBarrier({ barrier });
-		 
+
 		cmdBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
 
 		barrier.bufferBarrier().srcStage = BarrierStage::Copy;
@@ -142,7 +136,7 @@ namespace Volt::RHI
 		});
 	}
 
-	void VulkanStorageBuffer::SetData(RefPtr<CommandBuffer> commandBuffer, const void* data, const size_t size)
+	void D3D12StorageBuffer::SetData(RefPtr<CommandBuffer> commandBuffer, const void* data, const size_t size)
 	{
 		RefPtr<Allocation> stagingAllocation = nullptr;
 
@@ -166,7 +160,7 @@ namespace Volt::RHI
 		barrier.bufferBarrier().dstAccess = BarrierAccess::TransferDestination;
 		barrier.bufferBarrier().offset = 0;
 		barrier.bufferBarrier().size = size;
-		barrier.bufferBarrier().resource = WeakPtr<VulkanStorageBuffer>(this);
+		barrier.bufferBarrier().resource = WeakPtr<D3D12StorageBuffer>(this);
 
 		commandBuffer->ResourceBarrier({ barrier });
 
@@ -191,8 +185,8 @@ namespace Volt::RHI
 			}
 		});
 	}
-
-	RefPtr<BufferView> VulkanStorageBuffer::GetView()
+	
+	RefPtr<BufferView> D3D12StorageBuffer::GetView()
 	{
 		if (m_view)
 		{
@@ -206,56 +200,53 @@ namespace Volt::RHI
 		return m_view;
 	}
 
-	void VulkanStorageBuffer::SetName(std::string_view name)
+	void D3D12StorageBuffer::SetName(std::string_view name)
 	{
-		if (!Volt::RHI::vkSetDebugUtilsObjectNameEXT)
+		if (!m_allocation)
 		{
 			return;
 		}
 
-		VkDebugUtilsObjectNameInfoEXT nameInfo{};
-		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
-		nameInfo.objectHandle = reinterpret_cast<uint64_t>(m_allocation->GetResourceHandle<VkBuffer>());
-		nameInfo.pObjectName = name.data();
-
-		const auto device = GraphicsContext::GetDevice();
-		Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
+		std::wstring str = Utility::ToWString(name);
+		m_allocation->GetResourceHandle<ID3D12Resource*>()->SetName(str.c_str());
 	}
 
-	const uint64_t VulkanStorageBuffer::GetDeviceAddress() const
+	const uint64_t D3D12StorageBuffer::GetDeviceAddress() const
 	{
-		return m_allocation->GetDeviceAddress();
+		return 0;
 	}
 
-	void* VulkanStorageBuffer::GetHandleImpl() const
+	const uint64_t D3D12StorageBuffer::GetByteSize() const
 	{
-		return m_allocation->GetResourceHandle<VkBuffer>();
+		return m_allocation->GetSize();
 	}
 
-	void* VulkanStorageBuffer::MapInternal()
+	void* D3D12StorageBuffer::GetHandleImpl() const
+	{
+		return m_allocation->GetResourceHandle<ID3D12Resource*>();
+	}
+
+	void* D3D12StorageBuffer::MapInternal()
 	{
 		return m_allocation->Map<void>();
 	}
 
-	void VulkanStorageBuffer::Invalidate(const size_t byteSize)
+	void D3D12StorageBuffer::Invalidate(const size_t byteSize)
 	{
 		Release();
 		m_byteSize = std::max(byteSize, Memory::GetMinBufferAllocationSize());
 
-		const VkDeviceSize bufferSize = m_byteSize;
-
 		if (m_allocatedUsingCustomAllocator)
 		{
-			m_allocation = m_customAllocator->CreateBuffer(bufferSize, m_bufferUsage | BufferUsage::TransferDst | BufferUsage::StorageBuffer, m_memoryUsage);
+			m_allocation = m_customAllocator->CreateBuffer(byteSize, m_bufferUsage | BufferUsage::TransferDst | BufferUsage::StorageBuffer, m_memoryUsage);
 		}
 		else
 		{
-			m_allocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, m_bufferUsage | BufferUsage::TransferDst | BufferUsage::StorageBuffer, m_memoryUsage);
+			m_allocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(byteSize, m_bufferUsage | BufferUsage::TransferDst | BufferUsage::StorageBuffer, m_memoryUsage);
 		}
 	}
 
-	void VulkanStorageBuffer::Release()
+	void D3D12StorageBuffer::Release()
 	{
 		if (!m_allocation)
 		{
@@ -277,3 +268,4 @@ namespace Volt::RHI
 		m_allocation = nullptr;
 	}
 }
+

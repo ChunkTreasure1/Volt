@@ -3,6 +3,7 @@
 
 #include "VoltD3D12/Descriptors/D3D12DescriptorHeap.h"
 #include "VoltD3D12/Images/D3D12ImageView.h"
+#include "VoltD3D12/Buffers/D3D12CommandBuffer.h"
 
 #include <VoltRHI/Images/ImageUtility.h>
 
@@ -54,6 +55,15 @@ namespace Volt::RHI
 
 	void D3D12DescriptorTable::SetBufferView(WeakPtr<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
+		if (!m_allocatedDescriptorPointers[set].contains(binding))
+		{
+			RHILog::LogTagged(LogSeverity::Warning, "[D3D12DescriptorTable]:", "Trying to assign buffer view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
+			return;
+		}
+
+		m_isDirty = true;
+
+		//const auto& descriptorInfo = m_allocatedDescriptorPointers.at(set).at(binding);
 	}
 
 	void D3D12DescriptorTable::SetSamplerState(WeakPtr<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
@@ -144,6 +154,21 @@ namespace Volt::RHI
 
 	void D3D12DescriptorTable::Bind(CommandBuffer& commandBuffer)
 	{
+		ID3D12GraphicsCommandList* cmdList = commandBuffer.GetHandle<ID3D12GraphicsCommandList*>();
+		ID3D12DescriptorHeap* heaps[2] {};
+		uint32_t heapCount = 0;
+
+		if (m_mainHeap)
+		{
+			heaps[heapCount++] = m_mainHeap->GetHeap().Get();
+		}
+
+		if (m_samplerHeap)
+		{
+			heaps[heapCount++] = m_samplerHeap->GetHeap().Get();
+		}
+
+		cmdList->SetDescriptorHeaps(heapCount, heaps);
 	}
 
 	void* D3D12DescriptorTable::GetHandleImpl() const

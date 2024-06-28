@@ -11,6 +11,7 @@ namespace Volt::RHI
 	{
 	public:
 		VulkanBufferView(const BufferViewSpecification& specification);
+		~VulkanBufferView() override = default;
 
 		[[nodiscard]] const uint64_t GetDeviceAddress() const override;
 

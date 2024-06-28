@@ -2,6 +2,7 @@
 #include "D3D12DefaultAllocator.h"
 
 #include "VoltD3D12/Common/D3D12MemAlloc.h"
+#include "VoltD3D12/Common/D3D12Helpers.h"
 #include "VoltD3D12/Memory/D3D12Allocation.h"
 
 #include <VoltRHI/Utility/HashUtility.h>
@@ -136,7 +137,12 @@ namespace Volt::RHI
 		resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
 		resourceDesc.SampleDesc = { 1, 0 };
 		resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-		resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		if (memoryUsage == MemoryUsage::GPU)
+		{
+			resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		}
 
 		D3D12MA::ALLOCATION_DESC allocDesc{};
 		allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
@@ -210,7 +216,19 @@ namespace Volt::RHI
 			resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 		}
 
-		resourceDesc.Flags = (memoryUsage & MemoryUsage::GPU) != MemoryUsage::None ? D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS : D3D12_RESOURCE_FLAG_NONE;
+		resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		const bool resourceShouldBeUnorderedAccess = (memoryUsage & MemoryUsage::GPU) != MemoryUsage::None && (imageSpecification.usage == ImageUsage::Storage || imageSpecification.usage == ImageUsage::AttachmentStorage);
+
+		if (resourceShouldBeUnorderedAccess && Utility::DoFormatSupportUnorderedAccess(resourceDesc.Format))
+		{
+			resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		}
+
+		if (resourceShouldBeUnorderedAccess && !Utility::DoFormatSupportUnorderedAccess(resourceDesc.Format))
+		{
+			RHILog::LogTagged(LogSeverity::Error, "[D3D12DefaultAllocator]", "Resource description is not valid for unordered access!");
+		}
 
 		D3D12MA::ALLOCATION_DESC allocDesc{};
 		allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;

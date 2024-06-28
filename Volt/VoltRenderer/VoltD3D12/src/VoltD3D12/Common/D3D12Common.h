@@ -16,4 +16,6 @@ namespace Volt::RHI
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(D3D12ViewType);
+
+
 }

@@ -85,6 +85,6 @@ namespace Volt::RHI
 		auto currentFenceData = executeInfo.commandBuffers.front()->As<D3D12CommandBuffer>()->GetCurrentSemaphore();
 
 		m_commandQueue->ExecuteCommandLists(static_cast<UINT>(cmdLists.size()), cmdLists.data());
-		m_commandQueue->Signal(currentFenceData->GetHandle<ID3D12Fence*>(), currentFenceData->GetValue());
+		m_commandQueue->Signal(currentFenceData->GetHandle<ID3D12Fence*>(), currentFenceData->IncrementAndGetValue());
 	}
 }
