@@ -3,6 +3,7 @@
 #include "Sandbox/Modals/Modal.h"
 
 #include <Volt/Asset/Importers/FbxUtilities.h>
+#include <Volt/Asset/Asset.h>
 
 class MeshImportModal : public Modal
 {
@@ -24,6 +25,9 @@ private:
 		bool isSkeletalMesh = false;
 		bool combineMeshes = false;
 		bool importVertexColors = false;
+		Volt::AssetHandle targetSkeleton = Volt::Asset::Null();
+
+		bool importAnimations = true;
 
 		glm::vec3 translation = 0.f;
 		glm::vec3 rotation = 0.f;
@@ -43,6 +47,8 @@ private:
 
 	const std::string GetStringFromImportType(const ImportType importType);
 	void GetInformationOfCurrentMesh();
+
+	void Import(const std::filesystem::path& importPath);
 
 	ImportType m_currentImportType = ImportType::StaticMesh;
 	ImportOptions m_importOptions{};

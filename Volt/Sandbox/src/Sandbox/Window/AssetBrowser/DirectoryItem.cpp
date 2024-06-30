@@ -10,6 +10,7 @@
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Input/KeyCodes.h>
+#include <Volt/Rendering/Texture/Texture2D.h>
 
 namespace AssetBrowser
 {
@@ -88,7 +89,7 @@ namespace AssetBrowser
 		ImGui::PushID(path.string().c_str());
 	}
 
-	Ref<Volt::RHI::Image2D> DirectoryItem::GetIcon() const
+	RefPtr<Volt::RHI::Image2D> DirectoryItem::GetIcon() const
 	{
 		return EditorResources::GetEditorIcon(EditorIcon::Directory)->GetImage();
 	}

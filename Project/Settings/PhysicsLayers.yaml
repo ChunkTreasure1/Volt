@@ -1,0 +1,5 @@
+PhysicsLayers:
+  - layerId: 0
+    bitValue: 1
+    collidesWith: 1
+    name: Default

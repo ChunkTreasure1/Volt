@@ -10,17 +10,17 @@
 
 struct Constants
 {
-    RWTypedBuffer<uint> indexBuffer;
-    RWTypedBuffer<uint> drawCommand;
+    UniformRWTypedBuffer<uint> indexBuffer;
+    UniformRWTypedBuffer<uint> drawCommand;
   
-    TypedBuffer<uint> survivingMeshlets;
-    TypedBuffer<uint> survivingMeshletCount;
+    UniformTypedBuffer<uint> survivingMeshlets;
+    UniformTypedBuffer<uint> survivingMeshletCount;
     
-    TypedBuffer<Meshlet> gpuMeshlets;
-    TypedBuffer<GPUMesh> gpuMeshes;
-    TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    UniformBuffer<ViewData> viewData;
-    
+    GPUScene gpuScene;
+
+    float4x4 viewMatrix;
+    float4x4 projectionMatrix;
+
     float2 renderSize;
 };
 
@@ -28,20 +28,19 @@ struct Constants
 void main(uint3 gid : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
 {
     const Constants constants = GetConstants<Constants>();
-    const ViewData viewData = constants.viewData.Load();
     
     uint groupId = UnwrapDispatchGroupId(gid);
     
     const uint meshletIndex = constants.survivingMeshlets.Load(groupId);
-    const Meshlet meshlet = constants.gpuMeshlets.Load(meshletIndex);
+    const Meshlet meshlet = constants.gpuScene.meshletsBuffer.Load(meshletIndex);
     
     if (groupThreadId >= meshlet.triangleCount)
     {
         return;
     }
     
-    const GPUMesh mesh = constants.gpuMeshes.Load(meshlet.meshId);
-    const ObjectDrawData objectData = constants.objectDrawDataBuffer.Load(meshlet.objectId);
+    const GPUMesh mesh = constants.gpuScene.meshesBuffer.Load(meshlet.meshId);
+    const ObjectDrawData objectData = constants.gpuScene.objectDrawDataBuffer.Load(meshlet.objectId);
     
     const uint triangleId = groupThreadId * 3;
     const uint index0 = mesh.meshletIndexBuffer.Load(mesh.meshletIndexStartOffset + meshlet.triangleOffset + triangleId + 0);
@@ -60,7 +59,7 @@ void main(uint3 gid : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
     positions[2] = mesh.vertexPositionsBuffer.Load(vIndex2).position;
     
     // #TODO_Ivar: switch to viewProjection
-    const float4x4 mvp = mul(viewData.projection, mul(viewData.view, objectData.transform));
+    const float4x4 mvp = mul(constants.projectionMatrix, mul(constants.viewMatrix, objectData.transform));
     
     [unroll]
     for (uint i = 0; i < 3; ++i)

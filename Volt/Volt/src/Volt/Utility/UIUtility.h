@@ -32,7 +32,6 @@ namespace Volt::RHI
 namespace Volt
 {
 	class Texture2D;
-	class Image2D;
 }
 
 enum class NotificationType
@@ -195,10 +194,8 @@ public:
 	private:
 	};
 
-	static ImTextureID GetTextureID(Ref<Volt::RHI::Image2D> texture);
-
+	static ImTextureID GetTextureID(RefPtr<Volt::RHI::Image2D> texture);
 	static ImTextureID GetTextureID(Ref<Volt::Texture2D> texture);
-	static ImTextureID GetTextureID(Ref<Volt::Image2D> texture);
 
 	static void Header(const std::string& text);
 
@@ -310,6 +307,8 @@ public:
 	static bool Property(const std::string& text, glm::ivec2& value, uint32_t min = 0, uint32_t max = 0, const std::string& toolTip = "");
 	static bool Property(const std::string& text, glm::ivec3& value, uint32_t min = 0, uint32_t max = 0, const std::string& toolTip = "");
 	static bool Property(const std::string& text, glm::ivec4& value, uint32_t min = 0, uint32_t max = 0, const std::string& toolTip = "");
+
+	static bool Property(const std::string& text, glm::quat& value, const std::string& toolTip = "");
 
 	static bool Property(const std::string& text, const std::string& value, bool readOnly = false, const std::string& toolTip = "");
 	static bool Property(const std::string& text, std::string& value, bool readOnly = false, const std::string& toolTip = "");

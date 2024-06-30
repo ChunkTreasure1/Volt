@@ -10,6 +10,7 @@
 #include <VoltRHI/Graphics/DeviceQueue.h>
 #include <VoltRHI/Memory/MemoryUtility.h>
 #include <VoltRHI/Core/Profiling.h>
+#include <VoltRHI/RHILog.h>
 
 #include <vulkan/vulkan.h>
 
@@ -42,9 +43,10 @@ namespace Volt::RHI
 		}
 	}
 
-	Ref<Allocation> VulkanTransientHeap::CreateBuffer(const TransientBufferCreateInfo& createInfo)
+	RefPtr<Allocation> VulkanTransientHeap::CreateBuffer(const TransientBufferCreateInfo& createInfo)
 	{
 		VT_PROFILE_FUNCTION();
+		VT_ENSURE((m_createInfo.flags & TransientHeapFlags::AllowBuffers) != TransientHeapFlags::None);
 
 		auto device = GraphicsContext::GetDevice();
 
@@ -52,7 +54,7 @@ namespace Volt::RHI
 
 		if (blockAlloc.size == 0)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientHeap]", "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientHeap]", "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
 			return nullptr;
 		}
 
@@ -76,7 +78,7 @@ namespace Volt::RHI
 		vkCreateBuffer(device->GetHandle<VkDevice>(), &bufferInfo, nullptr, &buffer);
 		vkBindBufferMemory(device->GetHandle<VkDevice>(), buffer, page.handle, blockAlloc.offset);
 
-		Ref<VulkanTransientBufferAllocation> bufferAlloc = CreateRef<VulkanTransientBufferAllocation>();
+		RefPtr<VulkanTransientBufferAllocation> bufferAlloc = RefPtr<VulkanTransientBufferAllocation>::Create(createInfo.hash);
 		bufferAlloc->m_memoryHandle = page.handle;
 		bufferAlloc->m_resource = buffer;
 		bufferAlloc->m_allocationBlock = blockAlloc;
@@ -86,9 +88,10 @@ namespace Volt::RHI
 		return bufferAlloc;
 	}
 
-	Ref<Allocation> VulkanTransientHeap::CreateImage(const TransientImageCreateInfo& createInfo)
+	RefPtr<Allocation> VulkanTransientHeap::CreateImage(const TransientImageCreateInfo& createInfo)
 	{
 		VT_PROFILE_FUNCTION();
+		VT_ENSURE((m_createInfo.flags & TransientHeapFlags::AllowTextures) != TransientHeapFlags::None);
 
 		auto device = GraphicsContext::GetDevice();
 		const auto& imageSpecification = createInfo.imageSpecification;
@@ -99,7 +102,7 @@ namespace Volt::RHI
 
 		if (blockAlloc.size == 0)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientHeap]", "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientHeap]", "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
 			return nullptr;
 		}
 
@@ -117,7 +120,7 @@ namespace Volt::RHI
 			vkBindImageMemory(device->GetHandle<VkDevice>(), image, page.handle, blockAlloc.offset);
 		}
 
-		Ref<VulkanTransientImageAllocation> imageAlloc = CreateRef<VulkanTransientImageAllocation>();
+		RefPtr<VulkanTransientImageAllocation> imageAlloc = RefPtr<VulkanTransientImageAllocation>::Create(createInfo.hash);
 		imageAlloc->m_memoryHandle = page.handle;
 		imageAlloc->m_resource = image;
 		imageAlloc->m_allocationBlock = blockAlloc;
@@ -127,11 +130,11 @@ namespace Volt::RHI
 		return imageAlloc;
 	}
 
-	void VulkanTransientHeap::ForfeitBuffer(Ref<Allocation> allocation)
+	void VulkanTransientHeap::ForfeitBuffer(RefPtr<Allocation> allocation)
 	{
 		VT_PROFILE_FUNCTION();
 
-		Ref<VulkanTransientBufferAllocation> bufferAlloc = std::reinterpret_pointer_cast<VulkanTransientBufferAllocation>(allocation);
+		RefPtr<VulkanTransientBufferAllocation> bufferAlloc = allocation.As<VulkanTransientBufferAllocation>();
 		if (!bufferAlloc)
 		{
 			return;
@@ -145,11 +148,11 @@ namespace Volt::RHI
 		ForfeitAllocationBlock(allocBlock);
 	}
 
-	void VulkanTransientHeap::ForfeitImage(Ref<Allocation> allocation)
+	void VulkanTransientHeap::ForfeitImage(RefPtr<Allocation> allocation)
 	{
 		VT_PROFILE_FUNCTION();
 
-		Ref<VulkanTransientImageAllocation> imageAlloc = std::reinterpret_pointer_cast<VulkanTransientImageAllocation>(allocation);
+		RefPtr<VulkanTransientImageAllocation> imageAlloc = allocation.As<VulkanTransientImageAllocation>();
 		if (!imageAlloc)
 		{
 			return;
@@ -182,6 +185,11 @@ namespace Volt::RHI
 		}
 
 		return false;
+	}
+
+	const UUID64 VulkanTransientHeap::GetHeapID() const
+	{
+		return m_heapId;
 	}
 
 	void* VulkanTransientHeap::GetHandleImpl() const
@@ -369,7 +377,7 @@ namespace Volt::RHI
 		int32_t memoryTypeIndex = physicalDevice.GetMemoryTypeIndex(m_memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		if (memoryTypeIndex == -1)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientHeap]", "Unable to find memory type index from bits {0}!", m_memoryRequirements.memoryTypeBits);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientHeap]", "Unable to find memory type index from bits {0}!", m_memoryRequirements.memoryTypeBits);
 			return;
 		}
 
@@ -444,7 +452,7 @@ namespace Volt::RHI
 		int32_t memoryTypeIndex = physicalDevice.GetMemoryTypeIndex(m_memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		if (memoryTypeIndex == -1)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientHeap]", "Unable to find memory type index from bits {0}!", m_memoryRequirements.memoryTypeBits);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientHeap]", "Unable to find memory type index from bits {0}!", m_memoryRequirements.memoryTypeBits);
 			return;
 		}
 

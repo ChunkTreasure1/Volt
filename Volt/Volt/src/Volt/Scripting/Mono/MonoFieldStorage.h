@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Volt/Core/Base.h"
-#include "Volt/Core/Buffer.h"
+#include <CoreUtilities/Buffer/Buffer.h>
 #include "Volt/Core/UUID.h"
 #include "MonoGCManager.h"
 //#include "ScriptTypes.h"

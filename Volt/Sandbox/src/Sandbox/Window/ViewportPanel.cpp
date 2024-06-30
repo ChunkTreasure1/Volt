@@ -27,24 +27,26 @@
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Input/MouseButtonCodes.h>
 
-#include <Volt/RenderingNew/SceneRendererNew.h>
-#include <Volt/Rendering/VulkanFramebuffer.h>
+#include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Camera/Camera.h>
-#include <Volt/Rendering/Texture/Image2D.h>
 
 #include <Volt/Components/CoreComponents.h>
 #include <Volt/Components/RenderingComponents.h>
 
 #include <Volt/Scene/Entity.h>
+#include <Volt/Scene/SceneManager.h>
+#include <Volt/Asset/Serializers/SceneSerializer.h>
 #include <Volt/Utility/UIUtility.h>
 
 #include <Volt/Utility/StringUtility.h>
 #include <Volt/Math/RayTriangle.h>
 #include <Volt/Math/Math.h>
 
+#include <VoltRHI/Images/Image2D.h>
+
 #include <Navigation/Core/NavigationSystem.h>
 
-ViewportPanel::ViewportPanel(Ref<Volt::SceneRendererNew>& sceneRenderer, Ref<Volt::Scene>& editorScene, EditorCameraController* cameraController,
+ViewportPanel::ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::Scene>& editorScene, EditorCameraController* cameraController,
 	SceneState& aSceneState)
 	: EditorWindow("Viewport"), m_sceneRenderer(sceneRenderer), m_editorCameraController(cameraController), m_editorScene(editorScene),
 	m_sceneState(aSceneState), m_animatedPhysicsIcon("Editor/Textures/Icons/Physics/LampPhysicsAnim1.dds", 30)
@@ -732,6 +734,10 @@ void ViewportPanel::CheckDragDrop()
 			}
 
 			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::GetFilePathFromAssetHandle(handle).stem().string();
+			
+			SelectionManager::DeselectAll();
+			SelectionManager::Select(newEntity.GetID());
+
 			m_createdEntity = newEntity;
 
 			Volt::MeshComponent::OnMemberChanged(meshComp, newEntity);
@@ -744,7 +750,7 @@ void ViewportPanel::CheckDragDrop()
 		case Volt::AssetType::MeshSource:
 		{
 			const std::filesystem::path meshSourcePath = Volt::AssetManager::GetFilePathFromAssetHandle(handle);
-			const std::filesystem::path vtMeshPath = meshSourcePath.parent_path() / (meshSourcePath.stem().string() + ".vtmesh");
+			const std::filesystem::path vtMeshPath = meshSourcePath.parent_path() / (meshSourcePath.stem().string() + ".vtasset");
 
 			Volt::AssetHandle resultHandle = handle;
 			Volt::Entity newEntity = m_editorScene->CreateEntity();
@@ -885,10 +891,11 @@ void ViewportPanel::HandleSingleSelect()
 
 	if (mouseX >= 0 && mouseY >= 0 && mouseX < (int32_t)perspectiveSize.x && mouseY < (int32_t)perspectiveSize.y)
 	{
-		//const auto renderScale = mySceneRenderer->GetSettings().renderScale;
+		//const auto renderScale = m_sceneRenderer->GetSettings().renderScale;
+		const float renderScale = 1.f;
 
-		//uint32_t pixelData = mySceneRenderer->GetIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX * renderScale), static_cast<uint32_t>(mouseY * renderScale));
-		/*const bool multiSelect = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);
+		uint32_t pixelData = m_sceneRenderer->GetObjectIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX * renderScale), static_cast<uint32_t>(mouseY * renderScale));
+		const bool multiSelect = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);
 		const bool deselect = Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL);
 
 		if (!multiSelect && !deselect)
@@ -917,7 +924,7 @@ void ViewportPanel::HandleSingleSelect()
 				SelectionManager::Select(entity.GetID());
 				EditorLibrary::Get<SceneViewPanel>()->HighlightEntity(entity);
 			}
-		}*/
+		}
 	}
 }
 
@@ -1089,6 +1096,12 @@ void ViewportPanel::UpdateModals()
 		}
 
 		Sandbox::Get().OpenScene(Volt::AssetManager::GetFilePathFromAssetHandle(m_sceneToOpen));
+
+		for (const auto& cell : Volt::SceneManager::GetActiveScene()->GetWorldEngine().GetCells())
+		{
+			Volt::SceneSerializer::Get().LoadWorldCell(Volt::SceneManager::GetActiveScene(), cell);
+		}
+
 		m_sceneToOpen = Volt::Asset::Null();
 	}
 }

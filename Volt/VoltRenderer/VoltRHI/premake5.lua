@@ -1,8 +1,9 @@
 project "VoltRHI"
 	location "."
-	kind "StaticLib"
+	kind "SharedLib"
 	language "C++"
 	cppdialect "C++20"
+	staticruntime "off"
 
 	targetdir ("../../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../../bin-int/" .. outputdir .."/%{prj.name}")
@@ -29,12 +30,35 @@ project "VoltRHI"
 	{
 		"src/",
 		"../VoltD3D12/src",
-		"../VoltVulkan/src",
 
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.imgui_notify}",
 
-		"%{IncludeDir.Aftermath}"
+		"%{IncludeDir.Aftermath}",
+	}
+
+	links
+	{
+		"ImGui", -- Should not be here
+		"tracy",
+		"%{Library.CoreUtilities}",
+		"%{Library.Aftermath}"
+	}
+
+	defines
+	{
+		"TRACY_IMPORTS",
+		"VT_ENABLE_NV_AFTERMATH"
+	}
+
+	postbuildcommands
+	{
+		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox"'
+	}
+
+	postbuildcommands
+	{
+		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher"'
 	}
 
 	filter "files:vendor/**.cpp"
@@ -52,7 +76,8 @@ project "VoltRHI"
 		systemversion "latest"
 		defines 
 		{
-			"VT_PLATFORM_WINDOWS"
+			"VT_PLATFORM_WINDOWS",
+			"VTRHI_BUILD_DLL"
 		}
 
 		filter "configurations:Debug"
@@ -63,6 +88,7 @@ project "VoltRHI"
 				"VT_ENABLE_VALIDATION",
 				"VT_ENABLE_PROFILING"
 			}
+
 			runtime "Debug"
 			optimize "off"
 			symbols "on"
@@ -88,3 +114,8 @@ project "VoltRHI"
 			runtime "Release"
 			optimize "on"
 			symbols "on"
+
+			postbuildcommands
+			{
+				'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../../Engine"'
+			}

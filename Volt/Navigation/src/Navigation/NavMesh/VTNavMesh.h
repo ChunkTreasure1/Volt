@@ -19,17 +19,20 @@ namespace Volt
 		{
 		public:
 			NavMesh() = default;
-			NavMesh(Ref<dtNavMesh> navmesh, Ref<dtTileCache> tilecache = nullptr);
 			virtual ~NavMesh() = default;
+
+			void Initialize(Ref<dtNavMesh> navmesh, Ref<dtTileCache> tilecache = nullptr);
 
 			Ref<DtNavMesh>& GetNavMesh() { return myNavMesh; }
 			Ref<DtCrowd>& GetCrowd() { return myCrowd; }
 
 			static AssetType GetStaticType() { return AssetType::NavMesh; }
 			AssetType GetType() override { return GetStaticType(); }
+			uint32_t GetVersion() const override { return 1; }
 
 		private:
 			friend class NavigationSystem;
+
 			void Update(float deltaTime);
 
 			Ref<DtNavMesh> myNavMesh = nullptr;

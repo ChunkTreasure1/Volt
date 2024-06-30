@@ -1,105 +1,112 @@
 #pragma once
 
-#include "Volt/Core/Base.h"
-#include "Volt/Asset/Mesh/SubMesh.h"
+#include "Volt/Rendering/Resources/ResourceHandle.h"
 
-#include "Volt/Rendering/RendererStructs.h"
-
-#include <glm/glm.hpp>
-#include <vector>
+#include <VoltRHI/Core/RHICommon.h>
 
 namespace Volt
 {
-	class Mesh;
-	class Texture2D;
-	class Font;
-
-	class ShaderStorageBufferSet;
-	class GlobalDescriptorSet;
-	class ComputePipeline;
-
-	struct SubmitCommand
+	struct IndirectGPUCommand
 	{
-		SubMesh subMesh;
+		RHI::IndirectDrawCommand command{};
+		uint32_t objectId{};
+		uint32_t meshId{};
+		uint32_t meshletId{};
+		uint32_t padding{};
+	};
+
+	struct IndirectDrawData
+	{
 		glm::mat4 transform;
+		uint32_t meshId{};
+		uint32_t vertexStartOffset{};
+		uint32_t materialId{};
 
-		std::vector<glm::mat4> boneTransforms;
-		std::vector<uint32_t> vertexColors;
-
-		Ref<Mesh> mesh;
-
-		float timeSinceCreation = 0.f;
-		float randomValue = 0.f;
-		uint32_t id = 0;
-		uint32_t objectBufferId = 0;
-		uint32_t batchId = 0;
-		uint32_t subMeshIndex = 0;
+		uint32_t padding;
 	};
 
-	struct LineCommand
+	struct GPUMeshNew
 	{
-		glm::vec3 startPosition;
-		glm::vec3 endPosition;
-		glm::vec4 color;
+		ResourceHandle vertexPositions;
+		ResourceHandle vertexMaterial;
+		ResourceHandle vertexAnimation;
+		ResourceHandle indexBuffer;
 	};
 
-	struct BillboardCommand
+	struct IndirectMeshTaskCommand
 	{
-		glm::vec4 color;
+		RHI::IndirectMeshTasksCommand command{};
+		uint32_t objectId{};
+		uint32_t meshId{};
+		uint32_t padding[3];
+	};
+
+	///// Rendering Structures /////
+	struct ViewData
+	{
+		// Camera
+		glm::mat4 view;
+		glm::mat4 projection;
+		glm::mat4 inverseView;
+		glm::mat4 inverseProjection;
+		glm::mat4 viewProjection;
+		glm::mat4 inverseViewProjection;
+		glm::vec4 cameraPosition;
+		glm::vec2 depthUnpackConsts;
+		float nearPlane;
+		float farPlane;
+	
+		// Render Target
+		glm::vec2 renderSize;
+		glm::vec2 invRenderSize;
+
+		// Light Culling
+		uint32_t tileCountX;
+
+		// Temp lights
+		uint32_t pointLightCount;
+		uint32_t spotLightCount;
+	};
+
+	struct DirectionalLightData
+	{
+		inline static constexpr uint32_t CASCADE_COUNT = 4;
+
+		glm::vec4 direction;
+		glm::vec3 color;
+		float intensity;
+
+		uint32_t castShadows = 1;
+
+		float cascadeDistances[CASCADE_COUNT];
+		glm::mat4 viewProjections[CASCADE_COUNT];
+	};
+
+	struct PointLightData
+	{
 		glm::vec3 position;
-		glm::vec3 scale;
+		float radius;
 
-		Ref<Texture2D> texture;
-		uint32_t id;
+		glm::vec3 color;
+		float intensity;
+
+		float falloff;
+		glm::vec3 padding;
 	};
 
-	struct TextCommand
+	struct SpotLightData
 	{
-		glm::mat4 transform;
-		std::string text;
-		glm::vec4 color;
-		Ref<Font> font;
-		float maxWidth;
-	};
+		glm::vec3 position;
+		float angleAttenuation;
 
-	struct DecalCommand
-	{
-		glm::mat4 transform;
-		glm::vec4 color;
-		float randomValue;
-		float timeSinceCreation;
-		
-		Ref<Material> material;
-	};
+		glm::vec3 color;
+		float intensity;
 
-	enum class MemoryUsage : uint32_t
-	{
-		None = 0,
-		Indirect,
-		CPUToGPU,
-		GPUOnly
-	};
+		glm::vec3 direction;
+		float range;
 
-	VT_SETUP_ENUM_CLASS_OPERATORS(MemoryUsage);
-
-	struct PushConstantDrawData
-	{
-		const void* data = nullptr;
-		const uint32_t size = 0;
-
-		inline const bool IsValid() const
-		{
-			return data != nullptr;
-		}
-	};
-
-	struct IndirectPass
-	{
-		Ref<ShaderStorageBufferSet> drawCountIDStorageBuffer;
-		Ref<ShaderStorageBufferSet> drawArgsStorageBuffer;
-		Ref<GlobalDescriptorSet> drawBuffersSet;
-
-		Ref<ComputePipeline> indirectCullPipeline;
-		Ref<ComputePipeline> clearCountBufferPipeline;
+		float angle;
+		float falloff;
+		glm::vec2 padding;
 	};
 }

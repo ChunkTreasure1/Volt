@@ -3,6 +3,8 @@
 #include "Volt/Events/Event.h"
 #include "Volt/Core/Base.h"
 
+#include <VoltRHI/Graphics/Swapchain.h>
+
 #include <functional>
 #include <Windows.h>
 
@@ -13,12 +15,6 @@ struct GLFWcursor;
 
 namespace Volt
 {
-	namespace RHI
-	{
-		class GraphicsContext;
-		class Swapchain;
-	}
-
 	enum class WindowMode : uint32_t
 	{
 		Windowed = 0,
@@ -29,7 +25,7 @@ namespace Volt
 	struct WindowProperties
 	{
 		WindowProperties(const std::string& aTitle = "Volt", uint32_t aWidth = 1280, uint32_t aHeight = 720, bool aVSync = true, WindowMode aWindowMode = WindowMode::Windowed)
-			: title(aTitle), width(aWidth), height(aHeight), vsync(aVSync), windowMode(aWindowMode)
+			: title(aTitle), width(aWidth), height(aHeight), vsync(aVSync), windowMode(aWindowMode), useTitlebar(false)
 		{
 		}
 
@@ -37,6 +33,7 @@ namespace Volt
 		uint32_t width;
 		uint32_t height;
 		bool vsync;
+		bool useTitlebar;
 		WindowMode windowMode;
 		std::filesystem::path iconPath;
 		std::filesystem::path cursorPath;
@@ -95,10 +92,11 @@ namespace Volt
 		inline HWND GetHWND() const { return m_windowHandle; }
 
 		inline const RHI::Swapchain& GetSwapchain() const { return *m_swapchain; }
-		inline const Weak <RHI::Swapchain> GetSwapchainPtr() const { return m_swapchain; }
+		inline const WeakPtr<RHI::Swapchain> GetSwapchainPtr() const { return m_swapchain; }
 
 		static Scope<Window> Create(const WindowProperties& aProperties = WindowProperties());
 		static void StaticInitialize();
+		static void StaticShutdown();
 
 	private:
 		GLFWwindow* m_window = nullptr;
@@ -120,7 +118,7 @@ namespace Volt
 
 		} m_data;
 
-		Ref<RHI::Swapchain> m_swapchain;
+		RefPtr<RHI::Swapchain> m_swapchain;
 
 		glm::uvec2 m_startPosition = 0;
 		glm::uvec2 m_startSize = 0;

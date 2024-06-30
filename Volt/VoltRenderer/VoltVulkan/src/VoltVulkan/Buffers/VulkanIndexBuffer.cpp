@@ -9,19 +9,14 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
 #include <VoltRHI/Memory/Allocation.h>
+#include <VoltRHI/RHIProxy.h>
 
 namespace Volt::RHI
 {
-	VulkanIndexBuffer::VulkanIndexBuffer(std::span<uint32_t> indices)
+	VulkanIndexBuffer::VulkanIndexBuffer(std::span<const uint32_t> indices)
 		: m_count(static_cast<uint32_t>(indices.size()))
 	{
 		SetData(indices.data(), static_cast<uint32_t>(sizeof(uint32_t) * indices.size()));
-	}
-
-	VulkanIndexBuffer::VulkanIndexBuffer(const uint32_t* indices, const uint32_t count)
-		: m_count(count)
-	{
-		SetData(indices, sizeof(uint32_t) * count);
 	}
 
 	VulkanIndexBuffer::~VulkanIndexBuffer()
@@ -31,7 +26,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		GraphicsContext::DestroyResource([allocation = m_allocation]() 
+		RHIProxy::GetInstance().DestroyResource([allocation = m_allocation]() 
 		{
 			GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
 		});
@@ -80,11 +75,11 @@ namespace Volt::RHI
 	{
 		VkDeviceSize bufferSize = size;
 
-		Ref<Allocation> stagingAllocation;
+		RefPtr<Allocation> stagingAllocation;
 
 		if (m_allocation)
 		{
-			GraphicsContext::DestroyResource([allocation = m_allocation]() 
+			RHIProxy::GetInstance().DestroyResource([allocation = m_allocation]() 
 			{
 				GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
 			});
@@ -115,7 +110,7 @@ namespace Volt::RHI
 		{
 			// Copy from staging buffer to GPU buffer
 			{
-				Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create();
+				RefPtr<CommandBuffer> cmdBuffer = CommandBuffer::Create();
 				cmdBuffer->Begin();
 
 				VkBufferCopy copy{};

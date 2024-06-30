@@ -1,7 +1,8 @@
 #pragma once
-#include "VoltRHI/Images/ImageView.h"
+#include "VoltD3D12/Common/D3D12Common.h"
+#include "VoltD3D12/Descriptors/DescriptorCommon.h"
 
-struct CD3DX12_CPU_DESCRIPTOR_HANDLE;
+#include <VoltRHI/Images/ImageView.h>
 
 namespace Volt::RHI
 {
@@ -18,9 +19,21 @@ namespace Volt::RHI
 		const ImageViewType GetViewType() const override;
 		const bool IsSwapchainView() const override;
 
+		VT_NODISCARD VT_INLINE const D3D12DescriptorPointer& GetRTVDSVDescriptor() const { return m_rtvDsvDescriptor; }
+		VT_NODISCARD VT_INLINE const D3D12DescriptorPointer& GetSRVDescriptor() const { return m_srvDescriptor; }
+		VT_NODISCARD VT_INLINE const D3D12DescriptorPointer& GetUAVDescriptor() const { return m_uavDescriptor; }
+		VT_NODISCARD VT_INLINE D3D12ViewType GetD3D12ViewType() const { return m_viewUsage; }
+
 	private:
-		ImageViewSpecification m_specs;
-		size_t m_viewID;
-		CD3DX12_CPU_DESCRIPTOR_HANDLE* m_view = {};
+		void CreateRTVDSV();
+		void CreateSRV();
+		void CreateUAV();
+
+		ImageViewSpecification m_specification;
+
+		D3D12ViewType m_viewUsage;
+		D3D12DescriptorPointer m_rtvDsvDescriptor;
+		D3D12DescriptorPointer m_srvDescriptor;
+		D3D12DescriptorPointer m_uavDescriptor;
 	};
 }

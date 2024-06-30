@@ -2,13 +2,13 @@
 #include "TextureNodes.h"
 
 #include "Volt/Asset/AssetManager.h"
-#include "Volt/RenderingNew/RendererNew.h"
+#include "Volt/Rendering/Renderer.h"
 #include "Volt/Utility/UIUtility.h"
 
 #include <Mosaic/MosaicGraph.h>
 #include <Mosaic/NodeRegistry.h>
 
-namespace Volt
+namespace Volt::MosaicNodes
 {
 	static void GetCorrectedVariableName(Mosaic::ResultInfo& resultInfo, uint32_t outputIndex)
 	{

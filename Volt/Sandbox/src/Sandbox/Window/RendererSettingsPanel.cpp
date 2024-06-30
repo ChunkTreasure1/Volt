@@ -2,13 +2,13 @@
 #include "RendererSettingsPanel.h"
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/RenderingNew/SceneRendererNew.h>
-#include <Volt/RenderingNew/RendererNew.h>
+#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/Rendering/Renderer.h>
 
 #include "Sandbox/Utility/EditorUtilities.h"
 
-RendererSettingsPanel::RendererSettingsPanel(Ref<Volt::SceneRendererNew>& sceneRenderer)
-	: EditorWindow("Renderer Settings"), mySceneRenderer(sceneRenderer)
+RendererSettingsPanel::RendererSettingsPanel(Ref<Volt::SceneRenderer>& sceneRenderer)
+	: EditorWindow("Renderer Settings"), m_sceneRenderer(sceneRenderer)
 {
 }
 
@@ -16,7 +16,26 @@ void RendererSettingsPanel::UpdateMainContent()
 {
 	if (ImGui::Button("Invalidate Render Scene"))
 	{
-		mySceneRenderer->Invalidate();
+		m_sceneRenderer->Invalidate();
+	}
+
+	static const std::vector<std::string> strings =
+	{
+		"Shaded",
+		"Albedo",
+		"Normals",
+		"Metalness",
+		"Roughness",
+		"Emissive",
+
+		"VisualizeCascades",
+		"VisualizeLightComplexity"
+	};
+
+	int32_t currentValue = static_cast<int32_t>(m_sceneRenderer->GetShadingMode());
+	if (UI::Combo("Shading Mode", currentValue, strings))
+	{
+		m_sceneRenderer->SetShadingMode(static_cast<Volt::SceneRenderer::ShadingMode>(currentValue));
 	}
 
 	//UI::Header("Settings");

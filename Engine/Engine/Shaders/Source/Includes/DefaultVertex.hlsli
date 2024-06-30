@@ -12,7 +12,7 @@ static const uint VERTEX_ANIMATION_DATA_SIZE = 16;
 
 struct Constants
 {
-    TypedBuffer<GPUScene> gpuScene;
+    UniformBuffer<GPUScene> gpuScene;
     TypedBuffer<DrawContext> drawContext;
     
     TypedBuffer<CameraData> cameraData; // #TODO_Ivar: Should be uniform buffer
@@ -26,7 +26,7 @@ struct DefaultInput
     
     uint GetObjectID()
     {
-        const Constants constants = GetConstants < Constants > ();
+        const Constants constants = GetConstants<Constants>();
         const DrawContext context = constants.drawContext.Load(0);
    
         const uint objectId = context.drawToInstanceOffset.Load(drawIndex);
@@ -52,7 +52,7 @@ struct DefaultInput
     const VertexPositionData GetVertexPositionData()
     {
         const Constants constants = GetConstants<Constants>();
-        const GPUScene scene = constants.gpuScene.Load(0);
+        const GPUScene scene = constants.gpuScene.Load();
         const DrawContext context = constants.drawContext.Load(0);
    
         const uint objectId = context.drawToInstanceOffset.Load(drawIndex);
@@ -66,7 +66,7 @@ struct DefaultInput
     const VertexMaterialData GetVertexMaterialData()
     {
         const Constants constants = GetConstants < Constants > ();
-        const GPUScene scene = constants.gpuScene.Load(0);
+        const GPUScene scene = constants.gpuScene.Load();
         const DrawContext context = constants.drawContext.Load(0);
    
         const uint objectId = context.drawToInstanceOffset.Load(drawIndex);
@@ -80,7 +80,7 @@ struct DefaultInput
     const float4x4 GetTransform()
     {
         const Constants constants = GetConstants<Constants>();
-        const GPUScene scene = constants.gpuScene.Load(0);
+        const GPUScene scene = constants.gpuScene.Load();
         const DrawContext context = constants.drawContext.Load(0);
    
         const uint objectId = context.drawToInstanceOffset.Load(drawIndex);

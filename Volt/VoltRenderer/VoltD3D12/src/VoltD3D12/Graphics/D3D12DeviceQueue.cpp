@@ -2,7 +2,8 @@
 #include "D3D12DeviceQueue.h"
 
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
-#include <VoltD3D12/Buffers/D3D12CommandBuffer.h>
+#include "VoltD3D12/Synchronization/D3D12Semaphore.h"
+#include "VoltD3D12/Buffers/D3D12CommandBuffer.h"
 
 namespace Volt::RHI
 {
@@ -10,23 +11,18 @@ namespace Volt::RHI
 	{
 		m_queueType = createInfo.queueType;
 		m_device = reinterpret_cast<D3D12GraphicsDevice*>(createInfo.graphicsDevice);
-		m_currentFence = nullptr;
-		m_currentFenceValue = 0;
 		CreateCommandQueue(createInfo.queueType);
 	}
 
 	D3D12DeviceQueue::~D3D12DeviceQueue()
 	{
-
 		WaitForQueue();
-
-
-		DestroyCommandQueue(m_queueType);
+		m_commandQueue = nullptr;
 	}
 
 	void* D3D12DeviceQueue::GetHandleImpl() const
 	{
-		return m_commandQueue;
+		return m_commandQueue.Get();
 	}
 
 	void D3D12DeviceQueue::CreateCommandQueue(QueueType type)
@@ -37,8 +33,9 @@ namespace Volt::RHI
 
 		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 		queueDesc.Type = d3d12QueueType;
-		queueDesc.NodeMask = 0;
+		queueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
 		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+		queueDesc.NodeMask = 0;
 
 		VT_D3D12_CHECK(d3d12Device->CreateCommandQueue(&queueDesc, VT_D3D12_ID(m_commandQueue)));
 
@@ -65,53 +62,29 @@ namespace Volt::RHI
 
 	}
 
-	void D3D12DeviceQueue::DestroyCommandQueue(QueueType type)
-	{
-		VT_D3D12_DELETE(m_commandQueue);
-	}
-
 	void D3D12DeviceQueue::WaitForQueue()
 	{
-		if (m_currentFence)
-		{
-			m_commandQueue->Signal(m_currentFence, m_currentFenceValue);
-			m_commandQueue->Wait(m_currentFence, m_currentFenceValue);
-		}
 	}
 
-	void D3D12DeviceQueue::Wait(D3D12Fence& fence)
+	void D3D12DeviceQueue::Execute(const DeviceQueueExecuteInfo& executeInfo)
 	{
-		m_commandQueue->Wait(fence.Get(), fence.Value());
-	}
-
-	void D3D12DeviceQueue::Signal(D3D12Fence& fence, const size_t customID)
-	{
-		m_commandQueue->Signal(fence.Get(), customID);
-	}
-
-	void D3D12DeviceQueue::Execute(const std::vector<Ref<CommandBuffer>>& commandBuffer)
-	{
-		if (commandBuffer.empty())
+		if (executeInfo.commandBuffers.empty())
 		{
 			VT_RHI_DEBUGBREAK();
 			return;
 		}
 
-		std::vector<ID3D12CommandList*> cmdLists(commandBuffer.size());
+		std::vector<ID3D12CommandList*> cmdLists(executeInfo.commandBuffers.size());
 
-		for (size_t i = 0; auto & cmdBuffer : commandBuffer)
+		for (size_t i = 0; auto & cmdBuffer : executeInfo.commandBuffers)
 		{
-			cmdLists[i] = cmdBuffer->As<D3D12CommandBuffer>()->GetCommandData().commandList;
+			cmdLists[i] = cmdBuffer->GetHandle<ID3D12CommandList*>();
 			i++;
 		}
 
-		auto& currentFenceData = commandBuffer.front()->As<D3D12CommandBuffer>()->GetFenceData();
+		auto currentFenceData = executeInfo.commandBuffers.front()->As<D3D12CommandBuffer>()->GetCurrentSemaphore();
 
 		m_commandQueue->ExecuteCommandLists(static_cast<UINT>(cmdLists.size()), cmdLists.data());
-
-		m_commandQueue->Signal(currentFenceData.Get(), currentFenceData.Value());
-		currentFenceData.Increment();
-		m_currentFence = currentFenceData.Get();
-		m_currentFenceValue = currentFenceData.Value();
+		m_commandQueue->Signal(currentFenceData->GetHandle<ID3D12Fence*>(), currentFenceData->IncrementAndGetValue());
 	}
 }

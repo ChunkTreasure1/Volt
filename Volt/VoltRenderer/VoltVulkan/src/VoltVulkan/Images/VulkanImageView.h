@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
 #include <VoltRHI/Images/ImageView.h>
 	
 struct VkImageView_T;

@@ -4,12 +4,12 @@
 
 namespace Volt::RHI
 {
-	class VertexBuffer : public RHIResource
+	class VTRHI_API VertexBuffer : public RHIResource
 	{
 	public:
 		virtual void SetData(const void* data, uint32_t size) = 0;
 
-		static Ref<VertexBuffer> Create(const void* data, const uint32_t size);
+		static RefPtr<VertexBuffer> Create(const uint32_t size, const void* data);
 
 	protected:
 		VertexBuffer() = default;

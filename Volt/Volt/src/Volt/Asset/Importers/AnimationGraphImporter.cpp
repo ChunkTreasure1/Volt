@@ -26,7 +26,7 @@ namespace Volt
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 		if (!streamReader.OpenFile(filePath))
 		{
 			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
@@ -62,7 +62,7 @@ namespace Volt
 	{
 		const Ref<AnimationGraphAsset> animGraph = std::reinterpret_pointer_cast<AnimationGraphAsset>(asset);
 
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
+		YAMLFileStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("AnimationGraph");
 

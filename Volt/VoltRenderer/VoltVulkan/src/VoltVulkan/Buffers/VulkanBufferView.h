@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
 #include <VoltRHI/Buffers/BufferView.h>
 
 struct VkBuffer_T;
@@ -10,15 +11,16 @@ namespace Volt::RHI
 	{
 	public:
 		VulkanBufferView(const BufferViewSpecification& specification);
+		~VulkanBufferView() override = default;
 
 		[[nodiscard]] const uint64_t GetDeviceAddress() const override;
 
-		Ref<RHIResource> GetResource() const { return m_buffer; }
+		RHIResource* GetResource() const { return m_buffer; }
 
 	protected:
 		void* GetHandleImpl() const override;
 
 	private:
-		Weak<RHIResource> m_buffer;
+		RHIResource* m_buffer = nullptr;
 	};
 }

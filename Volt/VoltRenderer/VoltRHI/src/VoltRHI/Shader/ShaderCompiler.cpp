@@ -1,10 +1,7 @@
 #include "rhipch.h"
 #include "ShaderCompiler.h"
 
-#include "VoltRHI/Graphics/GraphicsContext.h"
-
-#include <VoltVulkan/Shader/VulkanShaderCompiler.h>
-#include <VoltD3D12/Shader/D3D12ShaderCompiler.h>
+#include "VoltRHI/RHIProxy.h"
 
 namespace Volt::RHI
 {
@@ -18,9 +15,9 @@ namespace Volt::RHI
 		s_instance = nullptr;
 	}
 
-	ShaderCompiler::CompilationResult ShaderCompiler::TryCompile(const Specification& specification, Shader& shader)
+	ShaderCompiler::CompilationResultData ShaderCompiler::TryCompile(const Specification& specification)
 	{
-		return s_instance->TryCompileImpl(specification, shader);
+		return s_instance->TryCompileImpl(specification);
 	}
 
 	void ShaderCompiler::AddMacro(const std::string& macroName)
@@ -33,19 +30,8 @@ namespace Volt::RHI
 		s_instance->RemoveMacroImpl(macroName);
 	}
 
-	Ref<ShaderCompiler> ShaderCompiler::Create(const ShaderCompilerCreateInfo& createInfo)
+	RefPtr<ShaderCompiler> ShaderCompiler::Create(const ShaderCompilerCreateInfo& createInfo)
 	{
-		const auto api = GraphicsContext::GetAPI();
-
-		switch (api)
-		{
-			case GraphicsAPI::D3D12: return CreateRef<D3D12ShaderCompiler>(createInfo); break;
-			case GraphicsAPI::Mock:
-			case GraphicsAPI::MoltenVk:
-				break;
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanShaderCompiler>(createInfo); break;
-		}
-
-		return nullptr;
+		return RHIProxy::GetInstance().CreateShaderCompiler(createInfo);
 	}
 }

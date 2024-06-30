@@ -13,9 +13,7 @@
 
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Rendering/Camera/Camera.h>
-#include <Volt/RenderingNew/SceneRendererNew.h>
-#include <Volt/Rendering/VulkanFramebuffer.h>
-#include <Volt/Rendering/Renderer.h>
+#include <Volt/Rendering/SceneRenderer.h>
 
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/Entity.h>
@@ -37,7 +35,7 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 	{
 		auto entity = myPreviewScene->CreateEntity();
 		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>();
-		comp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
+		comp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtasset");
 		myPreviewEntity = entity;
 	}
 
@@ -86,7 +84,7 @@ void MaterialEditorPanel::OnOpen()
 		spec.scene = myPreviewScene;
 		spec.initialResolution = { 1024 };
 
-		myPreviewRenderer = CreateRef<Volt::SceneRendererNew>(spec);
+		myPreviewRenderer = CreateRef<Volt::SceneRenderer>(spec);
 	}
 
 	// Set HDRI

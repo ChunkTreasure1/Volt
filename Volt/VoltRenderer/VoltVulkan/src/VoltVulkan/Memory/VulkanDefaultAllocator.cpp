@@ -31,7 +31,7 @@ namespace Volt::RHI
 			info.flags |= VMA_ALLOCATOR_CREATE_EXT_DESCRIPTOR_BUFFER_BIT;
 		}
 
-		VT_VK_CHECK(vmaCreateAllocator(&info, &m_allocator))
+		VT_VK_CHECK(vmaCreateAllocator(&info, &m_allocator));
 	}
 
 	VulkanDefaultAllocator::~VulkanDefaultAllocator()
@@ -60,7 +60,7 @@ namespace Volt::RHI
 		vmaDestroyAllocator(m_allocator);
 	}
 
-	Ref<Allocation> VulkanDefaultAllocator::CreateBuffer(const size_t size, BufferUsage usage, MemoryUsage memoryUsage)
+	RefPtr<Allocation> VulkanDefaultAllocator::CreateBuffer(const size_t size, BufferUsage usage, MemoryUsage memoryUsage)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -121,7 +121,7 @@ namespace Volt::RHI
 
 		VmaAllocationInfo allocInfo{};
 
-		Ref<VulkanBufferAllocation> allocation = CreateRef<VulkanBufferAllocation>(hash);
+		RefPtr<VulkanBufferAllocation> allocation = RefPtr<VulkanBufferAllocation>::Create(hash);
 		VT_VK_CHECK(vmaCreateBuffer(m_allocator, &bufferInfo, &allocCreateInfo, &allocation->m_resource, &allocation->m_allocation, &allocInfo));
 
 		allocation->m_size = size;
@@ -133,7 +133,7 @@ namespace Volt::RHI
 		return allocation;
 	}
 
-	Ref<Allocation> VulkanDefaultAllocator::CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage)
+	RefPtr<Allocation> VulkanDefaultAllocator::CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -179,7 +179,7 @@ namespace Volt::RHI
 
 		VmaAllocationInfo allocInfo{};
 
-		Ref<VulkanImageAllocation> allocation = CreateRef<VulkanImageAllocation>(hash);
+		RefPtr<VulkanImageAllocation> allocation = RefPtr<VulkanImageAllocation>::Create(hash);
 		VT_VK_CHECK(vmaCreateImage(m_allocator, &imageInfo, &allocCreateInfo, &allocation->m_resource, &allocation->m_allocation, &allocInfo));
 
 		if (!imageSpecification.debugName.empty())
@@ -201,12 +201,12 @@ namespace Volt::RHI
 		return allocation;
 	}
 
-	void VulkanDefaultAllocator::DestroyBuffer(Ref<Allocation> allocation)
+	void VulkanDefaultAllocator::DestroyBuffer(RefPtr<Allocation> allocation)
 	{
 		m_allocationCache.QueueBufferAllocationForRemoval(allocation);
 	}
 
-	void VulkanDefaultAllocator::DestroyImage(Ref<Allocation> allocation)
+	void VulkanDefaultAllocator::DestroyImage(RefPtr<Allocation> allocation)
 	{
 		m_allocationCache.QueueImageAllocationForRemoval(allocation);
 	}
@@ -226,12 +226,12 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanDefaultAllocator::DestroyBufferInternal(Ref<Allocation> allocation)
+	void VulkanDefaultAllocator::DestroyBufferInternal(RefPtr<Allocation> allocation)
 	{
 		VT_PROFILE_FUNCTION();
 
-		const Ref<VulkanBufferAllocation> bufferAlloc = allocation->As<VulkanBufferAllocation>();
-		vmaDestroyBuffer(m_allocator, bufferAlloc->m_resource, bufferAlloc->m_allocation);
+		const VulkanBufferAllocation& bufferAlloc = allocation->AsRef<VulkanBufferAllocation>();
+		vmaDestroyBuffer(m_allocator, bufferAlloc.m_resource, bufferAlloc.m_allocation);
 
 		std::scoped_lock lock{ m_bufferAllocationMutex };
 		if (const auto it = std::ranges::find(m_activeBufferAllocations, allocation); it != m_activeBufferAllocations.end())
@@ -240,12 +240,12 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanDefaultAllocator::DestroyImageInternal(Ref<Allocation> allocation)
+	void VulkanDefaultAllocator::DestroyImageInternal(RefPtr<Allocation> allocation)
 	{
 		VT_PROFILE_FUNCTION();
 
-		const Ref<VulkanImageAllocation> imageAlloc = allocation->As<VulkanImageAllocation>();
-		vmaDestroyImage(m_allocator, imageAlloc->m_resource, imageAlloc->m_allocation);
+		const VulkanImageAllocation& imageAlloc = allocation->AsRef<VulkanImageAllocation>();
+		vmaDestroyImage(m_allocator, imageAlloc.m_resource, imageAlloc.m_allocation);
 
 		std::scoped_lock lock{ m_imageAllocationMutex };
 		if (const auto it = std::ranges::find(m_activeImageAllocations, allocation); it != m_activeImageAllocations.end())

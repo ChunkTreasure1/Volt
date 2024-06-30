@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
+
 #include <VoltRHI/Images/SamplerState.h>
 
 struct VkSampler_T;

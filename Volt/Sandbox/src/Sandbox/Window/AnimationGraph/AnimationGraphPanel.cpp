@@ -491,12 +491,11 @@ void AnimationGraphPanel::DrawPropertiesPanel()
 		{
 			if (UI::BeginProperties("graphProperties"))
 			{
-				/*auto handle = myCurrentAsset->GetCharacterHandle();
-				if (EditorUtils::Property("Character", handle, Volt::AssetType::AnimatedCharacter))
+				auto handle = myCurrentAsset->GetSkeletonHandle();
+				if (EditorUtils::Property("Character", handle, Volt::AssetType::Skeleton))
 				{
-					myCurrentAsset->SetCharacterHandle(handle);
-				}*/
-
+					myCurrentAsset->SetSkeletonHandle(handle);
+				}
 
 				UI::EndProperties();
 			}
@@ -677,6 +676,12 @@ void AnimationGraphPanel::DrawStateMachineNodes()
 			ed::PushStyleVar(ed::StyleVar_PinArrowSize, 10.f);
 			ed::PushStyleVar(ed::StyleVar_PinArrowWidth, 10.0f);
 			ed::PushStyleVar(ed::StyleVar_PinCorners, ImDrawFlags_RoundCornersBottom);
+
+			if (state->bottomPinId == UUID64(0))
+			{
+				VT_DEBUGBREAK();
+			}
+
 			ed::BeginPin(ed::PinId(state->bottomPinId), ed::PinKind::Output);
 			ed::PinPivotRect(outputsRect.GetTL(), outputsRect.GetBR());
 			ed::PinRect(outputsRect.GetTL(), outputsRect.GetBR());

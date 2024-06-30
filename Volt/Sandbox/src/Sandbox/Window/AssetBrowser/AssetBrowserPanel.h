@@ -70,6 +70,7 @@ private:
 	void CreateNewAssetInCurrentDirectory(Volt::AssetType type);
 	void CreateNewShaderModal();
 	void CreateNewMonoScriptModal();
+	void CreateNewMotionWeaveDatabaseModal();
 
 	struct NewShaderData
 	{
@@ -81,6 +82,12 @@ private:
 		int32_t shaderType = 0;
 
 	} myNewShaderData;
+
+	struct NewMotionWeaveDatabaseData
+	{
+		std::string name = "New Motion Weave Database";
+		Volt::AssetHandle skeleton = Volt::Asset::Null();
+	} m_NewMotionWeaveDatabaseData;
 	//////////////////////////
 
 	Ref<Volt::Scene>& myEditorScene;
@@ -119,7 +126,6 @@ private:
 	///// Animation Graph creation /////
 	NewAnimationGraphData myNewAnimationGraphData{};
 
-	Ref<AssetBrowser::DirectoryItem> ProcessDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent);
 	std::unordered_map <std::filesystem::path, Ref<AssetBrowser::DirectoryItem>> myDirectories;
 	Ref<AssetBrowser::SelectionManager> mySelectionManager;
 

@@ -13,7 +13,7 @@ namespace Volt::BehaviorTree
 	class NodeManager
 	{
 	public:
-		Ref<Node> GetNodeFromUUID(const UUID64& in_uuid);
+		Ref<Node> GetNodeFromUUID(const UUID64& in_uuid) const;
 		const std::vector<Link>& GetLinksFromUUID(const UUID64& in_uuid);
 		const Link& GetLink(const UUID64& in_uuid);
 
@@ -33,6 +33,7 @@ namespace Volt::BehaviorTree
 	private:
 		friend class Tree;
 		friend class BehaviorTreeImporter;
+		friend class BehaviourTreeSerializer;
 		friend class Node;
 		NodeManager();
 		~NodeManager();

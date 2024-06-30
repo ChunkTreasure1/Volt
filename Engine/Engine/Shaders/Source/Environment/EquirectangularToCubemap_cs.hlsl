@@ -1,7 +1,7 @@
-RWTexture2DArray<float3> o_output : register(u0, space0);
-Texture2D<float4> u_equirectangularMap : register(t1, space0);
+RWTexture2DArray<float3> o_output;
+Texture2D<float4> u_equirectangularMap;
 
-SamplerState u_linearSampler : register(s2, space0);
+SamplerState u_linearSampler;
 
 static const float m_pi = 3.14159265359f;
 

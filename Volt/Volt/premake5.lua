@@ -42,6 +42,8 @@ project "Volt"
 		"../Navigation/src/",
 		"../Nexus/src/",
 		"../VoltRenderer/VoltRHI/src",
+		"../VoltRenderer/VoltVulkan/src",
+		"../VoltRenderer/VoltD3D12/src",
 		"../Mosaic/src",
 		
 		"%{IncludeDir.GLFW}",
@@ -51,8 +53,6 @@ project "Volt"
 		"%{IncludeDir.TinyGLTF}",
 		"%{IncludeDir.tinyddsloader}",
 		"%{IncludeDir.imgui_notify}",
-		"%{IncludeDir.TGAFbx}",
-		"%{IncludeDir.DirectXTK}",
 		"%{IncludeDir.fmod}",
 		"%{IncludeDir.wwise}",
 		"%{IncludeDir.cr}",
@@ -80,10 +80,13 @@ project "Volt"
 		"%{IncludeDir.detourcrowd}",
 		"%{IncludeDir.detourtilecache}",
 
-		"%{IncludeDir.vma}",
-		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.cityhash}",
-		"%{IncludeDir.METIS}"
+		"%{IncludeDir.METIS}",
+		"%{IncludeDir.shaderc_glslc}",
+		"%{IncludeDir.shaderc_utils}",
+
+		"%{IncludeDir.zlib}",
+		"%{IncludeDir.ufbx}",
 	}
 
 	links
@@ -99,23 +102,25 @@ project "Volt"
 		"efsw-static-lib",
 		"Nexus",
 		"NFD-Extended",
-		"TGAFBX",
 		"cityhash",
+		"ufbx",
 
 		"CoreUtilities",
 		"Mosaic",
 
-		"DirectXTK",
 		"stb",
 		"VulkanMemoryAllocator",
+		"VoltD3D12",
+
 		"VoltRHI",
-		"VoltVulkan",
-		"VoltD3D12"
+		"VoltVulkan"
 	}
 
 	defines
 	{
 		"PX_PHYSX_STATIC_LIB",
+		"GLFW_DLL",
+		"TRACY_IMPORTS"
 	}
 
 	filter "files:vendor/**.cpp"

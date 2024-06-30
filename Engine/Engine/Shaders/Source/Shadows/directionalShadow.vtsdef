@@ -1,4 +1,6 @@
 name: "DirectionalShadow"
 internal: true
-paths:
-  - "Engine/Shaders/Source/Shadows/DirectionalShadow_vs.hlsl"
+sources:
+  - entryPoint: "main"
+    shaderStage: "vs"
+    filePath: "Engine/Shaders/Source/Shadows/DirectionalShadow_vs.hlsl"

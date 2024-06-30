@@ -1,8 +1,14 @@
 #pragma once
+
+#include "CoreUtilities/Core.h"
+
 #include <cstddef>
 #include <stdint.h>
 
-class UUID64
+class BinaryStreamReader;
+class BinaryStreamWriter;
+
+class VTCOREUTIL_API UUID64
 {
 public:
 	UUID64();
@@ -11,12 +17,15 @@ public:
 	UUID64(const UUID64&) = default;
 	~UUID64() = default;
 
-	operator uint64_t() const { return m_uuid; }
+	static void Serialize(BinaryStreamWriter& streamWriter, const UUID64& data);
+	static void Deserialize(BinaryStreamReader& streamReader, UUID64& outData);
+
+	operator uint64_t() const;
 private:
 	uint64_t m_uuid;
 };
 
-class UUID32
+class VTCOREUTIL_API UUID32
 {
 public:
 	UUID32();
@@ -25,7 +34,10 @@ public:
 	UUID32(const UUID32&) = default;
 	~UUID32() = default;
 
-	operator uint32_t() const { return m_uuid; }
+	static void Serialize(BinaryStreamWriter& streamWriter, const UUID32& data);
+	static void Deserialize(BinaryStreamReader& streamReader, UUID32& outData);
+
+	operator uint32_t() const;
 private:
 	uint32_t m_uuid;
 };

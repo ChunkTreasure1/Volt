@@ -1,7 +1,9 @@
 #pragma once
-#include "VoltRHI/Pipelines/RenderPipeline.h"
 
-struct ID3D12RootSignature;
+#include "VoltD3D12/Common/ComPtr.h"
+
+#include <VoltRHI/Pipelines/RenderPipeline.h>
+
 struct ID3D12PipelineState;
 
 namespace Volt::RHI
@@ -12,20 +14,16 @@ namespace Volt::RHI
 		D3D12RenderPipeline(const RenderPipelineCreateInfo& createInfo);
 		~D3D12RenderPipeline() override;
 
-		ID3D12RootSignature* GetRoot() { return m_rootSignature; }
-		ID3D12PipelineState* GetPSO() { return m_pipelineStateObject; }
-		Topology GetTopology() { return m_topology; }
+		void Invalidate() override;
+		RefPtr<Shader> GetShader() const override;
 
-		virtual void* GetHandleImpl() const override;
-		virtual void Invalidate() override;
-		Ref<Shader> GetShader() const override;
+	protected:
+		void* GetHandleImpl() const override;
+
 	private:
+		void Release();
+
 		RenderPipelineCreateInfo m_createInfo;
-
-		ID3D12RootSignature* m_rootSignature;
-		ID3D12PipelineState* m_pipelineStateObject;
-		Topology m_topology;
-
-		void Create(const RenderPipelineCreateInfo& createInfo);
+		ComPtr<ID3D12PipelineState> m_pipeline;
 	};
 }

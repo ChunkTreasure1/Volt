@@ -38,6 +38,7 @@ namespace Volt
 		}
 
 		inline const bool Empty() const { return m_queue.empty(); }
+		inline const auto& GetQueue() const { return m_uniqueSet; }
 
 	private:
 		std::queue<T> m_queue;

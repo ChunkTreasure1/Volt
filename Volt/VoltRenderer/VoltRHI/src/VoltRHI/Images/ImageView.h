@@ -16,13 +16,14 @@ namespace Volt::RHI
 		uint32_t mipCount = 1;
 		uint32_t layerCount = 1;
 
-		Weak<Image2D> image;
+		//Weak<Image2D> image;
+		Image2D* image = nullptr;
 	};
 
-	class ImageView : public RHIInterface
+	class VTRHI_API ImageView : public RHIInterface
 	{
 	public:
-		static Ref<ImageView> Create(const ImageViewSpecification specification);
+		static RefPtr<ImageView> Create(const ImageViewSpecification& specification);
 
 		virtual const ImageAspect GetImageAspect() const = 0;
 		virtual const uint64_t GetDeviceAddress() const = 0;

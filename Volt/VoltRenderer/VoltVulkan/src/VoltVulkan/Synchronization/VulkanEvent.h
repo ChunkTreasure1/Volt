@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
 #include <VoltRHI/Synchronization/Event.h>
 
 struct VkEvent_T;

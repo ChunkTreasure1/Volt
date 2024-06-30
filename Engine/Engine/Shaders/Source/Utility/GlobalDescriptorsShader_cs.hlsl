@@ -24,6 +24,7 @@
 [numthreads(1, 1, 1)]
 void main()
 {
+#if __VULKAN__
     GET_TEXTURES_WITH_TYPES(Texture1D, 0)
     GET_TEXTURES_WITH_TYPES(Texture2D, 0)
     GET_TEXTURES_WITH_TYPES(Texture3D, 0)
@@ -57,12 +58,11 @@ void main()
 
     ByteAddressBuffer buffVal = u_ByteAddressBuffer[0];
     RWByteAddressBuffer buffValRW = u_RWByteAddressBuffer[0];
-    ByteAddressBuffer uniBuffVal = u_UniformBuffer[0];
     
     buffValRW.Store(0, buffVal.Load(0));
-    buffValRW.Store(0, uniBuffVal.Load(0));
     
     float s = Texture2D_f1.SampleLevel(samplerS, float2(0.f, 0.f), 0);
 
     buffValRW.Store<float>(0, s);
+#endif
 }

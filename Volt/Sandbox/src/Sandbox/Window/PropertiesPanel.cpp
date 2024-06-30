@@ -27,7 +27,7 @@
 
 #include <vector>
 
-PropertiesPanel::PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRendererNew>& currentSceneRenderer, SceneState& sceneState, const std::string& id)
+PropertiesPanel::PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, SceneState& sceneState, const std::string& id)
 	: EditorWindow("Properties", false, id), myCurrentScene(currentScene), myCurrentSceneRenderer(currentSceneRenderer), mySceneState(sceneState)
 {
 	m_isOpen = true;
@@ -325,11 +325,11 @@ void PropertiesPanel::AddComponentPopup()
 						for (auto& ent : SelectionManager::GetSelectedEntities())
 						{
 							auto entity = myCurrentScene->GetEntityFromUUID(ent);
-							EditorUtils::MarkEntityAsEdited(entity);
 
 							if (!Volt::ComponentRegistry::Helpers::HasComponentWithGUID(compGuid, myCurrentScene->GetRegistry(), entity))
 							{
 								Volt::ComponentRegistry::Helpers::AddComponentWithGUID(compGuid, myCurrentScene->GetRegistry(), entity);
+								EditorUtils::MarkEntityAsEdited(entity);
 							}
 
 							if (newMonoScript)
@@ -339,6 +339,8 @@ void PropertiesPanel::AddComponentPopup()
 								{
 									comp.scriptIds.emplace_back();
 									comp.scriptNames.emplace_back("");
+
+									EditorUtils::MarkEntityAsEdited(entity);
 								}
 							}
 						}
@@ -454,7 +456,7 @@ void PropertiesPanel::AddMonoScriptPopup()
 
 					if (!entity.HasComponent<Volt::MonoScriptComponent>())
 					{
-						entity.AddComponent<Volt::MonoScriptComponent>(id);
+						entity.AddComponent<Volt::MonoScriptComponent>();
 					}
 
 					auto& comp = entity.GetComponent<Volt::MonoScriptComponent>();

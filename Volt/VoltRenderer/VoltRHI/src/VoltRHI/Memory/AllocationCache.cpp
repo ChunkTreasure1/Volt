@@ -5,7 +5,7 @@
 
 namespace Volt::RHI
 {
-	Ref<Allocation> AllocationCache::TryGetImageAllocationFromHash(const size_t hash)
+	RefPtr<Allocation> AllocationCache::TryGetImageAllocationFromHash(const size_t hash)
 	{
 		std::scoped_lock lock{ m_imageAllocationMutex };
 		for (int32_t i = static_cast<int32_t>(m_imageAllocations.size()) - 1; i >= 0; --i)
@@ -22,7 +22,7 @@ namespace Volt::RHI
 		return nullptr;
 	}
 
-	Ref<Allocation> AllocationCache::TryGetBufferAllocationFromHash(const size_t hash)
+	RefPtr<Allocation> AllocationCache::TryGetBufferAllocationFromHash(const size_t hash)
 	{
 		std::scoped_lock lock{ m_bufferAllocationMutex };
 		for (int32_t i = static_cast<int32_t>(m_bufferAllocations.size()) - 1; i >= 0; --i)
@@ -39,13 +39,13 @@ namespace Volt::RHI
 		return nullptr;
 	}
 
-	void AllocationCache::QueueImageAllocationForRemoval(Ref<Allocation> alloc)
+	void AllocationCache::QueueImageAllocationForRemoval(RefPtr<Allocation> alloc)
 	{
 		std::scoped_lock lock{ m_imageAllocationMutex };
 		m_imageAllocations.emplace_back(alloc, 0);
 	}
 
-	void AllocationCache::QueueBufferAllocationForRemoval(Ref<Allocation> alloc)
+	void AllocationCache::QueueBufferAllocationForRemoval(RefPtr<Allocation> alloc)
 	{
 		std::scoped_lock lock{ m_bufferAllocationMutex };
 		m_bufferAllocations.emplace_back(alloc, 0);
@@ -63,7 +63,7 @@ namespace Volt::RHI
 			allocInfo.framesAlive++;
 		}
 
-		constexpr size_t MAX_FRAMES_ALIVE = 2;
+		constexpr size_t MAX_FRAMES_ALIVE = 3;
 		
 		AllocationsToRemove result{};
 

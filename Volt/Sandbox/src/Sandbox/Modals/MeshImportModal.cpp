@@ -2,10 +2,35 @@
 #include "MeshImportModal.h"
 
 #include "Sandbox/Utility/Theme.h"
+#include "Sandbox/Utility/EditorUtilities.h"
 
 #include <Volt/Utility/UIUtility.h>
 
+#include <Volt/Asset/Mesh/MeshSource.h>
+#include <Volt/Asset/Mesh/Mesh.h>
+#include <Volt/Asset/Rendering/Material.h>
+#include <Volt/Asset/Animation/Skeleton.h>
+
+#include <Volt/Asset/Importers/MeshTypeImporter.h>
+
 #include <imgui.h>
+
+namespace Utility
+{
+	std::filesystem::path GetNonExistingFilePath(const std::filesystem::path& directory, const std::string& fileName)
+	{
+		std::filesystem::path filePath = directory / (fileName + ".vtasset");
+		uint32_t counter = 0;
+
+		while (std::filesystem::exists(filePath))
+		{
+			filePath = directory / (fileName + "_" + std::to_string(counter) + ".vtasset");
+			counter++;
+		}
+		
+		return filePath;
+	}
+}
 
 MeshImportModal::MeshImportModal(const std::string& strId)
 	: Modal(strId)
@@ -35,11 +60,34 @@ void MeshImportModal::DrawModalContent()
 	{
 		if (UI::BeginProperties("meshOptions"))
 		{
-			UI::Property("Skeletal Mesh", m_importOptions.isSkeletalMesh);
-			UI::Property("Combine Meshes", m_importOptions.combineMeshes);
-			UI::Property("Import Vertex Colors", m_importOptions.importVertexColors);
+			if (m_currentImportType != ImportType::Animation)
+			{
+				if (UI::Property("Skeletal Mesh", m_importOptions.isSkeletalMesh))
+				{
+					m_currentImportType = m_importOptions.isSkeletalMesh ? ImportType::SkeletalMesh : ImportType::StaticMesh;
+				}
+
+				UI::Property("Combine Meshes", m_importOptions.combineMeshes);
+				UI::Property("Import Vertex Colors", m_importOptions.importVertexColors);
+			}
+			else
+			{
+				EditorUtils::Property("Target Skeleton", m_importOptions.targetSkeleton, Volt::AssetType::Skeleton);
+			}
 
 			UI::EndProperties();
+		}
+	}
+
+	if (m_currentImportType == ImportType::Animation || m_currentImportType == ImportType::SkeletalMesh)
+	{
+		if (ImGui::CollapsingHeader("Animation", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			if (UI::BeginProperties("animationsOptions"))
+			{
+				UI::Property("Import Animations", m_importOptions.importAnimations);
+				UI::EndProperties();
+			}
 		}
 	}
 
@@ -91,6 +139,11 @@ void MeshImportModal::DrawModalContent()
 		UI::ScopedButtonColor importAllColor{ EditorTheme::Buttons::BlueButton };
 		if (ImGui::Button("Import All"))
 		{
+			for (const auto& path : m_importFilePaths)
+			{
+				Import(path);
+			}
+
 			Close();
 		}
 	}
@@ -99,7 +152,13 @@ void MeshImportModal::DrawModalContent()
 
 	if (ImGui::Button("Import"))
 	{
-		Close();
+		Import(m_importFilePaths.front());
+		m_importFilePaths.erase(m_importFilePaths.begin());
+
+		if (m_importFilePaths.empty())
+		{
+			Close();
+		}
 	}
 
 	ImGui::SameLine();
@@ -139,6 +198,7 @@ void MeshImportModal::GetInformationOfCurrentMesh()
 	else if (fbxInfo.hasMesh && fbxInfo.hasSkeleton)
 	{
 		m_currentImportType = ImportType::SkeletalMesh;
+		m_importOptions.isSkeletalMesh = true;
 	}
 	else if (!fbxInfo.hasMesh && fbxInfo.hasAnimation)
 	{
@@ -147,7 +207,68 @@ void MeshImportModal::GetInformationOfCurrentMesh()
 	else
 	{
 		m_currentImportType = ImportType::SkeletalMesh;
+		m_importOptions.isSkeletalMesh = true;
 	}
+}
+
+void MeshImportModal::Import(const std::filesystem::path& importPath)
+{
+	const std::filesystem::path destinationDirectory = importPath.parent_path();
+	const std::string destinationFileName = importPath.stem().string();
+
+	if (m_currentImportType == ImportType::StaticMesh || m_currentImportType == ImportType::SkeletalMesh)
+	{
+		Ref<Volt::MeshSource> importedMesh = Volt::AssetManager::GetAsset<Volt::MeshSource>(importPath);
+		if (importedMesh && importedMesh->IsValid())
+		{
+			if (m_importOptions.importMaterial)
+			{
+				for (const auto& mathandle : importedMesh->GetUnderlyingMesh()->GetMaterialTable())
+				{
+					const auto materialAsset = Volt::AssetManager::GetAsset<Volt::Material>(mathandle);
+					Volt::AssetManager::SaveAssetAs(materialAsset, Utility::GetNonExistingFilePath(destinationDirectory, materialAsset->assetName));
+				}
+			}
+
+			Volt::AssetManager::SaveAssetAs(importedMesh->GetUnderlyingMesh(), Utility::GetNonExistingFilePath(destinationDirectory, destinationFileName));
+		}
+
+		if (importedMesh)
+		{
+			Volt::AssetManager::Get().Unload(importedMesh->handle);
+		}
+	}
+
+	if (m_currentImportType == ImportType::SkeletalMesh)
+	{
+		Ref<Volt::Skeleton> skeleton = CreateRef<Volt::Skeleton>();
+		if (Volt::MeshTypeImporter::ImportSkeleton(Volt::ProjectManager::GetDirectory() / importPath, *skeleton))
+		{
+			Volt::AssetManager::SaveAssetAs(skeleton, Utility::GetNonExistingFilePath(destinationDirectory, destinationFileName + "_Skeleton"));
+		}
+
+		if (m_importOptions.importAnimations && skeleton && m_fbxFileInformation.hasAnimation)
+		{
+			Ref<Volt::Animation> animation = CreateRef<Volt::Animation>();
+			if (Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / importPath, skeleton, *animation))
+			{
+				Volt::AssetManager::SaveAssetAs(animation, Utility::GetNonExistingFilePath(destinationDirectory, destinationFileName + "_Animation"));
+			}
+		}
+	}
+	else if (m_currentImportType == ImportType::Animation)
+	{
+		Ref<Volt::Skeleton> targetSkeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(m_importOptions.targetSkeleton);
+		if (targetSkeleton && targetSkeleton->IsValid())
+		{
+			Ref<Volt::Animation> animation = CreateRef<Volt::Animation>();
+			if (Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / importPath, targetSkeleton, *animation))
+			{
+				Volt::AssetManager::SaveAssetAs(animation, Utility::GetNonExistingFilePath(destinationDirectory, destinationFileName + "_Animation"));
+			}
+		}
+	}
+
 }
 
 const std::string MeshImportModal::GetStringFromImportType(const ImportType importType)

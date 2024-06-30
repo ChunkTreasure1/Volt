@@ -14,8 +14,8 @@
 
 #include "Volt/Asset/AssetManager.h"
 
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
 namespace Volt
 {
@@ -30,7 +30,7 @@ namespace Volt
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 		if (!streamReader.OpenFile(filePath))
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
@@ -95,7 +95,7 @@ namespace Volt
 			std::sort(track.keyframes.begin(), track.keyframes.end(), [](const Volt::Keyframe& lhsKeyFrame, const Volt::Keyframe& rhsKeyFrame) { return lhsKeyFrame.time < rhsKeyFrame.time; });
 		}
 
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
+		YAMLFileStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
 		
 		streamWriter.BeginMap();
 		

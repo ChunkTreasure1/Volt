@@ -2,9 +2,12 @@
 
 #include "VoltRHI/Core/Core.h"
 
+#include <CoreUtilities/Pointers/RefCounted.h>
+#include <CoreUtilities/Pointers/RefPtr.h>
+
 namespace Volt::RHI
 {
-	class RHIInterface : public std::enable_shared_from_this<RHIInterface>
+	class VTRHI_API RHIInterface : public RefCounted
 	{
 	public:
 		virtual ~RHIInterface() = default;
@@ -17,9 +20,9 @@ namespace Volt::RHI
 		}
 
 		template<typename T>
-		constexpr Ref<T> As()
+		constexpr T* As()
 		{
-			return std::reinterpret_pointer_cast<T>(shared_from_this());
+			return reinterpret_cast<T*>(this);
 		}
 
 		template<typename T>

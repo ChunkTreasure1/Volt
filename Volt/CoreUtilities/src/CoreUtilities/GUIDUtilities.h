@@ -4,5 +4,5 @@
 
 namespace GUIDUtilities
 {
-	extern VoltGUID GenerateGUID();
+	extern VTCOREUTIL_API VoltGUID GenerateGUID();
 }

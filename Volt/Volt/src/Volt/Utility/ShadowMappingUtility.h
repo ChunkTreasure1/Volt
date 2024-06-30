@@ -58,7 +58,7 @@ namespace Volt
 				maxZ /= zMult;
 			}
 			else
-			{
+			{	
 				maxZ *= zMult;
 			}
 

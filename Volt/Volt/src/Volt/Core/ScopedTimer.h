@@ -2,10 +2,9 @@
 
 #include "Volt/Log/Log.h"
 
-#include <chrono>
+#include <CoreUtilities/Time.h>
 
 #include <string>
-#include <windows.h>
 
 class ScopedTimer
 {
@@ -13,12 +12,12 @@ public:
 	ScopedTimer(const std::string& name)
 		: m_name(name)
 	{
-		m_startTime = std::chrono::high_resolution_clock::now();
+		m_startTime = std::chrono::steady_clock::now();
 	}
 
 	ScopedTimer()
 	{
-		m_startTime = std::chrono::high_resolution_clock::now();
+		m_startTime = std::chrono::steady_clock::now();
 	}
 
 	~ScopedTimer()
@@ -30,12 +29,13 @@ public:
 		}
 	}
 
+	template<typename T = Time::Milliseconds>
 	inline float GetTime()
 	{
-		return std::chrono::duration<float, std::chrono::milliseconds::period>(std::chrono::high_resolution_clock::now() - m_startTime).count();
-	};
+		return std::chrono::duration<float, T>(std::chrono::steady_clock::now() - m_startTime).count();
+	}
 
 private:
 	std::string m_name;
-	std::chrono::high_resolution_clock::time_point m_startTime;
+	std::chrono::steady_clock::time_point m_startTime;
 };

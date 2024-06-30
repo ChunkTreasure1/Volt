@@ -39,9 +39,11 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::Prefab; }
 		AssetType GetType() override { return GetStaticType(); };
+		uint32_t GetVersion() const override { return m_version; }
 
 	private:
 		friend class PrefabImporter;
+		friend class PrefabSerializer;
 
 		[[nodiscard]] const Entity GetRootEntity() const;
 
@@ -50,6 +52,7 @@ namespace Volt
 		void CreatePrefab(Entity srcRootEntity);
 		void AddEntityToPrefabRecursive(Entity entity, Entity parentPrefabEntity);
 		void ValidatePrefabUpdate(Entity srcEntity);
+		void UpdatePrefabVersion(Entity entity, uint32_t targetVersion);
 
 		const bool UpdateEntityInPrefabInternal(Entity srcEntity, EntityID rootSceneId, EntityID forcedPrefabEntity);
 		void UpdateEntityInSceneInternal(Entity sceneEntity, EntityID forcedPrefabEntity);

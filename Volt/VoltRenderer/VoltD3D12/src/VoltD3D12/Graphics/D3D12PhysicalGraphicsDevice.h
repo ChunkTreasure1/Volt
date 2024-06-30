@@ -1,9 +1,12 @@
 #pragma once
-#include "VoltRHI/Graphics/PhysicalGraphicsDevice.h"
+
+#include "VoltD3D12/Common/ComPtr.h"
+
+#include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
 
 
 struct IDXGIFactory4;
-struct IDXGIAdapter1;
+struct IDXGIAdapter4;
 
 namespace Volt::RHI
 {
@@ -16,22 +19,17 @@ namespace Volt::RHI
 		D3D12PhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& info);
 		~D3D12PhysicalGraphicsDevice() override;
 
-		[[nodiscard]] inline std::string_view GetDeviceName() const override { return ""; }
-		[[nodiscard]] inline const DeviceVendor GetDeviceVendor() const override { return DeviceVendor::Unknown; }
-
-		[[nodiscard]] IDXGIFactory4* GetFactory() { return m_factory; }
-		[[nodiscard]] IDXGIAdapter1* GetAdapter() { return m_adapter; }
+		VT_NODISCARD VT_INLINE std::string_view GetDeviceName() const override { return m_name; }
+		VT_NODISCARD VT_INLINE const DeviceVendor GetDeviceVendor() const override { return m_vendor; }
 
 	protected:
-		void* GetHandleImpl() const override
-		{
-			return m_adapter;
-		}
+		void* GetHandleImpl() const override;
 
 	private:
-		[[nodiscard]] bool FindValidAdapter();
+		VT_NODISCARD ComPtr<IDXGIAdapter4> FindValidAdapter();
 
-		IDXGIFactory4* m_factory;
-		IDXGIAdapter1* m_adapter;
+		std::string m_name;
+		DeviceVendor m_vendor;
+		ComPtr<IDXGIAdapter4> m_adapter = nullptr;
 	};
 }

@@ -24,9 +24,10 @@ namespace Volt::RHI
 
 	struct TransientBufferCreateInfo
 	{
-		uint64_t size;
-		BufferUsage usage;
-		MemoryUsage memoryUsage;
+		uint64_t size = 0;
+		size_t hash = 0;
+		BufferUsage usage = BufferUsage::None;
+		MemoryUsage memoryUsage = MemoryUsage::None;
 	};
 
 	struct TransientHeapCreateInfo
@@ -40,24 +41,21 @@ namespace Volt::RHI
 	{
 		ImageSpecification imageSpecification;
 		uint64_t size = 0;
+		size_t hash = 0;
 	};
 
-	class TransientHeap : public RHIInterface
+	class VTRHI_API TransientHeap : public RHIInterface
 	{
 	public:
-		virtual Ref<Allocation> CreateBuffer(const TransientBufferCreateInfo& createInfo) = 0;
-		virtual Ref<Allocation> CreateImage(const TransientImageCreateInfo& createInfo) = 0;
+		virtual RefPtr<Allocation> CreateBuffer(const TransientBufferCreateInfo& createInfo) = 0;
+		virtual RefPtr<Allocation> CreateImage(const TransientImageCreateInfo& createInfo) = 0;
 
-		virtual void ForfeitBuffer(Ref<Allocation> allocation) = 0;
-		virtual void ForfeitImage(Ref<Allocation> allocation) = 0;
+		virtual void ForfeitBuffer(RefPtr<Allocation> allocation) = 0;
+		virtual void ForfeitImage(RefPtr<Allocation> allocation) = 0;
 
 		virtual const bool IsAllocationSupported(const uint64_t size, TransientHeapFlags heapFlags) const = 0;
+		virtual const UUID64 GetHeapID() const = 0;
 
-		inline const UUID64 GetHeapID() const { return m_heapId; }
-
-		static Ref<TransientHeap> Create(const TransientHeapCreateInfo& createInfo);
-
-	protected:
-		UUID64 m_heapId{};
+		static RefPtr<TransientHeap> Create(const TransientHeapCreateInfo& createInfo);
 	};
 }

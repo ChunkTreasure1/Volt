@@ -8,7 +8,7 @@
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/AssetManager.h>
 
-#include <Volt/RenderingNew/SceneRendererNew.h>
+#include <Volt/Rendering/SceneRenderer.h>
 
 #include <Volt/Components/LightComponents.h>
 #include <Volt/Components/RenderingComponents.h>
@@ -21,7 +21,7 @@ ParticleEmitterEditor::ParticleEmitterEditor()
 	: EditorWindow("Particle Editor")
 {
 	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-	myCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
+	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myPreviewScene = Volt::Scene::CreateDefaultScene("Particle Editor", false);
 	myReferenceModel = myPreviewScene->CreateEntity("Reference Entity");
 	myReferenceModel.AddComponent<Volt::MeshComponent>();
@@ -47,7 +47,7 @@ ParticleEmitterEditor::ParticleEmitterEditor()
 		//Volt::SceneRendererSettings settings{};
 		//settings.enableGrid = true;
 
-		myPreviewRenderer = CreateRef<Volt::SceneRendererNew>(spec);
+		myPreviewRenderer = CreateRef<Volt::SceneRenderer>(spec);
 	}
 }
 

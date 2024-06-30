@@ -17,7 +17,6 @@ namespace Volt
 	NetHandler::NetHandler()
 	{
 		m_lastUnhandledNetError = new eNetErrorCode();
-		NetContractContainer::Load();
 	}
 
 	void NetHandler::StartSinglePlayer()

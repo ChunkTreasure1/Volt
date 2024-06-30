@@ -9,7 +9,7 @@ namespace Volt::RHI
 
 	struct RenderPipelineCreateInfo
 	{
-		Ref<Shader> shader;
+		RefPtr<Shader> shader;
 
 		Topology topology = Topology::TriangleList;
 		CullMode cullMode = CullMode::Back;
@@ -21,13 +21,13 @@ namespace Volt::RHI
 		std::string name;
 	};
 
-	class RenderPipeline : public RHIInterface
+	class VTRHI_API RenderPipeline : public RHIInterface
 	{
 	public:
 		virtual void Invalidate() = 0;
-		virtual Ref<Shader> GetShader() const = 0;
+		virtual RefPtr<Shader> GetShader() const = 0;
 
-		static Ref<RenderPipeline> Create(const RenderPipelineCreateInfo& createInfo);
+		static RefPtr<RenderPipeline> Create(const RenderPipelineCreateInfo& createInfo);
 
 	protected:
 		RenderPipeline() = default;

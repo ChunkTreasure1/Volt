@@ -18,6 +18,19 @@ void EditorLibrary::Sort()
 	});
 }
 
+Ref<EditorWindow> EditorLibrary::GetPanel(const std::string& panelName)
+{
+	for (const auto& panel : s_editors)
+	{
+		if (panel.editorWindow->GetTitle() == panelName)
+		{
+			return panel.editorWindow;
+		}
+	}
+
+	return nullptr;
+}
+
 bool EditorLibrary::OpenAsset(Ref<Volt::Asset> asset)
 {
 	if (!asset)

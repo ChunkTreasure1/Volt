@@ -13,6 +13,7 @@
 #include "Sandbox/Window/AssetBrowser/DirectoryItem.h"
 #include "Sandbox/Window/AssetBrowser/AssetBrowserSelectionManager.h"
 #include "Sandbox/Window/AssetBrowser/PreviewRenderer.h"
+#include "Sandbox/Window/AssetBrowser/AssetDirectoryProcessor.h"
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Asset/AssetManager.h>
@@ -22,10 +23,9 @@
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
+#include <Volt/Asset/Animation/MotionWeaveDatabase.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
 #include <Volt/Asset/ParticlePreset.h>
-#include <Volt/Asset/Rendering/PostProcessingMaterial.h>
-#include <Volt/Asset/Rendering/PostProcessingStack.h>
 
 #include <Volt/Animation/BlendSpace.h>
 
@@ -33,11 +33,8 @@
 #include <Volt/Scene/Scene.h>
 #include <Volt/Project/ProjectManager.h>
 
-#include <Volt/Rendering/Shader/Shader.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
-#include <Volt/Rendering/Renderer.h>
-
-#include <Volt/RenderingNew/Shader/ShaderMap.h>
+#include <Volt/Rendering/Shader/ShaderMap.h>
 
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
@@ -49,7 +46,7 @@
 #include <Volt/Input/Input.h>
 #include <Volt/Input/KeyCodes.h>
 
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -63,16 +60,22 @@ AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string
 	SetMinWindowSize({ 700.f, 300.f });
 
 	mySelectionManager = CreateRef<AssetBrowser::SelectionManager>();
+	myPreviewRenderer = CreateRef<PreviewRenderer>();
 
-	if (!UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage)
+	if (!Volt::ProjectManager::GetProject().isDeprecated)
 	{
-		myPreviewRenderer = CreateRef<PreviewRenderer>();
+		{
+			AssetDirectoryProcessor processor{ mySelectionManager, myAssetMask };
+			myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = processor.ProcessDirectories(Volt::ProjectManager::GetAssetsDirectory(), myMeshImportData, myMeshToImport);
+		}
+
+		{
+			AssetDirectoryProcessor processor{ mySelectionManager, myAssetMask };
+			myDirectories[FileSystem::GetEnginePath()] = processor.ProcessDirectories(FileSystem::GetEnginePath(), myMeshImportData, myMeshToImport);
+		}
+
+		myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsDirectory()].get();
 	}
-
-	myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = ProcessDirectory(Volt::ProjectManager::GetAssetsDirectory(), nullptr);
-	myDirectories[FileSystem::GetEnginePath()] = ProcessDirectory(FileSystem::GetEnginePath(), nullptr);
-
-	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsDirectory()].get();
 
 	myCurrentDirectory = myAssetsDirectory;
 
@@ -249,7 +252,7 @@ void AssetBrowserPanel::UpdateMainContent()
 
 			myMeshImportData = {};
 			myMeshToImport = assetData;
-			myMeshImportData.destination = myMeshToImport.path.parent_path().string() + "\\" + myMeshToImport.path.stem().string() + ".vtmesh";
+			myMeshImportData.destination = myMeshToImport.path.parent_path().string() + "\\" + myMeshToImport.path.stem().string() + ".vtasset";
 
 			UI::OpenModal("Import Mesh##assetBrowser");
 		}
@@ -315,6 +318,7 @@ void AssetBrowserPanel::UpdateMainContent()
 
 	CreateNewShaderModal();
 	CreateNewMonoScriptModal();
+	CreateNewMotionWeaveDatabaseModal();
 	DeleteFilesModal();
 }
 
@@ -412,7 +416,12 @@ bool AssetBrowserPanel::OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent& e)
 
 bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 {
-	if (UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage || !myPreviewRenderer)
+	if (!myPreviewRenderer)
+	{
+		return false;
+	}
+
+	if (!myCurrentDirectory)
 	{
 		return false;
 	}
@@ -432,43 +441,6 @@ bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 		}
 	}
 	return false;
-}
-
-Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent)
-{
-	Ref<AssetBrowser::DirectoryItem> dirData = CreateRef<AssetBrowser::DirectoryItem>(mySelectionManager.get(), Volt::AssetManager::GetRelativePath(path));
-	dirData->parentDirectory = parent;
-
-	for (const auto& entry : std::filesystem::directory_iterator(path))
-	{
-		if (!entry.is_directory())
-		{
-			const auto type = Volt::AssetManager::GetAssetTypeFromPath(entry);
-			const auto filename = entry.path().filename().string();
-
-			if (type != Volt::AssetType::None && !Utility::StringContains(filename, ".vtthumb.png"))
-			{
-				if (myAssetMask == Volt::AssetType::None || (myAssetMask & type) != Volt::AssetType::None)
-				{
-					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), Volt::AssetManager::GetRelativePath(entry.path()), myMeshImportData, myMeshToImport);
-					dirData->assets.emplace_back(assetItem);
-				}
-			}
-		}
-		else
-		{
-			auto nextDirData = ProcessDirectory(entry.path(), dirData.get());
-			if ((!nextDirData->assets.empty() || !nextDirData->subDirectories.empty()) || myAssetMask == Volt::AssetType::None)
-			{
-				dirData->subDirectories.emplace_back(nextDirData);
-			}
-		}
-	}
-
-	std::sort(dirData->subDirectories.begin(), dirData->subDirectories.end(), [](const Ref<AssetBrowser::DirectoryItem>& a, const Ref<AssetBrowser::DirectoryItem>& b) { return a->path.string() < b->path.string(); });
-	std::sort(dirData->assets.begin(), dirData->assets.end(), [](const Ref<AssetBrowser::AssetItem>& a, const Ref<AssetBrowser::AssetItem>& b) { return a->path.stem().string() < b->path.stem().string(); });
-
-	return dirData;
 }
 
 std::vector<AssetBrowser::DirectoryItem*> AssetBrowserPanel::FindParentDirectoriesOfDirectory(AssetBrowser::DirectoryItem* directory)
@@ -939,6 +911,11 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 				{
 					CreateNewAssetInCurrentDirectory(Volt::AssetType::BlendSpace);
 				}
+
+				if (ImGui::MenuItem("Motion Weave Database"))
+				{
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::MotionWeave);
+				}
 				ImGui::EndMenu();
 			}
 
@@ -1036,7 +1013,7 @@ void AssetBrowserPanel::DeleteFilesModal()
 					{
 						case Volt::AssetType::ShaderDefinition:
 						{
-							auto shader = Volt::AssetManager::GetAsset<Volt::Shader>(item->path);
+							//auto shader = Volt::AssetManager::GetAsset<Volt::Shader>(item->path);
 							//Volt::ShaderRegistry::Unregister(shader->GetName());
 							break;
 						}
@@ -1073,7 +1050,11 @@ void AssetBrowserPanel::Reload()
 
 	ClearAssetPreviewsInCurrentDirectory();
 
-	myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = ProcessDirectory(Volt::ProjectManager::GetAssetsDirectory(), nullptr);
+	if (!Volt::ProjectManager::GetProject().isDeprecated)
+	{
+		AssetDirectoryProcessor processor{ mySelectionManager, myAssetMask };
+		myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = processor.ProcessDirectories(Volt::ProjectManager::GetAssetsDirectory(), myMeshImportData, myMeshToImport);
+	}
 
 	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsDirectory()].get();
 
@@ -1314,6 +1295,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		case Volt::AssetType::MonoScript: originalName = "idk.cs"; break;
 		case Volt::AssetType::PostProcessingStack: originalName = "PPS_NewPostStack"; break;
 		case Volt::AssetType::PostProcessingMaterial: originalName = "PPM_NewPostMaterial"; break;
+		case Volt::AssetType::MotionWeave: originalName = "MW_NewMotionWeaveDatabase"; break;
 	}
 
 	tempName = originalName;
@@ -1401,22 +1383,11 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 			break;
 		}
 
-		case Volt::AssetType::PostProcessingStack:
+		case Volt::AssetType::MotionWeave:
 		{
-			Ref<Volt::PostProcessingStack> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingStack>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName);
-			Volt::AssetManager::SaveAsset(postStack);
-
-			newAssetHandle = postStack->handle;
-
-			break;
-		}
-
-		case Volt::AssetType::PostProcessingMaterial:
-		{
-			Ref<Volt::PostProcessingMaterial> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingMaterial>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName, Volt::Renderer::GetDefaultData().defaultPostProcessingShader);
-			Volt::AssetManager::SaveAsset(postStack);
-
-			newAssetHandle = postStack->handle;
+			m_NewMotionWeaveDatabaseData.name = "";
+			m_NewMotionWeaveDatabaseData.skeleton = Volt::Asset::Null();
+			UI::OpenModal("New MotionWeaveDatabase##assetBrowser");
 			break;
 		}
 	}
@@ -1621,7 +1592,7 @@ void AssetBrowserPanel::CreateNewShaderModal()
 			{
 				using namespace Volt; // YAML Serialization helpers
 
-				YAMLStreamWriter streamWriter{ definitionDestinationPath };
+				YAMLFileStreamWriter streamWriter{ definitionDestinationPath };
 				streamWriter.BeginMap();
 
 				streamWriter.SetKey("name", myNewShaderData.name);
@@ -1634,7 +1605,10 @@ void AssetBrowserPanel::CreateNewShaderModal()
 
 				streamWriter.WriteToDisk();
 
-				Ref<Volt::Shader> newShader = Volt::AssetManager::CreateAsset<Volt::Shader>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName, tempName, shaderPaths, false);
+				//Ref<Volt::Shader> newShader = Volt::AssetManager::CreateAsset<Volt::Shader>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName, tempName, shaderPaths, false);
+				//Volt::ShaderRegistry::Register(tempName, newShader);
+				//newShader->Initialize(tempName, shaderPaths, false);
+
 				//Volt::ShaderRegistry::Register(tempName, newShader);
 			}
 
@@ -1681,6 +1655,47 @@ void AssetBrowserPanel::CreateNewMonoScriptModal()
 		if (ImGui::Button("Cancel"))
 		{
 			name = "";
+			ImGui::CloseCurrentPopup();
+		}
+
+		UI::EndModal();
+	}
+}
+
+void AssetBrowserPanel::CreateNewMotionWeaveDatabaseModal()
+{
+	if (UI::BeginModal("New MotionWeaveDatabase##assetBrowser"))
+	{
+		if (UI::BeginProperties("motionWeaveProp"))
+		{
+			UI::Property("Name", m_NewMotionWeaveDatabaseData.name);
+			EditorUtils::Property("Skeleton", m_NewMotionWeaveDatabaseData.skeleton, Volt::AssetType::Skeleton);
+			UI::EndProperties();
+		}
+		
+		bool canCreate = m_NewMotionWeaveDatabaseData.skeleton != Volt::Asset::Null() && !m_NewMotionWeaveDatabaseData.name.empty();
+		
+		if (!canCreate)
+		{
+			ImGui::BeginDisabled();
+		}
+		if (ImGui::Button("Create"))
+		{
+
+			Ref<Volt::MotionWeaveDatabase> motionWeaveGraph = Volt::AssetManager::CreateAsset<Volt::MotionWeaveDatabase>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), m_NewMotionWeaveDatabaseData.name, m_NewMotionWeaveDatabaseData.skeleton);
+			Volt::AssetManager::SaveAsset(motionWeaveGraph);
+			
+			ImGui::CloseCurrentPopup();
+		}
+		if (!canCreate)
+		{
+			ImGui::EndDisabled();
+			UI::SimpleToolTip("Cannot create Motion Weave Database without a name or without a skeleton");
+		}
+		ImGui::SameLine();
+
+		if (ImGui::Button("Cancel"))
+		{
 			ImGui::CloseCurrentPopup();
 		}
 

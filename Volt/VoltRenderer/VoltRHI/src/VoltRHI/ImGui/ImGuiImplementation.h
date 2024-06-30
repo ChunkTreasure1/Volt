@@ -1,11 +1,13 @@
 #pragma once
 
 #include "VoltRHI/Core/RHICommon.h"
+#include "VoltRHI/Core/RHIInterface.h"
 
 struct GLFWwindow;
 
 typedef void* ImTextureID;
 struct ImFont;
+struct ImGuiContext;
 
 namespace Volt::RHI
 {
@@ -15,10 +17,10 @@ namespace Volt::RHI
 	struct ImGuiCreateInfo
 	{
 		GLFWwindow* window = nullptr;
-		Weak<Swapchain> swapchain;
+		WeakPtr<Swapchain> swapchain;
 	};
 
-	class ImGuiImplementation
+	class VTRHI_API ImGuiImplementation : public RHIInterface
 	{
 	public:
 		virtual ~ImGuiImplementation();
@@ -29,26 +31,27 @@ namespace Volt::RHI
 		void End();
 
 		void SetDefaultFont(ImFont* font);
+		ImGuiContext* GetContext() const;
 
-		virtual ImTextureID GetTextureID(Ref<Image2D> image) const = 0;
+		virtual ImTextureID GetTextureID(RefPtr<Image2D> image) const = 0;
 		virtual ImFont* AddFont(const std::filesystem::path& fontPath, float pixelSize) = 0;
 
-		static Ref<ImGuiImplementation> Create(const ImGuiCreateInfo& createInfo);
+		static RefPtr<ImGuiImplementation> Create(const ImGuiCreateInfo& createInfo);
 		static ImGuiImplementation& Get();
 
 	protected:
 		ImGuiImplementation();
 
+		void Initialize();
+
 		virtual void BeginAPI() = 0;
 		virtual void EndAPI() = 0;
 
-		virtual void InitializeAPI() {}
+		virtual void InitializeAPI(ImGuiContext* context) {}
 		virtual void ShutdownAPI() {}
 
 	private:
 		inline static ImGuiImplementation* s_instance = nullptr;
 		ImFont* m_defaultFont = nullptr;
-
-		void Initialize();
 	};
 }

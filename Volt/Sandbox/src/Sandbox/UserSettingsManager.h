@@ -46,8 +46,6 @@ struct SceneSettings
 	bool showEnvironmentProbes = false;
 	NavMeshViewMode navMeshViewMode = NavMeshViewMode::None;
 
-	bool lowMemoryUsage = false;
-
 	std::filesystem::path lastOpenScene;
 };
 
@@ -67,6 +65,12 @@ struct AssetBrowserSettings
 	float thumbnailSize = 85.f;
 };
 
+struct PanelState
+{
+	std::string panelName;
+	bool isOpen = false;
+};
+
 struct EditorSettings
 {
 	WindowSettings windowSettings;
@@ -76,6 +80,8 @@ struct EditorSettings
 	RecastBuildSettings navmeshBuildSettings;
 	NetworkSettings networkSettings;
 	AssetBrowserSettings assetBrowserSettings;
+
+	std::vector<PanelState> panelStates;
 };
 
 class EditorWindow;
@@ -84,6 +90,8 @@ class UserSettingsManager
 public:
 	static void LoadUserSettings();
 	static void SaveUserSettings();
+
+	static void SetupPanels();
 
 	inline static EditorSettings& GetSettings() { return s_editorSettings; }
 

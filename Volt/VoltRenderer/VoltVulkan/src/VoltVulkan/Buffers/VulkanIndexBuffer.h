@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
 #include <VoltRHI/Buffers/IndexBuffer.h>
 
 namespace Volt::RHI
@@ -8,8 +9,7 @@ namespace Volt::RHI
 	class VulkanIndexBuffer : public IndexBuffer
 	{
 	public:
-		VulkanIndexBuffer(std::span<uint32_t> indices);
-		VulkanIndexBuffer(const uint32_t* indices, const uint32_t count);
+		VulkanIndexBuffer(std::span<const uint32_t> indices);
 		~VulkanIndexBuffer() override;
 
 		const uint32_t GetCount() const override;
@@ -24,7 +24,7 @@ namespace Volt::RHI
 	private:
 		void SetData(const void* data, const uint32_t size);
 
-		Ref<Allocation> m_allocation;
+		RefPtr<Allocation> m_allocation;
 
 		uint32_t m_count = 0;
 	};

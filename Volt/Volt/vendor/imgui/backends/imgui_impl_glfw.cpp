@@ -165,8 +165,10 @@ void ImGui_ImplGlfw_MonitorCallback(GLFWmonitor*, int)
     g_WantUpdateMonitors = true;
 }
 
-static bool ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks, GlfwClientApi client_api)
+static bool ImGui_ImplGlfw_Init(GLFWwindow* window, ImGuiContext* context, bool install_callbacks, GlfwClientApi client_api)
 {
+    ImGui::SetCurrentContext(context);
+
     g_Window = window;
     g_Time = 0.0;
 
@@ -264,19 +266,19 @@ static bool ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks, Glfw
     return true;
 }
 
-bool ImGui_ImplGlfw_InitForOpenGL(GLFWwindow* window, bool install_callbacks)
+bool ImGui_ImplGlfw_InitForOpenGL(GLFWwindow* window, ImGuiContext* context, bool install_callbacks)
 {
-    return ImGui_ImplGlfw_Init(window, install_callbacks, GlfwClientApi_OpenGL);
+    return ImGui_ImplGlfw_Init(window, context, install_callbacks, GlfwClientApi_OpenGL);
 }
 
-bool ImGui_ImplGlfw_InitForVulkan(GLFWwindow* window, bool install_callbacks)
+bool ImGui_ImplGlfw_InitForVulkan(GLFWwindow* window, ImGuiContext* context, bool install_callbacks)
 {
-    return ImGui_ImplGlfw_Init(window, install_callbacks, GlfwClientApi_Vulkan);
+    return ImGui_ImplGlfw_Init(window, context, install_callbacks, GlfwClientApi_Vulkan);
 }
 
-bool ImGui_ImplGlfw_InitForWebGPU(GLFWwindow* window, bool install_callbacks)
+bool ImGui_ImplGlfw_InitForWebGPU(GLFWwindow* window, ImGuiContext* context, bool install_callbacks)
 {
-    return ImGui_ImplGlfw_Init(window, install_callbacks, GlfwClientApi_WebGPU);
+    return ImGui_ImplGlfw_Init(window, context, install_callbacks, GlfwClientApi_WebGPU);
 }
 
 void ImGui_ImplGlfw_Shutdown()

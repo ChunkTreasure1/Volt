@@ -9,6 +9,7 @@
 #include <Volt/Scripting/Mono/MonoScriptClass.h>
 
 #include <Volt/Utility/YAMLSerializationHelpers.h>
+#include <Volt/Rendering/Texture/Texture2D.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -142,7 +143,7 @@ void GameBuilder::BuildGame(const BuildInfo& buildInfo)
 	myCurrentFileNumber = 0;
 	myRelevantFileCount = GetRelevantFileCount(buildInfo);
 
-	myBuildStartTime = std::chrono::high_resolution_clock::now();
+	myBuildStartTime = std::chrono::steady_clock::now();
 
 	std::thread thread{ Thread_BuildGame, std::reference_wrapper(buildInfo) };
 	thread.detach();

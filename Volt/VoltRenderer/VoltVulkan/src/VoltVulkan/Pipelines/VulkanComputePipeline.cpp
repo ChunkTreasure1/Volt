@@ -9,11 +9,13 @@
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
+#include <VoltRHI/RHIProxy.h>
+
 #include <vulkan/vulkan.h>
 
 namespace Volt::RHI
 {
-	VulkanComputePipeline::VulkanComputePipeline(Ref<Shader> shader, bool useGlobalResources)
+	VulkanComputePipeline::VulkanComputePipeline(RefPtr<Shader> shader, bool useGlobalResources)
 		: m_shader(shader), m_useGlobalResouces(useGlobalResources)
 	{
 		Invalidate();
@@ -32,7 +34,7 @@ namespace Volt::RHI
 
 		auto device = GraphicsContext::GetDevice();
 		const auto& shaderResources = m_shader->GetResources();
-		Ref<VulkanShader> vulkanShader = m_shader->As<VulkanShader>();
+		VulkanShader& vulkanShader = m_shader->AsRef<VulkanShader>();
 
 		// Create Pipeline Layout
 		{
@@ -56,8 +58,8 @@ namespace Volt::RHI
 			}
 			else
 			{
-				info.setLayoutCount = static_cast<uint32_t>(vulkanShader->GetDescriptorSetLayouts().size());
-				info.pSetLayouts = vulkanShader->GetDescriptorSetLayouts().data();
+				info.setLayoutCount = static_cast<uint32_t>(vulkanShader.GetDescriptorSetLayouts().size());
+				info.pSetLayouts = vulkanShader.GetDescriptorSetLayouts().data();
 			}
 
 			info.pushConstantRangeCount = shaderResources.constants.size > 0 ? 1 : 0;
@@ -68,14 +70,14 @@ namespace Volt::RHI
 
 		// Create Pipeline
 		{
-			const auto& firstStage = vulkanShader->GetPipelineStageInfos().at(ShaderStage::Compute);
+			const auto& firstStage = vulkanShader.GetPipelineStageInfos().at(ShaderStage::Compute);
 
 			VkPipelineShaderStageCreateInfo computeStageInfo{};
 			computeStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 			computeStageInfo.pNext = nullptr;
 			computeStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
 			computeStageInfo.module = firstStage.shaderModule;
-			computeStageInfo.pName = "main"; // #TODO_Ivar: Set correct entry point
+			computeStageInfo.pName = vulkanShader.GetSourceEntries().at(0).entryPoint.c_str();
 
 			VkComputePipelineCreateInfo info{};
 			info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
@@ -95,7 +97,7 @@ namespace Volt::RHI
 		}
 	}
 
-	Ref<Shader> VulkanComputePipeline::GetShader() const
+	RefPtr<Shader> VulkanComputePipeline::GetShader() const
 	{
 		return m_shader;
 	}
@@ -112,7 +114,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		GraphicsContext::DestroyResource([pipeline = m_pipeline, pipelineLayout = m_pipelineLayout]()
+		RHIProxy::GetInstance().DestroyResource([pipeline = m_pipeline, pipelineLayout = m_pipelineLayout]()
 		{
 			auto device = GraphicsContext::GetDevice();
 			vkDestroyPipeline(device->GetHandle<VkDevice>(), pipeline, nullptr);

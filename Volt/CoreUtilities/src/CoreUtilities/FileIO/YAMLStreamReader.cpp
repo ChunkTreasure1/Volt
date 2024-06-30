@@ -6,37 +6,6 @@ YAMLStreamReader::YAMLStreamReader()
 	m_nodeStack.reserve(100);
 }
 
-const bool YAMLStreamReader::OpenFile(const std::filesystem::path& filePath)
-{
-	if (!std::filesystem::exists(filePath))
-	{
-		return false;
-	}
-
-	std::ifstream file(filePath, std::ios::binary | std::ios::in);
-	if (!file.is_open())
-	{
-		return false;
-	}
-
-	std::stringstream strStream;
-	strStream << file.rdbuf();
-	file.close();
-
-	try
-	{
-		m_rootNode = YAML::Load(strStream.str());
-		m_currentNode = m_rootNode;
-	}
-	catch (std::exception&)
-	{
-		//VT_CORE_ERROR("[YAMLStreamReader] File {0} contains invalid YAML! Please correct it! Error: {1}", filePath.string(), e.what());
-		return false;
-	}
-
-	return true;
-}
-
 const bool YAMLStreamReader::HasKey(const std::string& key)
 {
 	if (m_currentNode[key])

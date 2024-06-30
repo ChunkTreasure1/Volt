@@ -16,10 +16,10 @@ namespace Volt::RHI
 		bool createSignaled = false;
 	};
 
-	class Fence : public RHIInterface
+	class VTRHI_API Fence : public RHIInterface
 	{
 	public:
-		static Ref<Fence> Create(const FenceCreateInfo& createInfo);
+		static RefPtr<Fence> Create(const FenceCreateInfo& createInfo);
 
 		virtual FenceStatus GetStatus() const = 0;
 		virtual void Reset() const = 0;

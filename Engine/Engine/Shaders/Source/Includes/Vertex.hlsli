@@ -7,10 +7,10 @@ struct VertexMaterialData
     float16_t2 texCoords;
 };
 
-struct VertexAnimationData
+struct VertexAnimationInfo
 {
-    uint16_t4 influences;
-    float16_t4 weights;
+    uint32_t boneOffset;  
+    uint16_t influenceCount;
 };
 
 struct VertexPositionData

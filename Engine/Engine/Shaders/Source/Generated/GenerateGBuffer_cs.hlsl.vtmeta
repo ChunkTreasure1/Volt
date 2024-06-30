@@ -1,8 +1,0 @@
-Metadata:
-  assetHandle: 453286071352835358
-  filePath: Engine/Shaders/Source/Generated/GenerateGBuffer_cs.hlsl
-  type: 128
-  Dependencies:
-    []
-  Properties:
-    {}

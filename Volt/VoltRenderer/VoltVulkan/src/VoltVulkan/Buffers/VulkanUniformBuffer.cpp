@@ -9,6 +9,7 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
 #include <VoltRHI/Memory/Allocation.h>
+#include <VoltRHI/RHIProxy.h>
 
 namespace Volt::RHI
 {
@@ -32,7 +33,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		GraphicsContext::DestroyResource([allocation = m_allocation]() 
+		RHIProxy::GetInstance().DestroyResource([allocation = m_allocation]() 
 		{
 			GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
 		});
@@ -40,10 +41,10 @@ namespace Volt::RHI
 		m_allocation = nullptr;
 	}
 
-	Ref<BufferView> VulkanUniformBuffer::GetView()
+	RefPtr<BufferView> VulkanUniformBuffer::GetView()
 	{
 		BufferViewSpecification spec{};
-		spec.bufferResource = As<VulkanUniformBuffer>();
+		spec.bufferResource = this;
 
 		return BufferView::Create(spec);
 	}

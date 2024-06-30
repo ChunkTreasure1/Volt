@@ -6,7 +6,7 @@
 
 #include "Volt/Components/CoreComponents.h"
 
-#include "Volt/Asset/Importers/SceneImporter.h"
+#include "Volt/Asset/Serializers/SceneSerializer.h"
 
 #include "Volt/Math/Math.h"
 
@@ -16,20 +16,22 @@ namespace Volt
 	{
 		m_scene = scene;
 
-		m_cells.clear();
+		//m_cells.clear();
 
-		for (uint32_t i = 0; i < initialCellCount; i++)
-		{
-			auto& newCell = m_cells.emplace_back();
-			newCell.cellId = i;
-			newCell.origin = { (i / cellCountWidth) * m_settings.cellSize / 2, 0, (i % cellCountWidth) * m_settings.cellSize / 2 };
-		}
+		//for (uint32_t i = 0; i < initialCellCount; i++)
+		//{
+		//	auto& newCell = m_cells.emplace_back();
+		//	newCell.cellId = i;
+		//	newCell.origin = { (i / cellCountWidth) * m_settings.cellSize / 2, 0, (i % cellCountWidth) * m_settings.cellSize / 2 };
+		//}
 
-		// Put entities into cells
-		for (const auto& entity : m_scene->GetAllEntities())
-		{
-			AddEntity(entity);
-		}
+		//// Put entities into cells
+		//for (const auto& entity : m_scene->GetAllEntities())
+		//{
+		//	AddEntity(entity);
+		//}
+
+		GenerateCells();
 	}
 
 	void WorldEngine::AddEntity(const Entity& entity)
@@ -141,7 +143,7 @@ namespace Volt
 			return;
 		}
 
-		SceneImporter::Get().LoadWorldCell(m_scene->shared_from_this(), cell);
+		SceneSerializer::Get().LoadWorldCell(m_scene->shared_from_this(), cell);
 		cell.isLoaded = true;
 	}
 

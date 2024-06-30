@@ -8,7 +8,6 @@
 #include <Volt/Components/RenderingComponents.h>
 #include <Volt/Asset/AssetManager.h>
 
-#include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Rendering/Camera/Camera.h>
 
@@ -64,7 +63,7 @@ void AssetPreview::Render()
 	//myIsRendered = true;
 }
 
-const Ref<Volt::RHI::Image2D> AssetPreview::GetPreview() const
+const RefPtr<Volt::RHI::Image2D> AssetPreview::GetPreview() const
 {
 	return nullptr; //mySceneRenderer->GetFinalImage();
 }

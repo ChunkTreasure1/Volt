@@ -65,7 +65,6 @@
 
 #include "imgui_impl_vulkan.h"
 
-#include <Volt/Rendering/Renderer.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Graphics/DeviceQueue.h>
@@ -1076,7 +1075,7 @@ bool ImGui_ImplVulkan_CreateDeviceObjects()
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         poolInfo.flags = 0;
         poolInfo.maxSets = 10000;
-        poolInfo.poolSizeCount = (uint32_t)ARRAYSIZE(poolSizes);
+        poolInfo.poolSizeCount = 11u;
         poolInfo.pPoolSizes = poolSizes;
 
         for (uint32_t d = 0; d < bd->VulkanInitInfo.ImageCount; d++)

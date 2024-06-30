@@ -11,7 +11,8 @@ function AddCommonWarnings()
 		"4201",
 		"4100",
 		"4505",
-        "4005"
+        "4005",
+		"4251"
     }
 end
 
@@ -31,6 +32,7 @@ function AddCommonIncludeDirs()
         "%{IncludeDir.glm}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.tracy}",
+		"%{IncludeDir.unordered_dense}"
     }
 end
 

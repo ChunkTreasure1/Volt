@@ -13,7 +13,7 @@ namespace Volt
 			return {};
 		}
 
-		return myAnimations.at(index)->Sample(aStartTime, mySkeleton, looping);
+		return myAnimations.at(index)->SampleStartTime(aStartTime, mySkeleton, looping);
 	}
 
 	const std::vector<glm::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, uint32_t frameIndex) const

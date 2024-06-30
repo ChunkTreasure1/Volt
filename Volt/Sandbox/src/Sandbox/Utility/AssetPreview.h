@@ -11,7 +11,7 @@ namespace Volt
 	}
 
 	class Scene;
-	class SceneRendererNew;
+	class SceneRenderer;
 	class Camera;
 }
 
@@ -21,7 +21,7 @@ public:
 	AssetPreview(const std::filesystem::path& path);
 
 	void Render();
-	const Ref<Volt::RHI::Image2D> GetPreview() const;
+	const RefPtr<Volt::RHI::Image2D> GetPreview() const;
 	inline const bool IsRendered() const { return m_isRenderered; }
 
 private:
@@ -32,5 +32,5 @@ private:
 
 	Ref<Volt::Camera> m_camera;
 	Ref<Volt::Scene> m_scene;
-	Ref<Volt::SceneRendererNew> m_sceneRenderer;
+	Ref<Volt::SceneRenderer> m_sceneRenderer;
 };

@@ -6,8 +6,8 @@ namespace Volt
 {
 	struct WorldGridSettings
 	{
-		int32_t cellSize = 256;
-		glm::uvec2 worldSize = { 1280, 1280 };
+		int32_t cellSize = 25'600;
+		glm::uvec2 worldSize = { 128'000, 128'000 };
 	};
 
 	class Scene;

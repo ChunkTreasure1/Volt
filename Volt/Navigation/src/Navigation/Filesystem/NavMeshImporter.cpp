@@ -6,6 +6,9 @@
 
 #include <Volt/Asset/AssetManager.h>
 
+#include <CoreUtilities/FileIO/BinaryStreamWriter.h>
+#include <CoreUtilities/FileIO/BinaryStreamReader.h>
+
 namespace Volt
 {
 	namespace AI
@@ -16,23 +19,7 @@ namespace Volt
 		static const int TILECACHESET_MAGIC = 'T' << 24 | 'S' << 16 | 'E' << 8 | 'T'; //'TSET';
 		static const int TILECACHESET_VERSION = 2;
 
-		struct NavMeshSetHeader
-		{
-			int magic;
-			int version;
-			int numTiles;
-			dtNavMeshParams params;
-		};
-
-		struct NavMeshTileHeader
-		{
-			dtTileRef tileRef;
-			int dataSize;
-		};
-
-		VT_OPTIMIZE_OFF
-
-		bool NavMeshImporter::SaveNavMesh(std::ostream& output, Ref<NavMesh>& asset)
+		bool NavMeshImporter::SaveNavMesh(BinaryStreamWriter& output, Ref<NavMesh>& asset)
 		{
 			if (asset->GetNavMesh()->GetTileCache())
 			{
@@ -44,7 +31,30 @@ namespace Volt
 			}
 		}
 
-		bool NavMeshImporter::LoadNavMesh(std::ifstream& input, Ref<dtNavMesh>& asset)
+		bool NavMeshImporter::LoadNavMesh(BinaryStreamReader& input, Ref<dtNavMesh>& asset)
+		{
+			// Read header.
+			NavMeshSetHeader header;
+			input.Read(header);
+
+			switch (header.magic)
+			{
+				case NAVMESHSET_MAGIC:
+				{
+					return LoadSingleNavMesh(input, header, asset);
+				}
+				case TILECACHESET_MAGIC:
+				{
+					return LoadTiledNavMesh(input, header, asset);
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+
+		bool NavMeshImporter::LoadNavMeshLegacy(std::ifstream& input, Ref<dtNavMesh>& asset)
 		{
 			std::streampos currentPosition = input.tellg();
 
@@ -62,11 +72,11 @@ namespace Volt
 			{
 				case NAVMESHSET_MAGIC:
 				{
-					return LoadSingleNavMesh(input, asset);
+					return LoadSingleNavMeshLegacy(input, asset);
 				}
 				case TILECACHESET_MAGIC:
 				{
-					return LoadTiledNavMesh(input, asset);
+					//return LoadTiledNavMesh(input, asset);
 				}
 				default:
 				{
@@ -76,7 +86,7 @@ namespace Volt
 			}
 		}
 
-		bool NavMeshImporter::SaveSingleNavMesh(std::ostream& output, Ref<NavMesh>& asset)
+		bool NavMeshImporter::SaveSingleNavMesh(BinaryStreamWriter& output, Ref<NavMesh>& asset)
 		{
 			const auto* mesh = asset->GetNavMesh()->GetNavMesh().get();
 
@@ -92,7 +102,7 @@ namespace Volt
 				header.numTiles++;
 			}
 			memcpy(&header.params, mesh->getParams(), sizeof(dtNavMeshParams));
-			output.write(reinterpret_cast<char*>(&header), sizeof(NavMeshSetHeader));
+			output.Write(header);
 
 			// Store tiles.
 			for (int i = 0; i < mesh->getMaxTiles(); ++i)
@@ -103,19 +113,69 @@ namespace Volt
 				NavMeshTileHeader tileHeader;
 				tileHeader.tileRef = mesh->getTileRef(tile);
 				tileHeader.dataSize = tile->dataSize;
-				output.write(reinterpret_cast<char*>(&tileHeader), sizeof(NavMeshTileHeader));
-
-				output.write(reinterpret_cast<const char*>(tile->data), tile->dataSize);
+				output.Write(tileHeader);
+				output.Write(tile->data);
 			}
 			return true;
 		}
 
-		bool NavMeshImporter::SaveTiledNavMesh(std::ostream& output, Ref<NavMesh>& asset)
+		bool NavMeshImporter::SaveTiledNavMesh(BinaryStreamWriter& output, Ref<NavMesh>& asset)
 		{
 			return true;
 		}
 
-		bool NavMeshImporter::LoadSingleNavMesh(std::ifstream& input, Ref<dtNavMesh>& asset)
+		bool NavMeshImporter::LoadSingleNavMesh(BinaryStreamReader& input, const NavMeshSetHeader& header, Ref<dtNavMesh>& asset)
+		{
+			if (header.magic != NAVMESHSET_MAGIC)
+			{
+				return false;
+			}
+			if (header.version != NAVMESHSET_VERSION)
+			{
+				return false;
+			}
+
+			dtNavMesh* mesh = dtAllocNavMesh();
+			if (!mesh)
+			{
+				dtFree(mesh);
+				return false;
+			}
+			dtStatus status = mesh->init(&header.params);
+			if (dtStatusFailed(status))
+			{
+				dtFree(mesh);
+				return false;
+			}
+
+			// Read tiles.
+			for (int i = 0; i < header.numTiles; ++i)
+			{
+				NavMeshTileHeader tileHeader;
+				input.Read(tileHeader);
+
+				if (!tileHeader.tileRef || !tileHeader.dataSize)
+					break;
+
+				unsigned char* data = (unsigned char*)dtAlloc(tileHeader.dataSize, DT_ALLOC_PERM);
+				if (!data) break;
+				memset(data, 0, tileHeader.dataSize);
+
+				input.Read(data);
+				mesh->addTile(data, tileHeader.dataSize, DT_TILE_FREE_DATA, tileHeader.tileRef, 0);
+			}
+
+			asset = CreateRef<dtNavMesh>();
+			asset.reset(mesh);
+			return true;
+		}
+
+		bool NavMeshImporter::LoadTiledNavMesh(BinaryStreamReader& input, const NavMeshSetHeader& header, Ref<dtNavMesh>& asset)
+		{
+			return true;
+		}
+
+		bool NavMeshImporter::LoadSingleNavMeshLegacy(std::ifstream& input, Ref<dtNavMesh>& asset)
 		{
 			// Read header.
 			NavMeshSetHeader header;
@@ -181,11 +241,6 @@ namespace Volt
 
 			asset = CreateRef<dtNavMesh>();
 			asset.reset(mesh);
-			return true;
-		}
-
-		bool NavMeshImporter::LoadTiledNavMesh(std::ifstream& input, Ref<dtNavMesh>& asset)
-		{
 			return true;
 		}
 	}

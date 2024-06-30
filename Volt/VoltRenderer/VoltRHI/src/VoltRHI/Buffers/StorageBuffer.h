@@ -9,7 +9,7 @@ namespace Volt::RHI
 	class CommandBuffer;
 	class Allocation;
 
-	class StorageBuffer : public RHIResource
+	class VTRHI_API StorageBuffer : public RHIResource
 	{
 	public:
 		~StorageBuffer() override = default;
@@ -17,22 +17,23 @@ namespace Volt::RHI
 		virtual void ResizeByteSize(const size_t byteSize) = 0;
 		virtual void Resize(const uint32_t size) = 0;
 
+		virtual const size_t GetElementSize() const = 0;
 		virtual const size_t GetSize() const = 0;
 		virtual const uint32_t GetCount() const = 0;
-		virtual Weak<Allocation> GetAllocation() const = 0;
+		virtual WeakPtr<Allocation> GetAllocation() const = 0;
 
 		virtual void Unmap() = 0;
 		virtual void SetData(const void* data, const size_t size) = 0;
-		virtual void SetData(Ref<CommandBuffer> commandBuffer, const void* data, const size_t size) = 0;
+		virtual void SetData(RefPtr<CommandBuffer> commandBuffer, const void* data, const size_t size) = 0;
 
-		virtual Ref<BufferView> GetView() = 0;
+		virtual RefPtr<BufferView> GetView() = 0;
 
 		template<typename T>
 		T* Map();
 
-		static Ref<StorageBuffer> Create(uint32_t count, size_t elementSize, std::string_view name, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
-		static Ref<StorageBuffer> Create(size_t size, std::string_view name, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
-		static Ref<StorageBuffer> Create(size_t size, Ref<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
+		static RefPtr<StorageBuffer> Create(uint32_t count, size_t elementSize, std::string_view name, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
+		static RefPtr<StorageBuffer> Create(size_t size, std::string_view name, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
+		static RefPtr<StorageBuffer> Create(size_t size, RefPtr<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
 
 	protected:
 		virtual void* MapInternal() = 0;

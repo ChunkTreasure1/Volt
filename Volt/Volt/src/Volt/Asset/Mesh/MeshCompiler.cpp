@@ -65,7 +65,7 @@ namespace Volt
 		BinarySerializer serializer{ Volt::ProjectManager::GetDirectory() / destination, CalculateMeshSize(mesh) };
 
 		const uint32_t submeshCount = (uint32_t)mesh->m_subMeshes.size();
-		const uint32_t vertexCount = (uint32_t)mesh->m_vertices.size();
+		const uint32_t vertexCount = (uint32_t)mesh->m_vertexContainer.positions.size();
 		const uint32_t indexCount = (uint32_t)mesh->m_indices.size();
 
 		const glm::vec3 boundingCenter = mesh->m_boundingSphere.center;
@@ -80,7 +80,7 @@ namespace Volt
 		}
 
 		serializer.Serialize<uint32_t>(vertexCount);
-		serializer.Serialize(mesh->m_vertices.data(), sizeof(Vertex) * vertexCount);
+		//serializer.Serialize(mesh->m_vertices.data(), sizeof(Vertex) * vertexCount);
 
 		serializer.Serialize<uint32_t>(indexCount);
 		serializer.Serialize(mesh->m_indices.data(), sizeof(uint32_t) * indexCount);
@@ -119,7 +119,7 @@ namespace Volt
 		size += sizeof(AssetHandle) * mesh->m_materialTable.GetSize();
 
 		size += sizeof(uint32_t); // Vertex count
-		size += sizeof(Vertex) * mesh->m_vertices.size(); // Vertices
+		//size += sizeof(Vertex) * mesh->m_vertices.size(); // Vertices
 		size += sizeof(uint32_t); // Index count
 		size += sizeof(uint32_t) * mesh->m_indices.size(); // Indices
 

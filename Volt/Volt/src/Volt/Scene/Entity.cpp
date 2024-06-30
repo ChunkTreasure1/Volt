@@ -364,7 +364,11 @@ namespace Volt
 		std::vector<Entity> result{};
 		for (const auto& id : children)
 		{
-			result.emplace_back(m_scene->GetEntityFromUUID(id));
+			auto entity = m_scene->GetEntityFromUUID(id);
+			if (entity != Entity::Null())
+			{
+				result.emplace_back(entity);
+			}
 		}
 
 		return result;
@@ -386,6 +390,11 @@ namespace Volt
 		auto parentEntity = scenePtr->GetEntityFromUUID(relComp.parent);
 
 		return parentEntity.IsValid();
+	}
+
+	void Entity::RemoveComponent(const VoltGUID& guid)
+	{
+		ComponentRegistry::Helpers::RemoveComponentWithGUID(guid, m_scene->GetRegistry(), m_handle);
 	}
 
 	const bool Entity::HasComponent(std::string_view componentName) const
@@ -494,6 +503,7 @@ namespace Volt
 
 	const EntityID Entity::GetID() const
 	{
+		VT_CORE_ASSERT(HasComponent<IDComponent>(), "Entity must have IDComponent!");
 		return GetComponent<IDComponent>().id;
 	}
 
@@ -567,19 +577,19 @@ namespace Volt
 				continue;
 			}
 
-			CopyComponent(reinterpret_cast<const uint8_t*>(storage.get(srcEntity)), componentData, 0, componentDesc);
+			CopyComponent(reinterpret_cast<const uint8_t*>(storage.get(srcEntity)), componentData, 0, componentDesc, dstEntity);
 		}
 
 		CopyMonoScripts(srcEntity, dstEntity);
 	}
 
-	Entity Entity::Duplicate(Entity srcEntity, Ref<Scene> targetScene, Entity parent)
+	Entity Entity::Duplicate(Entity srcEntity, Ref<Scene> targetScene, Entity parent, const EntityCopyFlags copyFlags)
 	{
 		auto scene = targetScene ? targetScene : srcEntity.GetScene().GetSharedPtr();
 
 		Entity newEntity = scene->CreateEntity();
 
-		Copy(srcEntity, newEntity, EntityCopyFlags::SkipID);
+		Copy(srcEntity, newEntity, EntityCopyFlags::SkipID | EntityCopyFlags::SkipRelationships | copyFlags);
 
 		if (newEntity.HasComponent<NetActorComponent>())
 		{
@@ -599,7 +609,7 @@ namespace Volt
 		return newEntity;
 	}
 
-	void Entity::CopyComponent(const uint8_t* srcData, uint8_t* dstData, const size_t offset, const IComponentTypeDesc* compDesc)
+	void Entity::CopyComponent(const uint8_t* srcData, uint8_t* dstData, const size_t offset, const IComponentTypeDesc* compDesc, Entity dstEntity)
 	{
 		for (const auto& member : compDesc->GetMembers())
 		{
@@ -615,7 +625,7 @@ namespace Volt
 					case ValueType::Component:
 					{
 						const IComponentTypeDesc* memberCompDesc = reinterpret_cast<const IComponentTypeDesc*>(member.typeDesc);
-						CopyComponent(srcData, dstData, offset + member.offset, memberCompDesc);
+						CopyComponent(srcData, dstData, offset + member.offset, memberCompDesc, dstEntity);
 						break;
 					}
 
@@ -633,6 +643,8 @@ namespace Volt
 				member.copyFunction(&dstData[offset + member.offset], &srcData[offset + member.offset]);
 			}
 		}
+
+		compDesc->OnComponentCopied(&dstData[offset], dstEntity);
 	}
 
 	void Entity::CopyMonoScripts(Entity srcEntity, Entity dstEntity)
@@ -674,6 +686,12 @@ namespace Volt
 			{
 				if (!srcFields.contains(name))
 				{
+					continue;
+				}
+
+				if (field.type.IsCustomMonoType())
+				{
+					// #TODO_Ivar: Handle copying custom mono types
 					continue;
 				}
 

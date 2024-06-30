@@ -10,11 +10,14 @@ struct Output
 
 Output main(in DefaultInput input)
 {
+    input.Initialize();
+
     const Constants constants = GetConstants<Constants>();
     const ViewData viewData = constants.viewData.Load();
     
+    const float4x4 skinningMatrix = input.GetSkinningMatrix();
     const float4x4 transform = input.GetTransform();
-    const float4 worldPosition = mul(transform, float4(input.GetVertexPositionData().position, 1.f));
+    const float4 worldPosition = mul(transform, mul(skinningMatrix, float4(input.GetVertexPositionData().position, 1.f)));
     
     const float3x3 worldNormalRotation = (float3x3)transform;
     const float3x3 cameraNormalRotation = (float3x3)viewData.view;

@@ -22,6 +22,8 @@
 #include <VoltRHI/Memory/Allocation.h>
 #include <VoltRHI/Memory/MemoryUtility.h>
 
+#include <VoltRHI/RHIProxy.h>
+
 namespace Volt::RHI
 {
 	namespace Utility
@@ -42,7 +44,7 @@ namespace Volt::RHI
 	VulkanDescriptorBufferTable::VulkanDescriptorBufferTable(const DescriptorTableCreateInfo& createInfo)
 	{
 		m_shader = createInfo.shader;
-		m_descriptorBufferCount = createInfo.count;
+		m_descriptorBufferCount = 1;
 
 		// Find descriptor offsets
 		{
@@ -69,7 +71,7 @@ namespace Volt::RHI
 		Release();
 	}
 
-	void VulkanDescriptorBufferTable::SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	void VulkanDescriptorBufferTable::SetImageView(WeakPtr<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_descriptorSetBindingOffsets.contains(set))
 		{
@@ -115,7 +117,7 @@ namespace Volt::RHI
 		vkGetDescriptorEXT(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &imageDescriptorInfo, descriptorTypeSize, descriptorPtr);
 	}
 
-	void VulkanDescriptorBufferTable::SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	void VulkanDescriptorBufferTable::SetBufferView(WeakPtr<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_descriptorSetBindingOffsets.contains(set))
 		{
@@ -133,7 +135,7 @@ namespace Volt::RHI
 		addressInfo.format = VK_FORMAT_UNDEFINED;
 		addressInfo.address = bufferView->GetDeviceAddress();
 
-		Ref<RHIResource> rawResource = bufferView->AsRef<VulkanBufferView>().GetResource();
+		RHIResource* rawResource = bufferView->AsRef<VulkanBufferView>().GetResource();
 
 		uint64_t descriptorTypeSize = 0;
 		VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -171,11 +173,7 @@ namespace Volt::RHI
 		vkGetDescriptorEXT(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &bufferDescriptorInfo, descriptorTypeSize, descriptorPtr);
 	}
 
-	void VulkanDescriptorBufferTable::SetBufferViewSet(Ref<BufferViewSet> bufferViewSet, uint32_t set, uint32_t binding, uint32_t arrayIndex)
-	{
-	}
-
-	void VulkanDescriptorBufferTable::SetImageView(std::string_view name, Ref<ImageView> view, uint32_t arrayIndex)
+	void VulkanDescriptorBufferTable::SetImageView(std::string_view name, WeakPtr<ImageView> view, uint32_t arrayIndex)
 	{
 		const auto& binding = m_shader->GetResourceBindingFromName(name);
 		if (!binding.IsValid())
@@ -186,7 +184,7 @@ namespace Volt::RHI
 		SetImageView(view, binding.set, binding.binding, arrayIndex);
 	}
 
-	void VulkanDescriptorBufferTable::SetBufferView(std::string_view name, Ref<BufferView> view, uint32_t arrayIndex)
+	void VulkanDescriptorBufferTable::SetBufferView(std::string_view name, WeakPtr<BufferView> view, uint32_t arrayIndex)
 	{
 		const auto& binding = m_shader->GetResourceBindingFromName(name);
 		if (!binding.IsValid())
@@ -197,29 +195,11 @@ namespace Volt::RHI
 		SetBufferView(view, binding.set, binding.binding, arrayIndex);
 	}
 
-	void VulkanDescriptorBufferTable::SetSamplerState(std::string_view name, Ref<SamplerState> samplerState, uint32_t arrayIndex)
+	void VulkanDescriptorBufferTable::SetSamplerState(std::string_view name, WeakPtr<SamplerState> samplerState, uint32_t arrayIndex)
 	{
 	}
 
-	void VulkanDescriptorBufferTable::SetBufferViews(const std::vector<Ref<BufferView>>& bufferViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset)
-	{
-		for (uint32_t index = arrayStartOffset; const auto & view : bufferViews)
-		{
-			SetBufferView(view, set, binding, index);
-			index++;
-		}
-	}
-
-	void VulkanDescriptorBufferTable::SetImageViews(const std::vector<Ref<ImageView>>& imageViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset)
-	{
-		for (uint32_t index = arrayStartOffset; const auto & view : imageViews)
-		{
-			SetImageView(view, set, binding, index);
-			index++;
-		}
-	}
-
-	void VulkanDescriptorBufferTable::SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	void VulkanDescriptorBufferTable::SetSamplerState(WeakPtr<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_descriptorSetBindingOffsets.contains(set))
 		{
@@ -247,9 +227,8 @@ namespace Volt::RHI
 		vkGetDescriptorEXT(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &imageDescriptorInfo, descriptorTypeSize, descriptorPtr);
 	}
 
-	void VulkanDescriptorBufferTable::Update(const uint32_t index)
+	void VulkanDescriptorBufferTable::PrepareForRender()
 	{
-
 	}
 
 	void* VulkanDescriptorBufferTable::GetHandleImpl() const
@@ -257,17 +236,17 @@ namespace Volt::RHI
 		return nullptr;
 	}
 
-	void VulkanDescriptorBufferTable::Bind(Ref<CommandBuffer> commandBuffer)
+	void VulkanDescriptorBufferTable::Bind(CommandBuffer& commandBuffer)
 	{
 		std::vector<VkDescriptorBufferBindingInfoEXT> descriptorBindingBufferInfos{};
 
-		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer->AsRef<VulkanCommandBuffer>();
+		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer.AsRef<VulkanCommandBuffer>();
 		const VkPipelineBindPoint bindPoint = vulkanCommandBuffer.m_currentRenderPipeline ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;
 
 		{
 			void* buff = m_descriptorBuffer->Map<void*>();
 
-			memcpy(buff, m_hostDescriptorBuffer.GetData(), m_accumulatedSize);
+			memcpy(buff, m_hostDescriptorBuffer.As<void>(), m_accumulatedSize);
 
 			m_descriptorBuffer->Unmap();
 		}
@@ -282,13 +261,13 @@ namespace Volt::RHI
 			bindingInfo.usage = VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT;
 		}
 
-		vkCmdBindDescriptorBuffersEXT(commandBuffer->GetHandle<VkCommandBuffer>(), static_cast<uint32_t>(descriptorBindingBufferInfos.size()), descriptorBindingBufferInfos.data());
+		vkCmdBindDescriptorBuffersEXT(commandBuffer.GetHandle<VkCommandBuffer>(), static_cast<uint32_t>(descriptorBindingBufferInfos.size()), descriptorBindingBufferInfos.data());
 
 		constexpr uint32_t bufferIndex = 0;
 		for (const auto& set : m_usedDescriptorSets)
 		{
 			const uint64_t offset = m_descriptorSetOffsets.at(set);
-			vkCmdSetDescriptorBufferOffsetsEXT(commandBuffer->GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), set, 1, &bufferIndex, &offset);
+			vkCmdSetDescriptorBufferOffsetsEXT(commandBuffer.GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), set, 1, &bufferIndex, &offset);
 		}
 	}
 
@@ -299,9 +278,9 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		auto device = GraphicsContext::GetDevice();
-		Ref<VulkanShader> vulkanShader = m_shader->As<VulkanShader>();
+		VulkanShader& vulkanShader = m_shader->AsRef<VulkanShader>();
 
-		for (const auto& descriptorSetLayout : vulkanShader->GetPaddedDescriptorSetLayouts())
+		for (const auto& descriptorSetLayout : vulkanShader.GetPaddedDescriptorSetLayouts())
 		{
 			vkGetDescriptorSetLayoutSizeEXT(device->GetHandle<VkDevice>(), descriptorSetLayout, &m_descriptorSetLayoutSizes.emplace_back());
 		}
@@ -329,7 +308,7 @@ namespace Volt::RHI
 
 	void VulkanDescriptorBufferTable::Release()
 	{
-		GraphicsContext::DestroyResource([descriptorBuffer = m_descriptorBuffer]()
+		RHIProxy::GetInstance().DestroyResource([descriptorBuffer = m_descriptorBuffer]()
 		{
 			if (descriptorBuffer)
 			{
@@ -353,8 +332,8 @@ namespace Volt::RHI
 		auto device = GraphicsContext::GetDevice();
 
 		const auto& resources = m_shader->GetResources();
-		Ref<VulkanShader> vulkanShader = m_shader->As<VulkanShader>();
-		const auto& descriptorSetLayouts = vulkanShader->GetPaddedDescriptorSetLayouts();
+		VulkanShader& vulkanShader = m_shader->AsRef<VulkanShader>();
+		const auto& descriptorSetLayouts = vulkanShader.GetPaddedDescriptorSetLayouts();
 
 		for (const auto& [set, bindings] : resources.uniformBuffers)
 		{

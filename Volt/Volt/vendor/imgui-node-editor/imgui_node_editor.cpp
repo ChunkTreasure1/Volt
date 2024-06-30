@@ -2090,7 +2090,9 @@ ed::Control ed::EditorContext::BuildControl(bool allowOffscreen)
 	auto emitInteractiveArea = [](ObjectId id, const ImRect& rect)
 	{
 		char idString[33] = { 0 }; // itoa can output 33 bytes maximum
-		snprintf(idString, 32, "%p", id.AsPointer());
+		void* ptr = id.AsPointer();
+
+		snprintf(idString, 32, "%p", ptr);
 		ImGui::SetCursorScreenPos(rect.Min);
 
 		// debug

@@ -16,7 +16,7 @@
 
 namespace Volt
 {
-	class SceneRendererNew;
+	class SceneRenderer;
 	class Scene;
 	class Mesh;
 	class Material;
@@ -61,11 +61,13 @@ public:
 	void SetEditorHasMouseControl();
 	void SetPlayHasMouseControl();
 
-	inline static Sandbox& Get() { return *myInstance; }
+	VT_NODISCARD VT_INLINE static Sandbox& Get() { return *s_instance; }
 
-	Ref<Volt::SceneRendererNew>& GetSceneRenderer() { return mySceneRenderer; }
-	inline const SceneState GetSceneState() const { return mySceneState; }
+	Ref<Volt::SceneRenderer>& GetSceneRenderer() { return m_sceneRenderer; }
+	VT_NODISCARD VT_INLINE const SceneState GetSceneState() const { return m_sceneState; }
 	
+	VT_NODISCARD VT_INLINE UUID64 GetMeshImportModalID() const { return m_meshImportModal; }
+
 	void NewScene();
 	void OpenScene();
 	void OpenScene(const std::filesystem::path& path);
@@ -80,7 +82,7 @@ private:
 	{
 		std::string name = "New Scene";
 		std::filesystem::path destinationPath = "Assets/Scenes/";
-	} mySaveSceneData;
+	} m_saveSceneData;
 
 	void SaveSceneAs();
 
@@ -116,10 +118,6 @@ private:
 	void RenderGameView();
 	///////////////
 
-	///// Modals /////
-	UUID64 m_projectUpgradeModal = 0;
-	//////////////////
-
 	///// Debug Rendering /////
 	void RenderSelection(Ref<Volt::Camera> camera);
 	void RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera);
@@ -132,48 +130,52 @@ private:
 	void CreateMovedWatch();
 	/////////////////////////
 
-	BuildInfo myBuildInfo;
+	BuildInfo m_buildInfo;
 
-	Ref<EditorCameraController> myEditorCameraController;
+	Ref<EditorCameraController> m_editorCameraController;
 
-	Ref<Volt::SceneRendererNew> mySceneRenderer;
-	Ref<Volt::SceneRendererNew> myGameSceneRenderer;
+	Ref<Volt::SceneRenderer> m_sceneRenderer;
+	Ref<Volt::SceneRenderer> m_gameSceneRenderer;
 
 	///// File watcher /////
-	Ref<FileWatcher> myFileWatcher;
-	std::mutex myFileWatcherMutex;
-	std::vector<std::function<void()>> myFileChangeQueue;
+	Ref<FileWatcher> m_fileWatcher;
+	std::mutex m_fileWatcherMutex;
+	std::vector<std::function<void()>> m_fileChangeQueue;
 	////////////////////////
 
-	Ref<Volt::Scene> myRuntimeScene;
-	Ref<Volt::Scene> myIntermediateScene;
+	///// Modals /////
+	UUID64 m_meshImportModal;
+	//////////////////
 
-	SceneState mySceneState = SceneState::Edit;
+	Ref<Volt::Scene> m_runtimeScene;
+	Ref<Volt::Scene> m_intermediateScene;
 
-	Ref<ViewportPanel> myViewportPanel;
-	Ref<GameViewPanel> myGameViewPanel;
+	SceneState m_sceneState = SceneState::Edit;
 
-	Ref<NavigationPanel> myNavigationPanel;
+	Ref<ViewportPanel> m_viewportPanel;
+	Ref<GameViewPanel> m_gameViewPanel;
 
-	Ref<AssetBrowserPanel> myAssetBrowserPanel;
+	Ref<NavigationPanel> m_navigationPanel;
 
-	glm::uvec2 myViewportSize = { 1280, 720 };
-	glm::uvec2 myViewportPosition = { 0, 0 };
+	Ref<AssetBrowserPanel> m_assetBrowserPanel;
 
-	bool myShouldOpenSaveSceneAs = false;
-	bool myOpenShouldSaveScenePopup = false;
-	bool myShouldResetLayout = false;
-	bool myTitlebarHovered = false;
-	bool myBuildStarted = false;
-	bool myPlayHasMouseControl = false;
+	glm::uvec2 m_viewportSize = { 1280, 720 };
+	glm::uvec2 m_viewportPosition = { 0, 0 };
+
+	bool m_shouldOpenSaveSceneAs = false;
+	bool m_openShouldSaveScenePopup = false;
+	bool m_shouldResetLayout = false;
+	bool m_titlebarHovered = false;
+	bool m_buildStarted = false;
+	bool m_playHasMouseControl = false;
 	bool m_isInitialized = false;
 
-	bool myShouldMovePlayer = false;
-	glm::vec3 myMovePlayerToPosition = 0.f;
+	bool m_shouldMovePlayer = false;
+	glm::vec3 m_movePlayerToPosition = 0.f;
 
-	Ref<Volt::Scene> myStoredScene;
-	bool myShouldLoadNewScene = false;
-	uint32_t myAssetBrowserCount = 0;
+	Ref<Volt::Scene> m_storedScene;
+	bool m_shouldLoadNewScene = false;
+	uint32_t m_assetBrowserCount = 0;
 
-	inline static Sandbox* myInstance = nullptr;
+	inline static Sandbox* s_instance = nullptr;
 };

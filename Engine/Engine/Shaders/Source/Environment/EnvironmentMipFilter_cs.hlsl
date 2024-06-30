@@ -1,8 +1,8 @@
 #include "Defines.hlsli"
 
-RWTexture2DArray<float3> o_output : register(u0, space0);
-TextureCube<float3> u_input : register(t1, space0);
-SamplerState u_linearSampler : register(s2, space0);
+RWTexture2DArray<float3> o_output;
+TextureCube<float3> u_input;
+SamplerState u_linearSampler;
 
 static const float m_pi = 3.1415926535897932384626433832795f;
 static const float m_twoPi = m_pi * 2.0f;

@@ -7,12 +7,12 @@
 
 namespace Volt
 {
-	static FastNoiseLite myNoise;
-	static std::uniform_real_distribution<float> globalJitters(0.f, 1.f);
-	static std::default_random_engine globalJitterGenerator(1337u);
+	static FastNoiseLite s_noise;
+	static std::uniform_real_distribution<float> s_globalJitters(0.f, 1.f);
+	static std::default_random_engine s_globalJitterGenerator(1337u);
 
-	inline static float myHaltonX[8];
-	inline static float myHaltonY[8];
+	inline static float s_haltonX[8];
+	inline static float s_haltonY[8];
 
 	std::array<glm::vec4, 16> Noise::HBAOJitter()
 	{
@@ -23,8 +23,8 @@ namespace Volt
 
 		for (int32_t i = 0; i < 16; i++)
 		{
-			float rand1 = globalJitters(globalJitterGenerator);
-			float rand2 = globalJitters(globalJitterGenerator);
+			float rand1 = s_globalJitters(s_globalJitterGenerator);
+			float rand2 = s_globalJitters(s_globalJitterGenerator);
 
 			const float angle = 2.f * PI * rand1 / numDir;
 			result[i].x = cosf(angle);
@@ -38,7 +38,7 @@ namespace Volt
 
 	const glm::vec2 Noise::GetTAAJitter(uint64_t frameIndex, const glm::uvec2& viewportSize)
 	{
-		return { myHaltonX[frameIndex % 8] / static_cast<float>(viewportSize.x), myHaltonY[frameIndex % 8] / static_cast<float>(viewportSize.y) };
+		return { s_haltonX[frameIndex % 8] / static_cast<float>(viewportSize.x), s_haltonY[frameIndex % 8] / static_cast<float>(viewportSize.y) };
 	}
 
 	void Noise::Initialize()
@@ -60,19 +60,19 @@ namespace Volt
 
 		for (size_t i = 0; i < 8; ++i)
 		{
-			myHaltonX[i] = halton(i + 1, 2) * 2.0f - 1.0f;
-			myHaltonY[i] = halton(i + 1, 3) * 2.0f - 1.0f;
+			s_haltonX[i] = halton(i + 1, 2) * 2.0f - 1.0f;
+			s_haltonY[i] = halton(i + 1, 3) * 2.0f - 1.0f;
 		}
 	}
 
 	float Noise::GetNoise(const float x, const float y, const float z)
 	{
-		return myNoise.GetNoise(x, y, z);
+		return s_noise.GetNoise(x, y, z);
 	}
 
 	float Noise::GetNoise(const float x, const float y, const float z, const float aTime)
 	{
-		return myNoise.GetNoise(x, y, z);
+		return s_noise.GetNoise(x, y, z);
 	}
 
 	float Noise::GetRandomSeed()
@@ -82,12 +82,12 @@ namespace Volt
 
 	void Noise::SetFrequency(const float frequency)
 	{
-		myNoise.SetFrequency(frequency);
+		s_noise.SetFrequency(frequency);
 	}
 
 	void Noise::SetSeed(const int seed)
 	{
-		myNoise.SetSeed(seed);
+		s_noise.SetSeed(seed);
 	}
 
 	void Noise::SetNoiseType(NoiseType type)
@@ -95,10 +95,10 @@ namespace Volt
 		switch (type)
 		{
 			case Volt::Noise::Perlin:
-				myNoise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+				s_noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 				break;
 			case Volt::Noise::Simplex:
-				myNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+				s_noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
 				break;
 			default:
 				break;

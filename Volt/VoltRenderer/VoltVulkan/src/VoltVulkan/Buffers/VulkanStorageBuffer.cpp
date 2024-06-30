@@ -11,6 +11,8 @@
 #include <VoltRHI/Memory/MemoryCommon.h>
 #include <VoltRHI/Memory/Allocation.h>
 
+#include <VoltRHI/RHIProxy.h>
+
 namespace Volt::RHI
 {
 	VulkanStorageBuffer::VulkanStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
@@ -27,7 +29,7 @@ namespace Volt::RHI
 		SetName(name);
 	}
 
-	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, Ref<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
 		: m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_name(name)
 	{
 		Invalidate(size);
@@ -42,6 +44,7 @@ namespace Volt::RHI
 	void VulkanStorageBuffer::ResizeByteSize(const size_t byteSize)
 	{
 		Invalidate(byteSize);
+		SetName(m_name);
 	}
 
 	void VulkanStorageBuffer::Resize(const uint32_t size)
@@ -57,6 +60,11 @@ namespace Volt::RHI
 		return m_allocation->GetSize();
 	}
 
+	const size_t VulkanStorageBuffer::GetElementSize() const
+	{
+		return m_elementSize;
+	}
+
 	const size_t VulkanStorageBuffer::GetSize() const
 	{
 		return m_byteSize;
@@ -67,7 +75,7 @@ namespace Volt::RHI
 		return m_size;
 	}
 
-	Weak<Allocation> VulkanStorageBuffer::GetAllocation() const
+	WeakPtr<Allocation> VulkanStorageBuffer::GetAllocation() const
 	{
 		return m_allocation;
 	}
@@ -79,7 +87,7 @@ namespace Volt::RHI
 
 	void VulkanStorageBuffer::SetData(const void* data, const size_t size)
 	{
-		Ref<Allocation> stagingAllocation = nullptr;
+		RefPtr<Allocation> stagingAllocation = nullptr;
 
 		if (m_allocatedUsingCustomAllocator)
 		{
@@ -94,15 +102,34 @@ namespace Volt::RHI
 		memcpy_s(mappedPtr, size, data, size);
 		stagingAllocation->Unmap();
 
-		const Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create();
+		RefPtr<CommandBuffer> cmdBuffer = CommandBuffer::Create();
 		cmdBuffer->Begin();
 
+		ResourceBarrierInfo barrier{};
+		barrier.type = BarrierType::Buffer;
+		barrier.bufferBarrier().srcStage = BarrierStage::ComputeShader | BarrierStage::VertexShader | BarrierStage::PixelShader;
+		barrier.bufferBarrier().srcAccess = BarrierAccess::None;
+		barrier.bufferBarrier().dstStage = BarrierStage::Copy;
+		barrier.bufferBarrier().dstAccess = BarrierAccess::TransferDestination;
+		barrier.bufferBarrier().offset = 0;
+		barrier.bufferBarrier().size = size;
+		barrier.bufferBarrier().resource = WeakPtr<VulkanStorageBuffer>(this);
+
+		cmdBuffer->ResourceBarrier({ barrier });
+		 
 		cmdBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
+
+		barrier.bufferBarrier().srcStage = BarrierStage::Copy;
+		barrier.bufferBarrier().srcAccess = BarrierAccess::TransferDestination;
+		barrier.bufferBarrier().dstStage = BarrierStage::ComputeShader | BarrierStage::VertexShader | BarrierStage::PixelShader;
+		barrier.bufferBarrier().dstAccess = BarrierAccess::None;
+
+		cmdBuffer->ResourceBarrier({ barrier });
 
 		cmdBuffer->End();
 		cmdBuffer->Execute();
 
-		GraphicsContext::DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = stagingAllocation]()
+		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = stagingAllocation]()
 		{
 			if (allocatedUsingCustomAllocator)
 			{
@@ -115,9 +142,9 @@ namespace Volt::RHI
 		});
 	}
 
-	void VulkanStorageBuffer::SetData(Ref<CommandBuffer> commandBuffer, const void* data, const size_t size)
+	void VulkanStorageBuffer::SetData(RefPtr<CommandBuffer> commandBuffer, const void* data, const size_t size)
 	{
-		Ref<Allocation> stagingAllocation = nullptr;
+		RefPtr<Allocation> stagingAllocation = nullptr;
 
 		if (m_allocatedUsingCustomAllocator)
 		{
@@ -132,9 +159,27 @@ namespace Volt::RHI
 		memcpy_s(mappedPtr, m_byteSize, data, size);
 		stagingAllocation->Unmap();
 
+		ResourceBarrierInfo barrier{};
+		barrier.bufferBarrier().srcStage = BarrierStage::All;
+		barrier.bufferBarrier().srcAccess = BarrierAccess::None;
+		barrier.bufferBarrier().dstStage = BarrierStage::Copy;
+		barrier.bufferBarrier().dstAccess = BarrierAccess::TransferDestination;
+		barrier.bufferBarrier().offset = 0;
+		barrier.bufferBarrier().size = size;
+		barrier.bufferBarrier().resource = WeakPtr<VulkanStorageBuffer>(this);
+
+		commandBuffer->ResourceBarrier({ barrier });
+
 		commandBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
 
-		GraphicsContext::DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = stagingAllocation]()
+		barrier.bufferBarrier().srcStage = BarrierStage::Copy;
+		barrier.bufferBarrier().srcAccess = BarrierAccess::TransferDestination;
+		barrier.bufferBarrier().dstStage = BarrierStage::All;
+		barrier.bufferBarrier().dstAccess = BarrierAccess::None;
+
+		commandBuffer->ResourceBarrier({ barrier });
+
+		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = stagingAllocation]()
 		{
 			if (allocatedUsingCustomAllocator)
 			{
@@ -147,13 +192,18 @@ namespace Volt::RHI
 		});
 	}
 
-	Ref<BufferView> VulkanStorageBuffer::GetView()
+	RefPtr<BufferView> VulkanStorageBuffer::GetView()
 	{
-		BufferViewSpecification spec{};
-		spec.bufferResource = As<StorageBuffer>();
+		if (m_view)
+		{
+			return m_view;
+		}
 
-		Ref<BufferView> bufferView = BufferView::Create(spec);
-		return bufferView;
+		BufferViewSpecification spec{};
+		spec.bufferResource = this;
+
+		m_view = BufferView::Create(spec);
+		return m_view;
 	}
 
 	void VulkanStorageBuffer::SetName(std::string_view name)
@@ -212,7 +262,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		GraphicsContext::DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
+		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
 		{
 			if (allocatedUsingCustomAllocator)
 			{

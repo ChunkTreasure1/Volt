@@ -5,7 +5,7 @@
 
 namespace Volt::RHI
 {
-	class PhysicalGraphicsDevice : public RHIInterface
+	class VTRHI_API PhysicalGraphicsDevice : public RHIInterface
 	{
 	public:
 		VT_DELETE_COMMON_OPERATORS(PhysicalGraphicsDevice);
@@ -14,7 +14,7 @@ namespace Volt::RHI
 		[[nodiscard]] virtual const DeviceVendor GetDeviceVendor() const = 0;
 		[[nodiscard]] virtual std::string_view GetDeviceName() const = 0;
 
-		static Ref<PhysicalGraphicsDevice> Create(const PhysicalDeviceCreateInfo& deviceInfo);
+		static RefPtr<PhysicalGraphicsDevice> Create(const PhysicalDeviceCreateInfo& deviceInfo);
 
 	protected:
 		PhysicalGraphicsDevice() = default;

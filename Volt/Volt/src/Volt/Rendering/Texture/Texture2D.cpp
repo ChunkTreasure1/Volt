@@ -1,9 +1,9 @@
 #include "vtpch.h"
 #include "Texture2D.h"
 
-#include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
+#include "Volt/Rendering/Resources/BindlessResourcesManager.h"
 
-#include <VoltRHI/Images/Image2D.h>
+#include <VoltRHI/Images/ImageView.h>
 
 namespace Volt
 {
@@ -16,18 +16,20 @@ namespace Volt
 		imageSpec.height = static_cast<uint32_t>(height);
 
 		m_image = RHI::Image2D::Create(imageSpec, data);
+		m_resourceHandle = BindlessResourcesManager::Get().RegisterImageView(m_image->GetView());
 	}
 
-	Texture2D::Texture2D(Ref<RHI::Image2D> image)
+	Texture2D::Texture2D(RefPtr<RHI::Image2D> image)
 		: m_image(image)
 	{
+		m_resourceHandle = BindlessResourcesManager::Get().RegisterImageView(m_image->GetView());
 	}
 
 	Texture2D::~Texture2D()
 	{
 		if (m_image)
 		{
-			GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_image->GetView());
+			BindlessResourcesManager::Get().UnregisterImageView(m_resourceHandle, m_image->GetView()->GetViewType());
 		}
 		
 		m_image = nullptr;
@@ -45,25 +47,28 @@ namespace Volt
 
 	ResourceHandle Texture2D::GetResourceHandle() const
 	{
-		return GlobalResourceManager::RegisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_image->GetView());
+		return m_resourceHandle;
 	}
 
-	void Texture2D::SetImage(Ref<RHI::Image2D> image)
+	void Texture2D::SetImage(RefPtr<RHI::Image2D> image)
 	{
 		if (m_image)
 		{
-			GlobalResourceManager::UnregisterResource<RHI::ImageView, ResourceSpecialization::Texture2D>(m_image->GetView());
+			BindlessResourcesManager::Get().UnregisterImageView(m_resourceHandle, m_image->GetView()->GetViewType());
 		}
+
+		m_resourceHandle = BindlessResourcesManager::Get().RegisterImageView(image->GetView());
 
 		m_image = image;
 	}
+
 
 	Ref<Texture2D> Texture2D::Create(RHI::PixelFormat format, uint32_t width, uint32_t height, const void* data)
 	{
 		return CreateRef<Texture2D>(format, width, height, data);
 	}
 
-	Ref<Texture2D> Texture2D::Create(Ref<RHI::Image2D> image)
+	Ref<Texture2D> Texture2D::Create(RefPtr<RHI::Image2D> image)
 	{
 		return CreateRef<Texture2D>(image);
 	}

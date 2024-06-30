@@ -11,7 +11,7 @@ namespace Volt
 	class Mesh;
 	class Camera;
 	class Scene;
-	class SceneRendererNew;
+	class SceneRenderer;
 }
 
 class MaterialEditorPanel : public EditorWindow
@@ -44,7 +44,7 @@ private:
 	Ref<Volt::Scene>& myEditorScene;
 
 	Ref<Volt::Scene> myPreviewScene;
-	Ref<Volt::SceneRendererNew> myPreviewRenderer;
+	Ref<Volt::SceneRenderer> myPreviewRenderer;
 
 	Volt::Entity myPreviewEntity;
 	std::string mySearchQuery;

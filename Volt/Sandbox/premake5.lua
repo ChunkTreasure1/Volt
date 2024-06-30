@@ -115,7 +115,7 @@ project "Sandbox"
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.vma}",
 
-		"%{IncludeDir.TGAFbx}",
+		"%{IncludeDir.zlib}"
 	}
 
     links
@@ -167,9 +167,6 @@ project "Sandbox"
 		"%{Library.mono}",
 		"%{Library.steam}",
 		"%{Library.discord}",
-
-		"%{Library.Vulkan}",
-		"%{Library.dxc}",
 
 		"%{Library.METIS}"
     }
@@ -241,14 +238,6 @@ project "Sandbox"
 		vectorextensions "AVX2"
 		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
 		kind "WindowedApp"
-
-        links
-		{
-			"%{Library.ShaderC_Release}",
-			"%{Library.ShaderC_Utils_Release}",
-			"%{Library.SPIRV_Cross_Release}",
-			"%{Library.SPIRV_Cross_GLSL_Release}",
-		}
 
 		postbuildcommands
 		{

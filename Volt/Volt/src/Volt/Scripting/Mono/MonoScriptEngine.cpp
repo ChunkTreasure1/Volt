@@ -2,7 +2,7 @@
 #include "MonoScriptEngine.h"
 
 #include "Volt/Core/Base.h"
-#include "Volt/Core/Buffer.h"
+#include <CoreUtilities/Buffer/Buffer.h>
 #include "Volt/Core/Application.h"
 
 #include "Volt/Log/Log.h"
@@ -515,6 +515,11 @@ namespace Volt
 			if (fieldInstance->field.type.IsEntity())
 			{
 				EntityID fieldEnt = *fieldInstance->data.As<EntityID>();
+				if (fieldEnt == Entity::NullID())
+				{
+					continue;
+				}
+
 				auto fieldEntInstance = GetOrCreateMonoEntity(fieldEnt);
 
 				auto instanceObject = MonoGCManager::GetObjectFromHandle(instance->GetHandle());

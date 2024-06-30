@@ -1,8 +1,7 @@
 #include "rhipch.h"
 #include "GraphicsContext.h"
 
-#include <VoltVulkan/Graphics/VulkanGraphicsContext.h>
-#include <VoltD3D12/Graphics/D3D12GraphicsContext.h>
+#include "VoltRHI/RHIProxy.h"
 
 namespace Volt::RHI
 {
@@ -16,48 +15,15 @@ namespace Volt::RHI
 		s_context = nullptr;
 	}
 
-	Ref<GraphicsContext> GraphicsContext::Create(const GraphicsContextCreateInfo& createInfo)
+	RefPtr<GraphicsContext> GraphicsContext::Create(const GraphicsContextCreateInfo& createInfo)
 	{
 		s_graphicsAPI = createInfo.graphicsApi;
-		s_logHook = createInfo.loghookInfo;
-		s_resourceManagementInfo = createInfo.resourceManagementInfo;
-
-		switch (s_graphicsAPI)
-		{
-			case GraphicsAPI::D3D12: return CreateRef<D3D12GraphicsContext>(createInfo); break;
-			case GraphicsAPI::MoltenVk:
-				break;
-			case GraphicsAPI::Vulkan: return CreateRef<VulkanGraphicsContext>(createInfo); break;
-		}
-
-		return nullptr;
-	}
-
-	void GraphicsContext::DestroyResource(std::function<void()>&& function)
-	{
-		if (s_resourceManagementInfo.resourceDeletionCallback)
-		{
-			s_resourceManagementInfo.resourceDeletionCallback(std::move(function));
-		}
-		else
-		{
-			function();
-		}
+		return RHIProxy::GetInstance().CreateGraphicsContext(createInfo);
 	}
 
 	void GraphicsContext::Update()
 	{
-		Get().m_defaultAllocator->Update();
-		Get().m_transientAllocator->Update();
-	}
-
-	void GraphicsContext::LogUnformatted(Severity logSeverity, std::string_view message)
-	{
-		if (!s_logHook.enabled || !s_logHook.logCallback)
-		{
-			return;
-		}
-
-		s_logHook.logCallback(logSeverity, message);
+		Get().GetDefaultAllocatorImpl().Update();
+		Get().GetTransientAllocatorImpl()->Update();
 	}
 }

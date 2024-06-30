@@ -5,11 +5,11 @@
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Rendering/Material.h>
+#include <Volt/Asset/Mesh/Mesh.h>
 
 #include <Volt/Scene/Scene.h>
 
-#include <Volt/RenderingNew/SceneRendererNew.h>
-#include <Volt/Rendering/Texture/Image2D.h>
+#include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Camera/Camera.h>
 
 #include <Volt/Components/LightComponents.h>
@@ -38,7 +38,7 @@ PreviewRenderer::PreviewRenderer()
 	//Volt::SceneRendererSettings settings{};
 	//settings.enableSkybox = false;
 
-	myPreviewRenderer = CreateRef<Volt::SceneRendererNew>(spec);
+	myPreviewRenderer = CreateRef<Volt::SceneRenderer>(spec);
 }
 
 PreviewRenderer::~PreviewRenderer()
@@ -126,7 +126,7 @@ bool PreviewRenderer::RenderMaterialPreview(Weak<AssetBrowser::AssetItem> assetI
 		return false;
 	}
 
-	auto meshAsset = Volt::AssetManager::QueueAsset<Volt::Mesh>(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh"));
+	auto meshAsset = Volt::AssetManager::QueueAsset<Volt::Mesh>(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtasset"));
 	if (!meshAsset || !meshAsset->IsValid())
 	{
 		return false;

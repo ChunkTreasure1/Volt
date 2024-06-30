@@ -8,7 +8,7 @@ struct GLFWwindow;
 namespace Volt::RHI
 {
 	class Image2D;
-	class Swapchain : public RHIInterface
+	class VTRHI_API Swapchain : public RHIInterface
 	{
 	public:
 		VT_DELETE_COMMON_OPERATORS(Swapchain);
@@ -19,13 +19,13 @@ namespace Volt::RHI
 		virtual void Resize(const uint32_t width, const uint32_t height, bool enableVSync) = 0;
 
 		VT_NODISCARD virtual const uint32_t GetCurrentFrame() const = 0;
-		VT_NODISCARD virtual Ref<Image2D> GetCurrentImage() const = 0;
+		VT_NODISCARD virtual RefPtr<Image2D> GetCurrentImage() const = 0;
 		VT_NODISCARD virtual const uint32_t GetWidth() const = 0;
 		VT_NODISCARD virtual const uint32_t GetHeight() const = 0;
 		VT_NODISCARD virtual const uint32_t GetFramesInFlight() const = 0;
 		VT_NODISCARD virtual const PixelFormat GetFormat() const = 0;
 
-		static Ref<Swapchain> Create(GLFWwindow* window);
+		static RefPtr<Swapchain> Create(GLFWwindow* window);
 
 	protected:
 		Swapchain() = default;

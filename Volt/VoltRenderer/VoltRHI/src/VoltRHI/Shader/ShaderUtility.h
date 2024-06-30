@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VoltRHI/Graphics/GraphicsContext.h"
+#include "VoltRHI/RHILog.h"
 
 #include <filesystem>
 #include <fstream>
@@ -10,29 +11,6 @@ namespace Volt::RHI
 {
 	namespace Utility
 	{
-		inline static std::filesystem::path GetShaderCacheSubDirectory()
-		{
-			const auto api = GraphicsContext::GetAPI();
-			std::filesystem::path subDir;
-
-			switch (api)
-			{
-				case GraphicsAPI::Vulkan: subDir = "Vulkan"; break;
-				case GraphicsAPI::D3D12: subDir = "D3D12"; break;
-				case GraphicsAPI::MoltenVk: subDir = "MoltenVK"; break;
-			}
-
-			return { subDir };
-		}
-
-		inline void CreateCacheDirectoryIfNeeded()
-		{
-			if (!std::filesystem::exists(GetShaderCacheSubDirectory()))
-			{
-				std::filesystem::create_directories(GetShaderCacheSubDirectory());
-			}
-		}
-
 		inline ShaderStage GetShaderStageFromFilename(const std::string& filename)
 		{
 			if (filename.find("_fs.glsl") != std::string::npos || filename.find("_ps.hlsl") != std::string::npos)
@@ -116,31 +94,6 @@ namespace Volt::RHI
 			return L"";
 		}
 
-		inline static std::string GetShaderStageCachedFileExtension(const ShaderStage stage)
-		{
-			switch (stage)
-			{
-				case ShaderStage::Vertex:		return ".vertex.cached";
-				case ShaderStage::Pixel:		return ".fragment.cached";
-				case ShaderStage::Hull:			return "hull.cached";
-				case ShaderStage::Domain:		return "domain.cached";
-				case ShaderStage::Geometry:		return ".geometry.cached";
-				case ShaderStage::Compute:		return ".compute.cached";
-
-				case ShaderStage::RayGen:		return "raygen.cached";
-				case ShaderStage::Miss:			return "raymiss.cached";
-				case ShaderStage::ClosestHit:	return "raychit.cached";
-				case ShaderStage::AnyHit:		return "rayahit.cached";
-				case ShaderStage::Intersection:	return "rayinter.cached";
-
-				case ShaderStage::Amplification:			return "amp.cached";
-				case ShaderStage::Mesh:			return "mesh.cached";
-			}
-			
-			assert(false);
-			return "";
-		}
-
 		inline std::string StageToString(ShaderStage stage)
 		{
 			switch (stage)
@@ -175,6 +128,10 @@ namespace Volt::RHI
 				result.resize(in.tellg());
 				in.seekg(0, std::ios::beg);
 				in.read(&result[0], result.size());
+			}
+			else
+			{
+				RHILog::LogTagged(LogSeverity::Error, "[Shader]", "Unable to read shader at location: {}!", path.string());
 			}
 
 			in.close();

@@ -5,6 +5,7 @@
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 
 #include <VoltRHI/Graphics/GraphicsDevice.h>
+#include <VoltRHI/Graphics/GraphicsContext.h>
 
 #include <vulkan/vulkan.h>
 
@@ -25,6 +26,8 @@ namespace Volt::RHI
 	inline static constexpr uint32_t RWBYTEADDRESSBUFFER_BINDING = 8;
 	inline static constexpr uint32_t UNIFORMBUFFER_BINDING = 9;
 	inline static constexpr uint32_t SAMPLERSTATE_BINDING = 10;
+	inline static constexpr uint32_t RWTEXTURE2DARRAY_BINDING = 11;
+	inline static constexpr uint32_t TEXTURE2DARRAY_BINDING = 12;
 
 	void VulkanBindlessManager::CreateGlobalDescriptorLayout()
 	{
@@ -41,6 +44,14 @@ namespace Volt::RHI
 		{
 			auto& binding = descriptorSetLayoutBindings.emplace_back();
 			binding.binding = TEXTURE2D_BINDING;
+			binding.descriptorCount = VulkanDefaults::IMAGE_BINDLESS_TABLE_SIZE;
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			binding.stageFlags = VK_SHADER_STAGE_ALL;
+		}
+
+		{
+			auto& binding = descriptorSetLayoutBindings.emplace_back();
+			binding.binding = TEXTURE2DARRAY_BINDING;
 			binding.descriptorCount = VulkanDefaults::IMAGE_BINDLESS_TABLE_SIZE;
 			binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 			binding.stageFlags = VK_SHADER_STAGE_ALL;
@@ -73,6 +84,14 @@ namespace Volt::RHI
 		{
 			auto& binding = descriptorSetLayoutBindings.emplace_back();
 			binding.binding = RWTEXTURE2D_BINDING;
+			binding.descriptorCount = VulkanDefaults::STORAGE_IMAGE_BINDLESS_TABLE_SIZE;
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			binding.stageFlags = VK_SHADER_STAGE_ALL;
+		}
+
+		{
+			auto& binding = descriptorSetLayoutBindings.emplace_back();
+			binding.binding = RWTEXTURE2DARRAY_BINDING;
 			binding.descriptorCount = VulkanDefaults::STORAGE_IMAGE_BINDLESS_TABLE_SIZE;
 			binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 			binding.stageFlags = VK_SHADER_STAGE_ALL;

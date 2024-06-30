@@ -2,7 +2,7 @@
 
 #include "Volt/Core/Base.h"
 #include "Volt/Core/UUID.h"
-#include "Volt/Core/Buffer.h"
+#include <CoreUtilities/Buffer/Buffer.h>
 
 #include "MonoScriptEngine.h"
 

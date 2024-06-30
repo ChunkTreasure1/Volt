@@ -9,6 +9,7 @@
 #include "Volt/Asset/Animation/Animation.h"
 #include "Volt/Asset/Animation/Skeleton.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
+#include "Volt/Asset/Mesh/Mesh.h"
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 

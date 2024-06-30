@@ -5,7 +5,6 @@
 #include "VoltVulkan/Graphics/VulkanSwapchain.h"
 #include "VoltVulkan/Graphics/VulkanGraphicsDevice.h"
 
-#include <VoltRHI/Buffers/CommandBuffer.h>
 #include <VoltRHI/Core/Profiling.h>
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
@@ -15,21 +14,20 @@
 #include <VoltRHI/Images/ImageView.h>
 #include <VoltRHI/Images/Image2D.h>
 
+#include <VoltRHI/RHILog.h>
+
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 
 namespace Volt::RHI
 {
-	static Ref<CommandBuffer> s_commandBuffer;
-	static VkDescriptorPool s_descriptorPool;
-
 	namespace Utility
 	{
 		inline static void CheckImGuiVulkanResults(VkResult result)
 		{
 			if (result != VK_SUCCESS)
 			{
-				GraphicsContext::Log(Severity::Error, std::format("VkResult is '{0}' in {1}:{2}", VKResultToString(result), __FILE__, __LINE__));
+				RHILog::Log(LogSeverity::Error, std::format("VkResult is '{0}' in {1}:{2}", VKResultToString(result), __FILE__, __LINE__));
 				if (result == VK_ERROR_DEVICE_LOST)
 				{
 					using namespace std::chrono_literals;
@@ -50,7 +48,7 @@ namespace Volt::RHI
 		ShutdownAPI();
 	}
 
-	ImTextureID VulkanImGuiImplementation::GetTextureID(Ref<Image2D> image) const
+	ImTextureID VulkanImGuiImplementation::GetTextureID(RefPtr<Image2D> image) const
 	{
 		ImTextureID id = ImGui_ImplVulkan_AddTexture(nullptr, image->GetView()->GetHandle<VkImageView>(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return id;
@@ -63,7 +61,7 @@ namespace Volt::RHI
 	
 		// Create font
 		{
-			Ref<CommandBuffer> commandBuffer = CommandBuffer::Create();
+			RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 			commandBuffer->Begin();
 			ImGui_ImplVulkan_CreateFontsTexture(commandBuffer->GetHandle<VkCommandBuffer>());
 			commandBuffer->End();
@@ -87,9 +85,9 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
-		s_commandBuffer->Begin();
+		m_commandBuffer->Begin();
 
-		VkCommandBuffer currentCommandBuffer = s_commandBuffer->GetHandle<VkCommandBuffer>();
+		VkCommandBuffer currentCommandBuffer = m_commandBuffer->GetHandle<VkCommandBuffer>();
 
 		auto swapchainPtr = m_swapchain->As<VulkanSwapchain>();
 
@@ -122,7 +120,7 @@ namespace Volt::RHI
 		viewport.minDepth = 0.f;
 		viewport.maxDepth = 1.f;
 
-		s_commandBuffer->SetViewports({ viewport });
+		m_commandBuffer->SetViewports({ viewport });
 
 		Rect2D scissor{};
 		scissor.extent.width = swapchainPtr->GetWidth();
@@ -130,18 +128,20 @@ namespace Volt::RHI
 		scissor.offset.x = 0;
 		scissor.offset.y = 0;
 
-		s_commandBuffer->SetScissors({ scissor });
+		m_commandBuffer->SetScissors({ scissor });
 
 		ImDrawData* drawData = ImGui::GetDrawData();
 		ImGui_ImplVulkan_RenderDrawData(drawData, currentCommandBuffer);
 
 		vkCmdEndRenderPass(currentCommandBuffer);
-		s_commandBuffer->End();
+		m_commandBuffer->End();
 	}
 
-	void VulkanImGuiImplementation::InitializeAPI()
+	void VulkanImGuiImplementation::InitializeAPI(ImGuiContext* context)
 	{
-		ImGui_ImplGlfw_InitForVulkan(m_windowPtr, true);
+		ImGui::SetCurrentContext(context);
+
+		ImGui_ImplGlfw_InitForVulkan(m_windowPtr, context, true);
 		InitializeVulkanData();
 	}
 
@@ -149,6 +149,11 @@ namespace Volt::RHI
 	{
 		ReleaseVulkanData();
 		ImGui_ImplGlfw_Shutdown();
+	}
+
+	void* VulkanImGuiImplementation::GetHandleImpl() const
+	{
+		return nullptr;
 	}
 
 	void VulkanImGuiImplementation::InitializeVulkanData()
@@ -177,7 +182,7 @@ namespace Volt::RHI
 
 		auto device = GraphicsContext::GetDevice();
 
-		VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle<VkDevice>(), &poolInfo, nullptr, &s_descriptorPool));
+		VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle<VkDevice>(), &poolInfo, nullptr, &m_descriptorPool));
 
 		const auto vulkanSwapchain = m_swapchain->As<VulkanSwapchain>();
 
@@ -187,7 +192,7 @@ namespace Volt::RHI
 		initInfo.Device = device->GetHandle<VkDevice>();
 		initInfo.Queue = device->GetDeviceQueue(QueueType::Graphics)->GetHandle<VkQueue>();
 
-		initInfo.DescriptorPool = s_descriptorPool;
+		initInfo.DescriptorPool = m_descriptorPool;
 		initInfo.ImageCount = VulkanSwapchain::MAX_FRAMES_IN_FLIGHT;
 		initInfo.MinImageCount = VulkanSwapchain::MAX_FRAMES_IN_FLIGHT;
 		initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
@@ -197,7 +202,7 @@ namespace Volt::RHI
 
 		// Create font
 		{
-			Ref<CommandBuffer> commandBuffer = CommandBuffer::Create();
+			RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 			commandBuffer->Begin();
 			ImGui_ImplVulkan_CreateFontsTexture(commandBuffer->GetHandle<VkCommandBuffer>());
 			commandBuffer->End();
@@ -206,15 +211,15 @@ namespace Volt::RHI
 			ImGui_ImplVulkan_DestroyFontUploadObjects();
 		}
 
-		s_commandBuffer = CommandBuffer::Create(m_swapchain);
+		m_commandBuffer = CommandBuffer::Create(m_swapchain);
 	}
 
 	void VulkanImGuiImplementation::ReleaseVulkanData()
 	{
 		auto device = GraphicsContext::GetDevice()->As<VulkanGraphicsDevice>();
-		s_commandBuffer = nullptr;
+		m_commandBuffer = nullptr;
 
-		vkDestroyDescriptorPool(device->GetHandle<VkDevice>(), s_descriptorPool, nullptr);
+		vkDestroyDescriptorPool(device->GetHandle<VkDevice>(), m_descriptorPool, nullptr);
 		ImGui_ImplVulkan_Shutdown();
 	}
 }

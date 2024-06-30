@@ -1,8 +1,0 @@
-Metadata:
-  assetHandle: 9028998913825246220
-  filePath: Engine/Shaders/Source/UI/SDFUI_ps.hlsl
-  type: 128
-  Dependencies:
-    []
-  Properties:
-    {}

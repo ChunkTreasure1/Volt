@@ -37,6 +37,7 @@ namespace Volt::BehaviorTree
 
 		static AssetType GetStaticType() { return AssetType::BehaviorGraph; }
 		AssetType GetType() override { return AssetType::BehaviorGraph; }
+		uint32_t GetVersion() const override { return 1; }
 
 	private:
 		friend class BehaviorTreeImporter;

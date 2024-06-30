@@ -1,5 +1,5 @@
 project "tracy"
-	kind "StaticLib"
+	kind "SharedLib"
 	language "C++"
 	staticruntime "off"
 	warnings "off"
@@ -22,7 +22,13 @@ project "tracy"
 	defines
 	{
 		"TRACY_ENABLE",
-		"TRACY_ON_DEMAND"
+		"TRACY_ON_DEMAND",
+		"TRACY_EXPORTS"
+	}
+
+	postbuildcommands
+	{
+		'{COPY} "bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/"%{prj.name}".dll" "../../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox"'
 	}
 
 	warnings "off"
@@ -47,3 +53,8 @@ project "tracy"
 	filter "configurations:Dist"
 		runtime "Release"
 		optimize "on"
+
+		postbuildcommands
+		{
+			'{COPY} "bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../../../Engine"'
+		}

@@ -12,6 +12,8 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Memory/Allocator.h>
 
+#include <VoltRHI/RHILog.h>
+
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
@@ -19,6 +21,8 @@
 
 namespace Volt::RHI
 {
+	static const std::vector<VkValidationFeatureEnableEXT> s_enabledValidationFeatures = { /*VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT, /*VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT*/};
+
 	namespace Utility
 	{
 		inline static VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger)
@@ -56,16 +60,16 @@ namespace Volt::RHI
 			switch (messageSeverity)
 			{
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-					GraphicsContext::LogUnformatted(Severity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					RHILog::LogUnformatted(LogSeverity::Trace, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-					GraphicsContext::LogUnformatted(Severity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					RHILog::LogUnformatted(LogSeverity::Info, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-					GraphicsContext::LogUnformatted(Severity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					RHILog::LogUnformatted(LogSeverity::Warning, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-					GraphicsContext::LogUnformatted(Severity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					RHILog::LogUnformatted(LogSeverity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 			}
 
@@ -95,14 +99,12 @@ namespace Volt::RHI
 
 		inline static void PopulateValidationFeaturesInfo(VkValidationFeaturesEXT& outInfo, VkDebugUtilsMessengerCreateInfoEXT& debugInfo)
 		{
-			const std::vector<VkValidationFeatureEnableEXT> enabledValidationFeatures = { /*VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT, VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT */ };
-
 			outInfo.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
 			outInfo.pNext = &debugInfo;
 			outInfo.disabledValidationFeatureCount = 0;
 			outInfo.pDisabledValidationFeatures = nullptr;
-			outInfo.enabledValidationFeatureCount = static_cast<uint32_t>(enabledValidationFeatures.size());
-			outInfo.pEnabledValidationFeatures = enabledValidationFeatures.data();
+			outInfo.enabledValidationFeatureCount = static_cast<uint32_t>(s_enabledValidationFeatures.size());
+			outInfo.pEnabledValidationFeatures = s_enabledValidationFeatures.data();
 		}
 	}
 
@@ -117,6 +119,26 @@ namespace Volt::RHI
 	VulkanGraphicsContext::~VulkanGraphicsContext()
 	{
 		Shutdown();
+	}
+
+	Allocator& VulkanGraphicsContext::GetDefaultAllocatorImpl()
+	{
+		return *m_defaultAllocator;
+	}
+
+	RefPtr<Allocator> VulkanGraphicsContext::GetTransientAllocatorImpl()
+	{
+		return m_transientAllocator;
+	}
+
+	RefPtr<GraphicsDevice> VulkanGraphicsContext::GetGraphicsDevice() const
+	{
+		return m_graphicsDevice;
+	}
+
+	RefPtr<PhysicalGraphicsDevice> VulkanGraphicsContext::GetPhysicalGraphicsDevice() const
+	{
+		return m_physicalDevice;
 	}
 
 	void* VulkanGraphicsContext::GetHandleImpl() const
@@ -166,7 +188,7 @@ namespace Volt::RHI
 		const bool validationLayerSupported = CheckValidationLayerSupport();
 		if (!validationLayerSupported)
 		{
-			GraphicsContext::Log(Severity::Error, "[GraphicsContext] Validation layers requested but not supported!");
+			RHILog::Log(LogSeverity::Error, "[GraphicsContext] Validation layers requested but not supported!");
 		}
 #endif
 

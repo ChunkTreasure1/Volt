@@ -1,12 +1,14 @@
 #pragma once
 
 #include <CoreUtilities/Core.h>
+#include <CoreUtilities/Pointers/RefPtr.h>
+#include <CoreUtilities/Pointers/WeakPtr.h>
 
 #include <memory>
 #include <string>
 #include <iostream>
 
-#define VT_VERSION Version::Create(0, 1, 4)
+#define VT_VERSION Version::Create(0, 1, 5)
 
 #define TO_NORMALIZEDRGB(r, g, b) glm::vec4{ r / 255.f, g / 255.f, b / 255.f, 1.f }
 #define TO_NORMALIZEDRGBA(r, g, b, a) glm::vec4{ r / 255.f, g / 255.f, b / 255.f, a / 255.f }
@@ -21,22 +23,16 @@
 #define VT_ENABLE_SHADER_DEBUG
 #define VT_SHADER_PRINT
 #define VT_PROFILE_GPU
-#define VT_OPTIMIZE_ON
-#define VT_OPTIMIZE_OFF
-
 #else
 
 #ifdef VT_RELEASE
 #define VT_ENABLE_SHADER_DEBUG
+#define VT_DEBUGBREAK() __debugbreak()
 #define VT_PROFILE_GPU
-#define VT_OPTIMIZE_OFF __pragma(optimize("", off));
-#define VT_OPTIMIZE_ON __pragma(optimize("", on));
 
 #endif
 
 #ifdef VT_DIST
-#define VT_OPTIMIZE_OFF __pragma(optimize("", off));
-#define VT_OPTIMIZE_ON __pragma(optimize("", on));
 #endif
 
 #define VT_DEBUGBREAK() 

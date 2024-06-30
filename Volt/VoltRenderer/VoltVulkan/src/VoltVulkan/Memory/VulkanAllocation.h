@@ -16,10 +16,10 @@ namespace Volt::RHI
 		~VulkanImageAllocation() override = default;
 
 		void Unmap() override;
-		[[nodiscard]] inline const UUID64 GetHeapID() const override { return 0; }
-		[[nodiscard]] const uint64_t GetDeviceAddress() const override;
-		[[nodiscard]] const size_t GetHash() const override { return m_allocationHash; }
-		[[nodiscard]] const uint64_t GetSize() const override { return m_size; }
+		VT_NODISCARD VT_INLINE const UUID64 GetHeapID() const override { return 0; }
+		VT_NODISCARD const uint64_t GetDeviceAddress() const override;
+		VT_NODISCARD VT_INLINE const size_t GetHash() const override { return m_allocationHash; }
+		VT_NODISCARD VT_INLINE const uint64_t GetSize() const override { return m_size; }
 
 	protected:
 		void* GetResourceHandleInternal() const override;
@@ -43,10 +43,10 @@ namespace Volt::RHI
 		~VulkanBufferAllocation() override = default;
 
 		void Unmap() override;
-		inline const UUID64 GetHeapID() const override { return 0; }
-		[[nodiscard]] const uint64_t GetDeviceAddress() const override;
-		[[nodiscard]] const size_t GetHash() const override { return m_allocationHash; }
-		[[nodiscard]] const uint64_t GetSize() const override { return m_size; }
+		VT_NODISCARD VT_INLINE const UUID64 GetHeapID() const override { return 0; }
+		VT_NODISCARD const uint64_t GetDeviceAddress() const override;
+		VT_NODISCARD VT_INLINE const size_t GetHash() const override { return m_allocationHash; }
+		VT_NODISCARD VT_INLINE const uint64_t GetSize() const override { return m_size; }
 
 	protected:
 		void* GetResourceHandleInternal() const override;
@@ -66,13 +66,14 @@ namespace Volt::RHI
 	class VulkanTransientBufferAllocation : public Allocation
 	{
 	public:
+		VulkanTransientBufferAllocation(const size_t hash);
 		~VulkanTransientBufferAllocation() override = default;
 
 		void Unmap() override;
-		inline const UUID64 GetHeapID() const override { return m_heapId; }
-		[[nodiscard]] const uint64_t GetDeviceAddress() const override;
-		[[nodiscard]] const size_t GetHash() const override { return m_allocationHash; }
-		[[nodiscard]] const uint64_t GetSize() const override { return m_size; }
+		VT_NODISCARD VT_INLINE const UUID64 GetHeapID() const override { return m_heapId; }
+		VT_NODISCARD const uint64_t GetDeviceAddress() const override;
+		VT_NODISCARD VT_INLINE const size_t GetHash() const override { return m_allocationHash; }
+		VT_NODISCARD VT_INLINE const uint64_t GetSize() const override { return m_size; }
 
 	protected:
 		void* GetResourceHandleInternal() const override;
@@ -95,13 +96,14 @@ namespace Volt::RHI
 	class VulkanTransientImageAllocation : public Allocation
 	{
 	public:
+		VulkanTransientImageAllocation(const size_t hash);
 		~VulkanTransientImageAllocation() override = default;
 
 		void Unmap() override;
-		inline const UUID64 GetHeapID() const override { return m_heapId; }
-		[[nodiscard]] const uint64_t GetDeviceAddress() const override;
-		[[nodiscard]] const size_t GetHash() const override { return m_allocationHash; }
-		[[nodiscard]] const uint64_t GetSize() const override { return m_size; }
+		VT_NODISCARD VT_INLINE const UUID64 GetHeapID() const override { return m_heapId; }
+		VT_NODISCARD const uint64_t GetDeviceAddress() const override;
+		VT_NODISCARD VT_INLINE const size_t GetHash() const override { return m_allocationHash; }
+		VT_NODISCARD VT_INLINE const uint64_t GetSize() const override { return m_size; }
 
 	protected:
 		void* GetResourceHandleInternal() const override;

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "VoltRHI/Core/RHICommon.h"
-#include "VoltRHI/Images/ImageUtility.h"
-#include "VoltRHI/Shader/BufferLayout.h"
+#include <VoltRHI/Core/RHICommon.h>
+#include <VoltRHI/Images/ImageUtility.h>
+#include <VoltRHI/Shader/BufferLayout.h>
+#include <VoltRHI/Shader/ShaderCommon.h>
 
 #include <vulkan/vulkan.h>
 
@@ -340,5 +341,7 @@ namespace Volt::RHI
 		const VkImageCreateInfo GetVkImageCreateInfo(const ImageSpecification& specification);
 		const MemoryRequirement GetImageRequirement(const VkImageCreateInfo& imageCreateInfo);
 
-	}
+		const ImageLayout GetImageLayoutFromVkImageLayout(VkImageLayout layout);
+		const VkImageLayout GetVkImageLayoutFromImageLayout(ImageLayout layout);
+}
 }

@@ -1,6 +1,18 @@
 #include "CommonBuffers.hlsli"
-#include "DefaultVertexMeshlet.hlsli"
 #include "Utility.hlsli"
+#include "Resources.hlsli"
+#include "GPUScene.hlsli"
+#include "Lights.hlsli"
+
+struct Constants
+{
+    GPUScene gpuScene;
+    UniformBuffer<ViewData> viewData;
+    UniformTypedBuffer<DirectionalLight> directionalLight;
+};
+
+#define OVERRIDE_DEFAULT_CONSTANTS
+#include "DefaultVertexMeshlet.hlsli"
 
 struct Output
 {
@@ -10,14 +22,17 @@ struct Output
 
 Output main(in DefaultInput input, in uint instanceId : SV_InstanceID)
 {
+    input.Initialize();
+
     const Constants constants = GetConstants<Constants>();
     const DirectionalLight light = constants.directionalLight.Load(0);
 
     const float4x4 transform = input.GetTransform();
+    const float4x4 skinningMatrix = input.GetSkinningMatrix();
 
     Output output;
     output.target = instanceId;
-    output.position = mul(light.viewProjections[instanceId], mul(transform, float4(input.GetVertexPositionData().position, 1.f)));
+    output.position = mul(light.viewProjections[instanceId], mul(transform, mul(skinningMatrix, float4(input.GetVertexPositionData().position, 1.f))));
 
     return output;
 }

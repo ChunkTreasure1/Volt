@@ -13,6 +13,8 @@
 #include <VoltRHI/Core/Profiling.h>
 #include <VoltRHI/Utility/HashUtility.h>
 
+#include <VoltRHI/RHILog.h>
+
 #include <vulkan/vulkan.h>
 
 namespace Volt::RHI
@@ -24,11 +26,21 @@ namespace Volt::RHI
 
 	VulkanTransientAllocator::~VulkanTransientAllocator()
 	{
+		for (const auto& imageAlloc : m_allocationCache.GetImageAllocations())
+		{
+			DestroyImageInternal(imageAlloc.allocation);
+		}
+
+		for (const auto& bufferAlloc : m_allocationCache.GetBufferAllocations())
+		{
+			DestroyBufferInternal(bufferAlloc.allocation);
+		}
+
 		m_bufferHeaps.clear();
 		m_imageHeaps.clear();
 	}
 
-	Ref<Allocation> VulkanTransientAllocator::CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage)
+	RefPtr<Allocation> VulkanTransientAllocator::CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -42,11 +54,23 @@ namespace Volt::RHI
 		info.size = size;
 		info.usage = usage;
 		info.memoryUsage = memoryUsage;
+		info.hash = hash;
 
-		Ref<Allocation> result;
+		RefPtr<Allocation> result;
 
 		for (const auto& heap : m_bufferHeaps)
 		{
+			if (heap->IsAllocationSupported(size, TransientHeapFlags::AllowBuffers))
+			{
+				result = heap->CreateBuffer(info);
+				break;
+			}
+		}
+
+		// If we were not able to allocate in the heap, we will create a new one
+		if (!result)
+		{
+			auto heap = CreateNewBufferHeap();
 			if (heap->IsAllocationSupported(size, TransientHeapFlags::AllowBuffers))
 			{
 				result = heap->CreateBuffer(info);
@@ -55,13 +79,13 @@ namespace Volt::RHI
 
 		if (!result)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientAllocation]", "Unable to create buffer of size {0}!", size);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocation]", "Unable to create buffer of size {0}!", size);
 		}
 
 		return result;
 	}
 
-	Ref<Allocation> VulkanTransientAllocator::CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage)
+	RefPtr<Allocation> VulkanTransientAllocator::CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -76,12 +100,24 @@ namespace Volt::RHI
 		TransientImageCreateInfo info{};
 		info.imageSpecification = imageSpecification;
 		info.size = Utility::Align(memoryRequirement.size, memoryRequirement.alignment);
+		info.hash = hash;
 
-		Ref<Allocation> result;
+		RefPtr<Allocation> result;
 
-		for (const auto& heap : m_bufferHeaps)
+		for (const auto& heap : m_imageHeaps)
 		{
-			if (heap->IsAllocationSupported(memoryRequirement.size, TransientHeapFlags::AllowBuffers))
+			if (heap->IsAllocationSupported(memoryRequirement.size, TransientHeapFlags::AllowTextures))
+			{
+				result = heap->CreateImage(info);
+				break;
+			}
+		}
+
+		// If we were not able to allocate in the heap, we will create a new one
+		if (!result)
+		{
+			auto heap = CreateNewImageHeap();
+			if (heap->IsAllocationSupported(memoryRequirement.size, TransientHeapFlags::AllowTextures))
 			{
 				result = heap->CreateImage(info);
 			}
@@ -89,18 +125,18 @@ namespace Volt::RHI
 
 		if (!result)
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientAllocation]", "Unable to create image of size {0}!", memoryRequirement.size);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocation]", "Unable to create image of size {0}!", memoryRequirement.size);
 		}
 
 		return result;
 	}
 
-	void VulkanTransientAllocator::DestroyBuffer(Ref<Allocation> allocation)
+	void VulkanTransientAllocator::DestroyBuffer(RefPtr<Allocation> allocation)
 	{
 		m_allocationCache.QueueBufferAllocationForRemoval(allocation);
 	}
 
-	void VulkanTransientAllocator::DestroyImage(Ref<Allocation> allocation)
+	void VulkanTransientAllocator::DestroyImage(RefPtr<Allocation> allocation)
 	{
 		m_allocationCache.QueueImageAllocationForRemoval(allocation);
 	}
@@ -115,7 +151,7 @@ namespace Volt::RHI
 		// Buffer heap
 		{
 			TransientHeapCreateInfo info{};
-			info.pageSize = 128 * 1024 * 1024;
+			info.pageSize = HEAP_PAGE_SIZE;
 			info.flags = TransientHeapFlags::AllowBuffers;
 			m_bufferHeaps.push_back(TransientHeap::Create(info));
 		}
@@ -123,17 +159,17 @@ namespace Volt::RHI
 		// Image heap
 		{
 			TransientHeapCreateInfo info{};
-			info.pageSize = 128 * 1024 * 1024;
-			info.flags = TransientHeapFlags::AllowTextures;
+			info.pageSize = HEAP_PAGE_SIZE;
+			info.flags = TransientHeapFlags::AllowTextures | TransientHeapFlags::AllowRenderTargets;
 			m_imageHeaps.push_back(TransientHeap::Create(info));
 		}
 	}
 
-	void VulkanTransientAllocator::DestroyBufferInternal(Ref<Allocation> allocation)
+	void VulkanTransientAllocator::DestroyBufferInternal(RefPtr<Allocation> allocation)
 	{
 		VT_PROFILE_FUNCTION();
 
-		Ref<TransientHeap> parentHeap;
+		RefPtr<TransientHeap> parentHeap;
 
 		for (const auto& heap : m_bufferHeaps)
 		{
@@ -150,18 +186,18 @@ namespace Volt::RHI
 		}
 		else
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientAllocation]", "Unable to destroy buffer with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocator]", "Unable to destroy buffer with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
 			DestroyOrphanBuffer(allocation);
 		}
 	}
 
-	void VulkanTransientAllocator::DestroyImageInternal(Ref<Allocation> allocation)
+	void VulkanTransientAllocator::DestroyImageInternal(RefPtr<Allocation> allocation)
 	{
 		VT_PROFILE_FUNCTION();
 
-		Ref<TransientHeap> parentHeap;
+		RefPtr<TransientHeap> parentHeap;
 
-		for (const auto& heap : m_bufferHeaps)
+		for (const auto& heap : m_imageHeaps)
 		{
 			if (heap->GetHeapID() == allocation->GetHeapID())
 			{
@@ -176,21 +212,45 @@ namespace Volt::RHI
 		}
 		else
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientAllocation]", "Unable to destroy image with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocator]", "Unable to destroy image with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
 			DestroyOrphanImage(allocation);
 		}
 	}
 
-	void VulkanTransientAllocator::DestroyOrphanBuffer(Ref<Allocation> allocation)
+	void VulkanTransientAllocator::DestroyOrphanBuffer(RefPtr<Allocation> allocation)
 	{
 		auto device = GraphicsContext::GetDevice();
 		vkDestroyBuffer(device->GetHandle<VkDevice>(), allocation->GetResourceHandle<VkBuffer>(), nullptr);
 	}
 
-	void VulkanTransientAllocator::DestroyOrphanImage(Ref<Allocation> allocation)
+	void VulkanTransientAllocator::DestroyOrphanImage(RefPtr<Allocation> allocation)
 	{
 		auto device = GraphicsContext::GetDevice();
 		vkDestroyImage(device->GetHandle<VkDevice>(), allocation->GetResourceHandle<VkImage>(), nullptr);
+	}
+
+	VT_NODISCARD RefPtr<TransientHeap> VulkanTransientAllocator::CreateNewImageHeap()
+	{
+		TransientHeapCreateInfo info{};
+		info.pageSize = HEAP_PAGE_SIZE;
+		info.flags = TransientHeapFlags::AllowTextures | TransientHeapFlags::AllowRenderTargets;
+		
+		RefPtr<TransientHeap>& heap = m_imageHeaps.emplace_back();
+		heap = TransientHeap::Create(info);
+
+		return heap;
+	}
+
+	VT_NODISCARD RefPtr<TransientHeap> VulkanTransientAllocator::CreateNewBufferHeap()
+	{
+		TransientHeapCreateInfo info{};
+		info.pageSize = HEAP_PAGE_SIZE;
+		info.flags = TransientHeapFlags::AllowBuffers;
+
+		RefPtr<TransientHeap>& heap = m_bufferHeaps.emplace_back();
+		heap = TransientHeap::Create(info);
+
+		return heap;
 	}
 
 	void VulkanTransientAllocator::Update()

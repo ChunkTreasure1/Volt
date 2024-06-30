@@ -9,17 +9,16 @@
 #include "Volt/Asset/Rendering/Material.h"
 #include "Volt/Asset/Rendering/MaterialTable.h"
 
-#include "Volt/RenderingNew/Shader/ShaderMap.h"
+#include "Volt/Rendering/Shader/ShaderMap.h"
 
 namespace Volt
 {
-	void VTMeshImporter::ImportMeshImpl(const std::filesystem::path& path, Ref<Mesh>& mesh)
+	bool VTMeshImporter::ImportMeshImpl(const std::filesystem::path& path, Mesh& dstMesh)
 	{
 		if (!std::filesystem::exists(path))
 		{
 			VT_CORE_ERROR("File does not exist: {0}", path.string().c_str());
-			mesh->SetFlag(AssetFlag::Missing, true);
-			return;
+			return false;
 		}
 
 		std::ifstream file(path, std::ios::in | std::ios::binary);
@@ -48,34 +47,31 @@ namespace Volt
 			const AssetHandle materialHandle = *(AssetHandle*)&totalData[offset];
 			offset += sizeof(AssetHandle);
 	
-			mesh->m_materialTable.SetMaterial(materialHandle, i);
+			dstMesh.m_materialTable.SetMaterial(materialHandle, i);
 		}
 
 		const uint32_t vertexCount = *(uint32_t*)&totalData[offset];
 		offset += sizeof(uint32_t);
 
-		mesh->m_vertices.resize(vertexCount);
-		memcpy_s(mesh->m_vertices.data(), sizeof(Vertex) * vertexCount, &totalData[offset], sizeof(Vertex) * vertexCount);
 		offset += sizeof(Vertex) * vertexCount;
 
 		const uint32_t indexCount = *(uint32_t*)&totalData[offset];
 		offset += sizeof(uint32_t);
 
-		mesh->m_indices.resize(indexCount);
-		memcpy_s(mesh->m_indices.data(), sizeof(uint32_t) * indexCount, &totalData[offset], sizeof(uint32_t) * indexCount);
+		dstMesh.m_indices.resize(indexCount);
+		memcpy_s(dstMesh.m_indices.data(), sizeof(uint32_t) * indexCount, &totalData[offset], sizeof(uint32_t) * indexCount);
 		offset += sizeof(uint32_t) * indexCount;
 
 		if (!IsValid(subMeshCount, vertexCount, indexCount, srcSize) && path.extension() != ".vtnavmesh")
 		{
 			VT_CORE_ERROR("Mesh {0} is invalid! It needs to be recompiled!", path.string());
-			mesh->SetFlag(AssetFlag::Invalid, true);
-			return;
+			return false;
 		}
 
-		mesh->m_boundingSphere.center = *(glm::vec3*)&totalData[offset];
+		dstMesh.m_boundingSphere.center = *(glm::vec3*)&totalData[offset];
 		offset += sizeof(glm::vec3);
 
-		mesh->m_boundingSphere.radius = *(float*)&totalData[offset];
+		dstMesh.m_boundingSphere.radius = *(float*)&totalData[offset];
 		offset += sizeof(float);
 
 		const uint32_t nameCount = *(uint32_t*)&totalData[offset];
@@ -97,7 +93,7 @@ namespace Volt
 
 		for (uint32_t i = 0; i < subMeshCount; i++)
 		{
-			auto& subMesh = mesh->m_subMeshes.emplace_back();
+			auto& subMesh = dstMesh.m_subMeshes.emplace_back();
 
 			subMesh.materialIndex = *(uint32_t*)&totalData[offset];
 			offset += sizeof(uint32_t);
@@ -125,16 +121,17 @@ namespace Volt
 			subMesh.GenerateHash();
 		}
 
-		//if (mesh->m_material)
+		//if (dstMesh.m_material)
 		//{
-		//	mesh->m_material = CreateRef<Material>();
-		//	mesh->m_material->mySubMaterials.emplace(0, SubMaterial::Create("Null", 0, ShaderMap::Get("VisibilityBuffer")));
+		//	dstMesh.m_material = CreateRef<Material>();
+		//	dstMesh.m_material->mySubMaterials.emplace(0, SubMaterial::Create("Null", 0, ShaderMap::Get("VisibilityBuffer")));
 		//}
 
 		//// #TODO_Ivar: Should be removed
-		//mesh->m_materialTable.SetMaterial(AssetManager::CreateAsset<Material>("", "None"), 0);
+		//dstMesh.m_materialTable.SetMaterial(AssetManager::CreateAsset<Material>("", "None"), 0);
 
-		mesh->Construct();
+		dstMesh.Construct();
+		return true;
 	}
 
 	bool VTMeshImporter::IsValid(uint32_t subMeshCount, uint32_t vertexCount, uint32_t indexCount, size_t srcSize) const

@@ -29,9 +29,11 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::BlendSpace; }
 		virtual AssetType GetType() override { return AssetType::BlendSpace; }
+		uint32_t GetVersion() const override { return 1; }
 
 	private:
 		friend class BlendSpaceImporter;
+		friend class BlendSpaceSerializer;
 
 		BlendSpaceDimension myDimension = BlendSpaceDimension::OneD;
 

@@ -10,9 +10,9 @@ namespace Volt
 		VTMeshImporter() = default;
 
 	protected:
-		void ImportMeshImpl(const std::filesystem::path& path, Ref<Mesh>& mesh) override;
-		void ImportSkeletonImpl(const std::filesystem::path&, Ref<Skeleton>& skeleton) override { }
-		void ImportAnimationImpl(const std::filesystem::path&, Ref<Skeleton> targetSkeleton, Ref<Animation>& animation) override { }
+		bool ImportMeshImpl(const std::filesystem::path& path, Mesh& dstMesh) override;
+		bool ImportSkeletonImpl(const std::filesystem::path&, Skeleton& dstSkeleton) override { return false; }
+		bool ImportAnimationImpl(const std::filesystem::path&, Ref<Skeleton> targetSkeleton, Animation& dstAnimation) override { return false; }
 
 	private:
 		bool IsValid(uint32_t subMeshCount, uint32_t vertexCount, uint32_t indexCount, size_t totalSize) const;

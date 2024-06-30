@@ -31,15 +31,17 @@
 
 #include "Volt/Math/Math.h"
 
-#include "Volt/RenderingNew/RenderScene.h"
-#include "Volt/RenderingNew/RendererNew.h"
+#include "Volt/Rendering/RenderScene.h"
+#include "Volt/Rendering/Renderer.h"
 
 #include "Volt/Rendering/RendererStructs.h"
 #include "Volt/Rendering/Camera/Camera.h"
-#include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
+#include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
 
 #include "Volt/Vision/Vision.h"
 #include "Volt/Utility/Random.h"
+
+#include "Volt/Animation/MotionWeaver.h"
 
 #include "Volt/Discord/DiscordSDK.h"
 
@@ -48,6 +50,8 @@
 #include <GraphKey/Node.h>
 
 #include <Navigation/Core/NavigationSystem.h>
+
+#include <CoreUtilities/TimeUtility.h>
 
 #include <stack>
 #include <ranges>
@@ -89,6 +93,9 @@ namespace Volt
 	void Scene::OnEvent(Event& e)
 	{
 		VT_PROFILE_SCOPE((std::string("Scene::OnEvent: ") + std::string(e.GetName())).c_str());
+
+		EventDispatcher dispatcher{ e };
+		dispatcher.Dispatch<AppPostFrameUpdateEvent>(VT_BIND_EVENT_FN(Scene::PostFrameUpdateEvent));
 
 		if (!m_isPlaying)
 		{
@@ -216,6 +223,31 @@ namespace Volt
 				MonoScriptEngine::OnCreateInstance(scriptComp.scriptIds[i], idComponent.id, scriptComp.scriptNames[i]);
 			}
 		});
+
+		ForEachWithComponents<MotionWeaveComponent, const MeshComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave, const MeshComponent& meshComp)
+		{
+			motionWeave.MotionWeaver = MotionWeaver::Create(motionWeave.motionWeaveDatabase);
+
+			Entity entity{ id, shared_from_this() };
+
+			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshComp.handle);
+			if (mesh && mesh->IsValid())
+			{
+				const auto& idComp = entity.GetComponent<IDComponent>();
+				const auto& materialTable = mesh->GetMaterialTable();
+
+				for (size_t i = 0; i < mesh->GetSubMeshes().size(); i++)
+				{
+					auto material = AssetManager::QueueAsset<Material>(materialTable.GetMaterial(mesh->GetSubMeshes().at(i).materialIndex));
+					if (!material->IsValid())
+					{
+					}
+
+					auto uuid = m_renderScene->Register(idComp.id, motionWeave.MotionWeaver, mesh, material, static_cast<uint32_t>(i));
+					motionWeave.renderObjectIds.emplace_back(uuid);
+				}
+			}
+		});
 	}
 
 	void Scene::OnRuntimeEnd()
@@ -228,6 +260,15 @@ namespace Volt
 			for (const auto& instId : scriptComp.scriptIds)
 			{
 				MonoScriptEngine::OnDestroyInstance(instId);
+			}
+		});
+
+		ForEachWithComponents<MotionWeaveComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave)
+		{
+			motionWeave.MotionWeaver = nullptr;
+			for (const auto& objId : motionWeave.renderObjectIds)
+			{
+				m_renderScene->Unregister(objId);
 			}
 		});
 
@@ -300,6 +341,14 @@ namespace Volt
 				cameraComp.camera->SetPerspectiveProjection(cameraComp.fieldOfView, (float)m_viewportWidth / (float)m_viewportHeight, cameraComp.nearPlane, cameraComp.farPlane);
 				cameraComp.camera->SetPosition(entity.GetPosition());
 				cameraComp.camera->SetRotation(glm::eulerAngles(entity.GetRotation()));
+			}
+		});
+
+		ForEachWithComponents<MotionWeaveComponent, const MeshComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave, const MeshComponent& mesh)
+		{
+			if (motionWeave.MotionWeaver)
+			{
+				motionWeave.MotionWeaver->Update(aDeltaTime);
 			}
 		});
 
@@ -379,6 +428,7 @@ namespace Volt
 		newEntity.GetComponent<CommonComponent>().layerId = m_sceneLayers.at(m_activeLayerIndex).id;
 		newEntity.GetComponent<CommonComponent>().randomValue = Random::Float(0.f, 1.f);
 		newEntity.GetComponent<CommonComponent>().timeSinceCreation = 0.f;
+		newEntity.GetComponent<CommonComponent>().timeCreatedID = TimeUtility::GetTimeSinceEpoch();
 
 		const auto uuid = newEntity.GetComponent<IDComponent>().id;
 
@@ -393,6 +443,8 @@ namespace Volt
 
 	Entity Scene::CreateEntityWithUUID(const EntityID& uuid, const std::string& tag)
 	{
+		VT_CORE_ASSERT(!m_entityRegistry.Contains(uuid), "Entity must not exist!");
+
 		entt::entity id = m_registry.create();
 
 		Entity newEntity = Entity(id, this);
@@ -420,6 +472,7 @@ namespace Volt
 		newEntity.GetComponent<CommonComponent>().layerId = m_sceneLayers.at(m_activeLayerIndex).id;
 		newEntity.GetComponent<CommonComponent>().randomValue = Random::Float(0.f, 1.f);
 		newEntity.GetComponent<CommonComponent>().timeSinceCreation = 0.f;
+		newEntity.GetComponent<CommonComponent>().timeCreatedID = TimeUtility::GetTimeSinceEpoch();
 
 		newEntity.GetComponent<IDComponent>().id = uuid;
 
@@ -449,8 +502,10 @@ namespace Volt
 
 	void Scene::RemoveEntity(Entity entity)
 	{
+		std::scoped_lock lock{ m_removeEntityMutex };
 		RemoveEntityInternal(entity, false);
 		SortScene();
+		//m_entityRemoveQueue.push_back(entity.GetID());
 	}
 
 	void Scene::ParentEntity(Entity parent, Entity child)
@@ -703,12 +758,12 @@ namespace Volt
 			if (createDefaultMesh)
 			{
 				// #TODO_Ivar: Readd
-				//auto ent = newScene->CreateEntity("Cube");
+				auto ent = newScene->CreateEntity("Cube");
 
 				//auto id = ent.GetComponent<IDComponent>();
 
-				//auto& meshComp = ent.AddComponent<MeshComponent>();
-				//meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+				auto& meshComp = ent.AddComponent<MeshComponent>();
+				meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube_Mesh.vtasset");
 
 				//ent.AddComponent<RigidbodyComponent>();
 			}
@@ -734,11 +789,13 @@ namespace Volt
 				auto ent = newScene->CreateEntity("Camera");
 				ent.AddComponent<CameraComponent>();
 
-				ent.SetPosition({ 0.f, 0.f, -5.f });
+				ent.SetPosition({ 0.f, 0.f, -500.f });
 			}
 		}
 
 		newScene->InvalidateRenderScene();
+		newScene->m_sceneSettings.useWorldEngine = true;
+
 		return newScene;
 	}
 
@@ -759,8 +816,12 @@ namespace Volt
 
 			auto entity =  otherScene->CreateEntityWithUUID(uuid);
 			Entity::Copy(Entity{ id, this }, entity, EntityCopyFlags::None);
+
+			otherScene->GetWorldEngineMutable().OnEntityMoved(entity);
 		});
-	}
+
+		otherScene->InvalidateRenderScene();
+	} 
 
 	void Scene::Clear()
 	{
@@ -822,7 +883,7 @@ namespace Volt
 		TQS resultTransform{};
 		for (const auto& ent : std::ranges::reverse_view(hierarchy))
 		{
-			const auto& transComp = m_registry.get<TransformComponent>((entt::entity)ent);
+			const auto& transComp = m_registry.get<TransformComponent>(ent.GetHandle());
 
 			resultTransform.position = resultTransform.position + resultTransform.rotation * transComp.position;
 			resultTransform.rotation = resultTransform.rotation * transComp.rotation;
@@ -986,9 +1047,27 @@ namespace Volt
 		m_registry.destroy(entity);
 	}
 
+	void Scene::ExecuteEntityRemoveQueue()
+	{
+		std::scoped_lock lock{ m_removeEntityMutex };
+		for (const auto& entityId : m_entityRemoveQueue)
+		{
+			Entity entity = GetEntityFromUUID(entityId);
+			RemoveEntityInternal(entity, false);
+		}
+
+		SortScene();
+	}
+
 	void Scene::AddLayer(const std::string& layerName, uint32_t layerId)
 	{
 		m_sceneLayers.emplace_back(layerId, layerName);
+	}
+
+	bool Scene::PostFrameUpdateEvent(const AppPostFrameUpdateEvent& e)
+	{
+		ExecuteEntityRemoveQueue();
+		return false;
 	}
 
 	void Scene::SetLayers(const std::vector<SceneLayer>& sceneLayers)
@@ -1101,7 +1180,9 @@ namespace Volt
 		}
 
 		AudioSourceComponent& comp = registry.get<AudioSourceComponent>(id);
-		comp.OnCreate(id);
+		const IDComponent& idComp = registry.get<const IDComponent>(id);
+
+		comp.OnCreate(idComp.id);
 	}
 
 	void Scene::AudioListenerComponent_OnCreate(entt::registry& registry, entt::entity id)
@@ -1112,7 +1193,8 @@ namespace Volt
 		}
 
 		AudioListenerComponent& comp = registry.get<AudioListenerComponent>(id);
-		comp.OnCreate(id);
+		const IDComponent& idComp = registry.get<const IDComponent>(id);
+		comp.OnCreate(idComp.id);
 	}
 
 	void Scene::CameraComponent_OnCreate(entt::registry& registry, entt::entity id)
@@ -1224,9 +1306,12 @@ namespace Volt
 
 	void Scene::SortScene()
 	{
-		m_registry.sort<CommonComponent>([](const entt::entity lhs, const entt::entity rhs)
+		m_registry.sort<CommonComponent>([&](const entt::entity lhs, const entt::entity rhs)
 		{
-			return lhs < rhs;
+			const auto& lhsCommonComp = m_registry.get<CommonComponent>(lhs);
+			const auto& rhsCommonComp = m_registry.get<CommonComponent>(rhs);
+
+			return lhsCommonComp.timeCreatedID < rhsCommonComp.timeCreatedID;
 		});
 	}
 
@@ -1348,7 +1433,7 @@ namespace Volt
 
 			meshComp.renderObjectIds.clear();
 
-			Ref<Mesh> mesh = AssetManager::QueueAsset<Mesh>(meshComp.handle);
+			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshComp.handle);
 			if (!mesh)
 			{
 				continue;

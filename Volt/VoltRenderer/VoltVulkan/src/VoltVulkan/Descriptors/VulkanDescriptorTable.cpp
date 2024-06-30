@@ -1,22 +1,22 @@
 #include "vkpch.h"
 #include "VulkanDescriptorTable.h"
 
-#include "VoltVulkan/Common/VulkanCommon.h"
-#include "VoltVulkan/Graphics/VulkanSwapchain.h"
 #include "VoltVulkan/Shader/VulkanShader.h"
-#include "VoltVulkan/Images/VulkanImageView.h"
+#include "VoltVulkan/Common/VulkanCommon.h"
+#include "VoltVulkan/Descriptors/VulkanBindlessManager.h"
 #include "VoltVulkan/Buffers/VulkanBufferView.h"
 #include "VoltVulkan/Buffers/VulkanStorageBuffer.h"
 #include "VoltVulkan/Buffers/VulkanCommandBuffer.h"
-#include "VoltVulkan/Descriptors/VulkanBindlessManager.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
-
-#include <VoltRHI/Buffers/BufferViewSet.h>
-
+#include <VoltRHI/Images/ImageView.h>
 #include <VoltRHI/Images/SamplerState.h>
-#include <VoltRHI/Core/Profiling.h>
+
+#include <VoltRHI/RHIProxy.h>
+#include <VoltRHI/RHILog.h>
+
+#include <CoreUtilities/Profiling/Profiling.h>
 
 #include <vulkan/vulkan.h>
 
@@ -32,16 +32,15 @@ namespace Volt::RHI
 				case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE: return VK_IMAGE_LAYOUT_GENERAL;
 			}
-			
+
 			return VK_IMAGE_LAYOUT_UNDEFINED;
 		}
 	}
 
-	VulkanDescriptorTable::VulkanDescriptorTable(const DescriptorTableCreateInfo& specification)
+	VulkanDescriptorTable::VulkanDescriptorTable(const DescriptorTableCreateInfo& createInfo)
 	{
-		m_shader = specification.shader;
-		m_descriptorPoolCount = specification.count;
-		m_isGlobal = specification.isGlobal;
+		m_shader = createInfo.shader;
+		m_isGlobal = createInfo.isGlobal;
 
 		Invalidate();
 	}
@@ -51,138 +50,125 @@ namespace Volt::RHI
 		Release();
 	}
 
-	void VulkanDescriptorTable::SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	void VulkanDescriptorTable::SetImageView(WeakPtr<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_writeDescriptorsMapping[set].contains(binding))
 		{
+			RHILog::LogTagged(LogSeverity::Warning, "[VulkanDescriptorTable]:", "Trying to assign image view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
 			return;
 		}
 
-		SetDirty(true);
-		m_imageInfos[set][binding][arrayIndex].resize(m_descriptorPoolCount);
+		m_isDirty = true;
 
-		for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
+		auto& description = m_imageDescriptorInfos[set][binding][arrayIndex];
+		description.imageView = imageView->GetHandle<VkImageView>();
+		description.sampler = nullptr;
+
+		VT_ENSURE(description.imageView);
+
+		uint32_t writeDescriptorIndex = 0;
+
+		if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].value == DefaultInvalid::INVALID_VALUE)
 		{
-			auto& description = m_imageInfos[set][binding][arrayIndex].at(i);
-			description.imageView = imageView->GetHandle<VkImageView>();
-			description.sampler = nullptr;
+			writeDescriptorIndex = m_writeDescriptorsMapping[set][binding];
+			
+			WriteDescriptor2 writeDescriptorCopy = m_writeDescriptors.at(writeDescriptorIndex);
+			writeDescriptorCopy.dstArrayElement = arrayIndex;
+			writeDescriptorCopy.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
+			m_activeWriteDescriptors.emplace_back(writeDescriptorCopy);
 
-			uint32_t writeDescriptorIndex = 0;
-
-			// Mapping for write descriptor does not exist
-			if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].size() <= static_cast<size_t>(i))
-			{
-				writeDescriptorIndex = m_writeDescriptorsMapping[set][binding][i];
-				WriteDescriptor writeDescriptorCopy = m_writeDescriptors.at(i).at(writeDescriptorIndex);
-				writeDescriptorCopy.dstArrayElement = arrayIndex;
-				writeDescriptorCopy.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
-
-				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
-
-				writeDescriptorIndex = static_cast<uint32_t>(m_activeWriteDescriptors.at(i).size() - 1);
-				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = writeDescriptorIndex;
-			}
-			else
-			{
-				writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex][i];
-				m_activeWriteDescriptors.at(i).at(writeDescriptorIndex).pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
-			}
-
-			description.imageLayout = Utility::GetImageLayoutFromDescriptorType(static_cast<VkDescriptorType>(m_activeWriteDescriptors.at(i).at(writeDescriptorIndex).descriptorType));
+			writeDescriptorIndex = static_cast<uint32_t>(m_activeWriteDescriptors.size() - 1);
+			m_activeWriteDescriptorsMapping[set][binding][arrayIndex].value = writeDescriptorIndex;
 		}
+		else
+		{
+			writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex].value;
+			m_activeWriteDescriptors.at(writeDescriptorIndex).pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
+		}
+
+		description.imageLayout = Utility::GetImageLayoutFromDescriptorType(static_cast<VkDescriptorType>(m_activeWriteDescriptors.at(writeDescriptorIndex).descriptorType));
 	}
 
-	void VulkanDescriptorTable::SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	void VulkanDescriptorTable::SetBufferView(WeakPtr<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_writeDescriptorsMapping[set].contains(binding))
 		{
+			RHILog::LogTagged(LogSeverity::Warning, "[VulkanDescriptorTable]:", "Trying to assign buffer view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
 			return;
 		}
 
-		SetDirty(true);
+		m_isDirty = true;
 
 		VulkanBufferView& vkBufferView = bufferView->AsRef<VulkanBufferView>();
-		auto resource = vkBufferView.GetResource();
 
-		m_bufferInfos[set][binding][arrayIndex].resize(m_descriptorPoolCount);
-		const auto type = resource->GetType();
+		auto& description = m_bufferDescriptorInfos[set][binding][arrayIndex];
+		description.buffer = vkBufferView.GetHandle<VkBuffer>();
+		
+		VT_ENSURE(description.buffer);
 
-		for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
+		auto bufferResource = vkBufferView.GetResource();
+		if (bufferResource->GetType() == ResourceType::StorageBuffer)
 		{
-			auto& description = m_bufferInfos[set][binding][arrayIndex].at(i);
-			description.buffer = bufferView->GetHandle<VkBuffer>();
+			description.range = bufferResource->AsRef<VulkanStorageBuffer>().GetSize();
+		}
 
-			if (type == ResourceType::StorageBuffer)
-			{
-				description.range = resource->AsRef<VulkanStorageBuffer>().GetSize();
-			}
+		if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].value == DefaultInvalid::INVALID_VALUE)
+		{
+			const uint32_t writeDescriptorIndex = m_writeDescriptorsMapping[set][binding];
+			
+			WriteDescriptor2 writeDescriptorCopy = m_writeDescriptors.at(writeDescriptorIndex);
+			writeDescriptorCopy.dstArrayElement = arrayIndex;
+			writeDescriptorCopy.pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
+			m_activeWriteDescriptors.emplace_back(writeDescriptorCopy);
 
-			// Mapping for write descriptor does not exist
-			if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].size() <= static_cast<size_t>(i))
-			{
-				const uint32_t writeDescriptorIndex = m_writeDescriptorsMapping[set][binding][i];
-				WriteDescriptor writeDescriptorCopy = m_writeDescriptors.at(i).at(writeDescriptorIndex);
-				writeDescriptorCopy.dstArrayElement = arrayIndex;
-				writeDescriptorCopy.pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
-
- 				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
-				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_activeWriteDescriptors.at(i).size() - 1);
-			}
-			else
-			{
-				const uint32_t writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex][i];
-				m_activeWriteDescriptors.at(i).at(writeDescriptorIndex).pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
-			}
+			const uint32_t activeWriteDescriptorIndex = static_cast<uint32_t>(m_activeWriteDescriptors.size() - 1);
+			m_activeWriteDescriptorsMapping[set][binding][arrayIndex].value = activeWriteDescriptorIndex;
+		}
+		else
+		{
+			const uint32_t writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex].value;
+			m_activeWriteDescriptors.at(writeDescriptorIndex).pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
 		}
 	}
 
-	void VulkanDescriptorTable::SetBufferViewSet(Ref<BufferViewSet> bufferViewSet, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	void VulkanDescriptorTable::SetSamplerState(WeakPtr<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_writeDescriptorsMapping[set].contains(binding))
 		{
+			RHILog::LogTagged(LogSeverity::Warning, "[VulkanDescriptorTable]:", "Trying to assign sampler state at set {0} and binding {1}. But that is not a valid binding!", set, binding);
 			return;
 		}
 
-		SetDirty(true);
+		m_isDirty = true;
 
-		const auto& views = bufferViewSet->GetViews();
+		auto& description = m_imageDescriptorInfos[set][binding][arrayIndex];
+		description.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		description.imageView = nullptr;
+		description.sampler = samplerState->GetHandle<VkSampler>();
 
-		VulkanBufferView& vkBufferView = views.front()->AsRef<VulkanBufferView>();
-		auto resource = vkBufferView.GetResource();
+		VT_ENSURE(description.sampler);
 
-		m_bufferInfos[set][binding][arrayIndex].resize(m_descriptorPoolCount);
-		const auto type = resource->GetType();
 
-		for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
+		if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].value == DefaultInvalid::INVALID_VALUE)
 		{
-			auto& description = m_bufferInfos[set][binding][arrayIndex].at(i);
-			description.buffer = views.at(i)->GetHandle<VkBuffer>();
+			const uint32_t writeDescriptorIndex = m_writeDescriptorsMapping[set][binding];
 
-			if (type == ResourceType::StorageBuffer)
-			{
-				description.range = resource->AsRef<VulkanStorageBuffer>().GetSize();
-			}
+			WriteDescriptor2 writeDescriptorCopy = m_writeDescriptors.at(writeDescriptorIndex);
+			writeDescriptorCopy.dstArrayElement = arrayIndex;
+			writeDescriptorCopy.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
+			m_activeWriteDescriptors.emplace_back(writeDescriptorCopy);
 
-			// Mapping for write descriptor does not exist
-			if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].size() <= static_cast<size_t>(i))
-			{
-				const uint32_t writeDescriptorIndex = m_writeDescriptorsMapping[set][binding][i];
-				WriteDescriptor writeDescriptorCopy = m_writeDescriptors.at(i).at(writeDescriptorIndex);
-				writeDescriptorCopy.dstArrayElement = arrayIndex;
-				writeDescriptorCopy.pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
-
-				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
-				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_activeWriteDescriptors.at(i).size() - 1);
-			}
-			else
-			{
-				const uint32_t writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex][i];
-				m_activeWriteDescriptors.at(i).at(writeDescriptorIndex).pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
-			}
+			const uint32_t activeWriteDescriptorIndex = static_cast<uint32_t>(m_activeWriteDescriptors.size() - 1);
+			m_activeWriteDescriptorsMapping[set][binding][arrayIndex].value = activeWriteDescriptorIndex;
+		}
+		else
+		{
+			const uint32_t writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex].value;
+			m_activeWriteDescriptors.at(writeDescriptorIndex).pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
 		}
 	}
 
-	void VulkanDescriptorTable::SetImageView(std::string_view name, Ref<ImageView> view, uint32_t arrayIndex)
+	void VulkanDescriptorTable::SetImageView(std::string_view name, WeakPtr<ImageView> view, uint32_t arrayIndex)
 	{
 		const auto& binding = m_shader->GetResourceBindingFromName(name);
 		if (!binding.IsValid())
@@ -193,7 +179,7 @@ namespace Volt::RHI
 		SetImageView(view, binding.set, binding.binding, arrayIndex);
 	}
 
-	void VulkanDescriptorTable::SetBufferView(std::string_view name, Ref<BufferView> view, uint32_t arrayIndex)
+	void VulkanDescriptorTable::SetBufferView(std::string_view name, WeakPtr<BufferView> view, uint32_t arrayIndex)
 	{
 		const auto& binding = m_shader->GetResourceBindingFromName(name);
 		if (!binding.IsValid())
@@ -204,7 +190,7 @@ namespace Volt::RHI
 		SetBufferView(view, binding.set, binding.binding, arrayIndex);
 	}
 
-	void VulkanDescriptorTable::SetSamplerState(std::string_view name, Ref<SamplerState> samplerState, uint32_t arrayIndex)
+	void VulkanDescriptorTable::SetSamplerState(std::string_view name, WeakPtr<SamplerState> samplerState, uint32_t arrayIndex)
 	{
 		const auto& binding = m_shader->GetResourceBindingFromName(name);
 		if (!binding.IsValid())
@@ -215,105 +201,32 @@ namespace Volt::RHI
 		SetSamplerState(samplerState, binding.set, binding.binding, arrayIndex);
 	}
 
-	void VulkanDescriptorTable::SetBufferViews(const std::vector<Ref<BufferView>>& bufferViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset)
+	void VulkanDescriptorTable::PrepareForRender()
 	{
-		for (uint32_t index = arrayStartOffset; const auto& view : bufferViews)
-		{
-			SetBufferView(view, set, binding, index);
-			index++;
-		}
-	}
-
-	void VulkanDescriptorTable::SetImageViews(const std::vector<Ref<ImageView>>& imageViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset)
-	{
-		for (uint32_t index = arrayStartOffset; const auto & view : imageViews)
-		{
-			SetImageView(view, set, binding, index);
-			index++;
-		}
-	}
-
-	void VulkanDescriptorTable::SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
-	{
-		if (!m_writeDescriptorsMapping[set].contains(binding))
+		if (!m_isDirty)
 		{
 			return;
 		}
-
-		SetDirty(true);
-		m_imageInfos[set][binding][arrayIndex].resize(m_descriptorPoolCount);
-
-		for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
-		{
-			auto& description = m_imageInfos[set][binding][arrayIndex].at(i);
-			description.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			description.imageView = nullptr;
-			description.sampler = samplerState->GetHandle<VkSampler>();
-
-			// Mapping for write descriptor does not exist
-			if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].size() <= static_cast<size_t>(i))
-			{
-				const uint32_t writeDescriptorIndex = m_writeDescriptorsMapping[set][binding][i];
-				WriteDescriptor writeDescriptorCopy = m_writeDescriptors.at(i).at(writeDescriptorIndex);
-				writeDescriptorCopy.dstArrayElement = arrayIndex;
-				writeDescriptorCopy.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
-
-				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
-				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_activeWriteDescriptors.at(i).size() - 1);
-			}
-			else
-			{
-				const uint32_t writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex][i];
-				m_activeWriteDescriptors.at(i).at(writeDescriptorIndex).pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
-			}
-		}
-	}
-
-	void VulkanDescriptorTable::Update(const uint32_t index)
-	{
-		uint32_t actualIndex = index;
-
-		if (m_descriptorPoolCount == 1)
-		{
-			actualIndex = 0;
-		}
-
-		if (!m_isDirty[actualIndex])
-		{
-			return;
-		}
-
-		m_isDirty[actualIndex] = false;
 
 		if (m_activeWriteDescriptors.empty())
 		{
 			return;
 		}
 
-		if (m_activeWriteDescriptors.at(actualIndex).empty())
-		{
-			return;
-		}
-
-		auto& writeDescriptors = m_activeWriteDescriptors.at(actualIndex);
-
 		auto device = GraphicsContext::GetDevice();
-		const VkWriteDescriptorSet* writeDescriptorsPtr = reinterpret_cast<const VkWriteDescriptorSet*>(writeDescriptors.data());
+		const VkWriteDescriptorSet* writeDescriptorsPtr = reinterpret_cast<const VkWriteDescriptorSet*>(m_activeWriteDescriptors.data());
 
-		vkUpdateDescriptorSets(device->GetHandle<VkDevice>(), static_cast<uint32_t>(writeDescriptors.size()), writeDescriptorsPtr, 0, nullptr);
+		vkUpdateDescriptorSets(device->GetHandle<VkDevice>(), static_cast<uint32_t>(m_activeWriteDescriptors.size()), writeDescriptorsPtr, 0, nullptr);
 
-		writeDescriptors.clear();
+		m_activeWriteDescriptors.clear();
 		m_activeWriteDescriptorsMapping.clear();
+
+		m_isDirty = false;
 	}
 
-	void* VulkanDescriptorTable::GetHandleImpl() const
+	void VulkanDescriptorTable::Bind(CommandBuffer& commandBuffer)
 	{
-		return nullptr;
-	}
-
-	void VulkanDescriptorTable::Bind(Ref<CommandBuffer> commandBuffer)
-	{
-		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer->AsRef<VulkanCommandBuffer>();
+		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer.AsRef<VulkanCommandBuffer>();
 		const VkPipelineBindPoint bindPoint = vulkanCommandBuffer.m_currentRenderPipeline ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;
 
 		if (m_isGlobal)
@@ -324,94 +237,76 @@ namespace Volt::RHI
 		}
 		else
 		{
-			Update(m_currentIndex);
+			PrepareForRender();
 
 			// #TODO_Ivar: move to an implementation that binds all descriptor sets in one call
-			for (const auto& [set, sets] : GetDescriptorSets())
+			for (const auto& [setIndex, set] : m_descriptorSets)
 			{
-				const bool isSingleFrameSet = sets.size() == 1;
-				vkCmdBindDescriptorSets(vulkanCommandBuffer.GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), set, 1, &sets.at(isSingleFrameSet ? 0 : m_currentIndex), 0, nullptr);
+				vkCmdBindDescriptorSets(vulkanCommandBuffer.GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), setIndex, 1, &set, 0, nullptr);
 			}
 		}
-
-		m_currentIndex++;
 	}
 
-	void VulkanDescriptorTable::SetDirty(bool state)
+	void* VulkanDescriptorTable::GetHandleImpl() const
 	{
-		for (auto dirty : m_isDirty)
-		{
-			dirty = state;
-		}
+		return nullptr;
 	}
 
 	void VulkanDescriptorTable::Invalidate()
 	{
-		Release();
-
 		VT_PROFILE_FUNCTION();
 
-		m_isDirty = std::vector<bool>(m_descriptorPoolCount, true);
-		m_maxTotalDescriptorCount = 0;
-		m_imageInfos.clear();
-		m_bufferInfos.clear();
+		Release();
 
-		Ref<VulkanShader> vulkanShader = m_shader->As<VulkanShader>();
-		const auto& shaderPoolSizes = vulkanShader->GetDescriptorPoolSizes();
+		m_imageDescriptorInfos.clear();
+		m_bufferDescriptorInfos.clear();
+
+		VulkanShader& vulkanShader = m_shader->AsRef<VulkanShader>();
+		const auto& shaderPoolSizes = vulkanShader.GetDescriptorPoolSizes();
+
+		uint32_t maxSets = 0;
 
 		std::vector<VkDescriptorPoolSize> poolSizes{};
 		for (const auto& [type, count] : shaderPoolSizes)
 		{
 			poolSizes.emplace_back(static_cast<VkDescriptorType>(type), count);
-			m_maxTotalDescriptorCount += count;
+			maxSets += count;
 		}
 
-		if (!m_isGlobal && m_maxTotalDescriptorCount == 0)
+		[[maybe_unused]] auto device = GraphicsContext::GetDevice();
+
+		if (!m_isGlobal)
 		{
-			return;
-		}
+			VkDescriptorPoolCreateInfo poolInfo{};
+			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+			poolInfo.maxSets = maxSets;
+			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+			poolInfo.pPoolSizes = poolSizes.data();
 
-		VkDescriptorPoolCreateInfo info{};
-		info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		info.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
-		info.maxSets = m_maxTotalDescriptorCount;
-		info.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-		info.pPoolSizes = poolSizes.data();
-
-		auto device = GraphicsContext::GetDevice();
-
-		for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
-		{
-			VT_PROFILE_SCOPE("Create Descriptor Pool");
-			VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle<VkDevice>(), &info, nullptr, &m_descriptorPools.emplace_back()));
-		}
-
-		const auto& usedSets = vulkanShader->GetResources().usedSets;
-
-		// Allocate descriptor sets
-		VkDescriptorSetAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.pNext = nullptr;
-		allocInfo.descriptorSetCount = 1;
-
-		for (const auto& set : usedSets)
-		{
-			m_descriptorSets[set].resize(m_descriptorPoolCount);
-
-			for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
-			{
-				VT_PROFILE_SCOPE("Allocate DescriptorSet");
-
-				allocInfo.descriptorPool = m_descriptorPools.at(i);
-				allocInfo.pSetLayouts = &vulkanShader->GetPaddedDescriptorSetLayouts().at(set);
-
-				VT_VK_CHECK(vkAllocateDescriptorSets(device->GetHandle<VkDevice>(), &allocInfo, &m_descriptorSets.at(set)[i]));
-			}
+			VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle<VkDevice>(), &poolInfo, nullptr, &m_descriptorPool));
 		}
 
 		if (m_isGlobal)
 		{
-			m_descriptorSets[0][0] = VulkanBindlessManager::GetGlobalDescriptorSet();
+			m_descriptorSets[0] = VulkanBindlessManager::GetGlobalDescriptorSet();
+		}
+		else
+		{
+			const auto& usedSets = vulkanShader.GetResources().usedSets;
+
+			VkDescriptorSetAllocateInfo allocInfo{};
+			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			allocInfo.pNext = nullptr;
+			allocInfo.descriptorSetCount = 1;
+
+			for (const auto& set : usedSets)
+			{
+				allocInfo.descriptorPool = m_descriptorPool;
+				allocInfo.pSetLayouts = &vulkanShader.GetPaddedDescriptorSetLayouts().at(set);
+
+				VT_VK_CHECK(vkAllocateDescriptorSets(device->GetHandle<VkDevice>(), &allocInfo, &m_descriptorSets[set]));
+			}
 		}
 
 		BuildWriteDescriptors();
@@ -420,144 +315,88 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::Release()
 	{
-		VT_PROFILE_FUNCTION();
-
-		if (m_descriptorPools.empty())
+		if (!m_descriptorPool)
 		{
 			return;
 		}
 
-		GraphicsContext::DestroyResource([descriptorPools = m_descriptorPools]() 
+		RHIProxy::GetInstance().DestroyResource([descriptorPool = m_descriptorPool]()
 		{
 			auto device = GraphicsContext::GetDevice();
-
-			for (const auto& pool : descriptorPools)
-			{
-				vkDestroyDescriptorPool(device->GetHandle<VkDevice>(), pool, nullptr);
-			}
+			vkDestroyDescriptorPool(device->GetHandle<VkDevice>(), descriptorPool, nullptr);
 		});
 
-		m_descriptorPools.clear();
+		m_descriptorPool = nullptr;
 	}
 
 	void VulkanDescriptorTable::BuildWriteDescriptors()
 	{
-		VT_PROFILE_FUNCTION();
-
 		const auto& resources = m_shader->GetResources();
 
-		for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
+		m_writeDescriptors.clear();
+		m_activeWriteDescriptors.clear();
+
+		for (const auto& [set, bindings] : resources.uniformBuffers)
 		{
-			m_writeDescriptors.emplace_back();
-			m_activeWriteDescriptors.emplace_back();
-
-			for (const auto& [set, bindings] : resources.uniformBuffers)
+			for (const auto& [binding, data] : bindings)
 			{
-				for (const auto& [binding, data] : bindings)
-				{
-					auto& writeDescriptor = m_writeDescriptors[i].emplace_back();
-					writeDescriptor.sType = static_cast<VkStructureType>(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-					writeDescriptor.pNext = nullptr;
-					writeDescriptor.descriptorCount = 1;
-					writeDescriptor.dstArrayElement = 0;
-					writeDescriptor.dstBinding = binding;
-					writeDescriptor.descriptorType = static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-					writeDescriptor.dstSet = m_descriptorSets[set][i];
-
-					m_writeDescriptorsMapping[set][binding].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
-				}
+				auto& writeDescriptor = m_writeDescriptors.emplace_back();
+				InitilizeWriteDescriptor(writeDescriptor, binding, static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER), m_descriptorSets[set]);
+				m_writeDescriptorsMapping[set][binding] = static_cast<uint32_t>(m_writeDescriptors.size() - 1);
 			}
+		}
 
-			for (const auto& [set, bindings] : resources.storageBuffers)
+		for (const auto& [set, bindings] : resources.storageBuffers)
+		{
+			for (const auto& [binding, data] : bindings)
 			{
-				for (const auto& [binding, data] : bindings)
-				{
-					auto& writeDescriptor = m_writeDescriptors[i].emplace_back();
-					writeDescriptor.sType = static_cast<VkStructureType>(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-					writeDescriptor.pNext = nullptr;
-					writeDescriptor.descriptorCount = 1;
-					writeDescriptor.dstArrayElement = 0;
-					writeDescriptor.dstBinding = binding;
-					writeDescriptor.descriptorType = static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-					writeDescriptor.dstSet = m_descriptorSets[set][i];
-
-					m_writeDescriptorsMapping[set][binding].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
-				}
+				auto& writeDescriptor = m_writeDescriptors.emplace_back();
+				InitilizeWriteDescriptor(writeDescriptor, binding, static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER), m_descriptorSets[set]);
+				m_writeDescriptorsMapping[set][binding] = static_cast<uint32_t>(m_writeDescriptors.size() - 1);
 			}
+		}
 
-			for (const auto& [set, bindings] : resources.storageImages)
+		for (const auto& [set, bindings] : resources.storageImages)
+		{
+			for (const auto& [binding, data] : bindings)
 			{
-				for (const auto& [binding, data] : bindings)
-				{
-					auto& writeDescriptor = m_writeDescriptors[i].emplace_back();
-					writeDescriptor.sType = static_cast<VkStructureType>(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-					writeDescriptor.pNext = nullptr;
-					writeDescriptor.descriptorCount = 1;
-					writeDescriptor.dstArrayElement = 0;
-					writeDescriptor.dstBinding = binding;
-					writeDescriptor.descriptorType = static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-					writeDescriptor.dstSet = m_descriptorSets[set][i];
-
-					m_writeDescriptorsMapping[set][binding].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
-				}
+				auto& writeDescriptor = m_writeDescriptors.emplace_back();
+				InitilizeWriteDescriptor(writeDescriptor, binding, static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE), m_descriptorSets[set]);
+				m_writeDescriptorsMapping[set][binding] = static_cast<uint32_t>(m_writeDescriptors.size() - 1);
 			}
+		}
 
-			for (const auto& [set, bindings] : resources.images)
+		for (const auto& [set, bindings] : resources.images)
+		{
+			for (const auto& [binding, data] : bindings)
 			{
-				for (const auto& [binding, data] : bindings)
-				{
-					auto& writeDescriptor = m_writeDescriptors[i].emplace_back();
-					writeDescriptor.sType = static_cast<VkStructureType>(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-					writeDescriptor.pNext = nullptr;
-					writeDescriptor.descriptorCount = 1;
-					writeDescriptor.dstArrayElement = 0;
-					writeDescriptor.dstBinding = binding;
-					writeDescriptor.descriptorType = static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
-					writeDescriptor.dstSet = m_descriptorSets[set][i];
-
-					m_writeDescriptorsMapping[set][binding].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
-				}
+				auto& writeDescriptor = m_writeDescriptors.emplace_back();
+				InitilizeWriteDescriptor(writeDescriptor, binding, static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE), m_descriptorSets[set]);
+				m_writeDescriptorsMapping[set][binding] = static_cast<uint32_t>(m_writeDescriptors.size() - 1);
 			}
+		}
 
-			for (const auto& [set, bindings] : resources.samplers)
+		for (const auto& [set, bindings] : resources.samplers)
+		{
+			for (const auto& [binding, data] : bindings)
 			{
-				for (const auto& [binding, data] : bindings)
-				{
-					auto& writeDescriptor = m_writeDescriptors[i].emplace_back();
-					writeDescriptor.sType = static_cast<VkStructureType>(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-					writeDescriptor.pNext = nullptr;
-					writeDescriptor.descriptorCount = 1;
-					writeDescriptor.dstArrayElement = 0;
-					writeDescriptor.dstBinding = binding;
-					writeDescriptor.descriptorType = static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_SAMPLER);
-					writeDescriptor.dstSet = m_descriptorSets[set][i];
-
-					m_writeDescriptorsMapping[set][binding].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
-				}
+				auto& writeDescriptor = m_writeDescriptors.emplace_back();
+				InitilizeWriteDescriptor(writeDescriptor, binding, static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_SAMPLER), m_descriptorSets[set]);
+				m_writeDescriptorsMapping[set][binding] = static_cast<uint32_t>(m_writeDescriptors.size() - 1);
 			}
 		}
 	}
 
 	void VulkanDescriptorTable::InitializeInfoStructs()
 	{
-		VT_PROFILE_FUNCTION();
-
 		const auto& resources = m_shader->GetResources();
 
 		for (const auto& [set, bindings] : resources.uniformBuffers)
 		{
 			for (const auto& [binding, info] : bindings)
 			{
-				if (!m_bufferInfos[set].contains(binding))
-				{
-					m_bufferInfos[set][binding][0].resize(m_descriptorPoolCount);
-				}
-
-				for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
-				{
-					m_bufferInfos[set][binding][0][i].offset = 0;
-					m_bufferInfos[set][binding][0][i].range = info.size;
-				}
+				m_bufferDescriptorInfos[set][binding][0].offset = 0;
+				m_bufferDescriptorInfos[set][binding][0].range = info.size;
 			}
 		}
 
@@ -565,17 +404,20 @@ namespace Volt::RHI
 		{
 			for (const auto& [binding, info] : bindings)
 			{
-				if (!m_bufferInfos[set].contains(binding))
-				{
-					m_bufferInfos[set][binding][0].resize(m_descriptorPoolCount);
-				}
-
-				for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
-				{
-					m_bufferInfos[set][binding][0][i].offset = 0;
-					m_bufferInfos[set][binding][0][i].range = info.size;
-				}
+				m_bufferDescriptorInfos[set][binding][0].offset = 0;
+				m_bufferDescriptorInfos[set][binding][0].range = info.size;
 			}
 		}
+	}
+
+	void VulkanDescriptorTable::InitilizeWriteDescriptor(WriteDescriptor2& writeDescriptor, const uint32_t binding, const uint32_t descriptorType, VkDescriptorSet_T* dstDescriptorSet)
+	{
+		writeDescriptor.sType = static_cast<uint32_t>(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
+		writeDescriptor.pNext = nullptr;
+		writeDescriptor.descriptorCount = 1;
+		writeDescriptor.dstArrayElement = 0;
+		writeDescriptor.dstBinding = binding;
+		writeDescriptor.descriptorType = descriptorType;
+		writeDescriptor.dstSet = dstDescriptorSet;
 	}
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
+
 #include <VoltRHI/Memory/Allocator.h>
 #include <VoltRHI/Memory/AllocationCache.h>
 
@@ -13,11 +15,11 @@ namespace Volt::RHI
 		VulkanTransientAllocator();
 		~VulkanTransientAllocator() override;
 
-		Ref<Allocation> CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage) override;
-		Ref<Allocation> CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage) override;
+		RefPtr<Allocation> CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage) override;
+		RefPtr<Allocation> CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage) override;
 
-		void DestroyBuffer(Ref<Allocation> allocation) override;
-		void DestroyImage(Ref<Allocation> allocation) override;
+		void DestroyBuffer(RefPtr<Allocation> allocation) override;
+		void DestroyImage(RefPtr<Allocation> allocation) override;
 
 		void Update() override;
 
@@ -25,17 +27,22 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
+		inline static constexpr uint32_t HEAP_PAGE_SIZE = 128 * 1024 * 1024;
+
 		void CreateDefaultHeaps();
 
-		void DestroyBufferInternal(Ref<Allocation> allocation);
-		void DestroyImageInternal(Ref<Allocation> allocation);
+		void DestroyBufferInternal(RefPtr<Allocation> allocation);
+		void DestroyImageInternal(RefPtr<Allocation> allocation);
 
 		// There are called if their parent heap has been destroyed for some reason
-		void DestroyOrphanBuffer(Ref<Allocation> allocation);
-		void DestroyOrphanImage(Ref<Allocation> allocation);
+		void DestroyOrphanBuffer(RefPtr<Allocation> allocation);
+		void DestroyOrphanImage(RefPtr<Allocation> allocation);
 
-		std::vector<Ref<TransientHeap>> m_bufferHeaps;
-		std::vector<Ref<TransientHeap>> m_imageHeaps;
+		VT_NODISCARD RefPtr<TransientHeap> CreateNewImageHeap();
+		VT_NODISCARD RefPtr<TransientHeap> CreateNewBufferHeap();
+
+		std::vector<RefPtr<TransientHeap>> m_bufferHeaps;
+		std::vector<RefPtr<TransientHeap>> m_imageHeaps;
 	
 		AllocationCache m_allocationCache{};
 	};

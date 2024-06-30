@@ -1,9 +1,0 @@
-Metadata:
-  assetHandle: 3178055852521492034
-  filePath: Engine/Shaders/Source/Utility/preDepth.vtsdef
-  type: 64
-  Dependencies:
-    - 15140976001098997334
-    - 16066151942631060855
-  Properties:
-    {}

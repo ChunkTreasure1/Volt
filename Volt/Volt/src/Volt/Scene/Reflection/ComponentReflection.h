@@ -103,7 +103,8 @@ namespace Volt
 		Color4 = BIT(1),
 
 		NoCopy = BIT(2),
-		NoSerialize = BIT(3)
+		NoSerialize = BIT(3),
+		DoNotShow = BIT(4)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(ComponentMemberFlag);
@@ -146,6 +147,8 @@ namespace Volt
 		[[nodiscard]] virtual const ComponentMember* FindMemberByName(std::string_view name) const = 0;
 		
 		virtual void OnMemberChanged(void* objectPtr, Entity entity) const = 0;
+		virtual void OnComponentCopied(void* objectPtr, Entity entity) const = 0;
+		virtual void OnComponentDeserialized(void* objectPtr, Entity entity) const = 0;
 	};
 
 	class IEnumTypeDesc : public CommonTypeDesc<ValueType::Enum>
@@ -312,6 +315,8 @@ namespace Volt
 		[[nodiscard]] inline const bool IsHidden() const override { return m_isHidden; }
 
 		void OnMemberChanged(void* objectPtr, Entity entity) const override;
+		void OnComponentCopied(void* objectPtr, Entity entity) const override;
+		void OnComponentDeserialized(void* objectPtr, Entity entity) const override;
 
 		[[nodiscard]] ComponentMember* FindMemberByOffset(const ptrdiff_t offset) override;
 		[[nodiscard]] ComponentMember* FindMemberByName(std::string_view name) override;
@@ -372,6 +377,16 @@ namespace Volt
 			m_onMemberChangedCallback = std::move(func);
 		}
 
+		void SetOnComponentCopiedCallback(std::function<void(T&, Entity)>&& func)
+		{
+			m_onComponentCopiedCallback = std::move(func);
+		}
+
+		void SetOnComponentDeserializedCallback(std::function<void(T&, Entity)>&& func)
+		{
+			m_onComponentDeserializedCallback = std::move(func);
+		}
+
 	private:
 		std::vector<ComponentMember> m_members;
 
@@ -381,6 +396,8 @@ namespace Volt
 
 		bool m_isHidden = false;
 		std::function<void(T& component, Entity entity)> m_onMemberChangedCallback;
+		std::function<void(T& component, Entity entity)> m_onComponentCopiedCallback;
+		std::function<void(T& component, Entity entity)> m_onComponentDeserializedCallback;
 	};
 
 	template<Enum T>
@@ -435,6 +452,24 @@ namespace Volt
 		if (m_onMemberChangedCallback)
 		{
 			m_onMemberChangedCallback(*reinterpret_cast<T*>(objectPtr), entity);
+		}
+	}
+
+	template<typename T>
+	inline void ComponentTypeDesc<T>::OnComponentCopied(void* objectPtr, Entity entity) const
+	{
+		if (m_onComponentCopiedCallback)
+		{
+			m_onComponentCopiedCallback(*reinterpret_cast<T*>(objectPtr), entity);
+		}
+	}
+
+	template<typename T>
+	inline void ComponentTypeDesc<T>::OnComponentDeserialized(void* objectPtr, Entity entity) const
+	{
+		if (m_onComponentDeserializedCallback)
+		{
+			m_onComponentDeserializedCallback(*reinterpret_cast<T*>(objectPtr), entity);
 		}
 	}
 

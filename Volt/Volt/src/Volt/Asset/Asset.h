@@ -14,7 +14,13 @@ namespace Volt
 {
 	using AssetHandle = UUID64;
 
-	enum class AssetFlag : uint16_t
+	enum class AssetChangedState : uint8_t
+	{
+		Removed,
+		Updated
+	};
+
+	enum class AssetFlag : uint8_t
 	{
 		None = 0,
 		Missing = BIT(0),
@@ -25,33 +31,36 @@ namespace Volt
 	enum class AssetType : uint32_t
 	{
 		None = 0,
-		Mesh = BIT(0),
-		MeshSource = BIT(1),
-		Animation = BIT(2),
-		Skeleton = BIT(3),
-		Texture = BIT(4),
-		Material = BIT(5),
-		ShaderDefinition = BIT(6),
-		ShaderSource = BIT(7),
-		Scene = BIT(8),
-		AnimatedCharacter = BIT(9),
-		ParticlePreset = BIT(10),
-		Prefab = BIT(11),
-		Font = BIT(12),
-		PhysicsMaterial = BIT(13),
-		Video = BIT(14),
-		BlendSpace = BIT(15),
-		NavMesh = BIT(16),
-		AnimationGraph = BIT(17),
-		GraphKey = BIT(18),
-		MonoScript = BIT(19),
-		BehaviorGraph = BIT(20),
-		RenderPipeline = BIT(22),
-		Timeline = BIT(23),
-		NetContract = BIT(24),
-		PostProcessingMaterial = BIT(25),
-		PostProcessingStack = BIT(26),
-		MotionWeave = BIT(27),
+		Mesh,
+		MeshSource,
+		Animation,
+		Skeleton,
+		Texture,
+		Material,
+		ShaderSource,
+		Scene,
+		AnimatedCharacter,
+		ParticlePreset,
+		Prefab,
+		Font,
+		PhysicsMaterial,
+		Video,
+		BlendSpace,
+		NavMesh,
+		AnimationGraph,
+		GraphKey,
+		MonoScript,
+		BehaviorGraph,
+		Timeline,
+		NetContract,
+		PostProcessingMaterial,
+		PostProcessingStack,
+		MotionWeave,
+		TextureSource,
+		ShaderDefinition,
+
+		// Add new assets above this line
+		Count
 	};
 
 	inline AssetType operator|(AssetType aLhs, AssetType aRhs)
@@ -82,13 +91,13 @@ namespace Volt
 		{ ".vtchr", AssetType::AnimatedCharacter },
 		{ ".vtanimgraph", AssetType::AnimationGraph },
 
-		{ ".png", AssetType::Texture },
-		{ ".jpg", AssetType::Texture },
-		{ ".jpeg", AssetType::Texture },
-		{ ".tga", AssetType::Texture },
-		{ ".ktx", AssetType::Texture },
-		{ ".dds", AssetType::Texture },
-		{ ".hdr", AssetType::Texture },
+		{ ".png", AssetType::TextureSource },
+		{ ".jpg", AssetType::TextureSource },
+		{ ".jpeg", AssetType::TextureSource },
+		{ ".tga", AssetType::TextureSource },
+		{ ".ktx", AssetType::TextureSource },
+		{ ".dds", AssetType::TextureSource },
+		{ ".hdr", AssetType::TextureSource },
 
 		{ ".vtsdef", AssetType::ShaderDefinition },
 		{ ".hlsl", AssetType::ShaderSource },
@@ -106,7 +115,6 @@ namespace Volt
 		{ ".ttf", AssetType::Font },
 
 		{ ".mp4", AssetType::Video },
-		{ ".vtrp", AssetType::RenderPipeline },
 		{ ".vtgk", AssetType::GraphKey },
 
 		{ ".cs", AssetType::MonoScript },
@@ -127,6 +135,7 @@ namespace Volt
 		{ "Animated Character", AssetType::AnimatedCharacter },
 		{ "Animation Graph", AssetType::AnimationGraph },
 
+		{ "TextureSource", AssetType::TextureSource },
 		{ "Texture", AssetType::Texture },
 
 		{ "Shader", AssetType::ShaderDefinition },
@@ -148,6 +157,8 @@ namespace Volt
 		{ "Blend Space", AssetType::BlendSpace },
 
 		{ "Net Contract", AssetType::NetContract },
+
+		{ "Motion Weave Database", AssetType::MotionWeave },
 	};
 
 	inline static const std::unordered_map<std::string, AssetType>& GetAssetNames()
@@ -166,23 +177,21 @@ namespace Volt
 		return "Unknown";
 	}
 
+	inline static std::string GetAssetTypeExtension(AssetType type)
+	{
+		for (const auto& [ext, assetType] : s_assetExtensionsMap)
+		{
+			if (assetType == type)
+			{
+				return ext;
+			}
+		}
+
+		return "Unknown";
+	}
+
 	struct AssetMetadata
 	{
-		inline void SetValue(const std::string& key, const std::string& data)
-		{
-			properties[key] = data;
-		}
-
-		inline const std::string& GetValue(const std::string& key) const
-		{
-			if (!properties.contains(key))
-			{
-				return {};
-			}
-
-			return properties.at(key);
-		}
-
 		inline const bool IsValid() const { return handle != 0; }
 
 		AssetHandle handle = 0;
@@ -193,8 +202,6 @@ namespace Volt
 		bool isMemoryAsset = false;
 
 		std::filesystem::path filePath;
-		std::vector<AssetHandle> dependencies;
-		std::unordered_map<std::string, std::string> properties;
 	};
 
 	class Asset
@@ -202,7 +209,7 @@ namespace Volt
 	public:
 		virtual ~Asset() = default;
 
-		inline bool IsValid() const { return ((assetFlags & (uint16_t)AssetFlag::Missing) | (assetFlags & (uint16_t)AssetFlag::Invalid) | (assetFlags & (uint16_t)AssetFlag::Queued)) == 0; }
+		inline bool IsValid() const { return ((assetFlags & (uint8_t)AssetFlag::Missing) | (assetFlags & (uint8_t)AssetFlag::Invalid) | (assetFlags & (uint8_t)AssetFlag::Queued)) == 0; }
 
 		inline virtual bool operator==(const Asset& other)
 		{
@@ -214,16 +221,16 @@ namespace Volt
 			return !(*this == other);
 		}
 
-		inline bool IsFlagSet(AssetFlag flag) { return (assetFlags & (uint16_t)flag) != 0; }
+		inline bool IsFlagSet(AssetFlag flag) { return (assetFlags & (uint8_t)flag) != 0; }
 		inline void SetFlag(AssetFlag flag, bool state)
 		{
 			if (state)
 			{
-				assetFlags |= (uint16_t)flag;
+				assetFlags |= (uint8_t)flag;
 			}
 			else
 			{
-				assetFlags &= ~(uint16_t)flag;
+				assetFlags &= ~(uint8_t)flag;
 			}
 		}
 
@@ -231,8 +238,10 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::None; }
 		virtual AssetType GetType() { assert(false); return AssetType::None; }
+		virtual uint32_t GetVersion() const { return 1; }
+		virtual void OnDependencyChanged(AssetHandle dependencyHandle, AssetChangedState state) {}
 
-		uint16_t assetFlags = (uint16_t)AssetFlag::None;
+		uint8_t assetFlags = (uint8_t)AssetFlag::None;
 		AssetHandle handle = {};
 		std::string assetName;
 	};

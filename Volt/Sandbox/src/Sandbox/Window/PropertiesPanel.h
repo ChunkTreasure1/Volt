@@ -26,13 +26,13 @@ struct PropertyEvent
 
 namespace Volt
 {
-	class SceneRendererNew;
+	class SceneRenderer;
 }
 
 class PropertiesPanel : public EditorWindow
 {
 public:
-	PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRendererNew>& currentSceneRenderer, SceneState& sceneState, const std::string& id);
+	PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, SceneState& sceneState, const std::string& id);
 	void UpdateMainContent() override;
 
 private:
@@ -41,7 +41,7 @@ private:
 	void AcceptMonoDragDrop();
 
 	Ref<Volt::Scene>& myCurrentScene;
-	Ref<Volt::SceneRendererNew>& myCurrentSceneRenderer;
+	Ref<Volt::SceneRenderer>& myCurrentSceneRenderer;
 	SceneState& mySceneState;
 
 	std::string myComponentSearchQuery;

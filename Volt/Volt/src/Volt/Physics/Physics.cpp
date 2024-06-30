@@ -14,8 +14,10 @@
 
 #include "Volt/Utility/FileSystem.h"
 
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include "Volt/Project/ProjectManager.h"
+
+#include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -37,13 +39,13 @@ namespace Volt
 
 	void Physics::LoadSettings()
 	{
-		if (!FileSystem::Exists(FileSystem::GetPhysicsSettingsPath()))
+		if (!FileSystem::Exists(ProjectManager::GetPhysicsSettingsPath()))
 		{
 			return;
 		}
 
-		YAMLStreamReader streamReader{};
-		if (!streamReader.OpenFile(FileSystem::GetPhysicsSettingsPath()))
+		YAMLFileStreamReader streamReader{};
+		if (!streamReader.OpenFile(ProjectManager::GetPhysicsSettingsPath()))
 		{
 			return;
 		}
@@ -64,12 +66,7 @@ namespace Volt
 
 	void Physics::SaveSettings()
 	{
-		if (!FileSystem::Exists(FileSystem::GetPhysicsSettingsPath().parent_path()))
-		{
-			std::filesystem::create_directories(FileSystem::GetPhysicsSettingsPath().parent_path());
-		}
-
-		YAMLStreamWriter streamWriter{ FileSystem::GetPhysicsSettingsPath() };
+		YAMLFileStreamWriter streamWriter{ ProjectManager::GetPhysicsSettingsPath() };
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("PhysicsSettings");
 
@@ -90,13 +87,13 @@ namespace Volt
 
 	void Physics::LoadLayers()
 	{
-		if (!FileSystem::Exists(FileSystem::GetPhysicsLayersPath()))
+		if (!FileSystem::Exists(ProjectManager::GetPhysicsLayersPath()))
 		{
 			return;
 		}
 
-		YAMLStreamReader streamReader{};
-		if (!streamReader.OpenFile(FileSystem::GetPhysicsLayersPath()))
+		YAMLFileStreamReader streamReader{};
+		if (!streamReader.OpenFile(ProjectManager::GetPhysicsLayersPath()))
 		{
 			return;
 		}
@@ -118,12 +115,7 @@ namespace Volt
 
 	void Physics::SaveLayers()
 	{
-		if (!FileSystem::Exists(FileSystem::GetPhysicsLayersPath().parent_path()))
-		{
-			std::filesystem::create_directories(FileSystem::GetPhysicsLayersPath().parent_path());
-		}
-
-		YAMLStreamWriter streamWriter{ FileSystem::GetPhysicsLayersPath() };
+		YAMLFileStreamWriter streamWriter{ ProjectManager::GetPhysicsLayersPath() };
 
 		streamWriter.BeginMap();
 		streamWriter.BeginSequence("PhysicsLayers");

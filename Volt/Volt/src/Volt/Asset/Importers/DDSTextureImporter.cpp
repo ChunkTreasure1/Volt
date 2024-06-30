@@ -2,7 +2,6 @@
 #include "DDSTextureImporter.h"
 
 #include "Volt/Rendering/Texture/Texture2D.h"
-#include "Volt/Utility/ImageUtility.h"
 
 #include <VoltRHI/Images/Image2D.h>
 #include <VoltRHI/Buffers/CommandBuffer.h>
@@ -71,7 +70,7 @@ namespace Volt
 		}
 	}
 
-	Ref<Texture2D> DDSTextureImporter::ImportTextureImpl(const std::filesystem::path& path)
+	bool DDSTextureImporter::ImportTextureImpl(const std::filesystem::path& path, Texture2D& outTexture)
 	{
 		tdl::DDSFile dds;
 		auto returnCode = dds.Load(path.string().c_str());
@@ -83,7 +82,7 @@ namespace Volt
 		if (dds.GetTextureDimension() != tdl::DDSFile::TextureDimension::Texture2D)
 		{
 			VT_CORE_ERROR("Texture {0} is not 2D!", path.string().c_str());
-			return nullptr;
+			return false;
 		}
 
 		auto imageData = dds.GetImageData();
@@ -94,7 +93,7 @@ namespace Volt
 		const uint32_t width = imageData->m_width;
 		const uint32_t height = imageData->m_height;
 
-		Ref<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(size, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPU);
+		RefPtr<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(size, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPUToGPU);
 
 		// Map memory
 		{
@@ -103,8 +102,8 @@ namespace Volt
 			stagingBuffer->Unmap();
 		}
 
-		Ref<RHI::Image2D> image;
-		Ref<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
+		RefPtr<RHI::Image2D> image;
+		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 
 		// Create image
 		{
@@ -180,9 +179,8 @@ namespace Volt
 		commandBuffer->End();
 		commandBuffer->Execute();
 
-		Ref<Texture2D> texture = CreateRef<Texture2D>();
-		texture->SetImage(image);
+		outTexture.SetImage(image);
 
-		return texture;
+		return true;
 	}
 }

@@ -1,4 +1,0 @@
-Scene:
-  name: TestingScene
-  Settings:
-    useWorldEngine: false

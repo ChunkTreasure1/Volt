@@ -1,7 +1,7 @@
 #include "vkpch.h"
 #include "HLSLIncluder.h"
 
-#include <VoltRHI/Graphics/GraphicsContext.h>
+#include <VoltRHI/RHILog.h>
 
 namespace Volt::RHI
 {
@@ -47,7 +47,7 @@ namespace Volt::RHI
 
 		if (!inStream)
 		{
-			GraphicsContext::Log(Severity::Error, std::format("[HLSLIncluder] Failed to read file {0}!", filepath.string()));
+			RHILog::Log(LogSeverity::Error, std::format("[HLSLIncluder] Failed to read file {0}!", filepath.string()));
 			return S_FALSE;
 		}
 

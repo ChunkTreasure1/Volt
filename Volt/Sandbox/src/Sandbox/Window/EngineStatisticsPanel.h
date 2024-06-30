@@ -5,18 +5,18 @@
 namespace Volt
 {
 	class Scene;
-	class SceneRendererNew;
+	class SceneRenderer;
 }
 
 class EngineStatisticsPanel : public EditorWindow
 {
 public:
-	EngineStatisticsPanel(Ref<Volt::Scene>& aScene, Ref<Volt::SceneRendererNew>& sceneRenderer, Ref<Volt::SceneRendererNew>& gameSceneRenderer);
+	EngineStatisticsPanel(Ref<Volt::Scene>& aScene, Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::SceneRenderer>& gameSceneRenderer);
 
 	void UpdateMainContent() override;
 
 private:
 	Ref<Volt::Scene>& myScene;
-	Ref<Volt::SceneRendererNew>& mySceneRenderer;
-	Ref<Volt::SceneRendererNew>& myGameSceneRenderer;
+	Ref<Volt::SceneRenderer>& mySceneRenderer;
+	Ref<Volt::SceneRenderer>& myGameSceneRenderer;
 };

@@ -63,10 +63,10 @@ namespace Volt
 
 	struct NavAgentComponent
 	{
-		float radius = 0.6f;
-		float height = 2.f;
-		float maxSpeed = 3.f;
-		float acceleration = 10.f;
+		float radius = 60.f;
+		float height = 200.f;
+		float maxSpeed = 300.f;
+		float acceleration = 1000.f;
 		float separationWeight = 0.f;
 		ObstacleAvoidanceQuality obstacleAvoidanceQuality = ObstacleAvoidanceQuality::None;
 		bool active = true;
@@ -75,10 +75,10 @@ namespace Volt
 		{
 			reflect.SetGUID("{2B4469CE-9B15-4FA9-ABA6-77BA83465357}"_guid);
 			reflect.SetLabel("Nav Agent Component");
-			reflect.AddMember(&NavAgentComponent::radius, "radius", "Radius", "", 0.6f);
-			reflect.AddMember(&NavAgentComponent::height, "height", "Height", "", 2.f);
-			reflect.AddMember(&NavAgentComponent::maxSpeed, "maxSpeed", "Max Speed", "", 3.f);
-			reflect.AddMember(&NavAgentComponent::acceleration, "acceleration", "Acceleration", "", 10.f);
+			reflect.AddMember(&NavAgentComponent::radius, "radius", "Radius", "", 60.f);
+			reflect.AddMember(&NavAgentComponent::height, "height", "Height", "", 200.f);
+			reflect.AddMember(&NavAgentComponent::maxSpeed, "maxSpeed", "Max Speed", "", 300.f);
+			reflect.AddMember(&NavAgentComponent::acceleration, "acceleration", "Acceleration", "", 1000.f);
 			reflect.AddMember(&NavAgentComponent::separationWeight, "seperationWeight", "Seperation Weight", "", 0.f);
 			reflect.AddMember(&NavAgentComponent::obstacleAvoidanceQuality, "obstacleAvoidanceQuality", "Obstacle Avoidance Quality", "", ObstacleAvoidanceQuality::None);
 			reflect.AddMember(&NavAgentComponent::active, "active", "Active", "", false);

@@ -5,9 +5,12 @@
 #include "Volt/Core/Application.h"
 
 #include "Volt/Utility/YAMLSerializationHelpers.h"
+#include "Volt/Utility/StringUtility.h"
 
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include "Volt/Asset/AssetManager.h"
+
+#include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
 namespace Volt
 {
@@ -22,7 +25,7 @@ namespace Volt
 		}
 		else
 		{
-			m_currentProject->projectDirectory = "./";
+			m_currentProject->projectDirectory = std::filesystem::current_path();
 		
 			for (const auto& dir : std::filesystem::directory_iterator("./"))
 			{
@@ -37,13 +40,13 @@ namespace Volt
 		VT_CORE_INFO("[ProjectManager]: Loading project {0}", projectPath);
 		DeserializeProject();
 
-		m_currentEngineDirectory = FileSystem::GetEnvVariable("VOLT_PATH");
+		m_currentEngineDirectory = ::Utility::ReplaceCharacter(FileSystem::GetEnvVariable("VOLT_PATH"), '\\', '/');
 		std::filesystem::current_path(m_currentEngineDirectory);
 	}
 
 	void ProjectManager::SerializeProject()
 	{
-		YAMLStreamWriter streamWriter{ m_currentProject->projectFilePath };
+		YAMLFileStreamWriter streamWriter{ m_currentProject->projectFilePath };
 
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("Project");
@@ -64,7 +67,7 @@ namespace Volt
 
 	void ProjectManager::DeserializeProject()
 	{
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 
 		if (!streamReader.OpenFile(m_currentProject->projectFilePath))
 		{
@@ -101,6 +104,11 @@ namespace Volt
 	const std::filesystem::path ProjectManager::GetEngineScriptsDirectory()
 	{
 		return GetAssetsDirectory() / "Scripts/Internal";
+	}
+
+	const std::filesystem::path ProjectManager::GetEngineShaderIncludeDirectory()
+	{
+		return "Engine/Shaders/Source/Includes";
 	}
 
 	const std::filesystem::path ProjectManager::GetAssetsDirectory()
@@ -141,6 +149,32 @@ namespace Volt
 	const std::filesystem::path ProjectManager::GetMonoAssemblyPath()
 	{
 		return GetDirectory() / "Binaries" / "Project.dll";
+	}
+
+	const std::filesystem::path ProjectManager::GetMonoBinariesDirectory()
+	{
+		return GetDirectory() / "Binaries";
+	}
+
+	const std::filesystem::path ProjectManager::GetOrCreateSettingsDirectory()
+	{
+		const std::filesystem::path dir = GetDirectory() / "Settings";
+		if (!std::filesystem::exists(dir))
+		{
+			std::filesystem::create_directories(dir);
+		}
+
+		return dir;
+	}
+
+	const std::filesystem::path ProjectManager::GetPhysicsSettingsPath()
+	{
+		return GetOrCreateSettingsDirectory() / "PhysicsSettings.yaml";
+	}
+
+	const std::filesystem::path ProjectManager::GetPhysicsLayersPath()
+	{
+		return GetOrCreateSettingsDirectory() / "PhysicsLayers.yaml";
 	}
 
 	const std::filesystem::path& ProjectManager::GetDirectory()

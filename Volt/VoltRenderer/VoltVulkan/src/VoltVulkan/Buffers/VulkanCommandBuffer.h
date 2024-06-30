@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
 #include <VoltRHI/Buffers/CommandBuffer.h>
 
 #include <vector>
@@ -13,11 +14,12 @@ struct VkPipelineLayout_T;
 
 namespace Volt::RHI
 {
+	class Semaphore;
 	class VulkanCommandBuffer final : public CommandBuffer
 	{
 	public:
 		VulkanCommandBuffer(const uint32_t count, QueueType queueType);
-		VulkanCommandBuffer(Weak<Swapchain> swapchain);
+		VulkanCommandBuffer(WeakPtr<Swapchain> swapchain);
 		~VulkanCommandBuffer() override;
 
 		void Begin() override;
@@ -28,31 +30,32 @@ namespace Volt::RHI
 		void WaitForLastFence() override;
 		void WaitForFences() override;
 
-		void SetEvent(Ref<Event> event) override;
+		void SetEvent(WeakPtr<Event> event) override;
 
 		void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance) override;
 		void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance) override;
-		void DrawIndexedIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) override;
-		void DrawIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) override;
-		void DrawIndexedIndirectCount(Ref<StorageBuffer> commandsBuffer, const size_t offset, Ref<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) override;
-		void DrawIndirectCount(Ref<StorageBuffer> commandsBuffer, const size_t offset, Ref<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) override;
+		void DrawIndexedIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) override;
+		void DrawIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) override;
+		void DrawIndexedIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) override;
+		void DrawIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) override;
 
 		void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ) override;
-		void DispatchIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset) override;
+		void DispatchIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset) override;
 
 		void DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ) override;
-		void DispatchMeshTasksIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) override;
-		void DispatchMeshTasksIndirectCount(Ref<StorageBuffer> commandsBuffer, const size_t offset, Ref<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) override;
+		void DispatchMeshTasksIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) override;
+		void DispatchMeshTasksIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) override;
 
-		void SetViewports(const std::vector<Viewport>& viewports) override;
-		void SetScissors(const std::vector<Rect2D>& scissors) override;
+		void SetViewports(const StackVector<Viewport, MAX_VIEWPORT_COUNT>& viewports) override;
+		void SetScissors(const StackVector<Rect2D, MAX_VIEWPORT_COUNT>& scissors) override;
 
-		void BindPipeline(Ref<RenderPipeline> pipeline) override;
-		void BindPipeline(Ref<ComputePipeline> pipeline) override;
-		void BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding) override;
-		void BindIndexBuffer(Ref<IndexBuffer> indexBuffer) override;
-		void BindIndexBuffer(Ref<StorageBuffer> indexBuffer) override;
-		void BindDescriptorTable(Ref<DescriptorTable> descriptorTable) override;
+		void BindPipeline(WeakPtr<RenderPipeline> pipeline) override;
+		void BindPipeline(WeakPtr<ComputePipeline> pipeline) override;
+		void BindVertexBuffers(const StackVector<WeakPtr<VertexBuffer>, MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding) override;
+		void BindVertexBuffers(const StackVector<WeakPtr<StorageBuffer>, MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding) override;
+		void BindIndexBuffer(WeakPtr<IndexBuffer> indexBuffer) override;
+		void BindIndexBuffer(WeakPtr<StorageBuffer> indexBuffer) override;
+		void BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable) override;
 
 		void BeginRendering(const RenderingInfo& renderingInfo) override;
 		void EndRendering() override;
@@ -68,16 +71,17 @@ namespace Volt::RHI
 		void EndTimestamp(uint32_t timestampIndex) override;
 		const float GetExecutionTime(uint32_t timestampIndex) const override;
 
-		void CopyImageToBackBuffer(Ref<Image2D> srcImage, Weak<Swapchain> targetSwapchain) override;
-		void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) override;
-		void ClearBuffer(Ref<StorageBuffer> buffer, const uint32_t value) override;
+		void ClearImage(WeakPtr<Image2D> image, std::array<float, 4> clearColor) override;
+		void ClearBuffer(WeakPtr<StorageBuffer> buffer, const uint32_t value) override;
 
-		void UpdateBuffer(Ref<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data) override;
-		void CopyBufferRegion(Ref<Allocation> srcAllocation, const size_t srcOffset, Ref<Allocation> dstAllocation, const size_t dstOffset, const size_t size) override;
-		void CopyBufferToImage(Ref<Allocation> srcBuffer, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip /* = 0 */) override;
-		void CopyImage(Ref<Image2D> srcImage, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height) override;
+		void UpdateBuffer(WeakPtr<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data) override;
+		void CopyBufferRegion(WeakPtr<Allocation> srcAllocation, const size_t srcOffset, WeakPtr<Allocation> dstAllocation, const size_t dstOffset, const size_t size) override;
+		void CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip /* = 0 */) override;
+		void CopyImageToBuffer(WeakPtr<Image2D> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip) override;
+		void CopyImage(WeakPtr<Image2D> srcImage, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height) override;
 
 		const uint32_t GetCurrentIndex() const override;
+		const QueueType GetQueueType() const override;
 
 		VkFence_T* GetCurrentFence() const;
 
@@ -95,9 +99,6 @@ namespace Volt::RHI
 
 		void CreateQueryPools();
 		void FetchTimestampResults();
-
-		// #TODO_Ivar: Maybe move somewhere else
-		void CheckWaitReturnValue(uint32_t resultValue);
 
 		VkPipelineLayout_T* GetCurrentPipelineLayout();
 		const uint32_t GetCurrentCommandBufferIndex() const;
@@ -118,6 +119,7 @@ namespace Volt::RHI
 		bool m_hasTimestampSupport = false;
 
 		uint32_t m_commandBufferCount = 0;
+		QueueType m_queueType;
 
 		// Queries
 		uint32_t m_timestampQueryCount = 0;
@@ -130,8 +132,8 @@ namespace Volt::RHI
 		std::vector<std::vector<float>> m_executionTimes;
 
 		// Internal state
-		Weak<RenderPipeline> m_currentRenderPipeline;
-		Weak<ComputePipeline> m_currentComputePipeline;
-		Weak<Swapchain> m_swapchainTarget;
+		WeakPtr<RenderPipeline> m_currentRenderPipeline;
+		WeakPtr<ComputePipeline> m_currentComputePipeline;
+		WeakPtr<Swapchain> m_swapchainTarget;
 	};
 }

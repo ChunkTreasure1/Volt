@@ -10,9 +10,9 @@
 #include "Volt/Core/Layer/Layer.h"
 #include "Volt/Steam/SteamImplementation.h"
 
-#include "Volt/RenderingNew/RendererNew.h"
-#include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
-#include "Volt/RenderingNew/Shader/ShaderMap.h"
+#include "Volt/Rendering/Renderer.h"
+#include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
+#include "Volt/Rendering/Shader/ShaderMap.h"
 
 #include "Volt/Core/ScopedTimer.h"
 
@@ -31,6 +31,9 @@
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
 
+#include <VoltVulkan/VulkanRHIProxy.h>
+#include <VoltD3D12/D3D12RHIProxy.h>
+
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 #include <Amp/WWiseEngine/WWiseEngine.h>
@@ -38,20 +41,20 @@
 
 namespace Volt
 {
-	inline static void RHILogCallback(RHI::Severity severity, std::string_view msg)
+	inline static void RHILogCallback(RHI::LogSeverity severity, std::string_view msg)
 	{
 		switch (severity)
 		{
-			case RHI::Severity::Trace:
+			case RHI::LogSeverity::Trace:
 				VT_CORE_TRACE(msg);
 				break;
-			case RHI::Severity::Info:
+			case RHI::LogSeverity::Info:
 				VT_CORE_INFO(msg);
 				break;
-			case RHI::Severity::Warning:
+			case RHI::LogSeverity::Warning:
 				VT_CORE_WARN(msg);
 				break;
-			case RHI::Severity::Error:
+			case RHI::LogSeverity::Error:
 				VT_CORE_ERROR(msg);
 				break;
 		}
@@ -94,6 +97,11 @@ namespace Volt
 		Window::StaticInitialize();
 		CreateGraphicsContext();
 
+		if (ProjectManager::GetProject().isDeprecated)
+		{
+			windowProperties.useTitlebar = true;
+		}
+
 		// Setup main window
 		{
 			m_windowHandle = m_windowManager.CreateNewWindow(windowProperties);
@@ -105,14 +113,12 @@ namespace Volt
 		FileSystem::Initialize();
 		
 		m_threadPool.Initialize(std::thread::hardware_concurrency() / 2);
+
+		Renderer::PreInitialize();
 		m_assetmanager = CreateScope<AssetManager>();
 		
-		RendererNew::PreInitialize();
 		ShaderMap::Initialize();
-		RendererNew::Initialize();
-
-		//Renderer::Initialize();
-		//Renderer::LateInitialize();
+		Renderer::Initialize();
 
 		//UIRenderer::Initialize();
 		//DebugRenderer::Initialize();
@@ -162,6 +168,7 @@ namespace Volt
 			UI::SetFont(FontType::Bold_90, m_imguiImplementation->AddFont("Engine/Fonts/Inter/inter-bold.ttf", 90.f));
 
 			m_imguiImplementation->SetDefaultFont(defaultFont);
+			ImGui::SetCurrentContext(m_imguiImplementation->GetContext());
 		}
 
 		if (info.netEnabled)
@@ -195,19 +202,19 @@ namespace Volt
 		//DebugRenderer::Shutdown();
 		//UIRenderer::Shutdown();
 
-		//Renderer::Shutdown();
-
-		//Amp::AudioManager::Shutdown();
 		Amp::WWiseEngine::Get().TermWwise();
 
 		m_assetmanager = nullptr;
 		m_threadPool.Shutdown();
 
 		ShaderMap::Shutdown();
-		RendererNew::Shutdown();
+		Renderer::Shutdown();
 		FileSystem::Shutdown();
 
 		m_windowManager.DestroyWindow(m_windowHandle);
+		m_graphicsContext = nullptr;
+		m_rhiProxy = nullptr;
+		Window::StaticShutdown();
 
 		s_instance = nullptr;
 		Log::Shutdown();
@@ -221,8 +228,10 @@ namespace Volt
 
 		while (m_isRunning)
 		{
-			MainUpdate();
 			VT_PROFILE_FRAME("Frame");
+			MainUpdate();
+
+			m_frameIndex++;
 		}
 	}
 
@@ -301,10 +310,10 @@ namespace Volt
 		{
 			VT_PROFILE_SCOPE("Application::Render");
 
-			RendererNew::Flush();
+			Renderer::Flush();
 			AppRenderEvent renderEvent;
 			OnEvent(renderEvent);
-			RendererNew::Update();
+			Renderer::Update();
 		}
 
 		{
@@ -344,7 +353,7 @@ namespace Volt
 		}
 
 		RenderGraphExecutionThread::WaitForFinishedExecution();
-		RendererNew::EndOfFrameUpdate();
+		Renderer::EndOfFrameUpdate();
 
 		{
 			m_windowManager.Present();
@@ -353,22 +362,46 @@ namespace Volt
 			OnEvent(presentEvent);
 		}
 
+		{
+			VT_PROFILE_SCOPE("Application::PostFrameUpdate");
+			AppPostFrameUpdateEvent postFrameUpdateEvent{ m_currentDeltaTime * m_timeScale };
+			OnEvent(postFrameUpdateEvent);
+		}
+
 		m_frameTimer.Accumulate();
 	}
 
 	void Application::CreateGraphicsContext()
 	{
-		RHI::LogHookInfo logHook{};
-		logHook.enabled = true;
-		logHook.logCallback = RHILogCallback;
-
-		RHI::ResourceManagementInfo resourceManagement{};
-		resourceManagement.resourceDeletionCallback = RendererNew::DestroyResource;
-
 		RHI::GraphicsContextCreateInfo cinfo{};
 		cinfo.graphicsApi = RHI::GraphicsAPI::Vulkan;
-		cinfo.loghookInfo = logHook;
-		cinfo.resourceManagementInfo = resourceManagement;
+
+		if (cinfo.graphicsApi == RHI::GraphicsAPI::Vulkan)
+		{
+			m_rhiProxy = RHI::CreateVulkanRHIProxy();
+		}
+		else if (cinfo.graphicsApi == RHI::GraphicsAPI::D3D12)
+		{
+			m_rhiProxy = RHI::CreateD3D12RHIProxy();
+		}
+
+		{
+			RHI::LogInfo logHook{};
+			logHook.enabled = true;
+			logHook.logCallback = RHILogCallback;
+
+			m_rhiProxy->SetLogInfo(logHook);
+
+			RHI::RHICallbackInfo callbackInfo{};
+			callbackInfo.resourceManagementInfo.resourceDeletionCallback = Renderer::DestroyResource;
+			callbackInfo.requestCloseEventCallback = []() 
+			{
+				WindowCloseEvent closeEvent{};
+				Application::Get().OnEvent(closeEvent);
+			};
+
+			m_rhiProxy->SetRHICallbackInfo(callbackInfo);
+		}
 
 		m_graphicsContext = RHI::GraphicsContext::Create(cinfo);
 	}

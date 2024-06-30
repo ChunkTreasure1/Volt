@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "RenderingComponents.h"
 
-#include "Volt/RenderingNew/RenderScene.h"
+#include "Volt/Rendering/RenderScene.h"
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Rendering/Material.h"
@@ -92,5 +92,57 @@ namespace Volt
 				index++;
 			}
 		}
+	}
+
+	void MeshComponent::OnComponentCopied(MeshComponent& data, Entity entity)
+	{
+		auto scene = entity.GetScene();
+		auto renderScene = scene->GetRenderScene();
+
+		for (const auto& uuid : data.renderObjectIds)
+		{
+			renderScene->Unregister(uuid);
+		}
+
+		if (data.handle == Asset::Null())
+		{
+			return;
+		}
+
+		Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(data.handle);
+		if (!mesh)
+		{
+			return;
+		}
+
+		const auto& materialTable = mesh->GetMaterialTable();
+
+		for (size_t i = 0; i < mesh->GetSubMeshes().size(); i++)
+		{
+			const auto materialIndex = mesh->GetSubMeshes().at(i).materialIndex;
+
+			Ref<Material> mat = AssetManager::QueueAsset<Material>(materialTable.GetMaterial(materialIndex));
+
+			if (static_cast<uint32_t>(data.materials.size()) > materialIndex)
+			{
+				if (data.materials.at(materialIndex) != mat->handle)
+				{
+					Ref<Material> tempMat = AssetManager::QueueAsset<Material>(data.materials.at(materialIndex));
+					mat = tempMat;
+				}
+			}
+
+			auto uuid = renderScene->Register(entity.GetID(), mesh, mat, static_cast<uint32_t>(i));
+			data.renderObjectIds.emplace_back(uuid);
+		}
+
+		data.m_oldHandle = data.handle;
+		data.m_oldMaterials = data.materials;
+	}
+
+	void MeshComponent::OnComponentDeserialized(MeshComponent& data, Entity entity)
+	{
+		data.m_oldHandle = data.handle;
+		data.m_oldMaterials = data.materials;
 	}
 }

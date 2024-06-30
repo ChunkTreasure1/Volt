@@ -7,12 +7,13 @@
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Rendering/Material.h>
+#include <Volt/Asset/Mesh/Mesh.h>
 
 #include <Volt/Utility/UIUtility.h>
 
 #include <Volt/Scene/Scene.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
-#include <Volt/RenderingNew/SceneRendererNew.h>
+#include <Volt/Rendering/SceneRenderer.h>
 
 #include <Volt/Components/RenderingComponents.h>
 #include <Volt/Components/LightComponents.h>
@@ -21,14 +22,14 @@
 MeshPreviewPanel::MeshPreviewPanel()
 	: EditorWindow("Mesh Preview", true)
 {
-	myCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
+	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myScene = Volt::Scene::CreateDefaultScene("Mesh Preview", false);
 
 	// Preview entity
 	{
 		auto entity = myScene->CreateEntity();
 		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>();
-		comp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+		comp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube_Mesh.vtasset");
 		myPreviewEntity = entity;
 	}
 }
@@ -73,7 +74,7 @@ void MeshPreviewPanel::OnOpen()
 		//settings.enableGrid = true;
 		//settings.enableOutline = true;
 
-		mySceneRenderer = CreateRef<Volt::SceneRendererNew>(spec);
+		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
 	}
 }
 
@@ -207,7 +208,7 @@ void MeshPreviewPanel::UpdateToolbar()
 
 	if (UI::ImageButton("##Load", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
 	{
-		const std::filesystem::path meshPath = FileSystem::OpenFileDialogue({ { "Mesh (*.vtmesh)", "vtmesh" } });
+		const std::filesystem::path meshPath = FileSystem::OpenFileDialogue({ { "Mesh (*.vtasset)", "vtasset" } });
 		if (!meshPath.empty() && FileSystem::Exists(meshPath))
 		{
 			myCurrentMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshPath);

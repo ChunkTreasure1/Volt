@@ -2,6 +2,7 @@
 
 #include "Vertex.hlsli"
 #include "Resources.hlsli"
+#include "BoundingVolumes.hlsli"
 
 #define MAX_LOD_COUNT 8
 
@@ -13,12 +14,6 @@ struct GPUMaterial
     uint textureCount;
     uint materialFlags;
     uint2 padding;
-};
-
-struct GPUMeshLOD
-{
-    uint indexCount;
-    uint indexOffset;
 };
 
 struct Meshlet
@@ -42,9 +37,11 @@ struct GPUMesh
 {
     TypedBuffer<VertexPositionData> vertexPositionsBuffer;
     TypedBuffer<VertexMaterialData> vertexMaterialBuffer;
-    TypedBuffer<VertexAnimationData> vertexAnimationBuffer;
+    TypedBuffer<VertexAnimationInfo> vertexAnimationInfoBuffer;
+    TypedBuffer<uint16_t> vertexBoneInfluencesBuffer;
+
+    TypedBuffer<float> vertexBoneWeightsBuffer; // Should be packed
     TypedBuffer<uint> indexBuffer;
-    
     TypedBuffer<uint> meshletIndexBuffer;
     TypedBuffer<Meshlet> meshletsBuffer;
     
@@ -52,9 +49,6 @@ struct GPUMesh
     uint meshletCount;
     uint meshletStartOffset;
     uint meshletIndexStartOffset;
-  
-    uint lodCount;
-    GPUMeshLOD lods[MAX_LOD_COUNT];
 };
 
 struct ObjectDrawData
@@ -64,16 +58,20 @@ struct ObjectDrawData
     uint meshId;
     uint materialId;
     uint meshletStartOffset;
-    uint padding;
+    uint entityId;
     
-    float3 boundingSphereCenter;
-    float boundingSphereRadius;
+    BoundingSphere boundingSphere;
+
+    uint isAnimated;
+    uint boneOffset;
+    uint2 padding;
 };
 
 struct GPUScene
 {
-    TypedBuffer<GPUMesh> meshesBuffer;
-    TypedBuffer<GPUMaterial> materialsBuffer;
-    TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    TypedBuffer<Meshlet> meshletsBuffer;
+    UniformTypedBuffer<GPUMesh> meshesBuffer;
+    UniformTypedBuffer<GPUMaterial> materialsBuffer;
+    UniformTypedBuffer<ObjectDrawData> objectDrawDataBuffer;
+    UniformTypedBuffer<Meshlet> meshletsBuffer;
+    UniformTypedBuffer<float4x4> bonesBuffer;
 };

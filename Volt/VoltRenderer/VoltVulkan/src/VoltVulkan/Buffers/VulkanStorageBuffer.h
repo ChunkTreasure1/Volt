@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
+
 #include <VoltRHI/Buffers/StorageBuffer.h>
 
 namespace Volt::RHI
@@ -12,21 +14,22 @@ namespace Volt::RHI
 	public:
 		VulkanStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
 		VulkanStorageBuffer(const size_t size, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
-		VulkanStorageBuffer(const size_t size, Ref<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
+		VulkanStorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
 		~VulkanStorageBuffer() override;
 
 		void ResizeByteSize(const size_t byteSize) override;
 		void Resize(const uint32_t size) override;
 
+		const size_t GetElementSize() const override;
 		const size_t GetSize() const override;
 		const uint32_t GetCount() const override;
-		Weak<Allocation> GetAllocation() const override;
+		WeakPtr<Allocation> GetAllocation() const override;
 
 		void Unmap() override;
 		void SetData(const void* data, const size_t size) override;
-		void SetData(Ref<CommandBuffer> commandBuffer, const void* data, const size_t size) override;
+		void SetData(RefPtr<CommandBuffer> commandBuffer, const void* data, const size_t size) override;
 
-		Ref<BufferView> GetView() override;
+		RefPtr<BufferView> GetView() override;
 
 		inline constexpr ResourceType GetType() const override { return ResourceType::StorageBuffer; }
 		void SetName(std::string_view name) override;
@@ -47,8 +50,9 @@ namespace Volt::RHI
 
 		std::string m_name;
 
-		Ref<Allocation> m_allocation;
-		Weak<Allocator> m_customAllocator;
+		RefPtr<BufferView> m_view;
+		RefPtr<Allocation> m_allocation;
+		WeakPtr<Allocator> m_customAllocator;
 
 		bool m_allocatedUsingCustomAllocator = false;
 

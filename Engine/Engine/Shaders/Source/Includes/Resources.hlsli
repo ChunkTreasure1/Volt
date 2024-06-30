@@ -2,67 +2,6 @@
 
 #include "Defines.hlsli"
 
-#define DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(textureType, binding, space) \
-    textureType<float> u_##textureType##float[] : register(binding, space); \
-    textureType<float2> u_##textureType##float2[] : register(binding, space); \
-    textureType<float3> u_##textureType##float3[] : register(binding, space); \
-    textureType<float4> u_##textureType##float4[] : register(binding, space); \
-    textureType<uint> u_##textureType##uint[] : register(binding, space); \
-    textureType<uint2> u_##textureType##uint2[] : register(binding, space); \
-    textureType<uint3> u_##textureType##uint3[] : register(binding, space); \
-    textureType<uint4> u_##textureType##uint4[] : register(binding, space); \
-
-#define DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, registerName, valueType, handleName, validationType) \
-    resourceType<valueType> operator[](handleName<valueType> identifier) \
-    { \
-        ValidateResourceAccess(GetHandleType(identifier.handle), validationType); \
-        return registerName##valueType[NonUniformResourceIndex(GetHandle(identifier.handle))]; \
-    } \
-
-#define DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(resourceType, validationType) \
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, float, resourceType##Handle, validationType) \
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, float2, resourceType##Handle, validationType) \
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, float3, resourceType##Handle, validationType) \
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, float4, resourceType##Handle, validationType) \
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, uint, resourceType##Handle, validationType) \
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, uint2, resourceType##Handle, validationType) \
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, uint3, resourceType##Handle, validationType) \
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, uint4, resourceType##Handle, validationType) \
-
-#define DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, registerName, valueType, handleName,  validationType) \
-    resourceType<valueType> operator[](handleName<valueType> identifier) \
-    { \
-        ValidateResourceAccess(GetHandleType(identifier.handle), validationType); \
-        return registerName##valueType[GetHandle(identifier.handle)]; \
-    } \
-
-#define DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(resourceType, validationType) \
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, float, resourceType##Handle, validationType) \
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, float2, resourceType##Handle, validationType) \
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, float3, resourceType##Handle, validationType) \
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, float4, resourceType##Handle, validationType) \
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, uint, resourceType##Handle, validationType) \
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, uint2, resourceType##Handle, validationType) \
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, uint3, resourceType##Handle, validationType) \
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL(resourceType, u_##resourceType, uint4, resourceType##Handle, validationType) \
-
-DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(Texture1D, t0, space0)
-DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(Texture2D, t1, space0)
-DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(Texture3D, t2, space0)
-DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(TextureCube, t3, space0)
-DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(RWTexture1D, u4, space0)
-DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(RWTexture2D, u5, space0)
-DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(RWTexture3D, u6, space0)
-
-DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(RWTexture2DArray, u11, space0)
-DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(Texture2DArray, t12, space0)
-
-ByteAddressBuffer u_ByteAddressBuffer[] : register(t7, space0);
-RWByteAddressBuffer u_RWByteAddressBuffer[] : register(u8, space0);
-
-ByteAddressBuffer u_UniformBuffer[] : register(t9, space0);
-SamplerState u_SamplerState[] : register(s10, space0);
-
 #ifndef NO_RENDERGRAPH
 
 struct PushContantData
@@ -73,12 +12,6 @@ struct PushContantData
 };
 
 PUSH_CONSTANT(PushContantData, u_pushConstantData);
-
-template<typename T>
-T GetConstants()
-{
-    return u_ByteAddressBuffer[u_pushConstantData.constantsBufferIndex].Load<T>(u_pushConstantData.constantsOffset);
-}
 
 #endif
 
@@ -159,137 +92,27 @@ struct RWTexture2DArrayHandle
     uint handle;
 };
 
+template<typename T>
+struct Texture2DArrayHandle
+{
+    uint handle;
+};
+
 struct SamplerStateHandle
 {
     uint handle;
 };
 
-namespace ResourceType
-{
-    static const uint INVALID = 0;
-    static const uint BUFFER = 1;
-    static const uint RW_BUFFER = 2;
-    static const uint UNIFORM_BUFFER = 3;
-    static const uint TEXTURE_1D = 4;
-    static const uint TEXTURE_2D = 5;
-    static const uint TEXTURE_3D = 6;
-    static const uint TEXTURE_CUBE = 7;
-    static const uint RW_TEXTURE_1D = 8;
-    static const uint RW_TEXTURE_2D = 9;
-    static const uint RW_TEXTURE_3D = 10;
-    static const uint RW_TEXTURE_2D_ARRAY = 11;
-    static const uint SAMPLER_STATE = 12;
-}
-
-#ifdef ENABLE_RUNTIME_VALIDATION
-
-#include "ShaderRuntimeValidator.hlsli"
-
-void ValidateResourceAccess(uint handleType, uint shouldBeType)
-{
-    // We skip the type "INVALID" as this can mean that the resource hasn't been marked with any type
-    if (handleType != shouldBeType && handleType != ResourceType::INVALID)
-    {
-        RuntimeValidationError error;
-        error.Initialize();
-        error.errorType = RuntimeErrorType::INVALID_RESOURCE_HANDLE_TYPE;
-        error.userdata0 = handleType;
-        error.userdata1 = shouldBeType;
-
-        WriteRuntimeError(error, u_RWByteAddressBuffer[u_pushConstantData.shaderValidationBuffer]);
-    }
-}
-
-#else
-
-void ValidateResourceAccess(uint handleType, uint shouldBeType)
-{}
-
-#endif
-
-// #TODO_Ivar: Add ability to access resources uniformly
-struct VulkanResourceDescriptorHeapInternal
-{
-    ByteAddressBuffer operator[](BufferHandle handle)
-    {
-        ValidateResourceAccess(GetHandleType(handle.handle), ResourceType::BUFFER);
-        return u_ByteAddressBuffer[NonUniformResourceIndex(GetHandle(handle.handle))];
-    }   
-
-    RWByteAddressBuffer operator[](RWBufferHandle handle)
-    {
-        ValidateResourceAccess(GetHandleType(handle.handle), ResourceType::RW_BUFFER);
-        return u_RWByteAddressBuffer[NonUniformResourceIndex(GetHandle(handle.handle))];
-    }
-
-    ByteAddressBuffer operator[](UniformBufferHandle handle)
-    {
-        ValidateResourceAccess(GetHandleType(handle.handle), ResourceType::UNIFORM_BUFFER);
-        return u_UniformBuffer[GetHandle(handle.handle)];
-    }
-    
-    SamplerState operator[](SamplerStateHandle handle)
-    {
-        ValidateResourceAccess(GetHandleType(handle.handle), ResourceType::SAMPLER_STATE);
-        return u_SamplerState[GetHandle(handle.handle)];
-    }
-
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(Texture1D, ResourceType::TEXTURE_1D)
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(Texture2D, ResourceType::TEXTURE_2D)
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(Texture3D, ResourceType::TEXTURE_3D)
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(TextureCube, ResourceType::TEXTURE_CUBE)
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture1D, ResourceType::RW_TEXTURE_1D)
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture2D, ResourceType::RW_TEXTURE_2D)
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture3D, ResourceType::RW_TEXTURE_3D)
-    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture2DArray, ResourceType::RW_TEXTURE_2D_ARRAY)
-};
-
-struct VulkanUniformResourceDescriptorHeapInternal
-{
-    ByteAddressBuffer operator[](BufferHandle handle)
-    {
-        ValidateResourceAccess(GetHandleType(handle.handle), ResourceType::BUFFER);
-        return u_ByteAddressBuffer[GetHandle(handle.handle)];
-    }
-
-    RWByteAddressBuffer operator[](RWBufferHandle handle)
-    {
-        ValidateResourceAccess(GetHandleType(handle.handle), ResourceType::RW_BUFFER);
-        return u_RWByteAddressBuffer[GetHandle(handle.handle)];
-    }
-
-    ByteAddressBuffer operator[](UniformBufferHandle handle)
-    {
-        ValidateResourceAccess(GetHandleType(handle.handle), ResourceType::UNIFORM_BUFFER);
-        return u_UniformBuffer[GetHandle(handle.handle)];
-    }
-    
-    SamplerState operator[](SamplerStateHandle handle)
-    {
-        ValidateResourceAccess(GetHandleType(handle.handle), ResourceType::SAMPLER_STATE);
-        return u_SamplerState[GetHandle(handle.handle)];
-    }
-
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(Texture1D, ResourceType::TEXTURE_1D)
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(Texture2D, ResourceType::TEXTURE_2D)
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(Texture3D, ResourceType::TEXTURE_3D)
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(TextureCube, ResourceType::TEXTURE_CUBE)
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture1D, ResourceType::RW_TEXTURE_1D)
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture2D, ResourceType::RW_TEXTURE_2D)
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture3D, ResourceType::RW_TEXTURE_3D)
-    DEFINE_UNIFORM_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture2DArray, ResourceType::RW_TEXTURE_2D_ARRAY)
-};
-
-static VulkanResourceDescriptorHeapInternal g_descriptorHeap;
-static VulkanUniformResourceDescriptorHeapInternal g_uniformDescriptorHeap;
-
-#define DESCRIPTOR_HEAP(handleType, handle) g_descriptorHeap[(handleType)handle]
-#define UNIFORM_DESCRIPTOR_HEAP(handleType, handle) g_uniformDescriptorHeap[(handleType)handle]
-
 struct ResourceHandle
 {
     uint handle;
 };
+
+#if __VULKAN__
+    #include "VulkanDescriptorHeap.hlsli"
+#elif __D3D12__
+    #include "D3D12DescriptorHeap.hlsli"
+#endif
 
 struct TextureSampler
 {
@@ -336,7 +159,7 @@ struct UniformRawByteBuffer
     }
 };
 
-struct RWUniformRawByteBuffer
+struct UniformRWRawByteBuffer
 {
     ResourceHandle handle;
     
@@ -639,7 +462,7 @@ struct UniformTypedBuffer
 };
 
 template<typename T>
-struct RWUniformTypedBuffer
+struct UniformRWTypedBuffer
 {
     ResourceHandle handle;
     
@@ -799,6 +622,12 @@ struct UniformTexture
         Texture2D<T> texture = UNIFORM_DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
         return texture.Sample(samplerState.Get(), location);
     }
+
+    T Sample2DArray(in TextureSampler samplerState, in float3 location, in int2 offset)
+    {
+        Texture2DArray<T> texture = UNIFORM_DESCRIPTOR_HEAP(Texture2DArrayHandle<T>, handle);
+        return texture.Sample(samplerState.Get(), location, offset);
+    }    
     
     T Sample3D(in TextureSampler samplerState, in float3 location)
     {
@@ -823,7 +652,13 @@ struct UniformTexture
         Texture2D<T> texture = UNIFORM_DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
         return texture.SampleLevel(samplerState.Get(), location, lod);
     }
-    
+
+    T SampleLevel2DArray(in TextureSampler samplerState, in float3 location, in float lod)
+    {
+        Texture2DArray<T> texture = UNIFORM_DESCRIPTOR_HEAP(Texture2DArrayHandle<T>, handle);
+        return texture.SampleLevel(samplerState.Get(), location, lod);
+    }
+
     T SampleLevel3D(in TextureSampler samplerState, in float3 location, in float lod)
     {
         Texture3D<T> texture = UNIFORM_DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);
@@ -1026,7 +861,13 @@ struct TTexture
         Texture2D<T> texture = DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
         return texture.Sample(samplerState.Get(), location);
     }
-    
+
+    T Sample2DArray(in TextureSampler samplerState, in float3 location, in int2 offset)
+    {
+        Texture2DArray<T> texture = DESCRIPTOR_HEAP(Texture2DArrayHandle<T>, handle);
+        return texture.Sample(samplerState.Get(), location, offset);
+    }    
+
     T Sample3D(in TextureSampler samplerState, in float3 location)
     {
         Texture3D<T> texture = DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);
@@ -1051,6 +892,12 @@ struct TTexture
         return texture.SampleLevel(samplerState.Get(), location, lod);
     }
     
+    T SampleLevel2DArray(in TextureSampler samplerState, in float3 location, in float lod)
+    {
+        Texture2DArray<T> texture = DESCRIPTOR_HEAP(Texture2DArrayHandle<T>, handle);
+        return texture.SampleLevel(samplerState.Get(), location, lod);
+    }
+
     T SampleLevel3D(in TextureSampler samplerState, in float3 location, in float lod)
     {
         Texture3D<T> texture = DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);
@@ -1218,8 +1065,3 @@ struct RWTexture
         return DESCRIPTOR_HEAP(RWTexture3DHandle<T>, handle);
     }
 };
-
-SamplerState GetSampler(uint samplerIndex)
-{
-    return u_SamplerState[NonUniformResourceIndex(samplerIndex)];
-}

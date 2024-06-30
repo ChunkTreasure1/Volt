@@ -13,11 +13,10 @@
 
 #include "Volt/Rendering/DebugRenderer.h"
 #include "Volt/Rendering/UIRenderer.h"
-#include "Volt/Rendering/Renderer.h"
+#include "Volt/Rendering/Texture/Texture2D.h"
 
+#include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Text/Font.h"
-#include "Volt/Asset/Rendering/PostProcessingStack.h"
-#include "Volt/Asset/Rendering/PostProcessingMaterial.h"
 
 #include "Volt/Utility/Noise.h"
 
@@ -1067,6 +1066,11 @@ namespace Volt
 		Entity entity = scene->GetEntityFromUUID(entityId);
 
 		if (!entity.IsValid())
+		{
+			return nullptr;
+		}
+
+		if (!entity.GetParent())
 		{
 			return nullptr;
 		}
@@ -3197,7 +3201,7 @@ namespace Volt
 		MonoScriptEngine::GetSceneContext()->GetVision().SetActiveCamera(MonoScriptEngine::GetSceneContext()->GetEntityFromUUID(entityId));
 	}
 
-	inline static EntityID Vision_GetActiveCamera()
+	inline static uint32_t Vision_GetActiveCamera()
 	{
 		const Volt::Entity ent = MonoScriptEngine::GetSceneContext()->GetVision().GetActiveCamera();
 		if (ent)
@@ -3205,7 +3209,7 @@ namespace Volt
 			return ent.GetID();
 		}
 
-		return Entity::NullID();
+		return 0;
 	}
 
 	inline static void Vision_DoCameraShake(EntityID entityId, Volt::CameraShakeSettings* shakeSettings)
@@ -4678,7 +4682,7 @@ namespace Volt
 #pragma endregion
 
 #pragma region PostProcessingMaterial
-	inline static void PostProcessingMaterial_SetBool(uint64_t handle, MonoString* name, bool value)
+	/*inline static void PostProcessingMaterial_SetBool(uint64_t handle, MonoString* name, bool value)
 	{
 		Ref<PostProcessingMaterial> material = AssetManager::GetAsset<PostProcessingMaterial>(handle);
 		if (!material || !material->IsValid())
@@ -4767,7 +4771,7 @@ namespace Volt
 
 		const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
 		material->SetValue(param, *value);
-	}
+	}*/
 #pragma endregion
 
 #pragma region UIRenderer
@@ -4824,7 +4828,7 @@ namespace Volt
 		auto entity = scene->GetEntityFromUUID(id);
 		while (!entity.HasComponent<NetActorComponent>())
 		{
-			if (entity.GetParent().GetID() == Entity::NullID()) return 0;
+			if (!entity.GetParent().IsValid()) return 0;
 			entity = entity.GetParent();
 		}
 		auto netId = entity.GetComponent<NetActorComponent>().repId;
@@ -5061,6 +5065,11 @@ namespace Volt
 
 	void MonoScriptGlue::Net_OnConnectCallback()
 	{
+		if (!MonoScriptEngine::GetCoreAssembly().assemblyImage)
+		{
+			return;
+		}
+
 		auto klass = MonoScriptClass(MonoScriptEngine::GetCoreAssembly().assemblyImage, "Volt", "Net");
 
 		auto method = klass.GetMethod("OnConnectCallback", 0);
@@ -5177,6 +5186,11 @@ namespace Volt
 #pragma region Asset
 	inline static bool Asset_IsValid(uint64_t handle)
 	{
+		if (handle == Asset::Null())
+		{
+			return false;
+		}
+
 		Ref<Asset> assetRaw = AssetManager::Get().GetAssetRaw(handle);
 		if (assetRaw && assetRaw->IsValid())
 		{
@@ -5893,13 +5907,13 @@ namespace Volt
 
 		// Post Processing Material
 		{
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetBool);
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetInt);
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetUInt);
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat);
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat2);
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat3);
-			VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat4);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetBool);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetInt);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetUInt);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat2);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat3);
+			//VT_ADD_INTERNAL_CALL(PostProcessingMaterial_SetFloat4);
 		}
 
 		// UIRenderer

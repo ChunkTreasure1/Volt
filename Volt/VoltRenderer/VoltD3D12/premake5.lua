@@ -1,6 +1,6 @@
 project "VoltD3D12"
 	location "."
-	kind "StaticLib"
+	kind "SharedLib"
 	language "C++"
 	cppdialect "C++20"
 
@@ -35,10 +35,37 @@ project "VoltD3D12"
 		"%{IncludeDir.ImGui}",
 	}
 
+	defines
+	{
+		"OPTICK_ENABLE_GPU_D3D12",
+		"GLFW_DLL",
+		"TRACY_IMPORTS",
+		-- "VT_ENABLE_NV_AFTERMATH"
+	}
+
 	links
 	{
+		"ImGui",
+		"tracy",
+		"GLFW",
+		"CoreUtilities",
+
 		"d3d12.lib",
 		"DXGI.lib",
+
+		"%{Library.VoltRHI}",
+		"%{Library.dxc}",
+		"%{Library.Aftermath}"
+	}
+
+	postbuildcommands
+	{
+		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox"'
+	}
+
+	postbuildcommands
+	{
+		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher"'
 	}
 
 	filter "files:vendor/**.cpp"
@@ -57,7 +84,8 @@ project "VoltD3D12"
 
 		defines
 		{
-			"VT_PLATFORM_WINDOWS"
+			"VT_PLATFORM_WINDOWS",
+			"VTDX_BUILD_DLL"
 		}
 
 		filter "configurations:Debug"
@@ -93,3 +121,5 @@ project "VoltD3D12"
 			runtime "Release"
 			optimize "on"
 			symbols "on"
+			vectorextensions "AVX2"
+			isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }

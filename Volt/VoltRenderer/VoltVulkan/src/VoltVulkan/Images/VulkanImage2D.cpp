@@ -4,6 +4,7 @@
 #include "VoltVulkan/Common/VulkanFunctions.h"
 #include "VoltVulkan/Common/VulkanHelpers.h"
 #include "VoltVulkan/Graphics/VulkanSwapchain.h"
+#include "VoltVulkan/Images/VulkanImageView.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
 
@@ -15,11 +16,13 @@
 #include <VoltRHI/Memory/Allocator.h>
 #include <VoltRHI/Memory/Allocation.h>
 
+#include <VoltRHI/RHIProxy.h>
+
 namespace Volt::RHI
 {
 	namespace Utility
 	{
-		VkImageLayout ToVulkanLayout(const VulkanImage2D::ImageLayout layout)
+		VkImageLayout ToVulkanLayout(const VulkanImage2D::ImageLayoutInt layout)
 		{
 			return static_cast<VkImageLayout>(layout);
 		}
@@ -37,7 +40,7 @@ namespace Volt::RHI
 		SetName(specification.debugName);
 	}
 
-	VulkanImage2D::VulkanImage2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data)
+	VulkanImage2D::VulkanImage2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data)
 		: m_specification(specification), m_currentImageLayout(static_cast<uint32_t>(VK_IMAGE_LAYOUT_UNDEFINED)), m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator)
 	{
 		Invalidate(specification.width, specification.height, data);
@@ -151,7 +154,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		GraphicsContext::DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
+		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
 		{
 			if (allocatedUsingCustomAllocator)
 			{
@@ -173,7 +176,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create();
+		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 		commandBuffer->Begin();
 
 		VkCommandBuffer vkCmdBuffer = commandBuffer->GetHandle<VkCommandBuffer>();
@@ -265,12 +268,12 @@ namespace Volt::RHI
 		vkCmdPipelineBarrier(vkCmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
 		commandBuffer->End();
-		commandBuffer->Execute();
+		commandBuffer->ExecuteAndWait();
 
 		m_hasGeneratedMips = true;
 	}
 
-	const Ref<ImageView> VulkanImage2D::GetView(const int32_t mip, const int32_t layer)
+	const RefPtr<ImageView> VulkanImage2D::GetView(const int32_t mip, const int32_t layer)
 	{
 		if (m_imageViews.contains(layer))
 		{
@@ -311,15 +314,15 @@ namespace Volt::RHI
 			spec.layerCount = m_specification.layers;
 		}
 
-		spec.image = As<Image2D>();
+		spec.image = this;
 
-		Ref<ImageView> view = ImageView::Create(spec);
+		RefPtr<ImageView> view = RefPtr<VulkanImageView>::Create(spec);
 		m_imageViews[layer][mip] = view;
 
 		return view;
 	}
 
-	const Ref<ImageView> VulkanImage2D::GetArrayView(const int32_t mip)
+	const RefPtr<ImageView> VulkanImage2D::GetArrayView(const int32_t mip)
 	{
 		if (m_arrayImageViews.contains(mip))
 		{
@@ -334,7 +337,7 @@ namespace Volt::RHI
 		spec.viewType = ImageViewType::View2DArray;
 		spec.image = As<Image2D>();
 
-		Ref<ImageView> view = ImageView::Create(spec);
+		RefPtr<ImageView> view = RefPtr<VulkanImageView>::Create(spec);
 		m_arrayImageViews[mip] = view;
 
 		return view;
@@ -348,6 +351,11 @@ namespace Volt::RHI
 	const uint32_t VulkanImage2D::GetHeight() const
 	{
 		return m_specification.height;
+	}
+
+	const uint32_t VulkanImage2D::GetMipCount() const
+	{
+		return m_specification.mips;
 	}
 
 	const PixelFormat VulkanImage2D::GetFormat() const
@@ -406,12 +414,17 @@ namespace Volt::RHI
 		return m_allocation->GetSize();
 	}
 
+	inline const ImageLayout VulkanImage2D::GetImageLayout() const
+	{
+		return Utility::GetImageLayoutFromVkImageLayout(static_cast<VkImageLayout>(m_currentImageLayout));
+	}
+
 	void VulkanImage2D::InitializeWithData(const void* data)
 	{
 		// #TODO_Ivar: Implement correct size for layer + mip
 		const VkDeviceSize bufferSize = m_specification.width * m_specification.height * Utility::GetByteSizePerPixelFromFormat(m_specification.format) * m_specification.layers;
 
-		Ref<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
+		RefPtr<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
 
 		auto* stagingData = stagingAlloc->Map<void>();
 		memcpy_s(stagingData, bufferSize, data, bufferSize);
@@ -423,25 +436,52 @@ namespace Volt::RHI
 			aspectFlags |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		}
 
-		VkImageMemoryBarrier barrier{};
-		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.image = m_allocation->GetResourceHandle<VkImage>();
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.srcAccessMask = 0;
-		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		barrier.subresourceRange.aspectMask = Utility::GetVkImageAspect(m_imageAspect);
-		barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
-		barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.baseMipLevel = 0;
+		VkImageMemoryBarrier2 barrier2{};
+		barrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+		barrier2.pNext = nullptr;
+		barrier2.srcAccessMask = VK_ACCESS_2_NONE;
+		barrier2.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+		barrier2.srcStageMask = VK_PIPELINE_STAGE_2_NONE;
+		barrier2.dstStageMask = VK_PIPELINE_STAGE_2_COPY_BIT;
+		barrier2.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		barrier2.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier2.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier2.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier2.subresourceRange.aspectMask = Utility::GetVkImageAspect(m_imageAspect);
+		barrier2.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+		barrier2.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		barrier2.subresourceRange.baseArrayLayer = 0;
+		barrier2.subresourceRange.baseMipLevel = 0;
+		barrier2.image = m_allocation->GetResourceHandle<VkImage>();
 
-		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create();
+		VkDependencyInfo depInfo{};
+		depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+		depInfo.pNext = nullptr;
+		depInfo.dependencyFlags = 0;
+		depInfo.imageMemoryBarrierCount = 1;
+		depInfo.pImageMemoryBarriers = &barrier2;
+
+
+		//VkImageMemoryBarrier barrier{};
+		//barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		//barrier.image = m_allocation->GetResourceHandle<VkImage>();
+		//barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		//barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		//barrier.srcAccessMask = 0;
+		//barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		//barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		//barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		//barrier.subresourceRange.aspectMask = Utility::GetVkImageAspect(m_imageAspect);
+		//barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+		//barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		//barrier.subresourceRange.baseArrayLayer = 0;
+		//barrier.subresourceRange.baseMipLevel = 0;
+
+		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 
 		commandBuffer->Begin();
-		vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		//vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		vkCmdPipelineBarrier2(commandBuffer->GetHandle<VkCommandBuffer>(), &depInfo);
 
 		VkBufferImageCopy region{};
 		region.bufferOffset = 0;
@@ -458,12 +498,21 @@ namespace Volt::RHI
 
 		vkCmdCopyBufferToImage(commandBuffer->GetHandle<VkCommandBuffer>(), stagingAlloc->GetResourceHandle<VkBuffer>(), m_allocation->GetResourceHandle<VkImage>(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		barrier2.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier2.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier2.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+		barrier2.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+		barrier2.srcStageMask = VK_PIPELINE_STAGE_2_COPY_BIT;
+		barrier2.dstStageMask = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT;
+
+		vkCmdPipelineBarrier2(commandBuffer->GetHandle<VkCommandBuffer>(), &depInfo);
+
+		//vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
 		commandBuffer->End();
 		commandBuffer->ExecuteAndWait();
+
+		GraphicsContext::GetDefaultAllocator().DestroyBuffer(stagingAlloc);
 	}
 
 	void* VulkanImage2D::GetHandleImpl() const
@@ -478,7 +527,76 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanImage2D::TransitionToLayout(ImageLayout targetLayout)
+	Buffer VulkanImage2D::ReadPixelInternal(const uint32_t x, const uint32_t y, const size_t stride)
+	{
+		// #TODO_Ivar: Implement correct size for layer + mip
+		const VkDeviceSize bufferSize = m_specification.width * m_specification.height * Utility::GetByteSizePerPixelFromFormat(m_specification.format) * m_specification.layers;
+
+		RefPtr<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, BufferUsage::TransferDst, MemoryUsage::GPUToCPU);
+
+		VkImageAspectFlags aspectFlags = Utility::IsDepthFormat(m_specification.format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		if (Utility::IsStencilFormat(m_specification.format))
+		{
+			aspectFlags |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		}
+
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.image = m_allocation->GetResourceHandle<VkImage>();
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barrier.subresourceRange.aspectMask = Utility::GetVkImageAspect(m_imageAspect);
+		barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+		barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.baseMipLevel = 0;
+
+		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
+
+		commandBuffer->Begin();
+		vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+		VkBufferImageCopy region{};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+		
+		region.imageSubresource.aspectMask = aspectFlags;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
+
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = { m_specification.width, m_specification.height, 1 };
+
+		vkCmdCopyImageToBuffer(commandBuffer->GetHandle<VkCommandBuffer>(), m_allocation->GetResourceHandle<VkImage>(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingAlloc->GetResourceHandle<VkBuffer>(), 1, &region);
+
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barrier.newLayout = static_cast<VkImageLayout>(m_currentImageLayout);
+		vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+		commandBuffer->End();
+		commandBuffer->ExecuteAndWait();
+
+		uint8_t* mappedMemory = stagingAlloc->Map<uint8_t>();
+		
+		const uint32_t perPixelSize = Utility::GetByteSizePerPixelFromFormat(m_specification.format);
+		const uint32_t bufferIndex = (x + y * m_specification.width) * perPixelSize;
+
+		Buffer buffer{ stride };
+		buffer.Copy(&mappedMemory[bufferIndex], stride);
+		
+		stagingAlloc->Unmap();
+
+		GraphicsContext::GetDefaultAllocator().DestroyBuffer(stagingAlloc);
+		return buffer;
+	}
+
+	void VulkanImage2D::TransitionToLayout(ImageLayoutInt targetLayout)
 	{
 		if (m_currentImageLayout == targetLayout)
 		{
@@ -506,7 +624,7 @@ namespace Volt::RHI
 		barrier.subresourceRange.baseArrayLayer = 0;
 		barrier.subresourceRange.baseMipLevel = 0;
 
-		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create();
+		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 
 		commandBuffer->Begin();
 		vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);

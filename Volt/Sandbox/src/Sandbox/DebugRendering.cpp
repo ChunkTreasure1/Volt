@@ -20,7 +20,7 @@
 #include <Volt/Rendering/DebugRenderer.h>
 #include <Volt/Rendering/Camera/Camera.h>
 
-#include <Volt/RenderingNew/SceneRendererNew.h>
+#include <Volt/Rendering/SceneRenderer.h>
 
 #include <NavigationEditor/Tools/NavMeshDebugDrawer.h>
 #include <NavigationEditor/Builder/RecastBuilder.h>
@@ -31,7 +31,7 @@ void Sandbox::RenderSelection(Ref<Volt::Camera> camera)
 
 	for (const auto& id : SelectionManager::GetSelectedEntities())
 	{
-		Volt::Entity entity = myRuntimeScene->GetEntityFromUUID(id);
+		Volt::Entity entity = m_runtimeScene->GetEntityFromUUID(id);
 		if (!entity)
 		{
 			continue;
@@ -76,9 +76,9 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 	if (settings.showEntityGizmos)
 	{
-		myRuntimeScene->ForEachWithComponents<const Volt::TransformComponent>([&](entt::entity id, const Volt::TransformComponent& transformComp)
+		m_runtimeScene->ForEachWithComponents<const Volt::TransformComponent>([&](entt::entity id, const Volt::TransformComponent& transformComp)
 		{
-			Volt::Entity entity{ id, myRuntimeScene };
+			Volt::Entity entity{ id, m_runtimeScene };
 
 			if (entity.HasComponent<Volt::CameraComponent>() || entity.HasComponent<Volt::PointLightComponent>() || entity.HasComponent<Volt::SpotLightComponent>())
 			{
@@ -92,8 +92,8 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 			glm::vec3 p = entity.GetPosition();
 
-			const float maxDist = 50.f * 50.f;
-			const float lerpStartDist = 40.f * 40.f;
+			const float maxDist = 5000.f * 5000.f;
+			const float lerpStartDist = 4000.f * 4000.f;
 			const float maxScale = 1.f;
 			const float minScale = 0.3f;
 			const float distance = glm::distance2(camera->GetPosition(), p);
@@ -115,19 +115,19 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 	if (settings.showEntityGizmos || settings.showLightSpheres)
 	{
-		myRuntimeScene->ForEachWithComponents<const Volt::PointLightComponent, const Volt::TransformComponent>([&](entt::entity id, const Volt::PointLightComponent& lightComp, const Volt::TransformComponent& transformComp)
+		m_runtimeScene->ForEachWithComponents<const Volt::PointLightComponent, const Volt::TransformComponent>([&](entt::entity id, const Volt::PointLightComponent& lightComp, const Volt::TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
 				return;
 			}
 
-			Volt::Entity entity{ id, myRuntimeScene.get() };
+			Volt::Entity entity{ id, m_runtimeScene.get() };
 
 			glm::vec3 p = entity.GetPosition();
 
-			const float maxDist = 50.f;
-			const float lerpStartDist = 40.f;
+			const float maxDist = 5000.f;
+			const float lerpStartDist = 4000.f;
 			const float maxScale = 1.f;
 			const float distance = glm::distance(camera->GetPosition(), p);
 
@@ -145,19 +145,19 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 			}
 		});
 
-		myRuntimeScene->ForEachWithComponents<const Volt::SpotLightComponent, const Volt::TransformComponent>([&](entt::entity id, const Volt::SpotLightComponent& lightComp, const Volt::TransformComponent& transformComp)
+		m_runtimeScene->ForEachWithComponents<const Volt::SpotLightComponent, const Volt::TransformComponent>([&](entt::entity id, const Volt::SpotLightComponent& lightComp, const Volt::TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
 				return;
 			}
 
-			Volt::Entity entity{ id, myRuntimeScene.get() };
+			Volt::Entity entity{ id, m_runtimeScene.get() };
 
 			glm::vec3 p = entity.GetPosition();
 
-			const float maxDist = 50.f;
-			const float lerpStartDist = 40.f;
+			const float maxDist = 5000.f;
+			const float lerpStartDist = 4000.f;
 			const float maxScale = 1.f;
 			const float distance = glm::distance(camera->GetPosition(), p);
 
@@ -177,9 +177,9 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 		if (settings.showLightSpheres)
 		{
-			myRuntimeScene->ForEachWithComponents<const Volt::PointLightComponent>([&](entt::entity id, const Volt::PointLightComponent& comp)
+			m_runtimeScene->ForEachWithComponents<const Volt::PointLightComponent>([&](entt::entity id, const Volt::PointLightComponent& comp)
 			{
-				Volt::Entity entity{ id, myRuntimeScene.get() };
+				Volt::Entity entity{ id, m_runtimeScene.get() };
 				Volt::DebugRenderer::DrawLineSphere(entity.GetPosition(), comp.radius);
 			});
 		}
@@ -187,7 +187,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 		///// Sphere Bounds Visualization /////
 		if (settings.showBoundingSpheres)
 		{
-			myRuntimeScene->ForEachWithComponents<const Volt::MeshComponent>([&](entt::entity id, const Volt::MeshComponent& comp)
+			m_runtimeScene->ForEachWithComponents<const Volt::MeshComponent>([&](entt::entity id, const Volt::MeshComponent& comp)
 			{
 				if (comp.GetHandle() == Volt::Asset::Null())
 				{
@@ -200,7 +200,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 					return;
 				}
 
-				Volt::Entity entity{ id, myRuntimeScene.get() };
+				Volt::Entity entity{ id, m_runtimeScene.get() };
 
 				const auto& boundingSphere = mesh->GetBoundingSphere();
 				const auto transform = entity.GetTransform();
@@ -231,9 +231,9 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 				// Draw NavLinks
 				{
 					std::vector<Volt::AI::NavLinkConnection> links;
-					myRuntimeScene->ForEachWithComponents<const Volt::NavLinkComponent>([&](const entt::entity id, const Volt::NavLinkComponent& comp)
+					m_runtimeScene->ForEachWithComponents<const Volt::NavLinkComponent>([&](const entt::entity id, const Volt::NavLinkComponent& comp)
 					{
-						Volt::Entity entity{ id, myRuntimeScene.get() };
+						Volt::Entity entity{ id, m_runtimeScene.get() };
 						Volt::AI::NavLinkConnection link;
 
 						link.start = entity.GetPosition() + comp.start;
@@ -252,16 +252,16 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 	///////////////////////////////////////
 
 	///// Camera Gizmo /////
-	myRuntimeScene->ForEachWithComponents<Volt::CameraComponent>([&](entt::entity id, const Volt::CameraComponent& cameraComponent)
+	m_runtimeScene->ForEachWithComponents<Volt::CameraComponent>([&](entt::entity id, const Volt::CameraComponent& cameraComponent)
 	{
-		Volt::Entity entity{ id, myRuntimeScene.get() };
+		Volt::Entity entity{ id, m_runtimeScene.get() };
 
 		if (!entity.IsVisible())
 		{
 			return;
 		}
 
-		const auto cameraMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Editor/Meshes/Gizmos/SM_Camera_Gizmo.vtmesh");
+		const auto cameraMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Editor/Meshes/Gizmos/SM_Camera_Gizmo.vtasset");
 		const auto material = Volt::AssetManager::GetAsset<Volt::Material>("Editor/Materials/M_Camera_Gizmo.vtmat");
 
 		if (!cameraMesh || !cameraMesh->IsValid() || !material || !material->IsValid())
@@ -291,39 +291,39 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 		case ColliderViewMode::All:
 		{
 			auto collisionMaterial = Volt::AssetManager::GetAsset<Volt::Material>("Editor/Materials/M_ColliderDebug.vtmat");
-			myRuntimeScene->ForEachWithComponents<const Volt::BoxColliderComponent>([&](entt::entity id, const Volt::BoxColliderComponent& collider)
+			m_runtimeScene->ForEachWithComponents<const Volt::BoxColliderComponent>([&](entt::entity id, const Volt::BoxColliderComponent& collider)
 			{
-				Volt::Entity entity{ id, myRuntimeScene.get() };
+				Volt::Entity entity{ id, m_runtimeScene.get() };
 
-				auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+				auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Cube_Mesh.vtasset");
 
 				const glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), collider.halfSize * 2.f * 0.01f);
 				Volt::DebugRenderer::DrawMesh(cubeMesh, collisionMaterial, entity.GetTransform() * colliderTransform, entity.GetID());
 			});
 
-			myRuntimeScene->ForEachWithComponents<const Volt::SphereColliderComponent>([&](entt::entity id, const Volt::SphereColliderComponent& collider)
+			m_runtimeScene->ForEachWithComponents<const Volt::SphereColliderComponent>([&](entt::entity id, const Volt::SphereColliderComponent& collider)
 			{
-				Volt::Entity entity{ id, myRuntimeScene.get() };
+				Volt::Entity entity{ id, m_runtimeScene.get() };
 
-				auto sphereMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
+				auto sphereMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtasset");
 
 				const glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f });
 				Volt::DebugRenderer::DrawMesh(sphereMesh, collisionMaterial, entity.GetTransform() * colliderTransform, entity.GetID());
 			});
 
-			myRuntimeScene->ForEachWithComponents<const Volt::CapsuleColliderComponent>([&](entt::entity id, const Volt::CapsuleColliderComponent& collider)
+			m_runtimeScene->ForEachWithComponents<const Volt::CapsuleColliderComponent>([&](entt::entity id, const Volt::CapsuleColliderComponent& collider)
 			{
-				Volt::Entity entity{ id, myRuntimeScene.get() };
+				Volt::Entity entity{ id, m_runtimeScene.get() };
 
 				const glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f, collider.height * 0.01f, collider.radius * 2.f * 0.01f });
-				auto capsuleMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Capsule.vtmesh");
+				auto capsuleMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Capsule.vtasset");
 
 				Volt::DebugRenderer::DrawMesh(capsuleMesh, collisionMaterial, entity.GetTransform() * colliderTransform, entity.GetID());
 			});
 
-			myRuntimeScene->ForEachWithComponents<const Volt::MeshColliderComponent>([&](entt::entity id, const Volt::MeshColliderComponent& collider)
+			m_runtimeScene->ForEachWithComponents<const Volt::MeshColliderComponent>([&](entt::entity id, const Volt::MeshColliderComponent& collider)
 			{
-				Volt::Entity entity{ id, myRuntimeScene.get() };
+				Volt::Entity entity{ id, m_runtimeScene.get() };
 
 				Ref<Volt::Mesh> debugMesh;
 
@@ -346,12 +346,12 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 			for (const auto& id : SelectionManager::GetSelectedEntities())
 			{
-				Volt::Entity entity = myRuntimeScene->GetEntityFromUUID(id);
+				Volt::Entity entity = m_runtimeScene->GetEntityFromUUID(id);
 
 				if (entity.HasComponent<Volt::BoxColliderComponent>())
 				{
 					const auto& collider = entity.GetComponent<Volt::BoxColliderComponent>();
-					auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+					auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Cube_Mesh.vtasset");
 
 					const glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), collider.halfSize * 2.f * 0.01f);
 					Volt::DebugRenderer::DrawMesh(cubeMesh, collisionMaterial, entity.GetTransform() * colliderTransform, entity.GetID());
@@ -360,7 +360,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 				if (entity.HasComponent<Volt::SphereColliderComponent>())
 				{
 					const auto& collider = entity.GetComponent<Volt::SphereColliderComponent>();
-					auto sphereMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
+					auto sphereMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtasset");
 
 					const glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f });
 					Volt::DebugRenderer::DrawMesh(sphereMesh, collisionMaterial, entity.GetTransform() * colliderTransform, entity.GetID());
@@ -371,7 +371,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 					const auto& collider = entity.GetComponent<Volt::CapsuleColliderComponent>();
 
 					const glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f, collider.height * 0.01f, collider.radius * 2.f * 0.01f });
-					auto capsuleMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Capsule.vtmesh");
+					auto capsuleMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Capsule.vtasset");
 
 					Volt::DebugRenderer::DrawMesh(capsuleMesh, collisionMaterial, entity.GetTransform() * colliderTransform, entity.GetID());
 				}

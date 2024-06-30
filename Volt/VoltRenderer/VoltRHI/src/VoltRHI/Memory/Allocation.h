@@ -13,7 +13,7 @@ namespace Volt::RHI
 		uint32_t pageId = 0;
 	};
 
-	class Allocation : public RHIInterface
+	class VTRHI_API Allocation : public RHIInterface
 	{
 	public:
 		virtual ~Allocation() = default;
@@ -39,7 +39,7 @@ namespace Volt::RHI
 		Allocation() = default;
 	};
 
-	class TransientAllocation : public Allocation
+	class VTRHI_API TransientAllocation : public Allocation
 	{
 	public:
 		virtual ~TransientAllocation() override = default;

@@ -7,15 +7,7 @@
 #include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Text/MSDFData.h"
 
-#include "Volt/Rendering/Renderer.h"
-
-#include "Volt/Rendering/Buffer/VertexBufferSet.h"
-
-#include "Volt/Rendering/CommandBuffer.h"
-
 #include "Volt/Rendering/Texture/Texture2D.h"
-#include "Volt/Rendering/Texture/Image2D.h"
-#include "Volt/Rendering/Texture/TextureTable.h"
 
 #include "Volt/Rendering/Vertex.h"
 
@@ -28,7 +20,7 @@ namespace Volt
 {
 	struct SpriteCommand
 	{
-		Ref<Image2D> image;
+		RefPtr<RHI::Image2D> image;
 		glm::vec4 color;
 		glm::vec3 position;
 		glm::vec2 scale;
@@ -38,9 +30,9 @@ namespace Volt
 
 	struct QuadData
 	{
-		Ref<RHI::VertexBuffer> vertexBuffer;
-		Ref<RHI::IndexBuffer> indexBuffer;
-		Ref<Material> quadMaterial;
+		RefPtr<RHI::VertexBuffer> vertexBuffer;
+		RefPtr<RHI::IndexBuffer> indexBuffer;
+		//Ref<Material> quadMaterial;
 	};
 
 	struct TextData
@@ -61,9 +53,9 @@ namespace Volt
 		inline static constexpr uint32_t MAX_VERTICES = MAX_QUADS * 4;
 		inline static constexpr uint32_t MAX_INDICES = MAX_QUADS * 6;
 
-		Ref<VertexBufferSet> vertexBuffer;
-		Ref<RHI::IndexBuffer> indexBuffer;
-		Ref<RenderPipeline> renderPipeline;
+		//Ref<VertexBufferSet> vertexBuffer;
+		RefPtr<RHI::IndexBuffer> indexBuffer;
+		//Ref<RenderPipeline> renderPipeline;
 
 		glm::vec4 vertices[4];
 		uint32_t indexCount = 0;
@@ -77,12 +69,12 @@ namespace Volt
 		QuadData quadData;
 		TextData textData;
 
-		Weak<Image2D> currentRenderTarget;
+		WeakPtr<RHI::Image2D> currentRenderTarget;
 		glm::mat4 currentProjection = { 1.f };
 		glm::mat4 currentView = { 1.f };
 
-		Ref<CommandBuffer> commandBuffer;
-		Ref<Image2D> depthImage;
+		//Ref<CommandBuffer> commandBuffer;
+		//Ref<Image2D> depthImage;
 
 		std::vector<SpriteCommand> spriteCommands;
 	};
@@ -115,8 +107,8 @@ namespace Volt
 		CreateTextData();
 
 		// Depth image
-		{
-			ImageSpecification spec{};
+		//{
+			/*ImageSpecification spec{};
 			spec.width = 1280;
 			spec.height = 720;
 			spec.format = ImageFormat::DEPTH32F;
@@ -124,7 +116,7 @@ namespace Volt
 			spec.debugName = "UI Depth";
 
 			s_uiRendererData->depthImage = Image2D::Create(spec);
-		}
+		}*/
 
 		//s_uiRendererData->commandBuffer = CommandBuffer::Create(framesInFlight);
 	}
@@ -134,11 +126,11 @@ namespace Volt
 		s_uiRendererData = nullptr;
 	}
 
-	void UIRenderer::Begin(Ref<Image2D> renderTarget)
+	void UIRenderer::Begin(RefPtr<RHI::Image2D> renderTarget)
 	{
 		VT_PROFILE_FUNCTION();
 
-		if (s_uiRendererData->depthImage->GetWidth() != renderTarget->GetWidth() || s_uiRendererData->depthImage->GetHeight() != renderTarget->GetHeight())
+		/*if (s_uiRendererData->depthImage->GetWidth() != renderTarget->GetWidth() || s_uiRendererData->depthImage->GetHeight() != renderTarget->GetHeight())
 		{
 			s_uiRendererData->depthImage->Invalidate(renderTarget->GetWidth(), renderTarget->GetHeight());
 		}
@@ -181,7 +173,7 @@ namespace Volt
 		SetViewport(0.f, 0.f, (float)renderTarget->GetWidth(), (float)renderTarget->GetHeight());
 		SetScissor(0, 0, renderTarget->GetWidth(), renderTarget->GetHeight());
 
-		vkCmdBeginRendering(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), &renderingInfo);
+		vkCmdBeginRendering(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), &renderingInfo);*/
 
 		//s_uiRendererData->quadData.vertexBuffer->Bind(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer());
 		//s_uiRendererData->quadData.indexBuffer->Bind(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer());
@@ -191,19 +183,19 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		vkCmdEndRendering(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer());
-		Renderer::EndSection(s_uiRendererData->commandBuffer);
+		//vkCmdEndRendering(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer());
+		//Renderer::EndSection(s_uiRendererData->commandBuffer);
 
-		s_uiRendererData->currentRenderTarget->TransitionToLayout(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		//s_uiRendererData->currentRenderTarget->TransitionToLayout(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-		s_uiRendererData->commandBuffer->End();
-		s_uiRendererData->commandBuffer->Submit();
+		//s_uiRendererData->commandBuffer->End();
+		//s_uiRendererData->commandBuffer->Submit();
 
-		// Reset text
-		{
-			s_uiRendererData->textData.vertexBufferPtr = s_uiRendererData->textData.vertexBufferBase;
-			s_uiRendererData->textData.indexCount = 0;
-		}
+		//// Reset text
+		//{
+		//	s_uiRendererData->textData.vertexBufferPtr = s_uiRendererData->textData.vertexBufferBase;
+		//	s_uiRendererData->textData.indexCount = 0;
+		//}
 	}
 
 	void UIRenderer::SetView(const glm::mat4& viewMatrix)
@@ -218,7 +210,7 @@ namespace Volt
 
 	void UIRenderer::SetViewport(float x, float y, float width, float height)
 	{
-		VkViewport viewport{};
+		/*VkViewport viewport{};
 		viewport.x = x;
 		viewport.y = y;
 		viewport.width = width;
@@ -226,18 +218,18 @@ namespace Volt
 		viewport.minDepth = 0.f;
 		viewport.maxDepth = 1.f;
 
-		vkCmdSetViewport(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), 0, 1, &viewport);
+		vkCmdSetViewport(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), 0, 1, &viewport);*/
 	}
 
 	void UIRenderer::SetScissor(int32_t x, int32_t y, uint32_t width, uint32_t height)
 	{
-		VkRect2D rect{};
+		/*VkRect2D rect{};
 		rect.offset.x = x;
 		rect.offset.y = y;
 		rect.extent.width = width;
 		rect.extent.height = height;
 
-		vkCmdSetScissor(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), 0, 1, &rect);
+		vkCmdSetScissor(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), 0, 1, &rect);*/
 	}
 
 	void UIRenderer::DrawSprite(Ref<Texture2D> texture, const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
@@ -253,7 +245,7 @@ namespace Volt
 		newCmd.offset = offset;
 	}
 
-	void UIRenderer::DrawSprite(Ref<Image2D> image, const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
+	void UIRenderer::DrawSprite(RefPtr<RHI::Image2D> image, const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -268,7 +260,7 @@ namespace Volt
 
 	void UIRenderer::DrawSprite(const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
 	{
-		DrawSprite(Ref<Image2D>(nullptr), position, scale, rotation, color, offset);
+		DrawSprite(RefPtr<RHI::Image2D>(nullptr), position, scale, rotation, color, offset);
 	}
 
 	static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)
@@ -288,7 +280,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto& textData = s_uiRendererData->textData;
+		//auto& textData = s_uiRendererData->textData;
 
 		std::u32string utf32string = ::Utility::To_UTF32(text);
 		Ref<Texture2D> fontAtlas = font->GetAtlas();
@@ -373,87 +365,87 @@ namespace Volt
 
 		// Setup vertices
 		{
-			double x = 0.0;
-			double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
-			double y = 0.0;
+			//double x = 0.0;
+			//double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+			//double y = 0.0;
 
-			const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget->GetWidth(), (float)s_uiRendererData->currentRenderTarget->GetHeight() };
-			const glm::vec2 halfSize = currentSize / 2.f;
+			//const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget->GetWidth(), (float)s_uiRendererData->currentRenderTarget->GetHeight() };
+			//const glm::vec2 halfSize = currentSize / 2.f;
 
-			const glm::vec3 remappedPosition = { Remap(position.x, -CORE_SIZE.x, CORE_SIZE.x, -halfSize.x, halfSize.x), Remap(position.y, -CORE_SIZE.y, CORE_SIZE.y, -halfSize.y, halfSize.y), position.z };
-			const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
-			const float minScale = glm::min(newScale.x, newScale.y);
+			//const glm::vec3 remappedPosition = { Remap(position.x, -CORE_SIZE.x, CORE_SIZE.x, -halfSize.x, halfSize.x), Remap(position.y, -CORE_SIZE.y, CORE_SIZE.y, -halfSize.y, halfSize.y), position.z };
+			//const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
+			//const float minScale = glm::min(newScale.x, newScale.y);
 
-			glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, glm::vec3{ remappedPosition.x, remappedPosition.y, remappedPosition.z })* glm::rotate(glm::mat4{ 1.f }, rotation, { 0.f, 0.f, 1.f })* glm::scale(glm::mat4{ 1.f }, { scale.x * minScale, scale.y * minScale, 1.f });
-			transform[3][0] -= positionOffset.x;
-			transform[3][1] -= positionOffset.y;
+			//glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, glm::vec3{ remappedPosition.x, remappedPosition.y, remappedPosition.z })* glm::rotate(glm::mat4{ 1.f }, rotation, { 0.f, 0.f, 1.f })* glm::scale(glm::mat4{ 1.f }, { scale.x * minScale, scale.y * minScale, 1.f });
+			//transform[3][0] -= positionOffset.x;
+			//transform[3][1] -= positionOffset.y;
 
-			for (int32_t i = 0; i < utf32string.size(); i++)
-			{
-				char32_t character = utf32string[i];
-				if (character == '\n' || NextLine(i, nextLines))
-				{
-					x = 0.0;
-					y -= fsScale * metrics.lineHeight;
-					continue;
-				}
+			//for (int32_t i = 0; i < utf32string.size(); i++)
+			//{
+			//	char32_t character = utf32string[i];
+			//	if (character == '\n' || NextLine(i, nextLines))
+			//	{
+			//		x = 0.0;
+			//		y -= fsScale * metrics.lineHeight;
+			//		continue;
+			//	}
 
-				auto glyph = fontGeom.getGlyph(character);
+			//	auto glyph = fontGeom.getGlyph(character);
 
-				if (!glyph)
-				{
-					glyph = fontGeom.getGlyph('?');
-				}
+			//	if (!glyph)
+			//	{
+			//		glyph = fontGeom.getGlyph('?');
+			//	}
 
-				if (!glyph)
-				{
-					continue;
-				}
+			//	if (!glyph)
+			//	{
+			//		continue;
+			//	}
 
-				double l, b, r, t;
-				glyph->getQuadAtlasBounds(l, b, r, t);
+			//	double l, b, r, t;
+			//	glyph->getQuadAtlasBounds(l, b, r, t);
 
-				double pl, pb, pr, pt;
-				glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+			//	double pl, pb, pr, pt;
+			//	glyph->getQuadPlaneBounds(pl, pb, pr, pt);
 
-				pl *= fsScale, pb *= fsScale, pr *= fsScale, pt *= fsScale;
-				pl += x, pb += y, pr += x, pt += y;
+			//	pl *= fsScale, pb *= fsScale, pr *= fsScale, pt *= fsScale;
+			//	pl += x, pb += y, pr += x, pt += y;
 
-				double texelWidth = 1.0 / fontAtlas->GetWidth();
-				double texelHeight = 1.0 / fontAtlas->GetHeight();
+			//	double texelWidth = 1.0 / fontAtlas->GetWidth();
+			//	double texelHeight = 1.0 / fontAtlas->GetHeight();
 
-				l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
+			//	l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
 
-				textData.vertexBufferPtr->position = transform * glm::vec4{ (float)pl, (float)pb, 0.f, 1.f };
-				textData.vertexBufferPtr->color = color;
-				textData.vertexBufferPtr->texCoords = { (float)l, (float)b };
-				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-				textData.vertexBufferPtr++;
+			//	textData.vertexBufferPtr->position = transform * glm::vec4{ (float)pl, (float)pb, 0.f, 1.f };
+			//	textData.vertexBufferPtr->color = color;
+			//	textData.vertexBufferPtr->texCoords = { (float)l, (float)b };
+			//	textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+			//	textData.vertexBufferPtr++;
 
-				textData.vertexBufferPtr->position = transform * glm::vec4{ (float)pr, (float)pb, 0.f, 1.f };
-				textData.vertexBufferPtr->color = color;
-				textData.vertexBufferPtr->texCoords = { (float)r, (float)b };
-				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-				textData.vertexBufferPtr++;
+			//	textData.vertexBufferPtr->position = transform * glm::vec4{ (float)pr, (float)pb, 0.f, 1.f };
+			//	textData.vertexBufferPtr->color = color;
+			//	textData.vertexBufferPtr->texCoords = { (float)r, (float)b };
+			//	textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+			//	textData.vertexBufferPtr++;
 
-				textData.vertexBufferPtr->position = transform * glm::vec4{ (float)pr, (float)pt, 0.f, 1.f };
-				textData.vertexBufferPtr->color = color;
-				textData.vertexBufferPtr->texCoords = { (float)r, (float)t };
-				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-				textData.vertexBufferPtr++;
+			//	textData.vertexBufferPtr->position = transform * glm::vec4{ (float)pr, (float)pt, 0.f, 1.f };
+			//	textData.vertexBufferPtr->color = color;
+			//	textData.vertexBufferPtr->texCoords = { (float)r, (float)t };
+			//	textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+			//	textData.vertexBufferPtr++;
 
-				textData.vertexBufferPtr->position = transform * glm::vec4{ (float)pl, (float)pt, 0.f, 1.f };
-				textData.vertexBufferPtr->color = color;
-				textData.vertexBufferPtr->texCoords = { (float)l, (float)t };
-				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-				textData.vertexBufferPtr++;
+			//	textData.vertexBufferPtr->position = transform * glm::vec4{ (float)pl, (float)pt, 0.f, 1.f };
+			//	textData.vertexBufferPtr->color = color;
+			//	textData.vertexBufferPtr->texCoords = { (float)l, (float)t };
+			//	textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+			//	textData.vertexBufferPtr++;
 
-				textData.indexCount += 6;
+			//	textData.indexCount += 6;
 
-				double advance = glyph->getAdvance();
-				fontGeom.getAdvance(advance, character, utf32string[i + 1]);
-				x += fsScale * advance;
-			}
+			//	double advance = glyph->getAdvance();
+			//	fontGeom.getAdvance(advance, character, utf32string[i + 1]);
+			//	x += fsScale * advance;
+			//}
 		}
 	}
 
@@ -468,8 +460,8 @@ namespace Volt
 			return;
 		}
 
-		const uint32_t currentIndex = s_uiRendererData->commandBuffer->GetCurrentIndex();
-		auto vertexBuffer = textData.vertexBuffer->Get(currentIndex);
+		//const uint32_t currentIndex = s_uiRendererData->commandBuffer->GetCurrentIndex();
+		//auto vertexBuffer = textData.vertexBuffer->Get(currentIndex);
 
 		//uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(textData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(textData.vertexBufferBase));
 		//vertexBuffer->SetDataMapped(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), textData.vertexBufferBase, dataSize);
@@ -489,24 +481,24 @@ namespace Volt
 		{
 			//auto subMat = s_uiRendererData->quadData.quadMaterial->GetSubMaterialAt(0);
 
-			const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget->GetWidth(), (float)s_uiRendererData->currentRenderTarget->GetHeight() };
+			/*const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget->GetWidth(), (float)s_uiRendererData->currentRenderTarget->GetHeight() };
 			const glm::vec2 halfSize = currentSize / 2.f;
 
 			const glm::vec3 remappedPosition = { Remap(cmd.position.x, -CORE_SIZE.x, CORE_SIZE.x, -halfSize.x, halfSize.x), Remap(cmd.position.y, -CORE_SIZE.y, CORE_SIZE.y, -halfSize.y, halfSize.y), cmd.position.z };
 			const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
 			const float minScale = glm::min(newScale.x, newScale.y);
 
-			const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, remappedPosition)* glm::rotate(glm::mat4{ 1.f }, cmd.rotation, { 0.f, 0.f, 1.f })* glm::scale(glm::mat4{ 1.f }, { cmd.scale.x * minScale, cmd.scale.y * minScale, 1.f });
+			const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, remappedPosition)* glm::rotate(glm::mat4{ 1.f }, cmd.rotation, { 0.f, 0.f, 1.f })* glm::scale(glm::mat4{ 1.f }, { cmd.scale.x * minScale, cmd.scale.y * minScale, 1.f });*/
 
 			//subMat->Bind(s_uiRendererData->commandBuffer);
 
 			if (cmd.image)
 			{
-				uint32_t textureIndex = Renderer::GetBindlessData().textureTable->GetBindingFromTexture(cmd.image);
-				if (textureIndex == 0)
-				{
-					textureIndex = Renderer::GetBindlessData().textureTable->AddTexture(cmd.image);
-				}
+				//uint32_t textureIndex = Renderer::GetBindlessData().textureTable->GetBindingFromTexture(cmd.image);
+				//if (textureIndex == 0)
+				//{
+				//	textureIndex = Renderer::GetBindlessData().textureTable->AddTexture(cmd.image);
+				//}
 
 				//subMat->SetValue("textureIndex", textureIndex);
 			}
@@ -534,7 +526,7 @@ namespace Volt
 			//	subMat->GetPipeline()->BindDescriptorSet(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::TEXTURES);
 			//}
 
-			vkCmdDrawIndexed(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), 6, 1, 0, 0, 0);
+			//vkCmdDrawIndexed(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), 6, 1, 0, 0, 0);
 		}
 
 		s_uiRendererData->spriteCommands.clear();
@@ -547,11 +539,12 @@ namespace Volt
 			return 0.f;
 		}
 
-		const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget->GetWidth(), (float)s_uiRendererData->currentRenderTarget->GetHeight() };
-		const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
-		const float minScale = glm::min(newScale.x, newScale.y);
+		//const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget->GetWidth(), (float)s_uiRendererData->currentRenderTarget->GetHeight() };
+		//const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
+		//const float minScale = glm::min(newScale.x, newScale.y);
 
-		return minScale;
+		//return minScale;
+		return 0.f;
 	}
 
 	float UIRenderer::GetCurrentScaleModifierX()
@@ -561,10 +554,11 @@ namespace Volt
 			return 0.f;
 		}
 
-		const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget->GetWidth(), (float)s_uiRendererData->currentRenderTarget->GetHeight() };
-		const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
+		//const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget->GetWidth(), (float)s_uiRendererData->currentRenderTarget->GetHeight() };
+		//const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
 
-		return newScale.x;
+		//return newScale.x;
+		return 0.f;
 	}
 
 	void UIRenderer::CreateQuadData()
@@ -661,7 +655,7 @@ namespace Volt
 		textData.vertexBufferBase = new TextVertex[TextData::MAX_INDICES];
 		textData.vertexBufferPtr = textData.vertexBufferBase;
 
-		textData.vertexBuffer = VertexBufferSet::Create(Renderer::GetFramesInFlightCount(), textData.vertexBufferBase, sizeof(TextVertex) * TextData::MAX_VERTICES);
+		//textData.vertexBuffer = VertexBufferSet::Create(Renderer::GetFramesInFlightCount(), textData.vertexBufferBase, sizeof(TextVertex) * TextData::MAX_VERTICES);
 
 		// Index buffer
 		{
@@ -681,7 +675,7 @@ namespace Volt
 				offset += 4;
 			}
 
-			textData.indexBuffer = RHI::IndexBuffer::Create(indices, TextData::MAX_INDICES);
+			textData.indexBuffer = RHI::IndexBuffer::Create(std::span<uint32_t>(indices, TextData::MAX_INDICES));
 			delete[] indices;
 		}
 	}

@@ -2,8 +2,8 @@
 
 #include "Volt/Asset/Importers/AssetImporter.h"
 
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
 
 #include "Volt/Scene/Entity.h"
 
@@ -32,9 +32,9 @@ namespace Volt
 		bool Load(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 		void Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
 
-		void SerializeEntity(entt::entity id, const AssetMetadata& metadata, const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const;
-		void DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLStreamReader& streamReader) const;
-		void DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLStreamReader& streamReader) const;
+		void SerializeEntity(entt::entity id, const AssetMetadata& metadata, const Ref<Scene>& scene, YAMLFileStreamWriter& streamWriter) const;
+		void DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLFileStreamReader& streamReader) const;
+		void DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLFileStreamReader& streamReader) const;
 
 		void LoadWorldCell(const Ref<Scene>& scene, const WorldCell& worldCell) const;
 
@@ -50,21 +50,21 @@ namespace Volt
 		void SaveEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const;
 		void LoadEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const;
 
-		void SerializeWorldEngine(const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const;
-		void DeserializeWorldEngine(const Ref<Scene>& scene, YAMLStreamReader& streamReader) const;
+		void SerializeWorldEngine(const Ref<Scene>& scene, YAMLFileStreamWriter& streamWriter) const;
+		void DeserializeWorldEngine(const Ref<Scene>& scene, YAMLFileStreamReader& streamReader) const;
 
 		void LoadCellEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const;
 
 		Entity CreateEntityFromUUIDThreadSafe(EntityID entityId, const Ref<Scene>& scene) const;
 
-		void SerializeClass(const uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLStreamWriter& streamWriter, bool isSubComponent) const;
-		void SerializeArray(const uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLStreamWriter& streamWriter) const;
-		void SerializeMono(entt::entity id, const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const;
+		void SerializeClass(const uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLFileStreamWriter& streamWriter, bool isSubComponent) const;
+		void SerializeArray(const uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLFileStreamWriter& streamWriter) const;
+		void SerializeMono(entt::entity id, const Ref<Scene>& scene, YAMLFileStreamWriter& streamWriter) const;
 
-		void DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLStreamReader& streamReader) const;
-		void DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLStreamReader& streamReader) const;
+		void DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLFileStreamReader& streamReader) const;
+		void DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLFileStreamReader& streamReader) const;
 
-		inline static std::unordered_map<std::type_index, std::function<void(YAMLStreamWriter&,	const uint8_t*, const size_t)>> s_typeSerializers;
-		inline static std::unordered_map<std::type_index, std::function<void(YAMLStreamReader&,	uint8_t*, const size_t)>> s_typeDeserializers;
+		inline static std::unordered_map<std::type_index, std::function<void(YAMLFileStreamWriter&,	const uint8_t*, const size_t)>> s_typeSerializers;
+		inline static std::unordered_map<std::type_index, std::function<void(YAMLFileStreamReader&,	uint8_t*, const size_t)>> s_typeDeserializers;
 	};
 }

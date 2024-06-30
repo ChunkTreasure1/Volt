@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
+
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Utility/GPUCrashTracker.h>
 
@@ -17,7 +19,8 @@ namespace Volt::RHI
 
 		void WaitForIdle();
 
-		Weak<VulkanPhysicalGraphicsDevice> GetPhysicalDevice() const;
+		RefPtr<DeviceQueue> GetDeviceQueue(QueueType queueType) const override;
+		WeakPtr<VulkanPhysicalGraphicsDevice> GetPhysicalDevice() const;
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -25,7 +28,9 @@ namespace Volt::RHI
 	private:
 		VkDevice_T* m_device = nullptr;
 	
-		Weak<VulkanPhysicalGraphicsDevice> m_physicalDevice;
+		std::unordered_map<QueueType, RefPtr<DeviceQueue>> m_deviceQueues;
+
+		WeakPtr<VulkanPhysicalGraphicsDevice> m_physicalDevice;
 		GPUCrashTracker m_deviceCrashTracker{};
 	};
 }

@@ -122,7 +122,7 @@ namespace Volt
 
 			if (type == AssetType::NetContract)
 			{
-				if (!AssetManager::Get().ExistsInRegistry(relPath))
+				if (!AssetManager::ExistsInRegistry(relPath))
 				{
 					AssetManager::Get().AddAssetToRegistry(relPath);
 				}

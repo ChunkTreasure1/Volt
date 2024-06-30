@@ -2,7 +2,7 @@
 
 #include <Mosaic/MosaicNode.h>
 
-namespace Volt
+namespace Volt::MosaicNodes
 {
 	class PBROutputNode : public Mosaic::MosaicNode
 	{

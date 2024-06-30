@@ -24,7 +24,7 @@ namespace Volt::RHI
 		ShaderStage shaderStage;
 	};
 
-	class ShaderPreProcessor
+	class VTRHI_API ShaderPreProcessor
 	{
 	public:
 		static bool PreProcessShaderSource(const PreProcessorData& data, PreProcessorResult& outResult);

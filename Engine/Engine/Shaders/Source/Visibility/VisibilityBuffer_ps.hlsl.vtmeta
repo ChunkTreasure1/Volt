@@ -1,8 +1,0 @@
-Metadata:
-  assetHandle: 8754835071696786377
-  filePath: Engine/Shaders/Source/Visibility/VisibilityBuffer_ps.hlsl
-  type: 128
-  Dependencies:
-    []
-  Properties:
-    {}

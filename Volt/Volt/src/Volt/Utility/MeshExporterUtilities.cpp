@@ -19,14 +19,27 @@ namespace Volt
 
 			auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(entity.GetComponent<Volt::MeshComponent>().GetHandle());
 
-			auto vertices = mesh->GetVertices();
+			auto vertexContainer = mesh->GetVertexContainer();
 			auto indices = mesh->GetIndices();
+
+			std::vector<Vertex> vertices;
 
 			for (const auto& submesh : mesh->GetSubMeshes())
 			{
+				vertices.reserve(vertices.size() + submesh.vertexCount);
+
 				for (uint32_t index = submesh.vertexStartOffset; index < submesh.vertexStartOffset + submesh.vertexCount; index++)
 				{
-					vertices[index].position = entity.GetTransform() * submesh.transform * glm::vec4(vertices[index].position, 1.f);
+					Vertex& vertex = vertices.emplace_back();
+					vertex.position = entity.GetTransform() * submesh.transform * glm::vec4(vertexContainer.positions[index], 1.f);
+					
+					const auto& materialData = vertexContainer.materialData[index];
+
+					const glm::vec2 encodedNormal = { materialData.normal.x / 255.f, materialData.normal.y / 255.f };
+					const glm::vec3 normal = Utility::OctNormalDecode(encodedNormal);
+
+					vertex.normal = normal;
+					vertex.uv = materialData.texCoords;
 				}
 			}
 
@@ -51,14 +64,25 @@ namespace Volt
 		{
 			auto mesh = meshes[meshIndex];
 
-			auto vertices = mesh->GetVertices();
+			auto vertexContainer = mesh->GetVertexContainer();
 			auto indices = mesh->GetIndices();
+
+			std::vector<Vertex> vertices;
 
 			for (const auto& submesh : mesh->GetSubMeshes())
 			{
 				for (uint32_t index = submesh.vertexStartOffset; index < submesh.vertexStartOffset + submesh.vertexCount; index++)
 				{
-					vertices[index].position = transforms[meshIndex] * submesh.transform * glm::vec4(vertices[index].position, 1.f);
+					Vertex& vertex = vertices.emplace_back();
+					vertex.position = transforms[index] * submesh.transform * glm::vec4(vertexContainer.positions[index], 1.f);
+
+					const auto& materialData = vertexContainer.materialData[index];
+
+					const glm::vec2 encodedNormal = { materialData.normal.x / 255.f, materialData.normal.y / 255.f };
+					const glm::vec3 normal = Utility::OctNormalDecode(encodedNormal);
+
+					vertex.normal = normal;
+					vertex.uv = materialData.texCoords;
 				}
 			}
 
@@ -90,10 +114,10 @@ namespace Volt
 				{
 					Ref<Volt::Mesh> mesh = CreateRef<Volt::Mesh>(*asset);
 
-					for (auto& vert : mesh->m_vertices)
+					for (auto& vert : mesh->m_vertexContainer.positions)
 					{
-						auto v4 = glm::vec4(vert.position, 1.f);
-						vert.position = transform.GetTransform() * v4;
+						auto v4 = glm::vec4(vert, 1.f);
+						vert = transform.GetTransform() * v4;
 					}
 
 					meshes.emplace_back(mesh);

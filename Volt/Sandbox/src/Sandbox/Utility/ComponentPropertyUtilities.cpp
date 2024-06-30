@@ -101,6 +101,7 @@ void ComponentPropertyUtility::Initialize()
 	RegisterMonoPropertyType<glm::vec2>(s_monoPropertyFunctions);
 	RegisterMonoPropertyType<glm::vec3>(s_monoPropertyFunctions);
 	RegisterMonoPropertyType<glm::vec4>(s_monoPropertyFunctions);
+	RegisterMonoPropertyType<glm::quat>(s_monoPropertyFunctions);
 
 	RegisterMonoPropertyType<std::string>(s_monoPropertyFunctions);
 }
@@ -214,6 +215,11 @@ bool ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, Volt::Enti
 	{
 		for (const auto& member : componentType->GetMembers())
 		{
+			if ((member.flags & Volt::ComponentMemberFlag::DoNotShow) != Volt::ComponentMemberFlag::None)
+			{
+				continue;
+			}
+
 			if (member.typeDesc)
 			{
 				switch (member.typeDesc->GetValueType())
@@ -255,6 +261,8 @@ bool ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, Volt::Enti
 	{
 		uint8_t* offsetPtr = ((uint8_t*)data) + offset;
 		componentType->OnMemberChanged(offsetPtr, entity);
+
+		EditorUtils::MarkEntityAsEdited(entity);
 	}
 
 	return edited;
@@ -583,6 +591,8 @@ void ComponentPropertyUtility::DrawMonoScript(Weak<Volt::Scene> scene, const Vol
 			scenePtr->ShutdownEngineScripts();
 			scenePtr->InitializeEngineScripts();
 		}
+
+		EditorUtils::MarkEntityAsEdited(entity);
 	}
 }
 
@@ -594,6 +604,8 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 	{
 		return;
 	}
+
+	bool edited = false;
 
 	if (scene->IsPlaying() && scriptInstance)
 	{
@@ -616,6 +628,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 				if (EditorUtils::Property(displayName, value, field.type.assetType))
 				{
 					scriptInstance->SetField(name, &value);
+					edited = true;
 				}
 
 				continue;
@@ -627,6 +640,8 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 				{
 					scriptInstance->SetField(name, &value);
 					AddLocalChangeToEntity(entity, scriptEntry.name, name);
+
+					edited = true;
 				}
 			}
 			else if (field.type.IsCustomMonoType())
@@ -634,7 +649,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 				Volt::EntityID value = scriptInstance->GetCustomMonoTypeField(name);
 				if (UI::PropertyEntityCustomMonoType(displayName, scene, value, field.type))
 				{
-
+					edited = true;
 				}
 			}
 			else if ((field.type.typeFlags & Volt::MonoTypeFlags::Color) != Volt::MonoTypeFlags::None)
@@ -644,6 +659,8 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 				{
 					scriptInstance->SetField(name, &value);
 					AddLocalChangeToEntity(entity, scriptEntry.name, name);
+
+					edited = true;
 				}
 
 				continue;
@@ -668,6 +685,8 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 					{
 						scriptInstance->SetField(name, &enumVal);
 						AddLocalChangeToEntity(entity, scriptEntry.name, name);
+
+						edited = true;
 					}
 				}
 
@@ -679,6 +698,8 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 				if (s_monoPropertyFunctions.at(field.type.typeIndex)(displayName, scriptInstance))
 				{
 					AddLocalChangeToEntity(entity, scriptEntry.name, name);
+				
+					edited = true;
 				}
 			}
 		}
@@ -802,16 +823,21 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 			}
 			else
 			{
-				if (s_propertyFunctions.contains(field.type.typeIndex))
+				if (s_propertyFunctions.contains(field.type.typeIndex)) 
 				{
 					fieldChanged = s_propertyFunctions.at(field.type.typeIndex)(displayName, currentField->data.As<void>(), 0);
 				}
 			}
 
-			if (scriptInstance && fieldChanged)
+			if (fieldChanged)
 			{
-				scriptInstance->SetField(name, currentField->data.As<void>());
 				AddLocalChangeToEntity(entity, scriptEntry.name, name);
+				edited = true;
+
+				if (scriptInstance)
+				{
+					scriptInstance->SetField(name, currentField->data.As<void>());
+				}
 			}
 
 			if (fontChanged)
@@ -836,6 +862,11 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 				ImGui::EndPopup();
 			}
 		}
+	}
+
+	if (edited)
+	{
+		EditorUtils::MarkEntityAsEdited(entity);
 	}
 
 	UI::EndProperties();

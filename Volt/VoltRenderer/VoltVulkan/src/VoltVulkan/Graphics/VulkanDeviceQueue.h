@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VoltVulkan/Core.h"
 #include <VoltRHI/Graphics/DeviceQueue.h>
 
 struct VkQueue_T;
@@ -13,7 +14,7 @@ namespace Volt::RHI
 		~VulkanDeviceQueue() override;
 
 		void WaitForQueue() override;
-		void Execute(const std::vector<Ref<CommandBuffer>>& commandBuffer) override;
+		void Execute(const DeviceQueueExecuteInfo& commandBuffer) override;
 
 		void AquireLock();
 		void ReleaseLock();

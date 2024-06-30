@@ -3,12 +3,13 @@
 
 #include <Volt/Asset/Importers/TextureImporter.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
+#include <Volt/Asset/AssetManager.h>
 
-#include <Volt/Rendering/Shape.h>
+#include <Volt/Asset/Mesh/Mesh.h>
+
 #include <Volt/Rendering/Renderer.h>
+#include <Volt/Rendering/ShapeLibrary.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
-
-#include <Volt/Utility/ImageUtility.h>
 
 void EditorResources::Initialize()
 {
@@ -27,6 +28,7 @@ void EditorResources::Initialize()
 		myAssetIcons[Volt::AssetType::MonoScript] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_monoscript.dds");
 		myAssetIcons[Volt::AssetType::BehaviorGraph] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_behaviorTree.dds");
 		myAssetIcons[Volt::AssetType::AnimationGraph] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_animationGraph.dds");
+		myAssetIcons[Volt::AssetType::MotionWeave] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_motionWeaveDatabase.dds");
 	}
 
 	// Editor Icons
@@ -91,13 +93,13 @@ void EditorResources::Initialize()
 
 	// Meshes
 	{
-		myEditorMeshes[EditorMesh::Cube] = TryLoadMesh("Engine/Meshes/Primitives/SM_Cube.vtmesh");
-		myEditorMeshes[EditorMesh::Capsule] = TryLoadMesh("Engine/Meshes/Primitives/SM_Capsule.vtmesh");
-		myEditorMeshes[EditorMesh::Cone] = TryLoadMesh("Engine/Meshes/Primitives/SM_Cone.vtmesh");
-		myEditorMeshes[EditorMesh::Cylinder] = TryLoadMesh("Engine/Meshes/Primitives/SM_Cylinder.vtmesh");
-		myEditorMeshes[EditorMesh::Plane] = TryLoadMesh("Engine/Meshes/Primitives/SM_Plane.vtmesh");
-		myEditorMeshes[EditorMesh::Sphere] = TryLoadMesh("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
-		myEditorMeshes[EditorMesh::Arrow] = TryLoadMesh("Editor/Meshes/Arrow/3dpil.vtmesh");
+		myEditorMeshes[EditorMesh::Cube] = TryLoadMesh("Engine/Meshes/Primitives/SM_Cube_Mesh.vtasset");
+		myEditorMeshes[EditorMesh::Capsule] = TryLoadMesh("Engine/Meshes/Primitives/SM_Capsule.vtasset");
+		myEditorMeshes[EditorMesh::Cone] = TryLoadMesh("Engine/Meshes/Primitives/SM_Cone.vtasset");
+		myEditorMeshes[EditorMesh::Cylinder] = TryLoadMesh("Engine/Meshes/Primitives/SM_Cylinder.vtasset");
+		myEditorMeshes[EditorMesh::Plane] = TryLoadMesh("Engine/Meshes/Primitives/SM_Plane.vtasset");
+		myEditorMeshes[EditorMesh::Sphere] = TryLoadMesh("Engine/Meshes/Primitives/SM_Sphere.vtasset");
+		//myEditorMeshes[EditorMesh::Arrow] = TryLoadMesh("Editor/Meshes/Arrow/3dpil.vtasset");
 	}
 }
 
@@ -122,17 +124,17 @@ Ref<Volt::Texture2D> EditorResources::GetEditorIcon(EditorIcon icon)
 {
 	if (!myEditorIcons.contains(icon))
 	{
-		return Volt::Renderer::GetDefaultData().whiteTexture;
+		return Volt::Renderer::GetDefaultResources().whiteTexture;
 	}
 
-	return myEditorIcons.at(icon);
-}
+		return myEditorIcons.at(icon);
+	}
 
 Ref<Volt::Mesh> EditorResources::GetEditorMesh(EditorMesh mesh)
 {
 	if (!myEditorMeshes.contains(mesh))
 	{
-		return Volt::Shape::CreateUnitCube();
+		return Volt::ShapeLibrary::GetCube();
 	}
 
 	return myEditorMeshes.at(mesh);
@@ -140,11 +142,12 @@ Ref<Volt::Mesh> EditorResources::GetEditorMesh(EditorMesh mesh)
 
 Ref<Volt::Texture2D> EditorResources::TryLoadIcon(const std::filesystem::path& path)
 {
-	Ref<Volt::Texture2D> texture = Volt::TextureImporter::ImportTexture(path);
+	Ref<Volt::Texture2D> texture = CreateRef<Volt::Texture2D>();
+	Volt::TextureImporter::ImportTexture(path, *texture);
 
-	if (!texture)
+	if (!texture->IsValid())
 	{
-		texture = Volt::Renderer::GetDefaultData().whiteTexture;
+		texture = Volt::Renderer::GetDefaultResources().whiteTexture;
 	}
 
 	return texture;
@@ -152,10 +155,12 @@ Ref<Volt::Texture2D> EditorResources::TryLoadIcon(const std::filesystem::path& p
 
 Ref<Volt::Mesh> EditorResources::TryLoadMesh(const std::filesystem::path& path)
 {
-	Ref<Volt::Mesh> mesh = nullptr; //Volt::MeshTypeImporter::ImportMesh(path);
-	if (!mesh)
+	// #TODO_Ivar: Reimplement
+	Ref<Volt::Mesh> mesh;
+	//Ref<Volt::Mesh> mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(path);
+	//if (!mesh->IsValid())
 	{
-		mesh = Volt::Shape::CreateUnitCube();
+		mesh = Volt::ShapeLibrary::GetCube();
 	}
 
 	return mesh;

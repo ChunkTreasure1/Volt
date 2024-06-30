@@ -44,11 +44,11 @@ namespace Volt
 		GLTFImporter() = default;
 
 	protected:
-		void ImportMeshImpl(const std::filesystem::path& path, Ref<Mesh>& mesh) override;
-		void ImportSkeletonImpl(const std::filesystem::path&, Ref<Skeleton>& skeleton) override { }
-		void ImportAnimationImpl(const std::filesystem::path&, Ref<Skeleton>, Ref<Animation>&) override { }
+		bool ImportMeshImpl(const std::filesystem::path& path, Mesh& dstMesh) override;
+		bool ImportSkeletonImpl(const std::filesystem::path&, Skeleton& dstSkeleton) override { return false; }
+		bool ImportAnimationImpl(const std::filesystem::path&, Ref<Skeleton>, Animation& dstAnimation) override { return false; }
 
 	private:
-		void LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model& inputModel, GLTF::Node* parent, Ref<Mesh> outMesh);
+		void LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model& inputModel, GLTF::Node* parent, Mesh& outMesh);
 	};
 }

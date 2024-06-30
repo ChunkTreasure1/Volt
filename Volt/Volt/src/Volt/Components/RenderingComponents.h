@@ -11,7 +11,8 @@ namespace Volt
 {
 	class Camera;
 	class AnimationController;
-
+	class MotionWeaver;
+	
 	struct MeshComponent
 	{
 		AssetHandle handle = Asset::Null();
@@ -22,6 +23,8 @@ namespace Volt
 		[[nodiscard]] inline const AssetHandle& GetHandle() const { return handle; }
 
 		static void OnMemberChanged(MeshComponent& data, Entity entity);
+		static void OnComponentCopied(MeshComponent& data, Entity entity);
+		static void OnComponentDeserialized(MeshComponent& data, Entity entity);
 
 		static void ReflectType(TypeDesc<MeshComponent>& reflect)
 		{
@@ -30,6 +33,8 @@ namespace Volt
 			reflect.AddMember(&MeshComponent::handle, "handle", "Mesh", "", Asset::Null(), AssetType::Mesh);
 			reflect.AddMember(&MeshComponent::materials, "materials", "Materials", "", std::vector<AssetHandle>{}, AssetType::Material);
 			reflect.SetOnMemberChangedCallback(&MeshComponent::OnMemberChanged);
+			reflect.SetOnComponentCopiedCallback(&MeshComponent::OnComponentCopied);
+			reflect.SetOnComponentDeserializedCallback(&MeshComponent::OnComponentDeserialized);
 		}
 
 		REGISTER_COMPONENT(MeshComponent);
@@ -42,8 +47,8 @@ namespace Volt
 	struct CameraComponent
 	{
 		float fieldOfView = 60.f;
-		float nearPlane = 0.01f;
-		float farPlane = 1000.f;
+		float nearPlane = 1.f;
+		float farPlane = 100'000.f;
 		uint32_t priority = 0;
 
 		Ref<Camera> camera;
@@ -53,8 +58,8 @@ namespace Volt
 			reflect.SetGUID("{9258BEEC-3A31-4CAB-AB1E-654524E1C398}"_guid);
 			reflect.SetLabel("Camera Component");
 			reflect.AddMember(&CameraComponent::fieldOfView, "fieldOfView", "Field Of View", "", 60.f);
-			reflect.AddMember(&CameraComponent::nearPlane, "nearPlane", "Near Plane", "", 0.01f);
-			reflect.AddMember(&CameraComponent::farPlane, "farPlane", "Far Plane", "", 1000.f);
+			reflect.AddMember(&CameraComponent::nearPlane, "nearPlane", "Near Plane", "", 1.f);
+			reflect.AddMember(&CameraComponent::farPlane, "farPlane", "Far Plane", "", 100'000.f);
 			reflect.AddMember(&CameraComponent::priority, "priority", "Priority", "", 0);
 		}
 
@@ -157,13 +162,16 @@ namespace Volt
 
 	struct MotionWeaveComponent
 	{
-		AssetHandle motionWeave = Asset::Null();
+		AssetHandle motionWeaveDatabase = Asset::Null();
+
+		Ref<MotionWeaver> MotionWeaver;
+		std::vector<UUID64> renderObjectIds;
 
 		static void ReflectType(TypeDesc<MotionWeaveComponent>& reflect)
 		{
 			reflect.SetGUID("{5D3B2C0D-5457-43D8-9623-98730E1556F4}"_guid);
 			reflect.SetLabel("Motion Weave Component");
-			reflect.AddMember(&MotionWeaveComponent::motionWeave, "motionGraph", "Motion Graph", "", Asset::Null(), AssetType::MotionWeave);
+			reflect.AddMember(&MotionWeaveComponent::motionWeaveDatabase, "motionGraph", "Motion Graph", "", Asset::Null(), AssetType::MotionWeave);
 		}
 
 		REGISTER_COMPONENT(MotionWeaveComponent);

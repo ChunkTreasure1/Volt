@@ -4,7 +4,7 @@
 
 namespace Volt::RHI
 {
-	class GPUCrashTracker
+	class VTRHI_API GPUCrashTracker
 	{
 	public:
 		GPUCrashTracker() = default;

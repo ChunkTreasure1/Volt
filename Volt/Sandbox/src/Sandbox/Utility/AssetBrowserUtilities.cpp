@@ -2,6 +2,9 @@
 #include "AssetBrowserUtilities.h"
 
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
+#include "Sandbox/UISystems/ModalSystem.h"
+#include "Sandbox/Modals/MeshImportModal.h"
+#include "Sandbox/Sandbox.h"
 
 #include <Volt/Asset/Prefab.h>
 #include <Volt/Asset/AssetManager.h>
@@ -9,14 +12,16 @@
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
+#include <Volt/Asset/TextureSource.h>
 
 #include <Volt/Components/RenderingComponents.h>
 
-#include <Volt/Rendering/Shader/Shader.h>
-#include <Volt/Rendering/Renderer.h>
-
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/MeshExporterUtilities.h>
+
+#include <Volt/Rendering/Texture/Texture2D.h>
+
+#include <VoltRHI/Images/Image2D.h>
 
 namespace AssetBrowser
 {
@@ -131,7 +136,7 @@ namespace AssetBrowser
 			{
 				if (ImGui::MenuItem("Recompile Shader"))
 				{
-					Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(item->path);
+					/*Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(item->path);
 					if (shader->Reload(true))
 					{
 						Volt::Renderer::ReloadShader(shader);
@@ -140,7 +145,7 @@ namespace AssetBrowser
 					else
 					{
 						UI::Notify(NotificationType::Error, "Shader Compilation Failed", std::format("Shader {} failed to compile!", item->path.string()));
-					}
+					}*/
 				}
 			};
 
@@ -148,13 +153,17 @@ namespace AssetBrowser
 			{
 				if (ImGui::MenuItem("Import"))
 				{
-					item->meshImportData = {};
-					item->meshImportData.destination = item->path.parent_path().string() + "\\" + item->path.stem().string() + ".vtmesh";
-					item->meshToImportData.handle = item->handle;
-					item->meshToImportData.path = item->path;
-					item->meshToImportData.type = Volt::AssetType::MeshSource;
+					auto& modal = ModalSystem::GetModal<MeshImportModal>(Sandbox::Get().GetMeshImportModalID());
+					modal.SetImportMeshes({ item->path });
+					modal.Open();
 
-					UI::OpenModal("Import Mesh##assetBrowser");
+					//item->meshImportData = {};
+					//item->meshImportData.destination = item->path.parent_path().string() + "\\" + item->path.stem().string() + ".vtasset";
+					//item->meshToImportData.handle = item->handle;
+					//item->meshToImportData.path = item->path;
+					//item->meshToImportData.type = Volt::AssetType::MeshSource;
+
+					//UI::OpenModal("Import Mesh##assetBrowser");
 				}
 			};
 
@@ -195,6 +204,36 @@ namespace AssetBrowser
 				{
 					SetMeshExport(item);
 					UI::OpenModal(std::format("Mesh Export##assetBrowser{0}", std::to_string(item->handle)));
+				}
+			};
+
+			renderFunctions[Volt::AssetType::TextureSource] = [](AssetItem* item)
+			{
+				if (ImGui::MenuItem("Import"))
+				{
+					Ref<Volt::TextureSource> importedTexture = Volt::AssetManager::GetAsset<Volt::TextureSource>(item->handle);
+					if (!importedTexture || !importedTexture->IsValid())
+					{
+						return;
+					}
+
+					Ref<Volt::Texture2D> newTexture = Volt::AssetManager::CreateAsset<Volt::Texture2D>(item->path.parent_path(), item->path.stem().string());
+					newTexture->SetImage(importedTexture->GetImage());
+					Volt::AssetManager::SaveAsset(newTexture);
+				}
+			};
+
+			renderFunctions[Volt::AssetType::Texture] = [](AssetItem* item)
+			{
+				if (ImGui::MenuItem("Generate Mips"))
+				{
+					Ref<Volt::Texture2D> texture = Volt::AssetManager::GetAsset<Volt::Texture2D>(item->handle);
+					if (!texture || !texture->IsValid())
+					{
+						return;
+					}
+
+					texture->GetImage()->GenerateMips();
 				}
 			};
 		}

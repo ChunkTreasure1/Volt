@@ -4,79 +4,79 @@
 namespace Volt
 {
 	Camera::Camera(float fov, float aspect, float nearPlane, float farPlane, bool reverse)
-		: myFieldOfView(fov), myAspecRatio(aspect), myNearPlane(nearPlane), myFarPlane(farPlane), myReversed(reverse)
+		: m_fieldOfView(fov), m_aspecRatio(aspect), m_nearPlane(nearPlane), m_farPlane(farPlane), m_reversed(reverse)
 	{
 		if (reverse)
 		{
-			myProjectionMatrix = glm::perspective(glm::radians(myFieldOfView), aspect, myFarPlane, myNearPlane);
+			m_projectionMatrix = glm::perspective(glm::radians(m_fieldOfView), aspect, m_farPlane, m_nearPlane);
 		}
 		else
 		{
-			myProjectionMatrix = glm::perspective(glm::radians(myFieldOfView), aspect, myNearPlane, myFarPlane);
+			m_projectionMatrix = glm::perspective(glm::radians(m_fieldOfView), aspect, m_nearPlane, m_farPlane);
 		}
-		myViewMatrix = glm::mat4(1.f);
-		myIsOrthographic = false;
+		m_viewMatrix = glm::mat4(1.f);
+		m_isOrthographic = false;
 
 		RecalculateFrustum();
 	}
 
 	Camera::Camera(float left, float right, float bottom, float top, float nearPlane, float farPlane)
-		: myNearPlane(nearPlane), myFarPlane(farPlane), myLeft(left), myRight(right), myBottom(bottom), myTop(top)
+		: m_nearPlane(nearPlane), m_farPlane(farPlane), m_left(left), m_right(right), m_bottom(bottom), m_top(top)
 	{
-		myProjectionMatrix = glm::ortho(left, right, bottom, top, nearPlane, farPlane);
-		myViewMatrix = glm::mat4(1.f);
-		myIsOrthographic = true;
+		m_projectionMatrix = glm::ortho(left, right, bottom, top, nearPlane, farPlane);
+		m_viewMatrix = glm::mat4(1.f);
+		m_isOrthographic = true;
 
 		RecalculateFrustum();
 	}
 
 	void Camera::SetPerspectiveProjection(float fov, float aspect, float nearPlane, float farPlane)
 	{
-		myFieldOfView = fov;
-		myAspecRatio = aspect;
-		myNearPlane = nearPlane;
-		myFarPlane = farPlane;
+		m_fieldOfView = fov;
+		m_aspecRatio = aspect;
+		m_nearPlane = nearPlane;
+		m_farPlane = farPlane;
 
-		if (myReversed)
+		if (m_reversed)
 		{
-			myProjectionMatrix = glm::perspective(glm::radians(myFieldOfView), myAspecRatio, myFarPlane, myNearPlane);
+			m_projectionMatrix = glm::perspective(glm::radians(m_fieldOfView), m_aspecRatio, m_farPlane, m_nearPlane);
 		}
 		else
 		{
-			myProjectionMatrix = glm::perspective(glm::radians(myFieldOfView), aspect, myNearPlane, myFarPlane);
+			m_projectionMatrix = glm::perspective(glm::radians(m_fieldOfView), aspect, m_nearPlane, m_farPlane);
 		}
 
-		myIsOrthographic = false;
+		m_isOrthographic = false;
 		RecalculateFrustum();
 	}
 
 	void Camera::SetSubpixelOffset(const glm::vec2& offset)
 	{
-		mySubpixelOffset = offset;
+		m_subpixelOffset = offset;
 
 		if (glm::all(glm::equal(offset, { 0.f })))
 		{
 			return;
 		}
 
-		if (myReversed)
+		if (m_reversed)
 		{
-			myProjectionMatrix = glm::perspective(glm::radians(myFieldOfView), myAspecRatio, myFarPlane, myNearPlane);
+			m_projectionMatrix = glm::perspective(glm::radians(m_fieldOfView), m_aspecRatio, m_farPlane, m_nearPlane);
 		}
 		else
 		{
-			myProjectionMatrix = glm::perspective(glm::radians(myFieldOfView), myAspecRatio, myNearPlane, myFarPlane);
+			m_projectionMatrix = glm::perspective(glm::radians(m_fieldOfView), m_aspecRatio, m_nearPlane, m_farPlane);
 		}
 
-		if (glm::all(glm::notEqual(mySubpixelOffset, { 0.f })))
+		if (glm::all(glm::notEqual(m_subpixelOffset, { 0.f })))
 		{
-			myProjectionMatrix = glm::translate(glm::mat4{ 1.f }, { offset.x, offset.y, 0.f })* myProjectionMatrix;
+			m_projectionMatrix = glm::translate(glm::mat4{ 1.f }, { offset.x, offset.y, 0.f })* m_projectionMatrix;
 		}
 	}
 
-	const std::vector<glm::vec4> Camera::GetFrustumCorners()
+	const std::vector<glm::vec4> Camera::GetFrustumCorners() const
 	{
-		const auto inv = glm::inverse(myProjectionMatrix * myViewMatrix);
+		const auto inv = glm::inverse(m_projectionMatrix * m_viewMatrix);
 
 		std::vector<glm::vec4> frustumCorners;
 
@@ -99,14 +99,30 @@ namespace Volt
 		return frustumCorners;
 	}
 
+	const AABB Camera::GetOrthographicFrustum() const
+	{
+		glm::vec3 min = std::numeric_limits<float>::max();
+		glm::vec3 max = std::numeric_limits<float>::lowest();
+
+		const auto frustumCorners = GetFrustumCorners();
+
+		for (const auto& c : frustumCorners)
+		{
+			min = glm::min(min, glm::vec3(c));
+			max = glm::max(max, glm::vec3(c));
+		}
+
+		return AABB{ min, max };
+	}
+
 	glm::vec3 Camera::ScreenToWorldRay(const glm::vec2& someCoords, const glm::vec2& aSize)
 	{
 		float x = (someCoords.x / aSize.x) * 2.f - 1.f;
 		float y = (someCoords.y / aSize.y) * 2.f - 1.f;
 
-		glm::mat4 tempProj = glm::perspective(glm::radians(myFieldOfView), myAspecRatio, myNearPlane, myFarPlane);
+		glm::mat4 tempProj = glm::perspective(glm::radians(m_fieldOfView), m_aspecRatio, m_nearPlane, m_farPlane);
 
-		glm::mat4 matInv = glm::inverse(tempProj * myViewMatrix);
+		glm::mat4 matInv = glm::inverse(tempProj * m_viewMatrix);
 
 		glm::vec4 rayOrigin = matInv * glm::vec4(x, -y, 0.f, 1.f);
 		glm::vec4 rayEnd = matInv * glm::vec4(x, -y, 1.f, 1.f);
@@ -130,44 +146,56 @@ namespace Volt
 		const glm::vec3 up = glm::normalize(GetUp());
 		const glm::vec3 right = glm::normalize(GetRight());
 
-		const glm::vec3 frontMulFar = myFarPlane * forward;
+		const glm::vec3 frontMulFar = m_farPlane * forward;
 
-		if (!myIsOrthographic)
+		if (!m_isOrthographic)
 		{
-			const float halfVSide = myFarPlane * std::tanf(glm::radians(myFieldOfView) * 0.5f);
-			const float halfHSide = halfVSide * myAspecRatio;
+			const float halfVSide = m_farPlane * std::tanf(glm::radians(m_fieldOfView) * 0.5f);
+			const float halfHSide = halfVSide * m_aspecRatio;
 
-			myFrustum.nearPlane = { myPosition + myNearPlane * forward, forward };
-			myFrustum.farPlane = { myPosition + frontMulFar, -1.f * forward };
+			m_frustum.nearPlane = { m_position + m_nearPlane * forward, forward };
+			m_frustum.farPlane = { m_position + frontMulFar, -1.f * forward };
 
-			myFrustum.rightPlane = { myPosition, glm::cross(up, frontMulFar - right * halfHSide) };
-			myFrustum.leftPlane = { myPosition, glm::cross(frontMulFar + right * halfHSide, up) };
+			m_frustum.rightPlane = { m_position, glm::cross(up, frontMulFar - right * halfHSide) };
+			m_frustum.leftPlane = { m_position, glm::cross(frontMulFar + right * halfHSide, up) };
 
-			myFrustum.topPlane = { myPosition, glm::cross(right, frontMulFar + up * halfVSide) };
-			myFrustum.bottomPlane = { myPosition, glm::cross(frontMulFar - up * halfVSide, right) };
+			m_frustum.topPlane = { m_position, glm::cross(right, frontMulFar + up * halfVSide) };
+			m_frustum.bottomPlane = { m_position, glm::cross(frontMulFar - up * halfVSide, right) };
 		}
 		else
 		{
-			myFrustum.nearPlane = { myPosition + myNearPlane * forward, forward };
-			myFrustum.farPlane = { myPosition + frontMulFar, -1.f * forward };
+			m_frustum.nearPlane = { m_position + m_nearPlane * forward, forward };
+			m_frustum.farPlane = { m_position + frontMulFar, -1.f * forward };
 
-			myFrustum.rightPlane = { myPosition + glm::vec3{ myRight, 0.f, 0.f }, -1.f * right };
-			myFrustum.leftPlane = { myPosition + glm::vec3{ myLeft, 0.f, 0.f }, right };
+			m_frustum.rightPlane = { m_position + glm::vec3{ m_right, 0.f, 0.f }, -1.f * right };
+			m_frustum.leftPlane = { m_position + glm::vec3{ m_left, 0.f, 0.f }, right };
 
-			myFrustum.topPlane = { myPosition + glm::vec3{ 0.f, myTop, 0.f }, up };
-			myFrustum.bottomPlane = { myPosition + glm::vec3{ 0.f, myBottom, 0.f }, -1.f * up };
+			m_frustum.topPlane = { m_position + glm::vec3{ 0.f, m_top, 0.f }, up };
+			m_frustum.bottomPlane = { m_position + glm::vec3{ 0.f, m_bottom, 0.f }, -1.f * up };
 		}
 	}
 
 	void Camera::SetOrthographicProjection(float left, float right, float bottom, float top)
 	{
-		myProjectionMatrix = glm::ortho(left, right, bottom, top, myNearPlane, myFarPlane);
-		myIsOrthographic = true;
+		m_projectionMatrix = glm::ortho(left, right, bottom, top, m_nearPlane, m_farPlane);
+		m_isOrthographic = true;
 
-		myLeft = left;
-		myRight = right;
-		myTop = top;
-		myBottom = bottom;
+		m_left = left;
+		m_right = right;
+		m_top = top;
+		m_bottom = bottom;
+	}
+
+	const glm::mat4 Camera::GetNonJitteredProjection() const
+	{
+		if (m_reversed)
+		{
+			return glm::perspective(glm::radians(m_fieldOfView), m_aspecRatio, m_farPlane, m_nearPlane);
+		}
+		else
+		{
+			return glm::perspective(glm::radians(m_fieldOfView), m_aspecRatio, m_nearPlane, m_farPlane);
+		}
 	}
 
 	glm::vec3 Camera::GetUp() const
@@ -187,15 +215,15 @@ namespace Volt
 
 	glm::quat Camera::GetOrientation() const
 	{
-		return glm::quat(myRotation);
+		return glm::quat(m_rotation);
 	}
 
 	void Camera::RecalculateViewMatrix()
 	{
 		const float yawSign = GetUp().y < 0 ? -1.0f : 1.0f;
 
-		const glm::vec3 lookAt = myPosition + GetForward();
-		myViewMatrix = glm::lookAt(myPosition, lookAt, glm::vec3(0.f, yawSign, 0.f));
+		const glm::vec3 lookAt = m_position + GetForward();
+		m_viewMatrix = glm::lookAt(m_position, lookAt, glm::vec3(0.f, yawSign, 0.f));
 
 		RecalculateFrustum();
 	}

@@ -3,6 +3,7 @@
 
 #include <CoreUtilities/Containers/StackVector.h>
 #include <CoreUtilities/Variant.h>
+#include <CoreUtilities/Pointers/WeakPtr.h>
 
 #include <array>
 #include <functional>
@@ -17,6 +18,8 @@ namespace Volt::RHI
 
 	inline static constexpr size_t MAX_COLOR_ATTACHMENT_COUNT = 8;
 	inline static constexpr size_t MAX_ATTACHMENT_COUNT = MAX_COLOR_ATTACHMENT_COUNT + 1;
+	inline static constexpr size_t MAX_VERTEX_BUFFER_COUNT = 32;
+	inline static constexpr size_t MAX_VIEWPORT_COUNT = 16;
 
 	enum class QueueType
 	{
@@ -42,7 +45,7 @@ namespace Volt::RHI
 		Unknown
 	};
 
-	enum class Severity
+	enum class LogSeverity
 	{
 		Trace,
 		Info,
@@ -330,31 +333,6 @@ namespace Volt::RHI
 		DISPLAY_NATIVE_AMD = 1000213000,
 	};
 
-	enum class ShaderStage : uint32_t
-	{
-		None = 0,
-		Vertex = 0x00000001,
-		Pixel = 0x00000010,
-		Hull = 0x00000002,
-		Domain = 0x00000004,
-		Geometry = 0x00000008,
-		Compute = 0x00000020,
-
-		RayGen = 0x00000100,
-		AnyHit = 0x00000200,
-		ClosestHit = 0x00000400,
-		Miss = 0x00000800,
-		Intersection = 0x00001000,
-
-		Amplification = 0x00000040,
-		Mesh = 0x00000080,
-
-		All = Vertex | Pixel | Hull | Domain | Geometry | Compute,
-		Common = Vertex | Pixel | Geometry | Compute
-	};
-
-	VT_SETUP_ENUM_CLASS_OPERATORS(ShaderStage);
-
 	enum class Topology : uint32_t
 	{
 		TriangleList = 0,
@@ -579,16 +557,28 @@ namespace Volt::RHI
 
 	enum class BarrierType : uint64_t
 	{
-		Image = 0,
+		None = 0,
+		Image,
 		Buffer,
 		Global
 	};
 
+	static DeviceVendor VendorIDToVendor(uint32_t vendorID)
+	{
+		switch (vendorID)
+		{
+			case 0x10DE: return DeviceVendor::NVIDIA;
+			case 0x1002: return DeviceVendor::AMD;
+			case 0x8086: return DeviceVendor::Intel;
+		}
+		return DeviceVendor::Unknown;
+	}
+
 	// --- structures --- \\
 
-	struct LogHookInfo
+	struct LogInfo
 	{
-		std::function<void(Severity, std::string_view)> logCallback;
+		std::function<void(LogSeverity, std::string_view)> logCallback;
 		bool enabled = false;
 	};
 
@@ -621,7 +611,7 @@ namespace Volt::RHI
 
 	struct GraphicsDeviceCreateInfo
 	{
-		Ref<PhysicalGraphicsDevice> physicalDevice;
+		RefPtr<PhysicalGraphicsDevice> physicalDevice;
 	};
 
 	struct GraphicsContextCreateInfo
@@ -629,9 +619,6 @@ namespace Volt::RHI
 		GraphicsAPI graphicsApi;
 		PhysicalDeviceCreateInfo physicalDeviceInfo;
 		GraphicsDeviceCreateInfo graphicsDeviceInfo;
-
-		LogHookInfo loghookInfo;
-		ResourceManagementInfo resourceManagementInfo;
 	};
 
 	struct DeviceQueueCreateInfo
@@ -650,6 +637,7 @@ namespace Volt::RHI
 
 		PixelFormat format = PixelFormat::R8G8B8A8_UNORM;
 		ImageUsage usage = ImageUsage::Texture;
+		ResourceType imageType = ResourceType::Image2D;
 
 		MemoryUsage memoryUsage = MemoryUsage::GPU;
 
@@ -701,7 +689,7 @@ namespace Volt::RHI
 
 	struct AttachmentInfo
 	{
-		Weak<ImageView> view;
+		WeakPtr<ImageView> view;
 
 		ClearMode clearMode;
 
@@ -760,7 +748,7 @@ namespace Volt::RHI
 
 	struct ImageBarrier
 	{
-		Weak<RHIResource> resource;
+		WeakPtr<RHIResource> resource;
 
 		BarrierStage srcStage = BarrierStage::None;
 		BarrierStage dstStage = BarrierStage::None;
@@ -776,7 +764,7 @@ namespace Volt::RHI
 
 	struct BufferBarrier
 	{
-		Weak<RHIResource> resource;
+		WeakPtr<RHIResource> resource;
 
 		BarrierStage srcStage = BarrierStage::None;
 		BarrierStage dstStage = BarrierStage::None;
@@ -801,18 +789,18 @@ namespace Volt::RHI
 	{
 		~ResourceBarrierInfo() = default;
 
-		BarrierType type = BarrierType::Global;
+		BarrierType type = BarrierType::None;
 
-		ImageBarrier& imageBarrier() { return m_barrier2.Get<ImageBarrier>(); }
-		BufferBarrier& bufferBarrier() { return m_barrier2.Get<BufferBarrier>(); }
-		GlobalBarrier& globalBarrier() { return m_barrier2.Get<GlobalBarrier>(); }
+		ImageBarrier& imageBarrier() { return m_barrier.Get<ImageBarrier>(); }
+		BufferBarrier& bufferBarrier() { return m_barrier.Get<BufferBarrier>(); }
+		GlobalBarrier& globalBarrier() { return m_barrier.Get<GlobalBarrier>(); }
 
-		const ImageBarrier& imageBarrier() const { return m_barrier2.Get<ImageBarrier>(); }
-		const BufferBarrier& bufferBarrier() const { return m_barrier2.Get<BufferBarrier>(); }
-		const GlobalBarrier& globalBarrier() const { return m_barrier2.Get<GlobalBarrier>(); }
+		const ImageBarrier& imageBarrier() const { return m_barrier.Get<ImageBarrier>(); }
+		const BufferBarrier& bufferBarrier() const { return m_barrier.Get<BufferBarrier>(); }
+		const GlobalBarrier& globalBarrier() const { return m_barrier.Get<GlobalBarrier>(); }
 
 	private:
-		Variant<ImageBarrier, BufferBarrier, GlobalBarrier> m_barrier2;
+		Variant<ImageBarrier, BufferBarrier, GlobalBarrier> m_barrier;
 	};
 
 	struct IndirectIndexedCommand

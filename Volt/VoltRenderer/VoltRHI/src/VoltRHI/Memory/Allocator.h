@@ -11,16 +11,16 @@ namespace Volt::RHI
 	class Allocation;
 	class MemoryPool;
 
-	class Allocator : public RHIInterface
+	class VTRHI_API Allocator : public RHIInterface
 	{
 	public:
 		virtual ~Allocator() = default;
 
-		virtual Ref<Allocation> CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage = MemoryUsage::GPU) = 0;
-		virtual Ref<Allocation> CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage = MemoryUsage::GPU) = 0;
+		virtual RefPtr<Allocation> CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage = MemoryUsage::GPU) = 0;
+		virtual RefPtr<Allocation> CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage = MemoryUsage::GPU) = 0;
 
-		virtual void DestroyBuffer(Ref<Allocation> allocation) = 0;
-		virtual void DestroyImage(Ref<Allocation> allocation) = 0;
+		virtual void DestroyBuffer(RefPtr<Allocation> allocation) = 0;
+		virtual void DestroyImage(RefPtr<Allocation> allocation) = 0;
 
 		// Used for allocation cache
 		virtual void Update() = 0;
@@ -29,7 +29,7 @@ namespace Volt::RHI
 		Allocator() = default;
 	};
 
-	class DefaultAllocator : public Allocator
+	class VTRHI_API DefaultAllocator : public Allocator
 	{
 	public:
 		virtual ~DefaultAllocator() override = default;
@@ -40,12 +40,12 @@ namespace Volt::RHI
 		DefaultAllocator() = default;
 	};
 
-	class TransientAllocator : public Allocator
+	class VTRHI_API TransientAllocator : public Allocator
 	{
 	public:
 		virtual ~TransientAllocator() override = default;
 
-		static Ref<TransientAllocator> Create();
+		static RefPtr<TransientAllocator> Create();
 
 	protected:
 		TransientAllocator() = default;

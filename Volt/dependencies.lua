@@ -9,7 +9,6 @@ IncludeDir["tinyddsloader"] = "%{wks.location}/Volt/vendor/tinyddsloader/"
 IncludeDir["imgui_notify"] = "%{wks.location}/Volt/vendor/imgui-notify/"
 IncludeDir["ImGuizmo"] = "%{wks.location}/Volt/vendor/ImGuizmo/"
 IncludeDir["glm"] = "%{wks.location}/Volt/vendor/glm"
-IncludeDir["DirectXTK"] = "%{wks.location}/Volt/vendor/DirectXTK"
 IncludeDir["imgui_node_editor"] = "%{wks.location}/Volt/vendor/imgui-node-editor/"
 IncludeDir["cr"] = "%{wks.location}/Volt/vendor/cr"
 IncludeDir["msdf_atlas_gen"] = "%{wks.location}/Volt/vendor/msdf-atlas-gen/msdf-atlas-gen"
@@ -35,15 +34,10 @@ IncludeDir["half"] = "%{wks.location}/Volt/vendor/half/"
 IncludeDir["steam"] = "%{wks.location}/Volt/vendor/steam/include"
 IncludeDir["discord"] = "%{wks.location}/Volt/vendor/DiscordSDK/include"
 IncludeDir["NFDExtended"] = "%{wks.location}/Volt/vendor/nfd-extended/src/include"
-IncludeDir["TGAFbx"] = "%{wks.location}/Volt/vendor/TGAFbx/src"
 IncludeDir["entt"] = "%{wks.location}/Volt/vendor/entt/include"
 IncludeDir["cityhash"] = "%{wks.location}/Volt/vendor/cityhash/src"
 IncludeDir["METIS"] = "%{wks.location}/Volt/vendor/METIS/include"
-
-IncludeDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/include/"
-IncludeDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/include/"
-IncludeDir["nlohmann"] = "%{wks.location}/Sandbox/vendor/nlohmann/include/"
-IncludeDir["httplib"] = "%{wks.location}/Sandbox/vendor/cpp-httplib/include/"
+IncludeDir["ufbx"] = "%{wks.location}/Volt/vendor/ufbx"
 
 IncludeDir["vma"] = "%{wks.location}/Volt/vendor/vma"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
@@ -52,6 +46,14 @@ IncludeDir["shaderc_glslc"] = "%{wks.location}/Volt/vendor/shaderc/glslc"
 IncludeDir["Aftermath"] = "%{wks.location}/Volt/vendor/Aftermath/include"
 
 IncludeDir["meshoptimizer"] = "%{wks.location}/Volt/vendor/meshoptimizer/src"
+IncludeDir["zlib"] = "%{wks.location}/Volt/vendor/zlib/include"
+
+IncludeDir["unordered_dense"] = "%{wks.location}/CoreUtilities/vendor/unordered_dense/include"
+
+IncludeDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/include/"
+IncludeDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/include/"
+IncludeDir["nlohmann"] = "%{wks.location}/Sandbox/vendor/nlohmann/include/"
+IncludeDir["httplib"] = "%{wks.location}/Sandbox/vendor/cpp-httplib/include/"
 
 IncludeDir["CoreUtilities"] = "%{wks.location}/CoreUtilities/src"
 
@@ -63,12 +65,18 @@ LibraryDir["ffmpeg"] = "%{wks.location}/Volt/vendor/ffmpeg/lib/"
 LibraryDir["mono"] = "%{wks.location}/Volt/vendor/mono/lib/%{cfg.buildcfg}"
 LibraryDir["steam"] = "%{wks.location}/Volt/vendor/steam/lib/win64"
 LibraryDir["discord"] = "%{wks.location}/Volt/vendor/DiscordSDK/lib"
+LibraryDir["zlib"] = "%{wks.location}/Volt/vendor/zlib/lib/%{cfg.buildcfg}"
 
 LibraryDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/lib/%{cfg.buildcfg}"
 LibraryDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/lib/%{cfg.buildcfg}"
 
 LibraryDir["Aftermath"] = "%{wks.location}/Volt/vendor/Aftermath/lib"
 LibraryDir["METIS"] = "%{wks.location}/Volt/vendor/METIS/libmetis/%{cfg.buildcfg}"
+
+LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
+LibraryDir["VulkanSDK_Debug"] = "%{VULKAN_SDK}/Lib"
+
+LibraryDir["Volt"] = "%{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 Library = {}
 Library["fmod"] = "%{LibraryDir.fmod}/fmod_vc.lib"
@@ -82,12 +90,11 @@ Library["AkMusicEngine"] = "%{LibraryDir.wwise}/AkMusicEngine.lib"
 
 Library["AkRoomVerbFX"] = "%{LibraryDir.wwise}/AkRoomVerbFX.lib"
 
+Library["zlib"] = "%{LibraryDir.zlib}/libz-static.lib"
+
 Library["mono"] = "%{LibraryDir.mono}/libmono-static-sgen.lib"
 Library["steam"] = "%{LibraryDir.steam}/steam_api64.lib"
 Library["discord"] = "%{LibraryDir.discord}/discord_game_sdk.dll.lib"
-
-LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
-LibraryDir["VulkanSDK_Debug"] = "%{VULKAN_SDK}/Lib"
 
 Library["P4_client"] = "%{LibraryDir.P4}/libclient.lib"
 Library["P4_api"] = "%{LibraryDir.P4}/libp4api.lib"
@@ -128,3 +135,7 @@ Library["SPIRV_Cross_GLSL_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.
 Library["Aftermath"] = "%{LibraryDir.Aftermath}/x64/GFSDK_Aftermath_Lib.x64.lib"
 
 Library["METIS"] = "%{LibraryDir.METIS}/metis.lib"
+
+Library["VoltVulkan"] = "%{LibraryDir.Volt}/VoltVulkan/VoltVulkan.lib"
+Library["VoltRHI"] = "%{LibraryDir.Volt}/VoltRHI/VoltRHI.lib"
+Library["CoreUtilities"] = "%{LibraryDir.Volt}/CoreUtilities/CoreUtilities.lib"

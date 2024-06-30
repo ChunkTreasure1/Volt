@@ -1,0 +1,9 @@
+name: "SDFUI"
+internal: true
+sources:
+  - entryPoint: "main"
+    shaderStage: "vs"
+    filePath: "Engine/Shaders/Source/Utility/FullscreenTriangle_vs.hlsl"
+  - entryPoint: "main"
+    shaderStage: "ps"
+    filePath: "Engine/Shaders/Source/Editor/SDFUI_ps.hlsl"

@@ -6,8 +6,8 @@
 
 #include <Volt/Utility/YAMLSerializationHelpers.h>
 
-#include <CoreUtilities/FileIO/YAMLStreamReader.h>
-#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
+#include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -16,32 +16,24 @@ inline static const std::string salt = "epic42069salt";
 
 void UserSettingsManager::LoadUserSettings()
 {
-	YAMLStreamReader streamReader{};
+	YAMLFileStreamReader streamReader{};
 	if (!streamReader.OpenFile(s_userSettingsPath))
 	{
 		return;
 	}
 
 	streamReader.EnterScope("Settings");
-	streamReader.EnterScope("Windows");
 
-	for (const auto& window : EditorLibrary::GetPanels())
+	streamReader.ForEach("Windows", [&]() 
 	{
-		if (streamReader.HasKey(window.editorWindow->GetTitle()))
-		{
-			bool value = streamReader.ReadAtKey(window.editorWindow->GetTitle(), false);
-			if (value)
-			{
-				window.editorWindow->Open();
-			}
-			else
-			{
-				window.editorWindow->Close();
-			}
-		}
-	}
+		std::string panelTitle = streamReader.ReadAtKey("title", std::string(""));
+		bool state = streamReader.ReadAtKey("state", false);
 
-	streamReader.ExitScope();
+		if (!panelTitle.empty())
+		{
+			s_editorSettings.panelStates.emplace_back(panelTitle, state);
+		}
+	});
 
 	streamReader.EnterScope("SceneSettings");
 	s_editorSettings.sceneSettings.worldSpace = streamReader.ReadAtKey("worldSpace", true);
@@ -62,7 +54,6 @@ void UserSettingsManager::LoadUserSettings()
 	s_editorSettings.sceneSettings.colliderViewMode = (ColliderViewMode)streamReader.ReadAtKey("colliderViewMode", 0u);
 	s_editorSettings.sceneSettings.showEnvironmentProbes = streamReader.ReadAtKey("showEnvironmentProbes", false);
 	s_editorSettings.sceneSettings.navMeshViewMode = (NavMeshViewMode)streamReader.ReadAtKey("navMeshViewMode", 0u);
-	s_editorSettings.sceneSettings.lowMemoryUsage = streamReader.ReadAtKey("lowMemoryUsage", false);
 
 	s_editorSettings.sceneSettings.lastOpenScene = streamReader.ReadAtKey("lastOpenScene", std::string());
 	streamReader.ExitScope();
@@ -120,108 +111,116 @@ void UserSettingsManager::LoadUserSettings()
 
 void UserSettingsManager::SaveUserSettings()
 {
-	// #TODO_Ivar: Reimplement
-	//YAML::Emitter out;
-	//out << YAML::BeginMap;
-	//out << YAML::Key << "Settings" << YAML::Value;
-	//{
-	//	out << YAML::BeginMap;
-	//	out << YAML::Key << "Windows" << YAML::BeginSeq;
-	//	for (const auto& window : EditorLibrary::GetPanels())
-	//	{
-	//		out << YAML::BeginMap;
-	//		VT_SERIALIZE_PROPERTY_STRING(window.editorWindow->GetTitle(), window.editorWindow->IsOpen(), out);
-	//		out << YAML::EndMap;
-	//	}
-	//	out << YAML::EndSeq;
+	YAMLFileStreamWriter streamWriter{ s_userSettingsPath };
+	streamWriter.BeginMap();
+	streamWriter.BeginMapNamned("Settings");
+	{
+		streamWriter.BeginSequence("Windows");
+		for (const auto& window : EditorLibrary::GetPanels())
+		{
+			streamWriter.BeginMap();
+			streamWriter.SetKey("title", window.editorWindow->GetTitle());
+			streamWriter.SetKey("state", window.editorWindow->IsOpen());
+			streamWriter.EndMap();
+		}
+		streamWriter.EndSequence();
 
-	//	out << YAML::Key << "SceneSettings" << YAML::Value;
-	//	{
-	//		out << YAML::BeginMap;
-	//		VT_SERIALIZE_PROPERTY(worldSpace, s_editorSettings.sceneSettings.worldSpace, out);
-	//		VT_SERIALIZE_PROPERTY(snapToGrid, s_editorSettings.sceneSettings.snapToGrid, out);
-	//		VT_SERIALIZE_PROPERTY(snapRotation, s_editorSettings.sceneSettings.snapRotation, out);
-	//		VT_SERIALIZE_PROPERTY(snapScale, s_editorSettings.sceneSettings.snapScale, out);
-	//		VT_SERIALIZE_PROPERTY(showGizmos, s_editorSettings.sceneSettings.showGizmos, out);
-	//		VT_SERIALIZE_PROPERTY(use16by9, s_editorSettings.sceneSettings.use16by9, out);
-	//		VT_SERIALIZE_PROPERTY(fullscreenOnPlay, s_editorSettings.sceneSettings.fullscreenOnPlay, out);
-	//		VT_SERIALIZE_PROPERTY(gridEnabled, s_editorSettings.sceneSettings.gridEnabled, out);
-	//		VT_SERIALIZE_PROPERTY(gridSnapValue, s_editorSettings.sceneSettings.gridSnapValue, out);
-	//		VT_SERIALIZE_PROPERTY(rotationSnapValue, s_editorSettings.sceneSettings.rotationSnapValue, out);
-	//		VT_SERIALIZE_PROPERTY(scaleSnapValue, s_editorSettings.sceneSettings.scaleSnapValue, out);
-	//		VT_SERIALIZE_PROPERTY(lastOpenScene, s_editorSettings.sceneSettings.lastOpenScene.string(), out);
+		streamWriter.BeginMapNamned("SceneSettings");
+		{
+			streamWriter.SetKey("worldSpace", s_editorSettings.sceneSettings.worldSpace);
+			streamWriter.SetKey("snapToGrid", s_editorSettings.sceneSettings.snapToGrid);
+			streamWriter.SetKey("snapRotation", s_editorSettings.sceneSettings.snapRotation);
+			streamWriter.SetKey("snapScale", s_editorSettings.sceneSettings.snapScale);
+			streamWriter.SetKey("showGizmos", s_editorSettings.sceneSettings.showGizmos);
+			streamWriter.SetKey("use16by9", s_editorSettings.sceneSettings.use16by9);
+			streamWriter.SetKey("fullscreenOnPlay", s_editorSettings.sceneSettings.fullscreenOnPlay);
+			streamWriter.SetKey("gridEnabled", s_editorSettings.sceneSettings.gridEnabled);
+			streamWriter.SetKey("gridSnapValue", s_editorSettings.sceneSettings.gridSnapValue);
+			streamWriter.SetKey("rotationSnapValue", s_editorSettings.sceneSettings.rotationSnapValue);
+			streamWriter.SetKey("scaleSnapValue", s_editorSettings.sceneSettings.scaleSnapValue);
+			streamWriter.SetKey("lastOpenScene", s_editorSettings.sceneSettings.lastOpenScene);
 
-	//		VT_SERIALIZE_PROPERTY(showLightSpheres, s_editorSettings.sceneSettings.showLightSpheres, out);
-	//		VT_SERIALIZE_PROPERTY(showEntityGizmos, s_editorSettings.sceneSettings.showEntityGizmos, out);
-	//		VT_SERIALIZE_PROPERTY(showBoundingSpheres, s_editorSettings.sceneSettings.showBoundingSpheres, out);
-	//		VT_SERIALIZE_PROPERTY(colliderViewMode, (uint32_t)s_editorSettings.sceneSettings.colliderViewMode, out);
-	//		VT_SERIALIZE_PROPERTY(showEnvironmentProbes, s_editorSettings.sceneSettings.showEnvironmentProbes, out);
-	//		VT_SERIALIZE_PROPERTY(navMeshViewMode, (uint32_t)s_editorSettings.sceneSettings.navMeshViewMode, out);
-	//		VT_SERIALIZE_PROPERTY(lowMemoryUsage, s_editorSettings.sceneSettings.lowMemoryUsage, out);
-	//		out << YAML::EndMap;
-	//	}
+			streamWriter.SetKey("showLightSpheres", s_editorSettings.sceneSettings.showLightSpheres);
+			streamWriter.SetKey("showEntityGizmos", s_editorSettings.sceneSettings.showEntityGizmos);
+			streamWriter.SetKey("showBoundingSpheres", s_editorSettings.sceneSettings.showBoundingSpheres);
+			streamWriter.SetKey("colliderViewMode", (uint32_t)s_editorSettings.sceneSettings.colliderViewMode);
+			streamWriter.SetKey("showEnvironmentProbes", s_editorSettings.sceneSettings.showEnvironmentProbes);
+			streamWriter.SetKey("navMeshViewMode", (uint32_t)s_editorSettings.sceneSettings.navMeshViewMode);
+		}
+		streamWriter.EndMap();
+	
+		streamWriter.BeginMapNamned("VersionControlSettings");
+		{
+			streamWriter.SetKey("server", s_editorSettings.versionControlSettings.server);
+			streamWriter.SetKey("user", s_editorSettings.versionControlSettings.user);
+			streamWriter.SetKey("password", s_editorSettings.versionControlSettings.password);
+			streamWriter.SetKey("workspace", s_editorSettings.versionControlSettings.workspace);
+			streamWriter.SetKey("stream", s_editorSettings.versionControlSettings.stream);
+		}
+		streamWriter.EndMap();
 
-	//	out << YAML::Key << "VersionControlSettings" << YAML::Value;
-	//	{
-	//		out << YAML::BeginMap;
-	//		VT_SERIALIZE_PROPERTY(server, s_editorSettings.versionControlSettings.server, out);
-	//		VT_SERIALIZE_PROPERTY(user, s_editorSettings.versionControlSettings.user, out);
-	//		VT_SERIALIZE_PROPERTY(password, s_editorSettings.versionControlSettings.password, out);
-	//		VT_SERIALIZE_PROPERTY(workspace, s_editorSettings.versionControlSettings.workspace, out);
-	//		VT_SERIALIZE_PROPERTY(stream, s_editorSettings.versionControlSettings.stream, out);
-	//		out << YAML::EndMap;
-	//	}
+		streamWriter.BeginMapNamned("ExternalToolsSettings");
+		{
+			streamWriter.SetKey("customExternalScriptEditor", s_editorSettings.externalToolsSettings.customExternalScriptEditor);
+		}
+		streamWriter.EndMap();
 
-	//	out << YAML::Key << "ExternalToolsSettings" << YAML::Value;
-	//	{
-	//		out << YAML::BeginMap;
-	//		VT_SERIALIZE_PROPERTY(customExternalScriptEditor, s_editorSettings.externalToolsSettings.customExternalScriptEditor.string(), out);
-	//		out << YAML::EndMap;
-	//	}
+		streamWriter.BeginMapNamned("NavMeshBuildSettings");
+		{
+			streamWriter.SetKey("maxAgents", s_editorSettings.navmeshBuildSettings.maxAgents);
+			streamWriter.SetKey("agentHeight", s_editorSettings.navmeshBuildSettings.agentHeight);
+			streamWriter.SetKey("agentRadius", s_editorSettings.navmeshBuildSettings.agentRadius);
+			streamWriter.SetKey("agentMaxClimb", s_editorSettings.navmeshBuildSettings.agentMaxClimb);
+			streamWriter.SetKey("agentMaxSlope", s_editorSettings.navmeshBuildSettings.agentMaxSlope);
 
-	//	out << YAML::Key << "NavMeshBuildSettings" << YAML::Value;
-	//	{
-	//		out << YAML::BeginMap;
-	//		VT_SERIALIZE_PROPERTY(maxAgents, s_editorSettings.navmeshBuildSettings.maxAgents, out);
-	//		VT_SERIALIZE_PROPERTY(agentHeight, s_editorSettings.navmeshBuildSettings.agentHeight, out);
-	//		VT_SERIALIZE_PROPERTY(agentRadius, s_editorSettings.navmeshBuildSettings.agentRadius, out);
-	//		VT_SERIALIZE_PROPERTY(agentMaxClimb, s_editorSettings.navmeshBuildSettings.agentMaxClimb, out);
-	//		VT_SERIALIZE_PROPERTY(agentMaxSlope, s_editorSettings.navmeshBuildSettings.agentMaxSlope, out);
+			streamWriter.SetKey("cellSize", s_editorSettings.navmeshBuildSettings.cellSize);
+			streamWriter.SetKey("cellHeight", s_editorSettings.navmeshBuildSettings.cellHeight);
+			streamWriter.SetKey("regionMinSize", s_editorSettings.navmeshBuildSettings.regionMinSize);
+			streamWriter.SetKey("regionMergeSize", s_editorSettings.navmeshBuildSettings.regionMergeSize);
+			streamWriter.SetKey("edgeMaxLen", s_editorSettings.navmeshBuildSettings.edgeMaxLen);
+			streamWriter.SetKey("edgeMaxError", s_editorSettings.navmeshBuildSettings.edgeMaxError);
+			streamWriter.SetKey("vertsPerPoly", s_editorSettings.navmeshBuildSettings.vertsPerPoly);
+			streamWriter.SetKey("detailSampleDist", s_editorSettings.navmeshBuildSettings.detailSampleDist);
+			streamWriter.SetKey("detailSampleMaxError", s_editorSettings.navmeshBuildSettings.detailSampleMaxError);
+			streamWriter.SetKey("partitionType", s_editorSettings.navmeshBuildSettings.partitionType);
+			streamWriter.SetKey("useTileCache", s_editorSettings.navmeshBuildSettings.useTileCache);
+			streamWriter.SetKey("useAutoBaking", s_editorSettings.navmeshBuildSettings.useAutoBaking);
+		}
+		streamWriter.EndMap();
+	
+		streamWriter.BeginMapNamned("NetworkSettings");
+		{
+			streamWriter.SetKey("enableNetworking", s_editorSettings.networkSettings.enableNetworking);
+		}
+		streamWriter.EndMap();
+	
+		streamWriter.BeginMapNamned("AssetBrowserSettings");
+		{
+			streamWriter.SetKey("thumbnailSize", s_editorSettings.assetBrowserSettings.thumbnailSize);
+		}
+		streamWriter.EndMap();
+	}
+	streamWriter.EndMap();
+	streamWriter.EndMap();
 
-	//		VT_SERIALIZE_PROPERTY(cellSize, s_editorSettings.navmeshBuildSettings.cellSize, out);
-	//		VT_SERIALIZE_PROPERTY(cellHeight, s_editorSettings.navmeshBuildSettings.cellHeight, out);
-	//		VT_SERIALIZE_PROPERTY(regionMinSize, s_editorSettings.navmeshBuildSettings.regionMinSize, out);
-	//		VT_SERIALIZE_PROPERTY(regionMergeSize, s_editorSettings.navmeshBuildSettings.regionMergeSize, out);
-	//		VT_SERIALIZE_PROPERTY(edgeMaxLen, s_editorSettings.navmeshBuildSettings.edgeMaxLen, out);
-	//		VT_SERIALIZE_PROPERTY(edgeMaxError, s_editorSettings.navmeshBuildSettings.edgeMaxError, out);
-	//		VT_SERIALIZE_PROPERTY(vertsPerPoly, s_editorSettings.navmeshBuildSettings.vertsPerPoly, out);
-	//		VT_SERIALIZE_PROPERTY(detailSampleDist, s_editorSettings.navmeshBuildSettings.detailSampleDist, out);
-	//		VT_SERIALIZE_PROPERTY(detailSampleMaxError, s_editorSettings.navmeshBuildSettings.detailSampleMaxError, out);
-	//		VT_SERIALIZE_PROPERTY(partitionType, s_editorSettings.navmeshBuildSettings.partitionType, out);
-	//		VT_SERIALIZE_PROPERTY(useTileCache, s_editorSettings.navmeshBuildSettings.useTileCache, out);
-	//		VT_SERIALIZE_PROPERTY(useAutoBaking, s_editorSettings.navmeshBuildSettings.useAutoBaking, out);
-	//		out << YAML::EndMap;
-	//	}
+	streamWriter.WriteToDisk();
+}
 
-	//	out << YAML::Key << "NetworkSettings" << YAML::Value;
-	//	{
-	//		out << YAML::BeginMap;
-	//		VT_SERIALIZE_PROPERTY(enableNetworking, s_editorSettings.networkSettings.enableNetworking, out);
-	//		out << YAML::EndMap;
-	//	}
-
-	//	out << YAML::Key << "AssetBrowserSettings" << YAML::Value;
-	//	{
-	//		out << YAML::BeginMap;
-	//		VT_SERIALIZE_PROPERTY(thumbnailSize, s_editorSettings.assetBrowserSettings.thumbnailSize, out);
-	//		out << YAML::EndMap;
-	//	}
-
-	//	out << YAML::EndMap;
-	//}
-	//out << YAML::EndMap;
-
-	//std::ofstream fout(s_userSettingsPath);
-	//fout << out.c_str();
-	//fout.close();
+void UserSettingsManager::SetupPanels()
+{
+	for (const auto& state : s_editorSettings.panelStates)
+	{
+		auto editor = EditorLibrary::GetPanel(state.panelName);
+		if (editor)
+		{
+			if (state.isOpen)
+			{
+				editor->Open();
+			}
+			else
+			{
+				editor->Close();
+			}
+		}
+	}
 }

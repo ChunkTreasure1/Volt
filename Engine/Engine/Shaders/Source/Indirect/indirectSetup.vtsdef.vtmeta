@@ -1,8 +1,0 @@
-Metadata:
-  assetHandle: 15016074700767103834
-  filePath: Engine/Shaders/Source/Indirect/indirectSetup.vtsdef
-  type: 64
-  Dependencies:
-    - 9521548831228798930
-  Properties:
-    {}

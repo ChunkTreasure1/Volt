@@ -5,7 +5,8 @@
 #include "Volt/MosaicNodes/TextureNodes.h"
 #include "Volt/Asset/AssetManager.h"
 
-#include "Volt/RenderingNew/RendererNew.h"
+#include "Volt/Rendering/Renderer.h"
+#include "Volt/Rendering/Texture/Texture2D.h"
 
 #include <Mosaic/MosaicNode.h>
 
@@ -16,13 +17,15 @@
 
 namespace Volt
 {
+	constexpr VoltGUID TEXTURE_NODE_GUID = "{DB60F69D-EFC5-4AA4-BF5A-C89D58942D3F}"_guid;
+
 	Material::Material()
 	{
 		m_graph = Mosaic::MosaicGraph::CreateDefaultGraph();
 		m_materialGUID = GUIDUtilities::GenerateGUID();
 	}
 
-	Material::Material(Ref<RHI::ComputePipeline> computePipeline)
+	Material::Material(RefPtr<RHI::ComputePipeline> computePipeline)
 		: m_computePipeline(computePipeline)
 	{
 	}
@@ -45,6 +48,7 @@ namespace Volt
 		}
 
 		m_textures[index] = texture;
+		m_isDirty = true;
 	}
 
 	void Material::RemoveTexture(uint32_t index)
@@ -55,6 +59,63 @@ namespace Volt
 		}
 
 		m_textures.erase(m_textures.begin() + index);
+		m_isDirty = true;
+	}
+
+	bool Material::ClearAndGetIsDirty()
+	{
+		bool state = m_isDirty;
+		m_isDirty = false;
+		return state;
+	}
+
+	std::vector<AssetHandle> Material::GetTextureHandles() const
+	{
+		std::vector<AssetHandle> result;
+
+		for (const auto& node : m_graph->GetUnderlyingGraph().GetNodes())
+		{
+			if (node.nodeData->GetGUID() == TEXTURE_NODE_GUID)
+			{
+				auto textureNode = std::reinterpret_pointer_cast<MosaicNodes::SampleTextureNode>(node.nodeData);
+				const auto textureInfo = textureNode->GetTextureInfo();
+				result.emplace_back(textureInfo.textureHandle);
+			}
+		}
+
+		return result;
+	}
+
+	void Material::OnDependencyChanged(AssetHandle dependencyHandle, AssetChangedState state)
+	{
+		VT_CORE_TRACE("Triggered dependency changed in material: {0}, with dependency {1}", (uint64_t)handle, (uint64_t)dependencyHandle);
+
+		auto it = std::find_if(m_textures.begin(), m_textures.end(), [dependencyHandle](Ref<Texture2D> tex)
+		{
+			return tex != nullptr && tex->handle == dependencyHandle;
+		});
+
+		if (it == m_textures.end())
+		{
+			return;
+		}
+
+		if (state == AssetChangedState::Updated)
+		{
+			m_isDirty = true;
+		}
+		else if (state == AssetChangedState::Removed)
+		{
+			for (size_t i = 0; i < m_textures.size(); i++)
+			{
+				if (m_textures.at(i)->handle == dependencyHandle)
+				{
+					m_textures[i] = Renderer::GetDefaultResources().whiteTexture;
+				}
+			}
+
+			m_isDirty = true;
+		}
 	}
 
 	void Material::Compile()
@@ -64,7 +125,6 @@ namespace Volt
 		constexpr const char* BASE_SHADER_PATH = "Engine\\Shaders\\Source\\Generated\\GenerateGBuffer_cs.hlsl";
 
 		constexpr size_t REPLACE_STRING_SIZE = 16;
-		constexpr VoltGUID TEXTURE_NODE_GUID = "{DB60F69D-EFC5-4AA4-BF5A-C89D58942D3F}"_guid;
 
 		const auto baseShaderPath = ProjectManager::GetEngineDirectory() / BASE_SHADER_PATH;
 		const std::string compilationResult = m_graph->Compile();
@@ -112,26 +172,28 @@ namespace Volt
 			{
 				if (node.nodeData->GetGUID() == TEXTURE_NODE_GUID)
 				{
-					auto textureNode = std::reinterpret_pointer_cast<SampleTextureNode>(node.nodeData);
+					auto textureNode = std::reinterpret_pointer_cast<MosaicNodes::SampleTextureNode>(node.nodeData);
 					const auto textureInfo = textureNode->GetTextureInfo();
 
-					Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureInfo.textureHandle);
+					auto& texture = m_textures.at(textureInfo.textureIndex);
+
+					texture = AssetManager::QueueAsset<Texture2D>(textureInfo.textureHandle);
 					if (!texture)
 					{
-						texture = RendererNew::GetDefaultResources().whiteTexture;
+						texture = Renderer::GetDefaultResources().whiteTexture;
 					}
-
-					m_textures.at(textureInfo.textureIndex) = texture;
 				}
 			}
 		}
 
 		RHI::ShaderSpecification shaderSpecification;
 		shaderSpecification.name = assetName;
-		shaderSpecification.sourceFiles = { outShaderPath };
+		shaderSpecification.sourceEntries = { { "main", RHI::ShaderStage::Compute, outShaderPath}};
 		shaderSpecification.forceCompile = true;
 
 		m_computePipeline = RHI::ComputePipeline::Create(RHI::Shader::Create(shaderSpecification));
+
+		m_isDirty = true;
 	}
 }
 

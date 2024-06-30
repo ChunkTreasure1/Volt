@@ -1,12 +1,10 @@
 #include "rhipch.h"
 #include "ImGuiImplementation.h"
 
-#include "VoltRHI/Graphics/GraphicsContext.h"
+#include "VoltRHI/RHILog.h"
 #include "VoltRHI/Core/Core.h"
 #include "VoltRHI/Core/Profiling.h"
-
-#include <VoltVulkan/ImGui/VulkanImGuiImplementation.h>
-#include <VoltD3D12/ImGui/D3D12ImGuiImplementation.h>
+#include "VoltRHI/RHIProxy.h"
 
 #include <imgui.h>
 //#include <imgui_notify.h>
@@ -39,12 +37,12 @@ namespace Volt::RHI
 
 		if (!std::filesystem::exists(userIniPath))
 		{
-			GraphicsContext::Log(Severity::Warning, "[ImGui] User ini file not found! Copying default!");
+			RHILog::Log(LogSeverity::Warning, "[ImGui] User ini file not found! Copying default!");
 
 			std::filesystem::create_directories(userIniPath.parent_path());
 			if (!std::filesystem::exists(defaultIniPath))
 			{
-				GraphicsContext::Log(Severity::Error, "[ImGui] Unable to find default ini file!");
+				RHILog::Log(LogSeverity::Error, "[ImGui] Unable to find default ini file!");
 				return "imgui.ini";
 			}
 			std::filesystem::copy(defaultIniPath, userIniPath.parent_path());
@@ -169,7 +167,7 @@ namespace Volt::RHI
 		style.WindowRounding = 0.0f;
 		style.WindowBorderSize = 2.f;
 
-		InitializeAPI();
+		InitializeAPI(ImGui::GetCurrentContext());
 	}
 
 	ImGuiImplementation::~ImGuiImplementation()
@@ -229,22 +227,14 @@ namespace Volt::RHI
 		m_defaultFont = font;
 	}
 
-	Ref<ImGuiImplementation> ImGuiImplementation::Create(const ImGuiCreateInfo& createInfo)
+	ImGuiContext* ImGuiImplementation::GetContext() const
 	{
-		const auto api = GraphicsContext::GetAPI();
+		return ImGui::GetCurrentContext();
+	}
 
-		Ref<ImGuiImplementation> implementation;
-
-		switch (api)
-		{
-			case GraphicsAPI::D3D12: implementation = CreateRef<D3D12ImGuiImplementation>(createInfo);
-			case GraphicsAPI::MoltenVk:
-			case GraphicsAPI::Mock:
-				break;
-			
-			case GraphicsAPI::Vulkan: implementation = CreateRef<VulkanImGuiImplementation>(createInfo);
-		}
-
+	RefPtr<ImGuiImplementation> ImGuiImplementation::Create(const ImGuiCreateInfo& createInfo)
+	{
+		RefPtr<ImGuiImplementation> implementation = RHIProxy::GetInstance().CreateImGuiImplementation(createInfo);
 		implementation->Initialize();
 
 		return implementation;

@@ -2,7 +2,6 @@
 #include "UIUtility.h"
 
 #include "Volt/Rendering/Texture/Texture2D.h"
-#include "Volt/Rendering/Texture/Image2D.h"
 
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
 
@@ -19,12 +18,7 @@ ImTextureID UI::GetTextureID(Ref<Volt::Texture2D> texture)
 	return Volt::RHI::ImGuiImplementation::Get().GetTextureID(texture->GetImage());
 }
 
-ImTextureID UI::GetTextureID(Ref<Volt::Image2D> texture)
-{
-	return nullptr;
-}
-
-ImTextureID UI::GetTextureID(Ref<Volt::RHI::Image2D> texture)
+ImTextureID UI::GetTextureID(RefPtr<Volt::RHI::Image2D> texture)
 {
 	return Volt::RHI::ImGuiImplementation::Get().GetTextureID(texture);
 }
@@ -1489,6 +1483,27 @@ bool UI::Property(const std::string& text, glm::ivec4& value, uint32_t min, uint
 	std::string id = "##" + std::to_string(s_stackId++);
 
 	changed = DragScalarN(id.c_str(), ImGuiDataType_S32, glm::value_ptr(value), 4, 1.f, &min, &max);
+	EndPropertyRow();
+
+	return changed;
+}
+
+bool UI::Property(const std::string& text, glm::quat& value, const std::string& toolTip)
+{
+	bool changed = false;
+
+	BeginPropertyRow();
+
+	ImGui::TextUnformatted(text.c_str());
+	SimpleToolTip(toolTip);
+
+	ImGui::TableNextColumn();
+	std::string id = "##" + std::to_string(s_stackId++);
+
+	constexpr float min = -1.f;
+	constexpr float max = 1.f;
+
+	changed = DragScalarN(id.c_str(), ImGuiDataType_Float, glm::value_ptr(value), 4, 1.f, &min, &max);
 	EndPropertyRow();
 
 	return changed;

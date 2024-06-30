@@ -7,8 +7,7 @@
 
 #include <Volt/Animation/AnimationManager.h>
 
-#include <Volt/Rendering/VulkanFramebuffer.h>
-#include <Volt/RenderingNew/SceneRendererNew.h>
+#include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
 
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
@@ -29,7 +28,7 @@ CharacterEditorPanel::CharacterEditorPanel()
 	: EditorWindow("Character Editor", true)
 {
 	m_windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-	myCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
+	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
 	myScene = Volt::Scene::CreateDefaultScene("Character Editor", false);
 
@@ -122,7 +121,7 @@ void CharacterEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 {
 	if (myCurrentCharacter)
 	{
-		Volt::AssetManager::Get().SaveAsset(asset);
+		Volt::AssetManager::Get().SaveAsset(myCurrentCharacter);
 	}
 
 	myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>().animatedCharacter = asset->handle;
@@ -149,7 +148,7 @@ void CharacterEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 		for (const auto& attachment : myCurrentCharacter->GetJointAttachments())
 		{
 			auto newEntity = myScene->CreateEntity();
-			newEntity.AddComponent<Volt::MeshComponent>().handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh")->handle;
+			newEntity.AddComponent<Volt::MeshComponent>().handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtasset")->handle;
 			newEntity.SetScale(0.2f);
 
 			myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>().attachedEntities[attachment.id].emplace_back(newEntity);
@@ -173,7 +172,7 @@ void CharacterEditorPanel::OnOpen()
 		//Volt::SceneRendererSettings settings{};
 		//settings.enableGrid = true;
 
-		mySceneRenderer = CreateScope<Volt::SceneRendererNew>(spec);
+		mySceneRenderer = CreateScope<Volt::SceneRenderer>(spec);
 	}
 }
 
@@ -610,7 +609,7 @@ void CharacterEditorPanel::UpdateAnimationTimelinePanel()
 					const auto id = UI::GetID();
 					bool selected = false;
 
-					ImGui::Selectable(std::format("{0}: ", events[index].name).c_str(), &selected, ImGuiSelectableFlags_AllowItemOverlap, ImVec2(100, 25));
+					ImGui::Selectable(std::format("{0}: ", events[index].name).c_str(), &selected, ImGuiSelectableFlags_AllowItemOverlap, ImVec2(150, 25));
 					ImGui::SameLine();
 					ImGui::DragInt(std::format("-##rem{0}", id).c_str(), (int*)&events[index].frame);
 
@@ -753,8 +752,8 @@ void CharacterEditorPanel::UpdateJointAttachmentViewPanel()
 
 	if (ImGui::BeginTable("AttachmentTable", 3, ImGuiTableFlags_BordersInnerH, ImGui::GetContentRegionAvail()))
 	{
-		ImGui::TableSetupColumn("Attachment Name");
 		ImGui::TableSetupColumn("Joint");
+		ImGui::TableSetupColumn("Attachment Name");
 
 		ImGui::TableHeadersRow();
 
@@ -791,6 +790,7 @@ void CharacterEditorPanel::UpdateJointAttachmentViewPanel()
 				ImGui::Text("OFFSET");
 
 				UI::Property("Pos", attachment.positionOffset);
+				UI::Property("Rot", attachment.rotationOffset);
 
 				UI::EndProperties();
 				ImGui::EndPopup();
@@ -894,7 +894,7 @@ void CharacterEditorPanel::AddJointAttachmentPopup()
 					newAttachment.jointIndex = myCurrentCharacter->GetSkeleton()->GetJointIndexFromName(name);
 
 					auto newEntity = myScene->CreateEntity();
-					newEntity.AddComponent<Volt::MeshComponent>().handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh")->handle;
+					newEntity.AddComponent<Volt::MeshComponent>().handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtasset")->handle;
 					newEntity.SetScale(0.2f);
 
 					myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>().attachedEntities[newAttachment.id].emplace_back(newEntity);

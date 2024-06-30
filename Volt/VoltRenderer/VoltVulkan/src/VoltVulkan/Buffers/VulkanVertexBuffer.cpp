@@ -9,10 +9,11 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
 #include <VoltRHI/Memory/Allocation.h>
+#include <VoltRHI/RHIProxy.h>
 
 namespace Volt::RHI
 {
-	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, const uint32_t size)
+	VulkanVertexBuffer::VulkanVertexBuffer(const uint32_t size, const void* data)
 	{
 		Invalidate(data, size);
 	}
@@ -24,7 +25,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		GraphicsContext::DestroyResource([allocation = m_allocation]()
+		RHIProxy::GetInstance().DestroyResource([allocation = m_allocation]()
 		{
 			GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
 		});
@@ -73,11 +74,11 @@ namespace Volt::RHI
 	{
 		VkDeviceSize bufferSize = size;
 	
-		Ref<Allocation> stagingAllocation;
+		RefPtr<Allocation> stagingAllocation;
 
 		if (m_allocation)
 		{
-			GraphicsContext::DestroyResource([allocation = m_allocation]()
+			RHIProxy::GetInstance().DestroyResource([allocation = m_allocation]()
 			{
 				GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
 			});
@@ -108,7 +109,7 @@ namespace Volt::RHI
 		{
 			// Copy from staging buffer to GPU buffer
 			{
-				Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create();
+				RefPtr<CommandBuffer> cmdBuffer = CommandBuffer::Create();
 				cmdBuffer->Begin();
 
 				VkBufferCopy copy{};

@@ -20,8 +20,13 @@ namespace Volt
 			return false;
 		}
 
-		Ref<Mesh> mesh = std::reinterpret_pointer_cast<Mesh>(asset);
-		MeshTypeImporter::ImportMesh(filePath, mesh);
+		Ref<Mesh> destinationMesh = std::reinterpret_pointer_cast<Mesh>(asset);
+		if (!MeshTypeImporter::ImportMesh(filePath, *destinationMesh))
+		{
+			asset->SetFlag(AssetFlag::Invalid, true);
+			return false;
+		}
+
 		return true;
 	}
 

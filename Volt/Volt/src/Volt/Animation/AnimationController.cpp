@@ -56,12 +56,12 @@ namespace Volt
 		}
 
 
-		/* {
+		{
 			VT_PROFILE_SCOPE("Joint Attachments");
 
 			for (const auto& [attachmentId, attachedEntities] : myAttachedEntities)
 			{
-				auto attachment = character->GetJointAttachmentFromID(attachmentId);
+				auto attachment = skeleton->GetJointAttachmentFromID(attachmentId);
 				if (attachment.jointIndex == -1)
 				{
 					continue;
@@ -79,36 +79,41 @@ namespace Volt
 
 				for (auto ent : attachedEntities)
 				{
+					if (!ent)
+					{
+						continue;
+					}
+
 					ent.SetLocalPosition(resultPos);
 					ent.SetLocalRotation(resultRot);
 					ent.SetLocalScale(currentTRS.scale);
 				}
 			}
-		}*/
+		}
 
 		return result;
 	}
 
 	void AnimationController::AttachEntity(const std::string& attachment, Entity entity)
 	{
-		/*const auto character = AssetManager::GetAsset<AnimatedCharacter>(myGraph->GetCharacterHandle());
+		const auto skeleton = AssetManager::GetAsset<Skeleton>(myGraph->GetSkeletonHandle());
 
-		if (!character || !character->IsValid())
+		if (!skeleton || !skeleton->IsValid())
 		{
 			return;
 		}
 
-		if (!character->HasJointAttachment(attachment))
+		if (!skeleton->HasJointAttachment(attachment))
 		{
 			return;
 		}
 
-		myAttachedEntities[character->GetJointAttachmentFromName(attachment).id].emplace_back(entity);*/
+		myAttachedEntities[skeleton->GetJointAttachmentFromName(attachment).id].emplace_back(entity);
 	}
 
 	void AnimationController::DetachEntity(Entity entity)
 	{
-		/*for (auto& [attachmentName, attachedEntities] : myAttachedEntities)
+		for (auto& [attachmentName, attachedEntities] : myAttachedEntities)
 		{
 			auto it = std::find(attachedEntities.begin(), attachedEntities.end(), entity);
 			if (it != attachedEntities.end())
@@ -116,7 +121,7 @@ namespace Volt
 				attachedEntities.erase(it);
 				return;
 			}
-		}*/
+		}
 	}
 
 	void AnimationController::OnEvent(Event& e)

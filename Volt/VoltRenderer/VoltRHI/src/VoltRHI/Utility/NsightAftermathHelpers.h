@@ -4,7 +4,7 @@
 
 #ifdef VT_ENABLE_NV_AFTERMATH
 
-#include "VoltRHI/Graphics/GraphicsContext.h"
+#include "VoltRHI/RHILog.h"
 
 #include "GFSDK_Aftermath.h"
 #include "GFSDK_Aftermath_GpuCrashDump.h"
@@ -90,7 +90,7 @@ namespace Volt::RHI
 		GFSDK_Aftermath_Result _result = FC;                                                                \
 		if (!GFSDK_Aftermath_SUCCEED(_result))                                                              \
 		{                                                                                                   \
-			GraphicsContext::LogTagged(Severity::Error, "[Aftermath]", "Error: {0}", AftermathException::GetErrorMessage(_result).c_str()); \
+			RHILog::LogTagged(LogSeverity::Error, "[Aftermath]", "Error: {0}", AftermathException::GetErrorMessage(_result).c_str()); \
 			throw AftermathException(_result);                                                              \
 		}                                                                                                   \
 	}()

@@ -6,13 +6,14 @@
 #include "Sandbox/Utility/EditorResources.h"
 
 #include <Volt/Asset/AssetManager.h>
+#include <Volt/Asset/Mesh/Mesh.h>
 
 #include <Volt/Utility/UIUtility.h>
 
 #include <Volt/Scene/Scene.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
 
-#include <Volt/RenderingNew/SceneRendererNew.h>
+#include <Volt/Rendering/SceneRenderer.h>
 
 #include <Volt/Components/CoreComponents.h>
 #include <Volt/Components/RenderingComponents.h>
@@ -22,7 +23,7 @@
 PrefabEditorPanel::PrefabEditorPanel()
 	: EditorWindow("Prefab Editor", true)
 {
-	myCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
+	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myScene = Volt::Scene::CreateDefaultScene("Prefab Editor", false);
 
 	myScene->Clear();
@@ -69,7 +70,7 @@ void PrefabEditorPanel::OnOpen()
 		//Volt::SceneRendererSettings settings{};
 		//settings.enableGrid = true;
 
-		mySceneRenderer = CreateRef<Volt::SceneRendererNew>(spec);
+		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
 	}
 }
 

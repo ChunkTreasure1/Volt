@@ -6,6 +6,8 @@
 #include "VoltVulkan/Graphics/VulkanDeviceQueue.h"
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 
+#include "VoltVulkan/Core.h"
+
 #include <vulkan/vulkan.h>
 #include <optick.h>
 
@@ -30,7 +32,7 @@ namespace Volt::RHI
 
 	namespace Utility
 	{
-		inline static void GetEnabledFeatures(Weak<VulkanPhysicalGraphicsDevice> physicalDevice)
+		inline static void GetEnabledFeatures(WeakPtr<VulkanPhysicalGraphicsDevice> physicalDevice)
 		{
 
 			s_enabledFeatures.vulkan11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
@@ -101,7 +103,8 @@ namespace Volt::RHI
 			s_enabledFeatures.aftermathDiagInfo.flags =
 				VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_RESOURCE_TRACKING_BIT_NV |
 				VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_AUTOMATIC_CHECKPOINTS_BIT_NV |
-				VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_SHADER_DEBUG_INFO_BIT_NV; // #TODO_Ivar: Implement some kind of debug level
+				VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_SHADER_DEBUG_INFO_BIT_NV |
+				VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_SHADER_ERROR_REPORTING_BIT_NV; // #TODO_Ivar: Implement some kind of debug level
 
 			chainEntryPoint = &s_enabledFeatures.aftermathDiagInfo;
 #endif
@@ -121,7 +124,7 @@ namespace Volt::RHI
 			s_enabledFeatures.physicalDeviceFeatures.features.shaderInt16 = VK_TRUE; // #TODO_Ivar: does not work on older cards
 		}
 
-		inline static std::vector<const char*> GetEnabledExtensions(Weak<VulkanPhysicalGraphicsDevice> physicalDevice)
+		inline static std::vector<const char*> GetEnabledExtensions(WeakPtr<VulkanPhysicalGraphicsDevice> physicalDevice)
 		{
 			std::vector<const char*> enabledExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
@@ -162,7 +165,7 @@ namespace Volt::RHI
 
 	VulkanGraphicsDevice::VulkanGraphicsDevice(const GraphicsDeviceCreateInfo& createInfo)
 	{
-		m_physicalDevice = std::reinterpret_pointer_cast<VulkanPhysicalGraphicsDevice>(createInfo.physicalDevice);
+		m_physicalDevice = createInfo.physicalDevice.As<VulkanPhysicalGraphicsDevice>();
 
 		VulkanPhysicalGraphicsDevice& physicalDevicePtr = m_physicalDevice->AsRef<VulkanPhysicalGraphicsDevice>();
 		const auto& queueFamilies = physicalDevicePtr.GetQueueFamilies();
@@ -224,9 +227,9 @@ namespace Volt::RHI
 			VT_VK_CHECK(vkCreateDevice(physicalDevicePtr.GetHandle<VkPhysicalDevice>(), &deviceInfo, nullptr, &m_device));
 		}
 
-		m_deviceQueues[QueueType::Graphics] = CreateRef<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Graphics });
-		m_deviceQueues[QueueType::TransferCopy] = CreateRef<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::TransferCopy });
-		m_deviceQueues[QueueType::Compute] = CreateRef<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Compute });
+		m_deviceQueues[QueueType::Graphics] = RefPtr<VulkanDeviceQueue>::Create(DeviceQueueCreateInfo{ this, QueueType::Graphics });
+		m_deviceQueues[QueueType::TransferCopy] = RefPtr<VulkanDeviceQueue>::Create(DeviceQueueCreateInfo{ this, QueueType::TransferCopy });
+		m_deviceQueues[QueueType::Compute] = RefPtr<VulkanDeviceQueue>::Create(DeviceQueueCreateInfo{ this, QueueType::Compute });
 
 #ifdef VT_ENABLE_GPU_PROFILING
 		{
@@ -247,10 +250,16 @@ namespace Volt::RHI
 
 	void VulkanGraphicsDevice::WaitForIdle()
 	{
+		// #TODO_Ivar: Must be externally synced with all queues
 		vkDeviceWaitIdle(m_device);
 	}
 
-	Weak<VulkanPhysicalGraphicsDevice> VulkanGraphicsDevice::GetPhysicalDevice() const
+	RefPtr<DeviceQueue> VulkanGraphicsDevice::GetDeviceQueue(QueueType queueType) const
+	{
+		return m_deviceQueues.at(queueType);
+	}
+
+	WeakPtr<VulkanPhysicalGraphicsDevice> VulkanGraphicsDevice::GetPhysicalDevice() const
 	{
 		return m_physicalDevice;
 	}
@@ -260,3 +269,4 @@ namespace Volt::RHI
 		return m_device;
 	}
 }
+

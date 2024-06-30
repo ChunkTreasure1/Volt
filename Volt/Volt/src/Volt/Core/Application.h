@@ -61,6 +61,7 @@ namespace Volt
 	{
 		class ImGuiImplementation;
 		class GraphicsContext;
+		class RHIProxy;
 	}
 
 	class Application
@@ -79,6 +80,7 @@ namespace Volt
 		inline static Application& Get() { return *s_instance; }
 		inline static ThreadPool& GetThreadPool() { return Get().m_threadPool; }
 		inline static WindowManager& GetWindowManager() { return Get().m_windowManager; }
+		inline static const uint64_t GetFrameIndex() { return Get().m_frameIndex; }
 
 		inline const bool IsRuntime() const { return m_info.isRuntime; }
 		inline const ApplicationInfo& GetInfo() const { return m_info; }
@@ -114,14 +116,17 @@ namespace Volt
 		float m_currentDeltaTime = 0.f;
 		float m_lastTotalTime = 0.f;
 
+		uint64_t m_frameIndex = 0;
+
 		ApplicationInfo m_info;
 
 		LayerStack m_layerStack;
 		MultiTimer m_frameTimer;
 		WindowManager m_windowManager;
 
-		Ref<RHI::ImGuiImplementation> m_imguiImplementation;
-		Ref<RHI::GraphicsContext> m_graphicsContext;
+		RefPtr<RHI::ImGuiImplementation> m_imguiImplementation;
+		RefPtr<RHI::GraphicsContext> m_graphicsContext;
+		RefPtr<RHI::RHIProxy> m_rhiProxy;
 
 		WindowHandle m_windowHandle = 0;
 		Scope<AssetManager> m_assetmanager;
@@ -129,7 +134,6 @@ namespace Volt
 		Scope<AI::NavigationSystem> m_navigationSystem;
 
 		Scope<SteamImplementation> m_steamImplementation;
-
 		ThreadPool m_threadPool;
 	};
 

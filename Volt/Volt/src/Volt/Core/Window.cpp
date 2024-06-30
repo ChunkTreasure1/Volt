@@ -9,7 +9,7 @@
 #include "Volt/Utility/FileSystem.h"
 #include "Volt/Utility/DDSUtility.h"
 
-#include "Volt/RenderingNew/RendererNew.h"
+#include "Volt/Rendering/Renderer.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/Swapchain.h>
@@ -64,8 +64,6 @@ namespace Volt
 		}
 
 		m_cursors.clear();
-
-		glfwTerminate();
 	}
 
 	void Window::Invalidate()
@@ -77,7 +75,7 @@ namespace Volt
 
 		glfwWindowHint(GLFW_SAMPLES, 0);
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_TITLEBAR, Application::Get().GetInfo().isRuntime ? GLFW_TRUE : GLFW_FALSE);
+		glfwWindowHint(GLFW_TITLEBAR, Application::Get().GetInfo().isRuntime || m_properties.useTitlebar ? GLFW_TRUE : GLFW_FALSE);
 		glfwWindowHint(GLFW_AUTO_ICONIFY, false);
 
 		GLFWmonitor* primaryMonitor = nullptr;
@@ -527,5 +525,10 @@ namespace Volt
 
 			glfwSetErrorCallback(GLFWErrorCallback);
 		}
+	}
+
+	void Window::StaticShutdown()
+	{
+		glfwTerminate();
 	}
 }

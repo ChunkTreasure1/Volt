@@ -79,6 +79,11 @@ namespace Volt::RHI
 		return m_allocation;
 	}
 
+	VulkanTransientBufferAllocation::VulkanTransientBufferAllocation(const size_t hash)
+	{
+		m_allocationHash = hash;
+	}
+
 	void VulkanTransientBufferAllocation::Unmap()
 	{
 		auto device = GraphicsContext::GetDevice();
@@ -114,6 +119,11 @@ namespace Volt::RHI
 		return m_memoryHandle;
 	}
 	
+	VulkanTransientImageAllocation::VulkanTransientImageAllocation(const size_t hash)
+	{
+		m_allocationHash = hash;
+	}
+
 	void VulkanTransientImageAllocation::Unmap()
 	{
 		auto device = GraphicsContext::GetDevice();

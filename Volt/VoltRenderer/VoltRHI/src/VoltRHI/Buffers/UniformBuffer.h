@@ -6,12 +6,12 @@ namespace Volt::RHI
 {
 	class BufferView;
 
-	class UniformBuffer : public RHIResource
+	class VTRHI_API UniformBuffer : public RHIResource
 	{ 
 	public:
 		~UniformBuffer() override = default;
 
-		virtual Ref<BufferView> GetView() = 0;
+		virtual RefPtr<BufferView> GetView() = 0;
 		virtual const uint32_t GetSize() const = 0;
 		virtual void SetData(const void* data, const uint32_t size) = 0;
 		virtual void Unmap() = 0;
@@ -22,7 +22,7 @@ namespace Volt::RHI
 		template<typename T>
 		inline void SetData(const T& data);
 
-		static Ref<UniformBuffer> Create(const uint32_t size, const void* data = nullptr);
+		static RefPtr<UniformBuffer> Create(const uint32_t size, const void* data = nullptr);
 
 	protected:
 		virtual void* MapInternal() = 0;

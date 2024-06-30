@@ -67,8 +67,14 @@ namespace Volt
 			MonoType* fieldType = mono_field_get_type(field);
 			const char* typeName = mono_type_get_name(fieldType);
 
+			const auto& monoTypeInfo = MonoTypeRegistry::GetTypeInfo(typeName);
+			if (!monoTypeInfo.IsValid())
+			{
+				continue;
+			}
+
 			MonoScriptField scriptField{};
-			scriptField.type = MonoTypeRegistry::GetTypeInfo(typeName);
+			scriptField.type = monoTypeInfo;
 			scriptField.fieldPtr = field;
 			scriptField.fieldAccessability = accessibility;
 
