@@ -76,6 +76,7 @@ namespace Volt::RHI
 
 	VulkanSwapchain::VulkanSwapchain(GLFWwindow* glfwWindow)
 	{
+		m_glfwWindow = glfwWindow;
 		auto vulkanContext = GraphicsContext::Get().As<VulkanGraphicsContext>();
 		auto& vulkanPhysicalDevice = GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>();
 
@@ -313,7 +314,15 @@ namespace Volt::RHI
 		auto physicalDevice = GraphicsContext::GetPhysicalDevice();
 
 		VkSurfaceCapabilitiesKHR capabilities{};
-		VT_VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice->GetHandle<VkPhysicalDevice>(), m_surface, &capabilities));
+		VkResult err = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice->GetHandle<VkPhysicalDevice>(), m_surface, &capabilities);
+		/*if (err == VK_ERROR_SURFACE_LOST_KHR)
+		{
+			auto vulkanContext = GraphicsContext::Get().As<VulkanGraphicsContext>();
+			VkInstance instance = vulkanContext->GetHandle<VkInstance>();
+			VT_VK_CHECK(glfwCreateWindowSurface(instance, m_glfwWindow, nullptr, &m_surface));
+			err = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice->GetHandle<VkPhysicalDevice>(), m_surface, &capabilities);
+		}*/
+		VT_VK_CHECK(err);
 
 		m_capabilities.minImageCount = capabilities.minImageCount;
 		m_capabilities.maxImageCount = capabilities.maxImageCount;

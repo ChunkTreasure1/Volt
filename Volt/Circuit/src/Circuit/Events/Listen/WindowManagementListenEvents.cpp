@@ -14,4 +14,10 @@ namespace Circuit
 		, m_WindowHandle(windowHandle)
 	{
 	}
+	WindowResizedListenEvent::WindowResizedListenEvent(InterfaceWindowHandle windowHandle, const glm::vec2& size)
+		: ListenEvent(CircuitListenEventType::WindowResized)
+		, m_WindowHandle(windowHandle)
+		, m_size(size)
+	{
+	}
 }

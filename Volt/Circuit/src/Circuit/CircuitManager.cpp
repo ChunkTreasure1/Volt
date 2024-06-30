@@ -31,7 +31,7 @@ namespace Circuit
 
 	void CircuitManager::Init()
 	{
-		m_TellEvents.push_back(std::make_unique<OpenWindowTellEvent>());
+		m_TellEvents.push_back(std::make_unique<OpenWindowTellEvent>(glm::u32vec2(300,200)));
 	}
 
 	void CircuitManager::Update()
@@ -92,5 +92,10 @@ namespace Circuit
 			default:
 				break;
 		}
+	}
+
+	CIRCUIT_API const std::map<InterfaceWindowHandle, std::unique_ptr<CircuitWindow>>& CircuitManager::GetWindows()
+	{
+		return m_Windows;
 	}
 }

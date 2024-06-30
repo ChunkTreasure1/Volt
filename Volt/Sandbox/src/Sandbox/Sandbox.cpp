@@ -834,11 +834,21 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		{
 			case Circuit::CircuitTellEventType::OpenWindow:
 			{
-				Volt::WindowProperties WindowProperties;
-				WindowProperties.title = "CircuitWindow";
+				//Circuit::OpenWindowTellEvent& OpenWindowEvent = reinterpret_cast<Circuit::OpenWindowTellEvent&>(*tellEvent);
+ 
+				Volt::WindowProperties windowProperties;
+				windowProperties.title = "CircuitWindow";
+				windowProperties.vsync = false;
+				/*
+				windowProperties.width = OpenWindowEvent.GetStartSize().x;
+				windowProperties.height = OpenWindowEvent.GetStartSize().y;*/
 
-				Volt::WindowHandle handle = Volt::Application::GetWindowManager().CreateNewWindow(WindowProperties);
-
+				Volt::WindowHandle handle = Volt::Application::GetWindowManager().CreateNewWindow(windowProperties);
+				Volt::Window& window = Volt::Application::GetWindowManager().GetWindow(handle);
+				window.SetEventCallback([](Volt::Event& event)
+				{
+					VT_CORE_INFO("Window Event: {0}", event.GetName());
+				});
 				Circuit::CircuitManager::Get().AddListenEvent(std::make_unique<Circuit::WindowOpenedListenEvent>(handle));
 
 			}
@@ -1001,11 +1011,21 @@ void Sandbox::RenderGameView()
 bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)
 {
 	VT_PROFILE_FUNCTION();
+	
+	for (auto& circuitWindowPair : Circuit::CircuitManager::Get().GetWindows())
+	{
+		Volt::WindowHandle handle = circuitWindowPair.first;
+		Volt::Window window = Volt::Application::GetWindowManager().GetWindow(handle);
+		Circuit::CircuitWindow& circuitWindow = *circuitWindowPair.second;
+
+
+		circuitWindow.GetDrawCommands();
+	}
 
 	//mySceneRenderer->ClearOutlineCommands();
 
 	RenderSelection(m_editorCameraController->GetCamera());
-	RenderGizmos(m_runtimeScene, m_editorCameraController->GetCamera());
+	//RenderGizmos(myRuntimeScene, myEditorCameraController->GetCamera());
 
 	switch (m_sceneState)
 	{

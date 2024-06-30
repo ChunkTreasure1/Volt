@@ -9,8 +9,13 @@ namespace Circuit
 	class OpenWindowTellEvent final : public TellEvent
 	{
 	public:
-		OpenWindowTellEvent();
+		OpenWindowTellEvent(glm::u32vec2 startSize);
 		~OpenWindowTellEvent() = default;
+
+		const glm::u32vec2& GetStartSize() const { return m_startSize; }
+
+	private:
+		const glm::u32vec2 m_startSize;
 	};
 
 	//CloseWindow

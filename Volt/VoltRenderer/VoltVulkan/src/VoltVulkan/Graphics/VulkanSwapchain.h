@@ -127,5 +127,7 @@ namespace Volt::RHI
 		VkSurfaceKHR_T* m_surface = nullptr;
 
 		PixelFormat m_swapchainFormat = PixelFormat::UNDEFINED;
+
+		GLFWwindow* m_glfwWindow;
 	};
 }

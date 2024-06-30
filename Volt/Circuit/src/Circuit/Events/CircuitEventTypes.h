@@ -18,5 +18,7 @@ namespace Circuit
 
 		WindowOpened,
 		WindowClosed,
+
+		WindowResized,
 	};
 }

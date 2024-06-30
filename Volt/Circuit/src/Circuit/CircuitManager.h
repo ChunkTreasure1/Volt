@@ -28,6 +28,8 @@ namespace Circuit
 		CIRCUIT_API const std::vector<std::unique_ptr<TellEvent>>& GetTellEventsToProcess();
 
 		CIRCUIT_API void AddListenEvent(std::unique_ptr<ListenEvent> event);
+
+		CIRCUIT_API const std::map<InterfaceWindowHandle, std::unique_ptr<CircuitWindow>>& GetWindows();
 	private:
 		CIRCUIT_API inline static std::unique_ptr<CircuitManager> s_Instance = nullptr;
 

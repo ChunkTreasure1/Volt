@@ -28,6 +28,7 @@ project "Circuit"
 	includedirs
 	{
 		"src/",
+		"%{IncludeDir.glm}",
 	}
 
 	filter "files:vendor/**.c"

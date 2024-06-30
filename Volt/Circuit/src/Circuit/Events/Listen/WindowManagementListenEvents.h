@@ -11,7 +11,7 @@ namespace Circuit
 		CIRCUIT_API WindowOpenedListenEvent(InterfaceWindowHandle windowHandle);
 		~WindowOpenedListenEvent() = default;
 
-		InterfaceWindowHandle GetWindowHandle() const { return m_WindowHandle; }
+		const InterfaceWindowHandle& GetWindowHandle() const { return m_WindowHandle; }
 
 	private:
 		const InterfaceWindowHandle m_WindowHandle;
@@ -23,9 +23,23 @@ namespace Circuit
 		CIRCUIT_API WindowClosedListenEvent(InterfaceWindowHandle windowHandle);
 		~WindowClosedListenEvent() = default;
 
-		InterfaceWindowHandle GetWindowHandle() const { return m_WindowHandle; }
+		const InterfaceWindowHandle& GetWindowHandle() const { return m_WindowHandle; }
 
 	private:
 		const InterfaceWindowHandle m_WindowHandle;
+	};
+
+	class WindowResizedListenEvent : public ListenEvent
+	{
+	public:
+		CIRCUIT_API WindowResizedListenEvent(InterfaceWindowHandle windowHandle, const glm::vec2& size);
+		~WindowResizedListenEvent() = default;
+
+		const InterfaceWindowHandle& GetWindowHandle() const { return m_WindowHandle; }
+		const glm::vec2& GetSize() const { return m_size; }
+
+	private:
+		const InterfaceWindowHandle m_WindowHandle;
+		const glm::vec2 m_size;
 	};
 }
