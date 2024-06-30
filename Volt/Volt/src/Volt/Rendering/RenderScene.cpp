@@ -241,9 +241,9 @@ namespace Volt
 
 		if (m_currentBoneCount > 0)
 		{
-			if (m_gpuBonesBuffer->GetResource()->GetSize() < m_animationBufferStorage.size())
+			if (m_gpuBonesBuffer->GetResource()->GetCount() < m_animationBufferStorage.size())
 			{
-				m_gpuBonesBuffer->GetResource()->Resize(static_cast<uint32_t>(m_animationBufferStorage.size()));
+				m_gpuBonesBuffer->GetResource()->ResizeWithCount(static_cast<uint32_t>(m_animationBufferStorage.size()));
 			}
 
 			m_gpuBonesBuffer->GetResource()->SetData(m_animationBufferStorage.data(), m_animationBufferStorage.size() * sizeof(glm::mat4));
@@ -413,7 +413,7 @@ namespace Volt
 	{
 		if (m_gpuMeshesBuffer->GetResource()->GetCount() < static_cast<uint32_t>(gpuMeshes.size()))
 		{
-			m_gpuMeshesBuffer->GetResource()->Resize(static_cast<uint32_t>(gpuMeshes.size()));
+			m_gpuMeshesBuffer->GetResource()->ResizeWithCount(static_cast<uint32_t>(gpuMeshes.size()));
 			m_gpuMeshesBuffer->MarkAsDirty();
 		}
 		m_gpuMeshesBuffer->GetResource()->SetData(gpuMeshes.data(), sizeof(GPUMesh) * gpuMeshes.size());
@@ -423,7 +423,7 @@ namespace Volt
 	{
 		if (m_objectDrawDataBuffer->GetResource()->GetCount() < static_cast<uint32_t>(objectDrawData.size()))
 		{
-			m_objectDrawDataBuffer->GetResource()->Resize(static_cast<uint32_t>(objectDrawData.size()));
+			m_objectDrawDataBuffer->GetResource()->ResizeWithCount(static_cast<uint32_t>(objectDrawData.size()));
 			m_objectDrawDataBuffer->MarkAsDirty();
 		}
 
@@ -434,7 +434,7 @@ namespace Volt
 	{
 		if (m_gpuMaterialsBuffer->GetResource()->GetCount() < static_cast<uint32_t>(m_individualMaterials.size()))
 		{
-			m_gpuMaterialsBuffer->GetResource()->Resize(static_cast<uint32_t>(m_individualMaterials.size()));
+			m_gpuMaterialsBuffer->GetResource()->ResizeWithCount(static_cast<uint32_t>(m_individualMaterials.size()));
 			m_gpuMaterialsBuffer->MarkAsDirty();
 		}
 
@@ -477,7 +477,7 @@ namespace Volt
 	{
 		if (m_gpuMeshletsBuffer->GetResource()->GetCount() < static_cast<uint32_t>(m_sceneMeshlets.size()))
 		{
-			m_gpuMeshletsBuffer->GetResource()->Resize(static_cast<uint32_t>(m_sceneMeshlets.size()));
+			m_gpuMeshletsBuffer->GetResource()->ResizeWithCount(static_cast<uint32_t>(m_sceneMeshlets.size()));
 			m_gpuMeshletsBuffer->MarkAsDirty();
 		}
 

@@ -121,9 +121,9 @@ namespace Volt::RHI
 		Shutdown();
 	}
 
-	Allocator& VulkanGraphicsContext::GetDefaultAllocatorImpl()
+	RefPtr<Allocator> VulkanGraphicsContext::GetDefaultAllocatorImpl()
 	{
-		return *m_defaultAllocator;
+		return m_defaultAllocator;
 	}
 
 	RefPtr<Allocator> VulkanGraphicsContext::GetTransientAllocatorImpl()

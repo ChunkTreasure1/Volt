@@ -22,7 +22,7 @@ namespace Volt::RHI
 		VT_INLINE VT_NODISCARD static GraphicsContext& Get() { return *s_context; }
 		VT_INLINE VT_NODISCARD static RefPtr<GraphicsDevice> GetDevice() { return s_context->GetGraphicsDevice(); };
 		VT_INLINE VT_NODISCARD static RefPtr<PhysicalGraphicsDevice> GetPhysicalDevice() { return s_context->GetPhysicalGraphicsDevice(); };
-		VT_INLINE VT_NODISCARD static Allocator& GetDefaultAllocator() { return s_context->GetDefaultAllocatorImpl(); };
+		VT_INLINE VT_NODISCARD static RefPtr<Allocator> GetDefaultAllocator() { return s_context->GetDefaultAllocatorImpl(); };
 		VT_INLINE VT_NODISCARD static RefPtr<Allocator> GetTransientAllocator() { return s_context->GetTransientAllocatorImpl(); }
 		VT_INLINE VT_NODISCARD static GraphicsAPI GetAPI() { return s_graphicsAPI; }
 
@@ -31,7 +31,7 @@ namespace Volt::RHI
 		static void Update();
 
 	protected:
-		virtual Allocator& GetDefaultAllocatorImpl() = 0;
+		virtual RefPtr<Allocator> GetDefaultAllocatorImpl() = 0;
 		virtual RefPtr<Allocator> GetTransientAllocatorImpl() = 0;
 
 		virtual RefPtr<GraphicsDevice> GetGraphicsDevice() const = 0;

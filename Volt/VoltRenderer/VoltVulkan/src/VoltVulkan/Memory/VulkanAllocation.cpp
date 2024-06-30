@@ -18,7 +18,7 @@ namespace Volt::RHI
 
 	void VulkanImageAllocation::Unmap()
 	{
-		vmaUnmapMemory(GraphicsContext::GetDefaultAllocator().GetHandle<VmaAllocator>(), m_allocation);
+		vmaUnmapMemory(GraphicsContext::GetDefaultAllocator()->GetHandle<VmaAllocator>(), m_allocation);
 	}
 
 	const uint64_t VulkanImageAllocation::GetDeviceAddress() const
@@ -34,7 +34,7 @@ namespace Volt::RHI
 	void* VulkanImageAllocation::MapInternal()
 	{
 		void* data = nullptr;
-		VT_VK_CHECK(vmaMapMemory(GraphicsContext::GetDefaultAllocator().GetHandle<VmaAllocator>(), m_allocation, &data));
+		VT_VK_CHECK(vmaMapMemory(GraphicsContext::GetDefaultAllocator()->GetHandle<VmaAllocator>(), m_allocation, &data));
 		return data;
 	}
 
@@ -50,7 +50,7 @@ namespace Volt::RHI
 
 	void VulkanBufferAllocation::Unmap()
 	{
-		vmaUnmapMemory(GraphicsContext::GetDefaultAllocator().GetHandle<VmaAllocator>(), m_allocation);
+		vmaUnmapMemory(GraphicsContext::GetDefaultAllocator()->GetHandle<VmaAllocator>(), m_allocation);
 	}
 
 	const uint64_t VulkanBufferAllocation::GetDeviceAddress() const
@@ -70,7 +70,7 @@ namespace Volt::RHI
 	void* VulkanBufferAllocation::MapInternal()
 	{
 		void* data = nullptr;
-		VT_VK_CHECK(vmaMapMemory(GraphicsContext::GetDefaultAllocator().GetHandle<VmaAllocator>(), m_allocation, &data));
+		VT_VK_CHECK(vmaMapMemory(GraphicsContext::GetDefaultAllocator()->GetHandle<VmaAllocator>(), m_allocation, &data));
 		return data;
 	}
 

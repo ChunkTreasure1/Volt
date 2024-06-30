@@ -15,8 +15,7 @@ namespace Volt::RHI
 	public:
 		using ImageLayoutInt = uint32_t;
 
-		VulkanImage2D(const ImageSpecification& specification, const void* data);
-		VulkanImage2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data);
+		VulkanImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator);
 		VulkanImage2D(const SwapchainImageSpecification& specification);
 		~VulkanImage2D() override;
 
@@ -65,10 +64,9 @@ namespace Volt::RHI
 		SwapchainImageData m_swapchainImageData;
 
 		RefPtr<Allocation> m_allocation;
-		WeakPtr<Allocator> m_customAllocator;
+		WeakPtr<Allocator> m_allocator;
 
 		bool m_hasGeneratedMips = false;
-		bool m_allocatedUsingCustomAllocator = false;
 		bool m_isSwapchainImage = false;
 
 		ImageLayoutInt m_currentImageLayout = 0;

@@ -9,8 +9,7 @@ namespace Volt::RHI
 	class D3D12Image2D final : public Image2D
 	{
 	public:
-		D3D12Image2D(const ImageSpecification& specification, const void* data);
-		D3D12Image2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data);
+		D3D12Image2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator);
 		D3D12Image2D(const SwapchainImageSpecification& specification);
 
 		~D3D12Image2D() override;
@@ -49,9 +48,8 @@ namespace Volt::RHI
 		SwapchainImageSpecification m_swapchainImageData;
 
 		RefPtr<Allocation> m_allocation;
-		RefPtr<Allocator> m_customAllocator;
+		RefPtr<Allocator> m_allocator;
 
-		bool m_allocatedUsingCustomAllocator = false;
 		bool m_isSwapchainImage = false;
 
 		std::map<int32_t, std::map<int32_t, RefPtr<ImageView>>> m_imageViews; // Layer -> Mip -> View

@@ -15,6 +15,7 @@ namespace Volt::RHI
 	class GraphicsDevice;
 	class ImageView;
 	class RHIResource;
+	class Swapchain;
 
 	inline static constexpr size_t MAX_COLOR_ATTACHMENT_COUNT = 8;
 	inline static constexpr size_t MAX_ATTACHMENT_COUNT = MAX_COLOR_ATTACHMENT_COUNT + 1;
@@ -648,6 +649,12 @@ namespace Volt::RHI
 		bool generateMips = false;
 
 		bool initializeImage = true;
+	};
+
+	struct SwapchainImageSpecification
+	{
+		Swapchain* swapchain = nullptr;
+		uint32_t imageIndex;
 	};
 
 	struct Extent2D

@@ -218,6 +218,9 @@ namespace Volt
 
 		m_dependencyGraph->AddAssetToGraph(assetHandle);
 
+		asset->handle = metadata.handle;
+		asset->assetName = metadata.filePath.stem().string();
+
 		{
 #ifndef VT_DIST
 			ScopedTimer timer{};
@@ -228,9 +231,6 @@ namespace Volt
 			VT_CORE_TRACE("[AssetManager]: Loaded asset {0} with handle {1} in {2} seconds!", metadata.filePath, asset->handle, timer.GetTime<Time::Seconds>());
 #endif	
 		}
-
-		asset->handle = metadata.handle;
-		asset->assetName = metadata.filePath.stem().string();
 
 		{
 			WriteLock lock{ m_assetRegistryMutex };
@@ -1234,6 +1234,13 @@ namespace Volt
 					asset = m_assetCache.at(handle);
 				}
 
+				if (handle != Asset::Null())
+				{
+					asset->handle = handle;
+				}
+
+				asset->assetName = metadata.filePath.stem().string();
+
 				{
 #ifndef VT_DIST
 					ScopedTimer timer{};
@@ -1246,12 +1253,6 @@ namespace Volt
 #endif
 				}
 
-				if (handle != Asset::Null())
-				{
-					asset->handle = handle;
-				}
-
-				asset->assetName = metadata.filePath.stem().string();
 				asset->SetFlag(AssetFlag::Queued, false);
 
 				{

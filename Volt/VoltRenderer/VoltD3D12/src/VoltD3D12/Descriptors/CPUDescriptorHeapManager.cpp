@@ -42,6 +42,7 @@ namespace Volt::RHI
 			if (heap->GetHash() == descriptorPointer.parentHeapHash)
 			{
 				heap->Free(descriptorPointer);
+				return;
 			}
 		}
 

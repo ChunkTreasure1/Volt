@@ -19,9 +19,7 @@ namespace Volt::RHI
 		RefPtr<IndexBuffer> CreateIndexBuffer(std::span<const uint32_t> indices) const override;
 		RefPtr<VertexBuffer> CreateVertexBuffer(const uint32_t size, const void* data) const override;
 
-		RefPtr<StorageBuffer> CreateStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const override;
-		RefPtr<StorageBuffer> CreateStorageBuffer(const size_t size, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const override;
-		RefPtr<StorageBuffer> CreateStorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const override;
+		RefPtr<StorageBuffer> CreateStorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator) const override;
 		RefPtr<UniformBuffer> CreateUniformBuffer(const uint32_t size, const void* data) const override;
 
 		RefPtr<DescriptorTable> CreateDescriptorTable(const DescriptorTableCreateInfo& createInfo) const override;
@@ -32,14 +30,13 @@ namespace Volt::RHI
 		RefPtr<PhysicalGraphicsDevice> CreatePhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& createInfo) const override;
 		RefPtr<Swapchain> CreateSwapchain(GLFWwindow* window) const override;
 
-		RefPtr<Image2D> CreateImage2D(const ImageSpecification& specification, const void* data) const override;
-		RefPtr<Image2D> CreateImage2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data) const override;
+		RefPtr<Image2D> CreateImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const override;
 		RefPtr<Image2D> CreateImage2D(const SwapchainImageSpecification& specification) const override;
 
 		RefPtr<ImageView> CreateImageView(const ImageViewSpecification& specification) const override;
 		RefPtr<SamplerState> CreateSamplerState(const SamplerStateCreateInfo& createInfo) const override;
 
-		Scope<DefaultAllocator> CreateDefaultAllocator() const override;
+		RefPtr<DefaultAllocator> CreateDefaultAllocator() const override;
 		RefPtr<TransientAllocator> CreateTransientAllocator() const override;
 		RefPtr<TransientHeap> CreateTransientHeap(const TransientHeapCreateInfo& createInfo) const override;
 

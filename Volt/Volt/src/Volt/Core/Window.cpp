@@ -140,6 +140,12 @@ namespace Volt
 		glfwSetWindowSizeCallback(m_window, [](GLFWwindow* window, int32_t width, int32_t height)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			if (!data.eventCallback)
+			{
+				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				return;
+			}
+
 			data.width = width;
 			data.height = height;
 
@@ -153,6 +159,12 @@ namespace Volt
 		glfwSetWindowCloseCallback(m_window, [](GLFWwindow* window)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			if (!data.eventCallback)
+			{
+				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				return;
+			}
+
 			WindowCloseEvent event{};
 			data.eventCallback(event);
 		});
@@ -162,6 +174,12 @@ namespace Volt
 			glfwSetTitlebarHitTestCallback(m_window, [](GLFWwindow* window, int x, int y, int* hit)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+				if (!data.eventCallback)
+				{
+					VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+					return;
+				}
+
 				WindowTitlebarHittestEvent event{ x, y, *hit };
 				if (data.eventCallback)
 				{
@@ -173,6 +191,11 @@ namespace Volt
 		glfwSetKeyCallback(m_window, [](GLFWwindow* window, int32_t key, int32_t, int32_t action, int32_t)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			if (!data.eventCallback)
+			{
+				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				return;
+			}
 
 			if (key == -1)
 			{
@@ -207,6 +230,12 @@ namespace Volt
 		glfwSetCharCallback(m_window, [](GLFWwindow* window, uint32_t key)
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			if (!data.eventCallback)
+			{
+				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				return;
+			}
+
 			KeyTypedEvent event(key);
 			data.eventCallback(event);
 		});
@@ -214,6 +243,12 @@ namespace Volt
 		glfwSetMouseButtonCallback(m_window, [](GLFWwindow* window, int button, int action, int)
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			if (!data.eventCallback)
+			{
+				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				return;
+			}
+
 			switch (action)
 			{
 				case GLFW_PRESS:
@@ -234,6 +269,11 @@ namespace Volt
 		glfwSetScrollCallback(m_window, [](GLFWwindow* window, double xOffset, double yOffset)
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			if (!data.eventCallback)
+			{
+				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				return;
+			}
 
 			MouseScrolledEvent event((float)xOffset, (float)yOffset);
 			data.eventCallback(event);
@@ -242,6 +282,11 @@ namespace Volt
 		glfwSetCursorPosCallback(m_window, [](GLFWwindow* window, double xPos, double yPos)
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			if (!data.eventCallback)
+			{
+				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				return;
+			}
 
 			MouseMovedEvent event((float)xPos, (float)yPos);
 
@@ -251,6 +296,11 @@ namespace Volt
 		glfwSetDropCallback(m_window, [](GLFWwindow* window, int32_t count, const char** paths)
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			if (!data.eventCallback)
+			{
+				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				return;
+			}
 
 			WindowDragDropEvent event(count, paths);
 			data.eventCallback(event);

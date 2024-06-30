@@ -87,7 +87,7 @@ namespace Volt
 			const size_t maxSize = image->GetWidth() * image->GetHeight() * RHI::Utility::GetByteSizePerPixelFromFormat(image->GetFormat());
 
 			RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
-			RefPtr<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(maxSize, RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
+			RefPtr<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator()->CreateBuffer(maxSize, RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
 
 			commandBuffer->Begin();
 
@@ -157,7 +157,7 @@ namespace Volt
 			commandBuffer->End();
 			commandBuffer->ExecuteAndWait();
 
-			RHI::GraphicsContext::GetDefaultAllocator().DestroyBuffer(stagingBuffer);
+			RHI::GraphicsContext::GetDefaultAllocator()->DestroyBuffer(stagingBuffer);
 		}
 
 		BinaryStreamWriter streamWriter{};
@@ -222,7 +222,7 @@ namespace Volt
 			image = RHI::Image2D::Create(specification);
 		}
 
-		RefPtr<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(textureHeader.mips.front().dataSize, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPU);
+		RefPtr<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator()->CreateBuffer(textureHeader.mips.front().dataSize, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPU);
 
 		// Map memory
 		{

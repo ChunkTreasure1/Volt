@@ -2,8 +2,7 @@
 #include "D3D12BufferView.h"
 
 #include "VoltD3D12/Descriptors/DescriptorUtility.h"
-
-#include <VoltRHI/Buffers/StorageBuffer.h>
+#include "VoltD3D12/Buffers/D3D12StorageBuffer.h"
 
 namespace Volt::RHI
 {
@@ -14,7 +13,12 @@ namespace Volt::RHI
 		{
 			m_viewType = D3D12ViewType::SRV | D3D12ViewType::UAV;
 			CreateSRV();
-			CreateUAV();
+
+			const auto bufferMemoryUsage = specification.bufferResource->AsRef<D3D12StorageBuffer>().GetMemoryUsage();
+			if ((bufferMemoryUsage & MemoryUsage::GPU) != MemoryUsage::None)
+			{
+				CreateUAV();
+			}
 		}
 		else if (specification.bufferResource->GetType() == ResourceType::UniformBuffer)
 		{
@@ -62,8 +66,8 @@ namespace Volt::RHI
 		if (m_resource->GetType() == ResourceType::StorageBuffer)
 		{
 			auto& storageBuffer = m_resource->AsRef<StorageBuffer>();
-			elementSize = storageBuffer.GetElementSize();
-			elementCount = storageBuffer.GetCount();
+			elementSize = 0; // If it's a raw buffer the element size is always 4 //storageBuffer.GetElementSize();
+			elementCount = static_cast<uint32_t>(storageBuffer.GetByteSize() / 4);
 
 			flags = D3D12_BUFFER_SRV_FLAG_RAW;
 			viewDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -87,22 +91,22 @@ namespace Volt::RHI
 		size_t elementSize = 0;
 		uint32_t elementCount = 0;
 
-		D3D12_BUFFER_UAV_FLAGS flags = D3D12_BUFFER_UAV_FLAG_NONE;
+		D3D12_UNORDERED_ACCESS_VIEW_DESC viewDesc{};
+		viewDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
 		if (m_resource->GetType() == ResourceType::StorageBuffer)
 		{
 			auto& storageBuffer = m_resource->AsRef<StorageBuffer>();
-			elementSize = storageBuffer.GetElementSize();
+			//elementSize = storageBuffer.GetElementSize();
 			elementCount = storageBuffer.GetCount();
 
-			flags = D3D12_BUFFER_UAV_FLAG_RAW;
+			viewDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
+			viewDesc.Format = DXGI_FORMAT_R32_TYPELESS;
 		}
 
-		D3D12_UNORDERED_ACCESS_VIEW_DESC viewDesc{};
 		viewDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
 		viewDesc.Buffer.CounterOffsetInBytes = 0;
 		viewDesc.Buffer.FirstElement = 0;
-		viewDesc.Buffer.Flags = flags;
 		viewDesc.Buffer.NumElements = elementCount;
 		viewDesc.Buffer.StructureByteStride = static_cast<uint32_t>(elementSize);
 

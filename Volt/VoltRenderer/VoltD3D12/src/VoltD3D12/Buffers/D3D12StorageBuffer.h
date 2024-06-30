@@ -10,16 +10,13 @@ namespace Volt::RHI
 	class D3D12StorageBuffer : public StorageBuffer
 	{ 
 	public:
-		D3D12StorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
-		D3D12StorageBuffer(const size_t size, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
-		D3D12StorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
+		D3D12StorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU, RefPtr<Allocator> allocator = nullptr);
 		~D3D12StorageBuffer() override;
 
-		void ResizeByteSize(const size_t byteSize) override;
-		void Resize(const uint32_t size) override;
+		void Resize(const uint64_t size) override;
+		void ResizeWithCount(const uint32_t size) override;
 
-		const size_t GetElementSize() const override;
-		const size_t GetSize() const override;
+		const uint64_t GetElementSize() const override;
 		const uint32_t GetCount() const override;
 		WeakPtr<Allocation> GetAllocation() const override;
 
@@ -34,6 +31,8 @@ namespace Volt::RHI
 		const uint64_t GetDeviceAddress() const override;
 		const uint64_t GetByteSize() const override;
 
+		VT_NODISCARD VT_INLINE MemoryUsage GetMemoryUsage() const { return m_memoryUsage; }
+
 	protected:
 		void* GetHandleImpl() const override;
 		void* MapInternal() override;
@@ -42,17 +41,15 @@ namespace Volt::RHI
 		void Invalidate(const size_t byteSize);
 		void Release();
 	
-		size_t m_elementSize = 0;
-		size_t m_byteSize = 0;
-		uint32_t m_size = 0;
+		uint64_t m_elementSize = 0;
+		uint64_t m_byteSize = 0;
+		uint32_t m_count = 0;
 	
 		std::string m_name;
 
 		RefPtr<BufferView> m_view;
 		RefPtr<Allocation> m_allocation;
-		WeakPtr<Allocator> m_customAllocator;
-
-		bool m_allocatedUsingCustomAllocator = false;
+		WeakPtr<Allocator> m_allocator;
 
 		BufferUsage m_bufferUsage = BufferUsage::StorageBuffer;
 		MemoryUsage m_memoryUsage = MemoryUsage::GPU;

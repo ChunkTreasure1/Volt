@@ -6,14 +6,9 @@
 
 namespace Volt::RHI
 {
-	RefPtr<Image2D> Image2D::Create(const ImageSpecification& specification, const void* data /* = nullptr */)
+	RefPtr<Image2D> Image2D::Create(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator)
 	{
-		return RHIProxy::GetInstance().CreateImage2D(specification, data);
-	}
-
-	RefPtr<Image2D> Image2D::Create(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data)
-	{
-		return RHIProxy::GetInstance().CreateImage2D(specification, customAllocator, data);
+		return RHIProxy::GetInstance().CreateImage2D(specification, data, allocator);
 	}
 
 	RefPtr<Image2D> Image2D::Create(const SwapchainImageSpecification& specification)

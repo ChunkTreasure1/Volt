@@ -89,9 +89,7 @@ namespace Volt::RHI
 		virtual RefPtr<IndexBuffer> CreateIndexBuffer(std::span<const uint32_t> indices) const = 0;
 		virtual RefPtr<VertexBuffer> CreateVertexBuffer(const uint32_t size, const void* data) const = 0;
 
-		virtual RefPtr<StorageBuffer> CreateStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const = 0;
-		virtual RefPtr<StorageBuffer> CreateStorageBuffer(const size_t size, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const = 0;
-		virtual RefPtr<StorageBuffer> CreateStorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const = 0;
+		virtual RefPtr<StorageBuffer> CreateStorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator) const = 0;
 		virtual RefPtr<UniformBuffer> CreateUniformBuffer(const uint32_t size, const void* data) const = 0;
 
 		virtual RefPtr<DescriptorTable> CreateDescriptorTable(const DescriptorTableCreateInfo& createInfo) const = 0;
@@ -102,14 +100,13 @@ namespace Volt::RHI
 		virtual RefPtr<PhysicalGraphicsDevice> CreatePhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& createInfo) const = 0;
 		virtual RefPtr<Swapchain> CreateSwapchain(GLFWwindow* window) const = 0;
 
-		virtual RefPtr<Image2D> CreateImage2D(const ImageSpecification& specification, const void* data) const = 0;
-		virtual RefPtr<Image2D> CreateImage2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data) const = 0;
+		virtual RefPtr<Image2D> CreateImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const = 0;
 		virtual RefPtr<Image2D> CreateImage2D(const SwapchainImageSpecification& specification) const = 0;
 
 		virtual RefPtr<ImageView> CreateImageView(const ImageViewSpecification& specification) const = 0;
 		virtual RefPtr<SamplerState> CreateSamplerState(const SamplerStateCreateInfo& createInfo) const = 0;
 
-		virtual Scope<DefaultAllocator> CreateDefaultAllocator() const = 0;
+		virtual RefPtr<DefaultAllocator> CreateDefaultAllocator() const = 0;
 		virtual RefPtr<TransientAllocator> CreateTransientAllocator() const = 0;
 		virtual RefPtr<TransientHeap> CreateTransientHeap(const TransientHeapCreateInfo& createInfo) const = 0;
 

@@ -16,9 +16,135 @@
 #include <VoltRHI/Buffers/IndexBuffer.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
 #include <VoltRHI/Synchronization/Semaphore.h>
+#include <VoltRHI/Memory/MemoryUtility.h>
+#include <VoltRHI/Images/ImageUtility.h>
+
+#include "VoltD3D12/Common/d3dx12.h"
+
+#include <CoreUtilities/EnumUtils.h>
 
 namespace Volt::RHI
 { 
+	namespace Utility
+	{
+		D3D12_RESOURCE_STATES GetResourceStateFromStage(const BarrierStage barrierSync, const BarrierAccess barrierAccess)
+		{
+			D3D12_RESOURCE_STATES result = D3D12_RESOURCE_STATE_COMMON;
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::Draw))
+			{
+				result |= D3D12_RESOURCE_STATE_COMMON;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::IndexInput))
+			{
+				result |= D3D12_RESOURCE_STATE_INDEX_BUFFER;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::VertexShader))
+			{
+				if (EnumValueContainsFlag(barrierAccess, BarrierAccess::VertexBuffer))
+				{
+					result |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+				}
+				else if (EnumValueContainsFlag(barrierAccess, BarrierAccess::ShaderRead))
+				{
+					result |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+				}
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::PixelShader))
+			{
+				if (EnumValueContainsFlag(barrierAccess, BarrierAccess::ShaderWrite))
+				{
+					result |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+				}
+				else
+				{
+					result |= D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+				}
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::DepthStencil))
+			{
+				if (EnumValueContainsFlag(barrierAccess, BarrierAccess::DepthStencilRead))
+				{
+					result |= D3D12_RESOURCE_STATE_DEPTH_READ;
+				}
+				else if (EnumValueContainsFlag(barrierAccess, BarrierAccess::DepthStencilWrite))
+				{
+					result |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
+				}
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::RenderTarget))
+			{
+				result |= D3D12_RESOURCE_STATE_RENDER_TARGET;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::ComputeShader))
+			{
+				if (EnumValueContainsFlag(barrierAccess, BarrierAccess::ShaderWrite))
+				{
+					result |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+				}
+				else
+				{
+					result |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+				}
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::RayTracing))
+			{
+				result |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::Copy))
+			{
+				if (EnumValueContainsFlag(barrierAccess, BarrierAccess::TransferSource))
+				{
+					result |= D3D12_RESOURCE_STATE_COPY_SOURCE;
+				}
+				else
+				{
+					result |= D3D12_RESOURCE_STATE_COPY_DEST;
+				}
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::Resolve))
+			{
+				result |= D3D12_RESOURCE_STATE_RESOLVE_DEST;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::Indirect))
+			{
+				result |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::AllGraphics))
+			{
+				result |= D3D12_RESOURCE_STATE_COMMON;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::VideoDecode))
+			{
+				result |= D3D12_RESOURCE_STATE_VIDEO_DECODE_WRITE;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::BuildAccelerationStructure))
+			{
+				result |= D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::All))
+			{
+				result |= D3D12_RESOURCE_STATE_COMMON;
+			}
+
+			return result;
+		}
+	}
+
 	D3D12CommandBuffer::D3D12CommandBuffer(const uint32_t count, QueueType queueType) 
 		: m_queueType(queueType), m_commandListCount(count)
 	{
@@ -104,7 +230,6 @@ namespace Volt::RHI
 		m_currentCommandListIndex = (m_currentCommandListIndex + 1) % m_commandListCount;
 		auto& currentCommandList = m_commandLists.at(m_currentCommandListIndex);
 
-		if (!m_isSwapchainTarget)
 		{
 			currentCommandList.fence->Wait();
 		}
@@ -338,6 +463,50 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers)
 	{
+		std::vector<D3D12_RESOURCE_BARRIER> barriers{};
+		barriers.reserve(resourceBarriers.size());
+
+		for (const auto& voltBarrier : resourceBarriers)
+		{
+			auto& newBarrier = barriers.emplace_back();
+
+			switch (voltBarrier.type)
+			{
+				case BarrierType::Global:
+				{
+					newBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+					newBarrier.UAV.pResource = nullptr;
+					break;
+				}
+
+				case BarrierType::Buffer:
+				{
+					const auto& bufferBarrier = voltBarrier.bufferBarrier();
+
+					newBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+					newBarrier.Transition.pResource = voltBarrier.bufferBarrier().resource->GetHandle<ID3D12Resource*>();
+					newBarrier.Transition.Subresource = 0;
+					newBarrier.Transition.StateBefore = Utility::GetResourceStateFromStage(bufferBarrier.srcStage, bufferBarrier.srcAccess);
+					newBarrier.Transition.StateAfter = Utility::GetResourceStateFromStage(bufferBarrier.dstStage, bufferBarrier.dstAccess);
+					break;
+				}
+
+				case BarrierType::Image:
+				{
+					const auto& imageBarrier = voltBarrier.imageBarrier();
+
+					newBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+					newBarrier.Transition.pResource = imageBarrier.resource->GetHandle<ID3D12Resource*>();
+					newBarrier.Transition.Subresource = D3D12CalcSubresource(imageBarrier.subResource.baseMipLevel, imageBarrier.subResource.baseArrayLayer, 0, imageBarrier.subResource.levelCount, imageBarrier.subResource.layerCount);
+					newBarrier.Transition.StateBefore = Utility::GetResourceStateFromStage(imageBarrier.srcStage, imageBarrier.srcAccess);
+					newBarrier.Transition.StateAfter = Utility::GetResourceStateFromStage(imageBarrier.dstStage, imageBarrier.dstAccess);
+					break;
+				}
+			}
+		}
+
+		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
+		cmdData.commandList->ResourceBarrier(static_cast<uint32_t>(barriers.size()), barriers.data());
 	}
 
 	void D3D12CommandBuffer::BeginMarker(std::string_view markerLabel, const std::array<float, 4>& markerColor)

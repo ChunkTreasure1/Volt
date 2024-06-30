@@ -68,21 +68,11 @@ namespace Volt::RHI
 		return RefPtr<VertexBuffer>();
 	}
 	
-	RefPtr<StorageBuffer> D3D12RHIProxy::CreateStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
+	RefPtr<StorageBuffer> D3D12RHIProxy::CreateStorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator) const
 	{
-		return RefPtr<D3D12StorageBuffer>::Create(count, elementSize, name, bufferUsage, memoryUsage);
+		return RefPtr<D3D12StorageBuffer>::Create(count, elementSize, name, bufferUsage, memoryUsage, allocator);
 	}
-	
-	RefPtr<StorageBuffer> D3D12RHIProxy::CreateStorageBuffer(const size_t size, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
-	{
-		return RefPtr<D3D12StorageBuffer>::Create(size, name, bufferUsage, memoryUsage);
-	}
-	
-	RefPtr<StorageBuffer> D3D12RHIProxy::CreateStorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
-	{
-		return RefPtr<D3D12StorageBuffer>::Create(size, customAllocator, name, bufferUsage, memoryUsage);
-	}
-	
+
 	RefPtr<UniformBuffer> D3D12RHIProxy::CreateUniformBuffer(const uint32_t size, const void* data) const
 	{
 		return RefPtr<UniformBuffer>();
@@ -118,14 +108,9 @@ namespace Volt::RHI
 		return RefPtr<D3D12Swapchain>::Create(window);
 	}
 	
-	RefPtr<Image2D> D3D12RHIProxy::CreateImage2D(const ImageSpecification& specification, const void* data) const
+	RefPtr<Image2D> D3D12RHIProxy::CreateImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const
 	{
-		return RefPtr<D3D12Image2D>::Create(specification, data);
-	}
-	
-	RefPtr<Image2D> D3D12RHIProxy::CreateImage2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data) const
-	{
-		return RefPtr<D3D12Image2D>::Create(specification, customAllocator, data);
+		return RefPtr<D3D12Image2D>::Create(specification, data, allocator);
 	}
 	
 	RefPtr<Image2D> D3D12RHIProxy::CreateImage2D(const SwapchainImageSpecification& specification) const
@@ -143,9 +128,9 @@ namespace Volt::RHI
 		return RefPtr<SamplerState>();
 	}
 	
-	Scope<DefaultAllocator> D3D12RHIProxy::CreateDefaultAllocator() const
+	RefPtr<DefaultAllocator> D3D12RHIProxy::CreateDefaultAllocator() const
 	{
-		return CreateScope<D3D12DefaultAllocator>();
+		return RefPtr<D3D12DefaultAllocator>::Create();
 	}
 	
 	RefPtr<TransientAllocator> D3D12RHIProxy::CreateTransientAllocator() const

@@ -109,7 +109,7 @@ namespace Volt::RHI
 		auto bufferResource = vkBufferView.GetResource();
 		if (bufferResource->GetType() == ResourceType::StorageBuffer)
 		{
-			description.range = bufferResource->AsRef<VulkanStorageBuffer>().GetSize();
+			description.range = bufferResource->GetByteSize();
 		}
 
 		if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].value == DefaultInvalid::INVALID_VALUE)

@@ -33,16 +33,14 @@ namespace Volt::RHI
 		}
 	}
 
-	VulkanImage2D::VulkanImage2D(const ImageSpecification& specification, const void* data)
-		: m_specification(specification), m_currentImageLayout(static_cast<uint32_t>(VK_IMAGE_LAYOUT_UNDEFINED))
+	VulkanImage2D::VulkanImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator)
+		: m_specification(specification), m_currentImageLayout(static_cast<uint32_t>(VK_IMAGE_LAYOUT_UNDEFINED)), m_allocator(allocator)
 	{
-		Invalidate(specification.width, specification.height, data);
-		SetName(specification.debugName);
-	}
+		if (!allocator)
+		{
+			m_allocator = GraphicsContext::GetDefaultAllocator();
+		}
 
-	VulkanImage2D::VulkanImage2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data)
-		: m_specification(specification), m_currentImageLayout(static_cast<uint32_t>(VK_IMAGE_LAYOUT_UNDEFINED)), m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator)
-	{
 		Invalidate(specification.width, specification.height, data);
 		SetName(specification.debugName);
 	}
@@ -74,15 +72,7 @@ namespace Volt::RHI
 		}
 
 		m_imageAspect = Utility::GetVoltImageAspect(aspectMask);
-
-		if (m_allocatedUsingCustomAllocator)
-		{
-			m_allocation = m_customAllocator->CreateImage(m_specification, m_specification.memoryUsage);
-		}
-		else
-		{
-			m_allocation = GraphicsContext::GetDefaultAllocator().CreateImage(m_specification, m_specification.memoryUsage);
-		}
+		m_allocation = m_allocator->CreateImage(m_specification, m_specification.memoryUsage);
 
 		if (data)
 		{
@@ -154,16 +144,9 @@ namespace Volt::RHI
 			return;
 		}
 
-		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
+		RHIProxy::GetInstance().DestroyResource([allocator = m_allocator, allocation = m_allocation]()
 		{
-			if (allocatedUsingCustomAllocator)
-			{
-				customAllocator->DestroyImage(allocation);
-			}
-			else
-			{
-				GraphicsContext::GetDefaultAllocator().DestroyImage(allocation);
-			}
+			allocator->DestroyImage(allocation);
 		});
 
 		m_allocation = nullptr;
@@ -424,7 +407,7 @@ namespace Volt::RHI
 		// #TODO_Ivar: Implement correct size for layer + mip
 		const VkDeviceSize bufferSize = m_specification.width * m_specification.height * Utility::GetByteSizePerPixelFromFormat(m_specification.format) * m_specification.layers;
 
-		RefPtr<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
+		RefPtr<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator()->CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
 
 		auto* stagingData = stagingAlloc->Map<void>();
 		memcpy_s(stagingData, bufferSize, data, bufferSize);
@@ -461,26 +444,9 @@ namespace Volt::RHI
 		depInfo.imageMemoryBarrierCount = 1;
 		depInfo.pImageMemoryBarriers = &barrier2;
 
-
-		//VkImageMemoryBarrier barrier{};
-		//barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		//barrier.image = m_allocation->GetResourceHandle<VkImage>();
-		//barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		//barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		//barrier.srcAccessMask = 0;
-		//barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		//barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		//barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		//barrier.subresourceRange.aspectMask = Utility::GetVkImageAspect(m_imageAspect);
-		//barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
-		//barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-		//barrier.subresourceRange.baseArrayLayer = 0;
-		//barrier.subresourceRange.baseMipLevel = 0;
-
 		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 
 		commandBuffer->Begin();
-		//vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 		vkCmdPipelineBarrier2(commandBuffer->GetHandle<VkCommandBuffer>(), &depInfo);
 
 		VkBufferImageCopy region{};
@@ -507,12 +473,10 @@ namespace Volt::RHI
 
 		vkCmdPipelineBarrier2(commandBuffer->GetHandle<VkCommandBuffer>(), &depInfo);
 
-		//vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
 		commandBuffer->End();
 		commandBuffer->ExecuteAndWait();
 
-		GraphicsContext::GetDefaultAllocator().DestroyBuffer(stagingAlloc);
+		GraphicsContext::GetDefaultAllocator()->DestroyBuffer(stagingAlloc);
 	}
 
 	void* VulkanImage2D::GetHandleImpl() const
@@ -532,7 +496,7 @@ namespace Volt::RHI
 		// #TODO_Ivar: Implement correct size for layer + mip
 		const VkDeviceSize bufferSize = m_specification.width * m_specification.height * Utility::GetByteSizePerPixelFromFormat(m_specification.format) * m_specification.layers;
 
-		RefPtr<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, BufferUsage::TransferDst, MemoryUsage::GPUToCPU);
+		RefPtr<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator()->CreateBuffer(bufferSize, BufferUsage::TransferDst, MemoryUsage::GPUToCPU);
 
 		VkImageAspectFlags aspectFlags = Utility::IsDepthFormat(m_specification.format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 		if (Utility::IsStencilFormat(m_specification.format))
@@ -592,7 +556,7 @@ namespace Volt::RHI
 		
 		stagingAlloc->Unmap();
 
-		GraphicsContext::GetDefaultAllocator().DestroyBuffer(stagingAlloc);
+		GraphicsContext::GetDefaultAllocator()->DestroyBuffer(stagingAlloc);
 		return buffer;
 	}
 

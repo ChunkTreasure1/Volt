@@ -27,7 +27,7 @@ namespace Volt::RHI
 
 		RHIProxy::GetInstance().DestroyResource([allocation = m_allocation]()
 		{
-			GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
+			GraphicsContext::GetDefaultAllocator()->DestroyBuffer(allocation);
 		});
 
 		m_allocation = nullptr;
@@ -80,17 +80,17 @@ namespace Volt::RHI
 		{
 			RHIProxy::GetInstance().DestroyResource([allocation = m_allocation]()
 			{
-				GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
+				GraphicsContext::GetDefaultAllocator()->DestroyBuffer(allocation);
 			});
 
 			m_allocation = nullptr;
 		}
 
-		auto& allocator = GraphicsContext::GetDefaultAllocator();
+		auto allocator = GraphicsContext::GetDefaultAllocator();
 
 		if (data != nullptr)
 		{
-			stagingAllocation = allocator.CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPU);
+			stagingAllocation = allocator->CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPU);
 
 			// Copy to staging buffer
 			{
@@ -102,7 +102,7 @@ namespace Volt::RHI
 
 		// Create GPU buffer
 		{
-			m_allocation = allocator.CreateBuffer(bufferSize, BufferUsage::VertexBuffer | BufferUsage::TransferDst);
+			m_allocation = allocator->CreateBuffer(bufferSize, BufferUsage::VertexBuffer | BufferUsage::TransferDst);
 		}
 
 		if (data)
@@ -123,7 +123,7 @@ namespace Volt::RHI
 				cmdBuffer->Execute();
 			}
 
-			allocator.DestroyBuffer(stagingAllocation);
+			allocator->DestroyBuffer(stagingAllocation);
 		}
 	}
 }

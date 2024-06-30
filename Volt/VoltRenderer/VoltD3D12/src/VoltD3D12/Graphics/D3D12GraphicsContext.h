@@ -19,7 +19,7 @@ namespace Volt::RHI
 		CPUDescriptorHeapManager& GetCPUDescriptorHeapManager() const { return *m_cpuDescriptorHeapManager; }
 
 	protected:
-		Allocator& GetDefaultAllocatorImpl() override;
+		RefPtr<Allocator> GetDefaultAllocatorImpl() override;
 		RefPtr<Allocator> GetTransientAllocatorImpl() override;
 		RefPtr<GraphicsDevice> GetGraphicsDevice() const override;
 		RefPtr<PhysicalGraphicsDevice> GetPhysicalGraphicsDevice() const override;
@@ -37,7 +37,7 @@ namespace Volt::RHI
 		RefPtr<GraphicsDevice> m_graphicsDevice;
 		RefPtr<PhysicalGraphicsDevice> m_physicalDevice;
 
-		Scope<Allocator> m_defaultAllocator;
+		RefPtr<Allocator> m_defaultAllocator;
 		RefPtr<Allocator> m_transientAllocator;
 
 		Scope<CPUDescriptorHeapManager> m_cpuDescriptorHeapManager;

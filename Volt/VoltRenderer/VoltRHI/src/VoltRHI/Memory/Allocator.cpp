@@ -10,7 +10,7 @@ namespace Volt::RHI
 		return RHIProxy::GetInstance().CreateTransientAllocator();
 	}
 
-	Scope<DefaultAllocator> DefaultAllocator::Create()
+	RefPtr<DefaultAllocator> DefaultAllocator::Create()
 	{
 		return RHIProxy::GetInstance().CreateDefaultAllocator();
 	}

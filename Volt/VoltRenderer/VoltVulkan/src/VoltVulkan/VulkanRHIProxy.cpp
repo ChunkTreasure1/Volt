@@ -68,19 +68,9 @@ namespace Volt::RHI
 		return RefPtr<VulkanVertexBuffer>::Create(size, data);
 	}
 
-	RefPtr<StorageBuffer> VulkanRHIProxy::CreateStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
+	RefPtr<StorageBuffer> VulkanRHIProxy::CreateStorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator) const
 	{
-		return RefPtr<VulkanStorageBuffer>::Create(count, elementSize, name, bufferUsage, memoryUsage);
-	}
-
-	RefPtr<StorageBuffer> VulkanRHIProxy::CreateStorageBuffer(const size_t size, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
-	{
-		return RefPtr<VulkanStorageBuffer>::Create(size, name, bufferUsage, memoryUsage);
-	}
-
-	RefPtr<StorageBuffer> VulkanRHIProxy::CreateStorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
-	{
-		return RefPtr<VulkanStorageBuffer>::Create(size, customAllocator, name, bufferUsage, memoryUsage);
+		return RefPtr<VulkanStorageBuffer>::Create(count, elementSize, name, bufferUsage, memoryUsage, allocator);
 	}
 
 	RefPtr<UniformBuffer> VulkanRHIProxy::CreateUniformBuffer(const uint32_t size, const void* data) const
@@ -118,14 +108,9 @@ namespace Volt::RHI
 		return RefPtr<VulkanSwapchain>::Create(window);
 	}
 
-	RefPtr<Image2D> VulkanRHIProxy::CreateImage2D(const ImageSpecification& specification, const void* data) const
+	RefPtr<Image2D> VulkanRHIProxy::CreateImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const
 	{
-		return RefPtr<VulkanImage2D>::Create(specification, data);
-	}
-
-	RefPtr<Image2D> VulkanRHIProxy::CreateImage2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data) const
-	{
-		return RefPtr<VulkanImage2D>::Create(specification, customAllocator, data);
+		return RefPtr<VulkanImage2D>::Create(specification, data, allocator);
 	}
 
 	RefPtr<Image2D> VulkanRHIProxy::CreateImage2D(const SwapchainImageSpecification& specification) const
@@ -143,9 +128,9 @@ namespace Volt::RHI
 		return RefPtr<VulkanSamplerState>::Create(createInfo);
 	}
 
-	Scope<DefaultAllocator> VulkanRHIProxy::CreateDefaultAllocator() const
+	RefPtr<DefaultAllocator> VulkanRHIProxy::CreateDefaultAllocator() const
 	{
-		return CreateScope<VulkanDefaultAllocator>();
+		return RefPtr<VulkanDefaultAllocator>::Create();
 	}
 
 	RefPtr<TransientAllocator> VulkanRHIProxy::CreateTransientAllocator() const

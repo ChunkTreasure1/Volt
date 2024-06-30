@@ -29,18 +29,14 @@ namespace Volt::RHI
 		return D3D12_RESOURCE_FLAG_NONE;
 	}
 
-
-
-	D3D12Image2D::D3D12Image2D(const ImageSpecification& specification, const void* data)
-		: m_specification(specification)
+	D3D12Image2D::D3D12Image2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator)
+		: m_specification(specification), m_allocator(allocator)
 	{
-		Invalidate(specification.width, specification.height, data);
-		SetName(specification.debugName);
-	}
+		if (!allocator)
+		{
+			m_allocator = GraphicsContext::GetDefaultAllocator();
+		}
 
-	D3D12Image2D::D3D12Image2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data)
-		: m_specification(specification), m_customAllocator(customAllocator), m_allocatedUsingCustomAllocator(true)
-	{
 		Invalidate(specification.width, specification.height, data);
 		SetName(specification.debugName);
 	}
@@ -77,15 +73,7 @@ namespace Volt::RHI
 
 		m_specification.width = width;
 		m_specification.height = height;
-
-		if (m_allocatedUsingCustomAllocator)
-		{
-			m_allocation = m_customAllocator->CreateImage(m_specification, m_specification.memoryUsage);
-		}
-		else
-		{
-			m_allocation = GraphicsContext::GetDefaultAllocator().CreateImage(m_specification, m_specification.memoryUsage);
-		}
+		m_allocation = m_allocator->CreateImage(m_specification, m_specification.memoryUsage);
 	}
 
 	void D3D12Image2D::Release()
@@ -95,16 +83,9 @@ namespace Volt::RHI
 			return;
 		}
 
-		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
+		RHIProxy::GetInstance().DestroyResource([allocator = m_allocator, allocation = m_allocation]()
 		{
-			if (allocatedUsingCustomAllocator)
-			{
-				customAllocator->DestroyImage(allocation);
-			}
-			else
-			{
-				GraphicsContext::GetDefaultAllocator().DestroyImage(allocation);
-			}
+			allocator->DestroyImage(allocation);
 		});
 
 		m_allocation = nullptr;

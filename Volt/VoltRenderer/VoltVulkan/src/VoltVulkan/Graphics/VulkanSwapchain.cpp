@@ -8,6 +8,7 @@
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 #include "VoltVulkan/Graphics/VulkanGraphicsDevice.h"
 #include "VoltVulkan/Graphics/VulkanDeviceQueue.h"
+#include "VoltVulkan/Images/VulkanImage2D.h"
 
 #include <VoltRHI/Core/Profiling.h>
 

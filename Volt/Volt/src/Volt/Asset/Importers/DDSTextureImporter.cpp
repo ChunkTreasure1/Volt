@@ -93,7 +93,7 @@ namespace Volt
 		const uint32_t width = imageData->m_width;
 		const uint32_t height = imageData->m_height;
 
-		RefPtr<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(size, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPUToGPU);
+		RefPtr<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator()->CreateBuffer(size, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPUToGPU);
 
 		// Map memory
 		{

@@ -728,7 +728,8 @@ namespace Volt
 	void RenderGraph::AllocateConstantsBuffer()
 	{
 		RenderGraphBufferDesc desc{};
-		desc.size = m_passIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
+		desc.count = m_passIndex;
+		desc.elementSize = RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
 		desc.usage = RHI::BufferUsage::StorageBuffer;
 		desc.memoryUsage = RHI::MemoryUsage::CPUToGPU;
 		desc.name = "Render Graph Constants";
@@ -796,7 +797,7 @@ namespace Volt
 
 	RenderGraphResourceHandle RenderGraph::CreateBuffer(const RenderGraphBufferDesc& bufferDesc)
 	{
-		VT_CORE_ASSERT(bufferDesc.size > 0, "Size must not be zero!");
+		VT_CORE_ASSERT(bufferDesc.elementSize > 0 && bufferDesc.count > 0, "Size must not be zero!");
 
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphBuffer>>();
@@ -814,7 +815,7 @@ namespace Volt
 
 	RenderGraphResourceHandle RenderGraph::CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc)
 	{
-		VT_CORE_ASSERT(bufferDesc.size > 0, "Size must not be zero!");
+		VT_CORE_ASSERT(bufferDesc.elementSize > 0 && bufferDesc.count > 0, "Size must not be zero!");
 
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphUniformBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphUniformBuffer>>();
@@ -1112,7 +1113,8 @@ namespace Volt
 		RenderGraphBufferDesc stagingDesc{};
 		stagingDesc.memoryUsage = RHI::MemoryUsage::CPUToGPU;
 		stagingDesc.name = "Staging Buffer";
-		stagingDesc.size = size;
+		stagingDesc.elementSize = size;
+		stagingDesc.count = 1;
 		stagingDesc.usage = RHI::BufferUsage::TransferSrc;
 
 		RenderGraphResourceHandle stagingBuffer = tempBuilder.CreateBuffer(stagingDesc);

@@ -262,16 +262,16 @@ namespace Volt::RHI
 			}
 			else if (usageFlags == ImageUsage::AttachmentStorage)
 			{
-				result = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+				//result = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 
-				//if (Utility::IsDepthFormat(imageFormat))
-				//{
-				//	result |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
-				//}
-				//else
-				//{
-				//	result |= D3D12_RESOURCE_STATE_RENDER_TARGET;
-				//}
+				if (Utility::IsDepthFormat(imageFormat))
+				{
+					result |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
+				}
+				else
+				{
+					result |= D3D12_RESOURCE_STATE_RENDER_TARGET;
+				}
 			}
 			else if (usageFlags == ImageUsage::Texture)
 			{

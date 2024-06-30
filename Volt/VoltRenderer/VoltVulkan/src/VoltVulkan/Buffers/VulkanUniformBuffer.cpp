@@ -18,7 +18,7 @@ namespace Volt::RHI
 	{
 		const VkDeviceSize bufferSize = static_cast<VkDeviceSize>(size);
 
-		m_allocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, BufferUsage::UniformBuffer, MemoryUsage::CPUToGPU);
+		m_allocation = GraphicsContext::GetDefaultAllocator()->CreateBuffer(bufferSize, BufferUsage::UniformBuffer, MemoryUsage::CPUToGPU);
 
 		if (data)
 		{
@@ -35,7 +35,7 @@ namespace Volt::RHI
 
 		RHIProxy::GetInstance().DestroyResource([allocation = m_allocation]() 
 		{
-			GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
+			GraphicsContext::GetDefaultAllocator()->DestroyBuffer(allocation);
 		});
 
 		m_allocation = nullptr;

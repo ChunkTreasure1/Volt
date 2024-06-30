@@ -4,8 +4,6 @@
 #include "VoltRHI/Core/RHIInterface.h"
 #include "VoltRHI/Core/RHICommon.h"
 
-#include "VoltRHI/Images/Image2D.h"
-
 namespace Volt::RHI
 {
 	class Allocation;
@@ -34,7 +32,7 @@ namespace Volt::RHI
 	public:
 		virtual ~DefaultAllocator() override = default;
 
-		static Scope<DefaultAllocator> Create();
+		static RefPtr<DefaultAllocator> Create();
 
 	protected:
 		DefaultAllocator() = default;

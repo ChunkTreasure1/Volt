@@ -14,7 +14,7 @@
 
 namespace Volt
 {
-	static ConsoleVariable<int32_t> s_enableMemoryAliasingCVar = ConsoleVariable<int32_t>("r.enableMemoryAliasing", 1, "Control whether memory aliasing should be enabled");
+	static ConsoleVariable<int32_t> s_enableMemoryAliasingCVar = ConsoleVariable<int32_t>("r.enableMemoryAliasing", 0, "Control whether memory aliasing should be enabled");
 
 	TransientResourceSystem::TransientResourceSystem()
 	{
@@ -44,7 +44,7 @@ namespace Volt
 			return m_allocatedResources.at(resourceHandle).resource;
 		}
 
-		RefPtr<RHI::UniformBuffer> buffer = RHI::UniformBuffer::Create(static_cast<uint32_t>(bufferDesc.size));
+		RefPtr<RHI::UniformBuffer> buffer = RHI::UniformBuffer::Create(static_cast<uint32_t>(bufferDesc.elementSize));
 
 		ResourceInfo info{};
 		info.resource = buffer;
@@ -92,7 +92,7 @@ namespace Volt
 		imageSpec.isCubeMap = imageDesc.isCubeMap;
 		imageSpec.initializeImage = false;
 
-		RefPtr<RHI::Image2D> image = RHI::Image2D::Create(imageSpec, RHI::GraphicsContext::GetTransientAllocator());
+		RefPtr<RHI::Image2D> image = RHI::Image2D::Create(imageSpec, nullptr, RHI::GraphicsContext::GetTransientAllocator());
 
 		ResourceInfo info{};
 		info.resource = image;
@@ -128,7 +128,7 @@ namespace Volt
 		}
 
 		// #TODO_Ivar: Switch to transient allocations
-		RefPtr<RHI::StorageBuffer> buffer = RHI::StorageBuffer::Create(bufferDesc.size, bufferDesc.name, bufferDesc.usage, bufferDesc.memoryUsage);
+		RefPtr<RHI::StorageBuffer> buffer = RHI::StorageBuffer::Create(bufferDesc.count, bufferDesc.elementSize, bufferDesc.name, bufferDesc.usage, bufferDesc.memoryUsage);
 
 		ResourceInfo info{};
 		info.resource = buffer;

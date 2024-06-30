@@ -3,11 +3,12 @@
 #include "VoltRHI/Core/RHIInterface.h"
 #include "VoltRHI/Core/RHICommon.h"
 
+#include "VoltRHI/Images/Image2D.h"
+
 struct GLFWwindow;
 
 namespace Volt::RHI
 {
-	class Image2D;
 	class VTRHI_API Swapchain : public RHIInterface
 	{
 	public:

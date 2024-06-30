@@ -46,9 +46,9 @@ namespace Volt::RHI
 		Shutdown();
 	}
 
-	Allocator& D3D12GraphicsContext::GetDefaultAllocatorImpl()
+	RefPtr<Allocator> D3D12GraphicsContext::GetDefaultAllocatorImpl()
 	{
-		return *m_defaultAllocator;
+		return m_defaultAllocator;
 	}
 
 	RefPtr<Allocator> D3D12GraphicsContext::GetTransientAllocatorImpl()
