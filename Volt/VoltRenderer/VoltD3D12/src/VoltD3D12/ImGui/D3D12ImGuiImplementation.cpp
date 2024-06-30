@@ -5,27 +5,36 @@
 #include <backends/imgui_impl_glfw.h>
 
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
+#include "VoltD3D12/Graphics/D3D12Swapchain.h"
+#include "VoltD3D12/Buffers/D3D12CommandBuffer.h"
+#include "VoltD3D12/Images/D3D12ImageView.h"
 
 #include "VoltRHI/Buffers/CommandBuffer.h"
-#include <VoltD3D12/Graphics/D3D12Swapchain.h>
-#include <VoltD3D12/Buffers/D3D12CommandBuffer.h>
 
 namespace Volt::RHI
 {
 	D3D12ImGuiImplementation::D3D12ImGuiImplementation(const ImGuiCreateInfo& createInfo)
+		: m_framesInFlight(createInfo.swapchain->GetFramesInFlight())
 	{
 		m_info = createInfo;
+		m_descriptorCache.resize(m_framesInFlight);
 	}
 
 	D3D12ImGuiImplementation::~D3D12ImGuiImplementation()
 	{
-		m_descriptorHeap = nullptr;
+		m_descriptorCache.clear();
 		m_commandBuffer = nullptr;
 		ShutdownAPI();
 	}
 
 	void D3D12ImGuiImplementation::BeginAPI()
 	{
+		m_currentFrameIndex = (m_currentFrameIndex + 1) % m_framesInFlight;
+		for (const auto& descriptor : m_descriptorCache.at(m_currentFrameIndex))
+		{
+			m_descriptorHeap->Free(descriptor.second);
+		}
+
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 	}
@@ -101,7 +110,23 @@ namespace Volt::RHI
 
 	ImTextureID D3D12ImGuiImplementation::GetTextureID(RefPtr<Image2D> image) const
 	{
-		return nullptr;
+		const size_t hash = std::hash<void*>()(image->GetHandle<void*>());
+
+		auto& cache = m_descriptorCache.at(m_currentFrameIndex);
+		if (cache.contains(hash))
+		{
+			auto descriptor = m_descriptorCache.at(m_currentFrameIndex).at(hash);
+			return reinterpret_cast<ImTextureID>(descriptor.GetGPUPointer());
+		}
+
+		D3D12DescriptorPointer resultDescriptor = m_descriptorHeap->Allocate();
+		D3D12DescriptorPointer srcDescriptor = image->GetView()->AsRef<D3D12ImageView>().GetSRVDescriptor();
+
+		ID3D12Device2* d3d12Device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
+		d3d12Device->CopyDescriptorsSimple(1, D3D12_CPU_DESCRIPTOR_HANDLE(resultDescriptor.GetCPUPointer()), D3D12_CPU_DESCRIPTOR_HANDLE(srcDescriptor.GetCPUPointer()), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+		cache[hash] = resultDescriptor;
+		return reinterpret_cast<ImTextureID>(resultDescriptor.GetGPUPointer());
 	}
 
 	ImFont* D3D12ImGuiImplementation::AddFont(const std::filesystem::path& fontPath, float pixelSize)

@@ -20,7 +20,7 @@ namespace Volt::RHI
 	
 	void* D3D12ImageAllocation::GetResourceHandleInternal() const
 	{
-		return m_resource.Get();
+		return m_resource;
 	}
 	
 	void* D3D12ImageAllocation::MapInternal()
@@ -52,7 +52,7 @@ namespace Volt::RHI
 
 	void* D3D12BufferAllocation::GetResourceHandleInternal() const
 	{
-		return m_resource.Get();
+		return m_resource;
 	}
 
 	void* D3D12BufferAllocation::MapInternal()
@@ -65,5 +65,69 @@ namespace Volt::RHI
 	void* D3D12BufferAllocation::GetHandleImpl() const
 	{
 		return m_allocation;
+	}
+
+	D3D12TransientBufferAllocation::D3D12TransientBufferAllocation(const size_t hash)
+		: m_allocationHash(hash)
+	{
+	}
+	
+	void D3D12TransientBufferAllocation::Unmap()
+	{
+		m_resource->Unmap(0, nullptr);
+	}
+
+	const uint64_t D3D12TransientBufferAllocation::GetDeviceAddress() const
+	{
+		return 0;
+	}
+
+	void* D3D12TransientBufferAllocation::GetResourceHandleInternal() const
+	{
+		return m_resource;
+	}
+
+	void* D3D12TransientBufferAllocation::MapInternal()
+	{
+		void* ptr = nullptr;
+		m_resource->Map(0, nullptr, &ptr);
+		return ptr;
+	}
+
+	void* D3D12TransientBufferAllocation::GetHandleImpl() const
+	{
+		return nullptr;
+	}
+
+	D3D12TransientImageAllocation::D3D12TransientImageAllocation(const size_t hash)
+		: m_allocationHash(hash)
+	{
+	}
+
+	void D3D12TransientImageAllocation::Unmap()
+	{
+		m_resource->Unmap(0, nullptr);
+	}
+
+	const uint64_t D3D12TransientImageAllocation::GetDeviceAddress() const
+	{
+		return 0;
+	}
+
+	void* D3D12TransientImageAllocation::GetResourceHandleInternal() const
+	{
+		return m_resource;
+	}
+
+	void* D3D12TransientImageAllocation::MapInternal()
+	{
+		void* ptr = nullptr;
+		m_resource->Map(0, nullptr, &ptr);
+		return ptr;
+	}
+
+	void* D3D12TransientImageAllocation::GetHandleImpl() const
+	{
+		return nullptr;
 	}
 }

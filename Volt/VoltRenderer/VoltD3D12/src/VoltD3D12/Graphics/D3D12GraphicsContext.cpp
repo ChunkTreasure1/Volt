@@ -53,7 +53,7 @@ namespace Volt::RHI
 
 	RefPtr<Allocator> D3D12GraphicsContext::GetTransientAllocatorImpl()
 	{
-		return nullptr;
+		return m_transientAllocator;
 	}
 
 	RefPtr<GraphicsDevice> D3D12GraphicsContext::GetGraphicsDevice() const
@@ -89,6 +89,7 @@ namespace Volt::RHI
 #endif
 
 		m_defaultAllocator = DefaultAllocator::Create();
+		m_transientAllocator = TransientAllocator::Create();
 		m_cpuDescriptorHeapManager = CreateScope<CPUDescriptorHeapManager>();
 	}
 

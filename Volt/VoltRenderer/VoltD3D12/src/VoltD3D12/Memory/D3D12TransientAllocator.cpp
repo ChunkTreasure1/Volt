@@ -1,30 +1,23 @@
-#include "vkpch.h"
-#include "VulkanTransientAllocator.h"
+#include "dxpch.h"
+#include "D3D12TransientAllocator.h"
 
-#include "VoltVulkan/Memory/VulkanAllocation.h"
-#include "VoltVulkan/Common/VulkanHelpers.h"
-
-#include <VoltRHI/Graphics/GraphicsContext.h>
-#include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
-#include <VoltRHI/Graphics/GraphicsDevice.h>
+#include "VoltD3D12/Common/D3D12Helpers.h"
 
 #include <VoltRHI/Memory/TransientHeap.h>
-#include <VoltRHI/Memory/MemoryUtility.h>
-#include <VoltRHI/Core/Profiling.h>
 #include <VoltRHI/Utility/HashUtility.h>
 
 #include <VoltRHI/RHILog.h>
 
-#include <vulkan/vulkan.h>
+#include <d3d12.h>
 
 namespace Volt::RHI
 {
-	VulkanTransientAllocator::VulkanTransientAllocator()
+	D3D12TransientAllocator::D3D12TransientAllocator()
 	{
 		CreateDefaultHeaps();
 	}
 
-	VulkanTransientAllocator::~VulkanTransientAllocator()
+	D3D12TransientAllocator::~D3D12TransientAllocator()
 	{
 		for (const auto& imageAlloc : m_allocationCache.GetImageAllocations())
 		{
@@ -40,7 +33,7 @@ namespace Volt::RHI
 		m_imageHeaps.clear();
 	}
 
-	RefPtr<Allocation> VulkanTransientAllocator::CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage)
+	RefPtr<Allocation> D3D12TransientAllocator::CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -51,7 +44,7 @@ namespace Volt::RHI
 		}
 
 		TransientBufferCreateInfo info{};
-		info.size = size;
+		info.size = Utility::Align(size, D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT);
 		info.usage = usage;
 		info.memoryUsage = memoryUsage;
 		info.hash = hash;
@@ -79,13 +72,13 @@ namespace Volt::RHI
 
 		if (!result)
 		{
-			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocation]", "Unable to create buffer of size {0}!", size);
+			RHILog::LogTagged(LogSeverity::Error, "[D3D12TransientAllocation]", "Unable to create buffer of size {0}!", size);
 		}
 
 		return result;
 	}
-
-	RefPtr<Allocation> VulkanTransientAllocator::CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage)
+	
+	RefPtr<Allocation> D3D12TransientAllocator::CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -95,7 +88,7 @@ namespace Volt::RHI
 			return image;
 		}
 
-		MemoryRequirement memoryRequirement = Utility::GetImageRequirement(Utility::GetVkImageCreateInfo(imageSpecification));
+		MemoryRequirement memoryRequirement = Utility::GetMemoryRequirements(Utility::GetD3D12ResourceDesc(imageSpecification));
 
 		TransientImageCreateInfo info{};
 		info.imageSpecification = imageSpecification;
@@ -125,28 +118,43 @@ namespace Volt::RHI
 
 		if (!result)
 		{
-			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocation]", "Unable to create image of size {0}!", memoryRequirement.size);
+			RHILog::LogTagged(LogSeverity::Error, "[D3D12TransientAllocation]", "Unable to create image of size {0}!", memoryRequirement.size);
 		}
 
 		return result;
 	}
-
-	void VulkanTransientAllocator::DestroyBuffer(RefPtr<Allocation> allocation)
+	
+	void D3D12TransientAllocator::DestroyBuffer(RefPtr<Allocation> allocation)
 	{
 		m_allocationCache.QueueBufferAllocationForRemoval(allocation);
 	}
-
-	void VulkanTransientAllocator::DestroyImage(RefPtr<Allocation> allocation)
+	
+	void D3D12TransientAllocator::DestroyImage(RefPtr<Allocation> allocation)
 	{
 		m_allocationCache.QueueImageAllocationForRemoval(allocation);
 	}
+	
+	void D3D12TransientAllocator::Update()
+	{
+		const auto allocationsToRemove = m_allocationCache.UpdateAndGetAllocationsToDestroy();
 
-	void* VulkanTransientAllocator::GetHandleImpl() const
+		for (const auto& alloc : allocationsToRemove.bufferAllocations)
+		{
+			DestroyBufferInternal(alloc);
+		}
+
+		for (const auto& alloc : allocationsToRemove.imageAllocations)
+		{
+			DestroyImageInternal(alloc);
+		}
+	}
+	
+	void* D3D12TransientAllocator::GetHandleImpl() const
 	{
 		return nullptr;
 	}
-
-	void VulkanTransientAllocator::CreateDefaultHeaps()
+	
+	void D3D12TransientAllocator::CreateDefaultHeaps()
 	{
 		// Buffer heap
 		{
@@ -164,8 +172,8 @@ namespace Volt::RHI
 			m_imageHeaps.push_back(TransientHeap::Create(info));
 		}
 	}
-
-	void VulkanTransientAllocator::DestroyBufferInternal(RefPtr<Allocation> allocation)
+	
+	void D3D12TransientAllocator::DestroyBufferInternal(RefPtr<Allocation> allocation)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -186,12 +194,12 @@ namespace Volt::RHI
 		}
 		else
 		{
-			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocator]", "Unable to destroy buffer with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
+			RHILog::LogTagged(LogSeverity::Error, "[D3D12TransientAllocator]", "Unable to destroy buffer with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
 			DestroyOrphanBuffer(allocation);
 		}
 	}
-
-	void VulkanTransientAllocator::DestroyImageInternal(RefPtr<Allocation> allocation)
+	
+	void D3D12TransientAllocator::DestroyImageInternal(RefPtr<Allocation> allocation)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -212,36 +220,35 @@ namespace Volt::RHI
 		}
 		else
 		{
-			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientAllocator]", "Unable to destroy image with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
+			RHILog::LogTagged(LogSeverity::Error, "[D3D12TransientAllocator]", "Unable to destroy image with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
 			DestroyOrphanImage(allocation);
 		}
 	}
-
-	void VulkanTransientAllocator::DestroyOrphanBuffer(RefPtr<Allocation> allocation)
+	
+	// #TODO_Ivar: These functions will probably cause issues due to the ComPtrs
+	void D3D12TransientAllocator::DestroyOrphanBuffer(RefPtr<Allocation> allocation)
 	{
-		auto device = GraphicsContext::GetDevice();
-		vkDestroyBuffer(device->GetHandle<VkDevice>(), allocation->GetResourceHandle<VkBuffer>(), nullptr);
+		allocation->GetResourceHandle<ID3D12Resource*>()->Release();
+	}
+	
+	void D3D12TransientAllocator::DestroyOrphanImage(RefPtr<Allocation> allocation)
+	{
+		allocation->GetResourceHandle<ID3D12Resource*>()->Release();
 	}
 
-	void VulkanTransientAllocator::DestroyOrphanImage(RefPtr<Allocation> allocation)
-	{
-		auto device = GraphicsContext::GetDevice();
-		vkDestroyImage(device->GetHandle<VkDevice>(), allocation->GetResourceHandle<VkImage>(), nullptr);
-	}
-
-	VT_NODISCARD RefPtr<TransientHeap> VulkanTransientAllocator::CreateNewImageHeap()
+	RefPtr<TransientHeap> D3D12TransientAllocator::CreateNewImageHeap()
 	{
 		TransientHeapCreateInfo info{};
 		info.pageSize = HEAP_PAGE_SIZE;
 		info.flags = TransientHeapFlags::AllowTextures | TransientHeapFlags::AllowRenderTargets;
-		
+
 		RefPtr<TransientHeap>& heap = m_imageHeaps.emplace_back();
 		heap = TransientHeap::Create(info);
 
 		return heap;
 	}
 
-	VT_NODISCARD RefPtr<TransientHeap> VulkanTransientAllocator::CreateNewBufferHeap()
+	RefPtr<TransientHeap> D3D12TransientAllocator::CreateNewBufferHeap()
 	{
 		TransientHeapCreateInfo info{};
 		info.pageSize = HEAP_PAGE_SIZE;
@@ -251,20 +258,5 @@ namespace Volt::RHI
 		heap = TransientHeap::Create(info);
 
 		return heap;
-	}
-
-	void VulkanTransientAllocator::Update()
-	{
-		const auto allocationsToRemove = m_allocationCache.UpdateAndGetAllocationsToDestroy();
-
-		for (const auto& alloc : allocationsToRemove.bufferAllocations)
-		{
-			DestroyBufferInternal(alloc);
-		}
-
-		for (const auto& alloc : allocationsToRemove.imageAllocations)
-		{
-			DestroyImageInternal(alloc);
-		}
 	}
 }

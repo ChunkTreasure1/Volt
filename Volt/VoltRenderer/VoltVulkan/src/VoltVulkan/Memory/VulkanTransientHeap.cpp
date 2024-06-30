@@ -37,7 +37,7 @@ namespace Volt::RHI
 		{
 			if (page.handle)
 			{
-				vkFreeMemory(device->GetHandle<VkDevice>(), page.handle, nullptr);
+				vkFreeMemory(device->GetHandle<VkDevice>(), static_cast<VkDeviceMemory>(page.handle), nullptr);
 				page.handle = nullptr;
 			}
 		}
@@ -76,10 +76,10 @@ namespace Volt::RHI
 
 		VkBuffer buffer;
 		vkCreateBuffer(device->GetHandle<VkDevice>(), &bufferInfo, nullptr, &buffer);
-		vkBindBufferMemory(device->GetHandle<VkDevice>(), buffer, page.handle, blockAlloc.offset);
+		vkBindBufferMemory(device->GetHandle<VkDevice>(), buffer, static_cast<VkDeviceMemory>(page.handle), blockAlloc.offset);
 
 		RefPtr<VulkanTransientBufferAllocation> bufferAlloc = RefPtr<VulkanTransientBufferAllocation>::Create(createInfo.hash);
-		bufferAlloc->m_memoryHandle = page.handle;
+		bufferAlloc->m_memoryHandle = static_cast<VkDeviceMemory>(page.handle);
 		bufferAlloc->m_resource = buffer;
 		bufferAlloc->m_allocationBlock = blockAlloc;
 		bufferAlloc->m_heapId = m_heapId;
@@ -102,7 +102,7 @@ namespace Volt::RHI
 
 		if (blockAlloc.size == 0)
 		{
-			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientHeap]", "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
+			RHILog::LogTagged(LogSeverity::Error, "[VulkanTransientHeap]", "Unable to find available allocation block for image allocation of size {0}!", createInfo.size);
 			return nullptr;
 		}
 
@@ -117,11 +117,11 @@ namespace Volt::RHI
 
 		{
 			VT_PROFILE_SCOPE("Bind memory");
-			vkBindImageMemory(device->GetHandle<VkDevice>(), image, page.handle, blockAlloc.offset);
+			vkBindImageMemory(device->GetHandle<VkDevice>(), image, static_cast<VkDeviceMemory>(page.handle), blockAlloc.offset);
 		}
 
 		RefPtr<VulkanTransientImageAllocation> imageAlloc = RefPtr<VulkanTransientImageAllocation>::Create(createInfo.hash);
-		imageAlloc->m_memoryHandle = page.handle;
+		imageAlloc->m_memoryHandle = static_cast<VkDeviceMemory>(page.handle);
 		imageAlloc->m_resource = image;
 		imageAlloc->m_allocationBlock = blockAlloc;
 		imageAlloc->m_heapId = m_heapId;
@@ -401,7 +401,11 @@ namespace Volt::RHI
 		{
 			m_pageAllocations[i].size = allocInfo.allocationSize;
 			m_pageAllocations[i].alignment = m_memoryRequirements.alignment;
-			vkAllocateMemory(device->GetHandle<VkDevice>(), &allocInfo, nullptr, &m_pageAllocations[i].handle);
+
+			VkDeviceMemory tempHandle = nullptr;
+			vkAllocateMemory(device->GetHandle<VkDevice>(), &allocInfo, nullptr, &tempHandle);
+
+			m_pageAllocations[i].handle = tempHandle;
 		}
 	}
 
@@ -476,7 +480,11 @@ namespace Volt::RHI
 		{
 			m_pageAllocations[i].size = allocInfo.allocationSize;
 			m_pageAllocations[i].alignment = m_memoryRequirements.alignment;
-			vkAllocateMemory(device->GetHandle<VkDevice>(), &allocInfo, nullptr, &m_pageAllocations[i].handle);
+
+			VkDeviceMemory tempHandle = nullptr;
+			vkAllocateMemory(device->GetHandle<VkDevice>(), &allocInfo, nullptr, &tempHandle);
+		
+			m_pageAllocations[i].handle = tempHandle;
 		}
 	}
 }

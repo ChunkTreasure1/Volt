@@ -6,11 +6,35 @@
 
 namespace Volt::RHI
 {
+	inline static constexpr uint32_t MAX_PAGE_COUNT = 5;
+
 	struct AllocationBlock
 	{
 		uint64_t size = 0;
 		uint64_t offset = 0;
 		uint32_t pageId = 0;
+	};
+
+	struct PageAllocation
+	{
+		void* handle = nullptr;
+		uint64_t size = 0;
+		uint64_t alignment = 0;
+
+		uint64_t usedSize = 0;
+		uint64_t tail = 0;
+
+		std::vector<AllocationBlock> availableBlocks;
+
+		VT_NODISCARD VT_INLINE const uint64_t GetRemainingSize() const
+		{
+			return size - std::min(usedSize, size);
+		}
+
+		VT_NODISCARD VT_INLINE const uint64_t GetRemainingTailSize() const
+		{
+			return size - tail;
+		}
 	};
 
 	class VTRHI_API Allocation : public RHIInterface

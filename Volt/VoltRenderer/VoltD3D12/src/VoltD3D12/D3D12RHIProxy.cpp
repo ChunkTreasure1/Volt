@@ -10,10 +10,10 @@
 #include "VoltD3D12/Descriptors/D3D12DescriptorTable.h"
 
 #include <VoltRHI/Buffers/UniformBuffer.h>
-#include <VoltRHI/Buffers/StorageBuffer.h>
+#include "VoltD3D12/Buffers/D3D12StorageBuffer.h"
 #include <VoltRHI/Buffers/VertexBuffer.h>
 #include <VoltRHI/Buffers/IndexBuffer.h>
-#include <VoltRHI/Buffers/BufferView.h>
+#include "VoltD3D12/Buffers/D3D12BufferView.h"
 #include "VoltD3D12/Buffers/D3D12CommandBuffer.h"
 
 #include "VoltD3D12/ImGui/D3D12ImGuiImplementation.h"
@@ -24,7 +24,8 @@
 #include "VoltD3D12/Pipelines/D3D12RenderPipeline.h"
 #include "VoltD3D12/Pipelines/D3D12ComputePipeline.h"
 
-#include <VoltRHI/Memory/TransientHeap.h>
+#include "VoltD3D12/Memory/D3D12TransientHeap.h"
+#include "VoltD3D12/Memory/D3D12TransientAllocator.h"
 #include "VoltD3D12/Memory/D3D12DefaultAllocator.h"
 
 #include <VoltRHI/Images/SamplerState.h>
@@ -44,7 +45,7 @@ namespace Volt::RHI
 	
 	RefPtr<BufferView> D3D12RHIProxy::CreateBufferView(const BufferViewSpecification& specification) const
 	{
-		return RefPtr<BufferView>();
+		return RefPtr<D3D12BufferView>::Create(specification);
 	}
 	
 	RefPtr<CommandBuffer> D3D12RHIProxy::CreateCommandBuffer(const uint32_t count, QueueType queueType) const
@@ -69,17 +70,17 @@ namespace Volt::RHI
 	
 	RefPtr<StorageBuffer> D3D12RHIProxy::CreateStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
 	{
-		return RefPtr<StorageBuffer>();
+		return RefPtr<D3D12StorageBuffer>::Create(count, elementSize, name, bufferUsage, memoryUsage);
 	}
 	
 	RefPtr<StorageBuffer> D3D12RHIProxy::CreateStorageBuffer(const size_t size, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
 	{
-		return RefPtr<StorageBuffer>();
+		return RefPtr<D3D12StorageBuffer>::Create(size, name, bufferUsage, memoryUsage);
 	}
 	
 	RefPtr<StorageBuffer> D3D12RHIProxy::CreateStorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
 	{
-		return RefPtr<StorageBuffer>();
+		return RefPtr<D3D12StorageBuffer>::Create(size, customAllocator, name, bufferUsage, memoryUsage);
 	}
 	
 	RefPtr<UniformBuffer> D3D12RHIProxy::CreateUniformBuffer(const uint32_t size, const void* data) const
@@ -149,12 +150,12 @@ namespace Volt::RHI
 	
 	RefPtr<TransientAllocator> D3D12RHIProxy::CreateTransientAllocator() const
 	{
-		return RefPtr<TransientAllocator>();
+		return RefPtr<D3D12TransientAllocator>::Create();
 	}
 	
 	RefPtr<TransientHeap> D3D12RHIProxy::CreateTransientHeap(const TransientHeapCreateInfo& createInfo) const
 	{
-		return RefPtr<TransientHeap>();
+		return RefPtr<D3D12TransientHeap>::Create(createInfo);
 	}
 	
 	RefPtr<RenderPipeline> D3D12RHIProxy::CreateRenderPipeline(const RenderPipelineCreateInfo& createInfo) const

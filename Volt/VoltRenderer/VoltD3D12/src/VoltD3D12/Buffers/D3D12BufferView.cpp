@@ -57,6 +57,7 @@ namespace Volt::RHI
 		uint32_t elementCount = 0;
 	
 		D3D12_BUFFER_SRV_FLAGS flags = D3D12_BUFFER_SRV_FLAG_NONE;
+		D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc{};
 
 		if (m_resource->GetType() == ResourceType::StorageBuffer)
 		{
@@ -65,9 +66,10 @@ namespace Volt::RHI
 			elementCount = storageBuffer.GetCount();
 
 			flags = D3D12_BUFFER_SRV_FLAG_RAW;
+			viewDesc.Format = DXGI_FORMAT_R32_TYPELESS;
 		}
 
-		D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc{};
+		viewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		viewDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 		viewDesc.Buffer.FirstElement = 0;
 		viewDesc.Buffer.Flags = flags;

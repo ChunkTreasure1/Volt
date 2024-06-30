@@ -89,7 +89,7 @@ namespace Volt::RHI
 		D3D12Shader& d3d12Shader = m_createInfo.shader->AsRef<D3D12Shader>();
 
 		D3D12_RASTERIZER_DESC rasterizerDesc{};
-		rasterizerDesc.FillMode = Utility::VoltToD3D12Fill(m_createInfo.fillMode);
+		rasterizerDesc.FillMode = Utility::VoltToD3D12Fill(m_createInfo.fillMode);              
 		rasterizerDesc.CullMode = Utility::VoltToD3D12Cull(m_createInfo.cullMode);
 		rasterizerDesc.FrontCounterClockwise = FALSE;
 		rasterizerDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
@@ -201,13 +201,22 @@ namespace Volt::RHI
 		pipelineStateDesc.PrimitiveTopologyType = Utility::VoltToD3D12Topology(m_createInfo.topology);
 		pipelineStateDesc.SampleDesc.Count = 1;
 		pipelineStateDesc.SampleDesc.Quality = 0;
-		pipelineStateDesc.NumRenderTargets = static_cast<uint32_t>(shaderResources.outputFormats.size());
 
-		for (uint32_t i = 0; const auto& outputFormat : shaderResources.outputFormats)
+		uint32_t i = 0;
+		for (const auto& outputFormat : shaderResources.outputFormats)
 		{
 			if (Utility::IsDepthFormat(outputFormat) || Utility::IsStencilFormat(outputFormat))
 			{
-				pipelineStateDesc.DSVFormat = ConvertFormatToD3D12Format(outputFormat);
+				const auto d3d12Format = ConvertFormatToD3D12Format(outputFormat);
+
+				if (Utility::IsFormatTypeless(d3d12Format))
+				{
+					pipelineStateDesc.DSVFormat = Utility::GetDSVFormatFromTypeless(d3d12Format);
+				}
+				else
+				{
+					pipelineStateDesc.DSVFormat = d3d12Format;
+				}
 			}
 			else
 			{
@@ -215,6 +224,8 @@ namespace Volt::RHI
 				i++;
 			}
 		}
+
+		pipelineStateDesc.NumRenderTargets = i;
 
 		auto d3d12Device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
 		VT_D3D12_CHECK(d3d12Device->CreateGraphicsPipelineState(&pipelineStateDesc, VT_D3D12_ID(m_pipeline)));

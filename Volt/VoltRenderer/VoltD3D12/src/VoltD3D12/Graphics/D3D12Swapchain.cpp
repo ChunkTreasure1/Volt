@@ -7,8 +7,6 @@
 #define GLFW_NATIVE_INCLUDE_NONE
 #include <GLFW/glfw3native.h>
 
-#include "VoltD3D12/Common/D3D12DescriptorHeapManager.h"
-
 #include "VoltD3D12/Graphics/D3D12DeviceQueue.h"
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 #include "VoltD3D12/Graphics/D3D12PhysicalGraphicsDevice.h"

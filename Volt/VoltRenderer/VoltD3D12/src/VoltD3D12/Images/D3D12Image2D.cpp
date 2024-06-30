@@ -195,7 +195,7 @@ namespace Volt::RHI
 
 	const ImageAspect D3D12Image2D::GetImageAspect() const
 	{
-		return ImageAspect();
+		return Utility::IsDepthFormat(m_specification.format) ? ImageAspect::Depth : ImageAspect::Color;
 	}
 
 	const ImageLayout D3D12Image2D::GetImageLayout() const

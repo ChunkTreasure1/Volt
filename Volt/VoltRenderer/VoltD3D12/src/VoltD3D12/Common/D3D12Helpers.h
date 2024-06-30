@@ -2,6 +2,7 @@
 
 #include <VoltRHI/Core/RHICommon.h>
 #include <VoltRHI/Shader/BufferLayout.h>
+#include <VoltRHI/Images/ImageUtility.h>
 
 #include <d3d12.h>
 
@@ -159,5 +160,132 @@ namespace Volt::RHI
 
 			return false;
 		}
+
+		inline DXGI_FORMAT GetDSVFormatFromTypeless(DXGI_FORMAT format)
+		{
+			switch (format)
+			{
+				case DXGI_FORMAT_R16_TYPELESS: return DXGI_FORMAT_D16_UNORM;
+				case DXGI_FORMAT_R24G8_TYPELESS: return DXGI_FORMAT_D24_UNORM_S8_UINT;
+				case DXGI_FORMAT_R32G8X24_TYPELESS: return DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+				case DXGI_FORMAT_R32_TYPELESS: return DXGI_FORMAT_D32_FLOAT;
+			}
+
+			return DXGI_FORMAT_UNKNOWN;
+		}
+
+		inline DXGI_FORMAT GetSRVUAVFormatFromTypeless(DXGI_FORMAT format)
+		{
+			switch (format)
+			{
+				case DXGI_FORMAT_R16_TYPELESS: return DXGI_FORMAT_R16_FLOAT;
+				case DXGI_FORMAT_R24G8_TYPELESS: return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+				case DXGI_FORMAT_R32G8X24_TYPELESS: return DXGI_FORMAT_R32G8X24_TYPELESS;
+				case DXGI_FORMAT_R32_TYPELESS: return DXGI_FORMAT_R32_FLOAT;
+			}
+
+			return DXGI_FORMAT_UNKNOWN;
+		}
+
+		inline bool IsFormatTypeless(DXGI_FORMAT format)
+		{
+			switch (format)
+			{
+				case DXGI_FORMAT_R16_TYPELESS:
+				case DXGI_FORMAT_R24G8_TYPELESS:
+				case DXGI_FORMAT_R32G8X24_TYPELESS: 
+				case DXGI_FORMAT_R32_TYPELESS:
+					return true;
+			}
+
+			return false;
+		}
+
+		inline D3D12_RESOURCE_STATES GetResourceStateFromUsage(BufferUsage usageFlags)
+		{
+			D3D12_RESOURCE_STATES result = D3D12_RESOURCE_STATE_COMMON;
+
+			if ((usageFlags & BufferUsage::TransferSrc) != BufferUsage::None)
+			{
+				result |= D3D12_RESOURCE_STATE_COPY_SOURCE;
+			}
+
+			if ((usageFlags & BufferUsage::TransferDst) != BufferUsage::None)
+			{
+				result |= D3D12_RESOURCE_STATE_COPY_DEST;
+			}
+
+			if ((usageFlags & BufferUsage::UniformBuffer) != BufferUsage::None)
+			{
+				result |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+			}
+
+			if ((usageFlags & BufferUsage::StorageBuffer) != BufferUsage::None)
+			{
+				result |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS | D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
+			}
+
+			if ((usageFlags & BufferUsage::IndexBuffer) != BufferUsage::None)
+			{
+				result |= D3D12_RESOURCE_STATE_INDEX_BUFFER;
+			}
+
+			if ((usageFlags & BufferUsage::VertexBuffer) != BufferUsage::None)
+			{
+				result |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+			}
+
+			if ((usageFlags & BufferUsage::IndirectBuffer) != BufferUsage::None)
+			{
+				result |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+			}
+
+			return result;
+		}
+
+		inline D3D12_RESOURCE_STATES GetResourceStateFromUsage(ImageUsage usageFlags, PixelFormat imageFormat)
+		{
+			D3D12_RESOURCE_STATES result = D3D12_RESOURCE_STATE_COMMON;
+
+			if (usageFlags == ImageUsage::Attachment)
+			{
+				//result = D3D12_RESOURCE_STATE_COPY_DEST;
+
+				if (Utility::IsDepthFormat(imageFormat))
+				{
+					result = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+				}
+				else
+				{
+					result = D3D12_RESOURCE_STATE_RENDER_TARGET;
+				}
+			}
+			else if (usageFlags == ImageUsage::AttachmentStorage)
+			{
+				result = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+
+				//if (Utility::IsDepthFormat(imageFormat))
+				//{
+				//	result |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
+				//}
+				//else
+				//{
+				//	result |= D3D12_RESOURCE_STATE_RENDER_TARGET;
+				//}
+			}
+			else if (usageFlags == ImageUsage::Texture)
+			{
+				result = D3D12_RESOURCE_STATE_COPY_DEST | D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
+			}
+			else if (usageFlags == ImageUsage::Storage)
+			{
+				result = D3D12_RESOURCE_STATE_COPY_DEST | D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+			}
+
+			return result;
+		}
+
+		D3D12_RESOURCE_DESC GetD3D12ResourceDesc(const ImageSpecification& specification);
+		MemoryRequirement GetMemoryRequirements(const D3D12_RESOURCE_DESC& resourceDesc);
 	}
 }

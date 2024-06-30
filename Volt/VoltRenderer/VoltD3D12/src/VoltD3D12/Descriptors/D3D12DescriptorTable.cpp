@@ -4,6 +4,7 @@
 #include "VoltD3D12/Descriptors/D3D12DescriptorHeap.h"
 #include "VoltD3D12/Images/D3D12ImageView.h"
 #include "VoltD3D12/Buffers/D3D12CommandBuffer.h"
+#include "VoltD3D12/Buffers/D3D12BufferView.h"
 
 #include <VoltRHI/Images/ImageUtility.h>
 
@@ -63,7 +64,26 @@ namespace Volt::RHI
 
 		m_isDirty = true;
 
-		//const auto& descriptorInfo = m_allocatedDescriptorPointers.at(set).at(binding);
+		const auto& descriptorInfo = m_allocatedDescriptorPointers.at(set).at(binding);
+		const auto& d3d12View = bufferView->AsRef<D3D12BufferView>();
+
+		if ((d3d12View.GetD3D12ViewType() & descriptorInfo.viewType) == D3D12ViewType::None)
+		{
+			RHILog::LogTagged(LogSeverity::Error, "[D3D12DescriptorTable]:", "Buffer View does not support the required D3D12 view type!");
+			return;
+		}
+
+		auto& descriptorCopy = m_activeDescriptorCopies.emplace_back();
+		descriptorCopy.dstPointer = descriptorInfo.pointer;
+
+		if ((descriptorInfo.viewType & D3D12ViewType::SRV) != D3D12ViewType::None)
+		{
+			descriptorCopy.srcPointer = d3d12View.GetSRVDescriptor();
+		}
+		else
+		{
+			descriptorCopy.srcPointer = d3d12View.GetUAVDescriptor();
+		}
 	}
 
 	void D3D12DescriptorTable::SetSamplerState(WeakPtr<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)

@@ -226,23 +226,25 @@ namespace Volt::RHI
 		}
 
 		m_currentRenderPipeline = pipeline;
+		auto cmdList = m_commandLists.at(m_currentCommandListIndex).commandList;
+		
+		D3D12Shader& d3d12Shader = m_currentRenderPipeline->GetShader()->AsRef<D3D12Shader>();
+		D3D12RenderPipeline& d3d12Pipeline = m_currentRenderPipeline->AsRef<D3D12RenderPipeline>();
 
-		//auto d3d12RenderPipline = pipeline->As<D3D12RenderPipeline>();
-		//GetCommandData().commandList->SetGraphicsRootSignature(d3d12RenderPipline->GetRoot());
-		//GetCommandData().commandList->SetPipelineState(d3d12RenderPipline->GetPSO());
-		//
-		//D3D12_PRIMITIVE_TOPOLOGY topologyType = {};
-		//
-		//switch (d3d12RenderPipline->GetTopology())
-		//{
-		//	case Topology::LineList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_LINELIST; break;
-		//	case Topology::PatchList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_UNDEFINED; break;
-		//	case Topology::TriangleList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST; break;
-		//	case Topology::PointList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_POINTLIST; break;
-		//	case Topology::TriangleStrip: topologyType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP; break;
-		//}
-		//
-		//GetCommandData().commandList->IASetPrimitiveTopology(topologyType);
+		cmdList->SetGraphicsRootSignature(d3d12Shader.GetRootSignature().Get());
+		cmdList->SetPipelineState(m_currentRenderPipeline->GetHandle<ID3D12PipelineState*>());
+
+		D3D12_PRIMITIVE_TOPOLOGY topology{};
+		
+		switch (d3d12Pipeline.GetTopology())
+		{
+			case Topology::TriangleList: topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST; break;
+			case Topology::LineList: topology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; break;
+			case Topology::TriangleStrip: topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP; break;
+			case Topology::PointList: topology = D3D_PRIMITIVE_TOPOLOGY_POINTLIST; break;
+		}
+
+		cmdList->IASetPrimitiveTopology(topology);
 	}
 
 	void D3D12CommandBuffer::BindPipeline(WeakPtr<ComputePipeline> pipeline)

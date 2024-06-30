@@ -10,91 +10,6 @@
 
 namespace Volt::RHI
 {
-	namespace Utility
-	{
-		inline D3D12_RESOURCE_STATES GetResourceStateFromUsage(BufferUsage usageFlags)
-		{
-			D3D12_RESOURCE_STATES result = D3D12_RESOURCE_STATE_COMMON;
-
-			if ((usageFlags & BufferUsage::TransferSrc) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_COPY_SOURCE;
-			}
-
-			if ((usageFlags & BufferUsage::TransferDst) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_COPY_DEST;
-			}
-
-			if ((usageFlags & BufferUsage::UniformBuffer) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-			}
-
-			if ((usageFlags & BufferUsage::StorageBuffer) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS | D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
-			}
-
-			if ((usageFlags & BufferUsage::IndexBuffer) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_INDEX_BUFFER;
-			}
-
-			if ((usageFlags & BufferUsage::VertexBuffer) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-			}
-
-			if ((usageFlags & BufferUsage::IndirectBuffer) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
-			}
-
-			return result;
-		}
-
-		inline D3D12_RESOURCE_STATES GetResourceStateFromUsage(ImageUsage usageFlags, PixelFormat imageFormat)
-		{
-			D3D12_RESOURCE_STATES result = D3D12_RESOURCE_STATE_COMMON;
-
-			if (usageFlags == ImageUsage::Attachment)
-			{
-				result |= D3D12_RESOURCE_STATE_COPY_DEST;
-
-				if (Utility::IsDepthFormat(imageFormat))
-				{
-					result |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
-				}
-				else
-				{
-					result |= D3D12_RESOURCE_STATE_RENDER_TARGET;
-				}
-			}
-			else if (usageFlags == ImageUsage::AttachmentStorage)
-			{
-				result |= D3D12_RESOURCE_STATE_COPY_DEST | D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-			
-				if (Utility::IsDepthFormat(imageFormat))
-				{
-					result |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
-				}
-				else
-				{
-					result |= D3D12_RESOURCE_STATE_RENDER_TARGET;
-				}
-			}
-			else if (usageFlags == ImageUsage::Texture)
-			{
-				result |= D3D12_RESOURCE_STATE_COPY_DEST | D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
-			}
-			else if (usageFlags == ImageUsage::Storage)
-			{
-				result |= D3D12_RESOURCE_STATE_COPY_DEST | D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-			}
-		}
-	}
-
 	D3D12DefaultAllocator::D3D12DefaultAllocator()
 	{
 		auto device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
@@ -139,7 +54,7 @@ namespace Volt::RHI
 		resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 		resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		if (memoryUsage == MemoryUsage::GPU)
+		if ((memoryUsage & MemoryUsage::GPU) != MemoryUsage::None)
 		{
 			resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 		}
@@ -189,46 +104,7 @@ namespace Volt::RHI
 			}
 		}
 
-		D3D12_RESOURCE_DESC resourceDesc{};
-		if (imageSpecification.imageType == ResourceType::Image2D)
-		{
-			resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-		}
-		else if (imageSpecification.imageType == ResourceType::Image3D)
-		{
-			resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D;
-		}
-
-		resourceDesc.Alignment = 0;
-		resourceDesc.Width = imageSpecification.width;
-		resourceDesc.Height = imageSpecification.height;
-		resourceDesc.DepthOrArraySize = imageSpecification.imageType == ResourceType::Image2D ? static_cast<uint16_t>(imageSpecification.layers) : static_cast<uint16_t>(imageSpecification.depth);
-		resourceDesc.MipLevels = static_cast<uint16_t>(imageSpecification.mips);
-		resourceDesc.Format = ConvertFormatToD3D12Format(imageSpecification.format);
-		resourceDesc.SampleDesc = { 1, 0 };
-
-		if ((memoryUsage & MemoryUsage::GPUToCPU) != MemoryUsage::None)
-		{
-			resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-		}
-		else
-		{
-			resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-		}
-
-		resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-		const bool resourceShouldBeUnorderedAccess = (memoryUsage & MemoryUsage::GPU) != MemoryUsage::None && (imageSpecification.usage == ImageUsage::Storage || imageSpecification.usage == ImageUsage::AttachmentStorage);
-
-		if (resourceShouldBeUnorderedAccess && Utility::DoFormatSupportUnorderedAccess(resourceDesc.Format))
-		{
-			resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-		}
-
-		if (resourceShouldBeUnorderedAccess && !Utility::DoFormatSupportUnorderedAccess(resourceDesc.Format))
-		{
-			RHILog::LogTagged(LogSeverity::Error, "[D3D12DefaultAllocator]", "Resource description is not valid for unordered access!");
-		}
+		D3D12_RESOURCE_DESC resourceDesc = Utility::GetD3D12ResourceDesc(imageSpecification);
 
 		D3D12MA::ALLOCATION_DESC allocDesc{};
 		allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;

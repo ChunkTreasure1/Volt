@@ -116,5 +116,10 @@ namespace Volt::RHI
 		VT_D3D12_CHECK(d3d12Device->CreateDescriptorHeap(&desc, VT_D3D12_ID(m_descriptorHeap)));
 
 		m_startPointer.cpuPointer = m_descriptorHeap->GetCPUDescriptorHandleForHeapStart().ptr;
+		
+		if (m_supportsGPUDescriptors)
+		{
+			m_startPointer.gpuPointer = m_descriptorHeap->GetGPUDescriptorHandleForHeapStart().ptr;
+		}
 	}
 }
