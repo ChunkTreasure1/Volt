@@ -125,10 +125,7 @@ project "Launcher"
 		"%{Library.steam}",
 		"%{Library.discord}",
 		
-		"%{Library.Vulkan}",
-		"%{Library.dxc}",
-		"%{Library.METIS}",
-		"%{Library.zlib}"
+		"%{Library.METIS}"
     }
 	
 	debugargs 
@@ -161,17 +158,6 @@ project "Launcher"
 		symbols "on"
 		optimize "off"
 
-		links
-		{
-			"%{Library.ShaderC_Debug}",
-			"%{Library.ShaderC_Utils_Debug}",
-			"%{Library.SPIRV_Cross_Debug}",
-			"%{Library.SPIRV_Cross_GLSL_Debug}",
-			"%{Library.SPIRV_Tools_Debug}",
-
-			"%{Library.Aftermath}"
-		}
-
 	filter "configurations:Release"
 		defines { "VT_RELEASE", "NDEBUG" }
 		runtime "Release"
@@ -179,16 +165,6 @@ project "Launcher"
 		optimize "on"
 		vectorextensions "AVX2"
 		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
-
-		links
-		{
-			"%{Library.ShaderC_Release}",
-			"%{Library.ShaderC_Utils_Release}",
-			"%{Library.SPIRV_Cross_Release}",
-			"%{Library.SPIRV_Cross_GLSL_Release}",
-
-			"%{Library.Aftermath}"
-		}
 
 	filter "configurations:Dist"
 		defines { "VT_DIST", "NDEBUG" }
@@ -198,14 +174,6 @@ project "Launcher"
 		vectorextensions "AVX2"
 		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
 		kind "WindowedApp"
-
-        links
-		{
-			"%{Library.ShaderC_Release}",
-			"%{Library.ShaderC_Utils_Release}",
-			"%{Library.SPIRV_Cross_Release}",
-			"%{Library.SPIRV_Cross_GLSL_Release}",
-		}
 
 		postbuildcommands
 		{

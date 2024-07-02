@@ -230,6 +230,21 @@ namespace Volt
 		std::vector<std::vector<ResourceUsageInfo>> resourceUsages;
 		resourceUsages.resize(m_resourceIndex);
 
+		for (auto& barriers : m_standaloneBarriers)
+		{
+			for (auto& barrier : barriers)
+			{
+				if (barrier.accessInfo.type == RHI::BarrierType::Image)
+				{
+					if (m_resourceNodes.at(barrier.resourceHandle)->isExternal)
+					{
+						auto image = GetImage2DRaw(barrier.resourceHandle);
+						barrier.accessInfo.imageBarrier().srcLayout = image->GetImageLayout();
+					}
+				}
+			}
+		}
+
 		for (const auto& pass : m_passNodes)
 		{
 			if (!pass->IsCulled())
@@ -656,6 +671,7 @@ namespace Volt
 		if (!m_standaloneBarriers.empty())
 		{
 			std::vector<RHI::ResourceBarrierInfo> barrierInfos{};
+			barrierInfos.reserve(m_standaloneBarriers.size());
 
 			for (const auto& barriers : m_standaloneBarriers)
 			{
@@ -683,7 +699,7 @@ namespace Volt
 
 		BindlessResourcesManager::Get().PrepareForRender();
 
-		m_commandBuffer->Execute();
+		m_commandBuffer->ExecuteAndWait();
 
 		if (m_totalAllocatedSizeCallback)
 		{
@@ -728,7 +744,7 @@ namespace Volt
 	void RenderGraph::AllocateConstantsBuffer()
 	{
 		RenderGraphBufferDesc desc{};
-		desc.count = m_passIndex;
+		desc.count = std::max(m_passIndex, 1u);
 		desc.elementSize = RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
 		desc.usage = RHI::BufferUsage::StorageBuffer;
 		desc.memoryUsage = RHI::MemoryUsage::CPUToGPU;
@@ -1119,9 +1135,10 @@ namespace Volt
 
 		RenderGraphResourceHandle stagingBuffer = tempBuilder.CreateBuffer(stagingDesc);
 
+		AddMappedBufferUpload(stagingBuffer, data, size, name);
+
 		newNode->executeFunction = [tempData, size, bufferHandle, stagingBuffer](const Empty&, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			context.MappedBufferUpload(stagingBuffer, tempData, size);
 			context.CopyBuffer(stagingBuffer, bufferHandle, size);
 		};
 

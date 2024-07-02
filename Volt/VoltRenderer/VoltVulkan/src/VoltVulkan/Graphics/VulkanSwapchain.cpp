@@ -8,6 +8,7 @@
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 #include "VoltVulkan/Graphics/VulkanGraphicsDevice.h"
 #include "VoltVulkan/Graphics/VulkanDeviceQueue.h"
+#include "VoltVulkan/Buffers/VulkanCommandBuffer.h"
 #include "VoltVulkan/Images/VulkanImage2D.h"
 
 #include <VoltRHI/Core/Profiling.h>
@@ -90,6 +91,8 @@ namespace Volt::RHI
 
 		assert(supportsPresent && "Device does not have present support!");
 
+		m_commandBuffer = CommandBuffer::Create(GetFramesInFlight());
+
 		Invalidate(m_width, m_height, m_vSyncEnabled);
 	}
 
@@ -111,11 +114,8 @@ namespace Volt::RHI
 		auto device = GraphicsContext::GetDevice();
 		auto& frameData = m_perFrameInFlightData.at(m_currentFrame);
 
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &frameData.fence, VK_TRUE, 1000000000));
+		m_commandBuffer->Begin();
 		VkResult swapchainStatus = vkAcquireNextImageKHR(device->GetHandle<VkDevice>(), m_swapchain, 1000000000, frameData.presentSemaphore, nullptr, &m_currentImage);
-
-		VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &frameData.fence));
-		VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), frameData.commandPool, 0));
 
 		if (swapchainStatus == VK_ERROR_OUT_OF_DATE_KHR)
 		{
@@ -132,6 +132,23 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+		{
+			ResourceBarrierInfo barrier{};
+			barrier.type = BarrierType::Image;
+			barrier.imageBarrier().srcAccess = BarrierAccess::RenderTarget;
+			barrier.imageBarrier().srcStage = BarrierStage::RenderTarget;
+			barrier.imageBarrier().srcLayout = m_perImageData.at(m_currentImage).imageReference->GetImageLayout();
+			barrier.imageBarrier().dstAccess = BarrierAccess::None;
+			barrier.imageBarrier().dstStage = BarrierStage::AllGraphics;
+			barrier.imageBarrier().dstLayout = ImageLayout::Present;
+			barrier.imageBarrier().resource = m_perImageData.at(m_currentImage).imageReference;
+
+			m_commandBuffer->ResourceBarrier({ barrier });
+		}
+
+
+		m_commandBuffer->End();
+
 		if (m_swapchainNeedsRebuild)
 		{
 			return;
@@ -144,10 +161,13 @@ namespace Volt::RHI
 
 		// Queue Submit
 		{
+			VkCommandBuffer cmdBuffer = m_commandBuffer->GetHandle<VkCommandBuffer>();
+			VkFence fence = m_commandBuffer->AsRef<VulkanCommandBuffer>().GetCurrentFence();
+
 			VkSubmitInfo submitInfo{};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &frameData.commandBuffer;
+			submitInfo.pCommandBuffers = &cmdBuffer;
 
 			submitInfo.signalSemaphoreCount = 1;
 			submitInfo.pSignalSemaphores = &frameData.renderSemaphore;
@@ -159,7 +179,7 @@ namespace Volt::RHI
 			submitInfo.pWaitDstStageMask = &waitStage;
 
 			vkQueue.AquireLock();
-			VT_VK_CHECK(vkQueueSubmit(deviceQueue->GetHandle<VkQueue>(), 1, &submitInfo, frameData.fence));
+			VT_VK_CHECK(vkQueueSubmit(deviceQueue->GetHandle<VkQueue>(), 1, &submitInfo, fence));
 			vkQueue.ReleaseLock();
 		}
 
@@ -212,8 +232,6 @@ namespace Volt::RHI
 		GraphicsContext::GetDevice()->As<VulkanGraphicsDevice>()->WaitForIdle();
 
 		CreateSwapchain(width, height, enableVSync);
-		CreateImageViews();
-		CreateFramebuffers();
 	}
 
 	const uint32_t VulkanSwapchain::GetCurrentFrame() const
@@ -247,10 +265,9 @@ namespace Volt::RHI
 		return data.imageReference;
 	}
 
-	VkFramebuffer_T* VulkanSwapchain::GetCurrentFramebuffer() const
+	RefPtr<CommandBuffer> VulkanSwapchain::GetCommandBuffer() const
 	{
-		const auto& data = m_perImageData.at(GetCurrentFrame());
-		return data.framebuffer;
+		return m_commandBuffer;
 	}
 
 	void* VulkanSwapchain::GetHandleImpl() const
@@ -267,12 +284,7 @@ namespace Volt::RHI
 		QuerySwapchainCapabilities();
 
 		CreateSwapchain(width, height, enableVSync);
-		CreateImageViews();
-		CreateRenderPass();
-		CreateFramebuffers();
 		CreateSyncObjects();
-		CreateCommandPools();
-		CreateCommandBuffers();
 	}
 
 	void VulkanSwapchain::Release()
@@ -284,27 +296,17 @@ namespace Volt::RHI
 
 		auto device = GraphicsContext::GetDevice();
 
+		m_commandBuffer->WaitForFences();
+
 		for (auto& perFrameData : m_perFrameInFlightData)
 		{
-			vkDestroyCommandPool(device->GetHandle<VkDevice>(), perFrameData.commandPool, nullptr);
-
 			vkDestroySemaphore(device->GetHandle<VkDevice>(), perFrameData.presentSemaphore, nullptr);
 			vkDestroySemaphore(device->GetHandle<VkDevice>(), perFrameData.renderSemaphore, nullptr);
-
-			vkDestroyFence(device->GetHandle<VkDevice>(), perFrameData.fence, nullptr);
 		}
 
 		m_perFrameInFlightData.clear();
-
-		for (auto& perImageData : m_perImageData)
-		{
-			vkDestroyImageView(device->GetHandle<VkDevice>(), perImageData.imageView, nullptr);
-			vkDestroyFramebuffer(device->GetHandle<VkDevice>(), perImageData.framebuffer, nullptr);
-		}
-
 		m_perImageData.clear();
 
-		vkDestroyRenderPass(device->GetHandle<VkDevice>(), m_renderPass, nullptr);
 		vkDestroySwapchainKHR(device->GetHandle<VkDevice>(), m_swapchain, nullptr);
 		vkDestroySurfaceKHR(GraphicsContext::Get().GetHandle<VkInstance>(), m_surface, nullptr);
 	}
@@ -385,8 +387,7 @@ namespace Volt::RHI
 
 			for (auto& imageData : m_perImageData)
 			{
-				vkDestroyImageView(device->GetHandle<VkDevice>(), imageData.imageView, nullptr);
-				vkDestroyFramebuffer(device->GetHandle<VkDevice>(), imageData.framebuffer, nullptr);
+				imageData.imageReference = nullptr;
 			}
 		}
 
@@ -414,93 +415,6 @@ namespace Volt::RHI
 		m_swapchainFormat = Utility::VulkanToVoltFormat(surfaceFormat.format);
 	}
 
-	void VulkanSwapchain::CreateImageViews()
-	{
-		VkImageViewCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		createInfo.format = Utility::VoltToVulkanFormat(m_swapchainFormat);
-		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		createInfo.subresourceRange.baseMipLevel = 0;
-		createInfo.subresourceRange.layerCount = 1;
-		createInfo.subresourceRange.baseArrayLayer = 0;
-		createInfo.subresourceRange.levelCount = 1;
-
-		auto device = GraphicsContext::GetDevice();
-
-		for (auto& imageData : m_perImageData)
-		{
-			createInfo.image = imageData.image;
-			VT_VK_CHECK(vkCreateImageView(device->GetHandle<VkDevice>(), &createInfo, nullptr, &imageData.imageView));
-		}
-	}
-
-	void VulkanSwapchain::CreateRenderPass()
-	{
-		VkAttachmentDescription colorAttachment{};
-		colorAttachment.format = Utility::VoltToVulkanFormat(m_swapchainFormat);
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-		VkAttachmentReference attachmentRef{};
-		attachmentRef.attachment = 0;
-		attachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subpassDesc{};
-		subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpassDesc.colorAttachmentCount = 1;
-		subpassDesc.pColorAttachments = &attachmentRef;
-		subpassDesc.pDepthStencilAttachment = nullptr;
-
-		VkSubpassDependency subpassDep{};
-		subpassDep.srcSubpass = VK_SUBPASS_EXTERNAL;
-		subpassDep.dstSubpass = 0;
-		subpassDep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		subpassDep.srcAccessMask = 0;
-		subpassDep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		subpassDep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-		VkRenderPassCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		createInfo.attachmentCount = 1;
-		createInfo.pAttachments = &colorAttachment;
-		createInfo.subpassCount = 1;
-		createInfo.pSubpasses = &subpassDesc;
-		createInfo.dependencyCount = 1;
-		createInfo.pDependencies = &subpassDep;
-
-		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkCreateRenderPass(device->GetHandle<VkDevice>(), &createInfo, nullptr, &m_renderPass));
-	}
-
-	void VulkanSwapchain::CreateFramebuffers()
-	{
-		VkFramebufferCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		createInfo.renderPass = m_renderPass;
-		createInfo.attachmentCount = 1;
-		createInfo.width = m_width;
-		createInfo.height = m_height;
-		createInfo.layers = 1;
-
-		auto device = GraphicsContext::GetDevice();
-
-		for (auto& imageData : m_perImageData)
-		{
-			createInfo.pAttachments = &imageData.imageView;
-			VT_VK_CHECK(vkCreateFramebuffer(device->GetHandle<VkDevice>(), &createInfo, nullptr, &imageData.framebuffer));
-		}
-	}
-
 	void VulkanSwapchain::CreateSyncObjects()
 	{
 		VkFenceCreateInfo fenceInfo{};
@@ -511,11 +425,6 @@ namespace Volt::RHI
 
 		m_perFrameInFlightData.resize(MAX_FRAMES_IN_FLIGHT);
 
-		for (auto& frameData : m_perFrameInFlightData)
-		{
-			VT_VK_CHECK(vkCreateFence(device->GetHandle<VkDevice>(), &fenceInfo, nullptr, &frameData.fence));
-		}
-
 		VkSemaphoreCreateInfo semaphoreInfo{};
 		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -523,37 +432,6 @@ namespace Volt::RHI
 		{
 			VT_VK_CHECK(vkCreateSemaphore(device->GetHandle<VkDevice>(), &semaphoreInfo, nullptr, &frameData.presentSemaphore));
 			VT_VK_CHECK(vkCreateSemaphore(device->GetHandle<VkDevice>(), &semaphoreInfo, nullptr, &frameData.renderSemaphore));
-		}
-	}
-
-	void VulkanSwapchain::CreateCommandPools()
-	{
-		const auto queueIndices = GraphicsContext::GetPhysicalDevice()->As<VulkanPhysicalGraphicsDevice>()->GetQueueFamilies();
-
-		VkCommandPoolCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		createInfo.queueFamilyIndex = queueIndices.graphicsFamilyQueueIndex;
-		createInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
-
-		auto device = GraphicsContext::GetDevice();
-		for (auto& frameData : m_perFrameInFlightData)
-		{
-			VT_VK_CHECK(vkCreateCommandPool(device->GetHandle<VkDevice>(), &createInfo, nullptr, &frameData.commandPool));
-		}
-	}
-
-	void VulkanSwapchain::CreateCommandBuffers()
-	{
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandBufferCount = 1;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-
-		auto device = GraphicsContext::GetDevice();
-		for (auto& frameData : m_perFrameInFlightData)
-		{
-			allocInfo.commandPool = frameData.commandPool;
-			VT_VK_CHECK(vkAllocateCommandBuffers(device->GetHandle<VkDevice>(), &allocInfo, &frameData.commandBuffer));
 		}
 	}
 

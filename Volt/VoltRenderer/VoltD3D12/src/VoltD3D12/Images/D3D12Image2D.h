@@ -37,6 +37,8 @@ namespace Volt::RHI
 		const ImageAspect GetImageAspect() const override;
 		const ImageLayout GetImageLayout() const override;
 
+		void SetCurrentImageLayout(ImageLayout layout) { m_layout = layout; }
+
 	protected:
 		void* GetHandleImpl() const override;
 		Buffer ReadPixelInternal(const uint32_t x, const uint32_t y, const size_t stride) override;
@@ -51,6 +53,7 @@ namespace Volt::RHI
 		RefPtr<Allocator> m_allocator;
 
 		bool m_isSwapchainImage = false;
+		ImageLayout m_layout = ImageLayout::Undefined;
 
 		std::map<int32_t, std::map<int32_t, RefPtr<ImageView>>> m_imageViews; // Layer -> Mip -> View
 	};

@@ -794,6 +794,13 @@ namespace Volt::RHI
 
 	struct ResourceBarrierInfo
 	{
+		ResourceBarrierInfo(const ResourceBarrierInfo& other)
+		{
+			type = other.type;
+			m_barrier = other.m_barrier;
+		}
+
+		ResourceBarrierInfo() = default;
 		~ResourceBarrierInfo() = default;
 
 		BarrierType type = BarrierType::None;

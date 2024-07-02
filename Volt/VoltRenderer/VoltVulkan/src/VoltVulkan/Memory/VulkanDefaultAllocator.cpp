@@ -38,7 +38,7 @@ namespace Volt::RHI
 	{
 		for (int32_t i = static_cast<int32_t>(m_activeImageAllocations.size()) - 1; i >= 0; i--)
 		{
-			if (!m_activeBufferAllocations.at(i))
+			if (!m_activeImageAllocations.at(i))
 			{
 				continue;
 			}

@@ -30,6 +30,7 @@ namespace Volt::RHI
 		VT_NODISCARD const uint32_t GetHeight() const override;
 		VT_NODISCARD const uint32_t GetFramesInFlight() const override;
 		VT_NODISCARD RefPtr<Image2D> GetCurrentImage() const override;
+		VT_NODISCARD RefPtr<CommandBuffer> GetCommandBuffer() const override;
 		VT_NODISCARD const PixelFormat GetFormat() const override;
 
 		VT_NODISCARD ComPtr<ID3D12Resource> GetCurrentImageResource() const { return m_perImageData.at(m_currentImageIndex).resource; }

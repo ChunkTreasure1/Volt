@@ -225,15 +225,6 @@ namespace Volt::RHI
 		Invalidate();
 	}
 
-	VulkanCommandBuffer::VulkanCommandBuffer(WeakPtr<Swapchain> swapchain)
-		: m_swapchainTarget(swapchain), m_queueType(QueueType::Graphics)
-	{
-		m_currentCommandBufferIndex = m_commandBufferCount - 1;
-		m_isSwapchainTarget = true;
-
-		Invalidate();
-	}
-
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{
 		Release();
@@ -251,12 +242,9 @@ namespace Volt::RHI
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		const auto& currentCommandBuffer = m_commandBuffers.at(index);
 
-		if (!m_isSwapchainTarget)
-		{
-			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence, VK_TRUE, UINT64_MAX));
-			VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence));
-			VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), currentCommandBuffer.commandPool, 0));
-		}
+		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence, VK_TRUE, UINT64_MAX));
+		VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence));
+		VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), currentCommandBuffer.commandPool, 0));
 
 		// If the next timestamp query is zero, no frame has run before
 		if (m_nextAvailableTimestampQuery > 0)
@@ -309,12 +297,9 @@ namespace Volt::RHI
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		const auto& currentCommandBuffer = m_commandBuffers.at(index);
 
-		if (!m_isSwapchainTarget)
-		{
-			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence, VK_TRUE, UINT64_MAX));
-			VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence));
-			VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), currentCommandBuffer.commandPool, 0));
-		}
+		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence, VK_TRUE, UINT64_MAX));
+		VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence));
+		VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), currentCommandBuffer.commandPool, 0));
 
 		// If the next timestamp query is zero, no frame has run before
 		if (m_nextAvailableTimestampQuery > 0)
@@ -347,23 +332,17 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
-		if (!m_isSwapchainTarget)
-		{
-			auto device = GraphicsContext::GetDevice();
-			device->GetDeviceQueue(m_queueType)->Execute({ { this } });
-		}
+		auto device = GraphicsContext::GetDevice();
+		device->GetDeviceQueue(m_queueType)->Execute({ { this } });
 	}
 
 	void VulkanCommandBuffer::ExecuteAndWait()
 	{
 		VT_PROFILE_FUNCTION();
 
-		if (!m_isSwapchainTarget)
-		{
-			auto device = GraphicsContext::GetDevice();
-			device->GetDeviceQueue(m_queueType)->Execute({ { this } });
-			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(m_currentCommandBufferIndex).fence, VK_TRUE, UINT64_MAX));
-		}
+		auto device = GraphicsContext::GetDevice();
+		device->GetDeviceQueue(m_queueType)->Execute({ { this } });
+		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(m_currentCommandBufferIndex).fence, VK_TRUE, UINT64_MAX));
 
 		FetchTimestampResults();
 	}
@@ -729,6 +708,7 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+		VT_ENSURE(barrierInfo.bufferBarrier().resource != nullptr);
 		auto& vkBuffer = barrierInfo.bufferBarrier().resource->AsRef<VulkanStorageBuffer>();
 
 		outBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
@@ -748,8 +728,9 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+		VT_ENSURE(barrierInfo.imageBarrier().resource != nullptr);
 		auto& vkImage = barrierInfo.imageBarrier().resource->AsRef<VulkanImage2D>();
-		
+
 		outBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
 		outBarrier.pNext = nullptr;
 		outBarrier.srcAccessMask = Utility::GetAccessFromBarrierAccess(barrierInfo.imageBarrier().srcAccess);
@@ -939,7 +920,7 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::UpdateBuffer(WeakPtr<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data)
 	{
 		assert(dataSize <= 65536 && "Size must not exceed MAX_UPDATE_SIZE!");
-		
+
 		VulkanStorageBuffer& vkBuffer = dstBuffer->AsRef<VulkanStorageBuffer>();
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		vkCmdUpdateBuffer(m_commandBuffers.at(index).commandBuffer, vkBuffer.GetHandle<VkBuffer>(), dstOffset, dataSize, data);
@@ -1083,72 +1064,55 @@ namespace Volt::RHI
 
 		const auto& queueFamilies = physicalDevice->GetQueueFamilies();
 
-		if (m_isSwapchainTarget)
-		{
-			auto& swapchain = m_swapchainTarget->AsRef<VulkanSwapchain>();
-			m_commandBufferCount = swapchain.GetFramesInFlight();
-			m_commandBuffers.resize(m_commandBufferCount);
+		m_commandBuffers.resize(m_commandBufferCount);
 
-			for (uint32_t i = 0; i < m_commandBufferCount; i++)
+		for (uint32_t i = 0; i < m_commandBufferCount; i++)
+		{
+			VkCommandPoolCreateInfo poolInfo{};
+			poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+
+			uint32_t queueFamilyIndex = 0;
+
+			switch (m_queueType)
 			{
-				m_commandBuffers[i].commandBuffer = swapchain.GetCommandBuffer(i);
-				m_commandBuffers[i].commandPool = swapchain.GetCommandPool(i);
+				case QueueType::Graphics:
+					queueFamilyIndex = queueFamilies.graphicsFamilyQueueIndex;
+					break;
+				case QueueType::Compute:
+					queueFamilyIndex = queueFamilies.computeFamilyQueueIndex;
+					break;
+				case QueueType::TransferCopy:
+					queueFamilyIndex = queueFamilies.transferFamilyQueueIndex;
+					break;
+				default:
+					assert(false);
+					break;
 			}
 
-			return;
+			poolInfo.queueFamilyIndex = queueFamilyIndex;
+			poolInfo.flags = 0;
+
+			VT_VK_CHECK(vkCreateCommandPool(device->GetHandle<VkDevice>(), &poolInfo, nullptr, &m_commandBuffers[i].commandPool));
 		}
-		else
+
+		for (uint32_t i = 0; i < m_commandBufferCount; i++)
 		{
-			m_commandBuffers.resize(m_commandBufferCount);
+			VkCommandBufferAllocateInfo allocInfo{};
+			allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			allocInfo.commandPool = m_commandBuffers[i].commandPool;
+			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			allocInfo.commandBufferCount = 1;
 
-			for (uint32_t i = 0; i < m_commandBufferCount; i++)
-			{
-				VkCommandPoolCreateInfo poolInfo{};
-				poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+			VT_VK_CHECK(vkAllocateCommandBuffers(device->GetHandle<VkDevice>(), &allocInfo, &m_commandBuffers[i].commandBuffer));
+		}
 
-				uint32_t queueFamilyIndex = 0;
+		for (uint32_t i = 0; i < m_commandBufferCount; i++)
+		{
+			VkFenceCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+			info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-				switch (m_queueType)
-				{
-					case QueueType::Graphics:
-						queueFamilyIndex = queueFamilies.graphicsFamilyQueueIndex;
-						break;
-					case QueueType::Compute:
-						queueFamilyIndex = queueFamilies.computeFamilyQueueIndex;
-						break;
-					case QueueType::TransferCopy:
-						queueFamilyIndex = queueFamilies.transferFamilyQueueIndex;
-						break;
-					default:
-						assert(false);
-						break;
-				}
-
-				poolInfo.queueFamilyIndex = queueFamilyIndex;
-				poolInfo.flags = 0;
-
-				VT_VK_CHECK(vkCreateCommandPool(device->GetHandle<VkDevice>(), &poolInfo, nullptr, &m_commandBuffers[i].commandPool));
-			}
-
-			for (uint32_t i = 0; i < m_commandBufferCount; i++)
-			{
-				VkCommandBufferAllocateInfo allocInfo{};
-				allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-				allocInfo.commandPool = m_commandBuffers[i].commandPool;
-				allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-				allocInfo.commandBufferCount = 1;
-
-				VT_VK_CHECK(vkAllocateCommandBuffers(device->GetHandle<VkDevice>(), &allocInfo, &m_commandBuffers[i].commandBuffer));
-			}
-
-			for (uint32_t i = 0; i < m_commandBufferCount; i++)
-			{
-				VkFenceCreateInfo info{};
-				info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-				info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-				VT_VK_CHECK(vkCreateFence(device->GetHandle<VkDevice>(), &info, nullptr, &m_commandBuffers[i].fence));
-			}
+			VT_VK_CHECK(vkCreateFence(device->GetHandle<VkDevice>(), &info, nullptr, &m_commandBuffers[i].fence));
 		}
 
 		m_hasTimestampSupport = GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().GetProperties().hasTimestampSupport;
@@ -1161,31 +1125,18 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::Release()
 	{
 		auto device = GraphicsContext::GetDevice();
-		if (!m_isSwapchainTarget)
+		std::vector<VkFence> fences{};
+		for (const auto& cmdBuffer : m_commandBuffers)
 		{
-			std::vector<VkFence> fences{};
-			for (const auto& cmdBuffer : m_commandBuffers)
-			{
-				fences.emplace_back(cmdBuffer.fence);
-			}
-
-			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
-
-			for (auto& cmdBuffer : m_commandBuffers)
-			{
-				vkDestroyFence(device->GetHandle<VkDevice>(), cmdBuffer.fence, nullptr);
-				vkDestroyCommandPool(device->GetHandle<VkDevice>(), cmdBuffer.commandPool, nullptr);
-			}
+			fences.emplace_back(cmdBuffer.fence);
 		}
-		else
-		{
-			std::vector<VkFence> fences{};
-			for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
-			{
-				fences.push_back(m_swapchainTarget->AsRef<VulkanSwapchain>().GetFence(i));
-			}
 
-			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
+		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
+
+		for (auto& cmdBuffer : m_commandBuffers)
+		{
+			vkDestroyFence(device->GetHandle<VkDevice>(), cmdBuffer.fence, nullptr);
+			vkDestroyCommandPool(device->GetHandle<VkDevice>(), cmdBuffer.commandPool, nullptr);
 		}
 
 		for (const auto& pool : m_timestampQueryPools)

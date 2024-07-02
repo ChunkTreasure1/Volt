@@ -249,8 +249,6 @@ namespace Volt::RHI
 
 			if (usageFlags == ImageUsage::Attachment)
 			{
-				//result = D3D12_RESOURCE_STATE_COPY_DEST;
-
 				if (Utility::IsDepthFormat(imageFormat))
 				{
 					result = D3D12_RESOURCE_STATE_DEPTH_WRITE;
@@ -262,8 +260,6 @@ namespace Volt::RHI
 			}
 			else if (usageFlags == ImageUsage::AttachmentStorage)
 			{
-				//result = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-
 				if (Utility::IsDepthFormat(imageFormat))
 				{
 					result |= D3D12_RESOURCE_STATE_DEPTH_WRITE;

@@ -95,7 +95,6 @@ namespace Volt::RHI
 		virtual const QueueType GetQueueType() const = 0;
 
 		static RefPtr<CommandBuffer> Create(const uint32_t count, QueueType queueType = QueueType::Graphics);
-		static RefPtr<CommandBuffer> Create(WeakPtr<Swapchain> swapchain);
 		static RefPtr<CommandBuffer> Create();
 
 	protected:

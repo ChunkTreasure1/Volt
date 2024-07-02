@@ -95,7 +95,7 @@ namespace Volt::RHI
 		D3D12_CPU_DESCRIPTOR_HANDLE(m_fontTexturePointer.GetCPUPointer()),
 		D3D12_GPU_DESCRIPTOR_HANDLE(m_fontTexturePointer.GetGPUPointer()));
 
-		m_commandBuffer = CommandBuffer::Create(m_info.swapchain);
+		m_commandBuffer = CommandBuffer::Create();
 	}
 
 	void D3D12ImGuiImplementation::ShutdownAPI()

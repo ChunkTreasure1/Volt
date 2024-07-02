@@ -53,11 +53,6 @@ namespace Volt::RHI
 		return RefPtr<VulkanCommandBuffer>::Create(count, queueType);
 	}
 
-	RefPtr<CommandBuffer> VulkanRHIProxy::CreateCommandBuffer(WeakPtr<Swapchain> swapchain) const
-	{
-		return RefPtr<VulkanCommandBuffer>::Create(swapchain);
-	}
-
 	RefPtr<IndexBuffer> VulkanRHIProxy::CreateIndexBuffer(std::span<const uint32_t> indices) const
 	{
 		return RefPtr<VulkanIndexBuffer>::Create(indices);

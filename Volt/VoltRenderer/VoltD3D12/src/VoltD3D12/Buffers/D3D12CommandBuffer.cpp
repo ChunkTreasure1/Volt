@@ -27,6 +27,97 @@ namespace Volt::RHI
 { 
 	namespace Utility
 	{
+		D3D12_RESOURCE_STATES GetResourceStateFromLayout(const ImageLayout layout, const BarrierStage barrierStage)
+		{
+			D3D12_RESOURCE_STATES result = D3D12_RESOURCE_STATE_COMMON;
+
+			if (EnumValueContainsFlag(layout, ImageLayout::Present))
+			{
+				result |= D3D12_RESOURCE_STATE_PRESENT;
+			}
+
+			if (EnumValueContainsFlag(layout, ImageLayout::RenderTarget))
+			{
+				result |= D3D12_RESOURCE_STATE_RENDER_TARGET;
+			}
+
+			if (EnumValueContainsFlag(layout, ImageLayout::ShaderWrite))
+			{
+				result |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+			}
+
+			if (EnumValueContainsFlag(layout, ImageLayout::DepthStencilWrite))
+			{
+				result |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
+			}
+
+			if (EnumValueContainsFlag(layout, ImageLayout::DepthStencilRead))
+			{
+				result |= D3D12_RESOURCE_STATE_DEPTH_READ;
+			}
+
+			if (EnumValueContainsFlag(layout, ImageLayout::ShaderRead))
+			{
+				if (EnumValueContainsFlag(barrierStage, BarrierStage::PixelShader))
+				{
+					result |= D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+				}
+
+				if (EnumValueContainsFlag(barrierStage, BarrierStage::VertexShader) ||
+					EnumValueContainsFlag(barrierStage, BarrierStage::ComputeShader))
+				{
+					result |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+				}
+
+				if (result == D3D12_RESOURCE_STATE_COMMON)
+				{
+					result = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+				}
+			}
+
+			if (EnumValueContainsFlag(layout, ImageLayout::TransferSource))
+			{
+				result |= D3D12_RESOURCE_STATE_COPY_SOURCE;
+			}
+
+			if (EnumValueContainsFlag(layout, ImageLayout::TransferDestination))
+			{
+				result |= D3D12_RESOURCE_STATE_COPY_DEST;
+			}
+
+			if (EnumValueContainsFlag(layout, ImageLayout::ResolveSource))
+			{
+				result |= D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
+			}
+
+			if (EnumValueContainsFlag(layout, ImageLayout::ResolveDestination))
+			{
+				result |= D3D12_RESOURCE_STATE_RESOLVE_DEST;
+			}
+
+			if (EnumValueContainsFlag(layout, ImageLayout::VideoDecodeRead))
+			{
+				result |= D3D12_RESOURCE_STATE_VIDEO_DECODE_READ;
+			}
+
+			if (EnumValueContainsFlag(layout, ImageLayout::VideoDecodeWrite))
+			{
+				result |= D3D12_RESOURCE_STATE_VIDEO_DECODE_WRITE;
+			}
+
+			if (EnumValueContainsFlag(layout, ImageLayout::VideoEncodeRead))
+			{
+				result |= D3D12_RESOURCE_STATE_VIDEO_ENCODE_READ;
+			}
+
+			if (EnumValueContainsFlag(layout, ImageLayout::VideoEncodeWrite))
+			{
+				result |= D3D12_RESOURCE_STATE_VIDEO_ENCODE_WRITE;
+			}
+
+			return result;
+		}
+
 		D3D12_RESOURCE_STATES GetResourceStateFromStage(const BarrierStage barrierSync, const BarrierAccess barrierAccess)
 		{
 			D3D12_RESOURCE_STATES result = D3D12_RESOURCE_STATE_COMMON;
@@ -149,14 +240,6 @@ namespace Volt::RHI
 		: m_queueType(queueType), m_commandListCount(count)
 	{
 		m_currentCommandListIndex = m_commandListCount - 1;
-		Invalidate();
-	}
-
-	D3D12CommandBuffer::D3D12CommandBuffer(WeakPtr<Swapchain> swapchain)
-		: m_queueType(QueueType::Graphics), m_commandListCount(1), m_swapchainTarget(swapchain)
-	{
-		m_currentCommandListIndex = m_commandListCount - 1;
-		m_isSwapchainTarget = true;
 		Invalidate();
 	}
 
@@ -468,7 +551,7 @@ namespace Volt::RHI
 
 		for (const auto& voltBarrier : resourceBarriers)
 		{
-			auto& newBarrier = barriers.emplace_back();
+			D3D12_RESOURCE_BARRIER newBarrier{};
 
 			switch (voltBarrier.type)
 			{
@@ -498,15 +581,27 @@ namespace Volt::RHI
 					newBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 					newBarrier.Transition.pResource = imageBarrier.resource->GetHandle<ID3D12Resource*>();
 					newBarrier.Transition.Subresource = D3D12CalcSubresource(imageBarrier.subResource.baseMipLevel, imageBarrier.subResource.baseArrayLayer, 0, imageBarrier.subResource.levelCount, imageBarrier.subResource.layerCount);
-					newBarrier.Transition.StateBefore = Utility::GetResourceStateFromStage(imageBarrier.srcStage, imageBarrier.srcAccess);
-					newBarrier.Transition.StateAfter = Utility::GetResourceStateFromStage(imageBarrier.dstStage, imageBarrier.dstAccess);
+					newBarrier.Transition.StateBefore = Utility::GetResourceStateFromLayout(imageBarrier.srcLayout, imageBarrier.srcStage);
+					newBarrier.Transition.StateAfter = Utility::GetResourceStateFromLayout(imageBarrier.dstLayout, imageBarrier.dstStage);
+
+					if (newBarrier.Transition.StateBefore == newBarrier.Transition.StateAfter)
+					{
+						continue;
+					}
+
+					imageBarrier.resource->As<D3D12Image2D>()->SetCurrentImageLayout(imageBarrier.dstLayout);
 					break;
 				}
 			}
+
+			barriers.emplace_back(newBarrier);
 		}
 
-		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
-		cmdData.commandList->ResourceBarrier(static_cast<uint32_t>(barriers.size()), barriers.data());
+		if (!barriers.empty())
+		{
+			auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
+			cmdData.commandList->ResourceBarrier(static_cast<uint32_t>(barriers.size()), barriers.data());
+		}
 	}
 
 	void D3D12CommandBuffer::BeginMarker(std::string_view markerLabel, const std::array<float, 4>& markerColor)
@@ -533,6 +628,24 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::ClearImage(WeakPtr<Image2D> image, std::array<float, 4> clearColor)
 	{
+		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
+		auto imageView = image->GetView();
+		auto& d3d12View = imageView->AsRef<D3D12ImageView>();
+
+		D3D12_RECT rect{};
+		rect.top = 0;
+		rect.left = 0;
+		rect.bottom = image->GetHeight();
+		rect.right = image->GetWidth();
+
+		if ((image->GetImageAspect() & ImageAspect::Depth) != ImageAspect::None)
+		{
+			cmdData.commandList->ClearDepthStencilView(D3D12_CPU_DESCRIPTOR_HANDLE(d3d12View.GetRTVDSVDescriptor().GetCPUPointer()), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, clearColor[0], static_cast<uint8_t>(clearColor[1]), 1, &rect);
+		}
+		else
+		{
+			cmdData.commandList->ClearRenderTargetView(D3D12_CPU_DESCRIPTOR_HANDLE(d3d12View.GetRTVDSVDescriptor().GetCPUPointer()), clearColor.data(), 1, &rect);
+		}
 	}
 
 	void D3D12CommandBuffer::ClearBuffer(WeakPtr<StorageBuffer> buffer, const uint32_t value)
@@ -545,6 +658,8 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::CopyBufferRegion(WeakPtr<Allocation> srcResource, const size_t srcOffset, WeakPtr<Allocation> dstResource, const size_t dstOffset, const size_t size)
 	{
+		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
+		cmdData.commandList->CopyBufferRegion(dstResource->GetResourceHandle<ID3D12Resource*>(), dstOffset, srcResource->GetResourceHandle<ID3D12Resource*>(), srcOffset, size);
 	}
 
 	void D3D12CommandBuffer::CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip)

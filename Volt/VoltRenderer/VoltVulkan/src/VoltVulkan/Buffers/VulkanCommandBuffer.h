@@ -19,7 +19,6 @@ namespace Volt::RHI
 	{
 	public:
 		VulkanCommandBuffer(const uint32_t count, QueueType queueType);
-		VulkanCommandBuffer(WeakPtr<Swapchain> swapchain);
 		~VulkanCommandBuffer() override;
 
 		void Begin() override;
@@ -115,7 +114,6 @@ namespace Volt::RHI
 		uint32_t m_currentCommandBufferIndex = 0;
 		uint32_t m_lastCommandBufferIndex = 0;
 
-		bool m_isSwapchainTarget = false;
 		bool m_hasTimestampSupport = false;
 
 		uint32_t m_commandBufferCount = 0;
@@ -134,6 +132,5 @@ namespace Volt::RHI
 		// Internal state
 		WeakPtr<RenderPipeline> m_currentRenderPipeline;
 		WeakPtr<ComputePipeline> m_currentComputePipeline;
-		WeakPtr<Swapchain> m_swapchainTarget;
 	};
 }

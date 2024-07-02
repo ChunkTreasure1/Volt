@@ -15,7 +15,6 @@ namespace Volt::RHI
 	{
 	public:
 		D3D12CommandBuffer(const uint32_t count, QueueType queueType);
-		D3D12CommandBuffer(WeakPtr<Swapchain> swapchain);
 		~D3D12CommandBuffer() override;
 
 		void Begin() override;
@@ -104,11 +103,9 @@ namespace Volt::RHI
 		uint32_t m_commandListCount = 0;
 		uint32_t m_currentCommandListIndex = 0;
 
-		bool m_isSwapchainTarget = false;
 		QueueType m_queueType;
 
 		// Internal state
-		WeakPtr<Swapchain> m_swapchainTarget;
 		WeakPtr<RenderPipeline> m_currentRenderPipeline;
 		WeakPtr<ComputePipeline> m_currentComputePipeline;
 	};

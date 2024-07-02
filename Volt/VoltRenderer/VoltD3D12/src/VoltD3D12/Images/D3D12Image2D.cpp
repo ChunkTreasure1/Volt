@@ -74,6 +74,41 @@ namespace Volt::RHI
 		m_specification.width = width;
 		m_specification.height = height;
 		m_allocation = m_allocator->CreateImage(m_specification, m_specification.memoryUsage);
+
+		if (m_specification.initializeImage)
+		{
+			// This should match GetResourceStateFromUsage in D3D12Helpers.h
+			//switch (m_specification.usage)
+			//{
+			//	case ImageUsage::Attachment:
+			//	case ImageUsage::AttachmentStorage:
+			//	{
+			//		if ((GetImageAspect() & ImageAspect::Depth) != ImageAspect::None)
+			//		{
+			//			m_layout = ImageLayout::DepthStencilWrite;
+			//		}
+			//		else
+			//		{
+			//			m_layout = ImageLayout::RenderTarget;
+			//		}
+			//		break;
+			//	}
+
+			//	case ImageUsage::Texture:
+			//	{
+			//		m_layout = ImageLayout::ShaderRead;
+			//		break;
+			//	}
+
+			//	case ImageUsage::Storage:
+			//	{
+			//		m_layout = ImageLayout::ShaderWrite;
+			//		break;
+			//	}
+			//}
+
+			m_layout = ImageLayout::Undefined;
+		}
 	}
 
 	void D3D12Image2D::Release()
@@ -181,7 +216,7 @@ namespace Volt::RHI
 
 	const ImageLayout D3D12Image2D::GetImageLayout() const
 	{
-		return ImageLayout();
+		return m_layout;
 	}
 
 	const uint32_t D3D12Image2D::CalculateMipCount() const

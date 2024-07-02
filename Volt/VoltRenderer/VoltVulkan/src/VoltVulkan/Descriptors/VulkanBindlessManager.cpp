@@ -209,6 +209,7 @@ namespace Volt::RHI
 
 	void VulkanBindlessManager::DestroyGlobalDescriptorLayout()
 	{
+		vkDestroyDescriptorPool(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), s_globalDescriptorPool, nullptr);
 		vkDestroyDescriptorSetLayout(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), s_globalDescriptorSetLayout, nullptr);
 		s_globalDescriptorSetLayout = nullptr;
 	}

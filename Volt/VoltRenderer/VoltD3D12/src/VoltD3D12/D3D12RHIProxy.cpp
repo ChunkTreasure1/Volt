@@ -53,11 +53,6 @@ namespace Volt::RHI
 		return RefPtr<D3D12CommandBuffer>::Create(count, queueType);
 	}
 	
-	RefPtr<CommandBuffer> D3D12RHIProxy::CreateCommandBuffer(WeakPtr<Swapchain> swapchain) const
-	{
-		return RefPtr<D3D12CommandBuffer>::Create(swapchain);
-	}
-	
 	RefPtr<IndexBuffer> D3D12RHIProxy::CreateIndexBuffer(std::span<const uint32_t> indices) const
 	{
 		return RefPtr<IndexBuffer>();
