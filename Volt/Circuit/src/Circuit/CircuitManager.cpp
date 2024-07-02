@@ -23,69 +23,56 @@ namespace Circuit
 		return *s_Instance.get();
 	}
 
-	void CircuitManager::Initialize()
+	void CircuitManager::Initialize(std::function<void(const TellEvent&)> eventCallback)
 	{
 		s_Instance = std::make_unique<CircuitManager>();
 		s_Instance->Init();
+		s_Instance->m_tellEventCallback = eventCallback;
 	}
 
 	void CircuitManager::Init()
 	{
-		m_TellEvents.push_back(std::make_unique<OpenWindowTellEvent>(glm::u32vec2(300,200)));
+
+	}
+
+	void CircuitManager::BroadcastTellEvent(const TellEvent& event)
+	{
+		m_tellEventCallback(event);
 	}
 
 	void CircuitManager::Update()
 	{
-		if (!m_TellEvents.empty())
-		{
-			for (long long i = m_TellEvents.size() - 1; i >= 0; i--)
-			{
-				if (m_TellEvents[i]->IsHandled())
-				{
-					m_TellEvents.erase(m_TellEvents.begin() + i);
-				}
-			}
-		}
-		if (!m_ListenEvents.empty())
-		{
-			for (long long i = m_ListenEvents.size() - 1; i >= 0; i--)
-			{
-				HandleListenEvent(m_ListenEvents[i]);
-				m_ListenEvents.erase(m_ListenEvents.begin() + i);
-			}
-		}
 	}
 
-	void CircuitManager::AddTellEvent(std::unique_ptr<TellEvent> event)
+	void CircuitManager::BroadcastListenEvent(const ListenEvent& event)
 	{
-		m_TellEvents.push_back(std::move(event));
+		HandleListenEvent(event);
 	}
 
-	const std::vector<std::unique_ptr<TellEvent>>& CircuitManager::GetTellEventsToProcess()
+	CircuitWindow& CircuitManager::OpenWindow(OpenWindowParams& params)
 	{
-		return m_TellEvents;
+		const size_t startWindowCount = m_windows.size();
+		BroadcastTellEvent(OpenWindowTellEvent(params));
+		assert(m_windows.size() == (startWindowCount + 1) && "Failed to open window.");
+
+		return *((--m_windows.end())->second);
 	}
 
-	CIRCUIT_API void CircuitManager::AddListenEvent(std::unique_ptr<ListenEvent> event)
+	void CircuitManager::HandleListenEvent(const ListenEvent& event)
 	{
-		m_ListenEvents.push_back(std::move(event));
-	}
-
-	void CircuitManager::HandleListenEvent(const std::unique_ptr<ListenEvent>& event)
-	{
-		switch (event->GetType())
+		switch (event.GetType())
 		{
 			case CircuitListenEventType::WindowOpened:
 			{
-				auto openWindowEvent = static_cast<WindowOpenedListenEvent*>(event.get());
-				m_Windows[openWindowEvent->GetWindowHandle()] = std::make_unique<CircuitWindow>(openWindowEvent->GetWindowHandle());
+				const WindowOpenedListenEvent& openWindowEvent = static_cast<const WindowOpenedListenEvent&>(event);
+				m_windows[openWindowEvent.GetWindowHandle()] = std::make_unique<CircuitWindow>(openWindowEvent.GetWindowHandle());
 			}
 			break;
 
 			case CircuitListenEventType::WindowClosed:
 			{
-				auto closeWindowEvent = static_cast<WindowClosedListenEvent*>(event.get());
-				m_Windows.erase(closeWindowEvent->GetWindowHandle());
+				auto closeWindowEvent = static_cast<const WindowClosedListenEvent&>(event);
+				m_windows.erase(closeWindowEvent.GetWindowHandle());
 			}
 			break;
 
@@ -96,6 +83,6 @@ namespace Circuit
 
 	CIRCUIT_API const std::map<InterfaceWindowHandle, std::unique_ptr<CircuitWindow>>& CircuitManager::GetWindows()
 	{
-		return m_Windows;
+		return m_windows;
 	}
 }

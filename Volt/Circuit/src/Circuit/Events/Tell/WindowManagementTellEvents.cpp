@@ -2,9 +2,9 @@
 #include "WindowManagementTellEvents.h"
 namespace Circuit
 {
-	OpenWindowTellEvent::OpenWindowTellEvent(glm::u32vec2 startSize)
+	OpenWindowTellEvent::OpenWindowTellEvent(const OpenWindowParams& params)
 		: TellEvent(CircuitTellEventType::OpenWindow),
-		m_startSize(startSize)
+		m_params(params)
 	{
 	}
 

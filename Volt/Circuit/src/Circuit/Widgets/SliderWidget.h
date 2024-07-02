@@ -17,12 +17,14 @@ namespace Circuit
 		CIRCUIT_BEGIN_ARGS(SliderWidget)
 		{
 		};
-		CIRCUIT_ARGUMENT(Observer<float>*, Value);
+		CIRCUIT_ARGUMENT(float, Value);
 		CIRCUIT_ARGUMENT(float, Min);
 		CIRCUIT_ARGUMENT(float, Max);
 		CIRCUIT_END_ARGS();
 
 		CIRCUIT_API void Build(const Arguments& args);
+
+		virtual void OnPaint(CircuitPainter& painter) override;
 
 		CIRCUIT_API float GetValue() const;
 		CIRCUIT_API void SetValue(float value);
@@ -35,8 +37,8 @@ namespace Circuit
 
 		CIRCUIT_API float GetValueNormalized();
 	private:
-		Observer<float>* m_Value;
-		unsigned int m_OnValueChangeHandle;
+		float m_Value;
+		//unsigned int m_OnValueChangeHandle;
 		float m_MinValue;
 		float m_MaxValue;
 	};

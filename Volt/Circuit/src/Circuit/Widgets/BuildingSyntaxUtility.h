@@ -38,15 +38,15 @@ struct CircuitDeclare
 {
 	CircuitDeclare()
 	{
-		m_Widget = std::make_shared<WidgetType>();
+		m_Widget = std::make_unique<WidgetType>();
 	}
-	std::shared_ptr<WidgetType> operator<<=(const typename WidgetType::Arguments::WidgetArgumentsType& args)
+	std::unique_ptr<WidgetType>& operator<<=(const typename WidgetType::Arguments::WidgetArgumentsType& args)
 	{
 		m_Widget->BuildBaseArgs(args);
 		m_Widget->Build(args);
 		return m_Widget;
 	}
-	std::shared_ptr<WidgetType> m_Widget;
+	std::unique_ptr<WidgetType> m_Widget;
 };
 
 /** Base class for named arguments. Provides settings necessary for all widgets. */

@@ -1,10 +1,14 @@
 #include "circuitpch.h"
 #include "CircuitWindow.h"
+#include "Circuit/CircuitPainter.h"
+
 namespace Circuit
 {
-	CircuitWindow::CircuitWindow(InterfaceWindowHandle windowHandle)
+	CircuitWindow::CircuitWindow(InterfaceWindowHandle windowHandle, const OpenWindowParams& params)
 		: m_interfaceWindowHandle(windowHandle)
 	{
+		m_title = params.title;
+		m_windowSize = { params.startWidth, params.startHeight };
 	}
 	InterfaceWindowHandle CircuitWindow::GetInterfaceWindowHandle() const
 	{
@@ -21,6 +25,12 @@ namespace Circuit
 
 	std::vector<CircuitDrawCommand> CircuitWindow::GetDrawCommands()
 	{
-		return std::vector<CircuitDrawCommand>();
+		CircuitPainter painter;
+		m_widget->OnPaint(painter);
+		return painter.GetCommands();
+	}
+	void CircuitWindow::SetWidget(std::unique_ptr<Widget> widget)
+	{
+		m_widget = std::move(widget);
 	}
 }

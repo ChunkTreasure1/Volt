@@ -118,7 +118,19 @@ void Sandbox::OnAttach()
 		EditorResources::Initialize();
 	}
 
-	Circuit::CircuitManager::Initialize();
+	Circuit::CircuitManager::Initialize(std::bind(&Sandbox::HandleCircuitTellEvents, this, std::placeholders::_1));
+	Circuit::OpenWindowParams params;
+	params.title = "Test Circuit Window";
+	params.startWidth = 600;
+	params.startHeight = 400;
+	Circuit::CircuitWindow& window = Circuit::CircuitManager::Get().OpenWindow(params);
+
+	window.SetWidget(CreateWidget(Circuit::SliderWidget)
+		.X(200)
+		.Y(200)
+		.Max(100)
+		.Min(0)
+		.Value(50.f));
 
 	EditorResources::Initialize();
 	VersionControl::Initialize(VersionControlSystem::Perforce);
@@ -645,6 +657,42 @@ bool Sandbox::LoadScene(Volt::OnSceneTransitionEvent& e)
 	return true;
 }
 
+void Sandbox::HandleCircuitTellEvents(const Circuit::TellEvent& e)
+{
+	switch (e.GetType())
+	{
+		case Circuit::CircuitTellEventType::OpenWindow:
+		{
+			const Circuit::OpenWindowTellEvent& openWindowEvent = reinterpret_cast<const Circuit::OpenWindowTellEvent&>(e);
+
+			Volt::WindowProperties windowProperties;
+			windowProperties.title = openWindowEvent.GetParams().title;
+			windowProperties.vsync = false;
+
+			windowProperties.width = openWindowEvent.GetParams().startWidth;
+			windowProperties.height = openWindowEvent.GetParams().startHeight;
+
+			Volt::WindowHandle handle = Volt::Application::GetWindowManager().CreateNewWindow(windowProperties);
+			Volt::Window& window = Volt::Application::GetWindowManager().GetWindow(handle);
+			window.SetEventCallback([](Volt::Event& event)
+			{
+				VT_CORE_INFO("Window Event: {0}", event.GetName());
+			});
+
+
+			Circuit::WindowOpenedListenEvent ev = Circuit::WindowOpenedListenEvent(handle);
+			Circuit::CircuitManager::Get().BroadcastListenEvent(ev);
+
+			m_circuitRenderers.push_back(CreateScope<CircuitRenderer>(handle));
+
+			break;
+		}
+		default:
+			VT_CORE_ERROR("Unhandled Circuit Event!");
+			break;
+	}
+}
+
 bool Sandbox::CheckForUpdateNavMesh(Volt::Entity entity)
 {
 	for (auto child : entity.GetChildren())
@@ -828,35 +876,6 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 
 	Circuit::CircuitManager::Get().Update();
 
-	for (const std::unique_ptr<Circuit::TellEvent>& tellEvent : Circuit::CircuitManager::Get().GetTellEventsToProcess())
-	{
-		switch (tellEvent->GetType())
-		{
-			case Circuit::CircuitTellEventType::OpenWindow:
-			{
-				//Circuit::OpenWindowTellEvent& OpenWindowEvent = reinterpret_cast<Circuit::OpenWindowTellEvent&>(*tellEvent);
- 
-				Volt::WindowProperties windowProperties;
-				windowProperties.title = "CircuitWindow";
-				windowProperties.vsync = false;
-				/*
-				windowProperties.width = OpenWindowEvent.GetStartSize().x;
-				windowProperties.height = OpenWindowEvent.GetStartSize().y;*/
-
-				Volt::WindowHandle handle = Volt::Application::GetWindowManager().CreateNewWindow(windowProperties);
-				Volt::Window& window = Volt::Application::GetWindowManager().GetWindow(handle);
-				window.SetEventCallback([](Volt::Event& event)
-				{
-					VT_CORE_INFO("Window Event: {0}", event.GetName());
-				});
-				Circuit::CircuitManager::Get().AddListenEvent(std::make_unique<Circuit::WindowOpenedListenEvent>(handle));
-
-			}
-			break;
-		}
-		tellEvent->MarkHandled();
-	}
-
 	return true;
 }
 
@@ -883,53 +902,6 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 
 		NewScene();
 	}
-
-	//if (ImGui::Begin("CIRCUIT WINDOW"))
-	//{
-	//	static float SliderValue = 50.0f;
-	//	static Observer<float> sliderObserver(&SliderValue);
-	//	static std::shared_ptr<SliderWidget> slider = CreateWidget(SliderWidget)
-	//		.Min(0)
-	//		.Max(100)
-	//		.Value(&sliderObserver);
-
-	//	float test = sliderObserver.GetValue();
-	//	if (ImGui::SliderFloat("TEST", &test, 0, 100))
-	//	{
-	//		sliderObserver = test;
-	//	}
-	//	ImVec2 cursorScreenPos = ImGui::GetCursorScreenPos();
-
-	//	auto drawList = ImGui::GetWindowDrawList();
-	//	for (auto& child : slider->GetChildren())
-	//	{
-	//		if (child->IsRenderPrimitive())
-	//		{
-	//			switch (child->GetRenderPrimitiveType())
-	//			{
-	//				case RenderPrimitiveType::Rectangle:
-	//				{
-	//					std::shared_ptr<RectWidget> rect = std::reinterpret_pointer_cast<RectWidget>(child);
-	//					ImVec2 min = { cursorScreenPos.x + rect->GetX(), cursorScreenPos.y + rect->GetY() };
-	//					ImVec2 max = { cursorScreenPos.x + rect->GetX() + rect->GetWidth(),cursorScreenPos.y + rect->GetY() + rect->GetHeight()};
-	//					
-	//					drawList->AddRectFilled(min, max, ImGui::GetColorU32(ImVec4(rect->GetColor().m_R, rect->GetColor().m_G, rect->GetColor().m_B, rect->GetColor().m_A)), 1);
-	//					break;
-	//				}
-	//				case RenderPrimitiveType::Circle:
-	//				{
-	//					std::shared_ptr<CircleWidget> circle = std::reinterpret_pointer_cast<CircleWidget>(child);
-	//					ImVec2 center = { cursorScreenPos.x + circle->GetX() , cursorScreenPos.y + circle->GetY() };
-	//					drawList->AddCircleFilled(center, circle->GetRadius(), ImGui::GetColorU32(ImVec4(circle->GetColor().m_R, circle->GetColor().m_G, circle->GetColor().m_B, circle->GetColor().m_A)));
-	//					break;
-	//				}
-	//				default:
-	//					break;
-	//			}
-	//		}
-	//	}
-	//}
-	//ImGui::End();
 
 	UpdateDockSpace();
 
@@ -1011,16 +983,21 @@ void Sandbox::RenderGameView()
 bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)
 {
 	VT_PROFILE_FUNCTION();
-	
-	for (auto& circuitWindowPair : Circuit::CircuitManager::Get().GetWindows())
+
+	for (Scope<CircuitRenderer>& renderer : m_circuitRenderers)
+	{
+		renderer->OnRender();
+	}
+
+	/*for (auto& circuitWindowPair : Circuit::CircuitManager::Get().GetWindows())
 	{
 		Volt::WindowHandle handle = circuitWindowPair.first;
-		Volt::Window window = Volt::Application::GetWindowManager().GetWindow(handle);
+		Volt::Window& window = Volt::Application::GetWindowManager().GetWindow(handle);
 		Circuit::CircuitWindow& circuitWindow = *circuitWindowPair.second;
 
 
 		circuitWindow.GetDrawCommands();
-	}
+	}*/
 
 	//mySceneRenderer->ClearOutlineCommands();
 

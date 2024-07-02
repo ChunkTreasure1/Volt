@@ -146,6 +146,8 @@ Output main(FullscreenTriangleVertex input)
                 float2 position = SDF_Translate(command.pixelPos, pixelPos);
                 position = SDF_Rotate(position, command.rotation);
                 position = SDF_Scale(position, command.scale);
+                position = SDF_Translate(position, -command.radiusHalfSize);
+                
                 const float sdf = SDF_Rectangle(position, command.radiusHalfSize) * command.scale;
 
                 const float alpha = SDF_AA(sdf);

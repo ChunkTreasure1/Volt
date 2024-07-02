@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Volt/Core/WindowHandle.h>
 #include <CoreUtilities/Core.h>
 
 namespace Circuit
@@ -7,6 +8,7 @@ namespace Circuit
 	class CircuitWindow;
 }
 
+struct CircuitOutputData;
 namespace Volt
 {
 	namespace RHI
@@ -22,13 +24,13 @@ namespace Volt
 class CircuitRenderer
 {
 public:
-	CircuitRenderer(Circuit::CircuitWindow& window);
+	CircuitRenderer(Volt::WindowHandle& windowHandle);
 	~CircuitRenderer() = default;
 
 	void OnRender();
 
 private:
-	void AddCircuitPrimitivesPass(Volt::RenderGraph& renderGraph, Volt::RenderGraphBlackboard& blackboard);
+	CircuitOutputData& AddCircuitPrimitivesPass(Volt::RenderGraph& renderGraph, Volt::RenderGraphBlackboard& blackboard);
 
 	Circuit::CircuitWindow& m_targetCircuitWindow;
 	Volt::Window& m_targetWindow;

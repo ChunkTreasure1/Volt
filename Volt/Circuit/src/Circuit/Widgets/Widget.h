@@ -5,7 +5,7 @@ class WidgetBuilder;
 
 namespace Circuit
 {
-
+	class CircuitPainter;
 	enum class RenderPrimitiveType
 	{
 		Rectangle,
@@ -29,6 +29,7 @@ namespace Circuit
 
 
 
+		CIRCUIT_API virtual void OnPaint(CircuitPainter& painter);
 
 		CIRCUIT_API void RequestRebuild();
 

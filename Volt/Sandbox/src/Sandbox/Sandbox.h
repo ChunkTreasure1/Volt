@@ -4,12 +4,14 @@
 #include "Sandbox/VersionControl/VersionControl.h"
 #include "Sandbox/FileWatcher/FileWatcher.h"
 #include "Sandbox/GameBuilder.h"
+#include "Sandbox/CircuitRenderer.h"
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Core/Layer/Layer.h>
 #include <Volt/Events/ApplicationEvent.h>
 #include <Volt/Events/KeyEvent.h>
 #include <Volt/Events/MouseEvent.h>
+
 
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -22,6 +24,11 @@ namespace Volt
 	class Material;
 	class Camera;
 	class Texture2D;
+}
+
+namespace Circuit
+{
+	class TellEvent;
 }
 
 enum class SceneState
@@ -96,6 +103,8 @@ private:
 	bool OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e);
 	bool LoadScene(Volt::OnSceneTransitionEvent& e);
 
+	void HandleCircuitTellEvents( const Circuit::TellEvent& e);
+
 	void CreateWatches();
 
 	void SetupNewSceneData();
@@ -129,6 +138,8 @@ private:
 	void CreateAddWatch();
 	void CreateMovedWatch();
 	/////////////////////////
+
+	std::vector<Scope<CircuitRenderer>> m_circuitRenderers;
 
 	BuildInfo m_buildInfo;
 

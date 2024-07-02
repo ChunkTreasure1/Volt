@@ -2,6 +2,7 @@
 #include "Circuit/Events/Tell/BaseTellEvent.h"
 #include "Circuit/Events/CircuitEventTypes.h"
 #include "Circuit/Window/WindowInterfaceDefines.h"
+#include "Circuit/Window/CircuitWindow.h"
 
 namespace Circuit
 {
@@ -9,13 +10,13 @@ namespace Circuit
 	class OpenWindowTellEvent final : public TellEvent
 	{
 	public:
-		OpenWindowTellEvent(glm::u32vec2 startSize);
+		OpenWindowTellEvent(const OpenWindowParams& params);
 		~OpenWindowTellEvent() = default;
 
-		const glm::u32vec2& GetStartSize() const { return m_startSize; }
+		const OpenWindowParams& GetParams() const { return m_params; }
 
 	private:
-		const glm::u32vec2 m_startSize;
+		const OpenWindowParams m_params;
 	};
 
 	//CloseWindow

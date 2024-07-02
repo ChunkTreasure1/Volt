@@ -6,6 +6,8 @@
 #include "Circuit/Widgets/Primitives/CircleWidget.h"
 #include "Delegates/Observer.h"
 
+#include "Circuit/CircuitPainter.h"
+
 namespace Circuit
 {
 
@@ -16,7 +18,7 @@ namespace Circuit
 
 	SliderWidget::~SliderWidget()
 	{
-		m_Value->GetOnChangeDelegate().Remove(m_OnValueChangeHandle);
+		//m_Value->GetOnChangeDelegate().Remove(m_OnValueChangeHandle);
 
 	}
 
@@ -25,60 +27,41 @@ namespace Circuit
 		m_MinValue = args._Min;
 		m_MaxValue = args._Max;
 		m_Value = args._Value;
+	}
 
-
+	void SliderWidget::OnPaint(CircuitPainter& painter)
+	{
 		const uint32_t sliderWidth = 100;
 		const uint32_t sliderHeight = 20;
-		const float endOfFirstRect = sliderWidth * GetValueNormalized();
+		const float leftRectWidth = sliderWidth * GetValueNormalized();
 
-		std::shared_ptr<RectWidget> LeftRect = AddChildWidget<RectWidget>(CreateWidget(RectWidget)
-			.Width(endOfFirstRect)
-			.Height(sliderHeight)
-			.Color(CircuitColor(CircuitColor(0, 255, 0, 255)))
-			.X(0)
-			.Y(0));
+		const CircuitColor unfilledColor = 0x555555ff;
+		const CircuitColor filledColor = 0xf5f5f5ff;
+		const CircuitColor handleColor = 0x000000ff;
 
-		std::shared_ptr<RectWidget> RightRect = AddChildWidget<RectWidget>(CreateWidget(RectWidget)
-			.Width(sliderWidth - endOfFirstRect)
-			.Height(sliderHeight)
-			.Color(CircuitColor(CircuitColor(255, 0, 0, 255)))
-			.X(endOfFirstRect)
-			.Y(0));
 
-		std::shared_ptr<CircleWidget> BigCircle = AddChildWidget<CircleWidget>(CreateWidget(CircleWidget)
-			.Radius((sliderHeight / 2) * 1.1f)
-			.Color(CircuitColor(255, 255, 255, 255))
-			.X(endOfFirstRect)
-			.Y(sliderHeight / 2));
+		//left rect
+		painter.AddRect(GetX(), GetY(), leftRectWidth, sliderHeight, filledColor);
 
-		std::shared_ptr<CircleWidget> SmallCircle = AddChildWidget<CircleWidget>(CreateWidget(CircleWidget)
-			.Radius((sliderHeight / 2) * 0.7f)
-			.Color(CircuitColor(0, 255, 0, 255))
-			.X(endOfFirstRect)
-			.Y(sliderHeight / 2));
+		//right rect
+		painter.AddRect(GetX() + leftRectWidth, GetY(), sliderWidth - leftRectWidth, sliderHeight, unfilledColor);
 
-		m_OnValueChangeHandle = m_Value->GetOnChangeDelegate().Add([this, LeftRect, RightRect, BigCircle, SmallCircle](float value)
-		{
-			const uint32_t sliderWidth = 100;
-			//const uint32_t sliderHeight = 20;
-			const float endOfFirstRect = sliderWidth * GetValueNormalized();
+		//handle outer
+		painter.AddCircle(GetX() + leftRectWidth, GetY() + sliderHeight/2, (sliderHeight / 2) * 1.1f, handleColor);
 
-			LeftRect->SetWidth(endOfFirstRect);
-			RightRect->SetWidth(sliderWidth - endOfFirstRect);
-			RightRect->SetX(endOfFirstRect);
-			BigCircle->SetX(endOfFirstRect);
-			SmallCircle->SetX(endOfFirstRect);
-		});
+		//handle inner
+		painter.AddCircle(GetX() + leftRectWidth, GetY() + sliderHeight/2, (sliderHeight / 2) * 0.7f, filledColor);
+
 	}
 
 	float SliderWidget::GetValue() const
 	{
-		return m_Value->GetValue();
+		return m_Value;
 	}
 
 	void SliderWidget::SetValue(float value)
 	{
-		(*m_Value) = value;
+		m_Value = value;
 	}
 
 	float SliderWidget::GetMinValue() const
@@ -105,6 +88,6 @@ namespace Circuit
 
 	float SliderWidget::GetValueNormalized()
 	{
-		return (m_Value->Get() - m_MinValue) / (m_MaxValue - m_MinValue);
+		return (m_Value - m_MinValue) / (m_MaxValue - m_MinValue);
 	}
 }

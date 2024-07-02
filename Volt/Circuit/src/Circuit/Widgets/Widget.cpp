@@ -10,6 +10,10 @@ namespace Circuit
 		m_LocalYPosition = baseArgs._Y;
 	}
 
+	void Widget::OnPaint(CircuitPainter& painter)
+	{
+	}
+
 	void Widget::RequestRebuild()
 	{
 		m_NeedsRebuild = true;
