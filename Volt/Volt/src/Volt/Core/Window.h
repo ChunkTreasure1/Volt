@@ -47,6 +47,10 @@ namespace Volt
 		Window(const WindowProperties& aProperties);
 		~Window();
 
+		Window(const Window&) = delete;
+		Window& operator= (const Window&) = delete;
+
+
 		void Shutdown();
 
 		void Invalidate();
