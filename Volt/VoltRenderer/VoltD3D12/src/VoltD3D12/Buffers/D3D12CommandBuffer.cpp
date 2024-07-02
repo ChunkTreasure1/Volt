@@ -351,8 +351,12 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::WaitForFences()
 	{
+		auto device = GraphicsContext::GetDevice();
+		auto queue = device->GetDeviceQueue(m_queueType)->GetHandle<ID3D12CommandQueue*>();
+
 		for (auto& cmdList : m_commandLists)
 		{
+			queue->Signal(cmdList.fence->GetHandle<ID3D12Fence*>(), cmdList.fence->IncrementAndGetValue());
 			cmdList.fence->Wait();
 		}
 	}

@@ -44,10 +44,15 @@ namespace Volt::RHI
 		Buffer ReadPixelInternal(const uint32_t x, const uint32_t y, const size_t stride) override;
 
 	private:
+		struct SwapchainImageData
+		{
+			ID3D12Resource* image = nullptr;
+		};
+
 		void InvalidateSwapchainImage(const SwapchainImageSpecification& specification);
 
 		ImageSpecification m_specification;
-		SwapchainImageSpecification m_swapchainImageData;
+		SwapchainImageData m_swapchainImageData;
 
 		RefPtr<Allocation> m_allocation;
 		RefPtr<Allocator> m_allocator;

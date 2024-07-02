@@ -2,10 +2,10 @@
 
 #include "VoltRHI/Core/RHIResource.h"
 #include "VoltRHI/Memory/Allocator.h"
+#include "VoltRHI/Buffers/BufferView.h"
 
 namespace Volt::RHI
 {
-	class BufferView;
 	class CommandBuffer;
 	class Allocation;
 
@@ -49,6 +49,6 @@ namespace Volt::RHI
 	template<typename T>
 	inline RefPtr<StorageBuffer> StorageBuffer::Create(uint32_t count, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator)
 	{
-		Create(count, sizeof(T), name, bufferUsage, memoryUsage, allocator);
+		return Create(count, sizeof(T), name, bufferUsage, memoryUsage, allocator);
 	}
 }

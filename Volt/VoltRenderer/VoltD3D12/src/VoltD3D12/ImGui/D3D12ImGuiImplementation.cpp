@@ -50,7 +50,7 @@ namespace Volt::RHI
 		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource = swapchain->GetCurrentImageResource().Get();
+		barrier.Transition.pResource = swapchain->GetCurrentImage()->GetHandle<ID3D12Resource*>();
 		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -58,7 +58,9 @@ namespace Volt::RHI
 		cmd->ResourceBarrier(1, &barrier);
 		const float clearColor[4] = { 0,0,0, 1 };
 
-		const auto rtvPointer = D3D12_CPU_DESCRIPTOR_HANDLE(swapchain->GetCurrentImageResourceView().GetCPUPointer());
+		auto& d3d12View = swapchain->GetCurrentImage()->GetView()->AsRef<D3D12ImageView>();
+
+		const auto rtvPointer = D3D12_CPU_DESCRIPTOR_HANDLE(d3d12View.GetRTVDSVDescriptor().GetCPUPointer());
 
 		cmd->ClearRenderTargetView(rtvPointer, clearColor, 0, nullptr);
 		cmd->OMSetRenderTargets(1, &rtvPointer, false, nullptr);

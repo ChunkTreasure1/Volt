@@ -1,11 +1,12 @@
 #include "dxpch.h"
 #include "D3D12Image2D.h"
 
-#include "VoltRHI/Graphics/GraphicsDevice.h"
-#include "VoltRHI/Images/ImageUtility.h"
-#include "VoltRHI/RHIProxy.h"
-
 #include "VoltD3D12/Images/D3D12ImageView.h"
+#include "VoltD3D12/Graphics/D3D12Swapchain.h"
+
+#include <VoltRHI/Graphics/GraphicsDevice.h>
+#include <VoltRHI/Images/ImageUtility.h>
+#include <VoltRHI/RHIProxy.h>
 
 namespace Volt::RHI
 {
@@ -42,7 +43,7 @@ namespace Volt::RHI
 	}
 
 	D3D12Image2D::D3D12Image2D(const SwapchainImageSpecification& specification)
-		: m_swapchainImageData(specification), m_isSwapchainImage(true)
+		: m_isSwapchainImage(true)
 	{
 		InvalidateSwapchainImage(specification);
 		SetName("Swapchain Image");
@@ -55,7 +56,14 @@ namespace Volt::RHI
 
 	void* D3D12Image2D::GetHandleImpl() const 
 	{
-		return m_allocation->GetResourceHandle<ID3D12Resource*>();
+		if (m_isSwapchainImage)
+		{
+			return m_swapchainImageData.image;
+		}
+		else
+		{
+			return m_allocation->GetResourceHandle<ID3D12Resource*>();
+		}
 	}
 
 	Buffer D3D12Image2D::ReadPixelInternal(const uint32_t x, const uint32_t y, const size_t stride)
@@ -65,6 +73,15 @@ namespace Volt::RHI
 
 	void D3D12Image2D::InvalidateSwapchainImage(const SwapchainImageSpecification& specification)
 	{
+		const auto& d3d12Swapchain = specification.swapchain->AsRef<D3D12Swapchain>();
+	
+		m_layout = ImageLayout::Undefined;
+		m_specification.width = d3d12Swapchain.GetWidth();
+		m_specification.height = d3d12Swapchain.GetHeight();
+		m_specification.format = d3d12Swapchain.GetFormat();
+		m_specification.usage = ImageUsage::Attachment;
+
+		m_swapchainImageData.image = d3d12Swapchain.GetImageAtIndex(specification.imageIndex).Get();
 	}
 
 	void D3D12Image2D::Invalidate(const uint32_t width, const uint32_t height, const void* data)
@@ -113,6 +130,8 @@ namespace Volt::RHI
 
 	void D3D12Image2D::Release()
 	{
+		m_imageViews.clear();
+
 		if (!m_allocation)
 		{
 			return;
@@ -232,7 +251,14 @@ namespace Volt::RHI
 	void D3D12Image2D::SetName(std::string_view name)
 	{
 		std::wstring wname(name.begin(), name.end());
-		m_allocation->GetResourceHandle<ID3D12Resource*>()->SetName(wname.c_str());
+		if (m_isSwapchainImage)
+		{
+			m_swapchainImageData.image->SetName(wname.c_str());
+		}
+		else
+		{
+			m_allocation->GetResourceHandle<ID3D12Resource*>()->SetName(wname.c_str());
+		}
 	}
 
 	const uint64_t D3D12Image2D::GetDeviceAddress() const

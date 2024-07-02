@@ -146,7 +146,6 @@ namespace Volt::RHI
 			m_commandBuffer->ResourceBarrier({ barrier });
 		}
 
-
 		m_commandBuffer->End();
 
 		if (m_swapchainNeedsRebuild)
@@ -383,12 +382,12 @@ namespace Volt::RHI
 
 		if (oldSwapchain != VK_NULL_HANDLE)
 		{
-			vkDestroySwapchainKHR(device->GetHandle<VkDevice>(), oldSwapchain, nullptr);
-
 			for (auto& imageData : m_perImageData)
 			{
 				imageData.imageReference = nullptr;
 			}
+
+			vkDestroySwapchainKHR(device->GetHandle<VkDevice>(), oldSwapchain, nullptr);
 		}
 
 		VT_VK_CHECK(vkGetSwapchainImagesKHR(device->GetHandle<VkDevice>(), m_swapchain, &m_totalImageCount, nullptr));
