@@ -13,7 +13,7 @@ SwapchainClearColorTest::~SwapchainClearColorTest()
 {
 }
 
-void SwapchainClearColorTest::RunTest()
+bool SwapchainClearColorTest::RunTest()
 {
 	auto& swapchain = Application::Get().GetWindow().GetSwapchain();
 
@@ -48,4 +48,6 @@ void SwapchainClearColorTest::RunTest()
 
 	m_commandBuffer->End();
 	m_commandBuffer->Execute();
+
+	return true;
 }

@@ -43,6 +43,7 @@ namespace Volt::RHI
 		{
 			D3D12DescriptorPointer pointer;
 			D3D12ViewType viewType;
+			uint32_t descriptorIndex;
 		};
 
 		void Invalidate();
@@ -53,6 +54,7 @@ namespace Volt::RHI
 
 		WeakPtr<Shader> m_shader;
 		bool m_isDirty = false;
+		bool m_isComputeTable = false;
 
 		vt::map<uint32_t, vt::map<uint32_t, AllocatedDescriptorInfo>> m_allocatedDescriptorPointers;
 		std::vector<DescriptorCopyInfo> m_activeDescriptorCopies;

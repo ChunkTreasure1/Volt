@@ -10,13 +10,14 @@ constexpr uint32_t GROUP_SIZE = 32;
 
 ComputeWriteToBufferTest::ComputeWriteToBufferTest()
 {
-	m_computePipeline = ShaderMap::GetComputePipeline("ComputeWriteToBufferTest");
+	m_computePipeline = ShaderMap::GetComputePipeline("ComputeWriteToBufferTest", false);
 
 	RHI::DescriptorTableCreateInfo tableInfo{};
 	tableInfo.shader = m_computePipeline->GetShader();
 
 	m_descriptorTable = RHI::DescriptorTable::Create(tableInfo);
-	m_buffer = RHI::StorageBuffer::Create<uint32_t>(GROUP_SIZE, "Write Buffer", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPUToCPU);
+	m_buffer = RHI::StorageBuffer::Create<uint32_t>(GROUP_SIZE, "Write Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::GPU);
+	m_readbackBuffer = RHI::StorageBuffer::Create<uint32_t>(GROUP_SIZE, "Readback Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
 }
 
 ComputeWriteToBufferTest::~ComputeWriteToBufferTest()
@@ -25,7 +26,7 @@ ComputeWriteToBufferTest::~ComputeWriteToBufferTest()
 	m_computePipeline = nullptr;
 }
 
-void ComputeWriteToBufferTest::RunTest()
+bool ComputeWriteToBufferTest::RunTest()
 {
 	m_descriptorTable->SetBufferView("u_outputBuffer", m_buffer->GetView(), 0);
 
@@ -34,16 +35,37 @@ void ComputeWriteToBufferTest::RunTest()
 	m_commandBuffer->BindPipeline(m_computePipeline);
 	m_commandBuffer->BindDescriptorTable(m_descriptorTable);
 	m_commandBuffer->Dispatch(1, 1, 1);
+
+	{
+		RHI::ResourceBarrierInfo barrier{};
+		barrier.type = RHI::BarrierType::Buffer;
+		barrier.bufferBarrier().srcAccess = RHI::BarrierAccess::ShaderWrite;
+		barrier.bufferBarrier().srcStage = RHI::BarrierStage::ComputeShader;
+		barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::TransferSource;
+		barrier.bufferBarrier().dstStage = RHI::BarrierStage::Copy;
+		barrier.bufferBarrier().resource = m_buffer;
+		barrier.bufferBarrier().size = m_buffer->GetByteSize();
+
+		m_commandBuffer->ResourceBarrier({ barrier });
+	}
+
+	m_commandBuffer->CopyBufferRegion(m_buffer->GetAllocation(), 0, m_readbackBuffer->GetAllocation(), 0, m_readbackBuffer->GetByteSize());
+
 	m_commandBuffer->End();
 	m_commandBuffer->ExecuteAndWait();
 
-	uint32_t* values = m_buffer->Map<uint32_t>();
-	
+	bool result = true;
+
+	uint32_t* values = m_readbackBuffer->Map<uint32_t>();
+
 	for (uint32_t i = 0; i < GROUP_SIZE; i++)
 	{
-		uint32_t value = values[i];
-		VT_ENSURE(value == i);
+		if (values[i] != i)
+		{
+			result = false;
+		}
 	}
-	
-	m_buffer->Unmap();
+
+	m_readbackBuffer->Unmap();
+	return result;
 }

@@ -11,10 +11,12 @@ public:
 	ComputeWriteToBufferTest();
 	~ComputeWriteToBufferTest() override;
 
-	void RunTest();
+	bool RunTest();
+	std::string GetName() const override { return "ComputeWriteToBufferTest"; }
 
 private:
 	RefPtr<Volt::RHI::DescriptorTable> m_descriptorTable;
 	RefPtr<Volt::RHI::ComputePipeline> m_computePipeline;
 	RefPtr<Volt::RHI::StorageBuffer> m_buffer;
+	RefPtr<Volt::RHI::StorageBuffer> m_readbackBuffer;
 };

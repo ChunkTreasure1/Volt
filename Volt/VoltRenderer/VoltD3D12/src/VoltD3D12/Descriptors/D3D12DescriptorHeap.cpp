@@ -55,25 +55,48 @@ namespace Volt::RHI
 		m_descriptorHeap = nullptr;
 	}
 
-	D3D12DescriptorPointer D3D12DescriptorHeap::Allocate()
+	D3D12DescriptorPointer D3D12DescriptorHeap::Allocate(const uint32_t descriptorIndex)
 	{
 		std::scoped_lock lock{ m_mutex };
 
+		const bool allocateAtLocation = descriptorIndex != std::numeric_limits<uint32_t>::max();
+
 		if (!m_availiableDescriptors.empty())
 		{
-			D3D12DescriptorPointer descriptor = m_availiableDescriptors.back();
-			m_availiableDescriptors.pop_back();
+			if (allocateAtLocation)
+			{
+				auto it = std::find_if(m_availiableDescriptors.begin(), m_availiableDescriptors.end(), [&](const D3D12DescriptorPointer& descriptorPointer)
+				{
+					uint64_t descriptorOffset = descriptorPointer.GetCPUPointer() - m_descriptorHeap->GetCPUDescriptorHandleForHeapStart().ptr;
+					descriptorOffset /= static_cast<uint32_t>(m_descriptorSize);
 
-			return descriptor;
+					return descriptorOffset == descriptorIndex;
+				});
+
+				if (it != m_availiableDescriptors.end())
+				{
+					D3D12DescriptorPointer descriptor = *it;
+					m_availiableDescriptors.erase(it);
+					return descriptor;
+				}
+			}
+			else
+			{
+				D3D12DescriptorPointer descriptor = m_availiableDescriptors.back();
+				m_availiableDescriptors.pop_back();
+				return descriptor;
+			}
 		}
 
-		if (m_currentDescriptorCount + 1 >= m_maxDescriptorCount)
+		const uint32_t newCount = allocateAtLocation ? std::max(descriptorIndex, m_currentDescriptorCount) : m_currentDescriptorCount;
+
+		if (newCount + 1 > m_maxDescriptorCount)
 		{
 			return {};
 		}
 
-		const uint32_t newDescriptorOffset = m_currentDescriptorCount * m_descriptorSize;
-		m_currentDescriptorCount++;
+		const uint32_t newDescriptorOffset = newCount * m_descriptorSize;
+		m_currentDescriptorCount = newCount + 1;
 
 		D3D12DescriptorPointer result{};
 		result.cpuPointer = m_startPointer.cpuPointer + static_cast<uint64_t>(newDescriptorOffset);

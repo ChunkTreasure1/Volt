@@ -8,7 +8,8 @@ public:
 	RenderingTestBase();
 	virtual ~RenderingTestBase();
 
-	virtual void RunTest() = 0;
+	virtual bool RunTest() = 0;
+	virtual std::string GetName() const = 0;
 
 protected:
 	RefPtr<Volt::RHI::CommandBuffer> m_commandBuffer;

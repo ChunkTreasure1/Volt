@@ -1,14 +1,23 @@
 #pragma once
 
 #include "VoltD3D12/Common/ComPtr.h"
+#include "VoltD3D12/Descriptors/DescriptorCommon.h"
 
 #include <VoltRHI/Shader/Shader.h>
 #include <VoltRHI/Shader/ShaderCompiler.h>
+
+#include <CoreUtilities/Containers/Map.h>
 
 struct ID3D12RootSignature;
 
 namespace Volt::RHI
 {
+	struct DescriptorRangeInfo
+	{
+		size_t rangeIndex;
+		uint32_t descriptorIndex;
+	};
+
 	class D3D12Shader final : public Shader
 	{
 	public:
@@ -25,6 +34,8 @@ namespace Volt::RHI
 		VT_NODISCARD VT_INLINE const std::unordered_map<ShaderStage, std::vector<uint32_t>>& GetShaderStageData() const { return m_shaderStageData; }
 		VT_NODISCARD VT_INLINE ComPtr<ID3D12RootSignature> GetRootSignature() const { return m_rootSignature; }
 
+		VT_NODISCARD uint32_t GetDescriptorIndexFromDescriptorHash(const size_t hash);
+
 	protected:
 		void* GetHandleImpl() const override;
 
@@ -39,6 +50,8 @@ namespace Volt::RHI
 
 		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_shaderStageData;
 		std::unordered_map<ShaderStage, ShaderSourceInfo> m_shaderSources;
+
+		vt::map<size_t, DescriptorRangeInfo> m_bindingToDescriptorRangeInfo; // Hash is space + binding + type
 
 		ComPtr<ID3D12RootSignature> m_rootSignature;
 

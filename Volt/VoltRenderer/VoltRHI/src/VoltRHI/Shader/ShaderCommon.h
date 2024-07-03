@@ -213,7 +213,6 @@ namespace Volt::RHI
 	{
 		ShaderStage usageStages;
 		size_t size = 0;
-
 		uint32_t usageCount = 0;
 	};
 
@@ -222,7 +221,6 @@ namespace Volt::RHI
 		ShaderStage usageStages;
 		size_t size = 0;
 		int32_t arraySize = 1; // -1 Means unsized array
-		
 		uint32_t usageCount = 0;
 		bool isWrite = false;
 	};
@@ -231,7 +229,6 @@ namespace Volt::RHI
 	{
 		ShaderStage usageStages;
 		int32_t arraySize = 1; // -1 Means unsized array
-
 		uint32_t usageCount = 0;
 	};
 
@@ -239,14 +236,12 @@ namespace Volt::RHI
 	{
 		ShaderStage usageStages;
 		int32_t arraySize = 1; // -1 Means unsized array
-
 		uint32_t usageCount = 0;
 	};
 
 	struct ShaderSampler
 	{
 		ShaderStage usageStages;
-
 		uint32_t usageCount = 0;
 	};
 	/////////////////////////////////

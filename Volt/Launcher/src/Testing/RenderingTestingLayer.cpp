@@ -2,6 +2,9 @@
 
 #include "Testing/Tests/SwapchainClearColorTest.h"
 #include "Testing/Tests/ComputeWriteToBufferTest.h"
+#include "Testing/Tests/ClearBufferToValueTest.h"
+
+#include <Volt/Log/Log.h>
 
 #include <functional>
 
@@ -11,6 +14,8 @@ void RenderingTestingLayer::OnAttach()
 {
 	m_renderingTests.emplace_back(CreateScope<SwapchainClearColorTest>());
 	m_renderingTests.emplace_back(CreateScope<ComputeWriteToBufferTest>());
+	m_renderingTests.emplace_back(CreateScope<ComputeWriteToBufferTest>());
+	m_renderingTests.emplace_back(CreateScope<ClearBufferToValueTest>());
 }
 
 void RenderingTestingLayer::OnDetach()
@@ -28,7 +33,10 @@ bool RenderingTestingLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 {
 	for (const auto& test : m_renderingTests)
 	{
-		test->RunTest();
+		if (!test->RunTest())
+		{
+			VT_CORE_ERROR("Test {} failed!", test->GetName());
+		}
 	}
 
 	return false;

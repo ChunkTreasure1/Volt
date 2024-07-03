@@ -49,6 +49,22 @@ namespace Volt::RHI
 		VT_ENSURE(false);
 	}
 
+	D3D12DescriptorHeap& CPUDescriptorHeapManager::GetHeapFromHash(size_t hash) const
+	{
+		for (const auto& heap : m_descriptorHeaps)
+		{
+			if (heap->GetHash() == hash)
+			{
+				return *heap;
+			}
+		}
+
+		VT_ENSURE(false);
+
+		static D3D12DescriptorHeap nullHeap({});
+		return nullHeap;
+	}
+
 	void CPUDescriptorHeapManager::Initialize()
 	{
 		m_descriptorHeaps.push_back(CreateDescriptorHeap(D3D12DescriptorType::RTV));
@@ -62,7 +78,7 @@ namespace Volt::RHI
 		DescriptorHeapSpecification specification{};
 		specification.descriptorType = descriptorType;
 		specification.maxDescriptorCount = DEFAULT_HEAP_DESCRIPTOR_COUNT;
-		specification.supportsGPUDescriptors = false;
+		specification.supportsGPUDescriptors = true; // We make it shader visible so we can call clear unordered access view
 
 		return CreateScope<D3D12DescriptorHeap>(specification);
 	}

@@ -5,8 +5,12 @@
 #include "VoltD3D12/Images/D3D12ImageView.h"
 #include "VoltD3D12/Buffers/D3D12CommandBuffer.h"
 #include "VoltD3D12/Buffers/D3D12BufferView.h"
+#include "VoltD3D12/Shader/D3D12Shader.h"
 
 #include <VoltRHI/Images/ImageUtility.h>
+#include <VoltRHI/Utility/HashUtility.h>
+
+#include <CoreUtilities/EnumUtils.h>
 
 namespace Volt::RHI
 {
@@ -35,7 +39,7 @@ namespace Volt::RHI
 		const auto& descriptorInfo = m_allocatedDescriptorPointers.at(set).at(binding);
 		const auto& d3d12View = imageView->AsRef<D3D12ImageView>();
 
-		if ((d3d12View.GetD3D12ViewType() & descriptorInfo.viewType) == D3D12ViewType::None)
+		if (!EnumValueContainsFlag(d3d12View.GetD3D12ViewType(), descriptorInfo.viewType))
 		{
 			RHILog::LogTagged(LogSeverity::Error, "[D3D12DescriptorTable]:", "Image View does not support the required D3D12 view type!");
 			return;
@@ -44,7 +48,7 @@ namespace Volt::RHI
 		auto& descriptorCopy = m_activeDescriptorCopies.emplace_back();
 		descriptorCopy.dstPointer = descriptorInfo.pointer;
 
-		if ((descriptorInfo.viewType & D3D12ViewType::SRV) != D3D12ViewType::None)
+		if (EnumValueContainsFlag(descriptorInfo.viewType, D3D12ViewType::SRV))
 		{
 			descriptorCopy.srcPointer = d3d12View.GetSRVDescriptor();
 		}
@@ -52,6 +56,9 @@ namespace Volt::RHI
 		{
 			descriptorCopy.srcPointer = d3d12View.GetUAVDescriptor();
 		}
+
+		VT_ENSURE(descriptorCopy.dstPointer.IsValid());
+		VT_ENSURE(descriptorCopy.srcPointer.IsValid());
 	}
 
 	void D3D12DescriptorTable::SetBufferView(WeakPtr<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
@@ -67,7 +74,7 @@ namespace Volt::RHI
 		const auto& descriptorInfo = m_allocatedDescriptorPointers.at(set).at(binding);
 		const auto& d3d12View = bufferView->AsRef<D3D12BufferView>();
 
-		if ((d3d12View.GetD3D12ViewType() & descriptorInfo.viewType) == D3D12ViewType::None)
+		if (!EnumValueContainsFlag(d3d12View.GetD3D12ViewType(), descriptorInfo.viewType))
 		{
 			RHILog::LogTagged(LogSeverity::Error, "[D3D12DescriptorTable]:", "Buffer View does not support the required D3D12 view type!");
 			return;
@@ -76,7 +83,7 @@ namespace Volt::RHI
 		auto& descriptorCopy = m_activeDescriptorCopies.emplace_back();
 		descriptorCopy.dstPointer = descriptorInfo.pointer;
 
-		if ((descriptorInfo.viewType & D3D12ViewType::SRV) != D3D12ViewType::None)
+		if (EnumValueContainsFlag(descriptorInfo.viewType, D3D12ViewType::SRV))
 		{
 			descriptorCopy.srcPointer = d3d12View.GetSRVDescriptor();
 		}
@@ -84,6 +91,9 @@ namespace Volt::RHI
 		{
 			descriptorCopy.srcPointer = d3d12View.GetUAVDescriptor();
 		}
+
+		VT_ENSURE(descriptorCopy.dstPointer.IsValid());
+		VT_ENSURE(descriptorCopy.srcPointer.IsValid());
 	}
 
 	void D3D12DescriptorTable::SetSamplerState(WeakPtr<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
@@ -174,6 +184,8 @@ namespace Volt::RHI
 
 	void D3D12DescriptorTable::Bind(CommandBuffer& commandBuffer)
 	{
+		PrepareForRender();
+
 		ID3D12GraphicsCommandList* cmdList = commandBuffer.GetHandle<ID3D12GraphicsCommandList*>();
 		ID3D12DescriptorHeap* heaps[2] {};
 		uint32_t heapCount = 0;
@@ -189,11 +201,47 @@ namespace Volt::RHI
 		}
 
 		cmdList->SetDescriptorHeaps(heapCount, heaps);
+
+		uint32_t tableCount = 0;
+
+		if (m_isComputeTable)
+		{
+			if (m_mainHeap)
+			{
+				cmdList->SetComputeRootDescriptorTable(tableCount++, m_mainHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+			}
+		
+			if (m_samplerHeap)
+			{
+				cmdList->SetComputeRootDescriptorTable(tableCount++, m_samplerHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+			}
+		}
+		else
+		{
+			if (m_mainHeap)
+			{
+				cmdList->SetGraphicsRootDescriptorTable(tableCount++, m_mainHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+			}
+
+			if (m_samplerHeap)
+			{
+				cmdList->SetGraphicsRootDescriptorTable(tableCount++, m_samplerHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+			}
+		}
 	}
 
 	void* D3D12DescriptorTable::GetHandleImpl() const
 	{
 		return nullptr;
+	}
+
+	inline size_t GetDescriptorBindingHash(uint32_t space, uint32_t binding, D3D12_DESCRIPTOR_RANGE_TYPE descriptorType)
+	{
+		size_t result = std::hash<uint32_t>()(space);
+		result = Utility::HashCombine(result, std::hash<uint32_t>()(binding));
+		result = Utility::HashCombine(result, std::hash<uint32_t>()(static_cast<uint32_t>(descriptorType)));
+
+		return result;
 	}
 
 	void D3D12DescriptorTable::Invalidate()
@@ -202,6 +250,8 @@ namespace Volt::RHI
 		Release();
 
 		const auto& resources = m_shader->GetResources();
+		auto& d3d12Shader = m_shader->AsRef<D3D12Shader>();
+		m_isComputeTable = d3d12Shader.GetShaderStageData().contains(RHI::ShaderStage::Compute);
 
 		constexpr uint32_t PUSH_CONSTANT_BINDING = 999;
 
@@ -219,6 +269,7 @@ namespace Volt::RHI
 
 				auto& info = m_allocatedDescriptorPointers[set][binding];
 				info.viewType = D3D12ViewType::CBV;
+				info.descriptorIndex = d3d12Shader.GetDescriptorIndexFromDescriptorHash(GetDescriptorBindingHash(set, binding, D3D12_DESCRIPTOR_RANGE_TYPE_CBV));
 
 				mainDescriptorCount++;
 			}
@@ -233,10 +284,12 @@ namespace Volt::RHI
 				if (data.isWrite)
 				{
 					info.viewType = D3D12ViewType::UAV;
+					info.descriptorIndex = d3d12Shader.GetDescriptorIndexFromDescriptorHash(GetDescriptorBindingHash(set, binding, D3D12_DESCRIPTOR_RANGE_TYPE_UAV));
 				}
 				else
 				{
 					info.viewType = D3D12ViewType::SRV;
+					info.descriptorIndex = d3d12Shader.GetDescriptorIndexFromDescriptorHash(GetDescriptorBindingHash(set, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SRV));
 				}
 
 				mainDescriptorCount++;
@@ -249,6 +302,7 @@ namespace Volt::RHI
 			{
 				auto& info = m_allocatedDescriptorPointers[set][binding];
 				info.viewType = D3D12ViewType::UAV;
+				info.descriptorIndex = d3d12Shader.GetDescriptorIndexFromDescriptorHash(GetDescriptorBindingHash(set, binding, D3D12_DESCRIPTOR_RANGE_TYPE_UAV));
 				mainDescriptorCount++;
 			}
 		}
@@ -259,6 +313,7 @@ namespace Volt::RHI
 			{
 				auto& info = m_allocatedDescriptorPointers[set][binding];
 				info.viewType = D3D12ViewType::SRV;
+				info.descriptorIndex = d3d12Shader.GetDescriptorIndexFromDescriptorHash(GetDescriptorBindingHash(set, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SRV));
 				mainDescriptorCount++;
 			}
 		}
@@ -269,6 +324,7 @@ namespace Volt::RHI
 			{
 				auto& info = m_allocatedDescriptorPointers[set][binding];
 				info.viewType = D3D12ViewType::Sampler;
+				info.descriptorIndex = d3d12Shader.GetDescriptorIndexFromDescriptorHash(GetDescriptorBindingHash(set, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER));
 				samplerDescriptorCount++;
 			}
 		}
@@ -318,11 +374,11 @@ namespace Volt::RHI
 					data.viewType == D3D12ViewType::SRV ||
 					data.viewType == D3D12ViewType::UAV)
 				{
-					data.pointer = m_mainHeap->Allocate();
+					data.pointer = m_mainHeap->Allocate(data.descriptorIndex);
 				}
 				else if (data.viewType == D3D12ViewType::Sampler)
 				{
-					data.pointer = m_samplerHeap->Allocate();
+					data.pointer = m_samplerHeap->Allocate(data.descriptorIndex);
 				}
 			}
 		}

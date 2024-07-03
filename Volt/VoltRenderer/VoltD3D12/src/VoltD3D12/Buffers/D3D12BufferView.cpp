@@ -4,6 +4,8 @@
 #include "VoltD3D12/Descriptors/DescriptorUtility.h"
 #include "VoltD3D12/Buffers/D3D12StorageBuffer.h"
 
+#include <CoreUtilities/EnumUtils.h>
+
 namespace Volt::RHI
 {
 	D3D12BufferView::D3D12BufferView(const BufferViewSpecification& specification)
@@ -15,7 +17,8 @@ namespace Volt::RHI
 			CreateSRV();
 
 			const auto bufferMemoryUsage = specification.bufferResource->AsRef<D3D12StorageBuffer>().GetMemoryUsage();
-			if ((bufferMemoryUsage & MemoryUsage::GPU) != MemoryUsage::None)
+			
+			if (EnumValueContainsFlag(bufferMemoryUsage, MemoryUsage::GPU))
 			{
 				CreateUAV();
 			}

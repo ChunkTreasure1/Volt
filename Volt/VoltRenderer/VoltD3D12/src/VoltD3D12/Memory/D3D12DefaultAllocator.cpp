@@ -8,6 +8,8 @@
 #include <VoltRHI/Utility/HashUtility.h>
 #include <VoltRHI/Images/ImageUtility.h>
 
+#include <CoreUtilities/EnumUtils.h>
+
 namespace Volt::RHI
 {
 	D3D12DefaultAllocator::D3D12DefaultAllocator()
@@ -54,7 +56,7 @@ namespace Volt::RHI
 		resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 		resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		if ((memoryUsage & MemoryUsage::GPU) != MemoryUsage::None)
+		if (EnumValueContainsFlag(memoryUsage, MemoryUsage::GPU))
 		{
 			resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 		}
@@ -64,16 +66,16 @@ namespace Volt::RHI
 		allocDesc.ExtraHeapFlags = D3D12_HEAP_FLAG_NONE;
 		allocDesc.Flags = D3D12MA::ALLOCATION_FLAG_NONE;
 
-		if ((memoryUsage & MemoryUsage::CPUToGPU) != MemoryUsage::None)
+		if (EnumValueContainsFlag(memoryUsage, MemoryUsage::CPUToGPU))
 		{
 			allocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
 		}
-		else if ((memoryUsage & MemoryUsage::GPUToCPU) != MemoryUsage::None)
+		else if (EnumValueContainsFlag(memoryUsage, MemoryUsage::GPUToCPU))
 		{
 			allocDesc.HeapType = D3D12_HEAP_TYPE_READBACK;
 		}
 
-		if ((memoryUsage & MemoryUsage::Dedicated) != MemoryUsage::None)
+		if (EnumValueContainsFlag(memoryUsage, MemoryUsage::Dedicated))
 		{
 			allocDesc.Flags = D3D12MA::ALLOCATION_FLAG_COMMITTED;
 		}

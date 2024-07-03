@@ -8,7 +8,8 @@ public:
 	SwapchainClearColorTest();
 	~SwapchainClearColorTest() override;
 
-	void RunTest() override;
+	bool RunTest() override;
+	std::string GetName() const override { return "SwapchainClearColorTest"; }
 
 private:
 };

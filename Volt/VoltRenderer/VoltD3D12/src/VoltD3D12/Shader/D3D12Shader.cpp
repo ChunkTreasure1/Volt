@@ -3,12 +3,14 @@
 
 #include <VoltRHI/Shader/ShaderCompiler.h>
 #include <VoltRHI/Shader/ShaderUtility.h>
+#include <VoltRHI/Utility/HashUtility.h>
+
 
 #include <dxc/dxcapi.h>
 
 namespace Volt::RHI
 {
-	D3D12Shader::D3D12Shader(const ShaderSpecification& specification) 
+	D3D12Shader::D3D12Shader(const ShaderSpecification& specification)
 		: m_specification(specification)
 	{
 		if (m_specification.sourceEntries.empty())
@@ -23,6 +25,11 @@ namespace Volt::RHI
 	D3D12Shader::~D3D12Shader()
 	{
 		Release();
+	}
+
+	uint32_t D3D12Shader::GetDescriptorIndexFromDescriptorHash(const size_t hash)
+	{
+		return m_bindingToDescriptorRangeInfo.at(hash).descriptorIndex;
 	}
 
 	void* D3D12Shader::GetHandleImpl() const
@@ -81,28 +88,81 @@ namespace Volt::RHI
 		m_shaderStageData = compilationResult.shaderData;
 	}
 
-	inline void InitializeRange(D3D12_DESCRIPTOR_RANGE& range, D3D12_DESCRIPTOR_RANGE_TYPE type)
+	inline void InitializeRange(D3D12_DESCRIPTOR_RANGE& range, D3D12_DESCRIPTOR_RANGE_TYPE type, uint32_t registerSpace, uint32_t binding)
 	{
 		range.RangeType = type;
-		range.RegisterSpace = 0;
+		range.RegisterSpace = registerSpace;
+		range.BaseShaderRegister = binding;
 		range.NumDescriptors = 0;
-		range.BaseShaderRegister = 0;
 		range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	}
+
+	inline DescriptorRangeInfo AddDescriptorToRange(vt::map<uint32_t, std::vector<size_t>>& rangesMap, std::vector<D3D12_DESCRIPTOR_RANGE>& ranges, uint32_t space, uint32_t binding, D3D12_DESCRIPTOR_RANGE_TYPE rangeType)
+	{
+		if (rangesMap.contains(space))
+		{
+			for (const auto& rangeIndex : rangesMap.at(space))
+			{
+				auto& range = ranges.at(rangeIndex);
+				if (range.RangeType != rangeType)
+				{
+					continue;
+				}
+
+				if (range.BaseShaderRegister > 0 && range.BaseShaderRegister - 1 == binding)
+				{
+					range.BaseShaderRegister = binding;
+					return { rangeIndex, range.NumDescriptors++ };
+				}
+
+				if (range.BaseShaderRegister + 1 == binding)
+				{
+					return { rangeIndex, range.NumDescriptors++ };
+				}
+			}
+		}
+
+		const size_t rangeIndex = ranges.size();
+		auto& newRange = ranges.emplace_back();
+
+		InitializeRange(newRange, rangeType, space, binding);
+		newRange.NumDescriptors = 1;
+
+		rangesMap[space].emplace_back(rangeIndex);
+
+		return { rangeIndex, 0 };
+	}	
+
+	inline void SetupDescriptorOffsets(vt::map<uint32_t, std::vector<size_t>>& rangesMap, std::vector<D3D12_DESCRIPTOR_RANGE>& ranges)
+	{
+		uint32_t descriptorCount = 0;
+		for (const auto& [space, rangeIndices] : rangesMap)
+		{
+			for (const auto& rangeIndex : rangeIndices)
+			{
+				ranges.at(rangeIndex).OffsetInDescriptorsFromTableStart = descriptorCount;
+				descriptorCount += ranges.at(rangeIndex).NumDescriptors;
+			}
+		}
+	}
+
+	inline size_t GetDescriptorBindingHash(uint32_t space, uint32_t binding, D3D12_DESCRIPTOR_RANGE_TYPE descriptorType)
+	{
+		size_t result = std::hash<uint32_t>()(space);
+		result = Utility::HashCombine(result, std::hash<uint32_t>()(binding));
+		result = Utility::HashCombine(result, std::hash<uint32_t>()(static_cast<uint32_t>(descriptorType)));
+
+		return result;
 	}
 
 	void D3D12Shader::CreateRootSignature()
 	{
 		std::vector<D3D12_ROOT_PARAMETER> rootParameters{};
 
-		D3D12_DESCRIPTOR_RANGE cbvRange{};
-		D3D12_DESCRIPTOR_RANGE srvRange{};
-		D3D12_DESCRIPTOR_RANGE uavRange{};
-		D3D12_DESCRIPTOR_RANGE samplerRange{};
+		std::vector<D3D12_DESCRIPTOR_RANGE> descriptorRanges;
+		std::vector<D3D12_DESCRIPTOR_RANGE> samplerRanges;
+		vt::map<uint32_t, std::vector<size_t>> bindingToDescriptorRanges;
 
-		InitializeRange(cbvRange, D3D12_DESCRIPTOR_RANGE_TYPE_CBV);
-		InitializeRange(srvRange, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
-		InitializeRange(uavRange, D3D12_DESCRIPTOR_RANGE_TYPE_UAV);
-		InitializeRange(samplerRange, D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER);
 
 		constexpr uint32_t PUSH_CONSTANTS_BINDING = 999;
 
@@ -120,8 +180,9 @@ namespace Volt::RHI
 				}
 				else
 				{
-					cbvRange.NumDescriptors++;
-					cbvRange.BaseShaderRegister = std::min(binding, cbvRange.BaseShaderRegister);
+					auto rangeInfo = AddDescriptorToRange(bindingToDescriptorRanges, descriptorRanges, space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_CBV);
+					const size_t descriptorHash = GetDescriptorBindingHash(space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_CBV);
+					m_bindingToDescriptorRangeInfo[descriptorHash] = rangeInfo;
 				}
 			}
 		}
@@ -132,13 +193,15 @@ namespace Volt::RHI
 			{
 				if (buffer.isWrite)
 				{
-					uavRange.NumDescriptors++;
-					uavRange.BaseShaderRegister = std::min(binding, uavRange.BaseShaderRegister);
+					auto rangeInfo = AddDescriptorToRange(bindingToDescriptorRanges, descriptorRanges, space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_UAV);
+					const size_t descriptorHash = GetDescriptorBindingHash(space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_UAV);
+					m_bindingToDescriptorRangeInfo[descriptorHash] = rangeInfo;
 				}
 				else
 				{
-					srvRange.NumDescriptors++;
-					srvRange.BaseShaderRegister = std::min(binding, srvRange.BaseShaderRegister);
+					auto rangeInfo = AddDescriptorToRange(bindingToDescriptorRanges, descriptorRanges, space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
+					const size_t descriptorHash = GetDescriptorBindingHash(space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
+					m_bindingToDescriptorRangeInfo[descriptorHash] = rangeInfo;
 				}
 			}
 		}
@@ -147,8 +210,9 @@ namespace Volt::RHI
 		{
 			for (const auto& [binding, image] : bindings)
 			{
-				uavRange.NumDescriptors++;
-				uavRange.BaseShaderRegister = std::min(binding, srvRange.BaseShaderRegister);
+				auto rangeInfo = AddDescriptorToRange(bindingToDescriptorRanges, descriptorRanges, space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_UAV);
+				const size_t descriptorHash = GetDescriptorBindingHash(space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_UAV);
+				m_bindingToDescriptorRangeInfo[descriptorHash] = rangeInfo;
 			}
 		}
 
@@ -156,8 +220,9 @@ namespace Volt::RHI
 		{
 			for (const auto& [binding, image] : bindings)
 			{
-				srvRange.NumDescriptors++;
-				srvRange.BaseShaderRegister = std::min(binding, srvRange.BaseShaderRegister);
+				auto rangeInfo = AddDescriptorToRange(bindingToDescriptorRanges, descriptorRanges, space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
+				const size_t descriptorHash = GetDescriptorBindingHash(space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
+				m_bindingToDescriptorRangeInfo[descriptorHash] = rangeInfo;
 			}
 		}
 
@@ -165,27 +230,17 @@ namespace Volt::RHI
 		{
 			for (const auto& [binding, image] : bindings)
 			{
-				samplerRange.NumDescriptors++;
-				samplerRange.BaseShaderRegister = std::min(binding, samplerRange.BaseShaderRegister);
+				auto rangeInfo = AddDescriptorToRange(bindingToDescriptorRanges, samplerRanges, space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER);
+				const size_t descriptorHash = GetDescriptorBindingHash(space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER);
+				m_bindingToDescriptorRangeInfo[descriptorHash] = rangeInfo;
 			}
 		}
 
-		std::vector<D3D12_DESCRIPTOR_RANGE> descriptorRanges{};
-		descriptorRanges.reserve(3);
+		SetupDescriptorOffsets(bindingToDescriptorRanges, descriptorRanges);
 
-		if (cbvRange.NumDescriptors > 0)
+		for (auto& [hash, rangeInfo] : m_bindingToDescriptorRangeInfo)
 		{
-			descriptorRanges.emplace_back(cbvRange);
-		}
-
-		if (srvRange.NumDescriptors > 0)
-		{
-			descriptorRanges.emplace_back(srvRange);
-		}
-
-		if (uavRange.NumDescriptors > 0)
-		{
-			descriptorRanges.emplace_back(uavRange);
+			rangeInfo.descriptorIndex += descriptorRanges.at(rangeInfo.rangeIndex).OffsetInDescriptorsFromTableStart;
 		}
 
 		if (!descriptorRanges.empty())
@@ -196,11 +251,11 @@ namespace Volt::RHI
 			tableParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 		}
 
-		if (samplerRange.NumDescriptors > 0)
+		if (!samplerRanges.empty())
 		{
 			auto& tableParam = rootParameters.emplace_back();
 			tableParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			tableParam.DescriptorTable = { 1, &samplerRange };
+			tableParam.DescriptorTable = { static_cast<uint32_t>(samplerRanges.size()), samplerRanges.data()};
 			tableParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 		}
 
@@ -259,7 +314,7 @@ namespace Volt::RHI
 	{
 		return m_specification.name;
 	}
-	
+
 	const ShaderResources& D3D12Shader::GetResources() const
 	{
 		return m_resources;
