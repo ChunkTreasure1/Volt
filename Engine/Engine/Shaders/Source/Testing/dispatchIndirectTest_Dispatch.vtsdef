@@ -1,0 +1,6 @@
+name: "DispatchIndirectTest_Dispatch"
+internal: true
+sources:
+  - entryPoint: "MainIndirectDispatch"
+    shaderStage: "cs"
+    filePath: "Engine/Shaders/Source/Testing/DispatchIndirectTest_cs.hlsl"

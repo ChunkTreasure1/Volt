@@ -3,6 +3,7 @@
 #include "Testing/Tests/SwapchainClearColorTest.h"
 #include "Testing/Tests/ComputeWriteToBufferTest.h"
 #include "Testing/Tests/ClearBufferToValueTest.h"
+#include "Testing/Tests/DispatchIndirectTest.h"
 
 #include <Volt/Log/Log.h>
 
@@ -16,6 +17,7 @@ void RenderingTestingLayer::OnAttach()
 	m_renderingTests.emplace_back(CreateScope<ComputeWriteToBufferTest>());
 	m_renderingTests.emplace_back(CreateScope<ComputeWriteToBufferTest>());
 	m_renderingTests.emplace_back(CreateScope<ClearBufferToValueTest>());
+	m_renderingTests.emplace_back(CreateScope<DispatchIndirectTest>());
 }
 
 void RenderingTestingLayer::OnDetach()

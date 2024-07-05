@@ -7,7 +7,7 @@
 
 struct ID3D12Fence;
 struct ID3D12CommandAllocator;
-struct ID3D12GraphicsCommandList1;
+struct ID3D12GraphicsCommandList6;
 
 namespace Volt::RHI
 {
@@ -94,7 +94,7 @@ namespace Volt::RHI
 		struct CommandListData
 		{
 			ComPtr<ID3D12CommandAllocator> commandAllocator;
-			ComPtr<ID3D12GraphicsCommandList> commandList;
+			ComPtr<ID3D12GraphicsCommandList6> commandList;
 			RefPtr<Semaphore> fence;
 		};
 

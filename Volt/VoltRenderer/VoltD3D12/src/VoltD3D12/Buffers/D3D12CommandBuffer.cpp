@@ -13,6 +13,7 @@
 #include "VoltD3D12/Descriptors/CPUDescriptorHeapManager.h"
 #include "VoltD3D12/Descriptors/D3D12DescriptorHeap.h"
 #include "VoltD3D12/Buffers/D3D12BufferView.h"
+#include "VoltD3D12/Buffers/CommandSignatureCache.h"
 
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Memory/Allocation.h>
@@ -394,30 +395,63 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::DrawIndexedIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
 	{
+		VT_PROFILE_FUNCTION();
+
+		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::DrawIndexed, stride);
+		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
+		commandData.commandList->ExecuteIndirect(signature.Get(), drawCount, commandsBuffer->GetHandle<ID3D12Resource*>(), offset, nullptr, 0);
 	}
 
 	void D3D12CommandBuffer::DrawIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
 	{
+		VT_PROFILE_FUNCTION();
+
+		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::Draw, stride);
+		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
+		commandData.commandList->ExecuteIndirect(signature.Get(), drawCount, commandsBuffer->GetHandle<ID3D12Resource*>(), offset, nullptr, 0);
 	}
 
 	void D3D12CommandBuffer::DrawIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
 	{
+		VT_PROFILE_FUNCTION();
+
+		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::Draw, stride);
+		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
+		commandData.commandList->ExecuteIndirect(signature.Get(), maxDrawCount, commandsBuffer->GetHandle<ID3D12Resource*>(), offset, countBuffer->GetHandle<ID3D12Resource*>(), countBufferOffset);
 	}
 
 	void D3D12CommandBuffer::DrawIndexedIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
 	{
+		VT_PROFILE_FUNCTION();
+
+		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::DrawIndexed, stride);
+		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
+		commandData.commandList->ExecuteIndirect(signature.Get(), maxDrawCount, commandsBuffer->GetHandle<ID3D12Resource*>(), offset, countBuffer->GetHandle<ID3D12Resource*>(), countBufferOffset);
 	}
 
 	void D3D12CommandBuffer::DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
 	{
+		VT_PROFILE_FUNCTION();
+
+		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
+		commandData.commandList->DispatchMesh(groupCountX, groupCountY, groupCountZ);
 	}
 
 	void D3D12CommandBuffer::DispatchMeshTasksIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
 	{
+		VT_PROFILE_FUNCTION();
+
+		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::DispatchMesh, stride);
+		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
+		commandData.commandList->ExecuteIndirect(signature.Get(), drawCount, commandsBuffer->GetHandle<ID3D12Resource*>(), offset, nullptr, 0);
 	}
 
 	void D3D12CommandBuffer::DispatchMeshTasksIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
 	{
+
+		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::DispatchMesh, stride);
+		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
+		commandData.commandList->ExecuteIndirect(signature.Get(), maxDrawCount, commandsBuffer->GetHandle<ID3D12Resource*>(), offset, countBuffer->GetHandle<ID3D12Resource*>(), countBufferOffset);
 	}
 
 	void D3D12CommandBuffer::Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
@@ -430,6 +464,11 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::DispatchIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset)
 	{
+		VT_PROFILE_FUNCTION();
+
+		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::Dispatch, sizeof(IndirectDispatchCommand));
+		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
+		commandData.commandList->ExecuteIndirect(signature.Get(), 1, commandsBuffer->GetHandle<ID3D12Resource*>(), offset, nullptr, 0);
 	}
 
 	void D3D12CommandBuffer::SetViewports(const StackVector<Viewport, MAX_VIEWPORT_COUNT>& viewports)
@@ -639,10 +678,14 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::BeginMarker(std::string_view markerLabel, const std::array<float, 4>& markerColor)
 	{
+		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
+		cmdData.commandList->BeginEvent(1, markerLabel.data(), static_cast<uint32_t>(markerLabel.size()));
 	}
 
 	void D3D12CommandBuffer::EndMarker()
 	{
+		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
+		cmdData.commandList->EndEvent();
 	}
 
 	const uint32_t D3D12CommandBuffer::BeginTimestamp()

@@ -6,6 +6,8 @@
 #include "VoltD3D12/Memory/D3D12DefaultAllocator.h"
 #include "VoltD3D12/Descriptors/CPUDescriptorHeapManager.h"
 
+#include "VoltD3D12/Buffers/CommandSignatureCache.h"
+
 namespace Volt::RHI
 {
 	namespace Utility
@@ -91,10 +93,16 @@ namespace Volt::RHI
 		m_defaultAllocator = DefaultAllocator::Create();
 		m_transientAllocator = TransientAllocator::Create();
 		m_cpuDescriptorHeapManager = CreateScope<CPUDescriptorHeapManager>();
+		m_commandSignatureCache = CreateScope<CommandSignatureCache>();
 	}
 
 	void D3D12GraphicsContext::Shutdown()
 	{
+		m_commandSignatureCache = nullptr;
+		m_cpuDescriptorHeapManager = nullptr;
+		m_transientAllocator = nullptr;
+		m_defaultAllocator = nullptr;
+
 #ifdef VT_ENABLE_VALIDATION
 		ShutdownAPIValidation();
 #endif

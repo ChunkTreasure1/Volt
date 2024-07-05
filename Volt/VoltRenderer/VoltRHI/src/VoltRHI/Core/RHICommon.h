@@ -817,7 +817,7 @@ namespace Volt::RHI
 		Variant<ImageBarrier, BufferBarrier, GlobalBarrier> m_barrier;
 	};
 
-	struct IndirectIndexedCommand
+	struct IndirectDrawIndexedCommand
 	{
 		uint32_t indexCount;
 		uint32_t instanceCount;

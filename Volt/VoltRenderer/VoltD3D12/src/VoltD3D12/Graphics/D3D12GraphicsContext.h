@@ -10,6 +10,8 @@ struct ID3D12Debug;
 namespace Volt::RHI
 {
 	class CPUDescriptorHeapManager;
+	class CommandSignatureCache;
+
 	class D3D12GraphicsContext final : public GraphicsContext
 	{
 	public:
@@ -41,6 +43,7 @@ namespace Volt::RHI
 		RefPtr<Allocator> m_transientAllocator;
 
 		Scope<CPUDescriptorHeapManager> m_cpuDescriptorHeapManager;
+		Scope<CommandSignatureCache> m_commandSignatureCache;
 
 		GraphicsContextCreateInfo m_createInfo{};
 

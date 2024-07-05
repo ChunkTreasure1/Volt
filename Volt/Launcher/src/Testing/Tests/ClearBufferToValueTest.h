@@ -8,7 +8,7 @@ public:
 	ClearBufferToValueTest();
 	~ClearBufferToValueTest() override;
 
-	bool RunTest();
+	bool RunTest() override;
 	std::string GetName() const override { return "ClearBufferToValueTest"; }
 
 private:
