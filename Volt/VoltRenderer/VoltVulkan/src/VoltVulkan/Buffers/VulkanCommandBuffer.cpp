@@ -245,7 +245,14 @@ namespace Volt::RHI
 
 		const uint32_t lastIndex = m_currentCommandBufferIndex;
 		m_lastCommandBufferIndex = lastIndex;
-		m_currentCommandBufferIndex = (m_currentCommandBufferIndex + 1) % m_commandBufferCount;
+		if (m_isSwapchainTarget)
+		{
+			m_currentCommandBufferIndex = m_swapchainTarget->GetCurrentFrame();
+		}
+		else
+		{
+			m_currentCommandBufferIndex = (m_currentCommandBufferIndex + 1) % m_commandBufferCount;
+		}
 
 		auto device = GraphicsContext::GetDevice();
 		const uint32_t index = GetCurrentCommandBufferIndex();

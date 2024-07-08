@@ -23,7 +23,7 @@ namespace Circuit
 
 		command.scale = scale;
 
-		//command.color = color;
+		command.color = color;
 
 		m_drawCommands.push_back(command);
 	}
@@ -39,7 +39,7 @@ namespace Circuit
 
 		command.scale = scale;
 
-		//command.color = color;
+		command.color = color;
 
 		m_drawCommands.push_back(command);
 	}

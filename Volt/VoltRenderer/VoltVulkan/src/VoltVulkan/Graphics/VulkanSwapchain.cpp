@@ -76,7 +76,6 @@ namespace Volt::RHI
 
 	VulkanSwapchain::VulkanSwapchain(GLFWwindow* glfwWindow)
 	{
-		m_glfwWindow = glfwWindow;
 		auto vulkanContext = GraphicsContext::Get().As<VulkanGraphicsContext>();
 		auto& vulkanPhysicalDevice = GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>();
 

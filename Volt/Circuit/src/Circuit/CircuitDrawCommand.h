@@ -22,6 +22,6 @@ namespace Circuit
 		float scale;
 		glm::vec2 radiusHalfSize;
 		glm::vec2 pixelPos;
-		//CircuitColor color;
+		CircuitColor color;
 	};
 };

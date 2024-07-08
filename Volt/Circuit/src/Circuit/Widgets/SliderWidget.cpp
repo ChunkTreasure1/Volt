@@ -31,12 +31,13 @@ namespace Circuit
 
 	void SliderWidget::OnPaint(CircuitPainter& painter)
 	{
-		const uint32_t sliderWidth = 100;
-		const uint32_t sliderHeight = 20;
+		const uint32_t sliderWidth = 200;
+		const uint32_t sliderHeight = 10;
+		const uint32_t sliderHandleRadius = 10;
 		const float leftRectWidth = sliderWidth * GetValueNormalized();
 
 		const CircuitColor unfilledColor = 0x555555ff;
-		const CircuitColor filledColor = 0xf5f5f5ff;
+		const CircuitColor filledColor = 0xffa500ff;
 		const CircuitColor handleColor = 0x000000ff;
 
 
@@ -47,10 +48,10 @@ namespace Circuit
 		painter.AddRect(GetX() + leftRectWidth, GetY(), sliderWidth - leftRectWidth, sliderHeight, unfilledColor);
 
 		//handle outer
-		painter.AddCircle(GetX() + leftRectWidth, GetY() + sliderHeight/2, (sliderHeight / 2) * 1.1f, handleColor);
+		painter.AddCircle(GetX() + leftRectWidth, GetY() + sliderHeight/2, sliderHandleRadius, handleColor);
 
 		//handle inner
-		painter.AddCircle(GetX() + leftRectWidth, GetY() + sliderHeight/2, (sliderHeight / 2) * 0.7f, filledColor);
+		painter.AddCircle(GetX() + leftRectWidth, GetY() + sliderHeight/2, (sliderHeight / 3), filledColor);
 
 	}
 

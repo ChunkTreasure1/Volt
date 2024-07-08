@@ -126,8 +126,8 @@ void Sandbox::OnAttach()
 	Circuit::CircuitWindow& window = Circuit::CircuitManager::Get().OpenWindow(params);
 
 	window.SetWidget(CreateWidget(Circuit::SliderWidget)
-		.X(200)
-		.Y(200)
+		.X(0)
+		.Y(0)
 		.Max(100)
 		.Min(0)
 		.Value(50.f));
@@ -137,7 +137,8 @@ void Sandbox::OnAttach()
 	NodeEditorHelpers::Initialize();
 	IONodeGraphEditorHelpers::Initialize();
 
-	Volt::Application::Get().GetWindow().Maximize();
+	//Volt::Application::Get().GetWindow().Maximize();
+	Volt::Application::Get().GetWindow().Resize(300,500);
 
 	m_editorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 

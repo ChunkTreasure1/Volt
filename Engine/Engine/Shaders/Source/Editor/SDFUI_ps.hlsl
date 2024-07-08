@@ -22,6 +22,7 @@ struct UICommand
     float scale;
     float2 radiusHalfSize;
     float2 pixelPos;
+    uint color;
 };
 
 struct Constants
@@ -113,7 +114,14 @@ Output main(FullscreenTriangleVertex input)
     for (uint i = 0; i < constants.commandCount; i++)
     {
         UICommand command = constants.commands.Load(i);
-
+        const uint mask = 0xff;
+        const float4 color = float4(
+        ((command.color >> 24)  & mask) / 255.f,
+        ((command.color >> 16)  & mask) / 255.f,
+        ((command.color >> 8)   & mask) / 255.f,
+        (command.color          & mask) / 255.f);
+        
+        
         switch (command.type)
         {
             case UIPrimitiveType::CIRCLE:
@@ -126,7 +134,7 @@ Output main(FullscreenTriangleVertex input)
                 const float alpha = SDF_AA(sdf);
                 if (alpha > 0.f)
                 {
-                    output.color = BlendColors(output.color, float4(1.f, 0.f, 0.f, alpha));
+                    output.color = BlendColors(output.color, float4(color.rgb, alpha));
                 }
 
                 const float dropShadowRadius = command.radiusHalfSize.x * 0.05f;
@@ -153,7 +161,7 @@ Output main(FullscreenTriangleVertex input)
                 const float alpha = SDF_AA(sdf);
                 if (alpha > 0.f)
                 {
-                    output.color = BlendColors(output.color, float4(0.f, 1.f, 0.f, alpha));
+                    output.color = BlendColors(output.color, float4(color.rgb, alpha));
                 }
 
                 const float dropShadowRadius = command.radiusHalfSize.x * 0.05f;
