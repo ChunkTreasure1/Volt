@@ -5,6 +5,7 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
 struct ID3D12Device2;
+struct ID3D12DebugDevice;
 
 namespace Volt::RHI
 {
@@ -38,5 +39,6 @@ namespace Volt::RHI
 
 		std::unordered_map<QueueType, RefPtr<DeviceQueue>> m_deviceQueues;
 		ComPtr<ID3D12Device2> m_device;
+		ComPtr<ID3D12DebugDevice> m_debugDevice;
 	};
 }

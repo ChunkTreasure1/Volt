@@ -31,6 +31,7 @@ bool ComputeWriteToBufferTest::RunTest()
 	m_descriptorTable->SetBufferView("u_outputBuffer", m_buffer->GetView(), 0);
 
 	m_commandBuffer->Begin();
+	m_commandBuffer->BeginMarker("ComputeWriteToBufferTest", { 1.f, 1.f, 1.f, 1.f });
 
 	m_commandBuffer->BindPipeline(m_computePipeline);
 	m_commandBuffer->BindDescriptorTable(m_descriptorTable);
@@ -51,6 +52,7 @@ bool ComputeWriteToBufferTest::RunTest()
 
 	m_commandBuffer->CopyBufferRegion(m_buffer->GetAllocation(), 0, m_readbackBuffer->GetAllocation(), 0, m_readbackBuffer->GetByteSize());
 
+	m_commandBuffer->EndMarker();
 	m_commandBuffer->End();
 	m_commandBuffer->ExecuteAndWait();
 

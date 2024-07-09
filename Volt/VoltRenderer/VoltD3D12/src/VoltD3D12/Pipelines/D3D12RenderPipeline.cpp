@@ -6,7 +6,7 @@
 
 #include <VoltRHI/Images/ImageUtility.h>
 
-#include <dxc/dxcapi.h>
+#include <dxsc/dxcapi.h>
 
 namespace Volt::RHI
 {

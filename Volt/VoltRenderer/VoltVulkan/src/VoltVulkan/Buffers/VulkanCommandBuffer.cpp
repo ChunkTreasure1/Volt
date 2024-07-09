@@ -98,7 +98,12 @@ namespace Volt::RHI
 
 			if (EnumValueContainsFlag(barrierSync, BarrierStage::Copy))
 			{
-				result |= VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
+				result |= VK_PIPELINE_STAGE_2_COPY_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::Clear))
+			{
+				result |= VK_PIPELINE_STAGE_2_CLEAR_BIT;
 			}
 
 			if (EnumValueContainsFlag(barrierSync, BarrierStage::Resolve))
@@ -347,14 +352,6 @@ namespace Volt::RHI
 		FetchTimestampResults();
 	}
 
-	void VulkanCommandBuffer::WaitForLastFence()
-	{
-		VT_PROFILE_FUNCTION();
-
-		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(m_lastCommandBufferIndex).fence, VK_TRUE, UINT64_MAX));
-	}
-
 	void VulkanCommandBuffer::WaitForFences()
 	{
 		VT_PROFILE_FUNCTION();
@@ -386,6 +383,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
+
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
 		VT_PROFILE_GPU_EVENT("Draw");
@@ -396,6 +397,10 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance)
 	{
 		VT_PROFILE_FUNCTION();
+
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
@@ -408,6 +413,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
+
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
 		VT_PROFILE_GPU_EVENT("DrawIndexedIndirect");
@@ -418,6 +427,10 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::DrawIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
 	{
 		VT_PROFILE_FUNCTION();
+
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
@@ -430,6 +443,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
+
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
 		VT_PROFILE_GPU_EVENT("DrawIndexedIndirectCount");
@@ -440,6 +457,10 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::DrawIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
 	{
 		VT_PROFILE_FUNCTION();
+
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
@@ -452,6 +473,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentComputePipeline != nullptr);
+#endif
+
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
 		VT_PROFILE_GPU_EVENT("Dispatch");
@@ -462,6 +487,10 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::DispatchIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset)
 	{
 		VT_PROFILE_FUNCTION();
+
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentComputePipeline != nullptr);
+#endif
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
@@ -474,6 +503,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
+
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		vkCmdDrawMeshTasksEXT(m_commandBuffers.at(index).commandBuffer, groupCountX, groupCountY, groupCountZ);
 	}
@@ -482,6 +515,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
+
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		vkCmdDrawMeshTasksIndirectEXT(m_commandBuffers.at(index).commandBuffer, commandsBuffer->GetHandle<VkBuffer>(), offset, drawCount, stride);
 	}
@@ -489,6 +526,10 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::DispatchMeshTasksIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
 	{
 		VT_PROFILE_FUNCTION();
+
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		vkCmdDrawMeshTasksIndirectCountEXT(m_commandBuffers.at(index).commandBuffer, commandsBuffer->GetHandle<VkBuffer>(), offset, countBuffer->GetHandle<VkBuffer>(), countBufferOffset, maxDrawCount, stride);

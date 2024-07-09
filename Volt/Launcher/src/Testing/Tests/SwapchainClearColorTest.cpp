@@ -2,7 +2,6 @@
 
 #include <Volt/Core/Application.h>
 
-
 using namespace Volt;
 
 SwapchainClearColorTest::SwapchainClearColorTest()
@@ -18,6 +17,7 @@ bool SwapchainClearColorTest::RunTest()
 	auto& swapchain = Application::Get().GetWindow().GetSwapchain();
 
 	m_commandBuffer->Begin();
+	m_commandBuffer->BeginMarker("SwapchainClearColorTest", { 1.f });
 
 	{
 		RHI::ResourceBarrierInfo barrier{};
@@ -46,6 +46,7 @@ bool SwapchainClearColorTest::RunTest()
 	m_commandBuffer->BeginRendering(renderingInfo);
 	m_commandBuffer->EndRendering();
 
+	m_commandBuffer->EndMarker();
 	m_commandBuffer->End();
 	m_commandBuffer->Execute();
 

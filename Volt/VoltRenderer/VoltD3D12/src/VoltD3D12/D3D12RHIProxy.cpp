@@ -11,8 +11,8 @@
 
 #include <VoltRHI/Buffers/UniformBuffer.h>
 #include "VoltD3D12/Buffers/D3D12StorageBuffer.h"
-#include <VoltRHI/Buffers/VertexBuffer.h>
-#include <VoltRHI/Buffers/IndexBuffer.h>
+#include "VoltD3D12/Buffers/D3D12VertexBuffer.h"
+#include "VoltD3D12/Buffers/D3D12IndexBuffer.h"
 #include "VoltD3D12/Buffers/D3D12BufferView.h"
 #include "VoltD3D12/Buffers/D3D12CommandBuffer.h"
 
@@ -55,12 +55,12 @@ namespace Volt::RHI
 	
 	RefPtr<IndexBuffer> D3D12RHIProxy::CreateIndexBuffer(std::span<const uint32_t> indices) const
 	{
-		return RefPtr<IndexBuffer>();
+		return RefPtr<D3D12IndexBuffer>::Create(indices);
 	}
 	
 	RefPtr<VertexBuffer> D3D12RHIProxy::CreateVertexBuffer(const uint32_t size, const void* data) const
 	{
-		return RefPtr<VertexBuffer>();
+		return RefPtr<D3D12VertexBuffer>::Create(size, data);
 	}
 	
 	RefPtr<StorageBuffer> D3D12RHIProxy::CreateStorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator) const

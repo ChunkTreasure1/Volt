@@ -5,14 +5,14 @@
 #include <VoltRHI/Pipelines/ComputePipeline.h>
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 
-class ComputeWriteToBufferTest : public RenderingTestBase
+class PushConstantsTest : public RenderingTestBase
 {
-public: 
-	ComputeWriteToBufferTest();
-	~ComputeWriteToBufferTest() override;
+public:
+	PushConstantsTest();
+	~PushConstantsTest() override;
 
 	bool RunTest() override;
-	std::string GetName() const override { return "ComputeWriteToBufferTest"; }
+	std::string GetName() const override { return "PushConstantsTest"; }
 
 private:
 	RefPtr<Volt::RHI::DescriptorTable> m_descriptorTable;

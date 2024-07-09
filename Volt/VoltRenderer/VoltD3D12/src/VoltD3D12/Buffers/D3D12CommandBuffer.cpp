@@ -12,6 +12,7 @@
 #include "VoltD3D12/Descriptors/D3D12DescriptorTable.h"
 #include "VoltD3D12/Descriptors/CPUDescriptorHeapManager.h"
 #include "VoltD3D12/Descriptors/D3D12DescriptorHeap.h"
+#include "VoltD3D12/Descriptors/D3D12DescriptorHeap.h"
 #include "VoltD3D12/Buffers/D3D12BufferView.h"
 #include "VoltD3D12/Buffers/CommandSignatureCache.h"
 
@@ -208,6 +209,11 @@ namespace Volt::RHI
 				}
 			}
 
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::Clear))
+			{
+				result |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+			}
+
 			if (EnumValueContainsFlag(barrierSync, BarrierStage::Resolve))
 			{
 				result |= D3D12_RESOURCE_STATE_RESOLVE_DEST;
@@ -300,16 +306,37 @@ namespace Volt::RHI
 			info.initialValue = 0;
 			cmdListData.fence = Semaphore::Create(info);
 		}
+
+		// Temp descriptors
+		{
+			m_allocatedDescriptors.resize(m_commandListCount);
+
+			DescriptorHeapSpecification spec{};
+			spec.descriptorType = D3D12DescriptorType::CBV_SRV_UAV;
+			spec.maxDescriptorCount = 500;
+			spec.supportsGPUDescriptors = true;
+			m_descriptorHeap = CreateScope<D3D12DescriptorHeap>(spec);
+		}
 	}
 
 	void D3D12CommandBuffer::Release()
 	{
 		WaitForFences();
+
+		m_descriptorHeap = nullptr;
+		m_commandLists.clear();
 	}
 
 	const uint32_t D3D12CommandBuffer::GetCurrentCommandListIndex() const
 	{
 		return m_currentCommandListIndex;
+	}
+
+	D3D12DescriptorPointer D3D12CommandBuffer::CreateTempDescriptorPointer()
+	{
+		D3D12DescriptorPointer ptr = m_descriptorHeap->Allocate(m_currentCommandListIndex);
+		m_allocatedDescriptors.at(m_currentCommandListIndex).emplace_back(ptr);
+		return ptr;
 	}
 
 	void D3D12CommandBuffer::Begin()
@@ -320,6 +347,11 @@ namespace Volt::RHI
 		auto& currentCommandList = m_commandLists.at(m_currentCommandListIndex);
 
 		currentCommandList.fence->Wait();
+
+		for (const auto& descriptor : m_allocatedDescriptors.at(m_currentCommandListIndex))
+		{
+			m_descriptorHeap->Free(descriptor);
+		}
 
 		VT_D3D12_CHECK(currentCommandList.commandAllocator->Reset());
 		VT_D3D12_CHECK(currentCommandList.commandList->Reset(currentCommandList.commandAllocator.Get(), nullptr)); // #TODO_Ivar: Huh?
@@ -355,10 +387,6 @@ namespace Volt::RHI
 		cmdList.fence->Wait();
 	}
 
-	void D3D12CommandBuffer::WaitForLastFence()
-	{
-	}
-
 	void D3D12CommandBuffer::WaitForFences()
 	{
 		VT_PROFILE_FUNCTION();
@@ -381,6 +409,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
+
 		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
 		commandData.commandList->DrawInstanced(vertexCount, instanceCount, firstVertex, firstInstance);
 	}
@@ -389,6 +421,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
+
 		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
 		commandData.commandList->DrawIndexedInstanced(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 	}
@@ -396,6 +432,10 @@ namespace Volt::RHI
 	void D3D12CommandBuffer::DrawIndexedIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
 	{
 		VT_PROFILE_FUNCTION();
+
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
 
 		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::DrawIndexed, stride);
 		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
@@ -406,6 +446,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
+
 		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::Draw, stride);
 		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
 		commandData.commandList->ExecuteIndirect(signature.Get(), drawCount, commandsBuffer->GetHandle<ID3D12Resource*>(), offset, nullptr, 0);
@@ -414,6 +458,10 @@ namespace Volt::RHI
 	void D3D12CommandBuffer::DrawIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
 	{
 		VT_PROFILE_FUNCTION();
+
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
 
 		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::Draw, stride);
 		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
@@ -424,6 +472,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
+
 		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::DrawIndexed, stride);
 		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
 		commandData.commandList->ExecuteIndirect(signature.Get(), maxDrawCount, commandsBuffer->GetHandle<ID3D12Resource*>(), offset, countBuffer->GetHandle<ID3D12Resource*>(), countBufferOffset);
@@ -433,6 +485,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
+
 		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
 		commandData.commandList->DispatchMesh(groupCountX, groupCountY, groupCountZ);
 	}
@@ -441,6 +497,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
+
 		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::DispatchMesh, stride);
 		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
 		commandData.commandList->ExecuteIndirect(signature.Get(), drawCount, commandsBuffer->GetHandle<ID3D12Resource*>(), offset, nullptr, 0);
@@ -448,6 +508,11 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::DispatchMeshTasksIndirectCount(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset, WeakPtr<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
 	{
+		VT_PROFILE_FUNCTION();
+
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentRenderPipeline != nullptr);
+#endif
 
 		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::DispatchMesh, stride);
 		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
@@ -458,6 +523,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentComputePipeline != nullptr);
+#endif
+
 		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
 		commandData.commandList->Dispatch(groupCountX, groupCountY, groupCountZ);
 	}
@@ -465,6 +534,10 @@ namespace Volt::RHI
 	void D3D12CommandBuffer::DispatchIndirect(WeakPtr<StorageBuffer> commandsBuffer, const size_t offset)
 	{
 		VT_PROFILE_FUNCTION();
+
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentComputePipeline != nullptr);
+#endif
 
 		ComPtr<ID3D12CommandSignature> signature = CommandSignatureCache::Get().GetOrCreateCommandSignature(CommandSignatureType::Dispatch, sizeof(IndirectDispatchCommand));
 		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
@@ -554,10 +627,28 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::BindIndexBuffer(WeakPtr<IndexBuffer> indexBuffer)
 	{
+		VT_PROFILE_FUNCTION();
+		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
+
+		D3D12_INDEX_BUFFER_VIEW view{};
+		view.BufferLocation = indexBuffer->GetHandle<ID3D12Resource*>()->GetGPUVirtualAddress();
+		view.Format = DXGI_FORMAT_R32_UINT;
+		view.SizeInBytes = static_cast<uint32_t>(indexBuffer->GetByteSize());
+
+		commandData.commandList->IASetIndexBuffer(&view);
 	}
 
 	void D3D12CommandBuffer::BindIndexBuffer(WeakPtr<StorageBuffer> indexBuffer)
 	{
+		VT_PROFILE_FUNCTION();
+
+		D3D12_INDEX_BUFFER_VIEW view{};
+		view.BufferLocation = indexBuffer->GetHandle<ID3D12Resource*>()->GetGPUVirtualAddress();
+		view.Format = DXGI_FORMAT_R32_UINT;
+		view.SizeInBytes = static_cast<uint32_t>(indexBuffer->GetByteSize());
+
+		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
+		commandData.commandList->IASetIndexBuffer(&view);
 	}
 
 	void D3D12CommandBuffer::BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable)
@@ -612,6 +703,35 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::PushConstants(const void* data, const uint32_t size, const uint32_t offset)
 	{
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		VT_ENSURE(m_currentComputePipeline != nullptr || m_currentRenderPipeline != nullptr);
+
+		if (m_currentRenderPipeline)
+		{
+			VT_ENSURE(m_currentRenderPipeline->GetShader()->GetConstantsBuffer().IsValid());
+		}
+		else
+		{
+			VT_ENSURE(m_currentComputePipeline->GetShader()->GetConstantsBuffer().IsValid());
+		}
+
+		VT_ENSURE(size % 4 == 0 && offset % 4 == 0);
+#endif
+
+		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
+
+		const uint32_t numValues = size / sizeof(uint32_t);
+		const uint32_t numOffsetValues = offset / sizeof(uint32_t);
+
+		// Root parameter index will always be 0 for push constants.
+		if (m_currentRenderPipeline)
+		{
+			cmdData.commandList->SetGraphicsRoot32BitConstants(0, numValues, data, numOffsetValues);
+		}
+		else
+		{
+			cmdData.commandList->SetComputeRoot32BitConstants(0, numValues, data, numOffsetValues);
+		}
 	}
 
 	void D3D12CommandBuffer::ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers)
@@ -678,14 +798,14 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::BeginMarker(std::string_view markerLabel, const std::array<float, 4>& markerColor)
 	{
-		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
-		cmdData.commandList->BeginEvent(1, markerLabel.data(), static_cast<uint32_t>(markerLabel.size()));
+		//auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
+		//cmdData.commandList->BeginEvent(1, markerLabel.data(), static_cast<uint32_t>(markerLabel.size()));
 	}
 
 	void D3D12CommandBuffer::EndMarker()
 	{
-		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
-		cmdData.commandList->EndEvent();
+		//auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
+		//cmdData.commandList->EndEvent();
 	}
 
 	const uint32_t D3D12CommandBuffer::BeginTimestamp()
@@ -730,17 +850,23 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
+		auto view = buffer->GetView().As<D3D12BufferView>();
+		ID3D12Device2* devicePtr = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
 
-		D3D12DescriptorPointer descriptor = buffer->AsRef<D3D12BufferView>().GetUAVDescriptor();
-		VT_ENSURE(descriptor.IsValid());
+		D3D12DescriptorPointer srcDescriptor = view->GetUAVDescriptor();
+		VT_ENSURE(srcDescriptor.IsValid());
 
-		ID3D12DescriptorHeap* heap = GraphicsContext::Get().AsRef<D3D12GraphicsContext>().GetCPUDescriptorHeapManager().GetHeapFromHash(descriptor.parentHeapHash).GetHeap().Get();
+		D3D12DescriptorPointer tempDescriptor = CreateTempDescriptorPointer();
+		VT_ENSURE(tempDescriptor.IsValid());
+
+		devicePtr->CopyDescriptorsSimple(1, D3D12_CPU_DESCRIPTOR_HANDLE(tempDescriptor.GetCPUPointer()), D3D12_CPU_DESCRIPTOR_HANDLE(srcDescriptor.GetCPUPointer()), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 		const uint32_t values[4] = { value, value, value, value };
+		ID3D12DescriptorHeap* heap = m_descriptorHeap->GetHeap().Get();
 
+		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
 		cmdData.commandList->SetDescriptorHeaps(1, &heap);
-		cmdData.commandList->ClearUnorderedAccessViewUint(D3D12_GPU_DESCRIPTOR_HANDLE(descriptor.GetGPUPointer()), D3D12_CPU_DESCRIPTOR_HANDLE(descriptor.GetCPUPointer()), buffer->GetHandle<ID3D12Resource*>(), values, 0, nullptr);
+		cmdData.commandList->ClearUnorderedAccessViewUint(D3D12_GPU_DESCRIPTOR_HANDLE(tempDescriptor.GetGPUPointer()), D3D12_CPU_DESCRIPTOR_HANDLE(srcDescriptor.GetCPUPointer()), buffer->GetHandle<ID3D12Resource*>(), values, 0, nullptr);
 	}
 
 	void D3D12CommandBuffer::UpdateBuffer(WeakPtr<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data)

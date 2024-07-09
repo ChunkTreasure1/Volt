@@ -78,7 +78,7 @@ namespace Volt::RHI
 		DescriptorHeapSpecification specification{};
 		specification.descriptorType = descriptorType;
 		specification.maxDescriptorCount = DEFAULT_HEAP_DESCRIPTOR_COUNT;
-		specification.supportsGPUDescriptors = true; // We make it shader visible so we can call clear unordered access view
+		specification.supportsGPUDescriptors = false;
 
 		return CreateScope<D3D12DescriptorHeap>(specification);
 	}

@@ -3,10 +3,10 @@
 #ifdef _WIN32
 #include <wrl.h>
 #else
-#include <dxc/WinAdapter.h>
+#include <dxsc/WinAdapter.h>
 #endif
 
-#include <dxc/dxcapi.h>
+#include <dxsc/dxcapi.h>
 
 #include <unordered_set>
 #include <filesystem>

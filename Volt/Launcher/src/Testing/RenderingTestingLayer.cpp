@@ -4,6 +4,8 @@
 #include "Testing/Tests/ComputeWriteToBufferTest.h"
 #include "Testing/Tests/ClearBufferToValueTest.h"
 #include "Testing/Tests/DispatchIndirectTest.h"
+#include "Testing/Tests/DrawIndirectTest.h"
+#include "Testing/Tests/PushConstantsTest.h"
 
 #include <Volt/Log/Log.h>
 
@@ -18,6 +20,8 @@ void RenderingTestingLayer::OnAttach()
 	m_renderingTests.emplace_back(CreateScope<ComputeWriteToBufferTest>());
 	m_renderingTests.emplace_back(CreateScope<ClearBufferToValueTest>());
 	m_renderingTests.emplace_back(CreateScope<DispatchIndirectTest>());
+	m_renderingTests.emplace_back(CreateScope<DrawIndirectTest>());
+	m_renderingTests.emplace_back(CreateScope<PushConstantsTest>());
 }
 
 void RenderingTestingLayer::OnDetach()

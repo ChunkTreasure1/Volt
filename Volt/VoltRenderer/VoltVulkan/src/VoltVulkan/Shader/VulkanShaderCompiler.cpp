@@ -16,10 +16,10 @@
 #ifdef _WIN32
 #include <wrl.h>
 #else
-#include <dxc/WinAdapter.h>
+#include <dxsc/WinAdapter.h>
 #endif
 
-#include <dxc/dxcapi.h>
+#include <dxsc/dxcapi.h>
 
 #include <spirv_cross/spirv_glsl.hpp>
 #include <spirv-tools/libspirv.h>
@@ -185,7 +185,7 @@ namespace Volt::RHI
 			L"-D",
 			L"__VULKAN__ ",
 			L"-enable-16bit-types",
-			L"-fvk-use-scalar-layout",
+			L"-fvk-use-dx-layout",
 
 			DXC_ARG_PACK_MATRIX_COLUMN_MAJOR
 		};
@@ -205,7 +205,7 @@ namespace Volt::RHI
 		if (specification.optimizationLevel != ShaderCompiler::OptimizationLevel::Dist)
 		{
 			arguments.push_back(DXC_ARG_DEBUG);
-			/*arguments.push_back(L"-fspv-debug=vulkan");*/
+			//arguments.push_back(L"-fspv-debug=vulkan");
 		}
 
 		if (shaderStage == ShaderStage::Vertex || shaderStage == ShaderStage::Hull || shaderStage == ShaderStage::Geometry)

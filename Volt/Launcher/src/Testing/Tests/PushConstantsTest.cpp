@@ -1,23 +1,31 @@
-#include "ClearBufferToValueTest.h"
+#include "PushConstantsTest.h"
+
+#include <Volt/Rendering/Shader/ShaderMap.h>
 
 #include <VoltRHI/Buffers/StorageBuffer.h>
 
 using namespace Volt;
 
-constexpr uint32_t BUFFER_SIZE = 100;
-
-ClearBufferToValueTest::ClearBufferToValueTest()
+PushConstantsTest::PushConstantsTest()
 {
-	m_buffer = RHI::StorageBuffer::Create<uint32_t>(BUFFER_SIZE, "Write Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::GPU);
-	m_readbackBuffer = RHI::StorageBuffer::Create<uint32_t>(BUFFER_SIZE, "Readback Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
+	m_computePipeline = ShaderMap::GetComputePipeline("PushConstantsTest", false);
+
+	RHI::DescriptorTableCreateInfo tableInfo{};
+	tableInfo.shader = m_computePipeline->GetShader();
+
+	m_descriptorTable = RHI::DescriptorTable::Create(tableInfo);
+	m_buffer = RHI::StorageBuffer::Create<uint32_t>(1, "Write Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::GPU);
+	m_readbackBuffer = RHI::StorageBuffer::Create<uint32_t>(1, "Readback Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
 }
 
-ClearBufferToValueTest::~ClearBufferToValueTest()
+PushConstantsTest::~PushConstantsTest()
 {
 }
 
-bool ClearBufferToValueTest::RunTest()
+bool PushConstantsTest::RunTest()
 {
+	m_descriptorTable->SetBufferView("u_outputBuffer", m_buffer->GetView(), 0);
+
 	constexpr uint32_t ITERATIONS = 10;
 
 	bool result = true;
@@ -25,7 +33,7 @@ bool ClearBufferToValueTest::RunTest()
 	for (uint32_t i = 0; i < ITERATIONS; i++)
 	{
 		m_commandBuffer->Begin();
-		m_commandBuffer->BeginMarker("ClearBufferToValueTest", { 1.f, 1.f, 1.f, 1.f });
+		m_commandBuffer->BeginMarker("PushConstantsTest", { 1.f, 1.f, 1.f, 1.f });
 
 		{
 			RHI::ResourceBarrierInfo barrier{};
@@ -40,7 +48,10 @@ bool ClearBufferToValueTest::RunTest()
 			m_commandBuffer->ResourceBarrier({ barrier });
 		}
 
-		m_commandBuffer->ClearBuffer(m_buffer, i);
+		m_commandBuffer->BindPipeline(m_computePipeline);
+		m_commandBuffer->BindDescriptorTable(m_descriptorTable);
+		m_commandBuffer->PushConstants(&i, sizeof(uint32_t), 0);
+		m_commandBuffer->Dispatch(1, 1, 1);
 
 		{
 			RHI::ResourceBarrierInfo barrier{};
@@ -59,17 +70,12 @@ bool ClearBufferToValueTest::RunTest()
 		m_commandBuffer->EndMarker();
 		m_commandBuffer->End();
 		m_commandBuffer->ExecuteAndWait();
-	
-		uint32_t* values = m_readbackBuffer->Map<uint32_t>();
 
-		for (uint32_t j = 0; j < BUFFER_SIZE; j++)
+		uint32_t* value = m_readbackBuffer->Map<uint32_t>();
+		if (*value != i)
 		{
-			if (values[j] != i)
-			{
-				result = false;
-			}
+			result = false;
 		}
-
 		m_readbackBuffer->Unmap();
 	}
 

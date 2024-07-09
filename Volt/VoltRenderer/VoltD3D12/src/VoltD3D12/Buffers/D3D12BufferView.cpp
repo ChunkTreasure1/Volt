@@ -100,8 +100,8 @@ namespace Volt::RHI
 		if (m_resource->GetType() == ResourceType::StorageBuffer)
 		{
 			auto& storageBuffer = m_resource->AsRef<StorageBuffer>();
-			//elementSize = storageBuffer.GetElementSize();
-			elementCount = storageBuffer.GetCount();
+			elementSize = 0; // If it's a raw buffer the element size is always 4 //storageBuffer.GetElementSize();
+			elementCount = static_cast<uint32_t>(storageBuffer.GetByteSize() / 4);
 
 			viewDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
 			viewDesc.Format = DXGI_FORMAT_R32_TYPELESS;

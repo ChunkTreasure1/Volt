@@ -38,7 +38,6 @@ namespace Volt::RHI
 
 		virtual void Execute() = 0;
 		virtual void ExecuteAndWait() = 0;
-		virtual void WaitForLastFence() = 0;
 		virtual void WaitForFences() = 0;
 
 		virtual void SetEvent(WeakPtr<Event> event) = 0;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VoltD3D12/Common/ComPtr.h"
+#include "VoltD3D12/Descriptors/DescriptorCommon.h"
 
 #include <VoltRHI/Synchronization/Semaphore.h>
 #include <VoltRHI/Buffers/CommandBuffer.h>
@@ -11,6 +12,7 @@ struct ID3D12GraphicsCommandList6;
 
 namespace Volt::RHI
 {
+	class D3D12DescriptorHeap;
 	class D3D12CommandBuffer final : public CommandBuffer
 	{
 	public:
@@ -22,7 +24,6 @@ namespace Volt::RHI
 		void End() override;
 		void Execute() override;
 		void ExecuteAndWait() override;
-		void WaitForLastFence() override;
 		void WaitForFences() override;
 		void SetEvent(WeakPtr<Event> event) override;
 
@@ -90,6 +91,7 @@ namespace Volt::RHI
 		void Release();
 
 		const uint32_t GetCurrentCommandListIndex() const;
+		D3D12DescriptorPointer CreateTempDescriptorPointer();
 
 		struct CommandListData
 		{
@@ -108,5 +110,8 @@ namespace Volt::RHI
 		// Internal state
 		WeakPtr<RenderPipeline> m_currentRenderPipeline;
 		WeakPtr<ComputePipeline> m_currentComputePipeline;
+
+		std::vector<std::vector<D3D12DescriptorPointer>> m_allocatedDescriptors;
+		Scope<D3D12DescriptorHeap> m_descriptorHeap;
 	};
 }

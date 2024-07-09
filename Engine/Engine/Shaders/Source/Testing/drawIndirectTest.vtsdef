@@ -1,0 +1,9 @@
+name: "DrawIndirectTest"
+internal: true
+sources:
+  - entryPoint: "MainVS"
+    shaderStage: "vs"
+    filePath: "Engine/Shaders/Source/Testing/DrawIndirectTest.hlsl"
+  - entryPoint: "MainPS"
+    shaderStage: "ps"
+    filePath: "Engine/Shaders/Source/Testing/DrawIndirectTest.hlsl"

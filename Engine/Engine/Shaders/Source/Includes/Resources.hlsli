@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Defines.hlsli"
+#include "PushConstant.hlsli"
 
 #ifndef NO_RENDERGRAPH
 
-struct PushContantData
+struct PushContantData 
 {
     uint constantsBufferIndex;
     uint shaderValidationBuffer;

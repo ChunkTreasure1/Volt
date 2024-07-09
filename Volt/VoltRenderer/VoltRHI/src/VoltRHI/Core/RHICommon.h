@@ -504,7 +504,8 @@ namespace Volt::RHI
 		AllGraphics = BIT(12), // ALL_GRAPHICS
 		VideoDecode = BIT(13),
 		VideoEncode = BIT(14),
-		BuildAccelerationStructure = BIT(15)
+		BuildAccelerationStructure = BIT(15),
+		Clear = BIT(16)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(BarrierStage);

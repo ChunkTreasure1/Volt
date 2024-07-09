@@ -10,7 +10,7 @@
 
 #include <CoreUtilities/StringUtility.h>
 
-#include <dxc/dxcapi.h>
+#include <dxsc/dxcapi.h>
 #include <d3d12shader.h>
 
 #include <ranges>
@@ -34,6 +34,31 @@ namespace Volt::RHI
 			}
 
 			return output;
+		}
+
+		inline ShaderUniformType GetShaderUniformTypeFromD3D12(ID3D12ShaderReflectionType* type)
+		{
+			D3D12_SHADER_TYPE_DESC desc{};
+			type->GetDesc(&desc);
+
+			ShaderUniformType resultType;
+
+			switch (desc.Type)
+			{
+				case D3D_SVT_BOOL: resultType.baseType = ShaderUniformBaseType::Bool; break;
+				case D3D_SVT_UINT: resultType.baseType = ShaderUniformBaseType::UInt; break;
+				case D3D_SVT_INT: resultType.baseType = ShaderUniformBaseType::Int; break;
+				case D3D_SVT_FLOAT: resultType.baseType = ShaderUniformBaseType::Float; break;
+				case D3D_SVT_FLOAT16: resultType.baseType = ShaderUniformBaseType::Half; break;
+				case D3D_SVT_INT16: resultType.baseType = ShaderUniformBaseType::Short; break;
+				case D3D_SVT_UINT16: resultType.baseType = ShaderUniformBaseType::UShort; break;
+			}
+
+			// #TODO_Ivar: Is this correct?
+			resultType.columns = desc.Rows;
+			resultType.vecsize = desc.Columns;
+		
+			return resultType;
 		}
 	}
 
@@ -443,10 +468,54 @@ namespace Volt::RHI
 
 				const size_t size = static_cast<size_t>(cbDesc.Size);
 
-				auto& buffer = inOutData.uniformBuffers[space][binding];
-				buffer.usageStages = buffer.usageStages | stage;
-				buffer.usageCount++;
-				buffer.size = size;
+				if (binding == 999)
+				{
+					inOutData.constantsBuffer.SetSize(size);
+					inOutData.constants.size = static_cast<uint32_t>(size);
+
+					ID3D12ShaderReflectionVariable* baseVariable = reflectedCB->GetVariableByIndex(0);
+					ID3D12ShaderReflectionType* baseType = baseVariable->GetType();
+					D3D12_SHADER_TYPE_DESC baseTypeDesc;
+					baseType->GetDesc(&baseTypeDesc);
+
+					D3D12_SHADER_VARIABLE_DESC varDesc{};
+					baseVariable->GetDesc(&varDesc);
+
+					if (baseTypeDesc.Members == 0)
+					{
+						const uint32_t memberSize = varDesc.Size;
+						const uint32_t memberOffset = varDesc.StartOffset;
+						const std::string memberName = varDesc.Name;
+
+						const auto type = Utility::GetShaderUniformTypeFromD3D12(baseType);
+
+						inOutData.constantsBuffer.AddMember(memberName, type, memberSize, memberOffset);
+					}
+					else
+					{
+						for (uint32_t k = 0; k < baseTypeDesc.Members; k++)
+						{
+
+							ID3D12ShaderReflectionType* memberType = baseType->GetMemberTypeByIndex(k);
+							D3D12_SHADER_TYPE_DESC memberDesc{};
+							memberType->GetDesc(&memberDesc);
+
+							const uint32_t memberSize = 0;
+							const uint32_t memberOffset = memberDesc.Offset;
+
+							const auto type = Utility::GetShaderUniformTypeFromD3D12(memberType);
+						
+							inOutData.constantsBuffer.AddMember("", type, memberSize, memberOffset);
+						}
+					}
+				}
+				else
+				{
+					auto& buffer = inOutData.uniformBuffers[space][binding];
+					buffer.usageStages = buffer.usageStages | stage;
+					buffer.usageCount++;
+					buffer.size = size;
+				}
 			}
 			else if (shaderInputBindDesc.Type == D3D_SIT_STRUCTURED || shaderInputBindDesc.Type == D3D_SIT_BYTEADDRESS || 
 					 shaderInputBindDesc.Type == D3D_SIT_UAV_RWSTRUCTURED || shaderInputBindDesc.Type == D3D_SIT_UAV_RWBYTEADDRESS)

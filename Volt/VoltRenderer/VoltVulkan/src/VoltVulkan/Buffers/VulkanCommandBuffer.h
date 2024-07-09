@@ -26,7 +26,6 @@ namespace Volt::RHI
 		void RestartAfterFlush() override;
 		void Execute() override;
 		void ExecuteAndWait() override;
-		void WaitForLastFence() override;
 		void WaitForFences() override;
 
 		void SetEvent(WeakPtr<Event> event) override;
