@@ -5,7 +5,8 @@
 
 namespace Volt::RHI
 {
-	ResourceRegistry::ResourceRegistry()
+	ResourceRegistry::ResourceRegistry(uint32_t handleSize)
+		: m_handleSize(handleSize)
 	{
 		m_removalQueue.resize(FRAME_COUNT);
 	}
@@ -33,7 +34,7 @@ namespace Volt::RHI
 		m_dirtyResources.clear();
 	}
 
-	ResourceHandle ResourceRegistry::RegisterResource(WeakPtr<RHI::RHIInterface> resource, RHI::ImageUsage imageUsage)
+	ResourceHandle ResourceRegistry::RegisterResource(WeakPtr<RHI::RHIInterface> resource, RHI::ImageUsage imageUsage, uint32_t userData)
 	{
 		std::scoped_lock lock{ m_mutex };
 
@@ -56,8 +57,12 @@ namespace Volt::RHI
 
 		if (newHandle == Resource::Invalid)
 		{
-			newHandle = m_currentMaxHandle++;
-			registeredResourcePtr = &m_resources.emplace_back();
+			newHandle = m_currentMaxHandle;
+			m_currentMaxHandle = m_currentMaxHandle + static_cast<ResourceHandle>(m_handleSize);
+
+			m_resources.resize(m_currentMaxHandle);
+
+			registeredResourcePtr = &m_resources[newHandle];
 		}
 		else
 		{
@@ -68,6 +73,7 @@ namespace Volt::RHI
 		registeredResourcePtr->resource = resource;
 		registeredResourcePtr->referenceCount = 1;
 		registeredResourcePtr->imageUsage = imageUsage;
+		registeredResourcePtr->userData = userData;
 
 		m_resourceHashToHandle[resourceHash] = newHandle;
 		m_dirtyResources.emplace_back(newHandle);

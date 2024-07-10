@@ -33,19 +33,6 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
-		struct DescriptorCopyInfo
-		{
-			D3D12DescriptorPointer srcPointer;
-			D3D12DescriptorPointer dstPointer;
-		};
-		
-		struct AllocatedDescriptorInfo
-		{
-			D3D12DescriptorPointer pointer;
-			D3D12ViewType viewType;
-			uint32_t descriptorIndex;
-		};
-
 		void Invalidate();
 		void Release();
 

@@ -281,6 +281,108 @@ namespace Volt::RHI
 			return result;
 		}
 
+		inline D3D12_FILTER VoltToD3D12Filter(TextureFilter min, TextureFilter mag, TextureFilter mip, CompareOperator compareOperator)
+		{
+			if (compareOperator == CompareOperator::None)
+			{
+				if (min == TextureFilter::Nearest && mag == TextureFilter::Nearest && mip == TextureFilter::Nearest)
+				{
+					return D3D12_FILTER_MIN_MAG_MIP_POINT;
+				}
+				else if (min == TextureFilter::Linear && mag == TextureFilter::Nearest && mip == TextureFilter::Nearest)
+				{
+					return D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+				}
+				else if (min == TextureFilter::Linear && mag == TextureFilter::Linear && mip == TextureFilter::Nearest)
+				{
+					return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+				}
+				else if (min == TextureFilter::Linear && mag == TextureFilter::Linear && mip == TextureFilter::Linear)
+				{
+					return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+				}
+
+				else if (min == TextureFilter::Nearest && mag == TextureFilter::Nearest && mip == TextureFilter::Linear)
+				{
+					return D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+				}
+				else if (min == TextureFilter::Nearest && mag == TextureFilter::Linear && mip == TextureFilter::Nearest)
+				{
+					return D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
+				}
+				else if (min == TextureFilter::Nearest && mag == TextureFilter::Linear && mip == TextureFilter::Linear)
+				{
+					return D3D12_FILTER_MIN_POINT_MAG_MIP_LINEAR;
+				}
+				else if (min == TextureFilter::Linear && mag == TextureFilter::Nearest && mip == TextureFilter::Linear)
+				{
+					return D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+				}
+
+				else if (min == TextureFilter::Anisotropy || mag == TextureFilter::Anisotropy || mip == TextureFilter::Anisotropy)
+				{
+					return D3D12_FILTER_ANISOTROPIC;
+				}
+			}
+			else
+			{
+				if (min == TextureFilter::Nearest && mag == TextureFilter::Nearest && mip == TextureFilter::Nearest)
+				{
+					return D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
+				}
+				else if (min == TextureFilter::Linear && mag == TextureFilter::Nearest && mip == TextureFilter::Nearest)
+				{
+					return D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_MIP_POINT;
+				}
+				else if (min == TextureFilter::Linear && mag == TextureFilter::Linear && mip == TextureFilter::Nearest)
+				{
+					return D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+				}
+				else if (min == TextureFilter::Linear && mag == TextureFilter::Linear && mip == TextureFilter::Linear)
+				{
+					return D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+				}
+
+				else if (min == TextureFilter::Nearest && mag == TextureFilter::Nearest && mip == TextureFilter::Linear)
+				{
+					return D3D12_FILTER_COMPARISON_MIN_MAG_POINT_MIP_LINEAR;
+				}
+				else if (min == TextureFilter::Nearest && mag == TextureFilter::Linear && mip == TextureFilter::Nearest)
+				{
+					return D3D12_FILTER_COMPARISON_MIN_POINT_MAG_LINEAR_MIP_POINT;
+				}
+				else if (min == TextureFilter::Nearest && mag == TextureFilter::Linear && mip == TextureFilter::Linear)
+				{
+					return D3D12_FILTER_COMPARISON_MIN_POINT_MAG_MIP_LINEAR;
+				}
+				else if (min == TextureFilter::Linear && mag == TextureFilter::Nearest && mip == TextureFilter::Linear)
+				{
+					return D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+				}
+
+				else if (min == TextureFilter::Anisotropy || mag == TextureFilter::Anisotropy || mip == TextureFilter::Anisotropy)
+				{
+					return D3D12_FILTER_COMPARISON_ANISOTROPIC;
+				}
+			}
+
+			VT_ENSURE(false);
+			return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+		}
+
+		inline D3D12_TEXTURE_ADDRESS_MODE VoltToD3D12WrapMode(TextureWrap wrap)
+		{
+			switch (wrap)
+			{
+				case TextureWrap::None: break;
+				case TextureWrap::Clamp: return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+				case TextureWrap::Repeat: return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			}
+
+			VT_ENSURE(false);
+			return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		}
+
 		D3D12_RESOURCE_DESC GetD3D12ResourceDesc(const ImageSpecification& specification);
 		MemoryRequirement GetMemoryRequirements(const D3D12_RESOURCE_DESC& resourceDesc);
 	}

@@ -8,7 +8,7 @@
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 
 #include "VoltD3D12/Descriptors/D3D12DescriptorTable.h"
-#include <VoltRHI/Descriptors/BindlessDescriptorTable.h>
+#include "VoltD3D12/Descriptors/D3D12BindlessDescriptorTable.h"
 
 #include <VoltRHI/Buffers/UniformBuffer.h>
 #include "VoltD3D12/Buffers/D3D12StorageBuffer.h"
@@ -29,7 +29,7 @@
 #include "VoltD3D12/Memory/D3D12TransientAllocator.h"
 #include "VoltD3D12/Memory/D3D12DefaultAllocator.h"
 
-#include <VoltRHI/Images/SamplerState.h>
+#include "VoltD3D12/Images/D3D12SamplerState.h"
 #include "VoltD3D12/Images/D3D12ImageView.h"
 #include "VoltD3D12/Images/D3D12Image2D.h"
 
@@ -81,7 +81,7 @@ namespace Volt::RHI
 
 	RefPtr<BindlessDescriptorTable> D3D12RHIProxy::CreateBindlessDescriptorTable() const
 	{
-		return RefPtr<BindlessDescriptorTable>();
+		return RefPtr<D3D12BindlessDescriptorTable>::Create();
 	}
 	
 	RefPtr<DeviceQueue> D3D12RHIProxy::CreateDeviceQueue(const DeviceQueueCreateInfo& createInfo) const
@@ -126,7 +126,7 @@ namespace Volt::RHI
 	
 	RefPtr<SamplerState> D3D12RHIProxy::CreateSamplerState(const SamplerStateCreateInfo& createInfo) const
 	{
-		return RefPtr<SamplerState>();
+		return RefPtr<D3D12SamplerState>::Create(createInfo);
 	}
 	
 	RefPtr<DefaultAllocator> D3D12RHIProxy::CreateDefaultAllocator() const

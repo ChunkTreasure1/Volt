@@ -43,6 +43,8 @@ namespace Volt::RHI
 	}
 
 	VulkanBindlessDescriptorTable::VulkanBindlessDescriptorTable()
+		: m_image2DRegistry(1), m_image2DArrayRegistry(1), m_imageCubeRegistry(1),
+		m_bufferRegistry(1), m_samplerRegistry(1)
 	{
 		m_activeDescriptorWrites.reserve(100);
 		Invalidate();

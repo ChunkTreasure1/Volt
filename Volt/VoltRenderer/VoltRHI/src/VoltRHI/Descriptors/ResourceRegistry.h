@@ -16,6 +16,7 @@ namespace Volt::RHI
 		ResourceHandle handle;
 		uint32_t referenceCount = 0;
 		ImageUsage imageUsage;
+		uint32_t userData;
 
 		WeakPtr<RHIInterface> resource;
 	};
@@ -23,9 +24,9 @@ namespace Volt::RHI
 	class VTRHI_API ResourceRegistry
 	{
 	public:
-		ResourceRegistry();
+		ResourceRegistry(uint32_t handleSize);
 
-		ResourceHandle RegisterResource(WeakPtr<RHIInterface> resource, ImageUsage imageUsage = ImageUsage::None);
+		ResourceHandle RegisterResource(WeakPtr<RHIInterface> resource, ImageUsage imageUsage = ImageUsage::None, uint32_t userData = 0);
 		void UnregisterResource(ResourceHandle handle);
 
 		ResourceHandle GetResourceHandle(WeakPtr<RHIInterface> resource);
@@ -51,6 +52,8 @@ namespace Volt::RHI
 		std::unordered_map<size_t, ResourceHandle> m_resourceHashToHandle;
 
 		ResourceHandle m_currentMaxHandle = ResourceHandle(0u);
+
+		uint32_t m_handleSize;
 		uint64_t m_frameIndex = 0;
 		std::mutex m_mutex;
 	};

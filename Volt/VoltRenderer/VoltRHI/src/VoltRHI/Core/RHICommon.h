@@ -398,7 +398,7 @@ namespace Volt::RHI
 		None = 0,
 		Linear,
 		Nearest,
-		Anisotopy
+		Anisotropy
 	};
 
 	enum class AnisotropyLevel : uint32_t
@@ -469,7 +469,7 @@ namespace Volt::RHI
 		DontCare
 	};
 
-	enum class ResourceType
+	enum class ResourceType : uint32_t
 	{
 		Image2D = 0,
 		Image3D,

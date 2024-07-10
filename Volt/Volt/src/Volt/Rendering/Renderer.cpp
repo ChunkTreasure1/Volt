@@ -464,6 +464,7 @@ namespace Volt
 			imageSpec.height = 1;
 			imageSpec.layers = 6;
 			imageSpec.isCubeMap = true;
+			imageSpec.debugName = "BlackCube";
 
 			s_rendererData->defaultResources.blackCubeTexture = RHI::Image2D::Create(imageSpec, PIXEL_DATA);
 		}
@@ -485,6 +486,7 @@ namespace Volt
 		spec.usage = RHI::ImageUsage::Storage;
 		spec.width = BRDFSize;
 		spec.height = BRDFSize;
+		spec.debugName = "BRDFLut";
 
 		s_rendererData->defaultResources.BRDFLuT = RHI::Image2D::Create(spec);
 
@@ -498,11 +500,40 @@ namespace Volt
 		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 		commandBuffer->Begin();
 
+		{
+			RHI::ResourceBarrierInfo barrier{};
+			barrier.type = RHI::BarrierType::Image;
+			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::None;
+			barrier.imageBarrier().srcLayout = RHI::ImageLayout::Undefined;
+			barrier.imageBarrier().srcStage = RHI::BarrierStage::None;
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderWrite;
+			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderWrite;
+			barrier.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader;
+			barrier.imageBarrier().resource = s_rendererData->defaultResources.BRDFLuT;
+
+			commandBuffer->ResourceBarrier({ barrier });
+		}
+
 		commandBuffer->BindPipeline(pipeline);
 		commandBuffer->BindDescriptorTable(descriptorTable);
 
 		const uint32_t groupCount = Math::DivideRoundUp(BRDFSize, 32u);
 		commandBuffer->Dispatch(groupCount, groupCount, 1);
+
+		{
+			RHI::ResourceBarrierInfo barrier{};
+			barrier.type = RHI::BarrierType::Image;
+			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::ShaderWrite;
+			barrier.imageBarrier().srcLayout = RHI::ImageLayout::ShaderWrite;
+			barrier.imageBarrier().srcStage = RHI::BarrierStage::ComputeShader;
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
+			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
+			barrier.imageBarrier().dstStage = RHI::BarrierStage::PixelShader | RHI::BarrierStage::ComputeShader;
+			barrier.imageBarrier().resource = s_rendererData->defaultResources.BRDFLuT;
+
+			commandBuffer->ResourceBarrier({ barrier });
+		}
+
 		commandBuffer->End();
 		commandBuffer->Execute();
 	}

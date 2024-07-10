@@ -67,21 +67,23 @@ namespace Volt::RHI
 
 			if (EnumValueContainsFlag(layout, ImageLayout::ShaderRead))
 			{
-				if (EnumValueContainsFlag(barrierStage, BarrierStage::PixelShader))
-				{
-					result |= D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-				}
+				result |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
-				if (EnumValueContainsFlag(barrierStage, BarrierStage::VertexShader) ||
-					EnumValueContainsFlag(barrierStage, BarrierStage::ComputeShader))
-				{
-					result |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-				}
+				//if (EnumValueContainsFlag(barrierStage, BarrierStage::PixelShader))
+				//{
+				//	result |= D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+				//}
 
-				if (result == D3D12_RESOURCE_STATE_COMMON)
-				{
-					result = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-				}
+				//if (EnumValueContainsFlag(barrierStage, BarrierStage::VertexShader) ||
+				//	EnumValueContainsFlag(barrierStage, BarrierStage::ComputeShader))
+				//{
+				//	result |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+				//}
+
+				//if (result == D3D12_RESOURCE_STATE_COMMON)
+				//{
+				//	result = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+				//}
 			}
 
 			if (EnumValueContainsFlag(layout, ImageLayout::TransferSource))
@@ -91,7 +93,14 @@ namespace Volt::RHI
 
 			if (EnumValueContainsFlag(layout, ImageLayout::TransferDestination))
 			{
-				result |= D3D12_RESOURCE_STATE_COPY_DEST;
+				if (barrierStage == BarrierStage::Clear)
+				{
+					result |= D3D12_RESOURCE_STATE_RENDER_TARGET;
+				}
+				else
+				{
+					result |= D3D12_RESOURCE_STATE_COPY_DEST;
+				}
 			}
 
 			if (EnumValueContainsFlag(layout, ImageLayout::ResolveSource))
@@ -823,6 +832,8 @@ namespace Volt::RHI
 				case BarrierType::Image:
 				{
 					const auto& imageBarrier = voltBarrier.imageBarrier();
+
+					VT_ENSURE(imageBarrier.dstLayout != ImageLayout::Undefined);
 
 					newBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 					newBarrier.Transition.pResource = imageBarrier.resource->GetHandle<ID3D12Resource*>();

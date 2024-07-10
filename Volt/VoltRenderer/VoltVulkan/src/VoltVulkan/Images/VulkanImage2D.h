@@ -45,8 +45,6 @@ namespace Volt::RHI
 		const ImageLayoutInt GetCurrentLayout() const { return m_currentImageLayout; }
 		void SetCurrentLayout(ImageLayoutInt layout) { m_currentImageLayout = layout; }
 
-		void InitializeWithData(const void* data);
-
 	protected:
 		void* GetHandleImpl() const override;
 		Buffer ReadPixelInternal(const uint32_t x, const uint32_t y, const size_t stride) override;
@@ -59,6 +57,7 @@ namespace Volt::RHI
 
 		void InvalidateSwapchainImage(const SwapchainImageSpecification& specification);
 		void TransitionToLayout(ImageLayoutInt targetLayout);
+		void InitializeWithData(const void* data);
 
 		ImageSpecification m_specification;
 		SwapchainImageData m_swapchainImageData;

@@ -477,6 +477,8 @@ namespace Volt::RHI
 		commandBuffer->ExecuteAndWait();
 
 		GraphicsContext::GetDefaultAllocator()->DestroyBuffer(stagingAlloc);
+
+		m_currentImageLayout = static_cast<uint32_t>(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
 
 	void* VulkanImage2D::GetHandleImpl() const

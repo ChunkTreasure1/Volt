@@ -50,6 +50,7 @@ namespace Volt::RHI
 		};
 
 		void InvalidateSwapchainImage(const SwapchainImageSpecification& specification);
+		void InitializeWithData(const void* data);
 
 		ImageSpecification m_specification;
 		SwapchainImageData m_swapchainImageData;

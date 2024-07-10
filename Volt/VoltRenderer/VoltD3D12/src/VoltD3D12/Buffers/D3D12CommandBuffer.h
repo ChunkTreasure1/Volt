@@ -90,6 +90,7 @@ namespace Volt::RHI
 
 	private:
 		friend class D3D12DescriptorTable;
+		friend class D3D12BindlessDescriptorTable;
 
 		void Invalidate();
 		void Release();

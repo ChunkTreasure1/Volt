@@ -19,7 +19,6 @@ namespace Volt::RHI
 	struct DescriptorTableCreateInfo
 	{
 		RefPtr<Shader> shader;
-		bool isGlobal = false;
 	};
 
 	class VTRHI_API DescriptorTable : public RHIInterface

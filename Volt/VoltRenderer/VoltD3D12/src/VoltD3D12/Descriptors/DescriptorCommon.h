@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltD3D12/Common/D3D12Common.h"
+
 #include <CoreUtilities/Core.h>
 
 #include <cstdint>
@@ -25,5 +27,18 @@ namespace Volt::RHI
 		DSV,
 		CBV_SRV_UAV,
 		Sampler
+	};
+
+	struct DescriptorCopyInfo
+	{
+		D3D12DescriptorPointer srcPointer;
+		D3D12DescriptorPointer dstPointer;
+	};
+
+	struct AllocatedDescriptorInfo
+	{
+		D3D12DescriptorPointer pointer;
+		D3D12ViewType viewType;
+		uint32_t descriptorIndex;
 	};
 }

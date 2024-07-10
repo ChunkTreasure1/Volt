@@ -631,10 +631,10 @@ namespace Volt
 		renderGraph.AddPass("Clear GBuffer",
 		[&](RenderGraph::Builder& builder) 
 		{
-			builder.WriteResource(gbufferData.albedo, RenderGraphResourceState::TransferDestination);
-			builder.WriteResource(gbufferData.normals, RenderGraphResourceState::TransferDestination);
-			builder.WriteResource(gbufferData.material, RenderGraphResourceState::TransferDestination);
-			builder.WriteResource(gbufferData.emissive, RenderGraphResourceState::TransferDestination);
+			builder.WriteResource(gbufferData.albedo, RenderGraphResourceState::Clear);
+			builder.WriteResource(gbufferData.normals, RenderGraphResourceState::Clear);
+			builder.WriteResource(gbufferData.material, RenderGraphResourceState::Clear);
+			builder.WriteResource(gbufferData.emissive, RenderGraphResourceState::Clear);
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources) 
 		{
@@ -861,8 +861,8 @@ namespace Volt
 			}
 
 			builder.ReadResource(environmentTexturesData.radiance);
-			builder.ReadResource(meshVertexBufferHandle);
-			builder.ReadResource(indexBufferHandle);
+			builder.ReadResource(meshVertexBufferHandle, RenderGraphResourceState::VertexBuffer);
+			builder.ReadResource(indexBufferHandle, RenderGraphResourceState::IndexBuffer);
 			builder.ReadResource(uniformBuffers.viewDataBuffer);
 		},
 		[=](const ShadingOutputData& data, RenderContext& context, const RenderGraphPassResources& resources)
