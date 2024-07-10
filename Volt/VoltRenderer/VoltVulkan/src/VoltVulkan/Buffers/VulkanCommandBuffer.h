@@ -78,6 +78,8 @@ namespace Volt::RHI
 		void CopyImageToBuffer(WeakPtr<Image2D> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip) override;
 		void CopyImage(WeakPtr<Image2D> srcImage, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height) override;
 
+		void UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData) override;
+
 		const uint32_t GetCurrentIndex() const override;
 		const QueueType GetQueueType() const override;
 

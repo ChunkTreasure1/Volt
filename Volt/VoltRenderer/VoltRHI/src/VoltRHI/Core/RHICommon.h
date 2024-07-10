@@ -754,6 +754,22 @@ namespace Volt::RHI
 		uint32_t layerCount = ALL_LAYERS;
 	};
 
+	struct ImageCopySubData
+	{
+		ImageSubResource subResource;
+		uint32_t width;
+		uint32_t height;
+		uint32_t depth;
+		uint32_t rowPitch;
+		uint32_t slicePitch;
+		const void* data;
+	};
+
+	struct ImageCopyData
+	{
+		std::vector<ImageCopySubData> copySubData;
+	};
+
 	struct ImageBarrier
 	{
 		WeakPtr<RHIResource> resource;

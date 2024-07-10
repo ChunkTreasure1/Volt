@@ -12,6 +12,7 @@
 #include "VoltD3D12/Descriptors/CPUDescriptorHeapManager.h"
 #include "VoltD3D12/Descriptors/D3D12DescriptorHeap.h"
 #include "VoltD3D12/Buffers/D3D12BufferView.h"
+#include "VoltD3D12/Buffers/D3D12StorageBuffer.h"
 #include "VoltD3D12/Buffers/CommandSignatureCache.h"
 
 #include <VoltRHI/Graphics/GraphicsDevice.h>
@@ -19,11 +20,11 @@
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 #include <VoltRHI/Pipelines/ComputePipeline.h>
 #include <VoltRHI/Buffers/IndexBuffer.h>
-#include <VoltRHI/Buffers/StorageBuffer.h>
 #include <VoltRHI/Buffers/VertexBuffer.h>
 #include <VoltRHI/Synchronization/Semaphore.h>
 #include <VoltRHI/Memory/MemoryUtility.h>
 #include <VoltRHI/Images/ImageUtility.h>
+#include <VoltRHI/RHIProxy.h>
 
 #include "VoltD3D12/Common/d3dx12.h"
 
@@ -126,8 +127,15 @@ namespace Volt::RHI
 			return result;
 		}
 
-		D3D12_RESOURCE_STATES GetResourceStateFromStage(const BarrierStage barrierSync, const BarrierAccess barrierAccess)
+		D3D12_RESOURCE_STATES GetResourceStateFromStage(const BarrierStage barrierSync, const BarrierAccess barrierAccess, WeakPtr<RHIResource> resource)
 		{
+			bool isUploadBuffer = false;
+
+			if (resource->GetType() == ResourceType::StorageBuffer)
+			{
+				isUploadBuffer = (resource->As<D3D12StorageBuffer>()->GetMemoryUsage() & MemoryUsage::CPUToGPU) != MemoryUsage::None;
+			}
+
 			D3D12_RESOURCE_STATES result = D3D12_RESOURCE_STATE_COMMON;
 
 			if (EnumValueContainsFlag(barrierSync, BarrierStage::Draw))
@@ -202,7 +210,14 @@ namespace Volt::RHI
 			{
 				if (EnumValueContainsFlag(barrierAccess, BarrierAccess::TransferSource))
 				{
-					result |= D3D12_RESOURCE_STATE_COPY_SOURCE;
+					if (isUploadBuffer)
+					{
+						result |= D3D12_RESOURCE_STATE_GENERIC_READ;
+					}
+					else
+					{
+						result |= D3D12_RESOURCE_STATE_COPY_SOURCE;
+					}
 				}
 				else
 				{
@@ -790,8 +805,13 @@ namespace Volt::RHI
 					newBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 					newBarrier.Transition.pResource = voltBarrier.bufferBarrier().resource->GetHandle<ID3D12Resource*>();
 					newBarrier.Transition.Subresource = 0;
-					newBarrier.Transition.StateBefore = Utility::GetResourceStateFromStage(bufferBarrier.srcStage, bufferBarrier.srcAccess);
-					newBarrier.Transition.StateAfter = Utility::GetResourceStateFromStage(bufferBarrier.dstStage, bufferBarrier.dstAccess);
+					newBarrier.Transition.StateBefore = Utility::GetResourceStateFromStage(bufferBarrier.srcStage, bufferBarrier.srcAccess, voltBarrier.bufferBarrier().resource);
+					newBarrier.Transition.StateAfter = Utility::GetResourceStateFromStage(bufferBarrier.dstStage, bufferBarrier.dstAccess, voltBarrier.bufferBarrier().resource);
+
+					if (newBarrier.Transition.StateBefore == newBarrier.Transition.StateAfter)
+					{
+						continue;
+					}
 					break;
 				}
 
@@ -921,6 +941,34 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::CopyImage(WeakPtr<Image2D> srcImage, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height)
 	{
+	}
+
+	void D3D12CommandBuffer::UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData)
+	{
+		std::vector<D3D12_SUBRESOURCE_DATA> subResources;
+		subResources.reserve(copyData.copySubData.size());
+
+		for (const auto& subData : copyData.copySubData)
+		{
+			auto& newSubResource = subResources.emplace_back();
+			newSubResource.pData = subData.data;
+			newSubResource.RowPitch = subData.rowPitch;
+			newSubResource.SlicePitch = subData.slicePitch;
+		}
+
+		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
+
+		ID3D12Resource* d3d12Image = dstImage->GetHandle<ID3D12Resource*>();
+
+		const uint32_t subResourceCount = static_cast<uint32_t>(subResources.size());
+		const uint64_t requiredSize = GetRequiredIntermediateSize(d3d12Image, 0, subResourceCount);
+		RefPtr<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator()->CreateBuffer(requiredSize, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
+		UpdateSubresources(cmdData.commandList.Get(), d3d12Image, stagingAlloc->GetResourceHandle<ID3D12Resource*>(), 0, 0, subResourceCount, subResources.data());
+
+		RHIProxy::GetInstance().DestroyResource([stagingAlloc]() 
+		{
+			GraphicsContext::GetDefaultAllocator()->DestroyBuffer(stagingAlloc);
+		});
 	}
 
 	const uint32_t D3D12CommandBuffer::GetCurrentIndex() const

@@ -35,6 +35,8 @@ namespace Volt::RHI
 			m_descriptorHeap->Free(descriptor.second);
 		}
 
+		m_descriptorCache.at(m_currentFrameIndex).clear();
+
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 	}

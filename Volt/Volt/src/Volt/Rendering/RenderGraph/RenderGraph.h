@@ -57,10 +57,10 @@ namespace Volt
 		public:
 			Builder(RenderGraph& renderGraph, Ref<RenderGraphPassNodeBase> pass);
 
-			RenderGraphResourceHandle CreateImage2D(const RenderGraphImageDesc& textureDesc);
-			RenderGraphResourceHandle CreateImage3D(const RenderGraphImageDesc& textureDesc);
-			RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc);
-			RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
+			RenderGraphResourceHandle CreateImage2D(const RenderGraphImageDesc& textureDesc, RenderGraphResourceState forceState = RenderGraphResourceState::None);
+			RenderGraphResourceHandle CreateImage3D(const RenderGraphImageDesc& textureDesc, RenderGraphResourceState forceState = RenderGraphResourceState::None);
+			RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc, RenderGraphResourceState forceState = RenderGraphResourceState::None);
+			RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc, RenderGraphResourceState forceState = RenderGraphResourceState::None);
 
 			RenderGraphResourceHandle AddExternalImage2D(RefPtr<RHI::Image2D> image);
 			//RenderGraphResourceHandle AddExternalImage3D(RefPtr<RHI::Image3D> image);

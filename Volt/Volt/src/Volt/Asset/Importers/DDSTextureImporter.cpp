@@ -119,6 +119,24 @@ namespace Volt
 			image = RHI::Image2D::Create(specification);
 		}
 
+		RHI::ImageCopyData copyData{};
+		for (uint32_t i = 0; i < dds.GetMipCount(); i++)
+		{
+			auto mipData = dds.GetImageData(i);
+			
+			auto& subData = copyData.copySubData.emplace_back();
+			subData.data = mipData->m_mem;
+			subData.rowPitch = mipData->m_memPitch;
+			subData.slicePitch = mipData->m_memSlicePitch;
+			subData.width = mipData->m_width;
+			subData.height = mipData->m_height;
+			subData.depth = mipData->m_depth;
+			subData.subResource.baseArrayLayer = 0;
+			subData.subResource.baseMipLevel = i;
+			subData.subResource.layerCount = 1;
+			subData.subResource.levelCount = 1;
+		}
+
 		commandBuffer->Begin();
 
 		{
@@ -135,33 +153,8 @@ namespace Volt
 			commandBuffer->ResourceBarrier({ barrier });
 		}
 
-		commandBuffer->CopyBufferToImage(stagingBuffer, image, width, height, 0);
-		commandBuffer->End();
-		commandBuffer->ExecuteAndWait();
-
-		// Set mip data
-		{
-			for (uint32_t i = 1; i < dds.GetMipCount(); i++)
-			{
-				commandBuffer->Begin();
-
-				auto mipData = dds.GetImageData(i);
-				const size_t mipSize = mipData->m_memSlicePitch;
-
-				// Map mip memory
-				{
-					void* bufferPtr = stagingBuffer->Map<void>();
-					memcpy_s(bufferPtr, mipSize, mipData->m_mem, mipSize);
-					stagingBuffer->Unmap();
-				}
-
-				commandBuffer->CopyBufferToImage(stagingBuffer, image, mipData->m_width, mipData->m_height, i);
-				commandBuffer->End();
-				commandBuffer->ExecuteAndWait();
-			}
-		}
-
-		commandBuffer->Begin();
+		commandBuffer->UploadTextureData(image, copyData);
+		
 		{
 			RHI::ResourceBarrierInfo barrier{};
 			barrier.type = RHI::BarrierType::Image;

@@ -77,6 +77,38 @@ namespace Volt
 					usageInfo.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::Copy;
 				}
 			}
+			else if (state == RenderGraphResourceState::TransferSource)
+			{
+				if (resourceType == ResourceType::Image2D)
+				{
+					usageInfo.accessInfo.type = RHI::BarrierType::Image;
+					usageInfo.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::TransferSource;
+					usageInfo.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::Copy;
+					usageInfo.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::TransferSource;
+				}
+				else
+				{
+					usageInfo.accessInfo.type = RHI::BarrierType::Buffer;
+					usageInfo.accessInfo.bufferBarrier().dstAccess = RHI::BarrierAccess::TransferSource;
+					usageInfo.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::Copy;
+				}
+			}
+			else if (state == RenderGraphResourceState::Clear)
+			{
+				if (resourceType == ResourceType::Image2D)
+				{
+					usageInfo.accessInfo.type = RHI::BarrierType::Image;
+					usageInfo.accessInfo.imageBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
+					usageInfo.accessInfo.imageBarrier().dstStage = RHI::BarrierStage::Clear;
+					usageInfo.accessInfo.imageBarrier().dstLayout = RHI::ImageLayout::TransferDestination;
+				}
+				else
+				{
+					usageInfo.accessInfo.type = RHI::BarrierType::Buffer;
+					usageInfo.accessInfo.bufferBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
+					usageInfo.accessInfo.bufferBarrier().dstStage = RHI::BarrierStage::Clear;
+				}
+			}
 		}
 
 		inline static void SetupBufferBarrier(RHI::BufferBarrier& bufferBarrier, WeakPtr<RHI::RHIResource> resource)
@@ -120,9 +152,9 @@ namespace Volt
 				m_resourceNodes.at(access.handle)->refCount++;
 			}
 
-			for (const auto& handle : pass->resourceCreates)
+			for (const auto& access : pass->resourceCreates)
 			{
-				m_resourceNodes.at(handle)->producer = pass;
+				m_resourceNodes.at(access.handle)->producer = pass;
 			}
 
 			for (const auto& access : pass->resourceWrites)
@@ -186,9 +218,9 @@ namespace Volt
 				continue;
 			}
 
-			for (const auto& handle : pass->resourceCreates)
+			for (const auto& access : pass->resourceCreates)
 			{
-				m_resourceNodes.at(handle)->producer = pass;
+				m_resourceNodes.at(access.handle)->producer = pass;
 			}
 
 			for (const auto& access : pass->resourceWrites)
@@ -473,7 +505,7 @@ namespace Volt
 
 				for (const auto& write : pass->resourceCreates)
 				{
-					writeResourceFunc({ RenderGraphResourceState::None, write });
+					writeResourceFunc(write);
 				}
 
 				for (const auto& write : pass->resourceWrites)
@@ -1133,7 +1165,7 @@ namespace Volt
 		stagingDesc.count = 1;
 		stagingDesc.usage = RHI::BufferUsage::TransferSrc;
 
-		RenderGraphResourceHandle stagingBuffer = tempBuilder.CreateBuffer(stagingDesc);
+		RenderGraphResourceHandle stagingBuffer = tempBuilder.CreateBuffer(stagingDesc, RenderGraphResourceState::TransferSource);
 
 		AddMappedBufferUpload(stagingBuffer, data, size, name);
 
@@ -1160,7 +1192,7 @@ namespace Volt
 		newNode->index = m_passIndex++;
 
 		Builder tempBuilder{ *this, newNode };
-		tempBuilder.WriteResource(bufferHandle, RenderGraphResourceState::TransferDestination);
+		tempBuilder.WriteResource(bufferHandle, RenderGraphResourceState::Clear);
 
 		newNode->executeFunction = [bufferHandle, clearValue](const Empty&, RenderContext& context, const RenderGraphPassResources& resources)
 		{
@@ -1253,34 +1285,34 @@ namespace Volt
 	{
 	}
 
-	RenderGraphResourceHandle RenderGraph::Builder::CreateImage2D(const RenderGraphImageDesc& textureDesc)
+	RenderGraphResourceHandle RenderGraph::Builder::CreateImage2D(const RenderGraphImageDesc& textureDesc, RenderGraphResourceState forceState)
 	{
 		const auto resourceId = m_renderGraph.CreateImage2D(textureDesc);
-		m_pass->resourceCreates.emplace_back(resourceId);
+		m_pass->resourceCreates.emplace_back(forceState, resourceId);
 
 		return resourceId;
 	}
 
-	RenderGraphResourceHandle RenderGraph::Builder::CreateImage3D(const RenderGraphImageDesc& textureDesc)
+	RenderGraphResourceHandle RenderGraph::Builder::CreateImage3D(const RenderGraphImageDesc& textureDesc, RenderGraphResourceState forceState)
 	{
 		const auto resourceId = m_renderGraph.CreateImage3D(textureDesc);
-		m_pass->resourceCreates.emplace_back(resourceId);
+		m_pass->resourceCreates.emplace_back(forceState, resourceId);
 
 		return resourceId;
 	}
 
-	RenderGraphResourceHandle RenderGraph::Builder::CreateBuffer(const RenderGraphBufferDesc& bufferDesc)
+	RenderGraphResourceHandle RenderGraph::Builder::CreateBuffer(const RenderGraphBufferDesc& bufferDesc, RenderGraphResourceState forceState)
 	{
 		const auto resourceId = m_renderGraph.CreateBuffer(bufferDesc);
-		m_pass->resourceCreates.emplace_back(resourceId);
+		m_pass->resourceCreates.emplace_back(forceState, resourceId);
 
 		return resourceId;
 	}
 
-	RenderGraphResourceHandle RenderGraph::Builder::CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc)
+	RenderGraphResourceHandle RenderGraph::Builder::CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc, RenderGraphResourceState forceState)
 	{
 		const auto resourceId = m_renderGraph.CreateUniformBuffer(bufferDesc);
-		m_pass->resourceCreates.emplace_back(resourceId);
+		m_pass->resourceCreates.emplace_back(forceState, resourceId);
 
 		return resourceId;
 	}

@@ -220,6 +220,17 @@ namespace Volt::RHI
 
 			return result;
 		}
+
+		inline uint64_t CalculateStagingBufferSize(const ImageCopyData& copyData)
+		{
+			uint64_t size = 0;
+			for (const auto& data : copyData.copySubData)
+			{
+				size += data.slicePitch;
+			}
+
+			return size;
+		}
 	}
 
 	VulkanCommandBuffer::VulkanCommandBuffer(const uint32_t count, QueueType queueType)
@@ -1134,6 +1145,46 @@ namespace Volt::RHI
 		cpyInfo.regionCount = 1;
 
 		vkCmdCopyImage2(m_commandBuffers.at(index).commandBuffer, &cpyInfo);
+	}
+
+	void VulkanCommandBuffer::UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData)
+	{
+		VT_PROFILE_FUNCTION();
+		
+		auto& vkImage = dstImage->AsRef<VulkanImage2D>();
+
+		std::vector<VkBufferImageCopy> copyRegions;
+		copyRegions.reserve(copyData.copySubData.size());
+
+		const uint64_t stagingSize = Utility::CalculateStagingBufferSize(copyData);
+		RefPtr<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator()->CreateBuffer(stagingSize, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
+
+		uint8_t* stagingPtr = stagingAlloc->Map<uint8_t>();
+
+		uint64_t offset = 0;
+		for (const auto& subData : copyData.copySubData)
+		{
+			auto& newRegion = copyRegions.emplace_back();
+			newRegion.bufferOffset = offset;
+			newRegion.bufferRowLength = 0;
+			newRegion.bufferImageHeight = 0;
+
+			newRegion.imageSubresource.aspectMask = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
+			newRegion.imageSubresource.mipLevel = subData.subResource.baseMipLevel;
+			newRegion.imageSubresource.baseArrayLayer = subData.subResource.baseArrayLayer;
+			newRegion.imageSubresource.layerCount = subData.subResource.layerCount;
+
+			newRegion.imageOffset = { 0, 0, 0 };
+			newRegion.imageExtent = { subData.width, subData.height, subData.depth };
+
+			memcpy_s(&stagingPtr[offset], stagingSize, subData.data, subData.slicePitch);
+			offset += subData.slicePitch;
+		}
+
+		stagingAlloc->Unmap();
+
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		vkCmdCopyBufferToImage(m_commandBuffers.at(index).commandBuffer, stagingAlloc->GetResourceHandle<VkBuffer>(), dstImage->GetHandle<VkImage>(), static_cast<VkImageLayout>(vkImage.GetCurrentLayout()), static_cast<uint32_t>(copyRegions.size()), copyRegions.data());
 	}
 
 	const uint32_t VulkanCommandBuffer::GetCurrentIndex() const
