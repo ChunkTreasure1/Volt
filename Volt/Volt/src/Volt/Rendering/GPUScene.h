@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Rendering/Resources/ResourceHandle.h"
+#include <VoltRHI/Descriptors/ResourceHandle.h>
 
 #include <glm/glm.hpp>
 #include <cstdint>

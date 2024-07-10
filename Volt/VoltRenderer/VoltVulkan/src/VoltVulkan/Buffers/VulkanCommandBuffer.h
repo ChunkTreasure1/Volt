@@ -53,7 +53,9 @@ namespace Volt::RHI
 		void BindVertexBuffers(const StackVector<WeakPtr<StorageBuffer>, MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding) override;
 		void BindIndexBuffer(WeakPtr<IndexBuffer> indexBuffer) override;
 		void BindIndexBuffer(WeakPtr<StorageBuffer> indexBuffer) override;
+
 		void BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable) override;
+		void BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable) override;
 
 		void BeginRendering(const RenderingInfo& renderingInfo) override;
 		void EndRendering() override;
@@ -91,6 +93,7 @@ namespace Volt::RHI
 	private:
 		friend class VulkanDescriptorTable;
 		friend class VulkanDescriptorBufferTable;
+		friend class VulkanBindlessDescriptorTable;
 
 		inline static constexpr uint32_t MAX_QUERIES = 64;
 

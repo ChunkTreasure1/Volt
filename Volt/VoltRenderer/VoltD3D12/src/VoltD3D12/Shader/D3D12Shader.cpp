@@ -329,6 +329,11 @@ namespace Volt::RHI
 		return m_resources.constantsBuffer;
 	}
 
+	bool D3D12Shader::HasConstants() const
+	{
+		return m_resources.constantsBuffer.IsValid();
+	}
+
 	const ShaderResourceBinding& D3D12Shader::GetResourceBindingFromName(std::string_view name) const
 	{
 		static ShaderResourceBinding invalidBinding{};

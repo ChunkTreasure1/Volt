@@ -18,6 +18,7 @@ namespace Volt::RHI
 	class IndexBuffer;
 
 	class DescriptorTable;
+	class BindlessDescriptorTable;
 
 	class Image2D;
 	class StorageBuffer;
@@ -65,7 +66,9 @@ namespace Volt::RHI
 		virtual void BindVertexBuffers(const StackVector<WeakPtr<StorageBuffer>, MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding) = 0;
 		virtual void BindIndexBuffer(WeakPtr<IndexBuffer> indexBuffer) = 0;
 		virtual void BindIndexBuffer(WeakPtr<StorageBuffer> indexBuffer) = 0;
+
 		virtual void BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable) = 0;
+		virtual void BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable) = 0;
 
 		virtual void BeginRendering(const RenderingInfo& renderingInfo) = 0;
 		virtual void EndRendering() = 0;

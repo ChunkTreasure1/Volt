@@ -86,7 +86,7 @@ namespace Volt
 			context.SetConstant("viewData"_sh, viewDataHandle);
 			context.SetConstant("directionalLight"_sh, resources.GetBuffer(uniformBuffers.directionalLightBuffer));
 
-			context.DrawIndexedIndirect(cullPrimitivesData.drawCommand, 0, 1, sizeof(RHI::IndirectIndexedCommand));
+			context.DrawIndexedIndirect(cullPrimitivesData.drawCommand, 0, 1, sizeof(RHI::IndirectDrawIndexedCommand));
 			context.EndRendering();
 		});
 

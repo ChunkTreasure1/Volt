@@ -119,6 +119,11 @@ namespace Volt::RHI
 		return dataBuffer;
 	}
 
+	bool VulkanShader::HasConstants() const
+	{
+		return m_resources.constantsBuffer.IsValid();
+	}
+
 	void* VulkanShader::GetHandleImpl() const
 	{
 		return nullptr;

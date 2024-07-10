@@ -22,6 +22,7 @@ namespace Volt::RHI
 	class CommandBuffer;
 
 	class DescriptorTable;
+	class BindlessDescriptorTable;
 	class DeviceQueue;
 	class GraphicsContext;
 	class GraphicsDevice;
@@ -92,6 +93,7 @@ namespace Volt::RHI
 		virtual RefPtr<UniformBuffer> CreateUniformBuffer(const uint32_t size, const void* data) const = 0;
 
 		virtual RefPtr<DescriptorTable> CreateDescriptorTable(const DescriptorTableCreateInfo& createInfo) const = 0;
+		virtual RefPtr<BindlessDescriptorTable> CreateBindlessDescriptorTable() const = 0;
 
 		virtual RefPtr<DeviceQueue> CreateDeviceQueue(const DeviceQueueCreateInfo& createInfo) const = 0;
 		virtual RefPtr<GraphicsContext> CreateGraphicsContext(const GraphicsContextCreateInfo& createInfo) const = 0;

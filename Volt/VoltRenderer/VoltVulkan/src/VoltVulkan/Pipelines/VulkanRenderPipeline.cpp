@@ -5,7 +5,7 @@
 #include "VoltVulkan/Common/VulkanHelpers.h"
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
-#include "VoltVulkan/Descriptors/VulkanBindlessManager.h"
+#include "VoltVulkan/Descriptors/VulkanBindlessDescriptorLayoutManager.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
@@ -114,7 +114,7 @@ namespace Volt::RHI
 			// #TODO_Ivar: Remove
 			//const auto& setLayouts = vulkanShader->GetPaddedDescriptorSetLayouts();
 
-			const auto descriptorSetLayout = VulkanBindlessManager::GetGlobalDescriptorSetLayout();
+			const auto descriptorSetLayout = VulkanBindlessDescriptorLayoutManager::GetGlobalDescriptorSetLayout();
 
 			VkPipelineLayoutCreateInfo info{};
 			info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

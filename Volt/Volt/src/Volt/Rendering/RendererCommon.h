@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Volt/Rendering/Resources/ResourceHandle.h"
-
+#include <VoltRHI/Descriptors/ResourceHandle.h>
 #include <VoltRHI/Core/RHICommon.h>
 
 namespace Volt

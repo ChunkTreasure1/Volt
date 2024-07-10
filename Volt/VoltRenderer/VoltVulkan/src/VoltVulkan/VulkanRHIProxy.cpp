@@ -9,6 +9,7 @@
 #include "VoltVulkan/Buffers/VulkanStorageBuffer.h"
 
 #include "VoltVulkan/Descriptors/VulkanDescriptorTable.h"
+#include "VoltVulkan/Descriptors/VulkanBindlessDescriptorTable.h"
 
 #include "VoltVulkan/Graphics/VulkanDeviceQueue.h"
 #include "VoltVulkan/Graphics/VulkanGraphicsContext.h"
@@ -76,6 +77,11 @@ namespace Volt::RHI
 	RefPtr<DescriptorTable> VulkanRHIProxy::CreateDescriptorTable(const DescriptorTableCreateInfo& createInfo) const
 	{
 		return RefPtr<VulkanDescriptorTable>::Create(createInfo);
+	}
+
+	RefPtr<BindlessDescriptorTable> VulkanRHIProxy::CreateBindlessDescriptorTable() const
+	{
+		return RefPtr<VulkanBindlessDescriptorTable>::Create();
 	}
 
 	RefPtr<DeviceQueue> VulkanRHIProxy::CreateDeviceQueue(const DeviceQueueCreateInfo& createInfo) const

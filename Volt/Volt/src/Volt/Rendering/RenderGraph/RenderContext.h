@@ -3,8 +3,8 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Rendering/RenderGraph/RenderGraphCommon.h"
 #include "Volt/Rendering/RenderGraph/Resources/RenderGraphResourceHandle.h"
-#include "Volt/Rendering/Resources/ResourceHandle.h"
 
+#include <VoltRHI/Descriptors/ResourceHandle.h>
 #include <VoltRHI/Core/RHICommon.h>
 #include <VoltRHI/Shader/Shader.h>
 #include <VoltRHI/Pipelines/RenderPipeline.h>
@@ -222,15 +222,11 @@ namespace Volt
 
 		const RHI::ShaderRenderGraphConstantsData& GetRenderGraphConstantsData();
 
-		RefPtr<RHI::DescriptorTable> GetOrCreateDescriptorTable(WeakPtr<RHI::RenderPipeline> renderPipeline);
-		RefPtr<RHI::DescriptorTable> GetOrCreateDescriptorTable(WeakPtr<RHI::ComputePipeline> computePipeline);
-
 		// Internal state
 		bool m_descriptorTableIsBound = false; // This needs to be checked in every call that uses resources
 
 		WeakPtr<RHI::RenderPipeline> m_currentRenderPipeline;
 		WeakPtr<RHI::ComputePipeline> m_currentComputePipeline;
-		RefPtr<RHI::DescriptorTable> m_currentDescriptorTable;
 
 		WeakPtr<RHI::StorageBuffer> m_passConstantsBuffer;
 
@@ -240,8 +236,6 @@ namespace Volt
 
 		RefPtr<RHI::CommandBuffer> m_commandBuffer;
 
-		std::unordered_map<void*, RefPtr<RHI::DescriptorTable>> m_descriptorTableCache;
-	
 		// #TODO_Ivar: Should be changed
 		std::vector<uint8_t> m_passConstantsBufferData;
 

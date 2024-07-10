@@ -6,7 +6,6 @@
 #include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Project/ProjectManager.h"
-#include "Volt/Utility/FunctionQueue.h"
 
 #include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
@@ -25,6 +24,8 @@
 #include <VoltRHI/Images/ImageUtility.h>
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 #include <VoltRHI/Pipelines/ComputePipeline.h>
+
+#include <CoreUtilities/Containers/FunctionQueue.h>
 
 namespace Volt
 {

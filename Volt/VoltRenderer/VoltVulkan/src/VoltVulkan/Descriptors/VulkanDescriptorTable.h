@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltVulkan/Descriptors/VulkanDescriptorCommon.h"
+
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 #include <CoreUtilities/Pointers/WeakPtr.h>
 
@@ -16,34 +18,6 @@ struct VkDescriptorBufferInfo;
 
 namespace Volt::RHI
 {
-	struct WriteDescriptor2
-	{
-		uint32_t sType = 0;
-		const void* pNext = nullptr;
-		VkDescriptorSet_T* dstSet = nullptr;
-		uint32_t dstBinding = 0;
-		uint32_t dstArrayElement = 0;
-		uint32_t descriptorCount = 0;
-		uint32_t descriptorType = 0;
-		const VkDescriptorImageInfo* pImageInfo;
-		const VkDescriptorBufferInfo* pBufferInfo;
-		const VkBufferView_T* pTexelBufferView;
-	};
-
-	struct DescriptorImageInfo2
-	{
-		VkSampler_T* sampler = nullptr;
-		VkImageView_T* imageView = nullptr;
-		uint32_t imageLayout = 0;
-	};
-
-	struct DescriptorBufferInfo2
-	{
-		VkBuffer_T* buffer = nullptr;
-		uint64_t offset = 0;
-		uint64_t range = 0;
-	};
-
 	class VulkanDescriptorTable : public DescriptorTable
 	{
 	public:
@@ -77,19 +51,19 @@ namespace Volt::RHI
 		void BuildWriteDescriptors();
 		void InitializeInfoStructs();
 
-		void InitilizeWriteDescriptor(WriteDescriptor2& writeDescriptor, const uint32_t binding, const uint32_t descriptorType, VkDescriptorSet_T* dstDescriptorSet);
+		void InitilizeWriteDescriptor(DescriptorWrite& writeDescriptor, const uint32_t binding, const uint32_t descriptorType, VkDescriptorSet_T* dstDescriptorSet);
 
 		WeakPtr<Shader> m_shader;
 		bool m_isGlobal = false;
 		bool m_isDirty = false;
 
-		std::vector<WriteDescriptor2> m_writeDescriptors;
-		std::vector<WriteDescriptor2> m_activeWriteDescriptors;
+		std::vector<DescriptorWrite> m_descriptorWrites;
+		std::vector<DescriptorWrite> m_activeDescriptorWrites;
 
-		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, DescriptorImageInfo2>>> m_imageDescriptorInfos; // Set -> Binding -> Array Index
-		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, DescriptorBufferInfo2>>> m_bufferDescriptorInfos; // Set -> Binding -> Array Index
+		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, DescriptorImageInfo>>> m_imageDescriptorInfos; // Set -> Binding -> Array Index
+		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, DescriptorBufferInfo>>> m_bufferDescriptorInfos; // Set -> Binding -> Array Index
 		std::map<uint32_t, std::map<uint32_t, uint32_t>> m_writeDescriptorsMapping; // Set -> Binding
-		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, DefaultInvalid>>> m_activeWriteDescriptorsMapping; // Set -> Binding -> ArrayIndex 
+		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, DefaultInvalid>>> m_activeDescriptorWritesMapping; // Set -> Binding -> ArrayIndex 
 
 		VkDescriptorPool_T* m_descriptorPool = nullptr;
 		std::map<uint32_t, VkDescriptorSet_T*> m_descriptorSets;

@@ -701,6 +701,11 @@ namespace Volt::RHI
 		descriptorTable->AsRef<D3D12DescriptorTable>().Bind(*this);
 	}
 
+	void D3D12CommandBuffer::BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable)
+	{
+
+	}
+
 	void D3D12CommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
 	{
 		VT_PROFILE_FUNCTION();

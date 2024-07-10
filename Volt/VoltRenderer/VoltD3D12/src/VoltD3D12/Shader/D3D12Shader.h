@@ -29,6 +29,7 @@ namespace Volt::RHI
 		const std::vector<ShaderSourceEntry>& GetSourceEntries() const override;
 		const ShaderResources& GetResources() const override;
 		ShaderDataBuffer GetConstantsBuffer() const override;
+		VT_NODISCARD bool HasConstants() const override;
 		const ShaderResourceBinding& GetResourceBindingFromName(std::string_view name) const override;
 
 		VT_NODISCARD VT_INLINE const std::unordered_map<ShaderStage, std::vector<uint32_t>>& GetShaderStageData() const { return m_shaderStageData; }

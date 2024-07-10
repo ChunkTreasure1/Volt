@@ -275,7 +275,7 @@ namespace Volt
 		GPUSceneData::SetupConstants(context, resources, blackboard.Get<GPUSceneData>());
 
 		context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
-		context.DrawIndexedIndirect(cullPrimitivesData.drawCommand, 0, 1, sizeof(RHI::IndirectIndexedCommand));
+		context.DrawIndexedIndirect(cullPrimitivesData.drawCommand, 0, 1, sizeof(RHI::IndirectDrawIndexedCommand));
 	}
 
 	void SceneRenderer::SetupFrameData(RenderGraphBlackboard& blackboard, Ref<Camera> camera)

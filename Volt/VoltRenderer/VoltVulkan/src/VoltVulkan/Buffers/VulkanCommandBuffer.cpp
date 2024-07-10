@@ -12,6 +12,7 @@
 #include "VoltVulkan/Pipelines/VulkanComputePipeline.h"
 
 #include "VoltVulkan/Descriptors/VulkanDescriptorTable.h"
+#include "VoltVulkan/Descriptors/VulkanBindlessDescriptorTable.h"
 #include "VoltVulkan/Descriptors/VulkanDescriptorBufferTable.h"
 
 #include "VoltVulkan/Images/VulkanImage2D.h"
@@ -680,7 +681,13 @@ namespace Volt::RHI
 		{
 			descriptorTable->AsRef<VulkanDescriptorTable>().Bind(*this);
 		}
+	}
 
+	void VulkanCommandBuffer::BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable)
+	{
+		VT_PROFILE_FUNCTION();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(m_currentCommandBufferIndex).commandBuffer);
+		descriptorTable->AsRef<VulkanBindlessDescriptorTable>().Bind(*this);
 	}
 
 	void VulkanCommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)

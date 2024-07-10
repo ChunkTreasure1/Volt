@@ -261,7 +261,6 @@ namespace Volt
 		m_commandBuffer->BindPipeline(pipeline);
 
 		m_descriptorTableIsBound = false;
-		m_currentDescriptorTable = GetOrCreateDescriptorTable(pipeline);
 	
 		InitializeCurrentPipelineConstantsValidation();
 	}
@@ -282,7 +281,6 @@ namespace Volt
 		m_commandBuffer->BindPipeline(pipeline);
 
 		m_descriptorTableIsBound = false;
-		m_currentDescriptorTable = GetOrCreateDescriptorTable(pipeline);
 
 		InitializeCurrentPipelineConstantsValidation();
 	}
@@ -434,54 +432,25 @@ namespace Volt
 		
 		constantsData.constantsOffset = m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
 
-		m_commandBuffer->PushConstants(&constantsData, sizeof(PushConstantsData), 0);
-		m_commandBuffer->BindDescriptorTable(m_currentDescriptorTable);
+		bool shouldPushConstants = false;
+
+		if (m_currentRenderPipeline)
+		{
+			shouldPushConstants = m_currentRenderPipeline->GetShader()->HasConstants();
+		}
+		else if (m_currentComputePipeline)
+		{
+			shouldPushConstants = m_currentComputePipeline->GetShader()->HasConstants();
+		}
+
+		if (shouldPushConstants)
+		{
+			m_commandBuffer->PushConstants(&constantsData, sizeof(PushConstantsData), 0);
+		}
+
+		m_commandBuffer->BindDescriptorTable(BindlessResourcesManager::Get().GetDescriptorTable());
 
 		m_descriptorTableIsBound = true;
-	}
-
-	RefPtr<RHI::DescriptorTable> RenderContext::GetOrCreateDescriptorTable(WeakPtr<RHI::RenderPipeline> renderPipeline)
-	{
-		VT_PROFILE_FUNCTION();
-
-		//auto shader = renderPipeline->GetShader();
-		//void* ptr = shader.get();
-
-		//if (m_descriptorTableCache.contains(ptr))
-		//{
-		//	return m_descriptorTableCache.at(ptr);
-		//}
-
-		//RHI::DescriptorTableCreateInfo info{};
-		//info.shader = shader;
-		//info.count = 1;
-
-		//RefPtr<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
-		//m_descriptorTableCache[ptr] = descriptorTable;
-
-		return BindlessResourcesManager::Get().GetDescriptorTable();
-	}
-
-	RefPtr<RHI::DescriptorTable> RenderContext::GetOrCreateDescriptorTable(WeakPtr<RHI::ComputePipeline> computePipeline)
-	{
-		VT_PROFILE_FUNCTION();
-
-		//auto shader = computePipeline->GetShader();
-		//void* ptr = shader.get();
-
-		//if (m_descriptorTableCache.contains(ptr))
-		//{
-		//	return m_descriptorTableCache.at(ptr);
-		//}
-
-		//RHI::DescriptorTableCreateInfo info{};
-		//info.shader = shader;
-		//info.count = 1;
-
-		//RefPtr<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
-		//m_descriptorTableCache[ptr] = descriptorTable;
-
-		return BindlessResourcesManager::Get().GetDescriptorTable();
 	}
 
 	template<>

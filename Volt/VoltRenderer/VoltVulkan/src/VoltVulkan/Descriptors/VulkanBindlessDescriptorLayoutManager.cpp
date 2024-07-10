@@ -1,5 +1,5 @@
 #include "vkpch.h"
-#include "VulkanBindlessManager.h"
+#include "VulkanBindlessDescriptorLayoutManager.h"
 
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
@@ -12,24 +12,8 @@
 namespace Volt::RHI
 {
 	inline static VkDescriptorSetLayout s_globalDescriptorSetLayout = nullptr;
-	inline static VkDescriptorPool s_globalDescriptorPool = nullptr;
-	inline static VkDescriptorSet s_globalDescriptorSet = nullptr;
 
-	inline static constexpr uint32_t TEXTURE1D_BINDING = 0;
-	inline static constexpr uint32_t TEXTURE2D_BINDING = 1;
-	inline static constexpr uint32_t TEXTURE3D_BINDING = 2;
-	inline static constexpr uint32_t TEXTURECUBE_BINDING = 3;
-	inline static constexpr uint32_t RWTEXTURE1D_BINDING = 4;
-	inline static constexpr uint32_t RWTEXTURE2D_BINDING = 5;
-	inline static constexpr uint32_t RWTEXTURE3D_BINDING = 6;
-	inline static constexpr uint32_t BYTEADDRESSBUFFER_BINDING = 7;
-	inline static constexpr uint32_t RWBYTEADDRESSBUFFER_BINDING = 8;
-	inline static constexpr uint32_t UNIFORMBUFFER_BINDING = 9;
-	inline static constexpr uint32_t SAMPLERSTATE_BINDING = 10;
-	inline static constexpr uint32_t RWTEXTURE2DARRAY_BINDING = 11;
-	inline static constexpr uint32_t TEXTURE2DARRAY_BINDING = 12;
-
-	void VulkanBindlessManager::CreateGlobalDescriptorLayout()
+	void VulkanBindlessDescriptorLayoutManager::CreateGlobalDescriptorLayout()
 	{
 		std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings;
 
@@ -178,49 +162,16 @@ namespace Volt::RHI
 		info.pNext = &extendedInfo;
 
 		VT_VK_CHECK(vkCreateDescriptorSetLayout(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &info, nullptr, &s_globalDescriptorSetLayout));
-
-		constexpr VkDescriptorPoolSize poolSizes[] =
-		{
-			{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 10000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 10000 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10000 },
-		};
-
-		VkDescriptorPoolCreateInfo poolInfo{};
-		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
-		poolInfo.maxSets = 100'000;
-		poolInfo.poolSizeCount = 5;
-		poolInfo.pPoolSizes = poolSizes;
-
-		VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &poolInfo, nullptr, &s_globalDescriptorPool));
-
-		VkDescriptorSetAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.pNext = nullptr;
-		allocInfo.descriptorPool = s_globalDescriptorPool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &s_globalDescriptorSetLayout;
-
-		VT_VK_CHECK(vkAllocateDescriptorSets(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &allocInfo, &s_globalDescriptorSet));
 	}
 
-	void VulkanBindlessManager::DestroyGlobalDescriptorLayout()
+	void VulkanBindlessDescriptorLayoutManager::DestroyGlobalDescriptorLayout()
 	{
-		vkDestroyDescriptorPool(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), s_globalDescriptorPool, nullptr);
 		vkDestroyDescriptorSetLayout(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), s_globalDescriptorSetLayout, nullptr);
 		s_globalDescriptorSetLayout = nullptr;
 	}
 
-	VkDescriptorSetLayout_T* VulkanBindlessManager::GetGlobalDescriptorSetLayout()
+	VkDescriptorSetLayout_T* VulkanBindlessDescriptorLayoutManager::GetGlobalDescriptorSetLayout()
 	{
 		return s_globalDescriptorSetLayout;
-	}
-
-	VkDescriptorSet_T* VulkanBindlessManager::GetGlobalDescriptorSet()
-	{
-		return s_globalDescriptorSet;
 	}
 }

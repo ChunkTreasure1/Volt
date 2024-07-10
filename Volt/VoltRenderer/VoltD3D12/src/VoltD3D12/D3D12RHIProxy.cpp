@@ -8,6 +8,7 @@
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 
 #include "VoltD3D12/Descriptors/D3D12DescriptorTable.h"
+#include <VoltRHI/Descriptors/BindlessDescriptorTable.h>
 
 #include <VoltRHI/Buffers/UniformBuffer.h>
 #include "VoltD3D12/Buffers/D3D12StorageBuffer.h"
@@ -76,6 +77,11 @@ namespace Volt::RHI
 	RefPtr<DescriptorTable> D3D12RHIProxy::CreateDescriptorTable(const DescriptorTableCreateInfo& createInfo) const
 	{
 		return RefPtr<D3D12DescriptorTable>::Create(createInfo);
+	}
+
+	RefPtr<BindlessDescriptorTable> D3D12RHIProxy::CreateBindlessDescriptorTable() const
+	{
+		return RefPtr<BindlessDescriptorTable>();
 	}
 	
 	RefPtr<DeviceQueue> D3D12RHIProxy::CreateDeviceQueue(const DeviceQueueCreateInfo& createInfo) const
