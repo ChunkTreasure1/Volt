@@ -1,4 +1,3 @@
-
 #include "dxpch.h"
 #include "D3D12CommandBuffer.h"
 
@@ -12,7 +11,6 @@
 #include "VoltD3D12/Descriptors/D3D12DescriptorTable.h"
 #include "VoltD3D12/Descriptors/CPUDescriptorHeapManager.h"
 #include "VoltD3D12/Descriptors/D3D12DescriptorHeap.h"
-#include "VoltD3D12/Descriptors/D3D12DescriptorHeap.h"
 #include "VoltD3D12/Buffers/D3D12BufferView.h"
 #include "VoltD3D12/Buffers/CommandSignatureCache.h"
 
@@ -22,6 +20,7 @@
 #include <VoltRHI/Pipelines/ComputePipeline.h>
 #include <VoltRHI/Buffers/IndexBuffer.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
+#include <VoltRHI/Buffers/VertexBuffer.h>
 #include <VoltRHI/Synchronization/Semaphore.h>
 #include <VoltRHI/Memory/MemoryUtility.h>
 #include <VoltRHI/Images/ImageUtility.h>
@@ -29,6 +28,8 @@
 #include "VoltD3D12/Common/d3dx12.h"
 
 #include <CoreUtilities/EnumUtils.h>
+
+#include <pix.h>
 
 namespace Volt::RHI
 { 
@@ -619,10 +620,38 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::BindVertexBuffers(const StackVector<WeakPtr<VertexBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding)
 	{
+		VT_PROFILE_FUNCTION();
+
+		StackVector<D3D12_VERTEX_BUFFER_VIEW, RHI::MAX_VERTEX_BUFFER_COUNT> views;
+
+		for (const auto& buffer : vertexBuffers)
+		{
+			auto& newView = views.Emplace();
+			newView.BufferLocation = buffer->GetHandle<ID3D12Resource*>()->GetGPUVirtualAddress();
+			newView.SizeInBytes = static_cast<uint32_t>(buffer->GetByteSize());
+			newView.StrideInBytes = buffer->GetStride();
+		}
+
+		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
+		commandData.commandList->IASetVertexBuffers(firstBinding, static_cast<uint32_t>(views.Size()), views.Data());
 	}
 
 	void D3D12CommandBuffer::BindVertexBuffers(const StackVector<WeakPtr<StorageBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding)
 	{
+		VT_PROFILE_FUNCTION();
+
+		StackVector<D3D12_VERTEX_BUFFER_VIEW, RHI::MAX_VERTEX_BUFFER_COUNT> views;
+
+		for (const auto& buffer : vertexBuffers)
+		{
+			auto& newView = views.Emplace();
+			newView.BufferLocation = buffer->GetHandle<ID3D12Resource*>()->GetGPUVirtualAddress();
+			newView.SizeInBytes = static_cast<uint32_t>(buffer->GetByteSize());
+			newView.StrideInBytes = static_cast<uint32_t>(buffer->GetElementSize());
+		}
+
+		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
+		commandData.commandList->IASetVertexBuffers(firstBinding, static_cast<uint32_t>(views.Size()), views.Data());
 	}
 
 	void D3D12CommandBuffer::BindIndexBuffer(WeakPtr<IndexBuffer> indexBuffer)
@@ -798,14 +827,15 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::BeginMarker(std::string_view markerLabel, const std::array<float, 4>& markerColor)
 	{
-		//auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
-		//cmdData.commandList->BeginEvent(1, markerLabel.data(), static_cast<uint32_t>(markerLabel.size()));
+		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
+		uint32_t color = PIX_COLOR(static_cast<BYTE>(markerColor[0] * 255.f), static_cast<BYTE>(markerColor[1] * 255.f), static_cast<BYTE>(markerColor[2] * 255.f));
+		PIXBeginEvent(cmdData.commandList.Get(), color, markerLabel.data());
 	}
 
 	void D3D12CommandBuffer::EndMarker()
 	{
-		//auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
-		//cmdData.commandList->EndEvent();
+		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
+		PIXEndEvent(cmdData.commandList.Get());
 	}
 
 	const uint32_t D3D12CommandBuffer::BeginTimestamp()

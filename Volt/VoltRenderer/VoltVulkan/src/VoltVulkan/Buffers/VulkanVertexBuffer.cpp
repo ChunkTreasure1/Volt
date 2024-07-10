@@ -13,7 +13,8 @@
 
 namespace Volt::RHI
 {
-	VulkanVertexBuffer::VulkanVertexBuffer(const uint32_t size, const void* data)
+	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, const uint32_t size, const uint32_t stride)
+		: m_stride(stride)
 	{
 		Invalidate(data, size);
 	}
@@ -36,6 +37,11 @@ namespace Volt::RHI
 	void VulkanVertexBuffer::SetData(const void* data, uint32_t size)
 	{
 		// #TODO_Ivar: Implement
+	}
+
+	uint32_t VulkanVertexBuffer::GetStride() const
+	{
+		return m_stride;
 	}
 
 	void VulkanVertexBuffer::SetName(std::string_view name)

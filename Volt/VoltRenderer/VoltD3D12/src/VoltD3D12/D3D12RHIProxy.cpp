@@ -58,9 +58,9 @@ namespace Volt::RHI
 		return RefPtr<D3D12IndexBuffer>::Create(indices);
 	}
 	
-	RefPtr<VertexBuffer> D3D12RHIProxy::CreateVertexBuffer(const uint32_t size, const void* data) const
+	RefPtr<VertexBuffer> D3D12RHIProxy::CreateVertexBuffer(const void* data, const uint32_t size, const uint32_t stride) const
 	{
-		return RefPtr<D3D12VertexBuffer>::Create(size, data);
+		return RefPtr<D3D12VertexBuffer>::Create(data, size, stride);
 	}
 	
 	RefPtr<StorageBuffer> D3D12RHIProxy::CreateStorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator) const

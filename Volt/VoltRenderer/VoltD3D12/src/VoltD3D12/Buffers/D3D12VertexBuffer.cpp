@@ -14,7 +14,8 @@
 
 namespace Volt::RHI
 {
-	D3D12VertexBuffer::D3D12VertexBuffer(const uint32_t size, const void* data)
+	D3D12VertexBuffer::D3D12VertexBuffer(const void* data, const uint32_t size, const uint32_t stride)
+		: m_stride(stride)
 	{
 		Invalidate(data, size);
 	}
@@ -37,6 +38,11 @@ namespace Volt::RHI
 	void D3D12VertexBuffer::SetData(const void* data, uint32_t size)
 	{
 		// #TODO_Ivar: Implement
+	}
+
+	uint32_t D3D12VertexBuffer::GetStride() const
+	{
+		return m_stride;
 	}
 
 	void D3D12VertexBuffer::SetName(std::string_view name)

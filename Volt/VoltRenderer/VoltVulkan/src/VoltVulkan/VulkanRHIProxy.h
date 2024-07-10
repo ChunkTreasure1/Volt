@@ -17,7 +17,7 @@ namespace Volt::RHI
 		RefPtr<CommandBuffer> CreateCommandBuffer(const uint32_t count, QueueType queueType) const override;
 
 		RefPtr<IndexBuffer> CreateIndexBuffer(std::span<const uint32_t> indices) const override;
-		RefPtr<VertexBuffer> CreateVertexBuffer(const uint32_t size, const void* data) const override;
+		RefPtr<VertexBuffer> CreateVertexBuffer(const void* data, const uint32_t size, const uint32_t stride) const override;
 
 		RefPtr<StorageBuffer> CreateStorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator) const override;
 		RefPtr<UniformBuffer> CreateUniformBuffer(const uint32_t size, const void* data) const override;

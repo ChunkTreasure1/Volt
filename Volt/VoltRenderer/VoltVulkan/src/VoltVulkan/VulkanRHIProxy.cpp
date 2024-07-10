@@ -58,9 +58,9 @@ namespace Volt::RHI
 		return RefPtr<VulkanIndexBuffer>::Create(indices);
 	}
 
-	RefPtr<VertexBuffer> VulkanRHIProxy::CreateVertexBuffer(const uint32_t size, const void* data) const
+	RefPtr<VertexBuffer> VulkanRHIProxy::CreateVertexBuffer(const void* data, const uint32_t size, const uint32_t stride) const
 	{
-		return RefPtr<VulkanVertexBuffer>::Create(size, data);
+		return RefPtr<VulkanVertexBuffer>::Create(data, size, stride);
 	}
 
 	RefPtr<StorageBuffer> VulkanRHIProxy::CreateStorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator) const
