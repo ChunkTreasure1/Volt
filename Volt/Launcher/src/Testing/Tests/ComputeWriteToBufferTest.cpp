@@ -42,7 +42,7 @@ bool ComputeWriteToBufferTest::RunTest()
 		barrier.type = RHI::BarrierType::Buffer;
 		barrier.bufferBarrier().srcAccess = RHI::BarrierAccess::ShaderWrite;
 		barrier.bufferBarrier().srcStage = RHI::BarrierStage::ComputeShader;
-		barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::TransferSource;
+		barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::CopySource;
 		barrier.bufferBarrier().dstStage = RHI::BarrierStage::Copy;
 		barrier.bufferBarrier().resource = m_buffer;
 		barrier.bufferBarrier().size = m_buffer->GetByteSize();

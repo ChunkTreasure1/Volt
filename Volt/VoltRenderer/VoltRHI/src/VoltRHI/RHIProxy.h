@@ -49,6 +49,7 @@ namespace Volt::RHI
 	class Semaphore;
 
 	class ImGuiImplementation;
+	class ResourceStateTracker;
 
 	struct BufferViewSpecification;
 	struct DescriptorTableCreateInfo;
@@ -122,7 +123,7 @@ namespace Volt::RHI
 		virtual RefPtr<Semaphore> CreateSemaphore(const SemaphoreCreateInfo& createInfo) const = 0;
 
 		virtual RefPtr<ImGuiImplementation> CreateImGuiImplementation(const ImGuiCreateInfo& createInfo) const = 0;
-		
+
 		virtual void SetRHICallbackInfo(const RHICallbackInfo& callbackInfo) = 0;
 
 		virtual void DestroyResource(std::function<void()>&& function) = 0;

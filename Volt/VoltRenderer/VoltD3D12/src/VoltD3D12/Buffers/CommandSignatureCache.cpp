@@ -7,7 +7,7 @@
 
 #include <VoltRHI/Utility/HashUtility.h>
 
-#include <d3d12.h>
+#include <d3d12/d3d12.h>
 
 namespace Volt::RHI
 {

@@ -45,7 +45,6 @@ namespace Volt
 		Weak<RenderGraphPassNodeBase> lastUsage;
 
 		RenderGraphResourceHandle handle;
-		RenderGraphBarrierInfo currentState;
 
 		bool isExternal = false;
 

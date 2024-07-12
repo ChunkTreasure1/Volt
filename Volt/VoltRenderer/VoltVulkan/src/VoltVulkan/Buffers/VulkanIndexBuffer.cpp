@@ -16,11 +16,14 @@ namespace Volt::RHI
 	VulkanIndexBuffer::VulkanIndexBuffer(std::span<const uint32_t> indices)
 		: m_count(static_cast<uint32_t>(indices.size()))
 	{
+		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None);
 		SetData(indices.data(), static_cast<uint32_t>(sizeof(uint32_t) * indices.size()));
 	}
 
 	VulkanIndexBuffer::~VulkanIndexBuffer()
 	{
+		GraphicsContext::GetResourceStateTracker()->RemoveResource(this);
+
 		if (!m_allocation)
 		{
 			return;

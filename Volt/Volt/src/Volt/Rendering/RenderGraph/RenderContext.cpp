@@ -443,12 +443,12 @@ namespace Volt
 			shouldPushConstants = m_currentComputePipeline->GetShader()->HasConstants();
 		}
 
+		m_commandBuffer->BindDescriptorTable(BindlessResourcesManager::Get().GetDescriptorTable());
+
 		if (shouldPushConstants)
 		{
 			m_commandBuffer->PushConstants(&constantsData, sizeof(PushConstantsData), 0);
 		}
-
-		m_commandBuffer->BindDescriptorTable(BindlessResourcesManager::Get().GetDescriptorTable());
 
 		m_descriptorTableIsBound = true;
 	}

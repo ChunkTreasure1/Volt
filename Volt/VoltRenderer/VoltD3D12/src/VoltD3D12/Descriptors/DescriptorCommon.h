@@ -2,6 +2,8 @@
 
 #include "VoltD3D12/Common/D3D12Common.h"
 
+#include <VoltRHI/Shader/ShaderCommon.h>
+
 #include <CoreUtilities/Core.h>
 
 #include <cstdint>
@@ -40,5 +42,6 @@ namespace Volt::RHI
 		D3D12DescriptorPointer pointer;
 		D3D12ViewType viewType;
 		uint32_t descriptorIndex;
+		ShaderRegisterType registerType;
 	};
 }

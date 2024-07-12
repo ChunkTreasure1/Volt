@@ -162,6 +162,7 @@ namespace Volt::RHI
 		std::vector<D3D12_DESCRIPTOR_RANGE> descriptorRanges;
 		std::vector<D3D12_DESCRIPTOR_RANGE> samplerRanges;
 		vt::map<uint32_t, std::vector<size_t>> bindingToDescriptorRanges;
+		vt::map<uint32_t, std::vector<size_t>> samplerBindingToDescriptorRanges;
 
 		constexpr uint32_t PUSH_CONSTANTS_BINDING = 999;
 
@@ -229,13 +230,14 @@ namespace Volt::RHI
 		{
 			for (const auto& [binding, image] : bindings)
 			{
-				auto rangeInfo = AddDescriptorToRange(bindingToDescriptorRanges, samplerRanges, space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER);
+				auto rangeInfo = AddDescriptorToRange(samplerBindingToDescriptorRanges, samplerRanges, space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER);
 				const size_t descriptorHash = GetDescriptorBindingHash(space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER);
 				m_bindingToDescriptorRangeInfo[descriptorHash] = rangeInfo;
 			}
 		}
 
 		SetupDescriptorOffsets(bindingToDescriptorRanges, descriptorRanges);
+		SetupDescriptorOffsets(samplerBindingToDescriptorRanges, samplerRanges);
 
 		for (auto& [hash, rangeInfo] : m_bindingToDescriptorRangeInfo)
 		{
@@ -258,9 +260,12 @@ namespace Volt::RHI
 			tableParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 		}
 
-		D3D12_ROOT_SIGNATURE_FLAGS flags =
-			D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED |
-			D3D12_ROOT_SIGNATURE_FLAG_SAMPLER_HEAP_DIRECTLY_INDEXED;
+		D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+
+		if (m_resources.renderGraphConstantsData.IsValid())
+		{
+			flags |= D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED | D3D12_ROOT_SIGNATURE_FLAG_SAMPLER_HEAP_DIRECTLY_INDEXED;
+		}
 
 		if (!m_shaderStageData.contains(ShaderStage::Compute))
 		{

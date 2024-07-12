@@ -16,11 +16,13 @@ namespace Volt::RHI
 	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, const uint32_t size, const uint32_t stride)
 		: m_stride(stride)
 	{
+		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None);
 		Invalidate(data, size);
 	}
 
 	VulkanVertexBuffer::~VulkanVertexBuffer()
 	{
+		GraphicsContext::GetResourceStateTracker()->RemoveResource(this);
 		if (!m_allocation)
 		{
 			return;

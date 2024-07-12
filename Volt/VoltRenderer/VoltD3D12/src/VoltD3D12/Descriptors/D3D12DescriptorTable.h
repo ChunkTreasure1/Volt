@@ -28,11 +28,16 @@ namespace Volt::RHI
 
 		void PrepareForRender() override;
 		void Bind(CommandBuffer& commandBuffer) override;
+		void SetRootDescriptorTables(CommandBuffer& commandBuffer);
 
 	protected:
 		void* GetHandleImpl() const override;
 
 	private:
+		void SetImageView(WeakPtr<ImageView> imageView, uint32_t set, uint32_t binding, ShaderRegisterType registerType);
+		void SetBufferView(WeakPtr<BufferView> bufferView, uint32_t set, uint32_t binding, ShaderRegisterType registerType);
+		void SetSamplerState(WeakPtr<SamplerState> samplerState, uint32_t set, uint32_t binding, ShaderRegisterType registerType);
+
 		void Invalidate();
 		void Release();
 
@@ -44,7 +49,7 @@ namespace Volt::RHI
 		bool m_isComputeTable = false;
 		bool m_hasRootConstants = false;
 
-		vt::map<uint32_t, vt::map<uint32_t, AllocatedDescriptorInfo>> m_allocatedDescriptorPointers;
+		vt::map<uint32_t, vt::map<uint32_t, vt::map<ShaderRegisterType, AllocatedDescriptorInfo>>> m_allocatedDescriptorPointers;
 		std::vector<DescriptorCopyInfo> m_activeDescriptorCopies;
 		std::vector<DescriptorCopyInfo> m_activeSamplerDescriptorCopies;
 

@@ -20,11 +20,11 @@
 
 //Windows stuff
 #include <wrl.h>
-#include <d3d12.h>
+#include <d3d12/d3d12.h>
 #include <dxgi.h>
 #include <dxgi1_6.h>
-#include <d3d12sdklayers.h>
-#include "VoltD3D12/Common/d3dx12.h"
+#include <d3d12/d3d12sdklayers.h>
+#include <d3d12/d3dx12/d3dx12.h>
 
 #include <string>
 #include <istream>

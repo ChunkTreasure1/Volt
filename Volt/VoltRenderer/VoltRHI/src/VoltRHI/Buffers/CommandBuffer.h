@@ -4,6 +4,8 @@
 #include "VoltRHI/Core/RHICommon.h"
 #include "VoltRHI/Images/ImageView.h"
 
+#include "VoltRHI/Descriptors/BindlessDescriptorTable.h"
+
 #include <CoreUtilities/Pointers/WeakPtr.h>
 #include <CoreUtilities/Containers/StackVector.h>
 
@@ -18,7 +20,6 @@ namespace Volt::RHI
 	class IndexBuffer;
 
 	class DescriptorTable;
-	class BindlessDescriptorTable;
 
 	class Image2D;
 	class StorageBuffer;

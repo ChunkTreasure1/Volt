@@ -14,6 +14,8 @@
 
 #include <VoltRHI/Shader/Shader.h>
 
+#include <CoreUtilities/EnumUtils.h>
+
 namespace Volt::RHI
 {
 	D3D12BindlessDescriptorTable::D3D12BindlessDescriptorTable()
@@ -175,7 +177,7 @@ namespace Volt::RHI
 					}
 
 					// Read-Write
-					if (resourceData.imageUsage == RHI::ImageUsage::Storage || resourceData.imageUsage == RHI::ImageUsage::AttachmentStorage)
+					if ((resourceData.imageUsage == RHI::ImageUsage::Storage || resourceData.imageUsage == RHI::ImageUsage::AttachmentStorage) && EnumValueContainsFlag(view->GetD3D12ViewType(), D3D12ViewType::UAV))
 					{
 						auto writeHandle = resourceHandle + ResourceHandle(1u);
 						auto& descriptorCopy = m_activeDescriptorCopies.emplace_back();
@@ -269,35 +271,40 @@ namespace Volt::RHI
 
 	void D3D12BindlessDescriptorTable::Bind(CommandBuffer& commandBuffer)
 	{
-		auto& d3d12CommandBuffer = commandBuffer.AsRef<D3D12CommandBuffer>();
 		ID3D12GraphicsCommandList* cmdList = commandBuffer.GetHandle<ID3D12GraphicsCommandList*>();
 		ID3D12DescriptorHeap* heaps[2] = { m_mainHeap->GetHeap().Get(), m_samplerHeap->GetHeap().Get() };
 	
 		cmdList->SetDescriptorHeaps(2, heaps);
+	}
 
-		bool hasRootConstants = false;
+	void D3D12BindlessDescriptorTable::SetRootDescriptorTables(CommandBuffer& commandBuffer)
+	{
+		//auto& d3d12CommandBuffer = commandBuffer.AsRef<D3D12CommandBuffer>();
+		////ID3D12GraphicsCommandList* cmdList = commandBuffer.GetHandle<ID3D12GraphicsCommandList*>();
 
-		if (d3d12CommandBuffer.m_currentRenderPipeline)
-		{
-			hasRootConstants = d3d12CommandBuffer.m_currentRenderPipeline->GetShader()->HasConstants();
-		}
-		else if (d3d12CommandBuffer.m_currentComputePipeline)
-		{
-			hasRootConstants = d3d12CommandBuffer.m_currentComputePipeline->GetShader()->HasConstants();
-		}
+		//bool hasRootConstants = false;
 
-		uint32_t tableCount = hasRootConstants ? 1 : 0;
+		//if (d3d12CommandBuffer.m_currentRenderPipeline)
+		//{
+		//	hasRootConstants = d3d12CommandBuffer.m_currentRenderPipeline->GetShader()->HasConstants();
+		//}
+		//else if (d3d12CommandBuffer.m_currentComputePipeline)
+		//{
+		//	hasRootConstants = d3d12CommandBuffer.m_currentComputePipeline->GetShader()->HasConstants();
+		//}
 
-		if (d3d12CommandBuffer.m_currentRenderPipeline)
-		{
-			cmdList->SetGraphicsRootDescriptorTable(tableCount++, m_mainHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
-			cmdList->SetGraphicsRootDescriptorTable(tableCount++, m_mainHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
-		}
-		else
-		{
-			cmdList->SetComputeRootDescriptorTable(tableCount++, m_mainHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
-			cmdList->SetComputeRootDescriptorTable(tableCount++, m_mainHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
-		}
+		//uint32_t tableCount = hasRootConstants ? 1 : 0;
+
+		//if (d3d12CommandBuffer.m_currentRenderPipeline)
+		//{
+		//	cmdList->SetGraphicsRootDescriptorTable(tableCount++, m_mainHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+		//	cmdList->SetGraphicsRootDescriptorTable(tableCount++, m_samplerHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+		//}
+		//else
+		//{
+		//	cmdList->SetComputeRootDescriptorTable(tableCount++, m_mainHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+		//	cmdList->SetComputeRootDescriptorTable(tableCount++, m_samplerHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+		//}
 	}
 
 	void* D3D12BindlessDescriptorTable::GetHandleImpl() const

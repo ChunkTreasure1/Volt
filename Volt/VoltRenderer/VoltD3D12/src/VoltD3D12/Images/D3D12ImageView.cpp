@@ -17,6 +17,8 @@ namespace Volt::RHI
 		auto image = specification.image->As<D3D12Image2D>();
 		const auto imageUsage = image->GetUsage();
 
+		m_viewUsage = D3D12ViewType::None;
+
 		if (imageUsage == ImageUsage::Attachment)
 		{
 			CreateRTVDSV();
@@ -195,6 +197,11 @@ namespace Volt::RHI
 
 	void D3D12ImageView::CreateUAV()
 	{
+		if (m_specification.viewType == ImageViewType::ViewCube)
+		{
+			return;
+		}
+
 		const auto format = m_specification.image->GetFormat();
 		auto* devicePtr = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
 		auto* resourcePtr = m_specification.image->GetHandle<ID3D12Resource*>();

@@ -4,7 +4,7 @@
 #include <VoltRHI/Shader/BufferLayout.h>
 #include <VoltRHI/Images/ImageUtility.h>
 
-#include <d3d12.h>
+#include <d3d12/d3d12.h>
 
 namespace Volt::RHI
 {
@@ -205,40 +205,40 @@ namespace Volt::RHI
 		{
 			D3D12_RESOURCE_STATES result = D3D12_RESOURCE_STATE_COMMON;
 
-			if ((usageFlags & BufferUsage::TransferSrc) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_COPY_SOURCE;
-			}
+			//if ((usageFlags & BufferUsage::TransferSrc) != BufferUsage::None)
+			//{
+			//	result |= D3D12_RESOURCE_STATE_COPY_SOURCE;
+			//}
 
-			if ((usageFlags & BufferUsage::TransferDst) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_COPY_DEST;
-			}
+			//if ((usageFlags & BufferUsage::TransferDst) != BufferUsage::None)
+			//{
+			//	result |= D3D12_RESOURCE_STATE_COPY_DEST;
+			//}
 
-			if ((usageFlags & BufferUsage::UniformBuffer) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-			}
+			//if ((usageFlags & BufferUsage::UniformBuffer) != BufferUsage::None)
+			//{
+			//	result |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+			//}
 
-			if ((usageFlags & BufferUsage::StorageBuffer) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS | D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
-			}
+			//if ((usageFlags & BufferUsage::StorageBuffer) != BufferUsage::None)
+			//{
+			//	result |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS | D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
+			//}
 
-			if ((usageFlags & BufferUsage::IndexBuffer) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_INDEX_BUFFER;
-			}
+			//if ((usageFlags & BufferUsage::IndexBuffer) != BufferUsage::None)
+			//{
+			//	result |= D3D12_RESOURCE_STATE_INDEX_BUFFER;
+			//}
 
-			if ((usageFlags & BufferUsage::VertexBuffer) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-			}
+			//if ((usageFlags & BufferUsage::VertexBuffer) != BufferUsage::None)
+			//{
+			//	result |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+			//}
 
-			if ((usageFlags & BufferUsage::IndirectBuffer) != BufferUsage::None)
-			{
-				result |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
-			}
+			//if ((usageFlags & BufferUsage::IndirectBuffer) != BufferUsage::None)
+			//{
+			//	result |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+			//}
 
 			return result;
 		}
@@ -247,36 +247,36 @@ namespace Volt::RHI
 		{
 			D3D12_RESOURCE_STATES result = D3D12_RESOURCE_STATE_COMMON;
 
-			if (usageFlags == ImageUsage::Attachment)
-			{
-				if (Utility::IsDepthFormat(imageFormat))
-				{
-					result = D3D12_RESOURCE_STATE_DEPTH_WRITE;
-				}
-				else
-				{
-					result = D3D12_RESOURCE_STATE_RENDER_TARGET;
-				}
-			}
-			else if (usageFlags == ImageUsage::AttachmentStorage)
-			{
-				if (Utility::IsDepthFormat(imageFormat))
-				{
-					result |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
-				}
-				else
-				{
-					result |= D3D12_RESOURCE_STATE_RENDER_TARGET;
-				}
-			}
-			else if (usageFlags == ImageUsage::Texture)
-			{
-				result = D3D12_RESOURCE_STATE_COPY_DEST | D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
-			}
-			else if (usageFlags == ImageUsage::Storage)
-			{
-				result = D3D12_RESOURCE_STATE_COPY_DEST | D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-			}
+			//if (usageFlags == ImageUsage::Attachment)
+			//{
+			//	if (Utility::IsDepthFormat(imageFormat))
+			//	{
+			//		result = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+			//	}
+			//	else
+			//	{
+			//		result = D3D12_RESOURCE_STATE_RENDER_TARGET;
+			//	}
+			//}
+			//else if (usageFlags == ImageUsage::AttachmentStorage)
+			//{
+			//	if (Utility::IsDepthFormat(imageFormat))
+			//	{
+			//		result |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
+			//	}
+			//	else
+			//	{
+			//		result |= D3D12_RESOURCE_STATE_RENDER_TARGET;
+			//	}
+			//}
+			//else if (usageFlags == ImageUsage::Texture)
+			//{
+			//	result = D3D12_RESOURCE_STATE_COPY_DEST | D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
+			//}
+			//else if (usageFlags == ImageUsage::Storage)
+			//{
+			//	result = D3D12_RESOURCE_STATE_COPY_DEST | D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+			//}
 
 			return result;
 		}
@@ -383,7 +383,7 @@ namespace Volt::RHI
 			return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 		}
 
-		D3D12_RESOURCE_DESC GetD3D12ResourceDesc(const ImageSpecification& specification);
-		MemoryRequirement GetMemoryRequirements(const D3D12_RESOURCE_DESC& resourceDesc);
+		D3D12_RESOURCE_DESC1 GetD3D12ResourceDesc(const ImageSpecification& specification);
+		MemoryRequirement GetMemoryRequirements(const D3D12_RESOURCE_DESC1& resourceDesc);
 	}
 }

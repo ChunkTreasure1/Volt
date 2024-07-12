@@ -8,6 +8,7 @@
 #include "Testing/Tests/PushConstantsTest.h"
 
 #include "Testing/RenderGraphTests/DrawTriangleTest.h"
+#include "Testing/RenderGraphTests/ClearCreatedRenderTargetTest.h"
 
 #include <Volt/Log/Log.h>
 
@@ -25,7 +26,8 @@ void RenderingTestingLayer::OnAttach()
 	//m_renderingTests.emplace_back(CreateScope<DrawIndirectTest>());
 	//m_renderingTests.emplace_back(CreateScope<PushConstantsTest>());
 
-	m_renderingTests.emplace_back(CreateScope<RG_DrawTriangleTest>());
+	//m_renderingTests.emplace_back(CreateScope<RG_DrawTriangleTest>());
+	m_renderingTests.emplace_back(CreateScope<RG_ClearCreatedRenderTargetTest>());
 }
 
 void RenderingTestingLayer::OnDetach()

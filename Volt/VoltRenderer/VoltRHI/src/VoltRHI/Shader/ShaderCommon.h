@@ -60,6 +60,14 @@ namespace Volt::RHI
 		Sampler
 	};
 
+	enum class ShaderRegisterType : uint32_t
+	{
+		Texture = 0,
+		UniformBuffer,
+		UnorderedAccess,
+		Sampler
+	};
+
 	struct VTRHI_API ShaderUniformType
 	{
 		ShaderUniformBaseType baseType = ShaderUniformBaseType::Invalid;
@@ -250,6 +258,7 @@ namespace Volt::RHI
 	{
 		uint32_t set = std::numeric_limits<uint32_t>::max();
 		uint32_t binding = std::numeric_limits<uint32_t>::max();
+		ShaderRegisterType registerType;
 
 		inline const bool IsValid() const { return set != std::numeric_limits<uint32_t>::max() && binding != std::numeric_limits<uint32_t>::max(); }
 

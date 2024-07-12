@@ -22,6 +22,8 @@ namespace Volt::RHI
 	protected:
 		RefPtr<Allocator> GetDefaultAllocatorImpl() override;
 		RefPtr<Allocator> GetTransientAllocatorImpl() override;
+		RefPtr<ResourceStateTracker> GetResourceStateTrackerImpl() override;
+
 		RefPtr<GraphicsDevice> GetGraphicsDevice() const override;
 		RefPtr<PhysicalGraphicsDevice> GetPhysicalGraphicsDevice() const override;
 
@@ -40,6 +42,7 @@ namespace Volt::RHI
 
 		RefPtr<GraphicsDevice> m_graphicsDevice;
 		RefPtr<PhysicalGraphicsDevice> m_physicalDevice;
+		RefPtr<ResourceStateTracker> m_resourceStateTracker;
 
 		RefPtr<Allocator> m_defaultAllocator;
 		RefPtr<Allocator> m_transientAllocator;

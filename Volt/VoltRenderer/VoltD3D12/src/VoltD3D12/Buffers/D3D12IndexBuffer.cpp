@@ -4,6 +4,7 @@
 #include <VoltRHI/Buffers/CommandBuffer.h>
 #include <VoltRHI/Memory/Allocation.h>
 #include <VoltRHI/RHIProxy.h>
+#include <VoltRHI/Utility/ResourceUtility.h>
 
 #include <CoreUtilities/StringUtility.h>
 
@@ -12,11 +13,14 @@ namespace Volt::RHI
 	D3D12IndexBuffer::D3D12IndexBuffer(std::span<const uint32_t> indices)
 		: m_count(static_cast<uint32_t>(indices.size()))
 	{
+		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None);
 		SetData(indices.data(), static_cast<uint32_t>(sizeof(uint32_t) * indices.size()));
 	}
 
 	D3D12IndexBuffer::~D3D12IndexBuffer()
 	{
+		GraphicsContext::GetResourceStateTracker()->RemoveResource(this);
+
 		if (!m_allocation)
 		{
 			return;
@@ -97,7 +101,37 @@ namespace Volt::RHI
 			{
 				RefPtr<CommandBuffer> cmdBuffer = CommandBuffer::Create();
 				cmdBuffer->Begin();
-				cmdBuffer->GetHandle<ID3D12GraphicsCommandList*>()->CopyBufferRegion(m_allocation->GetResourceHandle<ID3D12Resource*>(), 0, stagingAllocation->GetResourceHandle<ID3D12Resource*>(), 0, bufferSize);
+
+				{
+					ResourceBarrierInfo barrier{};
+					barrier.type = BarrierType::Buffer;
+					ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.bufferBarrier(), this);
+					
+					barrier.bufferBarrier().dstAccess = BarrierAccess::CopyDest;
+					barrier.bufferBarrier().dstStage = BarrierStage::Copy;
+					barrier.bufferBarrier().resource = this;
+					barrier.bufferBarrier().offset = 0;
+					barrier.bufferBarrier().size = GetByteSize();
+
+					cmdBuffer->ResourceBarrier({ barrier });
+				}
+
+				cmdBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, bufferSize);
+
+				{
+					ResourceBarrierInfo barrier{};
+					barrier.type = BarrierType::Buffer;
+					ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.bufferBarrier(), this);
+
+					barrier.bufferBarrier().dstAccess = BarrierAccess::IndexBuffer;
+					barrier.bufferBarrier().dstStage = BarrierStage::IndexInput;
+					barrier.bufferBarrier().resource = this;
+					barrier.bufferBarrier().offset = 0;
+					barrier.bufferBarrier().size = GetByteSize();
+
+					cmdBuffer->ResourceBarrier({ barrier });
+				}
+
 				cmdBuffer->End();
 				cmdBuffer->Execute();
 			}

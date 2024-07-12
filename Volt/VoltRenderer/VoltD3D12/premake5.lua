@@ -29,6 +29,7 @@ project "VoltD3D12"
 	{
 		"src/",
 		"../VoltRHI/src",
+		"vendor/d3d12",
 
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",
@@ -52,6 +53,7 @@ project "VoltD3D12"
 
 		"d3d12.lib",
 		"DXGI.lib",
+		"dxguid.lib",
 
 		"%{Library.VoltRHI}",
 		"%{Library.dxc}",

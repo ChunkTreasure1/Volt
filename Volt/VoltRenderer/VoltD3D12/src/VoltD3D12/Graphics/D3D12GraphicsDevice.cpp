@@ -16,6 +16,7 @@ namespace Volt::RHI
 		m_deviceQueues[QueueType::Compute] = RefPtr<D3D12DeviceQueue>::Create(DeviceQueueCreateInfo{ this, QueueType::Compute });
 	
 		InitializeProperties();
+		InitializeCapabilities();
 	}
 
 	D3D12GraphicsDevice::~D3D12GraphicsDevice()
@@ -34,6 +35,18 @@ namespace Volt::RHI
 		return m_deviceQueues.at(queueType);
 	}
 
+	uint64_t D3D12GraphicsDevice::GetAndIncreaseFenceValue()
+	{
+		uint64_t value = m_currentFenceValue;
+		m_currentFenceValue++;
+		return value;
+	}
+
+	uint64_t D3D12GraphicsDevice::GetFenceValue()
+	{
+		return m_currentFenceValue;
+	}
+
 	void* D3D12GraphicsDevice::GetHandleImpl() const
 	{
 		return m_device.Get();
@@ -45,5 +58,15 @@ namespace Volt::RHI
 		m_properties.dsvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 		m_properties.cbvSrvUavDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		m_properties.samplerDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+	}
+
+	void D3D12GraphicsDevice::InitializeCapabilities()
+	{
+		{
+			D3D12_FEATURE_DATA_D3D12_OPTIONS12 options{};
+			m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &options, sizeof(options));
+		
+			m_capabilities.supportsEnhancedBarriers = options.EnhancedBarriersSupported;
+		}
 	}
 }

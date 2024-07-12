@@ -18,6 +18,8 @@ namespace Volt::RHI
 	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator)
 		: m_count(count), m_elementSize(elementSize), m_name(name), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_allocator(allocator)
 	{
+		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None);
+
 		if (!m_allocator)
 		{
 			m_allocator = GraphicsContext::GetDefaultAllocator();
@@ -28,6 +30,7 @@ namespace Volt::RHI
 
 	VulkanStorageBuffer::~VulkanStorageBuffer()
 	{
+		GraphicsContext::GetResourceStateTracker()->RemoveResource(this);
 		Release();
 	}
 
@@ -89,7 +92,7 @@ namespace Volt::RHI
 		barrier.bufferBarrier().srcStage = BarrierStage::ComputeShader | BarrierStage::VertexShader | BarrierStage::PixelShader;
 		barrier.bufferBarrier().srcAccess = BarrierAccess::None;
 		barrier.bufferBarrier().dstStage = BarrierStage::Copy;
-		barrier.bufferBarrier().dstAccess = BarrierAccess::TransferDestination;
+		barrier.bufferBarrier().dstAccess = BarrierAccess::CopyDest;
 		barrier.bufferBarrier().offset = 0;
 		barrier.bufferBarrier().size = size;
 		barrier.bufferBarrier().resource = WeakPtr<VulkanStorageBuffer>(this);
@@ -99,7 +102,7 @@ namespace Volt::RHI
 		cmdBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
 
 		barrier.bufferBarrier().srcStage = BarrierStage::Copy;
-		barrier.bufferBarrier().srcAccess = BarrierAccess::TransferDestination;
+		barrier.bufferBarrier().srcAccess = BarrierAccess::CopyDest;
 		barrier.bufferBarrier().dstStage = BarrierStage::ComputeShader | BarrierStage::VertexShader | BarrierStage::PixelShader;
 		barrier.bufferBarrier().dstAccess = BarrierAccess::None;
 
@@ -126,7 +129,7 @@ namespace Volt::RHI
 		barrier.bufferBarrier().srcStage = BarrierStage::All;
 		barrier.bufferBarrier().srcAccess = BarrierAccess::None;
 		barrier.bufferBarrier().dstStage = BarrierStage::Copy;
-		barrier.bufferBarrier().dstAccess = BarrierAccess::TransferDestination;
+		barrier.bufferBarrier().dstAccess = BarrierAccess::CopyDest;
 		barrier.bufferBarrier().offset = 0;
 		barrier.bufferBarrier().size = size;
 		barrier.bufferBarrier().resource = WeakPtr<VulkanStorageBuffer>(this);
@@ -136,7 +139,7 @@ namespace Volt::RHI
 		commandBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
 
 		barrier.bufferBarrier().srcStage = BarrierStage::Copy;
-		barrier.bufferBarrier().srcAccess = BarrierAccess::TransferDestination;
+		barrier.bufferBarrier().srcAccess = BarrierAccess::CopyDest;
 		barrier.bufferBarrier().dstStage = BarrierStage::All;
 		barrier.bufferBarrier().dstAccess = BarrierAccess::None;
 

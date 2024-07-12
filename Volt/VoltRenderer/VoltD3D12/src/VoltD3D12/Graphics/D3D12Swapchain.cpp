@@ -13,6 +13,8 @@
 
 #include "VoltD3D12/Descriptors/DescriptorUtility.h"
 
+#include <VoltRHI/Utility/ResourceUtility.h>
+
 namespace Volt::RHI
 {
 	namespace Utility
@@ -71,10 +73,9 @@ namespace Volt::RHI
 		{
 			ResourceBarrierInfo barrier{};
 			barrier.type = BarrierType::Image;
-			barrier.imageBarrier().srcAccess = BarrierAccess::RenderTarget;
-			barrier.imageBarrier().srcStage = BarrierStage::RenderTarget;
-			barrier.imageBarrier().srcLayout = m_perImageData.at(m_currentImageIndex).imageReference->GetImageLayout();
-			barrier.imageBarrier().dstAccess = BarrierAccess::None;
+			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), m_perImageData.at(m_currentImageIndex).imageReference);
+
+			barrier.imageBarrier().dstAccess = BarrierAccess::ShaderRead;
 			barrier.imageBarrier().dstStage = BarrierStage::AllGraphics;
 			barrier.imageBarrier().dstLayout = ImageLayout::Present;
 			barrier.imageBarrier().resource = m_perImageData.at(m_currentImageIndex).imageReference;

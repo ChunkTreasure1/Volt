@@ -41,6 +41,7 @@ namespace Volt
 		RHI::ResourceBarrierInfo accessInfo;
 
 		bool isPassSpecificUsage = true;
+		bool hasInitialState = true;
 	};
 
 	class RenderGraph

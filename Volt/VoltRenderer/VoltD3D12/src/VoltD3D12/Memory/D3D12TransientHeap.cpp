@@ -38,7 +38,7 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 		VT_ENSURE((m_createInfo.flags & TransientHeapFlags::AllowBuffers) != TransientHeapFlags::None);
 
-		auto device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
+		auto device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device10*>();
 
 		auto [pageIndex, blockAlloc] = FindNextAvailableBlock(createInfo.size);
 
@@ -48,7 +48,7 @@ namespace Volt::RHI
 			return nullptr;
 		}
 
-		D3D12_RESOURCE_DESC resourceDesc{};
+		D3D12_RESOURCE_DESC1 resourceDesc{};
 		resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 		resourceDesc.Alignment = 0;
 		resourceDesc.Width = createInfo.size;
@@ -68,7 +68,7 @@ namespace Volt::RHI
 		const auto& page = m_pageAllocations.at(pageIndex);
 
 		ID3D12Resource* resource = nullptr;
-		device->CreatePlacedResource(static_cast<ID3D12Heap*>(page.handle), blockAlloc.offset, &resourceDesc, Utility::GetResourceStateFromUsage(createInfo.usage), nullptr, VT_D3D12_ID(resource));
+		device->CreatePlacedResource2(static_cast<ID3D12Heap*>(page.handle), blockAlloc.offset, &resourceDesc, D3D12_BARRIER_LAYOUT_COMMON, nullptr, 0, nullptr, VT_D3D12_ID(resource));
 
 		RefPtr<D3D12TransientBufferAllocation> bufferAlloc = RefPtr<D3D12TransientBufferAllocation>::Create(createInfo.hash);
 		bufferAlloc->m_resource = resource;
@@ -84,7 +84,7 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 		VT_ENSURE((m_createInfo.flags & TransientHeapFlags::AllowTextures) != TransientHeapFlags::None);
 
-		auto device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
+		auto device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device10*>();
 		auto [pageIndex, blockAlloc] = FindNextAvailableBlock(createInfo.size);
 
 		if (blockAlloc.size == 0)
@@ -93,11 +93,35 @@ namespace Volt::RHI
 			return nullptr;
 		}
 
-		D3D12_RESOURCE_DESC resourceDesc = Utility::GetD3D12ResourceDesc(createInfo.imageSpecification);
+		D3D12_RESOURCE_DESC1 resourceDesc = Utility::GetD3D12ResourceDesc(createInfo.imageSpecification);
+		D3D12_BARRIER_LAYOUT initialLayout = D3D12_BARRIER_LAYOUT_COMMON;
+
+		switch (createInfo.imageSpecification.usage)
+		{
+			case ImageUsage::Attachment:
+			case ImageUsage::AttachmentStorage:
+				if (Utility::IsDepthFormat(createInfo.imageSpecification.format))
+				{
+					initialLayout = D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_WRITE;
+				}
+				else
+				{
+					initialLayout = D3D12_BARRIER_LAYOUT_RENDER_TARGET;
+				}
+				break;
+
+			case ImageUsage::Storage:
+				initialLayout = D3D12_BARRIER_LAYOUT_UNORDERED_ACCESS;
+				break;
+
+			case ImageUsage::Texture:
+				initialLayout = D3D12_BARRIER_LAYOUT_COMMON;
+				break;
+		}
 
 		const auto& page = m_pageAllocations.at(pageIndex);
 		ID3D12Resource* resource = nullptr;
-		device->CreatePlacedResource(static_cast<ID3D12Heap*>(page.handle), blockAlloc.offset, &resourceDesc, Utility::GetResourceStateFromUsage(createInfo.imageSpecification.usage, createInfo.imageSpecification.format), nullptr, VT_D3D12_ID(resource));
+		device->CreatePlacedResource2(static_cast<ID3D12Heap*>(page.handle), blockAlloc.offset, &resourceDesc, initialLayout, nullptr, 0, nullptr, VT_D3D12_ID(resource));
 
 		RefPtr<D3D12TransientImageAllocation> imageAlloc = RefPtr<D3D12TransientImageAllocation>::Create(createInfo.hash);
 		imageAlloc->m_resource = resource;

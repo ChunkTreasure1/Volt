@@ -136,6 +136,14 @@ project "Launcher"
 	filter "system:windows"
 		systemversion "latest"
 
+		postbuildcommands
+		{
+			'{COPY} "../../Engine/D3D12/D3D12Core.dll" "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher/D3D12/"',
+			'{COPY} "../../Engine/D3D12/D3D12Core.pdb" "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher/D3D12/"',
+			'{COPY} "../../Engine/D3D12/d3d12SDKLayers.dll" "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher/D3D12/"',
+			'{COPY} "../../Engine/D3D12/d3d12SDKLayers.pdb" "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher/D3D12/"'
+		}
+		
 		defines
 		{
 			"NOMINMAX",

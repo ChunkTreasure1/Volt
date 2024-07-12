@@ -3,6 +3,7 @@
 
 #include "VoltD3D12/Descriptors/D3D12DescriptorHeap.h"
 #include "VoltD3D12/Images/D3D12ImageView.h"
+#include "VoltD3D12/Images/D3D12SamplerState.h"
 #include "VoltD3D12/Buffers/D3D12CommandBuffer.h"
 #include "VoltD3D12/Buffers/D3D12BufferView.h"
 #include "VoltD3D12/Shader/D3D12Shader.h"
@@ -28,72 +29,12 @@ namespace Volt::RHI
 
 	void D3D12DescriptorTable::SetImageView(WeakPtr<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
-		if (!m_allocatedDescriptorPointers[set].contains(binding))
-		{
-			RHILog::LogTagged(LogSeverity::Warning, "[D3D12DescriptorTable]:", "Trying to assign image view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
-			return;
-		}
-
-		m_isDirty = true;
-	
-		const auto& descriptorInfo = m_allocatedDescriptorPointers.at(set).at(binding);
-		const auto& d3d12View = imageView->AsRef<D3D12ImageView>();
-
-		if (!EnumValueContainsFlag(d3d12View.GetD3D12ViewType(), descriptorInfo.viewType))
-		{
-			RHILog::LogTagged(LogSeverity::Error, "[D3D12DescriptorTable]:", "Image View does not support the required D3D12 view type!");
-			return;
-		}
-
-		auto& descriptorCopy = m_activeDescriptorCopies.emplace_back();
-		descriptorCopy.dstPointer = descriptorInfo.pointer;
-
-		if (EnumValueContainsFlag(descriptorInfo.viewType, D3D12ViewType::SRV))
-		{
-			descriptorCopy.srcPointer = d3d12View.GetSRVDescriptor();
-		}
-		else
-		{
-			descriptorCopy.srcPointer = d3d12View.GetUAVDescriptor();
-		}
-
-		VT_ENSURE(descriptorCopy.dstPointer.IsValid());
-		VT_ENSURE(descriptorCopy.srcPointer.IsValid());
+		
 	}
 
 	void D3D12DescriptorTable::SetBufferView(WeakPtr<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
-		if (!m_allocatedDescriptorPointers[set].contains(binding))
-		{
-			RHILog::LogTagged(LogSeverity::Warning, "[D3D12DescriptorTable]:", "Trying to assign buffer view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
-			return;
-		}
 
-		m_isDirty = true;
-
-		const auto& descriptorInfo = m_allocatedDescriptorPointers.at(set).at(binding);
-		const auto& d3d12View = bufferView->AsRef<D3D12BufferView>();
-
-		if (!EnumValueContainsFlag(d3d12View.GetD3D12ViewType(), descriptorInfo.viewType))
-		{
-			RHILog::LogTagged(LogSeverity::Error, "[D3D12DescriptorTable]:", "Buffer View does not support the required D3D12 view type!");
-			return;
-		}
-
-		auto& descriptorCopy = m_activeDescriptorCopies.emplace_back();
-		descriptorCopy.dstPointer = descriptorInfo.pointer;
-
-		if (EnumValueContainsFlag(descriptorInfo.viewType, D3D12ViewType::SRV))
-		{
-			descriptorCopy.srcPointer = d3d12View.GetSRVDescriptor();
-		}
-		else
-		{
-			descriptorCopy.srcPointer = d3d12View.GetUAVDescriptor();
-		}
-
-		VT_ENSURE(descriptorCopy.dstPointer.IsValid());
-		VT_ENSURE(descriptorCopy.srcPointer.IsValid());
 	}
 
 	void D3D12DescriptorTable::SetSamplerState(WeakPtr<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
@@ -108,7 +49,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		SetImageView(view, binding.set, binding.binding, arrayIndex);
+		SetImageView(view, binding.set, binding.binding, binding.registerType);
 	}
 
 	void D3D12DescriptorTable::SetBufferView(std::string_view name, WeakPtr<BufferView> view, uint32_t arrayIndex)
@@ -119,7 +60,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		SetBufferView(view, binding.set, binding.binding, arrayIndex);
+		SetBufferView(view, binding.set, binding.binding, binding.registerType);
 	}
 
 	void D3D12DescriptorTable::SetSamplerState(std::string_view name, WeakPtr<SamplerState> samplerState, uint32_t arrayIndex)
@@ -130,7 +71,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		SetSamplerState(samplerState, binding.set, binding.binding, arrayIndex);
+		SetSamplerState(samplerState, binding.set, binding.binding, binding.registerType);
 	}
 
 	void D3D12DescriptorTable::PrepareForRender()
@@ -201,9 +142,13 @@ namespace Volt::RHI
 		}
 
 		cmdList->SetDescriptorHeaps(heapCount, heaps);
+	}
 
+	void D3D12DescriptorTable::SetRootDescriptorTables(CommandBuffer& commandBuffer)
+	{
 		// Push constants (root constants) will always be in slot 0
 		uint32_t tableCount = m_hasRootConstants ? 1 : 0;
+		ID3D12GraphicsCommandList* cmdList = commandBuffer.GetHandle<ID3D12GraphicsCommandList*>();
 
 		if (m_isComputeTable)
 		{
@@ -211,7 +156,7 @@ namespace Volt::RHI
 			{
 				cmdList->SetComputeRootDescriptorTable(tableCount++, m_mainHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 			}
-		
+
 			if (m_samplerHeap)
 			{
 				cmdList->SetComputeRootDescriptorTable(tableCount++, m_samplerHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
@@ -234,6 +179,96 @@ namespace Volt::RHI
 	void* D3D12DescriptorTable::GetHandleImpl() const
 	{
 		return nullptr;
+	}
+
+	void D3D12DescriptorTable::SetImageView(WeakPtr<ImageView> imageView, uint32_t set, uint32_t binding, ShaderRegisterType registerType)
+	{
+		if (!m_allocatedDescriptorPointers[set].contains(binding))
+		{
+			RHILog::LogTagged(LogSeverity::Warning, "[D3D12DescriptorTable]", "Trying to assign image view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
+			return;
+		}
+
+		m_isDirty = true;
+
+		const auto& descriptorInfo = m_allocatedDescriptorPointers.at(set).at(binding).at(registerType);
+		const auto& d3d12View = imageView->AsRef<D3D12ImageView>();
+
+		if (!EnumValueContainsFlag(d3d12View.GetD3D12ViewType(), descriptorInfo.viewType))
+		{
+			RHILog::LogTagged(LogSeverity::Error, "[D3D12DescriptorTable]", "Image View does not support the required D3D12 view type!");
+			return;
+		}
+
+		auto& descriptorCopy = m_activeDescriptorCopies.emplace_back();
+		descriptorCopy.dstPointer = descriptorInfo.pointer;
+
+		if (EnumValueContainsFlag(descriptorInfo.viewType, D3D12ViewType::SRV))
+		{
+			descriptorCopy.srcPointer = d3d12View.GetSRVDescriptor();
+		}
+		else
+		{
+			descriptorCopy.srcPointer = d3d12View.GetUAVDescriptor();
+		}
+
+		VT_ENSURE(descriptorCopy.dstPointer.IsValid());
+		VT_ENSURE(descriptorCopy.srcPointer.IsValid());
+	}
+
+	void D3D12DescriptorTable::SetBufferView(WeakPtr<BufferView> bufferView, uint32_t set, uint32_t binding, ShaderRegisterType registerType)
+	{
+		if (!m_allocatedDescriptorPointers[set].contains(binding))
+		{
+			RHILog::LogTagged(LogSeverity::Warning, "[D3D12DescriptorTable]:", "Trying to assign buffer view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
+			return;
+		}
+
+		m_isDirty = true;
+
+		const auto& descriptorInfo = m_allocatedDescriptorPointers.at(set).at(binding).at(registerType);
+		const auto& d3d12View = bufferView->AsRef<D3D12BufferView>();
+
+		if (!EnumValueContainsFlag(d3d12View.GetD3D12ViewType(), descriptorInfo.viewType))
+		{
+			RHILog::LogTagged(LogSeverity::Error, "[D3D12DescriptorTable]:", "Buffer View does not support the required D3D12 view type!");
+			return;
+		}
+
+		auto& descriptorCopy = m_activeDescriptorCopies.emplace_back();
+		descriptorCopy.dstPointer = descriptorInfo.pointer;
+
+		if (EnumValueContainsFlag(descriptorInfo.viewType, D3D12ViewType::SRV))
+		{
+			descriptorCopy.srcPointer = d3d12View.GetSRVDescriptor();
+		}
+		else
+		{
+			descriptorCopy.srcPointer = d3d12View.GetUAVDescriptor();
+		}
+
+		VT_ENSURE(descriptorCopy.dstPointer.IsValid());
+		VT_ENSURE(descriptorCopy.srcPointer.IsValid());
+	}
+
+	void D3D12DescriptorTable::SetSamplerState(WeakPtr<SamplerState> samplerState, uint32_t set, uint32_t binding, ShaderRegisterType registerType)
+	{
+		if (!m_allocatedDescriptorPointers[set].contains(binding))
+		{
+			RHILog::LogTagged(LogSeverity::Warning, "[D3D12DescriptorTable]:", "Trying to assign sampler state at set {0} and binding {1}. But that is not a valid binding!", set, binding);
+			return;
+		}
+
+		m_isDirty = true;
+
+		const auto& descriptorInfo = m_allocatedDescriptorPointers.at(set).at(binding).at(registerType);
+
+		auto& descriptorCopy = m_activeSamplerDescriptorCopies.emplace_back();
+		descriptorCopy.dstPointer = descriptorInfo.pointer;
+		descriptorCopy.srcPointer = *samplerState->GetHandle<D3D12DescriptorPointer*>();
+
+		VT_ENSURE(descriptorCopy.dstPointer.IsValid());
+		VT_ENSURE(descriptorCopy.srcPointer.IsValid());
 	}
 
 	inline size_t GetDescriptorBindingHash(uint32_t space, uint32_t binding, D3D12_DESCRIPTOR_RANGE_TYPE descriptorType)
@@ -262,7 +297,7 @@ namespace Volt::RHI
 		{
 			for (const auto& [binding, data] : bindings)
 			{
-				auto& info = m_allocatedDescriptorPointers[set][binding];
+				auto& info = m_allocatedDescriptorPointers[set][binding][ShaderRegisterType::UniformBuffer];
 				info.viewType = D3D12ViewType::CBV;
 				info.descriptorIndex = d3d12Shader.GetDescriptorIndexFromDescriptorHash(GetDescriptorBindingHash(set, binding, D3D12_DESCRIPTOR_RANGE_TYPE_CBV));
 
@@ -274,7 +309,7 @@ namespace Volt::RHI
 		{
 			for (const auto& [binding, data] : bindings)
 			{
-				auto& info = m_allocatedDescriptorPointers[set][binding];
+				auto& info = m_allocatedDescriptorPointers[set][binding][ShaderRegisterType::UnorderedAccess];
 
 				if (data.isWrite)
 				{
@@ -295,7 +330,7 @@ namespace Volt::RHI
 		{
 			for (const auto& [binding, data] : bindings)
 			{
-				auto& info = m_allocatedDescriptorPointers[set][binding];
+				auto& info = m_allocatedDescriptorPointers[set][binding][ShaderRegisterType::UnorderedAccess];
 				info.viewType = D3D12ViewType::UAV;
 				info.descriptorIndex = d3d12Shader.GetDescriptorIndexFromDescriptorHash(GetDescriptorBindingHash(set, binding, D3D12_DESCRIPTOR_RANGE_TYPE_UAV));
 				mainDescriptorCount++;
@@ -306,7 +341,7 @@ namespace Volt::RHI
 		{
 			for (const auto& [binding, data] : bindings)
 			{
-				auto& info = m_allocatedDescriptorPointers[set][binding];
+				auto& info = m_allocatedDescriptorPointers[set][binding][ShaderRegisterType::Texture];
 				info.viewType = D3D12ViewType::SRV;
 				info.descriptorIndex = d3d12Shader.GetDescriptorIndexFromDescriptorHash(GetDescriptorBindingHash(set, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SRV));
 				mainDescriptorCount++;
@@ -317,7 +352,7 @@ namespace Volt::RHI
 		{
 			for (const auto& [binding, data] : bindings)
 			{
-				auto& info = m_allocatedDescriptorPointers[set][binding];
+				auto& info = m_allocatedDescriptorPointers[set][binding][ShaderRegisterType::Sampler];
 				info.viewType = D3D12ViewType::Sampler;
 				info.descriptorIndex = d3d12Shader.GetDescriptorIndexFromDescriptorHash(GetDescriptorBindingHash(set, binding, D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER));
 				samplerDescriptorCount++;
@@ -363,17 +398,20 @@ namespace Volt::RHI
 	{
 		for (auto& [set, bindings] : m_allocatedDescriptorPointers)
 		{
-			for (auto& [binding, data] : bindings)
+			for (auto& [binding, registers] : bindings)
 			{
-				if (data.viewType == D3D12ViewType::CBV ||
-					data.viewType == D3D12ViewType::SRV ||
-					data.viewType == D3D12ViewType::UAV)
+				for (auto& [registerType, data] : registers)
 				{
-					data.pointer = m_mainHeap->Allocate(data.descriptorIndex);
-				}
-				else if (data.viewType == D3D12ViewType::Sampler)
-				{
-					data.pointer = m_samplerHeap->Allocate(data.descriptorIndex);
+					if (data.viewType == D3D12ViewType::CBV ||
+						data.viewType == D3D12ViewType::SRV ||
+						data.viewType == D3D12ViewType::UAV)
+					{
+						data.pointer = m_mainHeap->Allocate(data.descriptorIndex);
+					}
+					else if (data.viewType == D3D12ViewType::Sampler)
+					{
+						data.pointer = m_samplerHeap->Allocate(data.descriptorIndex);
+					}
 				}
 			}
 		}

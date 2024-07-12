@@ -29,6 +29,7 @@ namespace Volt::RHI
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
 		const uint32_t GetMipCount() const override;
+		const uint32_t GetLayerCount() const override;
 		const PixelFormat GetFormat() const override;
 		const ImageUsage GetUsage() const override;
 		const uint32_t CalculateMipCount() const override;
@@ -40,10 +41,6 @@ namespace Volt::RHI
 		const uint64_t GetByteSize() const override;
 
 		inline const ImageAspect GetImageAspect() const override { return m_imageAspect; }
-		inline const ImageLayout GetImageLayout() const override;
-
-		const ImageLayoutInt GetCurrentLayout() const { return m_currentImageLayout; }
-		void SetCurrentLayout(ImageLayoutInt layout) { m_currentImageLayout = layout; }
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -56,7 +53,7 @@ namespace Volt::RHI
 		};
 
 		void InvalidateSwapchainImage(const SwapchainImageSpecification& specification);
-		void TransitionToLayout(ImageLayoutInt targetLayout);
+		void TransitionToLayout(ImageLayout targetLayout);
 		void InitializeWithData(const void* data);
 
 		ImageSpecification m_specification;
@@ -68,7 +65,6 @@ namespace Volt::RHI
 		bool m_hasGeneratedMips = false;
 		bool m_isSwapchainImage = false;
 
-		ImageLayoutInt m_currentImageLayout = 0;
 		ImageAspect m_imageAspect = ImageAspect::None;
 
 		std::map<int32_t, std::map<int32_t, RefPtr<ImageView>>> m_imageViews; // Layer -> Mip -> View

@@ -12,6 +12,7 @@
 #include <VoltRHI/Buffers/CommandBuffer.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Memory/Allocation.h>
+#include <VoltRHI/Utility/ResourceUtility.h>
 
 namespace Volt
 {
@@ -98,8 +99,8 @@ namespace Volt
 				barrier.imageBarrier().srcAccess = RHI::BarrierAccess::None;
 				barrier.imageBarrier().srcLayout = RHI::ImageLayout::ShaderRead;
 				barrier.imageBarrier().dstStage = RHI::BarrierStage::Copy;
-				barrier.imageBarrier().dstAccess = RHI::BarrierAccess::TransferSource;
-				barrier.imageBarrier().dstLayout = RHI::ImageLayout::TransferSource;
+				barrier.imageBarrier().dstAccess = RHI::BarrierAccess::CopySource;
+				barrier.imageBarrier().dstLayout = RHI::ImageLayout::CopySource;
 				barrier.imageBarrier().resource = image;
 
 				commandBuffer->ResourceBarrier({ barrier });
@@ -143,8 +144,8 @@ namespace Volt
 			{
 				RHI::ResourceBarrierInfo barrier{};
 				barrier.type = RHI::BarrierType::Image;
-				barrier.imageBarrier().srcAccess = RHI::BarrierAccess::TransferSource;
-				barrier.imageBarrier().srcLayout = RHI::ImageLayout::TransferSource;
+				barrier.imageBarrier().srcAccess = RHI::BarrierAccess::CopySource;
+				barrier.imageBarrier().srcLayout = RHI::ImageLayout::CopySource;
 				barrier.imageBarrier().srcStage = RHI::BarrierStage::Copy;
 				barrier.imageBarrier().dstStage = RHI::BarrierStage::None;
 				barrier.imageBarrier().dstAccess = RHI::BarrierAccess::None;
@@ -222,13 +223,25 @@ namespace Volt
 			image = RHI::Image2D::Create(specification);
 		}
 
-		RefPtr<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator()->CreateBuffer(textureHeader.mips.front().dataSize, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPU);
+		TextureData texData{};
+		texData.SetupMips(textureHeader, textureDataBuffer);
 
-		// Map memory
+		RHI::ImageCopyData copyData{};
+		for (uint32_t mipIndex = 0; const auto& mipData : texData.mips)
 		{
-			void* bufferPtr = stagingBuffer->Map<void>();;
-			memcpy_s(bufferPtr, textureHeader.mips.front().dataSize, textureDataBuffer.As<void>(), textureHeader.mips.front().dataSize);
-			stagingBuffer->Unmap();
+			auto& subData = copyData.copySubData.emplace_back();
+			subData.data = mipData.dataPtr;
+			subData.rowPitch = mipData.width * RHI::Utility::GetByteSizePerPixelFromFormat(textureHeader.format);
+			subData.slicePitch = static_cast<uint32_t>(mipData.dataSize);
+			subData.width = mipData.width;
+			subData.height = mipData.height;
+			subData.depth = 1;
+			subData.subResource.baseArrayLayer = 0;
+			subData.subResource.baseMipLevel = mipIndex;
+			subData.subResource.layerCount = 1;
+			subData.subResource.levelCount = 1;
+
+			mipIndex++;
 		}
 
 		commandBuffer->Begin();
@@ -236,55 +249,23 @@ namespace Volt
 		{
 			RHI::ResourceBarrierInfo barrier{};
 			barrier.type = RHI::BarrierType::Image;
-			barrier.imageBarrier().srcStage = RHI::BarrierStage::None;
-			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::None;
-			barrier.imageBarrier().srcLayout = RHI::ImageLayout::Undefined;
+			RHI::ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), image);
+
 			barrier.imageBarrier().dstStage = RHI::BarrierStage::Copy;
-			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
-			barrier.imageBarrier().dstLayout = RHI::ImageLayout::TransferDestination;
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::CopyDest;
+			barrier.imageBarrier().dstLayout = RHI::ImageLayout::CopyDest;
 			barrier.imageBarrier().resource = image;
 
 			commandBuffer->ResourceBarrier({ barrier });
 		}
 
-		commandBuffer->CopyBufferToImage(stagingBuffer, image, textureHeader.mips.front().width, textureHeader.mips.front().height, 0);
-		commandBuffer->End();
-		commandBuffer->ExecuteAndWait();
+		commandBuffer->UploadTextureData(image, copyData);
 
-		// Set mip data
-		{
-			TextureData texData{};
-			texData.SetupMips(textureHeader, textureDataBuffer);
-
-			for (size_t i = 1; i < texData.mips.size(); i++)
-			{
-				commandBuffer->Begin();
-
-				auto mipData = texData.mips.at(i);
-				const size_t mipSize = mipData.dataSize;
-
-				// Map mip memory
-				{
-					void* bufferPtr = stagingBuffer->Map<void>();
-					memcpy_s(bufferPtr, mipSize, mipData.dataPtr, mipSize);
-					stagingBuffer->Unmap();
-				}
-
-				commandBuffer->CopyBufferToImage(stagingBuffer, image, mipData.width, mipData.height, static_cast<uint32_t>(i));
-				commandBuffer->End();
-				commandBuffer->ExecuteAndWait();
-			}
-		}
-
-		textureDataBuffer.Release();
-
-		commandBuffer->Begin();
 		{
 			RHI::ResourceBarrierInfo barrier{};
 			barrier.type = RHI::BarrierType::Image;
-			barrier.imageBarrier().srcStage = RHI::BarrierStage::Copy;
-			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::TransferDestination;
-			barrier.imageBarrier().srcLayout = RHI::ImageLayout::TransferDestination;
+			RHI::ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), image);
+
 			barrier.imageBarrier().dstStage = RHI::BarrierStage::PixelShader;
 			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
 			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
@@ -294,9 +275,8 @@ namespace Volt
 		}
 
 		commandBuffer->End();
-
-		// #TODO_Ivar: Remove and implement proper way of generating mips
-		commandBuffer->ExecuteAndWait();
+		commandBuffer->Execute();
+		
 		image->GenerateMips();
 
 		texture->SetImage(image);

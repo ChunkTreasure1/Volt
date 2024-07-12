@@ -7,21 +7,24 @@
 #include <VoltRHI/Memory/Allocation.h>
 #include <VoltRHI/RHIProxy.h>
 
+#include <VoltRHI/Utility/ResourceUtility.h>
 
 #include <CoreUtilities/StringUtility.h>
 
-#include <d3d12.h>
+#include <d3d12/d3d12.h>
 
 namespace Volt::RHI
 {
 	D3D12VertexBuffer::D3D12VertexBuffer(const void* data, const uint32_t size, const uint32_t stride)
 		: m_stride(stride)
 	{
+		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None);
 		Invalidate(data, size);
 	}
 
 	D3D12VertexBuffer::~D3D12VertexBuffer()
 	{
+		GraphicsContext::GetResourceStateTracker()->RemoveResource(this);
 		if (!m_allocation)
 		{
 			return;
@@ -105,7 +108,37 @@ namespace Volt::RHI
 			{
 				RefPtr<CommandBuffer> cmdBuffer = CommandBuffer::Create();
 				cmdBuffer->Begin();
+
+				{
+					ResourceBarrierInfo barrier{};
+					barrier.type = BarrierType::Buffer;
+					ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.bufferBarrier(), this);
+
+					barrier.bufferBarrier().dstAccess = BarrierAccess::CopyDest;
+					barrier.bufferBarrier().dstStage = BarrierStage::Copy;
+					barrier.bufferBarrier().resource = this;
+					barrier.bufferBarrier().offset = 0;
+					barrier.bufferBarrier().size = GetByteSize();
+
+					cmdBuffer->ResourceBarrier({ barrier });
+				}
+
 				cmdBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
+
+				{
+					ResourceBarrierInfo barrier{};
+					barrier.type = BarrierType::Buffer;
+					ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.bufferBarrier(), this);
+
+					barrier.bufferBarrier().dstAccess = BarrierAccess::VertexBuffer;
+					barrier.bufferBarrier().dstStage = BarrierStage::VertexInput;
+					barrier.bufferBarrier().resource = this;
+					barrier.bufferBarrier().offset = 0;
+					barrier.bufferBarrier().size = GetByteSize();
+
+					cmdBuffer->ResourceBarrier({ barrier });
+				}
+
 				cmdBuffer->End();
 				cmdBuffer->Execute();
 			}

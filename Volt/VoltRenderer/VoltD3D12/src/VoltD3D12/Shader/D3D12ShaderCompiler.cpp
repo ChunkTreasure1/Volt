@@ -11,7 +11,7 @@
 #include <CoreUtilities/StringUtility.h>
 
 #include <dxsc/dxcapi.h>
-#include <d3d12shader.h>
+#include <d3d12/d3d12shader.h>
 
 #include <ranges>
 #include <codecvt>
@@ -449,10 +449,7 @@ namespace Volt::RHI
 			const uint32_t space = shaderInputBindDesc.Space;
 			const std::string name = shaderInputBindDesc.Name;
 
-			if (!TryAddShaderBinding(name, space, binding, inOutData))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[D3D12ShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
+			ShaderRegisterType registerType = ShaderRegisterType::Texture;
 
 			if (name == "$Globals")
 			{
@@ -465,6 +462,8 @@ namespace Volt::RHI
 				ID3D12ShaderReflectionConstantBuffer* reflectedCB = reflectionData->GetConstantBufferByIndex(i);
 				D3D12_SHADER_BUFFER_DESC cbDesc{};
 				reflectedCB->GetDesc(&cbDesc);
+
+				registerType = ShaderRegisterType::UniformBuffer;
 
 				const size_t size = static_cast<size_t>(cbDesc.Size);
 
@@ -539,12 +538,16 @@ namespace Volt::RHI
 						buffer.arraySize = shaderInputBindDesc.BindCount;
 					}
 				}
+
+				registerType = buffer.isWrite ? ShaderRegisterType::UnorderedAccess : ShaderRegisterType::Texture;
 			}
 			else if (shaderInputBindDesc.Type == D3D_SIT_UAV_RWTYPED && (shaderInputBindDesc.Dimension >= 2 && shaderInputBindDesc.Dimension <= 10)) // This is all the texutre types
 			{
 				auto& shaderImage = inOutData.storageImages[space][binding];
 				shaderImage.usageStages = shaderImage.usageStages | stage;
 				shaderImage.usageCount++;
+
+				registerType = ShaderRegisterType::UnorderedAccess;
 
 				const bool firstEntry = !inOutData.storageImages[space].contains(binding);
 
@@ -566,6 +569,8 @@ namespace Volt::RHI
 				shaderImage.usageStages = shaderImage.usageStages | stage;
 				shaderImage.usageCount++;
 
+				registerType = ShaderRegisterType::Texture;
+
 				const bool firstEntry = !inOutData.images[space].contains(binding);
 
 				if (firstEntry)
@@ -585,18 +590,22 @@ namespace Volt::RHI
 				auto& shaderSampler = inOutData.samplers[space][binding];
 				shaderSampler.usageStages = shaderSampler.usageStages | stage;
 				shaderSampler.usageCount++;
+
+				registerType = ShaderRegisterType::Sampler;
 			}
+
+			TryAddShaderBinding(name, space, binding, registerType, inOutData);
 		}
 	}
 
-	bool D3D12ShaderCompiler::TryAddShaderBinding(const std::string& name, uint32_t set, uint32_t binding, CompilationResultData& outData)
+	bool D3D12ShaderCompiler::TryAddShaderBinding(const std::string& name, uint32_t set, uint32_t binding, ShaderRegisterType registerType, CompilationResultData& outData)
 	{
 		if (outData.bindings.contains(name))
 		{
 			return false;
 		}
 
-		outData.bindings[name] = { set, binding };
+		outData.bindings[name] = { set, binding, registerType };
 		return true;
 	}
 }

@@ -8,6 +8,7 @@
 #include <VoltRHI/Graphics/GraphicsContext.h>
 
 #include <VoltRHI/Memory/Allocation.h>
+#include <VoltRHI/Utility/ResourceUtility.h>
 
 #define TINYDDSLOADER_IMPLEMENTATION
 #include <tinyddsloader.h>
@@ -87,20 +88,8 @@ namespace Volt
 
 		auto imageData = dds.GetImageData();
 
-		const size_t size = imageData->m_memSlicePitch;
-		const void* dataPtr = imageData->m_mem;
-
 		const uint32_t width = imageData->m_width;
 		const uint32_t height = imageData->m_height;
-
-		RefPtr<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator()->CreateBuffer(size, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPUToGPU);
-
-		// Map memory
-		{
-			void* bufferPtr = stagingBuffer->Map<void>();;
-			memcpy_s(bufferPtr, size, dataPtr, size);
-			stagingBuffer->Unmap();
-		}
 
 		RefPtr<RHI::Image2D> image;
 		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
@@ -142,12 +131,11 @@ namespace Volt
 		{
 			RHI::ResourceBarrierInfo barrier{};
 			barrier.type = RHI::BarrierType::Image;
-			barrier.imageBarrier().srcStage = RHI::BarrierStage::None;
-			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::None;
-			barrier.imageBarrier().srcLayout = RHI::ImageLayout::Undefined;
+			RHI::ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), image);
+
 			barrier.imageBarrier().dstStage = RHI::BarrierStage::Copy;
-			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
-			barrier.imageBarrier().dstLayout = RHI::ImageLayout::TransferDestination;
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::CopyDest;
+			barrier.imageBarrier().dstLayout = RHI::ImageLayout::CopyDest;
 			barrier.imageBarrier().resource = image;
 
 			commandBuffer->ResourceBarrier({ barrier });
@@ -158,9 +146,8 @@ namespace Volt
 		{
 			RHI::ResourceBarrierInfo barrier{};
 			barrier.type = RHI::BarrierType::Image;
-			barrier.imageBarrier().srcStage = RHI::BarrierStage::Copy;
-			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::TransferDestination;
-			barrier.imageBarrier().srcLayout = RHI::ImageLayout::TransferDestination;
+			RHI::ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), image);
+
 			barrier.imageBarrier().dstStage = RHI::BarrierStage::PixelShader;
 			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
 			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;

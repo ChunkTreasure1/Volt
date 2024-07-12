@@ -3,9 +3,9 @@
 
 namespace Volt::RHI::Utility
 {
-	D3D12_RESOURCE_DESC GetD3D12ResourceDesc(const ImageSpecification& specification)
+	D3D12_RESOURCE_DESC1 GetD3D12ResourceDesc(const ImageSpecification& specification)
 	{
-		D3D12_RESOURCE_DESC result{};
+		D3D12_RESOURCE_DESC1 result{};
 
 		if (specification.imageType == ResourceType::Image2D)
 		{
@@ -62,12 +62,13 @@ namespace Volt::RHI::Utility
 		return result;
 	}
 
-	D3D12_RESOURCE_ALLOCATION_INFO GetResourceAllocationInfo(const D3D12_RESOURCE_DESC& resourceDesc)
+	D3D12_RESOURCE_ALLOCATION_INFO GetResourceAllocationInfo(const D3D12_RESOURCE_DESC1& resourceDesc)
 	{
-		return GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>()->GetResourceAllocationInfo(0, 1, &resourceDesc);
+		D3D12_RESOURCE_ALLOCATION_INFO1 info1Unused;
+		return GraphicsContext::GetDevice()->GetHandle<ID3D12Device8*>()->GetResourceAllocationInfo2(0, 1, &resourceDesc, &info1Unused);
 	}
 
-	MemoryRequirement GetMemoryRequirements(const D3D12_RESOURCE_DESC& resourceDesc)
+	MemoryRequirement GetMemoryRequirements(const D3D12_RESOURCE_DESC1& resourceDesc)
 	{
 		MemoryRequirement requirement{};
 

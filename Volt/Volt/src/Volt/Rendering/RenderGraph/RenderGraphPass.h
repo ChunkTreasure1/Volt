@@ -17,8 +17,8 @@ namespace Volt
 		IndirectArgument,
 		IndexBuffer,
 		VertexBuffer,
-		TransferDestination,
-		TransferSource,
+		CopyDest,
+		CopySource,
 		Clear
 	};
 

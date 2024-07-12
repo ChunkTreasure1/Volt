@@ -16,7 +16,7 @@ namespace Volt::RHI
 	class VTRHI_API BindlessDescriptorTable : public RHIInterface
 	{
 	public:
-		virtual ~BindlessDescriptorTable() {}
+		~BindlessDescriptorTable() override = default;
 
 		virtual ResourceHandle RegisterBuffer(WeakPtr<StorageBuffer> storageBuffer) = 0;
 		virtual ResourceHandle RegisterImageView(WeakPtr<ImageView> imageView) = 0;

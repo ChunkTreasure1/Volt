@@ -14,8 +14,8 @@ DispatchIndirectTest::DispatchIndirectTest()
 	m_writeCommandPipeline = ShaderMap::GetComputePipeline("DispatchIndirectTest_WriteCommand", false);
 	m_indirectDispatchPipeline = ShaderMap::GetComputePipeline("DispatchIndirectTest_Dispatch", false);
 
-	m_writeCommandTable = RHI::DescriptorTable::Create({ m_writeCommandPipeline->GetShader(), false });
-	m_indirectDispatchTable = RHI::DescriptorTable::Create({ m_indirectDispatchPipeline->GetShader(), false });
+	m_writeCommandTable = RHI::DescriptorTable::Create({ m_writeCommandPipeline->GetShader() });
+	m_indirectDispatchTable = RHI::DescriptorTable::Create({ m_indirectDispatchPipeline->GetShader() });
 
 	m_commandsBuffer = RHI::StorageBuffer::Create<RHI::IndirectDispatchCommand>(1, "Commands Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer);
 	m_buffer = RHI::StorageBuffer::Create<uint32_t>(GROUP_SIZE * 2, "Write Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferSrc);
@@ -45,7 +45,7 @@ bool DispatchIndirectTest::RunTest()
 		barrier.bufferBarrier().srcAccess = RHI::BarrierAccess::ShaderWrite;
 		barrier.bufferBarrier().srcStage = RHI::BarrierStage::ComputeShader;
 		barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::IndirectArgument;
-		barrier.bufferBarrier().dstStage = RHI::BarrierStage::Indirect;
+		barrier.bufferBarrier().dstStage = RHI::BarrierStage::DrawIndirect;
 		barrier.bufferBarrier().resource = m_commandsBuffer;
 		barrier.bufferBarrier().size = m_commandsBuffer->GetByteSize();
 
@@ -61,7 +61,7 @@ bool DispatchIndirectTest::RunTest()
 		barrier.type = RHI::BarrierType::Buffer;
 		barrier.bufferBarrier().srcAccess = RHI::BarrierAccess::ShaderWrite;
 		barrier.bufferBarrier().srcStage = RHI::BarrierStage::ComputeShader;
-		barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::TransferSource;
+		barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::CopySource;
 		barrier.bufferBarrier().dstStage = RHI::BarrierStage::Copy;
 		barrier.bufferBarrier().resource = m_buffer;
 		barrier.bufferBarrier().size = m_buffer->GetByteSize();

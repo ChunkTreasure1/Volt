@@ -24,6 +24,7 @@
 #include <VoltRHI/Images/ImageUtility.h>
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 #include <VoltRHI/Pipelines/ComputePipeline.h>
+#include <VoltRHI/Utility/ResourceUtility.h>
 
 #include <CoreUtilities/Containers/FunctionQueue.h>
 
@@ -97,7 +98,6 @@ namespace Volt
 			shaderCompilerInfo.flags |= RHI::ShaderCompilerFlags::EnableShaderValidator;
 #endif
 
-			//shaderCompilerInfo.cacheDirectory = ProjectManager::GetEngineDirectory() / "Engine/Shaders/Cache";
 			shaderCompilerInfo.includeDirectories =
 			{
 				ProjectManager::GetEngineShaderIncludeDirectory(),
@@ -503,9 +503,8 @@ namespace Volt
 		{
 			RHI::ResourceBarrierInfo barrier{};
 			barrier.type = RHI::BarrierType::Image;
-			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::None;
-			barrier.imageBarrier().srcLayout = RHI::ImageLayout::Undefined;
-			barrier.imageBarrier().srcStage = RHI::BarrierStage::None;
+			RHI::ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), s_rendererData->defaultResources.BRDFLuT);
+
 			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderWrite;
 			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderWrite;
 			barrier.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader;
@@ -523,9 +522,8 @@ namespace Volt
 		{
 			RHI::ResourceBarrierInfo barrier{};
 			barrier.type = RHI::BarrierType::Image;
-			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::ShaderWrite;
-			barrier.imageBarrier().srcLayout = RHI::ImageLayout::ShaderWrite;
-			barrier.imageBarrier().srcStage = RHI::BarrierStage::ComputeShader;
+			RHI::ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), s_rendererData->defaultResources.BRDFLuT);
+
 			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
 			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
 			barrier.imageBarrier().dstStage = RHI::BarrierStage::PixelShader | RHI::BarrierStage::ComputeShader;

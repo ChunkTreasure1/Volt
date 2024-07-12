@@ -342,10 +342,7 @@ namespace Volt::RHI
 			const uint32_t set = compiler.get_decoration(ubo.id, spv::DecorationDescriptorSet);
 			const std::string& name = compiler.get_name(ubo.id);
 
-			if (!TryAddShaderBinding(name, set, binding, inOutData))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
+			TryAddShaderBinding(name, set, binding, inOutData);
 
 			if (name == "$Globals")
 			{

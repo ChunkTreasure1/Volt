@@ -12,6 +12,7 @@
 #include "VoltVulkan/Images/VulkanImage2D.h"
 
 #include <VoltRHI/Core/Profiling.h>
+#include <VoltRHI/Utility/ResourceUtility.h>
 
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
@@ -135,9 +136,7 @@ namespace Volt::RHI
 		{
 			ResourceBarrierInfo barrier{};
 			barrier.type = BarrierType::Image;
-			barrier.imageBarrier().srcAccess = BarrierAccess::RenderTarget;
-			barrier.imageBarrier().srcStage = BarrierStage::RenderTarget;
-			barrier.imageBarrier().srcLayout = m_perImageData.at(m_currentImage).imageReference->GetImageLayout();
+			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), m_perImageData.at(m_currentImage).imageReference);
 			barrier.imageBarrier().dstAccess = BarrierAccess::None;
 			barrier.imageBarrier().dstStage = BarrierStage::AllGraphics;
 			barrier.imageBarrier().dstLayout = ImageLayout::Present;

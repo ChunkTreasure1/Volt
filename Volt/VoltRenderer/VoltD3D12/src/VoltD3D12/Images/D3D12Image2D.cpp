@@ -8,28 +8,10 @@
 #include <VoltRHI/Images/ImageUtility.h>
 #include <VoltRHI/RHIProxy.h>
 
+#include <VoltRHI/Utility/ResourceUtility.h>
+
 namespace Volt::RHI
 {
-	 D3D12_RESOURCE_FLAGS GetFlagFromUsage(ImageUsage usage)
-	{
-		switch (usage)
-		{
-			case Volt::RHI::ImageUsage::None: return D3D12_RESOURCE_FLAG_NONE;
-
-			case Volt::RHI::ImageUsage::Texture:
-				break;
-				
-			case Volt::RHI::ImageUsage::Attachment: return D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-
-			case Volt::RHI::ImageUsage::AttachmentStorage:
-				break;
-
-			case Volt::RHI::ImageUsage::Storage:
-				break;
-		}
-		return D3D12_RESOURCE_FLAG_NONE;
-	}
-
 	D3D12Image2D::D3D12Image2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator)
 		: m_specification(specification), m_allocator(allocator)
 	{
@@ -45,16 +27,19 @@ namespace Volt::RHI
 	D3D12Image2D::D3D12Image2D(const SwapchainImageSpecification& specification)
 		: m_isSwapchainImage(true)
 	{
+		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None, ImageLayout::Undefined);
+
 		InvalidateSwapchainImage(specification);
 		SetName("Swapchain Image");
 	}
 
 	D3D12Image2D::~D3D12Image2D()
 	{
+		GraphicsContext::GetResourceStateTracker()->RemoveResource(this);
 		Release();
 	}
 
-	void* D3D12Image2D::GetHandleImpl() const 
+	void* D3D12Image2D::GetHandleImpl() const
 	{
 		if (m_isSwapchainImage)
 		{
@@ -74,14 +59,15 @@ namespace Volt::RHI
 	void D3D12Image2D::InvalidateSwapchainImage(const SwapchainImageSpecification& specification)
 	{
 		const auto& d3d12Swapchain = specification.swapchain->AsRef<D3D12Swapchain>();
-	
-		m_layout = ImageLayout::Undefined;
+
 		m_specification.width = d3d12Swapchain.GetWidth();
 		m_specification.height = d3d12Swapchain.GetHeight();
 		m_specification.format = d3d12Swapchain.GetFormat();
 		m_specification.usage = ImageUsage::Attachment;
 
 		m_swapchainImageData.image = d3d12Swapchain.GetImageAtIndex(specification.imageIndex).Get();
+
+		TransitionToLayout(ImageLayout::RenderTarget);
 	}
 
 	void D3D12Image2D::InitializeWithData(const void* data)
@@ -98,13 +84,12 @@ namespace Volt::RHI
 		{
 			RHI::ResourceBarrierInfo barrier{};
 			barrier.type = RHI::BarrierType::Image;
-			barrier.imageBarrier().srcStage = RHI::BarrierStage::None;
-			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::None;
-			barrier.imageBarrier().srcLayout = RHI::ImageLayout::Undefined;
+			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), this);
+
 			barrier.imageBarrier().dstStage = RHI::BarrierStage::Copy;
-			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
-			barrier.imageBarrier().dstLayout = RHI::ImageLayout::TransferDestination;
-			barrier.imageBarrier().resource = WeakPtr<Image2D>(this);
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::CopyDest;
+			barrier.imageBarrier().dstLayout = RHI::ImageLayout::CopyDest;
+			barrier.imageBarrier().resource = this;
 
 			cmdBuffer->ResourceBarrier({ barrier });
 		}
@@ -114,21 +99,44 @@ namespace Volt::RHI
 		{
 			RHI::ResourceBarrierInfo barrier{};
 			barrier.type = RHI::BarrierType::Image;
-			barrier.imageBarrier().srcStage = RHI::BarrierStage::Copy;
-			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::TransferDestination;
-			barrier.imageBarrier().srcLayout = RHI::ImageLayout::TransferDestination;
-			barrier.imageBarrier().dstStage = RHI::BarrierStage::PixelShader;
+			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), this);
+
+			barrier.imageBarrier().dstStage = RHI::BarrierStage::PixelShader | RHI::BarrierStage::ComputeShader;
 			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
 			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
-			barrier.imageBarrier().resource = WeakPtr<Image2D>(this);
+			barrier.imageBarrier().resource = this;
 
 			cmdBuffer->ResourceBarrier({ barrier });
 		}
 
 		cmdBuffer->End();
 		cmdBuffer->Execute();
+	}
 
-		m_layout = ImageLayout::ShaderRead;
+	void D3D12Image2D::TransitionToLayout(ImageLayout targetLayout)
+	{
+		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
+		commandBuffer->Begin();
+
+		{
+			RHI::ResourceBarrierInfo barrier{};
+			barrier.type = RHI::BarrierType::Image;
+			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), this);
+
+			barrier.imageBarrier().srcAccess = BarrierAccess::None;
+			barrier.imageBarrier().dstAccess = BarrierAccess::None;
+
+			barrier.imageBarrier().srcStage = BarrierStage::None;
+			barrier.imageBarrier().dstStage = BarrierStage::None;
+
+			barrier.imageBarrier().dstLayout = targetLayout;
+			barrier.imageBarrier().resource = this;
+
+			commandBuffer->ResourceBarrier({ barrier });
+		}
+
+		commandBuffer->End();
+		commandBuffer->Execute();
 	}
 
 	void D3D12Image2D::Invalidate(const uint32_t width, const uint32_t height, const void* data)
@@ -139,41 +147,52 @@ namespace Volt::RHI
 		m_specification.height = height;
 		m_allocation = m_allocator->CreateImage(m_specification, m_specification.memoryUsage);
 
+		ImageLayout targetLayout = ImageLayout::Undefined;
+
+		switch (m_specification.usage)
+		{
+			case ImageUsage::Attachment:
+			case ImageUsage::AttachmentStorage:
+			{
+				if ((GetImageAspect() & ImageAspect::Depth) != ImageAspect::None)
+				{
+					targetLayout = ImageLayout::DepthStencilWrite;
+				}
+				else
+				{
+					targetLayout = ImageLayout::RenderTarget;
+				}
+				break;
+			}
+
+			case ImageUsage::Texture:
+			{
+				targetLayout = ImageLayout::ShaderRead;
+				break;
+			}
+
+			case ImageUsage::Storage:
+			{
+				targetLayout = ImageLayout::ShaderWrite;
+				break;
+			}
+		}
+
+		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None, targetLayout);
+
 		if (data)
 		{
 			InitializeWithData(data);
 		}
-		else if (m_specification.initializeImage)
+
+		if (m_specification.initializeImage)
 		{
-			// This should match GetResourceStateFromUsage in D3D12Helpers.h
-			switch (m_specification.usage)
-			{
-				case ImageUsage::Attachment:
-				case ImageUsage::AttachmentStorage:
-				{
-					if ((GetImageAspect() & ImageAspect::Depth) != ImageAspect::None)
-					{
-						m_layout = ImageLayout::DepthStencilWrite;
-					}
-					else
-					{
-						m_layout = ImageLayout::RenderTarget;
-					}
-					break;
-				}
+			TransitionToLayout(targetLayout);
+		}
 
-				case ImageUsage::Texture:
-				{
-					m_layout = ImageLayout::ShaderRead;
-					break;
-				}
-
-				case ImageUsage::Storage:
-				{
-					m_layout = ImageLayout::ShaderWrite;
-					break;
-				}
-			}
+		if (m_specification.generateMips && m_specification.mips > 1)
+		{
+			GenerateMips();
 		}
 	}
 
@@ -249,7 +268,23 @@ namespace Volt::RHI
 
 	const RefPtr<ImageView> D3D12Image2D::GetArrayView(const int32_t mip)
 	{
-		return RefPtr<ImageView>();
+		if (m_arrayImageViews.contains(mip))
+		{
+			return m_arrayImageViews.at(mip);
+		}
+
+		ImageViewSpecification spec{};
+		spec.baseArrayLayer = 0;
+		spec.baseMipLevel = (mip == -1) ? 0 : mip;
+		spec.layerCount = m_specification.layers;
+		spec.mipCount = (mip == -1) ? m_specification.mips : 1;
+		spec.viewType = ImageViewType::View2DArray;
+		spec.image = As<Image2D>();
+
+		RefPtr<ImageView> view = RefPtr<D3D12ImageView>::Create(spec);
+		m_arrayImageViews[mip] = view;
+
+		return view;
 	}
 
 	const uint32_t D3D12Image2D::GetWidth() const
@@ -267,6 +302,11 @@ namespace Volt::RHI
 		return m_specification.mips;
 	}
 
+	const uint32_t D3D12Image2D::GetLayerCount() const
+	{
+		return m_specification.layers;
+	}
+
 	const PixelFormat D3D12Image2D::GetFormat() const
 	{
 		return m_specification.format;
@@ -280,11 +320,6 @@ namespace Volt::RHI
 	const ImageAspect D3D12Image2D::GetImageAspect() const
 	{
 		return Utility::IsDepthFormat(m_specification.format) ? ImageAspect::Depth : ImageAspect::Color;
-	}
-
-	const ImageLayout D3D12Image2D::GetImageLayout() const
-	{
-		return m_layout;
 	}
 
 	const uint32_t D3D12Image2D::CalculateMipCount() const

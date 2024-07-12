@@ -9,7 +9,7 @@
 #include "VoltD3D12/Buffers/D3D12CommandBuffer.h"
 #include "VoltD3D12/Images/D3D12ImageView.h"
 
-#include "VoltRHI/Buffers/CommandBuffer.h"
+#include <VoltRHI/Utility/ResourceUtility.h>
 
 namespace Volt::RHI
 {
@@ -49,31 +49,29 @@ namespace Volt::RHI
 
 		auto swapchain = m_info.swapchain->As<D3D12Swapchain>();
 
-		D3D12_RESOURCE_BARRIER barrier = {};
-		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource = swapchain->GetCurrentImage()->GetHandle<ID3D12Resource*>();
-		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		{
+			RHI::ResourceBarrierInfo barrier{};
+			barrier.type = BarrierType::Image;
 
-		cmd->ResourceBarrier(1, &barrier);
-		const float clearColor[4] = { 0,0,0, 1 };
+			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), swapchain->GetCurrentImage());
+			barrier.imageBarrier().dstAccess = BarrierAccess::RenderTarget;
+			barrier.imageBarrier().dstStage = BarrierStage::RenderTarget;
+			barrier.imageBarrier().dstLayout = ImageLayout::RenderTarget;
+			barrier.imageBarrier().resource = swapchain->GetCurrentImage();
+
+			m_commandBuffer->ResourceBarrier({ barrier });
+		}
 
 		auto& d3d12View = swapchain->GetCurrentImage()->GetView()->AsRef<D3D12ImageView>();
-
 		const auto rtvPointer = D3D12_CPU_DESCRIPTOR_HANDLE(d3d12View.GetRTVDSVDescriptor().GetCPUPointer());
 
+		const float clearColor[4] = { 0,0,0, 1 };
 		cmd->ClearRenderTargetView(rtvPointer, clearColor, 0, nullptr);
 		cmd->OMSetRenderTargets(1, &rtvPointer, false, nullptr);
 		cmd->SetDescriptorHeaps(1, m_descriptorHeap->GetHeap().GetAddressOf());
 
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmd);
 
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-
-		cmd->ResourceBarrier(1, &barrier);
 		m_commandBuffer->End();
 		m_commandBuffer->Execute();
 	}
@@ -99,7 +97,7 @@ namespace Volt::RHI
 		D3D12_CPU_DESCRIPTOR_HANDLE(m_fontTexturePointer.GetCPUPointer()),
 		D3D12_GPU_DESCRIPTOR_HANDLE(m_fontTexturePointer.GetGPUPointer()));
 
-		m_commandBuffer = CommandBuffer::Create();
+		m_commandBuffer = CommandBuffer::Create(m_framesInFlight);
 	}
 
 	void D3D12ImGuiImplementation::ShutdownAPI()

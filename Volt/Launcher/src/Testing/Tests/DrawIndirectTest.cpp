@@ -6,6 +6,8 @@
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
 
+#include <VoltRHI/Utility/ResourceUtility.h>
+
 using namespace Volt;
 
 DrawIndirectTest::DrawIndirectTest()
@@ -56,7 +58,7 @@ bool DrawIndirectTest::RunTest()
 		barrier.bufferBarrier().srcAccess = RHI::BarrierAccess::None;
 		barrier.bufferBarrier().srcStage = RHI::BarrierStage::None;
 		barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::IndirectArgument;
-		barrier.bufferBarrier().dstStage = RHI::BarrierStage::Indirect;
+		barrier.bufferBarrier().dstStage = RHI::BarrierStage::DrawIndirect;
 		barrier.bufferBarrier().resource = m_commandsBuffer;
 		barrier.bufferBarrier().size = m_commandsBuffer->GetByteSize();
 
@@ -83,9 +85,8 @@ bool DrawIndirectTest::RunTest()
 	{
 		RHI::ResourceBarrierInfo barrier{};
 		barrier.type = RHI::BarrierType::Image;
-		barrier.imageBarrier().srcAccess = RHI::BarrierAccess::RenderTarget;
-		barrier.imageBarrier().srcStage = RHI::BarrierStage::RenderTarget;
-		barrier.imageBarrier().srcLayout = swapchain.GetCurrentImage()->GetImageLayout();
+		RHI::ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), swapchain.GetCurrentImage());
+
 		barrier.imageBarrier().dstAccess = RHI::BarrierAccess::None;
 		barrier.imageBarrier().dstStage = RHI::BarrierStage::AllGraphics;
 		barrier.imageBarrier().dstLayout = RHI::ImageLayout::Present;

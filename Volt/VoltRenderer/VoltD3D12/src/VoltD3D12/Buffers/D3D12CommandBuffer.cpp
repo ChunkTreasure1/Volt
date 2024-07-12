@@ -9,6 +9,7 @@
 #include "VoltD3D12/Pipelines/D3D12RenderPipeline.h"
 #include "VoltD3D12/Shader/D3D12Shader.h"
 #include "VoltD3D12/Descriptors/D3D12DescriptorTable.h"
+#include "VoltD3D12/Descriptors/D3D12BindlessDescriptorTable.h"
 #include "VoltD3D12/Descriptors/CPUDescriptorHeapManager.h"
 #include "VoltD3D12/Descriptors/D3D12DescriptorHeap.h"
 #include "VoltD3D12/Buffers/D3D12BufferView.h"
@@ -26,8 +27,6 @@
 #include <VoltRHI/Images/ImageUtility.h>
 #include <VoltRHI/RHIProxy.h>
 
-#include "VoltD3D12/Common/d3dx12.h"
-
 #include <CoreUtilities/EnumUtils.h>
 
 #include <pix.h>
@@ -36,240 +35,208 @@ namespace Volt::RHI
 { 
 	namespace Utility
 	{
-		D3D12_RESOURCE_STATES GetResourceStateFromLayout(const ImageLayout layout, const BarrierStage barrierStage)
+		inline D3D12_BARRIER_SYNC GetD3D12BarrierSyncFromBarrierStage(const BarrierStage barrierStage)
 		{
-			D3D12_RESOURCE_STATES result = D3D12_RESOURCE_STATE_COMMON;
+			D3D12_BARRIER_SYNC result = D3D12_BARRIER_SYNC_NONE;
 
-			if (EnumValueContainsFlag(layout, ImageLayout::Present))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::All))
 			{
-				result |= D3D12_RESOURCE_STATE_PRESENT;
+				result |= D3D12_BARRIER_SYNC_ALL;
 			}
 
-			if (EnumValueContainsFlag(layout, ImageLayout::RenderTarget))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::IndexInput))
 			{
-				result |= D3D12_RESOURCE_STATE_RENDER_TARGET;
+				result |= D3D12_BARRIER_SYNC_INDEX_INPUT;
 			}
 
-			if (EnumValueContainsFlag(layout, ImageLayout::ShaderWrite))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::VertexInput))
 			{
-				result |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+				result |= D3D12_BARRIER_SYNC_VERTEX_SHADING;
 			}
 
-			if (EnumValueContainsFlag(layout, ImageLayout::DepthStencilWrite))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::VertexShader))
 			{
-				result |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
+				result |= D3D12_BARRIER_SYNC_VERTEX_SHADING;
 			}
 
-			if (EnumValueContainsFlag(layout, ImageLayout::DepthStencilRead))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::PixelShader))
 			{
-				result |= D3D12_RESOURCE_STATE_DEPTH_READ;
+				result |= D3D12_BARRIER_SYNC_PIXEL_SHADING;
 			}
 
-			if (EnumValueContainsFlag(layout, ImageLayout::ShaderRead))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::DepthStencil))
 			{
-				result |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-
-				//if (EnumValueContainsFlag(barrierStage, BarrierStage::PixelShader))
-				//{
-				//	result |= D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-				//}
-
-				//if (EnumValueContainsFlag(barrierStage, BarrierStage::VertexShader) ||
-				//	EnumValueContainsFlag(barrierStage, BarrierStage::ComputeShader))
-				//{
-				//	result |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-				//}
-
-				//if (result == D3D12_RESOURCE_STATE_COMMON)
-				//{
-				//	result = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-				//}
+				result |= D3D12_BARRIER_SYNC_DEPTH_STENCIL;
 			}
 
-			if (EnumValueContainsFlag(layout, ImageLayout::TransferSource))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::RenderTarget))
 			{
-				result |= D3D12_RESOURCE_STATE_COPY_SOURCE;
+				result |= D3D12_BARRIER_SYNC_RENDER_TARGET;
 			}
 
-			if (EnumValueContainsFlag(layout, ImageLayout::TransferDestination))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::ComputeShader))
 			{
-				if (barrierStage == BarrierStage::Clear)
-				{
-					result |= D3D12_RESOURCE_STATE_RENDER_TARGET;
-				}
-				else
-				{
-					result |= D3D12_RESOURCE_STATE_COPY_DEST;
-				}
+				result |= D3D12_BARRIER_SYNC_COMPUTE_SHADING;
 			}
 
-			if (EnumValueContainsFlag(layout, ImageLayout::ResolveSource))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::RayTracing))
 			{
-				result |= D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
+				result |= D3D12_BARRIER_SYNC_RAYTRACING;
 			}
 
-			if (EnumValueContainsFlag(layout, ImageLayout::ResolveDestination))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::Copy))
 			{
-				result |= D3D12_RESOURCE_STATE_RESOLVE_DEST;
+				result |= D3D12_BARRIER_SYNC_COPY;
 			}
 
-			if (EnumValueContainsFlag(layout, ImageLayout::VideoDecodeRead))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::Resolve))
 			{
-				result |= D3D12_RESOURCE_STATE_VIDEO_DECODE_READ;
+				result |= D3D12_BARRIER_SYNC_RESOLVE;
 			}
 
-			if (EnumValueContainsFlag(layout, ImageLayout::VideoDecodeWrite))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::DrawIndirect))
 			{
-				result |= D3D12_RESOURCE_STATE_VIDEO_DECODE_WRITE;
+				result |= D3D12_BARRIER_SYNC_EXECUTE_INDIRECT;
 			}
 
-			if (EnumValueContainsFlag(layout, ImageLayout::VideoEncodeRead))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::AllGraphics))
 			{
-				result |= D3D12_RESOURCE_STATE_VIDEO_ENCODE_READ;
+				result |= D3D12_BARRIER_SYNC_ALL_SHADING;
 			}
 
-			if (EnumValueContainsFlag(layout, ImageLayout::VideoEncodeWrite))
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::VideoDecode))
 			{
-				result |= D3D12_RESOURCE_STATE_VIDEO_ENCODE_WRITE;
+				result |= D3D12_BARRIER_SYNC_VIDEO_DECODE;
+			}
+
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::VideoEncode))
+			{
+				result |= D3D12_BARRIER_SYNC_VIDEO_ENCODE;
 			}
 
 			return result;
 		}
 
-		D3D12_RESOURCE_STATES GetResourceStateFromStage(const BarrierStage barrierSync, const BarrierAccess barrierAccess, WeakPtr<RHIResource> resource)
+		inline D3D12_BARRIER_ACCESS GetD3D12BarrierAccessFromBarrierAccess(const BarrierAccess barrierAccess)
 		{
-			bool isUploadBuffer = false;
+			D3D12_BARRIER_ACCESS result = D3D12_BARRIER_ACCESS_COMMON;
 
-			if (resource->GetType() == ResourceType::StorageBuffer)
+			if (barrierAccess == BarrierAccess::None)
 			{
-				isUploadBuffer = (resource->As<D3D12StorageBuffer>()->GetMemoryUsage() & MemoryUsage::CPUToGPU) != MemoryUsage::None;
+				result |= D3D12_BARRIER_ACCESS_NO_ACCESS;
 			}
 
-			D3D12_RESOURCE_STATES result = D3D12_RESOURCE_STATE_COMMON;
-
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::Draw))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::VertexBuffer))
 			{
-				result |= D3D12_RESOURCE_STATE_COMMON;
+				result |= D3D12_BARRIER_ACCESS_VERTEX_BUFFER;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::IndexInput))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::UniformBuffer))
 			{
-				result |= D3D12_RESOURCE_STATE_INDEX_BUFFER;
+				result |= D3D12_BARRIER_ACCESS_CONSTANT_BUFFER;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::VertexShader))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::IndexBuffer))
 			{
-				if (EnumValueContainsFlag(barrierAccess, BarrierAccess::VertexBuffer))
-				{
-					result |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-				}
-				else if (EnumValueContainsFlag(barrierAccess, BarrierAccess::ShaderRead))
-				{
-					result |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-				}
+				result |= D3D12_BARRIER_ACCESS_INDEX_BUFFER;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::PixelShader))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::RenderTarget))
 			{
-				if (EnumValueContainsFlag(barrierAccess, BarrierAccess::ShaderWrite))
-				{
-					result |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-				}
-				else
-				{
-					result |= D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-				}
+				result |= D3D12_BARRIER_ACCESS_RENDER_TARGET;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::DepthStencil))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::ShaderWrite))
 			{
-				if (EnumValueContainsFlag(barrierAccess, BarrierAccess::DepthStencilRead))
-				{
-					result |= D3D12_RESOURCE_STATE_DEPTH_READ;
-				}
-				else if (EnumValueContainsFlag(barrierAccess, BarrierAccess::DepthStencilWrite))
-				{
-					result |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
-				}
+				result |= D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::RenderTarget))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::DepthStencilWrite))
 			{
-				result |= D3D12_RESOURCE_STATE_RENDER_TARGET;
+				result |= D3D12_BARRIER_ACCESS_DEPTH_STENCIL_WRITE;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::ComputeShader))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::DepthStencilRead))
 			{
-				if (EnumValueContainsFlag(barrierAccess, BarrierAccess::ShaderWrite))
-				{
-					result |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-				}
-				else
-				{
-					result |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-				}
+				result |= D3D12_BARRIER_ACCESS_DEPTH_STENCIL_READ;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::RayTracing))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::ShaderRead))
 			{
-				result |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+				result |= D3D12_BARRIER_ACCESS_SHADER_RESOURCE;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::Copy))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::IndirectArgument))
 			{
-				if (EnumValueContainsFlag(barrierAccess, BarrierAccess::TransferSource))
-				{
-					if (isUploadBuffer)
-					{
-						result |= D3D12_RESOURCE_STATE_GENERIC_READ;
-					}
-					else
-					{
-						result |= D3D12_RESOURCE_STATE_COPY_SOURCE;
-					}
-				}
-				else
-				{
-					result |= D3D12_RESOURCE_STATE_COPY_DEST;
-				}
+				result |= D3D12_BARRIER_ACCESS_INDIRECT_ARGUMENT;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::Clear))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::CopyDest))
 			{
-				result |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+				result |= D3D12_BARRIER_ACCESS_COPY_DEST;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::Resolve))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::CopySource))
 			{
-				result |= D3D12_RESOURCE_STATE_RESOLVE_DEST;
+				result |= D3D12_BARRIER_ACCESS_COPY_SOURCE;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::Indirect))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::ResolveDest))
 			{
-				result |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+				result |= D3D12_BARRIER_ACCESS_RESOLVE_DEST;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::AllGraphics))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::ResolveSource))
 			{
-				result |= D3D12_RESOURCE_STATE_COMMON;
+				result |= D3D12_BARRIER_ACCESS_RESOLVE_SOURCE;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::VideoDecode))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::VideoEncodeRead))
 			{
-				result |= D3D12_RESOURCE_STATE_VIDEO_DECODE_WRITE;
+				result |= D3D12_BARRIER_ACCESS_VIDEO_ENCODE_READ;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::BuildAccelerationStructure))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::VideoEncodeWrite))
 			{
-				result |= D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
+				result |= D3D12_BARRIER_ACCESS_VIDEO_ENCODE_WRITE;
 			}
 
-			if (EnumValueContainsFlag(barrierSync, BarrierStage::All))
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::VideoDecodeRead))
 			{
-				result |= D3D12_RESOURCE_STATE_COMMON;
+				result |= D3D12_BARRIER_ACCESS_VIDEO_DECODE_READ;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::VideoDecodeWrite))
+			{
+				result |= D3D12_BARRIER_ACCESS_VIDEO_DECODE_WRITE;
 			}
 
 			return result;
+		}
+
+		inline D3D12_BARRIER_LAYOUT GetD3D12BarrierLayoutFromImageLayout(const ImageLayout layout)
+		{
+			switch (layout)
+			{
+				case ImageLayout::Undefined: return D3D12_BARRIER_LAYOUT_UNDEFINED;
+				case ImageLayout::Present: return D3D12_BARRIER_LAYOUT_PRESENT;
+				case ImageLayout::RenderTarget: return D3D12_BARRIER_LAYOUT_RENDER_TARGET;
+				case ImageLayout::ShaderWrite: return D3D12_BARRIER_LAYOUT_UNORDERED_ACCESS;
+				case ImageLayout::DepthStencilWrite: return D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_WRITE;
+				case ImageLayout::DepthStencilRead: return D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_READ;
+				case ImageLayout::ShaderRead: return D3D12_BARRIER_LAYOUT_SHADER_RESOURCE;
+				case ImageLayout::CopySource: return D3D12_BARRIER_LAYOUT_COPY_SOURCE;
+				case ImageLayout::CopyDest: return D3D12_BARRIER_LAYOUT_COPY_DEST;
+				case ImageLayout::ResolveSource: return D3D12_BARRIER_LAYOUT_RESOLVE_SOURCE;
+				case ImageLayout::ResolveDest: return D3D12_BARRIER_LAYOUT_RESOLVE_DEST;
+				case ImageLayout::VideoDecodeRead: return D3D12_BARRIER_LAYOUT_VIDEO_ENCODE_READ;
+				case ImageLayout::VideoDecodeWrite: return D3D12_BARRIER_LAYOUT_VIDEO_ENCODE_WRITE;
+				case ImageLayout::VideoEncodeRead: return D3D12_BARRIER_LAYOUT_VIDEO_DECODE_READ;
+				case ImageLayout::VideoEncodeWrite: return D3D12_BARRIER_LAYOUT_VIDEO_DECODE_READ;
+			}
+
+			VT_ENSURE(false);
+			return D3D12_BARRIER_LAYOUT_UNDEFINED;
 		}
 	}
 
@@ -352,6 +319,47 @@ namespace Volt::RHI
 		m_commandLists.clear();
 	}
 
+	void D3D12CommandBuffer::BindPipelineInternal()
+	{
+		if (!m_pipelineNeedsToBeBound)
+		{
+			return;
+		}
+
+		const uint32_t index = GetCurrentCommandListIndex();
+		auto& cmdList = m_commandLists.at(index).commandList;
+
+		if (m_currentComputePipeline)
+		{
+			D3D12Shader& d3d12Shader = m_currentComputePipeline->GetShader()->AsRef<D3D12Shader>();
+
+			cmdList->SetComputeRootSignature(d3d12Shader.GetRootSignature().Get());
+			cmdList->SetPipelineState(m_currentComputePipeline->GetHandle<ID3D12PipelineState*>());
+		}
+		else
+		{
+			D3D12Shader& d3d12Shader = m_currentRenderPipeline->GetShader()->AsRef<D3D12Shader>();
+			D3D12RenderPipeline& d3d12Pipeline = m_currentRenderPipeline->AsRef<D3D12RenderPipeline>();
+
+			cmdList->SetGraphicsRootSignature(d3d12Shader.GetRootSignature().Get());
+			cmdList->SetPipelineState(m_currentRenderPipeline->GetHandle<ID3D12PipelineState*>());
+
+			D3D12_PRIMITIVE_TOPOLOGY topology{};
+
+			switch (d3d12Pipeline.GetTopology())
+			{
+				case Topology::TriangleList: topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST; break;
+				case Topology::LineList: topology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; break;
+				case Topology::TriangleStrip: topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP; break;
+				case Topology::PointList: topology = D3D_PRIMITIVE_TOPOLOGY_POINTLIST; break;
+			}
+
+			cmdList->IASetPrimitiveTopology(topology);
+		}
+
+		m_pipelineNeedsToBeBound = false;
+	}
+
 	const uint32_t D3D12CommandBuffer::GetCurrentCommandListIndex() const
 	{
 		return m_currentCommandListIndex;
@@ -359,7 +367,7 @@ namespace Volt::RHI
 
 	D3D12DescriptorPointer D3D12CommandBuffer::CreateTempDescriptorPointer()
 	{
-		D3D12DescriptorPointer ptr = m_descriptorHeap->Allocate(m_currentCommandListIndex);
+		D3D12DescriptorPointer ptr = m_descriptorHeap->Allocate();
 		m_allocatedDescriptors.at(m_currentCommandListIndex).emplace_back(ptr);
 		return ptr;
 	}
@@ -379,7 +387,9 @@ namespace Volt::RHI
 		}
 
 		VT_D3D12_CHECK(currentCommandList.commandAllocator->Reset());
-		VT_D3D12_CHECK(currentCommandList.commandList->Reset(currentCommandList.commandAllocator.Get(), nullptr)); // #TODO_Ivar: Huh?
+		VT_D3D12_CHECK(currentCommandList.commandList->Reset(currentCommandList.commandAllocator.Get(), nullptr));
+
+		BeginMarker("CommandBuffer", { 1.f, 1.f, 1.f, 1.f });
 	}
 
 	void D3D12CommandBuffer::RestartAfterFlush()
@@ -390,6 +400,7 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+		EndMarker();
 		m_commandLists.at(m_currentCommandListIndex).commandList->Close();
 	}
 
@@ -552,6 +563,11 @@ namespace Volt::RHI
 		VT_ENSURE(m_currentComputePipeline != nullptr);
 #endif
 
+		if (groupCountX == 0 || groupCountY == 0 || groupCountZ == 0)
+		{
+			return;
+		}
+
 		auto& commandData = m_commandLists.at(m_currentCommandListIndex);
 		commandData.commandList->Dispatch(groupCountX, groupCountY, groupCountZ);
 	}
@@ -598,25 +614,7 @@ namespace Volt::RHI
 		}
 
 		m_currentRenderPipeline = pipeline;
-		auto cmdList = m_commandLists.at(m_currentCommandListIndex).commandList;
-		
-		D3D12Shader& d3d12Shader = m_currentRenderPipeline->GetShader()->AsRef<D3D12Shader>();
-		D3D12RenderPipeline& d3d12Pipeline = m_currentRenderPipeline->AsRef<D3D12RenderPipeline>();
-
-		cmdList->SetGraphicsRootSignature(d3d12Shader.GetRootSignature().Get());
-		cmdList->SetPipelineState(m_currentRenderPipeline->GetHandle<ID3D12PipelineState*>());
-
-		D3D12_PRIMITIVE_TOPOLOGY topology{};
-		
-		switch (d3d12Pipeline.GetTopology())
-		{
-			case Topology::TriangleList: topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST; break;
-			case Topology::LineList: topology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; break;
-			case Topology::TriangleStrip: topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP; break;
-			case Topology::PointList: topology = D3D_PRIMITIVE_TOPOLOGY_POINTLIST; break;
-		}
-
-		cmdList->IASetPrimitiveTopology(topology);
+		m_pipelineNeedsToBeBound = true;
 	}
 
 	void D3D12CommandBuffer::BindPipeline(WeakPtr<ComputePipeline> pipeline)
@@ -632,14 +630,7 @@ namespace Volt::RHI
 		}
 
 		m_currentComputePipeline = pipeline;
-
-		const uint32_t index = GetCurrentCommandListIndex();
-		auto& cmdList = m_commandLists.at(index).commandList;
-
-		D3D12Shader& d3d12Shader = m_currentComputePipeline->GetShader()->AsRef<D3D12Shader>();
-
-		cmdList->SetComputeRootSignature(d3d12Shader.GetRootSignature().Get());
-		cmdList->SetPipelineState(m_currentComputePipeline->GetHandle<ID3D12PipelineState*>());
+		m_pipelineNeedsToBeBound = true;
 	}
 
 	void D3D12CommandBuffer::BindVertexBuffers(const StackVector<WeakPtr<VertexBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding)
@@ -708,11 +699,20 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 		descriptorTable->AsRef<D3D12DescriptorTable>().Bind(*this);
+
+		BindPipelineInternal();
+
+		descriptorTable->AsRef<D3D12DescriptorTable>().SetRootDescriptorTables(*this);
 	}
 
 	void D3D12CommandBuffer::BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable)
 	{
+		VT_PROFILE_FUNCTION();
+		descriptorTable->AsRef<D3D12BindlessDescriptorTable>().Bind(*this);
 
+		BindPipelineInternal();
+
+		descriptorTable->AsRef<D3D12BindlessDescriptorTable>().SetRootDescriptorTables(*this);
 	}
 
 	void D3D12CommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
@@ -792,72 +792,181 @@ namespace Volt::RHI
 		}
 	}
 
+	inline void AddGlobalBarrier(const GlobalBarrier& barrierInfo, D3D12_GLOBAL_BARRIER& barrier)
+	{
+		barrier.SyncBefore = Utility::GetD3D12BarrierSyncFromBarrierStage(barrierInfo.srcStage);
+		barrier.AccessBefore = Utility::GetD3D12BarrierAccessFromBarrierAccess(barrierInfo.srcAccess);
+		barrier.SyncAfter = Utility::GetD3D12BarrierSyncFromBarrierStage(barrierInfo.dstStage);
+		barrier.AccessAfter = Utility::GetD3D12BarrierAccessFromBarrierAccess(barrierInfo.dstAccess);
+	}
+
+	inline void AddBufferBarrier(const BufferBarrier& barrierInfo, D3D12_BUFFER_BARRIER& barrier)
+	{
+		VT_ENSURE(barrierInfo.resource != nullptr);
+
+		if (barrierInfo.srcStage == BarrierStage::Clear)
+		{
+			barrier.SyncBefore = D3D12_BARRIER_SYNC_CLEAR_UNORDERED_ACCESS_VIEW;
+			barrier.AccessBefore = D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+		}
+		else
+		{
+			barrier.SyncBefore = Utility::GetD3D12BarrierSyncFromBarrierStage(barrierInfo.srcStage);
+			barrier.AccessBefore = Utility::GetD3D12BarrierAccessFromBarrierAccess(barrierInfo.srcAccess);
+		}
+
+		if (barrierInfo.dstStage == BarrierStage::Clear)
+		{
+			barrier.SyncAfter = D3D12_BARRIER_SYNC_CLEAR_UNORDERED_ACCESS_VIEW;
+			barrier.AccessAfter = D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+		}
+		else
+		{
+			barrier.SyncAfter = Utility::GetD3D12BarrierSyncFromBarrierStage(barrierInfo.dstStage);
+			barrier.AccessAfter = Utility::GetD3D12BarrierAccessFromBarrierAccess(barrierInfo.dstAccess);
+		}
+
+		barrier.Offset = 0;
+		barrier.Size = barrierInfo.size;
+		barrier.pResource = barrierInfo.resource->GetHandle<ID3D12Resource*>();
+
+		GraphicsContext::GetResourceStateTracker()->TransitionResource(barrierInfo.resource, barrierInfo.dstStage, barrierInfo.dstAccess);
+	}
+
+	inline void AddImageBarrier(const ImageBarrier& barrierInfo, D3D12_TEXTURE_BARRIER& barrier)
+	{
+		VT_ENSURE(barrierInfo.resource != nullptr);
+
+		if (barrierInfo.srcStage == BarrierStage::Clear)
+		{
+			if (barrierInfo.resource->GetType() == ResourceType::Image2D)
+			{
+				const auto aspectMask = barrierInfo.resource->As<Image2D>()->GetImageAspect();
+				if (EnumValueContainsFlag(aspectMask, ImageAspect::Depth) || EnumValueContainsFlag(aspectMask, ImageAspect::Stencil))
+				{
+					barrier.SyncBefore = D3D12_BARRIER_SYNC_DEPTH_STENCIL;
+				}
+				else
+				{
+					barrier.SyncBefore = D3D12_BARRIER_SYNC_RENDER_TARGET;
+				}
+			}
+		}
+		else
+		{
+			barrier.SyncBefore = Utility::GetD3D12BarrierSyncFromBarrierStage(barrierInfo.srcStage);
+		}
+
+		if (barrierInfo.dstStage == BarrierStage::Clear)
+		{
+			if (barrierInfo.resource->GetType() == ResourceType::Image2D)
+			{
+				const auto aspectMask = barrierInfo.resource->As<Image2D>()->GetImageAspect();
+				if (EnumValueContainsFlag(aspectMask, ImageAspect::Depth) || EnumValueContainsFlag(aspectMask, ImageAspect::Stencil))
+				{
+					barrier.SyncAfter = D3D12_BARRIER_SYNC_DEPTH_STENCIL;
+				}
+				else
+				{
+					barrier.SyncAfter = D3D12_BARRIER_SYNC_RENDER_TARGET;
+				}
+			}
+		}
+
+		barrier.AccessBefore = Utility::GetD3D12BarrierAccessFromBarrierAccess(barrierInfo.srcAccess);
+		barrier.SyncAfter = Utility::GetD3D12BarrierSyncFromBarrierStage(barrierInfo.dstStage);
+		barrier.AccessAfter = Utility::GetD3D12BarrierAccessFromBarrierAccess(barrierInfo.dstAccess);
+		barrier.LayoutBefore = Utility::GetD3D12BarrierLayoutFromImageLayout(barrierInfo.srcLayout);
+		barrier.LayoutAfter = Utility::GetD3D12BarrierLayoutFromImageLayout(barrierInfo.dstLayout);
+		barrier.pResource = barrierInfo.resource->GetHandle<ID3D12Resource*>();
+		barrier.Flags = D3D12_TEXTURE_BARRIER_FLAG_NONE;
+
+		auto levelCount = barrierInfo.subResource.levelCount;
+		if (levelCount == ALL_MIPS)
+		{
+			if (barrierInfo.resource->GetType() == ResourceType::Image2D)
+			{
+				levelCount = barrierInfo.resource->As<Image2D>()->GetMipCount();
+			}
+		}
+
+		auto layerCount = barrierInfo.subResource.layerCount;
+		if (layerCount == ALL_LAYERS)
+		{
+			if (barrierInfo.resource->GetType() == ResourceType::Image2D)
+			{
+				layerCount = barrierInfo.resource->As<Image2D>()->GetLayerCount();
+			}
+		}
+
+		barrier.Subresources.NumMipLevels = levelCount;
+		barrier.Subresources.NumArraySlices = layerCount;
+		barrier.Subresources.FirstArraySlice = barrierInfo.subResource.baseArrayLayer;
+		barrier.Subresources.IndexOrFirstMipLevel = barrierInfo.subResource.baseMipLevel;
+		barrier.Subresources.FirstPlane = 0;
+		barrier.Subresources.NumPlanes = 0;
+	
+		GraphicsContext::GetResourceStateTracker()->TransitionResource(barrierInfo.resource, barrierInfo.dstStage, barrierInfo.dstAccess, barrierInfo.dstLayout);
+	}
+	
 	void D3D12CommandBuffer::ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers)
 	{
 		VT_PROFILE_FUNCTION();
 
-		std::vector<D3D12_RESOURCE_BARRIER> barriers{};
-		barriers.reserve(resourceBarriers.size());
+		std::vector<D3D12_GLOBAL_BARRIER> globalBarriers;
+		std::vector<D3D12_TEXTURE_BARRIER> textureBarriers;
+		std::vector<D3D12_BUFFER_BARRIER> bufferBarriers;
 
-		for (const auto& voltBarrier : resourceBarriers)
+		for (const auto& resourceBarrier : resourceBarriers)
 		{
-			D3D12_RESOURCE_BARRIER newBarrier{};
+			VT_ENSURE(resourceBarrier.type != BarrierType::None);
 
-			switch (voltBarrier.type)
+			switch (resourceBarrier.type)
 			{
 				case BarrierType::Global:
-				{
-					newBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-					newBarrier.UAV.pResource = nullptr;
+					AddGlobalBarrier(resourceBarrier.globalBarrier(), globalBarriers.emplace_back());
 					break;
-				}
 
 				case BarrierType::Buffer:
-				{
-					const auto& bufferBarrier = voltBarrier.bufferBarrier();
-
-					newBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-					newBarrier.Transition.pResource = voltBarrier.bufferBarrier().resource->GetHandle<ID3D12Resource*>();
-					newBarrier.Transition.Subresource = 0;
-					newBarrier.Transition.StateBefore = Utility::GetResourceStateFromStage(bufferBarrier.srcStage, bufferBarrier.srcAccess, voltBarrier.bufferBarrier().resource);
-					newBarrier.Transition.StateAfter = Utility::GetResourceStateFromStage(bufferBarrier.dstStage, bufferBarrier.dstAccess, voltBarrier.bufferBarrier().resource);
-
-					if (newBarrier.Transition.StateBefore == newBarrier.Transition.StateAfter)
-					{
-						continue;
-					}
+					AddBufferBarrier(resourceBarrier.bufferBarrier(), bufferBarriers.emplace_back());
 					break;
-				}
 
 				case BarrierType::Image:
-				{
-					const auto& imageBarrier = voltBarrier.imageBarrier();
-
-					VT_ENSURE(imageBarrier.dstLayout != ImageLayout::Undefined);
-
-					newBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-					newBarrier.Transition.pResource = imageBarrier.resource->GetHandle<ID3D12Resource*>();
-					newBarrier.Transition.Subresource = D3D12CalcSubresource(imageBarrier.subResource.baseMipLevel, imageBarrier.subResource.baseArrayLayer, 0, imageBarrier.subResource.levelCount, imageBarrier.subResource.layerCount);
-					newBarrier.Transition.StateBefore = Utility::GetResourceStateFromLayout(imageBarrier.srcLayout, imageBarrier.srcStage);
-					newBarrier.Transition.StateAfter = Utility::GetResourceStateFromLayout(imageBarrier.dstLayout, imageBarrier.dstStage);
-
-					if (newBarrier.Transition.StateBefore == newBarrier.Transition.StateAfter)
-					{
-						continue;
-					}
-
-					imageBarrier.resource->As<D3D12Image2D>()->SetCurrentImageLayout(imageBarrier.dstLayout);
+					AddImageBarrier(resourceBarrier.imageBarrier(), textureBarriers.emplace_back());
 					break;
-				}
 			}
-
-			barriers.emplace_back(newBarrier);
 		}
 
-		if (!barriers.empty())
+		std::vector<D3D12_BARRIER_GROUP> barrierGroups{};
+
+		if (!globalBarriers.empty())
+		{
+			auto& group = barrierGroups.emplace_back();
+			group.Type = D3D12_BARRIER_TYPE_GLOBAL;
+			group.NumBarriers = static_cast<uint32_t>(globalBarriers.size());
+			group.pGlobalBarriers = globalBarriers.data();
+		}
+
+		if (!textureBarriers.empty())
+		{
+			auto& group = barrierGroups.emplace_back();
+			group.Type = D3D12_BARRIER_TYPE_TEXTURE;
+			group.NumBarriers = static_cast<uint32_t>(textureBarriers.size());
+			group.pTextureBarriers = textureBarriers.data();
+		}
+
+		if (!bufferBarriers.empty())
+		{
+			auto& group = barrierGroups.emplace_back();
+			group.Type = D3D12_BARRIER_TYPE_BUFFER;
+			group.NumBarriers = static_cast<uint32_t>(bufferBarriers.size());
+			group.pBufferBarriers = bufferBarriers.data();
+		}
+
+		if (!barrierGroups.empty())
 		{
 			auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
-			cmdData.commandList->ResourceBarrier(static_cast<uint32_t>(barriers.size()), barriers.data());
+			cmdData.commandList->Barrier(static_cast<uint32_t>(barrierGroups.size()), barrierGroups.data());
 		}
 	}
 

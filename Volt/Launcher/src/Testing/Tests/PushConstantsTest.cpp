@@ -40,8 +40,8 @@ bool PushConstantsTest::RunTest()
 			barrier.type = RHI::BarrierType::Buffer;
 			barrier.bufferBarrier().srcAccess = RHI::BarrierAccess::None;
 			barrier.bufferBarrier().srcStage = RHI::BarrierStage::AllGraphics;
-			barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
-			barrier.bufferBarrier().dstStage = RHI::BarrierStage::Clear;
+			barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::CopyDest;
+			barrier.bufferBarrier().dstStage = RHI::BarrierStage::Copy;
 			barrier.bufferBarrier().resource = m_buffer;
 			barrier.bufferBarrier().size = m_buffer->GetByteSize();
 
@@ -56,9 +56,9 @@ bool PushConstantsTest::RunTest()
 		{
 			RHI::ResourceBarrierInfo barrier{};
 			barrier.type = RHI::BarrierType::Buffer;
-			barrier.bufferBarrier().srcAccess = RHI::BarrierAccess::TransferDestination;
-			barrier.bufferBarrier().srcStage = RHI::BarrierStage::Clear;
-			barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::TransferSource;
+			barrier.bufferBarrier().srcAccess = RHI::BarrierAccess::CopyDest;
+			barrier.bufferBarrier().srcStage = RHI::BarrierStage::Copy;
+			barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::CopySource;
 			barrier.bufferBarrier().dstStage = RHI::BarrierStage::Copy;
 			barrier.bufferBarrier().resource = m_buffer;
 			barrier.bufferBarrier().size = m_buffer->GetByteSize();

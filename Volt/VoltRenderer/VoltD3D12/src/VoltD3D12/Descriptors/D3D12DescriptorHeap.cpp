@@ -3,6 +3,8 @@
 
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 
+#include <VoltRHI/RHIProxy.h>
+
 namespace Volt::RHI
 {
 	namespace Utility
@@ -52,11 +54,22 @@ namespace Volt::RHI
 
 	D3D12DescriptorHeap::~D3D12DescriptorHeap()
 	{
+		if (!m_descriptorHeap)
+		{
+			return;
+		}
+
+		RHIProxy::GetInstance().DestroyResource([descriptorHeap = m_descriptorHeap]() mutable
+		{
+			descriptorHeap = nullptr;
+		});
+
 		m_descriptorHeap = nullptr;
 	}
 
 	D3D12DescriptorPointer D3D12DescriptorHeap::Allocate(const uint32_t descriptorIndex)
 	{
+		VT_PROFILE_FUNCTION();
 		std::scoped_lock lock{ m_mutex };
 
 		const bool allocateAtLocation = descriptorIndex != std::numeric_limits<uint32_t>::max();
@@ -112,6 +125,8 @@ namespace Volt::RHI
 
 	void D3D12DescriptorHeap::Free(D3D12DescriptorPointer descriptor)
 	{
+		VT_PROFILE_FUNCTION();
+
 		std::scoped_lock lock{ m_mutex };
 		m_availiableDescriptors.emplace_back(descriptor);
 	}
@@ -124,11 +139,13 @@ namespace Volt::RHI
 
 	bool D3D12DescriptorHeap::IsAllocationSupported(D3D12DescriptorType descriptorType) const
 	{
-		return m_descriptorType == descriptorType && m_currentDescriptorCount < m_maxDescriptorCount && m_availiableDescriptors.empty();
+		return m_descriptorType == descriptorType && (m_currentDescriptorCount < m_maxDescriptorCount || !m_availiableDescriptors.empty());
 	}
 
 	void D3D12DescriptorHeap::AllocateHeap(uint32_t maxDescriptorCount)
 	{
+		VT_PROFILE_FUNCTION();
+
 		D3D12_DESCRIPTOR_HEAP_DESC desc{};
 		desc.Type = Utility::GetDescriptorType(m_descriptorType);
 		desc.Flags = m_supportsGPUDescriptors ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;

@@ -58,6 +58,11 @@ namespace Volt::RHI
 		return m_transientAllocator;
 	}
 
+	RefPtr<ResourceStateTracker> D3D12GraphicsContext::GetResourceStateTrackerImpl()
+	{
+		return m_resourceStateTracker;
+	}
+
 	RefPtr<GraphicsDevice> D3D12GraphicsContext::GetGraphicsDevice() const
 	{
 		return m_graphicsDevice;
@@ -92,6 +97,7 @@ namespace Volt::RHI
 
 		m_defaultAllocator = DefaultAllocator::Create();
 		m_transientAllocator = TransientAllocator::Create();
+		m_resourceStateTracker = RefPtr<ResourceStateTracker>::Create();
 		m_cpuDescriptorHeapManager = CreateScope<CPUDescriptorHeapManager>();
 		m_commandSignatureCache = CreateScope<CommandSignatureCache>();
 	}
@@ -124,6 +130,27 @@ namespace Volt::RHI
 			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
 			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, false); 
 			m_infoQueue->SetBreakOnCategory(D3D12_MESSAGE_CATEGORY_CLEANUP, true);
+
+			D3D12_MESSAGE_SEVERITY severities[] =
+			{
+				D3D12_MESSAGE_SEVERITY_INFO
+			};
+
+			D3D12_MESSAGE_ID denyIDs[] =
+			{
+				D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,
+				D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
+				D3D12_MESSAGE_ID_NON_OPTIMAL_BARRIER_ONLY_EXECUTE_COMMAND_LISTS
+			};
+
+			D3D12_INFO_QUEUE_FILTER queueFilter{};
+			queueFilter.DenyList.NumCategories = 0;
+			queueFilter.DenyList.NumSeverities = 1;
+			queueFilter.DenyList.pSeverityList = severities;
+			queueFilter.DenyList.NumIDs = 3;
+			queueFilter.DenyList.pIDList = denyIDs;
+
+			VT_D3D12_CHECK(m_infoQueue->PushStorageFilter(&queueFilter));
 		}
 		else
 		{

@@ -106,7 +106,7 @@ namespace Volt::RHI
 			}
 		}
 
-		D3D12_RESOURCE_DESC resourceDesc = Utility::GetD3D12ResourceDesc(imageSpecification);
+		D3D12_RESOURCE_DESC1 resourceDesc = Utility::GetD3D12ResourceDesc(imageSpecification);
 
 		D3D12MA::ALLOCATION_DESC allocDesc{};
 		allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
@@ -128,7 +128,7 @@ namespace Volt::RHI
 		}
 
 		RefPtr<D3D12ImageAllocation> allocation = RefPtr<D3D12ImageAllocation>::Create(hash);
-		VT_D3D12_CHECK(m_allocator->CreateResource(&allocDesc, &resourceDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, &allocation->m_allocation, IID_PPV_ARGS(&allocation->m_resource)));
+		VT_D3D12_CHECK(m_allocator->CreateResource2(&allocDesc, &resourceDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, &allocation->m_allocation, IID_PPV_ARGS(&allocation->m_resource)));
 
 		allocation->m_size = allocation->m_allocation->GetSize();
 

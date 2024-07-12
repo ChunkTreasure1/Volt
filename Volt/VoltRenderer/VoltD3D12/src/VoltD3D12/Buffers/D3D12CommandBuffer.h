@@ -95,13 +95,15 @@ namespace Volt::RHI
 		void Invalidate();
 		void Release();
 
+		void BindPipelineInternal();
+
 		const uint32_t GetCurrentCommandListIndex() const;
 		D3D12DescriptorPointer CreateTempDescriptorPointer();
 
 		struct CommandListData
 		{
 			ComPtr<ID3D12CommandAllocator> commandAllocator;
-			ComPtr<ID3D12GraphicsCommandList6> commandList;
+			ComPtr<ID3D12GraphicsCommandList7> commandList;
 			RefPtr<Semaphore> fence;
 		};
 
@@ -115,6 +117,8 @@ namespace Volt::RHI
 		// Internal state
 		WeakPtr<RenderPipeline> m_currentRenderPipeline;
 		WeakPtr<ComputePipeline> m_currentComputePipeline;
+
+		bool m_pipelineNeedsToBeBound = false;
 
 		std::vector<std::vector<D3D12DescriptorPointer>> m_allocatedDescriptors;
 		Scope<D3D12DescriptorHeap> m_descriptorHeap;
