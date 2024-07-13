@@ -56,8 +56,9 @@ Ref<AssetBrowser::DirectoryItem> AssetDirectoryProcessor::ProcessDirectories(con
 			auto relPath = Volt::AssetManager::GetRelativePath(entry.path);
 			Ref<AssetBrowser::DirectoryItem> dirData = CreateRef<AssetBrowser::DirectoryItem>(m_selectionManager.Get(), relPath);
 			directoryItems[relPath] = dirData;
-			directoryItems[relPath.parent_path()]->subDirectories.emplace_back(dirData);
-			dirData->parentDirectory = directoryItems[relPath.parent_path()].get();
+			const auto parentPath = Volt::AssetManager::GetRelativePath(entry.path.parent_path());
+			directoryItems[parentPath]->subDirectories.emplace_back(dirData);
+			dirData->parentDirectory = directoryItems[parentPath].get();
 		}
 		else
 		{
@@ -75,7 +76,8 @@ Ref<AssetBrowser::DirectoryItem> AssetDirectoryProcessor::ProcessDirectories(con
 				{
 					auto relPath = Volt::AssetManager::GetRelativePath(entry.path);
 					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(m_selectionManager.Get(), relPath, meshImportData, meshToImportData);
-					directoryItems[relPath.parent_path()]->assets.emplace_back(assetItem);
+					const auto parentPath = Volt::AssetManager::GetRelativePath(entry.path.parent_path());
+					directoryItems[parentPath]->assets.emplace_back(assetItem);
 				}
 			}
 		}
