@@ -27,6 +27,7 @@ namespace Volt::RHI
 		}
 
 		Invalidate(m_elementSize * m_count);
+		SetName(m_name);
 	}
 
 	D3D12StorageBuffer::~D3D12StorageBuffer()

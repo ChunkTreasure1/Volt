@@ -101,22 +101,39 @@ namespace Volt::RHI
 			}
 		}
 
-		const uint32_t newCount = allocateAtLocation ? std::max(descriptorIndex, m_currentDescriptorCount) : m_currentDescriptorCount;
+		uint32_t descriptorOffset = m_currentDescriptorCount * m_descriptorSize;
 
-		if (newCount + 1 > m_maxDescriptorCount)
+		if (allocateAtLocation)
 		{
-			return {};
+			if (descriptorIndex + 1 > m_maxDescriptorCount)
+			{
+				return {};
+			}
+
+			if (descriptorIndex >= m_currentDescriptorCount)
+			{
+				m_currentDescriptorCount = descriptorIndex + 1;
+			}
+
+			descriptorOffset = descriptorIndex * m_descriptorSize;
+		}
+		else
+		{
+			if (m_currentDescriptorCount + 1 > m_maxDescriptorCount)
+			{
+				return {};
+			}
+
+			m_currentDescriptorCount++;
 		}
 
-		const uint32_t newDescriptorOffset = newCount * m_descriptorSize;
-		m_currentDescriptorCount = newCount + 1;
 
 		D3D12DescriptorPointer result{};
-		result.cpuPointer = m_startPointer.cpuPointer + static_cast<uint64_t>(newDescriptorOffset);
+		result.cpuPointer = m_startPointer.cpuPointer + static_cast<uint64_t>(descriptorOffset);
 		
 		if (m_supportsGPUDescriptors)
 		{
-			result.gpuPointer = m_startPointer.gpuPointer + static_cast<uint64_t>(newDescriptorOffset);
+			result.gpuPointer = m_startPointer.gpuPointer + static_cast<uint64_t>(descriptorOffset);
 		}
 
 		result.parentHeapHash = m_hash;

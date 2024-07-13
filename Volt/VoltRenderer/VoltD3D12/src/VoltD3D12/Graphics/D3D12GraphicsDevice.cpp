@@ -25,7 +25,7 @@ namespace Volt::RHI
 		m_deviceQueues[QueueType::TransferCopy].Reset();
 		m_deviceQueues[QueueType::Compute].Reset();
 
-		m_debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_SUMMARY);
+		m_debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_SUMMARY | D3D12_RLDO_IGNORE_INTERNAL);
 		m_debugDevice = nullptr;
 		m_device = nullptr;
 	}

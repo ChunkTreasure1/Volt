@@ -36,7 +36,6 @@ namespace Volt::RHI
 		void PrepareForRender() override;
 
 		void Bind(CommandBuffer& commandBuffer) override;
-		void SetRootDescriptorTables(CommandBuffer& commandBuffer);
 
 	protected:
 		void* GetHandleImpl() const override;

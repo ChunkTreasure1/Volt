@@ -47,6 +47,7 @@ namespace Volt
 		RenderGraphResourceHandle handle;
 
 		bool isExternal = false;
+		bool isGlobal = false;
 
 		virtual ResourceType GetResourceType() const = 0;
 

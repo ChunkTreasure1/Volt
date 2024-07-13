@@ -91,7 +91,7 @@ namespace Volt::RHI
 			auto val = currentFenceData->IncrementAndGetValue();
 			m_commandQueue->Signal(currentFenceData->GetHandle<ID3D12Fence*>(), val);
 
-			RHILog::Log(LogSeverity::Trace, "Signaling value {}", val);
+			//RHILog::Log(LogSeverity::Trace, "Signaling value {}", val);
 		}
 	}
 }

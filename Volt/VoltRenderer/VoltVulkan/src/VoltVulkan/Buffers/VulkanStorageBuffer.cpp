@@ -26,6 +26,7 @@ namespace Volt::RHI
 		}
 
 		Invalidate(m_elementSize * m_count);
+		SetName(m_name);
 	}
 
 	VulkanStorageBuffer::~VulkanStorageBuffer()

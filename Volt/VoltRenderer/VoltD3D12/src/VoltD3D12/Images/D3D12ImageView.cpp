@@ -8,6 +8,8 @@
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 #include "VoltD3D12/Common/D3D12Helpers.h"
 
+#include <VoltRHI/RHIProxy.h>
+
 namespace Volt::RHI
 {
 
@@ -38,20 +40,18 @@ namespace Volt::RHI
 
 	D3D12ImageView::~D3D12ImageView()
 	{
-		if (m_rtvDsvDescriptor.IsValid())
+		RHIProxy::GetInstance().DestroyResource([srvDescriptor = m_srvDescriptor, uavDescriptor = m_uavDescriptor]()
 		{
-			DescriptorUtility::FreeDescriptorPointer(m_rtvDsvDescriptor);
-		}
+			if (srvDescriptor.IsValid())
+			{
+				DescriptorUtility::FreeDescriptorPointer(srvDescriptor);
+			}
 
-		if (m_srvDescriptor.IsValid())
-		{
-			DescriptorUtility::FreeDescriptorPointer(m_srvDescriptor);
-		}
-
-		if (m_uavDescriptor.IsValid())
-		{
-			DescriptorUtility::FreeDescriptorPointer(m_uavDescriptor);
-		}
+			if (uavDescriptor.IsValid())
+			{
+				DescriptorUtility::FreeDescriptorPointer(uavDescriptor);
+			}
+		});
 	}
 
 	void* D3D12ImageView::GetHandleImpl() const

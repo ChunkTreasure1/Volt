@@ -166,7 +166,7 @@ namespace Volt
 			Weak<RenderGraphResourceNodeBase> unreferencedNode = unreferencedResources.back();
 			unreferencedResources.pop_back();
 
-			if (unreferencedNode->isExternal)
+			if (unreferencedNode->isExternal || unreferencedNode->isGlobal)
 			{
 				continue;
 			}
@@ -861,6 +861,7 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->resourceInfo.description = textureDesc;
 		node->isExternal = false;
+		node->isGlobal = true;
 		node->hash = Utility::GetHashFromImageDesc(textureDesc);
 
 		m_resourceNodes.push_back(node);
@@ -877,6 +878,7 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->resourceInfo.description = textureDesc;
 		node->isExternal = false;
+		node->isGlobal = true;
 		node->hash = Utility::GetHashFromImageDesc(textureDesc);
 
 		m_resourceNodes.push_back(node);
@@ -893,6 +895,7 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->resourceInfo.description = bufferDesc;
 		node->isExternal = false;
+		node->isGlobal = true;
 		node->hash = Utility::GetHashFromBufferDesc(bufferDesc);
 
 		node->resourceInfo.description.usage = node->resourceInfo.description.usage | RHI::BufferUsage::StorageBuffer;
@@ -911,6 +914,7 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->resourceInfo.description = bufferDesc;
 		node->isExternal = false;
+		node->isGlobal = true;
 		node->hash = Utility::GetHashFromBufferDesc(bufferDesc);
 
 		node->resourceInfo.description.usage = node->resourceInfo.description.usage | RHI::BufferUsage::StorageBuffer;

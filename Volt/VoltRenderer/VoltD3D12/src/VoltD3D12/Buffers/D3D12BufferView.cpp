@@ -4,6 +4,8 @@
 #include "VoltD3D12/Descriptors/DescriptorUtility.h"
 #include "VoltD3D12/Buffers/D3D12StorageBuffer.h"
 
+#include <VoltRHI/RHIProxy.h>
+
 #include <CoreUtilities/EnumUtils.h>
 
 namespace Volt::RHI
@@ -32,20 +34,23 @@ namespace Volt::RHI
 
 	D3D12BufferView::~D3D12BufferView()
 	{
-		if (m_srvDescriptor.IsValid())
+		RHIProxy::GetInstance().DestroyResource([srvDescriptor = m_srvDescriptor, uavDescriptor = m_uavDescriptor, cbvDescriptor = m_cbvDescriptor]() 
 		{
-			DescriptorUtility::FreeDescriptorPointer(m_srvDescriptor);
-		}
+			if (srvDescriptor.IsValid())
+			{
+				DescriptorUtility::FreeDescriptorPointer(srvDescriptor);
+			}
 
-		if (m_uavDescriptor.IsValid())
-		{
-			DescriptorUtility::FreeDescriptorPointer(m_uavDescriptor);
-		}
+			if (uavDescriptor.IsValid())
+			{
+				DescriptorUtility::FreeDescriptorPointer(uavDescriptor);
+			}
 
-		if (m_cbvDescriptor.IsValid())
-		{
-			DescriptorUtility::FreeDescriptorPointer(m_cbvDescriptor);
-		}
+			if (cbvDescriptor.IsValid())
+			{
+				DescriptorUtility::FreeDescriptorPointer(cbvDescriptor);
+			}
+		});
 	}
 
 	const uint64_t D3D12BufferView::GetDeviceAddress() const

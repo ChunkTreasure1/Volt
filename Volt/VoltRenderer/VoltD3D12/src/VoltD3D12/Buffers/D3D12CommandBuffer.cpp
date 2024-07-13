@@ -709,10 +709,7 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 		descriptorTable->AsRef<D3D12BindlessDescriptorTable>().Bind(*this);
-
 		BindPipelineInternal();
-
-		descriptorTable->AsRef<D3D12BindlessDescriptorTable>().SetRootDescriptorTables(*this);
 	}
 
 	void D3D12CommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)

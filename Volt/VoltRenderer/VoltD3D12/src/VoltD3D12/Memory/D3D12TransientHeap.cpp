@@ -68,7 +68,7 @@ namespace Volt::RHI
 		const auto& page = m_pageAllocations.at(pageIndex);
 
 		ID3D12Resource* resource = nullptr;
-		device->CreatePlacedResource2(static_cast<ID3D12Heap*>(page.handle), blockAlloc.offset, &resourceDesc, D3D12_BARRIER_LAYOUT_COMMON, nullptr, 0, nullptr, VT_D3D12_ID(resource));
+		device->CreatePlacedResource2(static_cast<ID3D12Heap*>(page.handle), blockAlloc.offset, &resourceDesc, D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, 0, nullptr, VT_D3D12_ID(resource));
 
 		RefPtr<D3D12TransientBufferAllocation> bufferAlloc = RefPtr<D3D12TransientBufferAllocation>::Create(createInfo.hash);
 		bufferAlloc->m_resource = resource;

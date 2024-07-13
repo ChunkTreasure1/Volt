@@ -1,0 +1,6 @@
+name: "RG_DispatchComputeShaderTest"
+internal: true
+sources:
+  - entryPoint: "main"
+    shaderStage: "cs"
+    filePath: "Engine/Shaders/Source/Testing/RenderGraph/RG_DispatchComputeShaderTest.hlsl"
