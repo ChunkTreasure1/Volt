@@ -861,7 +861,7 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->resourceInfo.description = textureDesc;
 		node->isExternal = false;
-		node->isGlobal = true;
+		node->isGlobal = !m_currentlyInBuilder;
 		node->hash = Utility::GetHashFromImageDesc(textureDesc);
 
 		m_resourceNodes.push_back(node);
@@ -878,7 +878,7 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->resourceInfo.description = textureDesc;
 		node->isExternal = false;
-		node->isGlobal = true;
+		node->isGlobal = !m_currentlyInBuilder;
 		node->hash = Utility::GetHashFromImageDesc(textureDesc);
 
 		m_resourceNodes.push_back(node);
@@ -895,7 +895,7 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->resourceInfo.description = bufferDesc;
 		node->isExternal = false;
-		node->isGlobal = true;
+		node->isGlobal = !m_currentlyInBuilder;
 		node->hash = Utility::GetHashFromBufferDesc(bufferDesc);
 
 		node->resourceInfo.description.usage = node->resourceInfo.description.usage | RHI::BufferUsage::StorageBuffer;
@@ -914,7 +914,7 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->resourceInfo.description = bufferDesc;
 		node->isExternal = false;
-		node->isGlobal = true;
+		node->isGlobal = !m_currentlyInBuilder;
 		node->hash = Utility::GetHashFromBufferDesc(bufferDesc);
 
 		node->resourceInfo.description.usage = node->resourceInfo.description.usage | RHI::BufferUsage::StorageBuffer;
