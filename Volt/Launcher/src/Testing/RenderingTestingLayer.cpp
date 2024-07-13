@@ -10,6 +10,7 @@
 #include "Testing/RenderGraphTests/DrawTriangleTest.h"
 #include "Testing/RenderGraphTests/ClearCreatedRenderTargetTest.h"
 #include "Testing/RenderGraphTests/DispatchComputeShaderTest.h"
+#include "Testing/RenderGraphTests/DrawWithMeshShaderTest.h"
 
 #include <Volt/Log/Log.h>
 
@@ -29,7 +30,8 @@ void RenderingTestingLayer::OnAttach()
 
 	//m_renderingTests.emplace_back(CreateScope<RG_DrawTriangleTest>());
 	//m_renderingTests.emplace_back(CreateScope<RG_ClearCreatedRenderTargetTest>());
-	m_renderingTests.emplace_back(CreateScope<RG_DispatchComputeShaderTest>());
+	//m_renderingTests.emplace_back(CreateScope<RG_DispatchComputeShaderTest>());
+	m_renderingTests.emplace_back(CreateScope<RG_DrawWithMeshShaderTest>());
 }
 
 void RenderingTestingLayer::OnDetach()

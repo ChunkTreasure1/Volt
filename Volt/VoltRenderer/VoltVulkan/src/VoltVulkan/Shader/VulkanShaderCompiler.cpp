@@ -402,7 +402,7 @@ namespace Volt::RHI
 
 			if (!TryAddShaderBinding(name, set, binding, inOutData))
 			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
 			}
 
 			const bool firstEntry = !inOutData.storageImages[set].contains(binding);
@@ -435,7 +435,7 @@ namespace Volt::RHI
 
 			if (!TryAddShaderBinding(name, set, binding, inOutData))
 			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
 			}
 
 			const bool firstEntry = !inOutData.images[set].contains(binding);
@@ -467,7 +467,7 @@ namespace Volt::RHI
 
 			if (!TryAddShaderBinding(name, set, binding, inOutData))
 			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
 			}
 
 			auto& shaderSampler = inOutData.samplers[set][binding];

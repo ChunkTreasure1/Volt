@@ -130,6 +130,7 @@ namespace Volt
 	RefPtr<RHI::RenderPipeline> ShaderMap::GetRenderPipeline(const RHI::RenderPipelineCreateInfo& pipelineInfo)
 	{
 		VT_PROFILE_FUNCTION();
+		VT_ENSURE(pipelineInfo.shader);
 
 		const size_t hash = Utility::GetRenderPipelineHash(pipelineInfo);
 		
