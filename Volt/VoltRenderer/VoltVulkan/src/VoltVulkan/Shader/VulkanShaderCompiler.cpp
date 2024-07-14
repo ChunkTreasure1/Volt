@@ -366,10 +366,7 @@ namespace Volt::RHI
 			const uint32_t set = compiler.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
 			const std::string& name = compiler.get_name(ssbo.id);
 
-			if (!TryAddShaderBinding(name, set, binding, inOutData))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
+			TryAddShaderBinding(name, set, binding, inOutData);
 
 			const bool firstEntry = !inOutData.storageBuffers[set].contains(binding);
 
@@ -400,10 +397,7 @@ namespace Volt::RHI
 			const auto& imageType = compiler.get_type(image.type_id);
 			const std::string& name = compiler.get_name(image.id);
 
-			if (!TryAddShaderBinding(name, set, binding, inOutData))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
+			TryAddShaderBinding(name, set, binding, inOutData);
 
 			const bool firstEntry = !inOutData.storageImages[set].contains(binding);
 
@@ -433,10 +427,7 @@ namespace Volt::RHI
 			const auto& imageType = compiler.get_type(image.type_id);
 			const std::string& name = compiler.get_name(image.id);
 
-			if (!TryAddShaderBinding(name, set, binding, inOutData))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
+			TryAddShaderBinding(name, set, binding, inOutData);
 
 			const bool firstEntry = !inOutData.images[set].contains(binding);
 
@@ -465,10 +456,7 @@ namespace Volt::RHI
 			const uint32_t set = compiler.get_decoration(sampler.id, spv::DecorationDescriptorSet);
 			const std::string& name = compiler.get_name(sampler.id);
 
-			if (!TryAddShaderBinding(name, set, binding, inOutData))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
+			TryAddShaderBinding(name, set, binding, inOutData);
 
 			auto& shaderSampler = inOutData.samplers[set][binding];
 			shaderSampler.usageStages = shaderSampler.usageStages | stage;

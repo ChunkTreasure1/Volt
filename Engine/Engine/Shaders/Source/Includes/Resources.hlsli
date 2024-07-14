@@ -1,17 +1,16 @@
 #pragma once
 
-#include "PushConstant.hlsli"
-
 #ifndef NO_RENDERGRAPH
 
-struct PushContantData 
+struct RenderGraphConstants 
 {
     uint constantsBufferIndex;
     uint shaderValidationBuffer;
     uint constantsOffset;
 };
 
-PUSH_CONSTANT(PushContantData, u_pushConstantData);
+#define RENDER_GRAPH_CONSTANTS_BINDING b998
+ConstantBuffer<RenderGraphConstants> u_renderGraphConstants : register(RENDER_GRAPH_CONSTANTS_BINDING, space1);
 
 #endif
 

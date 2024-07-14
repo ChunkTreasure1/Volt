@@ -664,7 +664,8 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 
 		AllocateConstantsBuffer();
-		m_renderContext.SetPassConstantsBuffer(m_passConstantsBuffer);
+		m_renderContext.SetPerPassConstantsBuffer(m_perPassConstantsBuffer);
+		m_renderContext.SetRenderGraphConstantsBuffer(m_renderGraphConstantsBuffer);
 		m_renderContext.SetRenderGraphInstance(this);
 
 		m_commandBuffer->Begin();
@@ -713,7 +714,7 @@ namespace Volt
 
 			{
 				VT_PROFILE_SCOPE(passNode->name.data());
-				m_renderContext.SetCurrentPassIndex(passNode);
+				m_renderContext.SetCurrentPass(passNode);
 
 				passNode->Execute(*this, m_renderContext);
 			}
@@ -794,7 +795,7 @@ namespace Volt
 	{
 		ExtractResources();
 
-		BindlessResourcesManager::Get().UnregisterBuffer(m_passConstantsBufferResourceHandle);
+		BindlessResourcesManager::Get().UnregisterBuffer(m_perPassConstantsBufferResourceHandle);
 
 		for (const auto& handle : m_registeredBufferResources)
 		{
@@ -816,15 +817,30 @@ namespace Volt
 
 	void RenderGraph::AllocateConstantsBuffer()
 	{
-		RenderGraphBufferDesc desc{};
-		desc.count = std::max(m_passIndex, 1u);
-		desc.elementSize = RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
-		desc.usage = RHI::BufferUsage::StorageBuffer;
-		desc.memoryUsage = RHI::MemoryUsage::CPUToGPU;
-		desc.name = "Render Graph Constants";
+		// Pass constants
+		{
+			RenderGraphBufferDesc desc{};
+			desc.count = std::max(m_passIndex, 1u);
+			desc.elementSize = RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
+			desc.usage = RHI::BufferUsage::StorageBuffer;
+			desc.memoryUsage = RHI::MemoryUsage::CPUToGPU;
+			desc.name = "Render Graph Per Pass Constants";
 
-		m_passConstantsBuffer = m_transientResourceSystem.AquireBuffer(m_resourceIndex++, desc);
-		m_passConstantsBufferResourceHandle = BindlessResourcesManager::Get().RegisterBuffer(m_passConstantsBuffer);
+			m_perPassConstantsBuffer = m_transientResourceSystem.AquireBuffer(m_resourceIndex++, desc);
+			m_perPassConstantsBufferResourceHandle = BindlessResourcesManager::Get().RegisterBuffer(m_perPassConstantsBuffer);
+		}
+
+		// Render Graph constants
+		{
+			RenderGraphBufferDesc desc{};
+			desc.count = std::max(m_passIndex, 1u);
+			desc.elementSize = sizeof(RenderContext::RenderGraphConstants);
+			desc.usage = RHI::BufferUsage::UniformBuffer;
+			desc.memoryUsage = RHI::MemoryUsage::CPUToGPU;
+			desc.name = "Render Graph Constants";
+
+			m_renderGraphConstantsBuffer = m_transientResourceSystem.AquireUniformBuffer(m_resourceIndex++, desc);
+		}
 	}
 
 	void RenderGraph::ExtractResources()

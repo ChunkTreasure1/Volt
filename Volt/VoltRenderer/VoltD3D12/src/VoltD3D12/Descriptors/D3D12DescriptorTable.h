@@ -28,7 +28,7 @@ namespace Volt::RHI
 
 		void PrepareForRender() override;
 		void Bind(CommandBuffer& commandBuffer) override;
-		void SetRootDescriptorTables(CommandBuffer& commandBuffer);
+		void SetRootParameters(CommandBuffer& commandBuffer);
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -47,7 +47,7 @@ namespace Volt::RHI
 		WeakPtr<Shader> m_shader;
 		bool m_isDirty = false;
 		bool m_isComputeTable = false;
-		bool m_hasRootConstants = false;
+		uint32_t m_descriptorTableRootParamStartIndex = 0;
 
 		vt::map<uint32_t, vt::map<uint32_t, vt::map<ShaderRegisterType, AllocatedDescriptorInfo>>> m_allocatedDescriptorPointers;
 		std::vector<DescriptorCopyInfo> m_activeDescriptorCopies;

@@ -45,16 +45,16 @@ namespace Volt::RHI
 
 			assert(pushConstantRange.size <= 128 && "Push constant range must be less or equal to 128 bytes to support all platforms!");
 
-			const auto descriptorSetLayout = VulkanBindlessDescriptorLayoutManager::GetGlobalDescriptorSetLayout();
-
 			VkPipelineLayoutCreateInfo info{};
 			info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 			info.pNext = nullptr;
 
 			if (m_useGlobalResouces)
 			{
-				info.setLayoutCount = 1;
-				info.pSetLayouts = &descriptorSetLayout;
+				const auto descriptorSetLayouts = VulkanBindlessDescriptorLayoutManager::GetGlobalDescriptorSetLayouts();
+
+				info.setLayoutCount = shaderResources.renderGraphConstantsData.IsValid() ? 2 : 1;
+				info.pSetLayouts = descriptorSetLayouts.data();
 			}
 			else
 			{

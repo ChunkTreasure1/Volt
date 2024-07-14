@@ -144,10 +144,10 @@ namespace Volt::RHI
 		cmdList->SetDescriptorHeaps(heapCount, heaps);
 	}
 
-	void D3D12DescriptorTable::SetRootDescriptorTables(CommandBuffer& commandBuffer)
+	void D3D12DescriptorTable::SetRootParameters(CommandBuffer& commandBuffer)
 	{
 		// Push constants (root constants) will always be in slot 0
-		uint32_t tableCount = m_hasRootConstants ? 1 : 0;
+		uint32_t tableCount = m_descriptorTableRootParamStartIndex;
 		ID3D12GraphicsCommandList* cmdList = commandBuffer.GetHandle<ID3D12GraphicsCommandList*>();
 
 		if (m_isComputeTable)
@@ -288,7 +288,7 @@ namespace Volt::RHI
 		const auto& resources = m_shader->GetResources();
 		auto& d3d12Shader = m_shader->AsRef<D3D12Shader>();
 		m_isComputeTable = d3d12Shader.GetShaderStageData().contains(RHI::ShaderStage::Compute);
-		m_hasRootConstants = d3d12Shader.GetConstantsBuffer().IsValid();
+		m_descriptorTableRootParamStartIndex = d3d12Shader.GetDescriptorTableRootParameterIndex();
 
 		uint32_t mainDescriptorCount = 0;
 		uint32_t samplerDescriptorCount = 0;

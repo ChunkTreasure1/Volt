@@ -8,6 +8,7 @@
 #include "Volt/Rendering/Renderer.h"
 
 #include <VoltRHI/Buffers/StorageBuffer.h>
+#include <VoltRHI/Buffers/UniformBuffer.h>
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
@@ -131,6 +132,27 @@ namespace Volt
 		uint8_t* mappedPtr = buffer->Map<uint8_t>();
 		memcpy_s(mappedPtr, size, data, size);
 		buffer->Unmap();
+	}
+
+	void RenderContext::PushConstants(const void* data, const uint32_t size)
+	{
+		BindDescriptorTableIfRequired();
+
+		bool shouldPushConstants = false;
+
+		if (m_currentRenderPipeline)
+		{
+			shouldPushConstants = m_currentRenderPipeline->GetShader()->HasConstants();
+		}
+		else if (m_currentComputePipeline)
+		{
+			shouldPushConstants = m_currentComputePipeline->GetShader()->HasConstants();
+		}
+
+		if (shouldPushConstants)
+		{
+			m_commandBuffer->PushConstants(data, size, 0);
+		}
 	}
 
 	void RenderContext::DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
@@ -345,14 +367,19 @@ namespace Volt
 		return readbackBuffer;
 	}
 
-	void RenderContext::SetPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer)
+	void RenderContext::SetPerPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer)
 	{
-		m_passConstantsBuffer = constantsBuffer;
-		m_passConstantsBufferData.resize(constantsBuffer->GetByteSize());
-		memset(m_passConstantsBufferData.data(), 0, m_passConstantsBufferData.size());
+		m_perPassConstantsBuffer = constantsBuffer;
+		m_perPassConstantsBufferData.resize(constantsBuffer->GetByteSize());
+		memset(m_perPassConstantsBufferData.data(), 0, m_perPassConstantsBufferData.size());
 	}
 
-	void RenderContext::SetCurrentPassIndex(Weak<RenderGraphPassNodeBase> currentPassNode)
+	void RenderContext::SetRenderGraphConstantsBuffer(WeakPtr<RHI::UniformBuffer> constantsBuffer)
+	{
+		m_renderGraphConstantsBuffer = constantsBuffer;
+	}
+
+	void RenderContext::SetCurrentPass(Weak<RenderGraphPassNodeBase> currentPassNode)
 	{
 		m_currentPassIndex = currentPassNode->index;
 		m_currentPassNode = currentPassNode;
@@ -365,9 +392,9 @@ namespace Volt
 
 	void RenderContext::UploadConstantsData()
 	{
-		uint8_t* mappedPtr = m_passConstantsBuffer->Map<uint8_t>();
-		memcpy_s(mappedPtr, m_passConstantsBuffer->GetByteSize(), m_passConstantsBufferData.data(), m_passConstantsBufferData.size());
-		m_passConstantsBuffer->Unmap();
+		uint8_t* mappedPtr = m_perPassConstantsBuffer->Map<uint8_t>();
+		memcpy_s(mappedPtr, m_perPassConstantsBuffer->GetByteSize(), m_perPassConstantsBufferData.data(), m_perPassConstantsBufferData.size());
+		m_perPassConstantsBuffer->Unmap();
 	}
 
 	void RenderContext::InitializeCurrentPipelineConstantsValidation()
@@ -411,44 +438,32 @@ namespace Volt
 	void RenderContext::BindDescriptorTableIfRequired()
 	{
 		VT_PROFILE_FUNCTION();
+		VT_ENSURE(m_currentComputePipeline || m_currentRenderPipeline);
 
 		if (m_descriptorTableIsBound)
 		{
 			return;
 		}
 
-		struct PushConstantsData
+		// Set render graph constants
 		{
-			ResourceHandle constatsBufferIndex;
-			ResourceHandle shaderValidationBuffer;
-			uint32_t constantsOffset;
-		} constantsData;
-
-		constantsData.constatsBufferIndex = BindlessResourcesManager::Get().GetBufferHandle(m_passConstantsBuffer);
-		
+			RenderGraphConstants renderGraphConstants;
+			renderGraphConstants.constatsBufferIndex = BindlessResourcesManager::Get().GetBufferHandle(m_perPassConstantsBuffer);
+			renderGraphConstants.constantsOffset = m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
 #ifndef VT_DIST
-		constantsData.shaderValidationBuffer = Renderer::GetRuntimeShaderValidator().GetCurrentErrorBufferHandle();
+			renderGraphConstants.shaderValidationBuffer = Renderer::GetRuntimeShaderValidator().GetCurrentErrorBufferHandle();
 #endif
-		
-		constantsData.constantsOffset = m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
-
-		bool shouldPushConstants = false;
-
-		if (m_currentRenderPipeline)
-		{
-			shouldPushConstants = m_currentRenderPipeline->GetShader()->HasConstants();
-		}
-		else if (m_currentComputePipeline)
-		{
-			shouldPushConstants = m_currentComputePipeline->GetShader()->HasConstants();
+			{
+				uint8_t* constantsPtr = m_renderGraphConstantsBuffer->Map<uint8_t>(m_currentPassIndex);
+				memcpy_s(constantsPtr, sizeof(RenderGraphConstants), &renderGraphConstants, sizeof(RenderGraphConstants));
+				m_renderGraphConstantsBuffer->Unmap();
+			}
 		}
 
-		m_commandBuffer->BindDescriptorTable(BindlessResourcesManager::Get().GetDescriptorTable());
-
-		if (shouldPushConstants)
-		{
-			m_commandBuffer->PushConstants(&constantsData, sizeof(PushConstantsData), 0);
-		}
+		auto descriptorTable = BindlessResourcesManager::Get().GetDescriptorTable();
+		descriptorTable->SetConstantsBuffer(m_renderGraphConstantsBuffer);
+		descriptorTable->SetOffsetIndexAndStride(m_currentPassIndex, sizeof(RenderGraphConstants));
+		m_commandBuffer->BindDescriptorTable(descriptorTable);
 
 		m_descriptorTableIsBound = true;
 	}
@@ -501,6 +516,6 @@ namespace Volt
 		//}
 #endif
 
-		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(ResourceHandle));
+		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(ResourceHandle));
 	}
 }

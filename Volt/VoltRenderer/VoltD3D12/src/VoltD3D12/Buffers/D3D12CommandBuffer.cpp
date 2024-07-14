@@ -699,10 +699,8 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 		descriptorTable->AsRef<D3D12DescriptorTable>().Bind(*this);
-
 		BindPipelineInternal();
-
-		descriptorTable->AsRef<D3D12DescriptorTable>().SetRootDescriptorTables(*this);
+		descriptorTable->AsRef<D3D12DescriptorTable>().SetRootParameters(*this);
 	}
 
 	void D3D12CommandBuffer::BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable)
@@ -710,6 +708,7 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 		descriptorTable->AsRef<D3D12BindlessDescriptorTable>().Bind(*this);
 		BindPipelineInternal();
+		descriptorTable->AsRef<D3D12BindlessDescriptorTable>().SetRootParameters(*this);
 	}
 
 	void D3D12CommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
@@ -778,14 +777,13 @@ namespace Volt::RHI
 		const uint32_t numValues = size / sizeof(uint32_t);
 		const uint32_t numOffsetValues = offset / sizeof(uint32_t);
 
-		// Root parameter index will always be 0 for push constants.
 		if (m_currentRenderPipeline)
 		{
-			cmdData.commandList->SetGraphicsRoot32BitConstants(0, numValues, data, numOffsetValues);
+			cmdData.commandList->SetGraphicsRoot32BitConstants(m_currentRenderPipeline->GetShader()->As<D3D12Shader>()->GetPushConstantsRootParameterIndex(), numValues, data, numOffsetValues);
 		}
 		else
 		{
-			cmdData.commandList->SetComputeRoot32BitConstants(0, numValues, data, numOffsetValues);
+			cmdData.commandList->SetComputeRoot32BitConstants(m_currentRenderPipeline->GetShader()->As<D3D12Shader>()->GetPushConstantsRootParameterIndex(), numValues, data, numOffsetValues);
 		}
 	}
 

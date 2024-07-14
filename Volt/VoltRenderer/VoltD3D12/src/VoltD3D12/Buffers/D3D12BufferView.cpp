@@ -125,6 +125,12 @@ namespace Volt::RHI
 
 	void D3D12BufferView::CreateCBV()
 	{
-		// #TODO_Ivar: Implement
+		D3D12_CONSTANT_BUFFER_VIEW_DESC viewDesc{};
+		viewDesc.BufferLocation = m_resource->GetHandle<ID3D12Resource*>()->GetGPUVirtualAddress();
+		viewDesc.SizeInBytes = static_cast<uint32_t>(m_resource->GetByteSize());
+
+		m_cbvDescriptor = DescriptorUtility::AllocateDescriptorPointer(D3D12DescriptorType::CBV_SRV_UAV);
+		auto* devicePtr = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
+		devicePtr->CreateConstantBufferView(&viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE(m_cbvDescriptor.GetCPUPointer()));
 	}
 }

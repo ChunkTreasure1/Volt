@@ -37,22 +37,7 @@ namespace Volt
 
 	WeakPtr<RHI::UniformBuffer> TransientResourceSystem::AquireUniformBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
 	{
-		VT_PROFILE_FUNCTION();
-
-		if (m_allocatedResources.contains(resourceHandle))
-		{
-			return m_allocatedResources.at(resourceHandle).resource;
-		}
-
-		RefPtr<RHI::UniformBuffer> buffer = RHI::UniformBuffer::Create(static_cast<uint32_t>(bufferDesc.elementSize));
-
-		ResourceInfo info{};
-		info.resource = buffer;
-		info.isOriginal = true;
-
-		m_allocatedResources[resourceHandle] = info;
-
-		return buffer;
+		return AquireUniformBufferRef(resourceHandle, bufferDesc);
 	}
 
 	RefPtr<RHI::Image2D> TransientResourceSystem::AquireImage2DRef(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
@@ -129,6 +114,26 @@ namespace Volt
 
 		// #TODO_Ivar: Switch to transient allocations
 		RefPtr<RHI::StorageBuffer> buffer = RHI::StorageBuffer::Create(bufferDesc.count, bufferDesc.elementSize, bufferDesc.name, bufferDesc.usage, bufferDesc.memoryUsage);
+
+		ResourceInfo info{};
+		info.resource = buffer;
+		info.isOriginal = true;
+
+		m_allocatedResources[resourceHandle] = info;
+
+		return buffer;
+	}
+
+	RefPtr<RHI::UniformBuffer> TransientResourceSystem::AquireUniformBufferRef(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (m_allocatedResources.contains(resourceHandle))
+		{
+			return m_allocatedResources.at(resourceHandle).resource;
+		}
+
+		RefPtr<RHI::UniformBuffer> buffer = RHI::UniformBuffer::Create(static_cast<uint32_t>(bufferDesc.elementSize), nullptr, bufferDesc.count, bufferDesc.name);
 
 		ResourceInfo info{};
 		info.resource = buffer;

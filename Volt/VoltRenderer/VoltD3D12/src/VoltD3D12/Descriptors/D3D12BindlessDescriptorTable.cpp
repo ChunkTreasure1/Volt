@@ -5,12 +5,14 @@
 #include "VoltD3D12/Buffers/D3D12CommandBuffer.h"
 #include "VoltD3D12/Buffers/D3D12BufferView.h"
 #include "VoltD3D12/Images/D3D12ImageView.h"
+#include "VoltD3D12/Shader/D3D12Shader.h"
 
 #include <VoltRHI/Pipelines/RenderPipeline.h>
 #include <VoltRHI/Pipelines/ComputePipeline.h>
 
 #include <VoltRHI/Images/SamplerState.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
+#include <VoltRHI/Buffers/UniformBuffer.h>
 
 #include <VoltRHI/Shader/Shader.h>
 
@@ -269,12 +271,56 @@ namespace Volt::RHI
 		m_activeSamplerDescriptorCopies.clear();
 	}
 
+	void D3D12BindlessDescriptorTable::SetOffsetIndexAndStride(const uint32_t offsetIndex, const uint32_t stride)
+	{
+		m_offsetIndex = offsetIndex;
+		m_offsetStride = stride;
+	}
+
+	void D3D12BindlessDescriptorTable::SetConstantsBuffer(WeakPtr<UniformBuffer> constantsBuffer)
+	{
+		m_constantsBuffer = constantsBuffer;
+	}
+
 	void D3D12BindlessDescriptorTable::Bind(CommandBuffer& commandBuffer)
 	{
 		ID3D12GraphicsCommandList* cmdList = commandBuffer.GetHandle<ID3D12GraphicsCommandList*>();
 		ID3D12DescriptorHeap* heaps[2] = { m_mainHeap->GetHeap().Get(), m_samplerHeap->GetHeap().Get() };
 	
 		cmdList->SetDescriptorHeaps(2, heaps);
+	}
+
+	void D3D12BindlessDescriptorTable::SetRootParameters(CommandBuffer& commandBuffer)
+	{
+		D3D12CommandBuffer& d3d12CommandBuffer = commandBuffer.AsRef<D3D12CommandBuffer>();
+		ID3D12GraphicsCommandList* cmdList = commandBuffer.GetHandle<ID3D12GraphicsCommandList*>();
+	
+		bool isGraphicsPipeline = false;
+		uint32_t rgConstantsParamIndex = ~0u;
+
+		if (d3d12CommandBuffer.m_currentRenderPipeline)
+		{
+			isGraphicsPipeline = true;
+			rgConstantsParamIndex = d3d12CommandBuffer.m_currentRenderPipeline->GetShader()->As<D3D12Shader>()->GetRenderGraphConstantsRootParameterIndex();
+		}
+		else
+		{
+			rgConstantsParamIndex = d3d12CommandBuffer.m_currentComputePipeline->GetShader()->As<D3D12Shader>()->GetRenderGraphConstantsRootParameterIndex();
+		}
+
+		if (rgConstantsParamIndex != ~0u)
+		{
+			D3D12_GPU_VIRTUAL_ADDRESS bufferAddress = m_constantsBuffer->GetHandle<ID3D12Resource*>()->GetGPUVirtualAddress() + m_offsetStride * m_offsetIndex;
+
+			if (isGraphicsPipeline)
+			{
+				cmdList->SetGraphicsRootConstantBufferView(rgConstantsParamIndex, bufferAddress);
+			}
+			else
+			{
+				cmdList->SetComputeRootConstantBufferView(rgConstantsParamIndex, bufferAddress);
+			}
+		}
 	}
 
 	void* D3D12BindlessDescriptorTable::GetHandleImpl() const

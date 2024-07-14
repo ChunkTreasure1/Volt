@@ -25,7 +25,7 @@ namespace Volt::RHI
 		static void CreateGlobalDescriptorLayout();
 		static void DestroyGlobalDescriptorLayout();
 
-		static VkDescriptorSetLayout_T* GetGlobalDescriptorSetLayout();
+		static std::array<VkDescriptorSetLayout_T*, 2> GetGlobalDescriptorSetLayouts();
 
 	private:
 

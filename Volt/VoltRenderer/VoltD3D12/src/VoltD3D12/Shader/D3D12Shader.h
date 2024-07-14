@@ -36,6 +36,9 @@ namespace Volt::RHI
 		VT_NODISCARD VT_INLINE ComPtr<ID3D12RootSignature> GetRootSignature() const { return m_rootSignature; }
 
 		VT_NODISCARD uint32_t GetDescriptorIndexFromDescriptorHash(const size_t hash);
+		VT_NODISCARD VT_INLINE uint32_t GetPushConstantsRootParameterIndex() const { return m_pushConstantsRootParamIndex; }
+		VT_NODISCARD VT_INLINE uint32_t GetRenderGraphConstantsRootParameterIndex() const { return m_renderGraphConstantsRootParamIndex; }
+		VT_NODISCARD VT_INLINE uint32_t GetDescriptorTableRootParameterIndex() const { return m_descriptorTableRootParamIndex; }
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -58,5 +61,9 @@ namespace Volt::RHI
 
 		ShaderSpecification m_specification;
 		ShaderResources m_resources;
+
+		uint32_t m_pushConstantsRootParamIndex = ~0u;
+		uint32_t m_renderGraphConstantsRootParamIndex = ~0u;
+		uint32_t m_descriptorTableRootParamIndex = ~0u;
 	};
 }

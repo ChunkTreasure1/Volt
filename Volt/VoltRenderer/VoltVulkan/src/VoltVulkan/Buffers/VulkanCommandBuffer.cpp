@@ -1332,7 +1332,7 @@ namespace Volt::RHI
 			VT_VK_CHECK(vkCreateFence(device->GetHandle<VkDevice>(), &info, nullptr, &m_commandBuffers[i].fence));
 		}
 
-		m_hasTimestampSupport = GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().GetProperties().hasTimestampSupport;
+		m_hasTimestampSupport = GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().GetProperties().limits.timestampComputeAndGraphics;
 		if (m_hasTimestampSupport)
 		{
 			CreateQueryPools();
@@ -1423,7 +1423,7 @@ namespace Volt::RHI
 			const uint64_t startTime = m_timestampQueryResults.at(timestampsIndex).at(i);
 			const uint64_t endTime = m_timestampQueryResults.at(timestampsIndex).at(i + 1);
 
-			const float nsTime = endTime > startTime ? (endTime - startTime) * GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().GetProperties().timestampPeriod : 0.f;
+			const float nsTime = endTime > startTime ? (endTime - startTime) * GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().GetProperties().limits.timestampPeriod : 0.f;
 			m_executionTimes.at(timestampsIndex)[i / 2] = nsTime * 0.000001f; // Convert to ms
 		}
 	}

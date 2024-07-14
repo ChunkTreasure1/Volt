@@ -50,7 +50,7 @@ void ValidateResourceAccess(uint handleType, uint shouldBeType)
         error.userdata0 = handleType;
         error.userdata1 = shouldBeType;
 
-        WriteRuntimeError(error, ResourceDescriptorHeap[u_pushConstantData.shaderValidationBuffer]);
+        WriteRuntimeError(error, ResourceDescriptorHeap[u_renderGraphConstants.shaderValidationBuffer]);
     }
 }
 
@@ -145,7 +145,7 @@ static D3D12UniformResourceDescriptorHeapInternal g_uniformDescriptorHeap;
 template<typename T>
 T GetConstants()
 {
-    ByteAddressBuffer constantsBuffer = ResourceDescriptorHeap[u_pushConstantData.constantsBufferIndex];
-    return constantsBuffer.Load<T>(u_pushConstantData.constantsOffset);
+    ByteAddressBuffer constantsBuffer = ResourceDescriptorHeap[u_renderGraphConstants.constantsBufferIndex];
+    return constantsBuffer.Load<T>(u_renderGraphConstants.constantsOffset);
 }
 #endif

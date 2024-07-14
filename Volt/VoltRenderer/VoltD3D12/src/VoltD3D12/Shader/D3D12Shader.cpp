@@ -4,7 +4,7 @@
 #include <VoltRHI/Shader/ShaderCompiler.h>
 #include <VoltRHI/Shader/ShaderUtility.h>
 #include <VoltRHI/Utility/HashUtility.h>
-
+#include <VoltRHI/Globals.h>
 
 #include <dxsc/dxcapi.h>
 
@@ -164,8 +164,6 @@ namespace Volt::RHI
 		vt::map<uint32_t, std::vector<size_t>> bindingToDescriptorRanges;
 		vt::map<uint32_t, std::vector<size_t>> samplerBindingToDescriptorRanges;
 
-		constexpr uint32_t PUSH_CONSTANTS_BINDING = 999;
-
 		// Handle push constants / root constants
 		if (m_resources.constantsBuffer.IsValid())
 		{
@@ -173,17 +171,32 @@ namespace Volt::RHI
 			param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 			param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 			param.Constants.RegisterSpace = 0;
-			param.Constants.ShaderRegister = PUSH_CONSTANTS_BINDING;
+			param.Constants.ShaderRegister = Globals::PUSH_CONSTANTS_BINDING;
 			param.Constants.Num32BitValues = static_cast<uint32_t>(m_resources.constantsBuffer.GetSize() / sizeof(uint32_t));
+
+			m_pushConstantsRootParamIndex = 0;
 		}
 
 		for (const auto& [space, bindings] : m_resources.uniformBuffers)
 		{
 			for (const auto& [binding, buffer] : bindings)
 			{
-				auto rangeInfo = AddDescriptorToRange(bindingToDescriptorRanges, descriptorRanges, space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_CBV);
-				const size_t descriptorHash = GetDescriptorBindingHash(space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_CBV);
-				m_bindingToDescriptorRangeInfo[descriptorHash] = rangeInfo;
+				if (binding == Globals::RENDER_GRAPH_CONSTANTS_BINDING)
+				{
+					m_renderGraphConstantsRootParamIndex = static_cast<uint32_t>(rootParameters.size());
+
+					auto& param = rootParameters.emplace_back();
+					param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+					param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+					param.Descriptor.RegisterSpace = Globals::RENDER_GRAPH_CONSTANTS_SPACE;
+					param.Descriptor.ShaderRegister = Globals::RENDER_GRAPH_CONSTANTS_BINDING;
+				}
+				else
+				{
+					auto rangeInfo = AddDescriptorToRange(bindingToDescriptorRanges, descriptorRanges, space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_CBV);
+					const size_t descriptorHash = GetDescriptorBindingHash(space, binding, D3D12_DESCRIPTOR_RANGE_TYPE_CBV);
+					m_bindingToDescriptorRangeInfo[descriptorHash] = rangeInfo;
+				}
 			}
 		}
 
@@ -246,6 +259,8 @@ namespace Volt::RHI
 
 		if (!descriptorRanges.empty())
 		{
+			m_descriptorTableRootParamIndex = static_cast<uint32_t>(rootParameters.size());
+
 			auto& tableParam = rootParameters.emplace_back();
 			tableParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 			tableParam.DescriptorTable = { static_cast<uint32_t>(descriptorRanges.size()), descriptorRanges.data() };

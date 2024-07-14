@@ -30,6 +30,7 @@ namespace Volt
 
 		RefPtr<RHI::Image2D> AquireImage2DRef(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
 		RefPtr<RHI::StorageBuffer> AquireBufferRef(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
+		RefPtr<RHI::UniformBuffer> AquireUniformBufferRef(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
 
 		void SurrenderResource(RenderGraphResourceHandle originalResource, size_t hash);
 		void AddExternalResource(RenderGraphResourceHandle resourceHandle, RefPtr<RHI::RHIResource> resource);

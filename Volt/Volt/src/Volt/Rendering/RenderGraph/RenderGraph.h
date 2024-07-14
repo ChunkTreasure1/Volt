@@ -13,7 +13,7 @@
 #include <functional>
 
 // TODO:
-// * Implement validation system
+// * Implement validation system 
 // * Implement warning system
 
 namespace Volt
@@ -184,8 +184,9 @@ namespace Volt
 		RenderGraphResourceHandle m_resourceIndex = 0;
 
 		RefPtr<RHI::CommandBuffer> m_commandBuffer;
-		WeakPtr<RHI::StorageBuffer> m_passConstantsBuffer;
-		ResourceHandle m_passConstantsBufferResourceHandle = Resource::Invalid;
+		WeakPtr<RHI::StorageBuffer> m_perPassConstantsBuffer;
+		WeakPtr<RHI::UniformBuffer> m_renderGraphConstantsBuffer;
+		ResourceHandle m_perPassConstantsBufferResourceHandle = Resource::Invalid;
 
 		TransientResourceSystem m_transientResourceSystem;
 		RenderContext m_renderContext;

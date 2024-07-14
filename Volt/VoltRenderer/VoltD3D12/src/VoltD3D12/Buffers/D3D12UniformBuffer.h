@@ -1,17 +1,15 @@
 #pragma once
 
-#include "VoltVulkan/Core.h"
-
 #include <VoltRHI/Buffers/UniformBuffer.h>
 
 namespace Volt::RHI
 {
 	class Allocation;
-	class VulkanUniformBuffer : public UniformBuffer
+	class D3D12UniformBuffer : public UniformBuffer
 	{
 	public:
-		VulkanUniformBuffer(const uint32_t size, const void* data, const uint32_t count, std::string_view name);
-		~VulkanUniformBuffer() override;
+		D3D12UniformBuffer(const uint32_t size, const void* data, const uint32_t count, std::string_view name);
+		~D3D12UniformBuffer() override;
 
 		RefPtr<BufferView> GetView() override;
 		const uint32_t GetSize() const override;

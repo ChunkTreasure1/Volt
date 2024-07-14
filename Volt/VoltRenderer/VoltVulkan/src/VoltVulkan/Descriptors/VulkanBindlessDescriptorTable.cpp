@@ -4,13 +4,19 @@
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Descriptors/VulkanBindlessDescriptorLayoutManager.h"
 #include "VoltVulkan/Buffers/VulkanCommandBuffer.h"
+#include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 
 #include <VoltRHI/RHIProxy.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
 
 #include <VoltRHI/Buffers/StorageBuffer.h>
+#include <VoltRHI/Buffers/UniformBuffer.h>
 #include <VoltRHI/Images/ImageView.h>
 #include <VoltRHI/Images/SamplerState.h>
+#include <VoltRHI/Pipelines/RenderPipeline.h>
+#include <VoltRHI/Pipelines/ComputePipeline.h>
+#include <VoltRHI/Shader/Shader.h>
+#include <VoltRHI/Memory/MemoryUtility.h>
 
 #include <vulkan/vulkan.h>
 
@@ -187,14 +193,14 @@ namespace Volt::RHI
 				// Read Only
 				{
 					auto& descriptorWrite = m_activeDescriptorWrites.emplace_back();
-					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::BYTEADDRESSBUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, m_descriptorSet, resourceHandle.Get());
+					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::BYTEADDRESSBUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, m_mainDescriptorSet, resourceHandle.Get());
 					descriptorWrite.pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&bufferInfo);
 				}
 
 				// Read-Write
 				{
 					auto& descriptorWrite = m_activeDescriptorWrites.emplace_back();
-					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::RWBYTEADDRESSBUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, m_descriptorSet, resourceHandle.Get());
+					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::RWBYTEADDRESSBUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, m_mainDescriptorSet, resourceHandle.Get());
 					descriptorWrite.pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&bufferInfo);
 				}
 			}
@@ -221,7 +227,7 @@ namespace Volt::RHI
 					auto& imageInfo = m_activeDescriptorImageInfos.emplace_back(baseImageInfo);
 					
 					auto& descriptorWrite = m_activeDescriptorWrites.emplace_back();
-					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::TEXTURE2D_BINDING, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, m_descriptorSet, resourceHandle.Get());
+					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::TEXTURE2D_BINDING, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, m_mainDescriptorSet, resourceHandle.Get());
 					descriptorWrite.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&imageInfo);
 				}
 
@@ -232,7 +238,7 @@ namespace Volt::RHI
 					auto& imageInfo = m_activeDescriptorImageInfos.emplace_back(baseImageInfo);
 
 					auto& descriptorWrite = m_activeDescriptorWrites.emplace_back();
-					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::RWTEXTURE2D_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, m_descriptorSet, resourceHandle.Get());
+					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::RWTEXTURE2D_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, m_mainDescriptorSet, resourceHandle.Get());
 					descriptorWrite.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&imageInfo);
 				}
 			}
@@ -259,7 +265,7 @@ namespace Volt::RHI
 					auto& imageInfo = m_activeDescriptorImageInfos.emplace_back(baseImageInfo);
 
 					auto& descriptorWrite = m_activeDescriptorWrites.emplace_back();
-					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::TEXTURE2DARRAY_BINDING, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, m_descriptorSet, resourceHandle.Get());
+					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::TEXTURE2DARRAY_BINDING, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, m_mainDescriptorSet, resourceHandle.Get());
 					descriptorWrite.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&imageInfo);
 				}
 
@@ -270,7 +276,7 @@ namespace Volt::RHI
 					auto& imageInfo = m_activeDescriptorImageInfos.emplace_back(baseImageInfo);
 
 					auto& descriptorWrite = m_activeDescriptorWrites.emplace_back();
-					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::RWTEXTURE2DARRAY_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, m_descriptorSet, resourceHandle.Get());
+					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::RWTEXTURE2DARRAY_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, m_mainDescriptorSet, resourceHandle.Get());
 					descriptorWrite.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&imageInfo);
 				}
 			}
@@ -297,7 +303,7 @@ namespace Volt::RHI
 					auto& imageInfo = m_activeDescriptorImageInfos.emplace_back(baseImageInfo);
 
 					auto& descriptorWrite = m_activeDescriptorWrites.emplace_back();
-					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::TEXTURECUBE_BINDING, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, m_descriptorSet, resourceHandle.Get());
+					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::TEXTURECUBE_BINDING, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, m_mainDescriptorSet, resourceHandle.Get());
 					descriptorWrite.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&imageInfo);
 				}
 			}
@@ -316,7 +322,7 @@ namespace Volt::RHI
 				imageInfo.sampler = samplerState->GetHandle<VkSampler>();
 
 				auto& descriptorWrite = m_activeDescriptorWrites.emplace_back();
-				Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::SAMPLERSTATE_BINDING, VK_DESCRIPTOR_TYPE_SAMPLER, m_descriptorSet, resourceHandle.Get());
+				Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::SAMPLERSTATE_BINDING, VK_DESCRIPTOR_TYPE_SAMPLER, m_mainDescriptorSet, resourceHandle.Get());
 				descriptorWrite.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&imageInfo);
 			}
 			m_samplerRegistry.ClearDirtyResources();
@@ -339,16 +345,60 @@ namespace Volt::RHI
 
 	void* VulkanBindlessDescriptorTable::GetHandleImpl() const
 	{
-		return m_descriptorSet;
+		return m_mainDescriptorSet;
+	}
+
+	void VulkanBindlessDescriptorTable::SetOffsetIndexAndStride(const uint32_t offsetIndex, const uint32_t stride)
+	{
+		m_offsetIndex = offsetIndex;
+		m_offsetStride = stride;
+	}
+
+	void VulkanBindlessDescriptorTable::SetConstantsBuffer(WeakPtr<UniformBuffer> constantsBuffer)
+	{
+		m_constantsBuffer = constantsBuffer;
 	}
 
 	void VulkanBindlessDescriptorTable::Bind(CommandBuffer& commandBuffer)
 	{
 		VT_PROFILE_FUNCTION();
 		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer.AsRef<VulkanCommandBuffer>();
-		const VkPipelineBindPoint bindPoint = vulkanCommandBuffer.m_currentRenderPipeline ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;
 
-		vkCmdBindDescriptorSets(vulkanCommandBuffer.GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), 0, 1, &m_descriptorSet, 0, nullptr);
+		VkPipelineBindPoint bindPoint;
+		uint32_t descriptorSetCount = 0;
+
+		if (vulkanCommandBuffer.m_currentRenderPipeline)
+		{
+			descriptorSetCount = vulkanCommandBuffer.m_currentRenderPipeline->GetShader()->GetResources().renderGraphConstantsData.IsValid() ? 2 : 1;
+			bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		}
+		else
+		{
+			descriptorSetCount = vulkanCommandBuffer.m_currentComputePipeline->GetShader()->GetResources().renderGraphConstantsData.IsValid() ? 2 : 1;
+			bindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
+		}
+
+		const auto& deviceProperties = GraphicsContext::GetPhysicalDevice()->As<VulkanPhysicalGraphicsDevice>()->GetProperties();
+		const uint32_t alignedStride = Utility::Align(m_offsetStride, deviceProperties.limits.minUniformBufferOffsetAlignment);
+
+		const bool hasConstantsSet = descriptorSetCount == 2;
+		const uint32_t offset = alignedStride * m_offsetIndex;
+
+		std::array<VkDescriptorSet, 2> descriptorSets = { m_mainDescriptorSet, hasConstantsSet ? GetOrAllocateConstantsSet() : nullptr };
+		if (hasConstantsSet)
+		{
+			WriteConstantsSet(descriptorSets[1]);
+		}
+
+		vkCmdBindDescriptorSets(vulkanCommandBuffer.GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), 0, descriptorSetCount, descriptorSets.data(), hasConstantsSet ? 1 : 0, &offset);
+
+		if (hasConstantsSet)
+		{
+			RHIProxy::GetInstance().DestroyResource([&, descriptor = descriptorSets[1]]()
+			{
+				m_availiableConstantsSet.emplace_back(descriptor);
+			});
+		}
 	}
 
 	void VulkanBindlessDescriptorTable::Release()
@@ -376,28 +426,85 @@ namespace Volt::RHI
 			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 10000 },
 			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10000 },
 			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 10000 },
 		};
 
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
 		poolInfo.maxSets = 100'000;
-		poolInfo.poolSizeCount = 5;
+		poolInfo.poolSizeCount = 6;
 		poolInfo.pPoolSizes = poolSizes;
 
 		auto vkDevice = GraphicsContext::GetDevice()->GetHandle<VkDevice>();
 
 		VT_VK_CHECK(vkCreateDescriptorPool(vkDevice, &poolInfo, nullptr, &m_descriptorPool));
 
-		const VkDescriptorSetLayout descriptorSetLayout = VulkanBindlessDescriptorLayoutManager::GetGlobalDescriptorSetLayout();
+		const auto descriptorSetLayouts = VulkanBindlessDescriptorLayoutManager::GetGlobalDescriptorSetLayouts();
 
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.pNext = nullptr;
 		allocInfo.descriptorPool = m_descriptorPool;
 		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &descriptorSetLayout;
+		allocInfo.pSetLayouts = &descriptorSetLayouts.at(0);
 
-		VT_VK_CHECK(vkAllocateDescriptorSets(vkDevice, &allocInfo, &m_descriptorSet));
+		VT_VK_CHECK(vkAllocateDescriptorSets(vkDevice, &allocInfo, &m_mainDescriptorSet));
+	}
+
+	VkDescriptorSet_T* VulkanBindlessDescriptorTable::GetOrAllocateConstantsSet()
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (!m_availiableConstantsSet.empty())
+		{
+			auto set = m_availiableConstantsSet.back();
+			m_availiableConstantsSet.pop_back();
+			return set;
+		}
+
+		const auto descriptorSetLayouts = VulkanBindlessDescriptorLayoutManager::GetGlobalDescriptorSetLayouts();
+
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.pNext = nullptr;
+		allocInfo.descriptorPool = m_descriptorPool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &descriptorSetLayouts.at(1);
+
+		VkDescriptorSet resultSet;
+
+		auto vkDevice = GraphicsContext::GetDevice()->GetHandle<VkDevice>();
+		VT_VK_CHECK(vkAllocateDescriptorSets(vkDevice, &allocInfo, &resultSet));
+
+		return resultSet;
+	}
+
+	void VulkanBindlessDescriptorTable::WriteConstantsSet(VkDescriptorSet_T* dstSet)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (!m_constantsBuffer)
+		{
+			return;
+		}
+
+		VkDescriptorBufferInfo bufferInfo{};
+		bufferInfo.buffer = m_constantsBuffer->GetHandle<VkBuffer>();
+		bufferInfo.range = m_constantsBuffer->GetSize();
+		bufferInfo.offset = 0;
+
+		VkWriteDescriptorSet descriptorWrite{};
+		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrite.pNext = nullptr;
+		descriptorWrite.descriptorCount = 1;
+		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+		descriptorWrite.dstArrayElement = 0;
+		descriptorWrite.dstBinding = 998;
+		descriptorWrite.dstSet = dstSet;
+		descriptorWrite.pBufferInfo = &bufferInfo;
+
+		auto vkDevice = GraphicsContext::GetDevice()->GetHandle<VkDevice>();
+		vkUpdateDescriptorSets(vkDevice, 1, &descriptorWrite, 0, nullptr);
 	}
 }

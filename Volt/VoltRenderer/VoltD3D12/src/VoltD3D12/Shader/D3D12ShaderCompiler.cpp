@@ -7,6 +7,7 @@
 #include <VoltRHI/Shader/ShaderUtility.h>
 #include <VoltRHI/Shader/ShaderPreProcessor.h>
 #include <VoltRHI/Shader/ShaderCache.h>
+#include <VoltRHI/Globals.h>
 
 #include <CoreUtilities/StringUtility.h>
 
@@ -467,7 +468,7 @@ namespace Volt::RHI
 
 				const size_t size = static_cast<size_t>(cbDesc.Size);
 
-				if (binding == 999)
+				if (binding == Globals::PUSH_CONSTANTS_BINDING)
 				{
 					inOutData.constantsBuffer.SetSize(size);
 					inOutData.constants.size = static_cast<uint32_t>(size);

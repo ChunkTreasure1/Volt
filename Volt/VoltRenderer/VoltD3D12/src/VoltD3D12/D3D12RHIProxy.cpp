@@ -10,7 +10,7 @@
 #include "VoltD3D12/Descriptors/D3D12DescriptorTable.h"
 #include "VoltD3D12/Descriptors/D3D12BindlessDescriptorTable.h"
 
-#include <VoltRHI/Buffers/UniformBuffer.h>
+#include "VoltD3D12/Buffers/D3D12UniformBuffer.h"
 #include "VoltD3D12/Buffers/D3D12StorageBuffer.h"
 #include "VoltD3D12/Buffers/D3D12VertexBuffer.h"
 #include "VoltD3D12/Buffers/D3D12IndexBuffer.h"
@@ -69,9 +69,9 @@ namespace Volt::RHI
 		return RefPtr<D3D12StorageBuffer>::Create(count, elementSize, name, bufferUsage, memoryUsage, allocator);
 	}
 
-	RefPtr<UniformBuffer> D3D12RHIProxy::CreateUniformBuffer(const uint32_t size, const void* data) const
+	RefPtr<UniformBuffer> D3D12RHIProxy::CreateUniformBuffer(const uint32_t size, const void* data, const uint32_t count, std::string_view name) const
 	{
-		return RefPtr<UniformBuffer>();
+		return RefPtr<D3D12UniformBuffer>::Create(size, data, count, name);
 	}
 	
 	RefPtr<DescriptorTable> D3D12RHIProxy::CreateDescriptorTable(const DescriptorTableCreateInfo& createInfo) const

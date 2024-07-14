@@ -2,6 +2,7 @@
 #include "VulkanUniformBuffer.h"
 
 #include "VoltVulkan/Common/VulkanFunctions.h"
+#include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 
 #include <VoltRHI/Buffers/BufferView.h>
 
@@ -9,25 +10,34 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
 #include <VoltRHI/Memory/Allocation.h>
+#include <VoltRHI/Memory/MemoryUtility.h>
 #include <VoltRHI/RHIProxy.h>
 
 namespace Volt::RHI
 {
-	VulkanUniformBuffer::VulkanUniformBuffer(const uint32_t size, const void* data)
+	VulkanUniformBuffer::VulkanUniformBuffer(const uint32_t size, const void* data, const uint32_t count, std::string_view name)
 		: m_size(size)
 	{
-		const VkDeviceSize bufferSize = static_cast<VkDeviceSize>(size);
+		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None);
 
+		const auto& deviceProperties = GraphicsContext::GetPhysicalDevice()->As<VulkanPhysicalGraphicsDevice>()->GetProperties();
+		const uint64_t alignedSize = Utility::Align(size, deviceProperties.limits.minUniformBufferOffsetAlignment);
+
+		const VkDeviceSize bufferSize = alignedSize * count;
 		m_allocation = GraphicsContext::GetDefaultAllocator()->CreateBuffer(bufferSize, BufferUsage::UniformBuffer, MemoryUsage::CPUToGPU);
 
 		if (data)
 		{
 			SetData(data, size);
 		}
+
+		SetName(name);
 	}
 
 	VulkanUniformBuffer::~VulkanUniformBuffer()
 	{
+		GraphicsContext::GetResourceStateTracker()->RemoveResource(this);
+
 		if (m_allocation == nullptr)
 		{
 			return;
@@ -93,9 +103,13 @@ namespace Volt::RHI
 		return m_allocation->GetSize();
 	}
 
-	void* VulkanUniformBuffer::MapInternal()
+	void* VulkanUniformBuffer::MapInternal(const uint32_t index)
 	{
-		return m_allocation->Map<void>();
+		const auto& deviceProperties = GraphicsContext::GetPhysicalDevice()->As<VulkanPhysicalGraphicsDevice>()->GetProperties();
+		const uint32_t offset = Utility::Align(m_size, deviceProperties.limits.minUniformBufferOffsetAlignment) * index;
+
+		uint8_t* bytePtr = m_allocation->Map<uint8_t>();
+		return &bytePtr[offset];
 	}
 
 	void* VulkanUniformBuffer::GetHandleImpl() const

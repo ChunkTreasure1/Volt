@@ -1,4 +1,4 @@
-#include "DrawWithMeshShaderTest.h"
+#include "DrawMeshShaderTriangleTest.h"
 
 #include <Volt/Core/Application.h>
 #include <Volt/Rendering/RenderGraph/RenderGraph.h>
@@ -7,15 +7,15 @@
 
 using namespace Volt;
 
-RG_DrawWithMeshShaderTest::RG_DrawWithMeshShaderTest()
+RG_DrawMeshShaderTriangleTest::RG_DrawMeshShaderTriangleTest()
 {
 }
 
-RG_DrawWithMeshShaderTest::~RG_DrawWithMeshShaderTest()
+RG_DrawMeshShaderTriangleTest::~RG_DrawMeshShaderTriangleTest()
 {
 }
 
-bool RG_DrawWithMeshShaderTest::RunTest()
+bool RG_DrawMeshShaderTriangleTest::RunTest()
 {
 	auto& swapchain = Application::Get().GetWindow().GetSwapchain();
 
@@ -35,7 +35,7 @@ bool RG_DrawWithMeshShaderTest::RunTest()
 		RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { targetImageHandle });
 
 		RHI::RenderPipelineCreateInfo pipelineInfo{};
-		pipelineInfo.shader = ShaderMap::Get("RG_DrawWithMeshShaderTest");
+		pipelineInfo.shader = ShaderMap::Get("RG_DrawMeshShaderTriangleTest");
 		pipelineInfo.cullMode = RHI::CullMode::None;
 
 		auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);

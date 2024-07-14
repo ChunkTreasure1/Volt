@@ -91,7 +91,7 @@ namespace Volt::RHI
 		virtual RefPtr<VertexBuffer> CreateVertexBuffer(const void* data, const uint32_t size, const uint32_t stride) const = 0;
 
 		virtual RefPtr<StorageBuffer> CreateStorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator) const = 0;
-		virtual RefPtr<UniformBuffer> CreateUniformBuffer(const uint32_t size, const void* data) const = 0;
+		virtual RefPtr<UniformBuffer> CreateUniformBuffer(const uint32_t size, const void* data, const uint32_t count, std::string_view name) const = 0;
 
 		virtual RefPtr<DescriptorTable> CreateDescriptorTable(const DescriptorTableCreateInfo& createInfo) const = 0;
 		virtual RefPtr<BindlessDescriptorTable> CreateBindlessDescriptorTable() const = 0;

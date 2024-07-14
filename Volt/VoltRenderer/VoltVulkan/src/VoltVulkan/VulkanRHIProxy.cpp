@@ -69,9 +69,9 @@ namespace Volt::RHI
 		return RefPtr<VulkanStorageBuffer>::Create(count, elementSize, name, bufferUsage, memoryUsage, allocator);
 	}
 
-	RefPtr<UniformBuffer> VulkanRHIProxy::CreateUniformBuffer(const uint32_t size, const void* data) const
+	RefPtr<UniformBuffer> VulkanRHIProxy::CreateUniformBuffer(const uint32_t size, const void* data, const uint32_t count, std::string_view name) const
 	{
-		return RefPtr<VulkanUniformBuffer>::Create(size, data);
+		return RefPtr<VulkanUniformBuffer>::Create(size, data, count, name);
 	}
 
 	RefPtr<DescriptorTable> VulkanRHIProxy::CreateDescriptorTable(const DescriptorTableCreateInfo& createInfo) const
