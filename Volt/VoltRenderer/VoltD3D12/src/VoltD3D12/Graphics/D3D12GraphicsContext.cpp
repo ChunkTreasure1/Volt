@@ -6,6 +6,8 @@
 #include "VoltD3D12/Memory/D3D12DefaultAllocator.h"
 #include "VoltD3D12/Descriptors/CPUDescriptorHeapManager.h"
 
+#include "VoltD3D12/Buffers/CommandSignatureCache.h"
+
 namespace Volt::RHI
 {
 	namespace Utility
@@ -46,14 +48,19 @@ namespace Volt::RHI
 		Shutdown();
 	}
 
-	Allocator& D3D12GraphicsContext::GetDefaultAllocatorImpl()
+	RefPtr<Allocator> D3D12GraphicsContext::GetDefaultAllocatorImpl()
 	{
-		return *m_defaultAllocator;
+		return m_defaultAllocator;
 	}
 
 	RefPtr<Allocator> D3D12GraphicsContext::GetTransientAllocatorImpl()
 	{
-		return nullptr;
+		return m_transientAllocator;
+	}
+
+	RefPtr<ResourceStateTracker> D3D12GraphicsContext::GetResourceStateTrackerImpl()
+	{
+		return m_resourceStateTracker;
 	}
 
 	RefPtr<GraphicsDevice> D3D12GraphicsContext::GetGraphicsDevice() const
@@ -89,11 +96,19 @@ namespace Volt::RHI
 #endif
 
 		m_defaultAllocator = DefaultAllocator::Create();
+		m_transientAllocator = TransientAllocator::Create();
+		m_resourceStateTracker = RefPtr<ResourceStateTracker>::Create();
 		m_cpuDescriptorHeapManager = CreateScope<CPUDescriptorHeapManager>();
+		m_commandSignatureCache = CreateScope<CommandSignatureCache>();
 	}
 
 	void D3D12GraphicsContext::Shutdown()
 	{
+		m_commandSignatureCache = nullptr;
+		m_cpuDescriptorHeapManager = nullptr;
+		m_transientAllocator = nullptr;
+		m_defaultAllocator = nullptr;
+
 #ifdef VT_ENABLE_VALIDATION
 		ShutdownAPIValidation();
 #endif
@@ -113,8 +128,29 @@ namespace Volt::RHI
 			m_infoQueue->RegisterMessageCallback(&Utility::LogD3D12Message, D3D12_MESSAGE_CALLBACK_FLAG_NONE, nullptr, &m_debugCallbackId);
 			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
 			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
-			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, false);
+			m_infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, false); 
 			m_infoQueue->SetBreakOnCategory(D3D12_MESSAGE_CATEGORY_CLEANUP, true);
+
+			D3D12_MESSAGE_SEVERITY severities[] =
+			{
+				D3D12_MESSAGE_SEVERITY_INFO
+			};
+
+			D3D12_MESSAGE_ID denyIDs[] =
+			{
+				D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,
+				D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
+				D3D12_MESSAGE_ID_NON_OPTIMAL_BARRIER_ONLY_EXECUTE_COMMAND_LISTS
+			};
+
+			D3D12_INFO_QUEUE_FILTER queueFilter{};
+			queueFilter.DenyList.NumCategories = 0;
+			queueFilter.DenyList.NumSeverities = 1;
+			queueFilter.DenyList.pSeverityList = severities;
+			queueFilter.DenyList.NumIDs = 3;
+			queueFilter.DenyList.pIDList = denyIDs;
+
+			VT_D3D12_CHECK(m_infoQueue->PushStorageFilter(&queueFilter));
 		}
 		else
 		{

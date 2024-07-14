@@ -2,8 +2,11 @@
 #include "D3D12BufferView.h"
 
 #include "VoltD3D12/Descriptors/DescriptorUtility.h"
+#include "VoltD3D12/Buffers/D3D12StorageBuffer.h"
 
-#include <VoltRHI/Buffers/StorageBuffer.h>
+#include <VoltRHI/RHIProxy.h>
+
+#include <CoreUtilities/EnumUtils.h>
 
 namespace Volt::RHI
 {
@@ -14,7 +17,13 @@ namespace Volt::RHI
 		{
 			m_viewType = D3D12ViewType::SRV | D3D12ViewType::UAV;
 			CreateSRV();
-			CreateUAV();
+
+			const auto bufferMemoryUsage = specification.bufferResource->AsRef<D3D12StorageBuffer>().GetMemoryUsage();
+			
+			if (EnumValueContainsFlag(bufferMemoryUsage, MemoryUsage::GPU))
+			{
+				CreateUAV();
+			}
 		}
 		else if (specification.bufferResource->GetType() == ResourceType::UniformBuffer)
 		{
@@ -25,20 +34,23 @@ namespace Volt::RHI
 
 	D3D12BufferView::~D3D12BufferView()
 	{
-		if (m_srvDescriptor.IsValid())
+		RHIProxy::GetInstance().DestroyResource([srvDescriptor = m_srvDescriptor, uavDescriptor = m_uavDescriptor, cbvDescriptor = m_cbvDescriptor]() 
 		{
-			DescriptorUtility::FreeDescriptorPointer(m_srvDescriptor);
-		}
+			if (srvDescriptor.IsValid())
+			{
+				DescriptorUtility::FreeDescriptorPointer(srvDescriptor);
+			}
 
-		if (m_uavDescriptor.IsValid())
-		{
-			DescriptorUtility::FreeDescriptorPointer(m_uavDescriptor);
-		}
+			if (uavDescriptor.IsValid())
+			{
+				DescriptorUtility::FreeDescriptorPointer(uavDescriptor);
+			}
 
-		if (m_cbvDescriptor.IsValid())
-		{
-			DescriptorUtility::FreeDescriptorPointer(m_cbvDescriptor);
-		}
+			if (cbvDescriptor.IsValid())
+			{
+				DescriptorUtility::FreeDescriptorPointer(cbvDescriptor);
+			}
+		});
 	}
 
 	const uint64_t D3D12BufferView::GetDeviceAddress() const
@@ -57,17 +69,19 @@ namespace Volt::RHI
 		uint32_t elementCount = 0;
 	
 		D3D12_BUFFER_SRV_FLAGS flags = D3D12_BUFFER_SRV_FLAG_NONE;
+		D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc{};
 
 		if (m_resource->GetType() == ResourceType::StorageBuffer)
 		{
 			auto& storageBuffer = m_resource->AsRef<StorageBuffer>();
-			elementSize = storageBuffer.GetElementSize();
-			elementCount = storageBuffer.GetCount();
+			elementSize = 0; // If it's a raw buffer the element size is always 4 //storageBuffer.GetElementSize();
+			elementCount = static_cast<uint32_t>(storageBuffer.GetByteSize() / 4);
 
 			flags = D3D12_BUFFER_SRV_FLAG_RAW;
+			viewDesc.Format = DXGI_FORMAT_R32_TYPELESS;
 		}
 
-		D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc{};
+		viewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		viewDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 		viewDesc.Buffer.FirstElement = 0;
 		viewDesc.Buffer.Flags = flags;
@@ -85,22 +99,22 @@ namespace Volt::RHI
 		size_t elementSize = 0;
 		uint32_t elementCount = 0;
 
-		D3D12_BUFFER_UAV_FLAGS flags = D3D12_BUFFER_UAV_FLAG_NONE;
+		D3D12_UNORDERED_ACCESS_VIEW_DESC viewDesc{};
+		viewDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
 		if (m_resource->GetType() == ResourceType::StorageBuffer)
 		{
 			auto& storageBuffer = m_resource->AsRef<StorageBuffer>();
-			elementSize = storageBuffer.GetElementSize();
-			elementCount = storageBuffer.GetCount();
+			elementSize = 0; // If it's a raw buffer the element size is always 4 //storageBuffer.GetElementSize();
+			elementCount = static_cast<uint32_t>(storageBuffer.GetByteSize() / 4);
 
-			flags = D3D12_BUFFER_UAV_FLAG_RAW;
+			viewDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
+			viewDesc.Format = DXGI_FORMAT_R32_TYPELESS;
 		}
 
-		D3D12_UNORDERED_ACCESS_VIEW_DESC viewDesc{};
 		viewDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
 		viewDesc.Buffer.CounterOffsetInBytes = 0;
 		viewDesc.Buffer.FirstElement = 0;
-		viewDesc.Buffer.Flags = flags;
 		viewDesc.Buffer.NumElements = elementCount;
 		viewDesc.Buffer.StructureByteStride = static_cast<uint32_t>(elementSize);
 
@@ -111,6 +125,12 @@ namespace Volt::RHI
 
 	void D3D12BufferView::CreateCBV()
 	{
-		// #TODO_Ivar: Implement
+		D3D12_CONSTANT_BUFFER_VIEW_DESC viewDesc{};
+		viewDesc.BufferLocation = m_resource->GetHandle<ID3D12Resource*>()->GetGPUVirtualAddress();
+		viewDesc.SizeInBytes = static_cast<uint32_t>(m_resource->GetByteSize());
+
+		m_cbvDescriptor = DescriptorUtility::AllocateDescriptorPointer(D3D12DescriptorType::CBV_SRV_UAV);
+		auto* devicePtr = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
+		devicePtr->CreateConstantBufferView(&viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE(m_cbvDescriptor.GetCPUPointer()));
 	}
 }

@@ -42,10 +42,27 @@ namespace Volt::RHI
 			if (heap->GetHash() == descriptorPointer.parentHeapHash)
 			{
 				heap->Free(descriptorPointer);
+				return;
 			}
 		}
 
 		VT_ENSURE(false);
+	}
+
+	D3D12DescriptorHeap& CPUDescriptorHeapManager::GetHeapFromHash(size_t hash) const
+	{
+		for (const auto& heap : m_descriptorHeaps)
+		{
+			if (heap->GetHash() == hash)
+			{
+				return *heap;
+			}
+		}
+
+		VT_ENSURE(false);
+
+		static D3D12DescriptorHeap nullHeap({});
+		return nullHeap;
 	}
 
 	void CPUDescriptorHeapManager::Initialize()

@@ -25,7 +25,8 @@ struct Meshlet
     
     uint objectId;
     uint meshId;
-    uint2 padding;
+    uint dataOffset;
+    uint padding;
     
     float3 boundingSphereCenter;
     float boundingSphereRadius;

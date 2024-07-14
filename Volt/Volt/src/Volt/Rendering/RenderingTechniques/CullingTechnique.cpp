@@ -56,6 +56,7 @@ namespace Volt
 			GPUSceneData::SetupInputs(builder, gpuSceneData);
 			
 			builder.SetIsComputePass();
+			builder.SetHasSideEffect();
 		},
 		[=](const CullObjectsData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
@@ -186,17 +187,17 @@ namespace Volt
 		RenderGraphResourceHandle drawCommandBuffer = 0;
 
 		{
-			const auto desc = RGUtils::CreateBufferDesc<RHI::IndirectIndexedCommand>(1, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, "Meshlet Draw Command");
+			const auto desc = RGUtils::CreateBufferDesc<RHI::IndirectDrawIndexedCommand>(1, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, "Meshlet Draw Command");
 			drawCommandBuffer = m_renderGraph.CreateBuffer(desc);
 		
-			RHI::IndirectIndexedCommand command{};
+			RHI::IndirectDrawIndexedCommand command{};
 			command.indexCount = 0;
 			command.firstInstance = 0;
 			command.firstIndex = 0;
 			command.vertexOffset = 0;
 			command.instanceCount = instanceCount;
 
-			m_renderGraph.AddStagedBufferUpload(drawCommandBuffer, &command, sizeof(RHI::IndirectIndexedCommand), "Upload indirect command");
+			m_renderGraph.AddStagedBufferUpload(drawCommandBuffer, &command, sizeof(RHI::IndirectDrawIndexedCommand), "Upload indirect command");
 		}
 
 		CullPrimitivesData& primitivesData = m_renderGraph.AddPass<CullPrimitivesData>("Cull Primitives",

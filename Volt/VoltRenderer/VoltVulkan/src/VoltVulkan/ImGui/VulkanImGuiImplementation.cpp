@@ -4,6 +4,7 @@
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Graphics/VulkanSwapchain.h"
 #include "VoltVulkan/Graphics/VulkanGraphicsDevice.h"
+#include "VoltVulkan/Common/VulkanHelpers.h"
 
 #include <VoltRHI/Core/Profiling.h>
 
@@ -85,32 +86,34 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
-		m_commandBuffer->Begin();
-
-		VkCommandBuffer currentCommandBuffer = m_commandBuffer->GetHandle<VkCommandBuffer>();
-
 		auto swapchainPtr = m_swapchain->As<VulkanSwapchain>();
+		auto commandBuffer = swapchainPtr->GetCommandBuffer();
 
-		// Begin render pass
 		{
-			VkClearValue clearValues[2];
-			clearValues[0].color = { { 0.1f, 0.1f, 0.1f, 1.f } };
-			clearValues[1].depthStencil = { 1.f, 0 };
+			ResourceBarrierInfo barrier{};
+			barrier.type = BarrierType::Image;
+			barrier.imageBarrier().srcAccess = BarrierAccess::None;
+			barrier.imageBarrier().srcStage = BarrierStage::All;
+			barrier.imageBarrier().srcLayout = ImageLayout::Undefined;
+			barrier.imageBarrier().dstAccess = BarrierAccess::RenderTarget;
+			barrier.imageBarrier().dstStage = BarrierStage::RenderTarget;
+			barrier.imageBarrier().dstLayout = ImageLayout::RenderTarget;
+			barrier.imageBarrier().resource = swapchainPtr->GetCurrentImage();
 
-			VkRenderPassBeginInfo beginInfo{};
-			beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			beginInfo.pNext = nullptr;
-			beginInfo.renderPass = swapchainPtr->GetRenderPass();
-			beginInfo.renderArea.offset.x = 0;
-			beginInfo.renderArea.offset.y = 0;
-			beginInfo.renderArea.extent.width = swapchainPtr->GetWidth();
-			beginInfo.renderArea.extent.height = swapchainPtr->GetHeight();
-			beginInfo.clearValueCount = 2;
-			beginInfo.pClearValues = clearValues;
-			beginInfo.framebuffer = swapchainPtr->GetCurrentFramebuffer();
-
-			vkCmdBeginRenderPass(currentCommandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+			commandBuffer->ResourceBarrier({ barrier });
 		}
+
+		AttachmentInfo attachment{};
+		attachment.view = swapchainPtr->GetCurrentImage()->GetView();
+		attachment.clearMode = ClearMode::Clear;
+		attachment.clearColor = { 0.1f, 0.1f, 0.1f, 1.f };
+
+		RenderingInfo renderingInfo{};
+		renderingInfo.colorAttachments = { attachment };
+		renderingInfo.renderArea.extent.width = swapchainPtr->GetWidth();
+		renderingInfo.renderArea.extent.height = swapchainPtr->GetHeight();
+
+		commandBuffer->BeginRendering(renderingInfo);
 
 		Viewport viewport{};
 		viewport.x = 0.f;
@@ -120,7 +123,7 @@ namespace Volt::RHI
 		viewport.minDepth = 0.f;
 		viewport.maxDepth = 1.f;
 
-		m_commandBuffer->SetViewports({ viewport });
+		commandBuffer->SetViewports({ viewport });
 
 		Rect2D scissor{};
 		scissor.extent.width = swapchainPtr->GetWidth();
@@ -128,13 +131,12 @@ namespace Volt::RHI
 		scissor.offset.x = 0;
 		scissor.offset.y = 0;
 
-		m_commandBuffer->SetScissors({ scissor });
+		commandBuffer->SetScissors({ scissor });
 
 		ImDrawData* drawData = ImGui::GetDrawData();
-		ImGui_ImplVulkan_RenderDrawData(drawData, currentCommandBuffer);
+		ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer->GetHandle<VkCommandBuffer>());
 
-		vkCmdEndRenderPass(currentCommandBuffer);
-		m_commandBuffer->End();
+		commandBuffer->EndRendering();
 	}
 
 	void VulkanImGuiImplementation::InitializeAPI(ImGuiContext* context)
@@ -198,7 +200,7 @@ namespace Volt::RHI
 		initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		initInfo.CheckVkResultFn = Utility::CheckImGuiVulkanResults;
 
-		ImGui_ImplVulkan_Init(&initInfo, vulkanSwapchain->GetRenderPass());
+		ImGui_ImplVulkan_Init(&initInfo, Utility::VoltToVulkanFormat(vulkanSwapchain->GetFormat()));
 
 		// Create font
 		{
@@ -210,14 +212,13 @@ namespace Volt::RHI
 		
 			ImGui_ImplVulkan_DestroyFontUploadObjects();
 		}
-
-		m_commandBuffer = CommandBuffer::Create(m_swapchain);
 	}
 
 	void VulkanImGuiImplementation::ReleaseVulkanData()
 	{
 		auto device = GraphicsContext::GetDevice()->As<VulkanGraphicsDevice>();
-		m_commandBuffer = nullptr;
+
+		m_swapchain->GetCommandBuffer()->WaitForFences();
 
 		vkDestroyDescriptorPool(device->GetHandle<VkDevice>(), m_descriptorPool, nullptr);
 		ImGui_ImplVulkan_Shutdown();

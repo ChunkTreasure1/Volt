@@ -15,6 +15,7 @@ namespace Volt::RHI
 	class GraphicsDevice;
 	class ImageView;
 	class RHIResource;
+	class Swapchain;
 
 	inline static constexpr size_t MAX_COLOR_ATTACHMENT_COUNT = 8;
 	inline static constexpr size_t MAX_ATTACHMENT_COUNT = MAX_COLOR_ATTACHMENT_COUNT + 1;
@@ -397,7 +398,7 @@ namespace Volt::RHI
 		None = 0,
 		Linear,
 		Nearest,
-		Anisotopy
+		Anisotropy
 	};
 
 	enum class AnisotropyLevel : uint32_t
@@ -468,7 +469,7 @@ namespace Volt::RHI
 		DontCare
 	};
 
-	enum class ResourceType
+	enum class ResourceType : uint32_t
 	{
 		Image2D = 0,
 		Image3D,
@@ -489,21 +490,21 @@ namespace Volt::RHI
 	{
 		None = 0,
 		All = BIT(0),
-		Draw = BIT(1), // ?
-		IndexInput = BIT(2),
-		VertexShader = BIT(3), // VERTEX_ATTRIBUTE_INPUT & VERTEX_SHADER
-		PixelShader = BIT(4), // FRAGMENT_SHADER
-		DepthStencil = BIT(5), // EARLY_FRAGMENT_TESTS & LATE_FRAGMENT_TESTS
-		RenderTarget = BIT(6), // COLOR_ATTACHMENT_OUTPUT
-		ComputeShader = BIT(7), // COMPUTE_SHADER
-		RayTracing = BIT(8), // RAY_TRACING
-		Copy = BIT(9), // COPY
-		Resolve = BIT(10), // RESOLVE,
-		Indirect = BIT(11), // DRAW_INDIRECT
-		AllGraphics = BIT(12), // ALL_GRAPHICS
-		VideoDecode = BIT(13),
-		VideoEncode = BIT(14),
-		BuildAccelerationStructure = BIT(15)
+		IndexInput = BIT(1),
+		VertexShader = BIT(2),
+		PixelShader = BIT(3),
+		DepthStencil = BIT(4),
+		RenderTarget = BIT(5),
+		ComputeShader = BIT(6),
+		RayTracing = BIT(7),
+		Copy = BIT(8),
+		Resolve = BIT(9),
+		DrawIndirect = BIT(10),
+		AllGraphics = BIT(11),
+		VideoDecode = BIT(12),
+		VideoEncode = BIT(13),
+		Clear = BIT(14),
+		VertexInput = BIT(15)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(BarrierStage);
@@ -511,25 +512,23 @@ namespace Volt::RHI
 	enum class BarrierAccess : uint64_t
 	{
 		None = 0,
-		VertexBuffer = BIT(0), // VERTEX_ATTRIBUTE_READ
-		UniformBuffer = BIT(1), // UNIFORM_READ
-		IndexBuffer = BIT(2), // INDEX_READ
-		RenderTarget = BIT(3), // COLOR_ATTACHMENT_WRITE
-		ShaderWrite = BIT(4), // SHADER_WRITE
-		DepthStencilWrite = BIT(5), // DEPTH_STENCIL_ATTACHMENT_WRITE
-		DepthStencilRead = BIT(6), // DEPTH_STENCIL_ATTACHMENT_READ
-		IndirectArgument = BIT(7), // INDIRECT_COMMAND_READ
-		TransferSource = BIT(8),
-		TransferDestination = BIT(9),
-		ShaderRead = BIT(10),
-		ResolveSource = BIT(11), // ?
-		ResolveDestination = BIT(12), // ?
-		AccelerationStructureRead = BIT(13), // ACCELERATION_STRUCTURE_READ
-		AccelerationStructureWrite = BIT(14), // ACCELERATION_STRUCTURE_WRITEs
+		VertexBuffer = BIT(0),
+		UniformBuffer = BIT(1),
+		IndexBuffer = BIT(2),
+		RenderTarget = BIT(3),
+		ShaderWrite = BIT(4),
+		DepthStencilWrite = BIT(5),
+		DepthStencilRead = BIT(6),
+		ShaderRead = BIT(7),
+		IndirectArgument = BIT(8),
+		CopyDest = BIT(9),
+		CopySource = BIT(10),
+		ResolveDest = BIT(11),
+		ResolveSource = BIT(12),
+		VideoEncodeRead = BIT(13),
+		VideoEncodeWrite = BIT(14),
 		VideoDecodeRead = BIT(15),
-		VideoDecodeWrite = BIT(16),
-		VideoEncodeRead = BIT(17),
-		VideoEncodeWrite = BIT(18)
+		VideoDecodeWrite = BIT(16)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(BarrierAccess);
@@ -537,20 +536,20 @@ namespace Volt::RHI
 	enum class ImageLayout : uint64_t
 	{
 		Undefined = 0,
-		Present = BIT(0), // PRESENT_SRC
-		RenderTarget = BIT(1), // COLOR_ATTACHMENT_OPTIMAL
-		ShaderWrite = BIT(2), // GENERAL
-		DepthStencilWrite = BIT(3), // DEPTH_STENCIL_ATTACHMENT_WRITE
-		DepthStencilRead = BIT(4), // DEPTH_STENCIL_ATTACHMENT_READ
-		ShaderRead = BIT(5), // SHADER_READ_ONLY_OPTIMAL
-		TransferSource = BIT(6),
-		TransferDestination = BIT(7),
+		Present = BIT(0),
+		RenderTarget = BIT(1),
+		ShaderWrite = BIT(2),
+		DepthStencilWrite = BIT(3),
+		DepthStencilRead = BIT(4),
+		ShaderRead = BIT(5),
+		CopySource = BIT(6),
+		CopyDest = BIT(7),
 		ResolveSource = BIT(8),
-		ResolveDestination = BIT(9),
-		VideoDecodeRead = BIT(10),
-		VideoDecodeWrite = BIT(11),
-		VideoEncodeRead = BIT(12),
-		VideoEncodeWrite = BIT(13),
+		ResolveDest = BIT(9),
+		VideoEncodeRead = BIT(10),
+		VideoEncodeWrite = BIT(11),
+		VideoDecodeRead = BIT(12),
+		VideoDecodeWrite = BIT(13)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(ImageLayout);
@@ -650,6 +649,12 @@ namespace Volt::RHI
 		bool initializeImage = true;
 	};
 
+	struct SwapchainImageSpecification
+	{
+		Swapchain* swapchain = nullptr;
+		uint32_t imageIndex;
+	};
+
 	struct Extent2D
 	{
 		uint32_t width = 0;
@@ -746,6 +751,22 @@ namespace Volt::RHI
 		uint32_t layerCount = ALL_LAYERS;
 	};
 
+	struct ImageCopySubData
+	{
+		ImageSubResource subResource;
+		uint32_t width;
+		uint32_t height;
+		uint32_t depth;
+		uint32_t rowPitch;
+		uint32_t slicePitch;
+		const void* data;
+	};
+
+	struct ImageCopyData
+	{
+		std::vector<ImageCopySubData> copySubData;
+	};
+
 	struct ImageBarrier
 	{
 		WeakPtr<RHIResource> resource;
@@ -787,6 +808,13 @@ namespace Volt::RHI
 
 	struct ResourceBarrierInfo
 	{
+		ResourceBarrierInfo(const ResourceBarrierInfo& other)
+		{
+			type = other.type;
+			m_barrier = other.m_barrier;
+		}
+
+		ResourceBarrierInfo() = default;
 		~ResourceBarrierInfo() = default;
 
 		BarrierType type = BarrierType::None;
@@ -803,7 +831,7 @@ namespace Volt::RHI
 		Variant<ImageBarrier, BufferBarrier, GlobalBarrier> m_barrier;
 	};
 
-	struct IndirectIndexedCommand
+	struct IndirectDrawIndexedCommand
 	{
 		uint32_t indexCount;
 		uint32_t instanceCount;

@@ -10,10 +10,12 @@ namespace Volt::RHI
 	class VulkanVertexBuffer : public VertexBuffer
 	{
 	public:
-		VulkanVertexBuffer(const uint32_t size, const void* data);
+		VulkanVertexBuffer(const void* data, const uint32_t size, const uint32_t stride);
 		~VulkanVertexBuffer() override;
 
 		void SetData(const void* data, uint32_t size) override;
+		uint32_t GetStride() const override;
+
 		inline constexpr ResourceType GetType() const override { return ResourceType::VertexBuffer; }
 		void SetName(std::string_view name) override;
 		const uint64_t GetDeviceAddress() const override;
@@ -26,5 +28,6 @@ namespace Volt::RHI
 		void Invalidate(const void* data, const uint32_t size);
 
 		RefPtr<Allocation> m_allocation;
+		uint32_t m_stride = 0;
 	};
 }

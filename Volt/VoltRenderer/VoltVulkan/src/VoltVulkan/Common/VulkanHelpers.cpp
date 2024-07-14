@@ -66,16 +66,18 @@ namespace Volt::RHI::Utility
 		switch (layout)
 		{
 			case VK_IMAGE_LAYOUT_UNDEFINED: return ImageLayout::Undefined;
-			case VK_IMAGE_LAYOUT_GENERAL: return ImageLayout::ShaderWrite;
+			case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR: return ImageLayout::Present;
 			case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL: return ImageLayout::RenderTarget;
+			case VK_IMAGE_LAYOUT_GENERAL: return ImageLayout::ShaderWrite;
 			case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL: return ImageLayout::DepthStencilWrite;
 			case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL: return ImageLayout::DepthStencilRead;
 			case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL: return ImageLayout::ShaderRead;
-			case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL: return ImageLayout::TransferSource;
-			case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL: return ImageLayout::TransferDestination;
-			case VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR: return ImageLayout::VideoDecodeWrite;
+			case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL: return ImageLayout::CopySource;
+			case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL: return ImageLayout::CopyDest;
+			case VK_IMAGE_LAYOUT_VIDEO_ENCODE_SRC_KHR: return ImageLayout::VideoEncodeRead;
+			case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DST_KHR: return ImageLayout::VideoEncodeWrite;
 			case VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR: return ImageLayout::VideoDecodeRead;
-			case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR: return ImageLayout::Present;
+			case VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR: return ImageLayout::VideoDecodeWrite;
 			default:
 			break;
 		}
@@ -95,10 +97,14 @@ namespace Volt::RHI::Utility
 			case ImageLayout::DepthStencilWrite: return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 			case ImageLayout::DepthStencilRead: return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 			case ImageLayout::ShaderRead: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			case ImageLayout::TransferSource: return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-			case ImageLayout::TransferDestination: return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			case ImageLayout::CopySource: return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			case ImageLayout::CopyDest: return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			case ImageLayout::ResolveSource: return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			case ImageLayout::ResolveDest: return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 			case ImageLayout::VideoDecodeRead: return VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR;
 			case ImageLayout::VideoDecodeWrite: return VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR;
+			case ImageLayout::VideoEncodeRead: return VK_IMAGE_LAYOUT_VIDEO_ENCODE_SRC_KHR;
+			case ImageLayout::VideoEncodeWrite: return VK_IMAGE_LAYOUT_VIDEO_ENCODE_DST_KHR;
 		}
 
 		VT_ENSURE(false);

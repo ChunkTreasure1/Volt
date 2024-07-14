@@ -16,10 +16,10 @@
 #ifdef _WIN32
 #include <wrl.h>
 #else
-#include <dxc/WinAdapter.h>
+#include <dxsc/WinAdapter.h>
 #endif
 
-#include <dxc/dxcapi.h>
+#include <dxsc/dxcapi.h>
 
 #include <spirv_cross/spirv_glsl.hpp>
 #include <spirv-tools/libspirv.h>
@@ -185,7 +185,7 @@ namespace Volt::RHI
 			L"-D",
 			L"__VULKAN__ ",
 			L"-enable-16bit-types",
-			L"-fvk-use-scalar-layout",
+			L"-fvk-use-dx-layout",
 
 			DXC_ARG_PACK_MATRIX_COLUMN_MAJOR
 		};
@@ -205,7 +205,7 @@ namespace Volt::RHI
 		if (specification.optimizationLevel != ShaderCompiler::OptimizationLevel::Dist)
 		{
 			arguments.push_back(DXC_ARG_DEBUG);
-			/*arguments.push_back(L"-fspv-debug=vulkan");*/
+			//arguments.push_back(L"-fspv-debug=vulkan");
 		}
 
 		if (shaderStage == ShaderStage::Vertex || shaderStage == ShaderStage::Hull || shaderStage == ShaderStage::Geometry)
@@ -342,10 +342,7 @@ namespace Volt::RHI
 			const uint32_t set = compiler.get_decoration(ubo.id, spv::DecorationDescriptorSet);
 			const std::string& name = compiler.get_name(ubo.id);
 
-			if (!TryAddShaderBinding(name, set, binding, inOutData))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
+			TryAddShaderBinding(name, set, binding, inOutData);
 
 			if (name == "$Globals")
 			{
@@ -369,10 +366,7 @@ namespace Volt::RHI
 			const uint32_t set = compiler.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
 			const std::string& name = compiler.get_name(ssbo.id);
 
-			if (!TryAddShaderBinding(name, set, binding, inOutData))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
+			TryAddShaderBinding(name, set, binding, inOutData);
 
 			const bool firstEntry = !inOutData.storageBuffers[set].contains(binding);
 
@@ -403,10 +397,7 @@ namespace Volt::RHI
 			const auto& imageType = compiler.get_type(image.type_id);
 			const std::string& name = compiler.get_name(image.id);
 
-			if (!TryAddShaderBinding(name, set, binding, inOutData))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
+			TryAddShaderBinding(name, set, binding, inOutData);
 
 			const bool firstEntry = !inOutData.storageImages[set].contains(binding);
 
@@ -436,10 +427,7 @@ namespace Volt::RHI
 			const auto& imageType = compiler.get_type(image.type_id);
 			const std::string& name = compiler.get_name(image.id);
 
-			if (!TryAddShaderBinding(name, set, binding, inOutData))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
+			TryAddShaderBinding(name, set, binding, inOutData);
 
 			const bool firstEntry = !inOutData.images[set].contains(binding);
 
@@ -468,10 +456,7 @@ namespace Volt::RHI
 			const uint32_t set = compiler.get_decoration(sampler.id, spv::DecorationDescriptorSet);
 			const std::string& name = compiler.get_name(sampler.id);
 
-			if (!TryAddShaderBinding(name, set, binding, inOutData))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
+			TryAddShaderBinding(name, set, binding, inOutData);
 
 			auto& shaderSampler = inOutData.samplers[set][binding];
 			shaderSampler.usageStages = shaderSampler.usageStages | stage;

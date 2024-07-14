@@ -17,7 +17,9 @@ namespace Volt
 		IndirectArgument,
 		IndexBuffer,
 		VertexBuffer,
-		TransferDestination
+		CopyDest,
+		CopySource,
+		Clear
 	};
 
 	struct RenderGraphPassResourceAccess
@@ -39,7 +41,7 @@ namespace Volt
 
 		std::vector<RenderGraphPassResourceAccess> resourceReads;
 		std::vector<RenderGraphPassResourceAccess> resourceWrites;
-		std::vector<RenderGraphResourceHandle> resourceCreates;
+		std::vector<RenderGraphPassResourceAccess> resourceCreates;
 
 		virtual void Execute(RenderGraph& frameGraph, RenderContext& context) = 0;
 

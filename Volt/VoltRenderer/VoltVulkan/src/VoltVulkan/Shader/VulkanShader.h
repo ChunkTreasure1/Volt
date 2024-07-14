@@ -28,6 +28,7 @@ namespace Volt::RHI
 		const ShaderResources& GetResources() const override;
 		const ShaderResourceBinding& GetResourceBindingFromName(std::string_view name) const override;
 		ShaderDataBuffer GetConstantsBuffer() const override;
+		VT_NODISCARD bool HasConstants() const override;
 
 		inline const std::vector<std::pair<uint32_t, uint32_t>>& GetDescriptorPoolSizes() const { return m_descriptorPoolSizes; }
 		inline const std::vector<VkDescriptorSetLayout_T*>& GetDescriptorSetLayouts() const { return m_descriptorSetLayouts; }

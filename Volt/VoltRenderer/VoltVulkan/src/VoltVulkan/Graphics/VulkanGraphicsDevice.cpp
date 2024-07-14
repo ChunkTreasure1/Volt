@@ -157,6 +157,11 @@ namespace Volt::RHI
 			}
 #endif
 
+			if (physicalDevice->IsExtensionAvailiable(VK_NV_SHADER_SUBGROUP_PARTITIONED_EXTENSION_NAME))
+			{
+				enabledExtensions.emplace_back(VK_NV_SHADER_SUBGROUP_PARTITIONED_EXTENSION_NAME);
+			}
+
 			return enabledExtensions;
 		}
 	}

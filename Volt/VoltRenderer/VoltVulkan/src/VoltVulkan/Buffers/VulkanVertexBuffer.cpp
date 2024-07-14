@@ -13,13 +13,16 @@
 
 namespace Volt::RHI
 {
-	VulkanVertexBuffer::VulkanVertexBuffer(const uint32_t size, const void* data)
+	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, const uint32_t size, const uint32_t stride)
+		: m_stride(stride)
 	{
+		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None);
 		Invalidate(data, size);
 	}
 
 	VulkanVertexBuffer::~VulkanVertexBuffer()
 	{
+		GraphicsContext::GetResourceStateTracker()->RemoveResource(this);
 		if (!m_allocation)
 		{
 			return;
@@ -27,7 +30,7 @@ namespace Volt::RHI
 
 		RHIProxy::GetInstance().DestroyResource([allocation = m_allocation]()
 		{
-			GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
+			GraphicsContext::GetDefaultAllocator()->DestroyBuffer(allocation);
 		});
 
 		m_allocation = nullptr;
@@ -36,6 +39,11 @@ namespace Volt::RHI
 	void VulkanVertexBuffer::SetData(const void* data, uint32_t size)
 	{
 		// #TODO_Ivar: Implement
+	}
+
+	uint32_t VulkanVertexBuffer::GetStride() const
+	{
+		return m_stride;
 	}
 
 	void VulkanVertexBuffer::SetName(std::string_view name)
@@ -80,17 +88,17 @@ namespace Volt::RHI
 		{
 			RHIProxy::GetInstance().DestroyResource([allocation = m_allocation]()
 			{
-				GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
+				GraphicsContext::GetDefaultAllocator()->DestroyBuffer(allocation);
 			});
 
 			m_allocation = nullptr;
 		}
 
-		auto& allocator = GraphicsContext::GetDefaultAllocator();
+		auto allocator = GraphicsContext::GetDefaultAllocator();
 
 		if (data != nullptr)
 		{
-			stagingAllocation = allocator.CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPU);
+			stagingAllocation = allocator->CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPU);
 
 			// Copy to staging buffer
 			{
@@ -102,7 +110,7 @@ namespace Volt::RHI
 
 		// Create GPU buffer
 		{
-			m_allocation = allocator.CreateBuffer(bufferSize, BufferUsage::VertexBuffer | BufferUsage::TransferDst);
+			m_allocation = allocator->CreateBuffer(bufferSize, BufferUsage::VertexBuffer | BufferUsage::TransferDst);
 		}
 
 		if (data)
@@ -123,7 +131,7 @@ namespace Volt::RHI
 				cmdBuffer->Execute();
 			}
 
-			allocator.DestroyBuffer(stagingAllocation);
+			allocator->DestroyBuffer(stagingAllocation);
 		}
 	}
 }

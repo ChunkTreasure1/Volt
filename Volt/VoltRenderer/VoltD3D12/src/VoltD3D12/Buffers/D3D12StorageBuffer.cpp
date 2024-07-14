@@ -10,47 +10,46 @@
 #include <VoltRHI/Memory/MemoryCommon.h>
 #include <VoltRHI/RHIProxy.h>
 
+#include <VoltRHI/Utility/ResourceUtility.h>
+
 #include <CoreUtilities/StringUtility.h>
 
 namespace Volt::RHI
 {
-	D3D12StorageBuffer::D3D12StorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
-		: m_byteSize(count* elementSize), m_size(count), m_elementSize(elementSize), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_name(name)
+	D3D12StorageBuffer::D3D12StorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator)
+		: m_count(count), m_elementSize(elementSize), m_name(name), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_allocator(allocator)
 	{
-		Invalidate(elementSize * count);
-		SetName(name);
-	}
+		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None);
 
-	D3D12StorageBuffer::D3D12StorageBuffer(const size_t size, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
-		: m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_name(name)
-	{
-		Invalidate(size);
-		SetName(name);
-	}
+		if (!m_allocator)
+		{
+			m_allocator = GraphicsContext::GetDefaultAllocator();
+		}
 
-	D3D12StorageBuffer::D3D12StorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
-		: m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_name(name)
-	{
-		Invalidate(size);
-		SetName(name);
+		Invalidate(m_elementSize * m_count);
+		SetName(m_name);
 	}
 
 	D3D12StorageBuffer::~D3D12StorageBuffer()
 	{
+		GraphicsContext::GetResourceStateTracker()->RemoveResource(this);
 		Release();
 	}
 
-	void D3D12StorageBuffer::ResizeByteSize(const size_t byteSize)
+	void D3D12StorageBuffer::Resize(const uint64_t byteSize)
 	{
+		m_count = static_cast<uint32_t>(byteSize / 4);
+
 		Invalidate(byteSize);
 		SetName(m_name);
 	}
 
-	void D3D12StorageBuffer::Resize(const uint32_t size)
+	void D3D12StorageBuffer::ResizeWithCount(const uint32_t count)
 	{
-		const size_t newSize = size * m_elementSize;
-		Invalidate(newSize);
+		m_count = count;
+		const uint64_t newSize = m_count * m_elementSize;
 
+		Invalidate(newSize);
 		SetName(m_name);
 	}
 
@@ -59,14 +58,9 @@ namespace Volt::RHI
 		return m_elementSize;
 	}
 
-	const size_t D3D12StorageBuffer::GetSize() const
-	{
-		return m_byteSize;
-	}
-
 	const uint32_t D3D12StorageBuffer::GetCount() const
 	{
-		return m_size;
+		return m_count;
 	}
 
 	WeakPtr<Allocation> D3D12StorageBuffer::GetAllocation() const
@@ -81,16 +75,7 @@ namespace Volt::RHI
 
 	void D3D12StorageBuffer::SetData(const void* data, const size_t size)
 	{
-		RefPtr<Allocation> stagingAllocation = nullptr;
-
-		if (m_allocatedUsingCustomAllocator)
-		{
-			stagingAllocation = m_customAllocator->CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
-		}
-		else
-		{
-			stagingAllocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
-		}
+		RefPtr<Allocation> stagingAllocation = m_allocator->CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);;
 
 		void* mappedPtr = stagingAllocation->Map<void>();
 		memcpy_s(mappedPtr, size, data, size);
@@ -99,90 +84,90 @@ namespace Volt::RHI
 		RefPtr<CommandBuffer> cmdBuffer = CommandBuffer::Create();
 		cmdBuffer->Begin();
 
-		ResourceBarrierInfo barrier{};
-		barrier.type = BarrierType::Buffer;
-		barrier.bufferBarrier().srcStage = BarrierStage::ComputeShader | BarrierStage::VertexShader | BarrierStage::PixelShader;
-		barrier.bufferBarrier().srcAccess = BarrierAccess::None;
-		barrier.bufferBarrier().dstStage = BarrierStage::Copy;
-		barrier.bufferBarrier().dstAccess = BarrierAccess::TransferDestination;
-		barrier.bufferBarrier().offset = 0;
-		barrier.bufferBarrier().size = size;
-		barrier.bufferBarrier().resource = WeakPtr<D3D12StorageBuffer>(this);
+		{
+			ResourceBarrierInfo barrier{};
+			barrier.type = BarrierType::Buffer;
+			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.bufferBarrier(), this);
 
-		cmdBuffer->ResourceBarrier({ barrier });
+			barrier.bufferBarrier().dstStage = BarrierStage::Copy;
+			barrier.bufferBarrier().dstAccess = BarrierAccess::CopyDest;
+			barrier.bufferBarrier().offset = 0;
+			barrier.bufferBarrier().size = size;
+			barrier.bufferBarrier().resource = this;
+			
+			cmdBuffer->ResourceBarrier({ barrier });
+		}
 
 		cmdBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
 
-		barrier.bufferBarrier().srcStage = BarrierStage::Copy;
-		barrier.bufferBarrier().srcAccess = BarrierAccess::TransferDestination;
-		barrier.bufferBarrier().dstStage = BarrierStage::ComputeShader | BarrierStage::VertexShader | BarrierStage::PixelShader;
-		barrier.bufferBarrier().dstAccess = BarrierAccess::None;
+		{
+			ResourceBarrierInfo barrier{};
+			barrier.type = BarrierType::Buffer;
+			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.bufferBarrier(), this);
 
-		cmdBuffer->ResourceBarrier({ barrier });
+			barrier.bufferBarrier().dstStage = BarrierStage::ComputeShader | BarrierStage::VertexShader | BarrierStage::PixelShader;
+			barrier.bufferBarrier().dstAccess = BarrierAccess::ShaderRead;
+			barrier.bufferBarrier().offset = 0;
+			barrier.bufferBarrier().size = size;
+			barrier.bufferBarrier().resource = this;
+
+			cmdBuffer->ResourceBarrier({ barrier });
+		}
 
 		cmdBuffer->End();
 		cmdBuffer->Execute();
 
-		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = stagingAllocation]()
+		RHIProxy::GetInstance().DestroyResource([allocator = m_allocator, allocation = stagingAllocation]()
 		{
-			if (allocatedUsingCustomAllocator)
-			{
-				customAllocator->DestroyBuffer(allocation);
-			}
-			else
-			{
-				GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
-			}
+			allocator->DestroyBuffer(allocation);
 		});
 	}
 
 	void D3D12StorageBuffer::SetData(RefPtr<CommandBuffer> commandBuffer, const void* data, const size_t size)
 	{
-		RefPtr<Allocation> stagingAllocation = nullptr;
-
-		if (m_allocatedUsingCustomAllocator)
-		{
-			stagingAllocation = m_customAllocator->CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
-		}
-		else
-		{
-			stagingAllocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
-		}
+		RefPtr<Allocation> stagingAllocation = m_allocator->CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
 
 		void* mappedPtr = stagingAllocation->Map<void>();
 		memcpy_s(mappedPtr, m_byteSize, data, size);
 		stagingAllocation->Unmap();
 
-		ResourceBarrierInfo barrier{};
-		barrier.bufferBarrier().srcStage = BarrierStage::All;
-		barrier.bufferBarrier().srcAccess = BarrierAccess::None;
-		barrier.bufferBarrier().dstStage = BarrierStage::Copy;
-		barrier.bufferBarrier().dstAccess = BarrierAccess::TransferDestination;
-		barrier.bufferBarrier().offset = 0;
-		barrier.bufferBarrier().size = size;
-		barrier.bufferBarrier().resource = WeakPtr<D3D12StorageBuffer>(this);
+		{
+			const auto& currentState = GraphicsContext::GetResourceStateTracker()->GetCurrentResourceState(this);
 
-		commandBuffer->ResourceBarrier({ barrier });
+			ResourceBarrierInfo barrier{};
+			barrier.type = BarrierType::Buffer;
+			barrier.bufferBarrier().srcStage = currentState.stage;
+			barrier.bufferBarrier().srcAccess = currentState.access;
+			barrier.bufferBarrier().dstStage = BarrierStage::Copy;
+			barrier.bufferBarrier().dstAccess = BarrierAccess::CopyDest;
+			barrier.bufferBarrier().offset = 0;
+			barrier.bufferBarrier().size = size;
+			barrier.bufferBarrier().resource = this;
+
+			commandBuffer->ResourceBarrier({ barrier });
+		}
 
 		commandBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
 
-		barrier.bufferBarrier().srcStage = BarrierStage::Copy;
-		barrier.bufferBarrier().srcAccess = BarrierAccess::TransferDestination;
-		barrier.bufferBarrier().dstStage = BarrierStage::All;
-		barrier.bufferBarrier().dstAccess = BarrierAccess::None;
-
-		commandBuffer->ResourceBarrier({ barrier });
-
-		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = stagingAllocation]()
 		{
-			if (allocatedUsingCustomAllocator)
-			{
-				customAllocator->DestroyBuffer(allocation);
-			}
-			else
-			{
-				GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
-			}
+			const auto& currentState = GraphicsContext::GetResourceStateTracker()->GetCurrentResourceState(this);
+
+			ResourceBarrierInfo barrier{};
+			barrier.type = BarrierType::Buffer;
+			barrier.bufferBarrier().srcStage = currentState.stage;
+			barrier.bufferBarrier().srcAccess = currentState.access;
+			barrier.bufferBarrier().dstStage = BarrierStage::ComputeShader | BarrierStage::VertexShader | BarrierStage::PixelShader;
+			barrier.bufferBarrier().dstAccess = BarrierAccess::ShaderRead;
+			barrier.bufferBarrier().offset = 0;
+			barrier.bufferBarrier().size = size;
+			barrier.bufferBarrier().resource = this;
+
+			commandBuffer->ResourceBarrier({ barrier });
+		}
+
+		RHIProxy::GetInstance().DestroyResource([allocator = m_allocator, allocation = stagingAllocation]()
+		{
+			allocator->DestroyBuffer(allocation);
 		});
 	}
 	
@@ -235,15 +220,7 @@ namespace Volt::RHI
 	{
 		Release();
 		m_byteSize = std::max(byteSize, Memory::GetMinBufferAllocationSize());
-
-		if (m_allocatedUsingCustomAllocator)
-		{
-			m_allocation = m_customAllocator->CreateBuffer(byteSize, m_bufferUsage | BufferUsage::TransferDst | BufferUsage::StorageBuffer, m_memoryUsage);
-		}
-		else
-		{
-			m_allocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(byteSize, m_bufferUsage | BufferUsage::TransferDst | BufferUsage::StorageBuffer, m_memoryUsage);
-		}
+		m_allocation = m_allocator->CreateBuffer(byteSize, m_bufferUsage | BufferUsage::TransferDst | BufferUsage::StorageBuffer, m_memoryUsage);
 	}
 
 	void D3D12StorageBuffer::Release()
@@ -253,16 +230,9 @@ namespace Volt::RHI
 			return;
 		}
 
-		RHIProxy::GetInstance().DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
+		RHIProxy::GetInstance().DestroyResource([allocator = m_allocator, allocation = m_allocation]()
 		{
-			if (allocatedUsingCustomAllocator)
-			{
-				customAllocator->DestroyBuffer(allocation);
-			}
-			else
-			{
-				GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
-			}
+			allocator->DestroyBuffer(allocation);
 		});
 
 		m_allocation = nullptr;

@@ -7,11 +7,12 @@
 #include <VoltRHI/Shader/ShaderUtility.h>
 #include <VoltRHI/Shader/ShaderPreProcessor.h>
 #include <VoltRHI/Shader/ShaderCache.h>
+#include <VoltRHI/Globals.h>
 
 #include <CoreUtilities/StringUtility.h>
 
-#include <dxc/dxcapi.h>
-#include <d3d12shader.h>
+#include <dxsc/dxcapi.h>
+#include <d3d12/d3d12shader.h>
 
 #include <ranges>
 #include <codecvt>
@@ -34,6 +35,31 @@ namespace Volt::RHI
 			}
 
 			return output;
+		}
+
+		inline ShaderUniformType GetShaderUniformTypeFromD3D12(ID3D12ShaderReflectionType* type)
+		{
+			D3D12_SHADER_TYPE_DESC desc{};
+			type->GetDesc(&desc);
+
+			ShaderUniformType resultType;
+
+			switch (desc.Type)
+			{
+				case D3D_SVT_BOOL: resultType.baseType = ShaderUniformBaseType::Bool; break;
+				case D3D_SVT_UINT: resultType.baseType = ShaderUniformBaseType::UInt; break;
+				case D3D_SVT_INT: resultType.baseType = ShaderUniformBaseType::Int; break;
+				case D3D_SVT_FLOAT: resultType.baseType = ShaderUniformBaseType::Float; break;
+				case D3D_SVT_FLOAT16: resultType.baseType = ShaderUniformBaseType::Half; break;
+				case D3D_SVT_INT16: resultType.baseType = ShaderUniformBaseType::Short; break;
+				case D3D_SVT_UINT16: resultType.baseType = ShaderUniformBaseType::UShort; break;
+			}
+
+			// #TODO_Ivar: Is this correct?
+			resultType.columns = desc.Rows;
+			resultType.vecsize = desc.Columns;
+		
+			return resultType;
 		}
 	}
 
@@ -424,10 +450,7 @@ namespace Volt::RHI
 			const uint32_t space = shaderInputBindDesc.Space;
 			const std::string name = shaderInputBindDesc.Name;
 
-			if (!TryAddShaderBinding(name, space, binding, inOutData))
-			{
-				RHILog::LogTagged(LogSeverity::Error, "[D3D12ShaderCompiler]", "Unable to add binding with name {0} to list. It already exists!", name);
-			}
+			ShaderRegisterType registerType = ShaderRegisterType::Texture;
 
 			if (name == "$Globals")
 			{
@@ -441,12 +464,58 @@ namespace Volt::RHI
 				D3D12_SHADER_BUFFER_DESC cbDesc{};
 				reflectedCB->GetDesc(&cbDesc);
 
+				registerType = ShaderRegisterType::UniformBuffer;
+
 				const size_t size = static_cast<size_t>(cbDesc.Size);
 
-				auto& buffer = inOutData.uniformBuffers[space][binding];
-				buffer.usageStages = buffer.usageStages | stage;
-				buffer.usageCount++;
-				buffer.size = size;
+				if (binding == Globals::PUSH_CONSTANTS_BINDING)
+				{
+					inOutData.constantsBuffer.SetSize(size);
+					inOutData.constants.size = static_cast<uint32_t>(size);
+
+					ID3D12ShaderReflectionVariable* baseVariable = reflectedCB->GetVariableByIndex(0);
+					ID3D12ShaderReflectionType* baseType = baseVariable->GetType();
+					D3D12_SHADER_TYPE_DESC baseTypeDesc;
+					baseType->GetDesc(&baseTypeDesc);
+
+					D3D12_SHADER_VARIABLE_DESC varDesc{};
+					baseVariable->GetDesc(&varDesc);
+
+					if (baseTypeDesc.Members == 0)
+					{
+						const uint32_t memberSize = varDesc.Size;
+						const uint32_t memberOffset = varDesc.StartOffset;
+						const std::string memberName = varDesc.Name;
+
+						const auto type = Utility::GetShaderUniformTypeFromD3D12(baseType);
+
+						inOutData.constantsBuffer.AddMember(memberName, type, memberSize, memberOffset);
+					}
+					else
+					{
+						for (uint32_t k = 0; k < baseTypeDesc.Members; k++)
+						{
+
+							ID3D12ShaderReflectionType* memberType = baseType->GetMemberTypeByIndex(k);
+							D3D12_SHADER_TYPE_DESC memberDesc{};
+							memberType->GetDesc(&memberDesc);
+
+							const uint32_t memberSize = 0;
+							const uint32_t memberOffset = memberDesc.Offset;
+
+							const auto type = Utility::GetShaderUniformTypeFromD3D12(memberType);
+						
+							inOutData.constantsBuffer.AddMember("", type, memberSize, memberOffset);
+						}
+					}
+				}
+				else
+				{
+					auto& buffer = inOutData.uniformBuffers[space][binding];
+					buffer.usageStages = buffer.usageStages | stage;
+					buffer.usageCount++;
+					buffer.size = size;
+				}
 			}
 			else if (shaderInputBindDesc.Type == D3D_SIT_STRUCTURED || shaderInputBindDesc.Type == D3D_SIT_BYTEADDRESS || 
 					 shaderInputBindDesc.Type == D3D_SIT_UAV_RWSTRUCTURED || shaderInputBindDesc.Type == D3D_SIT_UAV_RWBYTEADDRESS)
@@ -470,12 +539,16 @@ namespace Volt::RHI
 						buffer.arraySize = shaderInputBindDesc.BindCount;
 					}
 				}
+
+				registerType = buffer.isWrite ? ShaderRegisterType::UnorderedAccess : ShaderRegisterType::Texture;
 			}
 			else if (shaderInputBindDesc.Type == D3D_SIT_UAV_RWTYPED && (shaderInputBindDesc.Dimension >= 2 && shaderInputBindDesc.Dimension <= 10)) // This is all the texutre types
 			{
 				auto& shaderImage = inOutData.storageImages[space][binding];
 				shaderImage.usageStages = shaderImage.usageStages | stage;
 				shaderImage.usageCount++;
+
+				registerType = ShaderRegisterType::UnorderedAccess;
 
 				const bool firstEntry = !inOutData.storageImages[space].contains(binding);
 
@@ -497,6 +570,8 @@ namespace Volt::RHI
 				shaderImage.usageStages = shaderImage.usageStages | stage;
 				shaderImage.usageCount++;
 
+				registerType = ShaderRegisterType::Texture;
+
 				const bool firstEntry = !inOutData.images[space].contains(binding);
 
 				if (firstEntry)
@@ -516,18 +591,22 @@ namespace Volt::RHI
 				auto& shaderSampler = inOutData.samplers[space][binding];
 				shaderSampler.usageStages = shaderSampler.usageStages | stage;
 				shaderSampler.usageCount++;
+
+				registerType = ShaderRegisterType::Sampler;
 			}
+
+			TryAddShaderBinding(name, space, binding, registerType, inOutData);
 		}
 	}
 
-	bool D3D12ShaderCompiler::TryAddShaderBinding(const std::string& name, uint32_t set, uint32_t binding, CompilationResultData& outData)
+	bool D3D12ShaderCompiler::TryAddShaderBinding(const std::string& name, uint32_t set, uint32_t binding, ShaderRegisterType registerType, CompilationResultData& outData)
 	{
 		if (outData.bindings.contains(name))
 		{
 			return false;
 		}
 
-		outData.bindings[name] = { set, binding };
+		outData.bindings[name] = { set, binding, registerType };
 		return true;
 	}
 }

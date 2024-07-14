@@ -38,6 +38,7 @@ IncludeDir["entt"] = "%{wks.location}/Volt/vendor/entt/include"
 IncludeDir["cityhash"] = "%{wks.location}/Volt/vendor/cityhash/src"
 IncludeDir["METIS"] = "%{wks.location}/Volt/vendor/METIS/include"
 IncludeDir["ufbx"] = "%{wks.location}/Volt/vendor/ufbx"
+IncludeDir["dxc"] = "%{wks.location}/Volt/vendor/dxc/include"
 
 IncludeDir["vma"] = "%{wks.location}/Volt/vendor/vma"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
@@ -119,7 +120,7 @@ Library["swresample"] = "%{LibraryDir.ffmpeg}/libswresample.lib"
 Library["swscale"] = "%{LibraryDir.ffmpeg}/libswscale.lib"
 
 Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
-Library["dxc"] = "%{wks.location}/Volt/vendor/dxc/dxcompiler.lib"
+Library["dxc"] = "%{wks.location}/Volt/vendor/dxc/lib/dxcompiler.lib"
 
 Library["ShaderC_Debug"] = "%{LibraryDir.VulkanSDK_Debug}/shaderc_sharedd.lib"
 Library["ShaderC_Utils_Debug"] = "%{LibraryDir.VulkanSDK_Debug}/shaderc_utild.lib"

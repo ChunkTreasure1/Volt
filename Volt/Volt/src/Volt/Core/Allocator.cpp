@@ -3,7 +3,7 @@
 
 inline static size_t s_totalAllocation = 0;
 
-void* operator new(size_t size)
+VT_NODISCARD void* operator new(size_t size)
 {
 	s_totalAllocation += size;
 	
@@ -21,7 +21,7 @@ void* operator new(size_t size)
 	throw std::bad_alloc();
 }
 
-void* operator new[](size_t size)
+VT_NODISCARD void* operator new[](size_t size)
 {
 	s_totalAllocation += size;
 	if (size == 0)

@@ -1,0 +1,6 @@
+name: "DispatchIndirectTest_WriteCommand"
+internal: true
+sources:
+  - entryPoint: "MainWriteCommands"
+    shaderStage: "cs"
+    filePath: "Engine/Shaders/Source/Testing/DispatchIndirectTest_cs.hlsl"

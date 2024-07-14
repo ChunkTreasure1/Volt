@@ -106,7 +106,7 @@ namespace Volt::RHI
 
 		for (const auto& heap : m_imageHeaps)
 		{
-			if (heap->IsAllocationSupported(memoryRequirement.size, TransientHeapFlags::AllowTextures))
+			if (heap->IsAllocationSupported(info.size, TransientHeapFlags::AllowTextures))
 			{
 				result = heap->CreateImage(info);
 				break;
@@ -117,7 +117,7 @@ namespace Volt::RHI
 		if (!result)
 		{
 			auto heap = CreateNewImageHeap();
-			if (heap->IsAllocationSupported(memoryRequirement.size, TransientHeapFlags::AllowTextures))
+			if (heap->IsAllocationSupported(info.size, TransientHeapFlags::AllowTextures))
 			{
 				result = heap->CreateImage(info);
 			}

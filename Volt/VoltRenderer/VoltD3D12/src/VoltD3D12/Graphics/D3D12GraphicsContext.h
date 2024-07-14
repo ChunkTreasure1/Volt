@@ -10,6 +10,8 @@ struct ID3D12Debug;
 namespace Volt::RHI
 {
 	class CPUDescriptorHeapManager;
+	class CommandSignatureCache;
+
 	class D3D12GraphicsContext final : public GraphicsContext
 	{
 	public:
@@ -19,8 +21,10 @@ namespace Volt::RHI
 		CPUDescriptorHeapManager& GetCPUDescriptorHeapManager() const { return *m_cpuDescriptorHeapManager; }
 
 	protected:
-		Allocator& GetDefaultAllocatorImpl() override;
+		RefPtr<Allocator> GetDefaultAllocatorImpl() override;
 		RefPtr<Allocator> GetTransientAllocatorImpl() override;
+		RefPtr<ResourceStateTracker> GetResourceStateTrackerImpl() override;
+
 		RefPtr<GraphicsDevice> GetGraphicsDevice() const override;
 		RefPtr<PhysicalGraphicsDevice> GetPhysicalGraphicsDevice() const override;
 
@@ -37,10 +41,12 @@ namespace Volt::RHI
 		RefPtr<GraphicsDevice> m_graphicsDevice;
 		RefPtr<PhysicalGraphicsDevice> m_physicalDevice;
 
-		Scope<Allocator> m_defaultAllocator;
+		RefPtr<Allocator> m_defaultAllocator;
 		RefPtr<Allocator> m_transientAllocator;
+		RefPtr<ResourceStateTracker> m_resourceStateTracker;
 
 		Scope<CPUDescriptorHeapManager> m_cpuDescriptorHeapManager;
+		Scope<CommandSignatureCache> m_commandSignatureCache;
 
 		GraphicsContextCreateInfo m_createInfo{};
 

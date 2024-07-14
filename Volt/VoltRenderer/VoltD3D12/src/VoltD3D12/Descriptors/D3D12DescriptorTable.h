@@ -28,22 +28,15 @@ namespace Volt::RHI
 
 		void PrepareForRender() override;
 		void Bind(CommandBuffer& commandBuffer) override;
+		void SetRootParameters(CommandBuffer& commandBuffer);
 
 	protected:
 		void* GetHandleImpl() const override;
 
 	private:
-		struct DescriptorCopyInfo
-		{
-			D3D12DescriptorPointer srcPointer;
-			D3D12DescriptorPointer dstPointer;
-		};
-		
-		struct AllocatedDescriptorInfo
-		{
-			D3D12DescriptorPointer pointer;
-			D3D12ViewType viewType;
-		};
+		void SetImageView(WeakPtr<ImageView> imageView, uint32_t set, uint32_t binding, ShaderRegisterType registerType);
+		void SetBufferView(WeakPtr<BufferView> bufferView, uint32_t set, uint32_t binding, ShaderRegisterType registerType);
+		void SetSamplerState(WeakPtr<SamplerState> samplerState, uint32_t set, uint32_t binding, ShaderRegisterType registerType);
 
 		void Invalidate();
 		void Release();
@@ -53,8 +46,10 @@ namespace Volt::RHI
 
 		WeakPtr<Shader> m_shader;
 		bool m_isDirty = false;
+		bool m_isComputeTable = false;
+		uint32_t m_descriptorTableRootParamStartIndex = 0;
 
-		vt::map<uint32_t, vt::map<uint32_t, AllocatedDescriptorInfo>> m_allocatedDescriptorPointers;
+		vt::map<uint32_t, vt::map<uint32_t, vt::map<ShaderRegisterType, AllocatedDescriptorInfo>>> m_allocatedDescriptorPointers;
 		std::vector<DescriptorCopyInfo> m_activeDescriptorCopies;
 		std::vector<DescriptorCopyInfo> m_activeSamplerDescriptorCopies;
 

@@ -23,7 +23,7 @@ namespace Volt::RHI
 
 	void GraphicsContext::Update()
 	{
-		Get().GetDefaultAllocatorImpl().Update();
+		Get().GetDefaultAllocatorImpl()->Update();
 		Get().GetTransientAllocatorImpl()->Update();
 	}
 }

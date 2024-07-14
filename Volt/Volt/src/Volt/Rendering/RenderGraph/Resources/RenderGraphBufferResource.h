@@ -10,7 +10,8 @@ namespace Volt
 {
 	struct RenderGraphBufferDesc
 	{
-		size_t size;
+		uint32_t count;
+		uint64_t elementSize;
 		RHI::BufferUsage usage = RHI::BufferUsage::None;
 		RHI::MemoryUsage memoryUsage = RHI::MemoryUsage::GPU;
 
@@ -21,7 +22,8 @@ namespace Volt
 	{
 		inline static size_t GetHashFromBufferDesc(const RenderGraphBufferDesc& desc)
 		{
-			size_t hash = std::hash<size_t>()(desc.size);
+			size_t hash = std::hash<uint32_t>()(desc.count);
+			hash = Math::HashCombine(hash, std::hash<uint64_t>()(desc.elementSize));
 			hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(desc.usage)));
 			hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(desc.memoryUsage)));
 		

@@ -142,13 +142,13 @@ namespace Volt::RHI
 
 		if (rawResource->GetType() == ResourceType::StorageBuffer)
 		{
-			addressInfo.range = rawResource->AsRef<VulkanStorageBuffer>().GetSize();
+			addressInfo.range = rawResource->AsRef<VulkanStorageBuffer>().GetByteSize();
 			descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			descriptorTypeSize = m_descriptorTypeOffsets.ssboSize;
 		}
 		else if (rawResource->GetType() == ResourceType::UniformBuffer)
 		{
-			addressInfo.range = rawResource->AsRef<VulkanUniformBuffer>().GetSize();
+			addressInfo.range = rawResource->AsRef<VulkanUniformBuffer>().GetByteSize();
 			descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			descriptorTypeSize = m_descriptorTypeOffsets.uboSize;
 		}
@@ -298,7 +298,7 @@ namespace Volt::RHI
 		}
 
 		const uint64_t accumulatedSize = std::accumulate(m_descriptorSetLayoutSizes.begin(), m_descriptorSetLayoutSizes.end(), uint64_t(0));
-		m_descriptorBuffer = GraphicsContext::GetDefaultAllocator().CreateBuffer(accumulatedSize, BufferUsage::DescriptorBuffer, MemoryUsage::CPUToGPU);
+		m_descriptorBuffer = GraphicsContext::GetDefaultAllocator()->CreateBuffer(accumulatedSize, BufferUsage::DescriptorBuffer, MemoryUsage::CPUToGPU);
 		m_hostDescriptorBuffer.Resize(accumulatedSize);
 
 		m_accumulatedSize = accumulatedSize;
@@ -312,7 +312,7 @@ namespace Volt::RHI
 		{
 			if (descriptorBuffer)
 			{
-				GraphicsContext::GetDefaultAllocator().DestroyBuffer(descriptorBuffer);
+				GraphicsContext::GetDefaultAllocator()->DestroyBuffer(descriptorBuffer);
 			}
 		});
 

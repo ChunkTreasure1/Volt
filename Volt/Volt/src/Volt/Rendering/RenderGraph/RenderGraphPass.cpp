@@ -26,7 +26,10 @@ namespace Volt
 
 	const bool RenderGraphPassNodeBase::CreatesResource(RenderGraphResourceHandle handle) const
 	{
-		auto it = std::find(resourceCreates.cbegin(), resourceCreates.cend(), handle);
+		auto it = std::find_if(resourceCreates.begin(), resourceCreates.end(), [&](const auto& lhs)
+		{
+			return lhs.handle == handle;
+		});
 		return it != resourceCreates.end();
 	}
 

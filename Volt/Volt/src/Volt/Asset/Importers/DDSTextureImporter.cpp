@@ -8,6 +8,7 @@
 #include <VoltRHI/Graphics/GraphicsContext.h>
 
 #include <VoltRHI/Memory/Allocation.h>
+#include <VoltRHI/Utility/ResourceUtility.h>
 
 #define TINYDDSLOADER_IMPLEMENTATION
 #include <tinyddsloader.h>
@@ -87,20 +88,8 @@ namespace Volt
 
 		auto imageData = dds.GetImageData();
 
-		const size_t size = imageData->m_memSlicePitch;
-		const void* dataPtr = imageData->m_mem;
-
 		const uint32_t width = imageData->m_width;
 		const uint32_t height = imageData->m_height;
-
-		RefPtr<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetDefaultAllocator().CreateBuffer(size, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPUToGPU);
-
-		// Map memory
-		{
-			void* bufferPtr = stagingBuffer->Map<void>();;
-			memcpy_s(bufferPtr, size, dataPtr, size);
-			stagingBuffer->Unmap();
-		}
 
 		RefPtr<RHI::Image2D> image;
 		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
@@ -119,55 +108,46 @@ namespace Volt
 			image = RHI::Image2D::Create(specification);
 		}
 
+		RHI::ImageCopyData copyData{};
+		for (uint32_t i = 0; i < dds.GetMipCount(); i++)
+		{
+			auto mipData = dds.GetImageData(i);
+			
+			auto& subData = copyData.copySubData.emplace_back();
+			subData.data = mipData->m_mem;
+			subData.rowPitch = mipData->m_memPitch;
+			subData.slicePitch = mipData->m_memSlicePitch;
+			subData.width = mipData->m_width;
+			subData.height = mipData->m_height;
+			subData.depth = mipData->m_depth;
+			subData.subResource.baseArrayLayer = 0;
+			subData.subResource.baseMipLevel = i;
+			subData.subResource.layerCount = 1;
+			subData.subResource.levelCount = 1;
+		}
+
 		commandBuffer->Begin();
 
 		{
 			RHI::ResourceBarrierInfo barrier{};
 			barrier.type = RHI::BarrierType::Image;
-			barrier.imageBarrier().srcStage = RHI::BarrierStage::None;
-			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::None;
-			barrier.imageBarrier().srcLayout = RHI::ImageLayout::Undefined;
+			RHI::ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), image);
+
 			barrier.imageBarrier().dstStage = RHI::BarrierStage::Copy;
-			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
-			barrier.imageBarrier().dstLayout = RHI::ImageLayout::TransferDestination;
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::CopyDest;
+			barrier.imageBarrier().dstLayout = RHI::ImageLayout::CopyDest;
 			barrier.imageBarrier().resource = image;
 
 			commandBuffer->ResourceBarrier({ barrier });
 		}
 
-		commandBuffer->CopyBufferToImage(stagingBuffer, image, width, height, 0);
-		commandBuffer->End();
-		commandBuffer->ExecuteAndWait();
-
-		// Set mip data
-		{
-			for (uint32_t i = 1; i < dds.GetMipCount(); i++)
-			{
-				commandBuffer->Begin();
-
-				auto mipData = dds.GetImageData(i);
-				const size_t mipSize = mipData->m_memSlicePitch;
-
-				// Map mip memory
-				{
-					void* bufferPtr = stagingBuffer->Map<void>();
-					memcpy_s(bufferPtr, mipSize, mipData->m_mem, mipSize);
-					stagingBuffer->Unmap();
-				}
-
-				commandBuffer->CopyBufferToImage(stagingBuffer, image, mipData->m_width, mipData->m_height, i);
-				commandBuffer->End();
-				commandBuffer->ExecuteAndWait();
-			}
-		}
-
-		commandBuffer->Begin();
+		commandBuffer->UploadTextureData(image, copyData);
+		
 		{
 			RHI::ResourceBarrierInfo barrier{};
 			barrier.type = RHI::BarrierType::Image;
-			barrier.imageBarrier().srcStage = RHI::BarrierStage::Copy;
-			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::TransferDestination;
-			barrier.imageBarrier().srcLayout = RHI::ImageLayout::TransferDestination;
+			RHI::ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), image);
+
 			barrier.imageBarrier().dstStage = RHI::BarrierStage::PixelShader;
 			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
 			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;

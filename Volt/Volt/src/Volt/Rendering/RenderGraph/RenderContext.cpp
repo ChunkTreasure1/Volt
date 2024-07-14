@@ -8,6 +8,7 @@
 #include "Volt/Rendering/Renderer.h"
 
 #include <VoltRHI/Buffers/StorageBuffer.h>
+#include <VoltRHI/Buffers/UniformBuffer.h>
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
@@ -131,6 +132,27 @@ namespace Volt
 		uint8_t* mappedPtr = buffer->Map<uint8_t>();
 		memcpy_s(mappedPtr, size, data, size);
 		buffer->Unmap();
+	}
+
+	void RenderContext::PushConstants(const void* data, const uint32_t size)
+	{
+		BindDescriptorTableIfRequired();
+
+		bool shouldPushConstants = false;
+
+		if (m_currentRenderPipeline)
+		{
+			shouldPushConstants = m_currentRenderPipeline->GetShader()->HasConstants();
+		}
+		else if (m_currentComputePipeline)
+		{
+			shouldPushConstants = m_currentComputePipeline->GetShader()->HasConstants();
+		}
+
+		if (shouldPushConstants)
+		{
+			m_commandBuffer->PushConstants(data, size, 0);
+		}
 	}
 
 	void RenderContext::DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
@@ -261,7 +283,6 @@ namespace Volt
 		m_commandBuffer->BindPipeline(pipeline);
 
 		m_descriptorTableIsBound = false;
-		m_currentDescriptorTable = GetOrCreateDescriptorTable(pipeline);
 	
 		InitializeCurrentPipelineConstantsValidation();
 	}
@@ -282,7 +303,6 @@ namespace Volt
 		m_commandBuffer->BindPipeline(pipeline);
 
 		m_descriptorTableIsBound = false;
-		m_currentDescriptorTable = GetOrCreateDescriptorTable(pipeline);
 
 		InitializeCurrentPipelineConstantsValidation();
 	}
@@ -334,12 +354,12 @@ namespace Volt
 
 	RefPtr<RHI::StorageBuffer> RenderContext::GetReadbackBuffer(WeakPtr<RHI::StorageBuffer> buffer)
 	{
-		RefPtr<RHI::StorageBuffer> readbackBuffer = RHI::StorageBuffer::Create(buffer->GetSize(), "Readback Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
+		RefPtr<RHI::StorageBuffer> readbackBuffer = RHI::StorageBuffer::Create(buffer->GetCount(), buffer->GetElementSize(), "Readback Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
 
 		RefPtr<RHI::CommandBuffer> tempCommandBuffer = RHI::CommandBuffer::Create();
 		tempCommandBuffer->Begin();
 
-		tempCommandBuffer->CopyBufferRegion(buffer->GetAllocation(), 0, readbackBuffer->GetAllocation(), 0, buffer->GetSize());
+		tempCommandBuffer->CopyBufferRegion(buffer->GetAllocation(), 0, readbackBuffer->GetAllocation(), 0, buffer->GetByteSize());
 
 		tempCommandBuffer->End();
 		tempCommandBuffer->ExecuteAndWait();
@@ -347,14 +367,19 @@ namespace Volt
 		return readbackBuffer;
 	}
 
-	void RenderContext::SetPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer)
+	void RenderContext::SetPerPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer)
 	{
-		m_passConstantsBuffer = constantsBuffer;
-		m_passConstantsBufferData.resize(constantsBuffer->GetSize());
-		memset(m_passConstantsBufferData.data(), 0, m_passConstantsBufferData.size());
+		m_perPassConstantsBuffer = constantsBuffer;
+		m_perPassConstantsBufferData.resize(constantsBuffer->GetByteSize());
+		memset(m_perPassConstantsBufferData.data(), 0, m_perPassConstantsBufferData.size());
 	}
 
-	void RenderContext::SetCurrentPassIndex(Weak<RenderGraphPassNodeBase> currentPassNode)
+	void RenderContext::SetRenderGraphConstantsBuffer(WeakPtr<RHI::UniformBuffer> constantsBuffer)
+	{
+		m_renderGraphConstantsBuffer = constantsBuffer;
+	}
+
+	void RenderContext::SetCurrentPass(Weak<RenderGraphPassNodeBase> currentPassNode)
 	{
 		m_currentPassIndex = currentPassNode->index;
 		m_currentPassNode = currentPassNode;
@@ -367,9 +392,9 @@ namespace Volt
 
 	void RenderContext::UploadConstantsData()
 	{
-		uint8_t* mappedPtr = m_passConstantsBuffer->Map<uint8_t>();
-		memcpy_s(mappedPtr, m_passConstantsBuffer->GetSize(), m_passConstantsBufferData.data(), m_passConstantsBufferData.size());
-		m_passConstantsBuffer->Unmap();
+		uint8_t* mappedPtr = m_perPassConstantsBuffer->Map<uint8_t>();
+		memcpy_s(mappedPtr, m_perPassConstantsBuffer->GetByteSize(), m_perPassConstantsBufferData.data(), m_perPassConstantsBufferData.size());
+		m_perPassConstantsBuffer->Unmap();
 	}
 
 	void RenderContext::InitializeCurrentPipelineConstantsValidation()
@@ -413,75 +438,34 @@ namespace Volt
 	void RenderContext::BindDescriptorTableIfRequired()
 	{
 		VT_PROFILE_FUNCTION();
+		VT_ENSURE(m_currentComputePipeline || m_currentRenderPipeline);
 
 		if (m_descriptorTableIsBound)
 		{
 			return;
 		}
 
-		struct PushConstantsData
+		// Set render graph constants
 		{
-			ResourceHandle constatsBufferIndex;
-			ResourceHandle shaderValidationBuffer;
-			uint32_t constantsOffset;
-		} constantsData;
-
-		constantsData.constatsBufferIndex = BindlessResourcesManager::Get().GetBufferHandle(m_passConstantsBuffer);
-		
+			RenderGraphConstants renderGraphConstants;
+			renderGraphConstants.constatsBufferIndex = BindlessResourcesManager::Get().GetBufferHandle(m_perPassConstantsBuffer);
+			renderGraphConstants.constantsOffset = m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
 #ifndef VT_DIST
-		constantsData.shaderValidationBuffer = Renderer::GetRuntimeShaderValidator().GetCurrentErrorBufferHandle();
+			renderGraphConstants.shaderValidationBuffer = Renderer::GetRuntimeShaderValidator().GetCurrentErrorBufferHandle();
 #endif
-		
-		constantsData.constantsOffset = m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
+			{
+				uint8_t* constantsPtr = m_renderGraphConstantsBuffer->Map<uint8_t>(m_currentPassIndex);
+				memcpy_s(constantsPtr, sizeof(RenderGraphConstants), &renderGraphConstants, sizeof(RenderGraphConstants));
+				m_renderGraphConstantsBuffer->Unmap();
+			}
+		}
 
-		m_commandBuffer->PushConstants(&constantsData, sizeof(PushConstantsData), 0);
-		m_commandBuffer->BindDescriptorTable(m_currentDescriptorTable);
+		auto descriptorTable = BindlessResourcesManager::Get().GetDescriptorTable();
+		descriptorTable->SetConstantsBuffer(m_renderGraphConstantsBuffer);
+		descriptorTable->SetOffsetIndexAndStride(m_currentPassIndex, sizeof(RenderGraphConstants));
+		m_commandBuffer->BindDescriptorTable(descriptorTable);
 
 		m_descriptorTableIsBound = true;
-	}
-
-	RefPtr<RHI::DescriptorTable> RenderContext::GetOrCreateDescriptorTable(WeakPtr<RHI::RenderPipeline> renderPipeline)
-	{
-		VT_PROFILE_FUNCTION();
-
-		//auto shader = renderPipeline->GetShader();
-		//void* ptr = shader.get();
-
-		//if (m_descriptorTableCache.contains(ptr))
-		//{
-		//	return m_descriptorTableCache.at(ptr);
-		//}
-
-		//RHI::DescriptorTableCreateInfo info{};
-		//info.shader = shader;
-		//info.count = 1;
-
-		//RefPtr<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
-		//m_descriptorTableCache[ptr] = descriptorTable;
-
-		return BindlessResourcesManager::Get().GetDescriptorTable();
-	}
-
-	RefPtr<RHI::DescriptorTable> RenderContext::GetOrCreateDescriptorTable(WeakPtr<RHI::ComputePipeline> computePipeline)
-	{
-		VT_PROFILE_FUNCTION();
-
-		//auto shader = computePipeline->GetShader();
-		//void* ptr = shader.get();
-
-		//if (m_descriptorTableCache.contains(ptr))
-		//{
-		//	return m_descriptorTableCache.at(ptr);
-		//}
-
-		//RHI::DescriptorTableCreateInfo info{};
-		//info.shader = shader;
-		//info.count = 1;
-
-		//RefPtr<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
-		//m_descriptorTableCache[ptr] = descriptorTable;
-
-		return BindlessResourcesManager::Get().GetDescriptorTable();
 	}
 
 	template<>
@@ -532,6 +516,6 @@ namespace Volt
 		//}
 #endif
 
-		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(ResourceHandle));
+		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(ResourceHandle));
 	}
 }

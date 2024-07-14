@@ -4,6 +4,8 @@
 #include "VoltD3D12/Descriptors/DescriptorCommon.h"
 
 #include <VoltRHI/Graphics/Swapchain.h>
+#include <VoltRHI/Buffers/CommandBuffer.h>
+
 #include <array>
 
 struct IDXGISwapChain3;
@@ -30,11 +32,10 @@ namespace Volt::RHI
 		VT_NODISCARD const uint32_t GetHeight() const override;
 		VT_NODISCARD const uint32_t GetFramesInFlight() const override;
 		VT_NODISCARD RefPtr<Image2D> GetCurrentImage() const override;
+		VT_NODISCARD RefPtr<CommandBuffer> GetCommandBuffer() const override;
 		VT_NODISCARD const PixelFormat GetFormat() const override;
 
-		VT_NODISCARD ComPtr<ID3D12Resource> GetCurrentImageResource() const { return m_perImageData.at(m_currentImageIndex).resource; }
-		VT_NODISCARD const D3D12DescriptorPointer& GetCurrentImageResourceView() const { return m_perImageData.at(m_currentImageIndex).descriptorPointer; }
-
+		VT_NODISCARD ComPtr<ID3D12Resource> GetImageAtIndex(const uint32_t index) const { return m_perImageData.at(index).resource; }
 	protected:
 		void* GetHandleImpl() const override;
 
@@ -43,27 +44,20 @@ namespace Volt::RHI
 		void Release();
 
 		void CreateSwapchain(const uint32_t width, const uint32_t height);
-		void CreateRTVs();
-		void CreateFence();
-
-		uint64_t Signal(uint64_t& fenceValue);
-		void WaitForFenceValue(uint64_t fenceValue);
+		void GetSwapchainImages();
 
 		struct PerImageData
 		{
 			ComPtr<ID3D12Resource> resource = nullptr;
-			D3D12DescriptorPointer descriptorPointer = {};
+			RefPtr<Image2D> imageReference;
 		};
 
 		GLFWwindow* m_windowHandle;
 		ComPtr<IDXGISwapChain4> m_swapchain;
 
-		std::array<PerImageData, MAX_SWAPCHAIN_IMAGES> m_perImageData = {};
-		std::array<uint64_t, MAX_SWAPCHAIN_IMAGES> m_perFrameFenceValues{};
+		RefPtr<CommandBuffer> m_commandBuffer;
 
-		ComPtr<ID3D12Fence> m_fence;
-		void* m_fenceEventHandle = nullptr;
-		uint64_t m_fenceValue = 0;
+		std::array<PerImageData, MAX_SWAPCHAIN_IMAGES> m_perImageData = {};
 
 		uint32_t m_width = 1280;
 		uint32_t m_height = 720;

@@ -13,7 +13,7 @@
 #include <functional>
 
 // TODO:
-// * Implement validation system
+// * Implement validation system 
 // * Implement warning system
 
 namespace Volt
@@ -41,6 +41,7 @@ namespace Volt
 		RHI::ResourceBarrierInfo accessInfo;
 
 		bool isPassSpecificUsage = true;
+		bool hasInitialState = true;
 	};
 
 	class RenderGraph
@@ -57,10 +58,10 @@ namespace Volt
 		public:
 			Builder(RenderGraph& renderGraph, Ref<RenderGraphPassNodeBase> pass);
 
-			RenderGraphResourceHandle CreateImage2D(const RenderGraphImageDesc& textureDesc);
-			RenderGraphResourceHandle CreateImage3D(const RenderGraphImageDesc& textureDesc);
-			RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc);
-			RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
+			RenderGraphResourceHandle CreateImage2D(const RenderGraphImageDesc& textureDesc, RenderGraphResourceState forceState = RenderGraphResourceState::None);
+			RenderGraphResourceHandle CreateImage3D(const RenderGraphImageDesc& textureDesc, RenderGraphResourceState forceState = RenderGraphResourceState::None);
+			RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc, RenderGraphResourceState forceState = RenderGraphResourceState::None);
+			RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc, RenderGraphResourceState forceState = RenderGraphResourceState::None);
 
 			RenderGraphResourceHandle AddExternalImage2D(RefPtr<RHI::Image2D> image);
 			//RenderGraphResourceHandle AddExternalImage3D(RefPtr<RHI::Image3D> image);
@@ -183,8 +184,9 @@ namespace Volt
 		RenderGraphResourceHandle m_resourceIndex = 0;
 
 		RefPtr<RHI::CommandBuffer> m_commandBuffer;
-		WeakPtr<RHI::StorageBuffer> m_passConstantsBuffer;
-		ResourceHandle m_passConstantsBufferResourceHandle = Resource::Invalid;
+		WeakPtr<RHI::StorageBuffer> m_perPassConstantsBuffer;
+		WeakPtr<RHI::UniformBuffer> m_renderGraphConstantsBuffer;
+		ResourceHandle m_perPassConstantsBufferResourceHandle = Resource::Invalid;
 
 		TransientResourceSystem m_transientResourceSystem;
 		RenderContext m_renderContext;

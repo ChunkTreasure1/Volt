@@ -4,6 +4,7 @@
 #include "VoltD3D12/Descriptors/D3D12DescriptorHeap.h"
 
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
+#include <CoreUtilities/Containers/Map.h>
 
 struct ID3D12DescriptorHeap;
 
@@ -31,8 +32,12 @@ namespace Volt::RHI
 		ImGuiCreateInfo m_info;
 
 		D3D12DescriptorPointer m_fontTexturePointer;
+		RefPtr<CommandBuffer> m_commandBuffer;
+
+		uint32_t m_currentFrameIndex = 0;
+		const uint32_t m_framesInFlight = 0;
 
 		Scope<D3D12DescriptorHeap> m_descriptorHeap;
-		RefPtr<CommandBuffer> m_commandBuffer;
+		mutable std::vector<vt::map<size_t, D3D12DescriptorPointer>> m_descriptorCache;
 	};
 }

@@ -10,7 +10,7 @@ namespace Volt::RHI
 	class VulkanUniformBuffer : public UniformBuffer
 	{
 	public:
-		VulkanUniformBuffer(const uint32_t size, const void* data);
+		VulkanUniformBuffer(const uint32_t size, const void* data, const uint32_t count, std::string_view name);
 		~VulkanUniformBuffer() override;
 
 		RefPtr<BufferView> GetView() override;
@@ -24,7 +24,7 @@ namespace Volt::RHI
 		const uint64_t GetByteSize() const override;
 
 	protected:
-		void* MapInternal() override;
+		void* MapInternal(const uint32_t index) override;
 		void* GetHandleImpl() const override;
 
 	private:

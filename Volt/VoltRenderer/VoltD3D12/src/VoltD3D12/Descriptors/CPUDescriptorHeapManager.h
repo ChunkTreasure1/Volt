@@ -18,6 +18,8 @@ namespace Volt::RHI
 		D3D12DescriptorPointer Allocate(D3D12DescriptorType descriptorType);
 		void Free(D3D12DescriptorPointer descriptorPointer);
 
+		D3D12DescriptorHeap& GetHeapFromHash(size_t hash) const;
+
 	private:
 		void Initialize();
 		Scope<D3D12DescriptorHeap> CreateDescriptorHeap(D3D12DescriptorType descriptorType);

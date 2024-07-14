@@ -115,7 +115,7 @@ struct ImGui_ImplVulkan_ViewportData
 struct ImGui_ImplVulkan_Data
 {
     ImGui_ImplVulkan_InitInfo   VulkanInitInfo = {};
-    VkRenderPass                RenderPass = nullptr;
+    VkFormat                    TargetFormat = VK_FORMAT_UNDEFINED;
     VkDeviceSize                BufferMemoryAlignment = 0;
     VkPipelineCreateFlags       PipelineCreateFlags = {};
     VkDescriptorSetLayout       DescriptorSetLayout = nullptr;
@@ -644,6 +644,12 @@ bool ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer)
 
     // Create the Image:
     {
+        if (bd->FontImage)
+        {
+            vkDestroyImage(v->Device, bd->FontImage, nullptr);
+            bd->FontImage = nullptr;
+        }
+
         VkImageCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         info.imageType = VK_IMAGE_TYPE_2D;
@@ -682,6 +688,12 @@ bool ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer)
 
     // Create the Image View:
     {
+        if (bd->FontView)
+        {
+            vkDestroyImageView(v->Device, bd->FontView, nullptr);
+            bd->FontView = nullptr;
+        }
+
         VkImageViewCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         info.image = bd->FontImage;
@@ -875,7 +887,7 @@ static void ImGui_ImplVulkan_CreatePipelineLayout(VkDevice device, const VkAlloc
     check_vk_result(err);
 }
 
-static void ImGui_ImplVulkan_CreatePipeline(VkDevice device, const VkAllocationCallbacks* allocator, VkPipelineCache pipelineCache, VkRenderPass renderPass, VkSampleCountFlagBits MSAASamples, VkPipeline* pipeline, uint32_t subpass)
+static void ImGui_ImplVulkan_CreatePipeline(VkDevice device, const VkAllocationCallbacks* allocator, VkPipelineCache pipelineCache, VkSampleCountFlagBits MSAASamples, VkPipeline* pipeline, uint32_t subpass, VkFormat targetFormat)
 {
     ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
     ImGui_ImplVulkan_CreateShaderModules(device, allocator);
@@ -961,8 +973,17 @@ static void ImGui_ImplVulkan_CreatePipeline(VkDevice device, const VkAllocationC
 
     ImGui_ImplVulkan_CreatePipelineLayout(device, allocator);
 
+    VkPipelineRenderingCreateInfo pipelineRenderingInfo{};
+    pipelineRenderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+    pipelineRenderingInfo.pNext = nullptr;
+    pipelineRenderingInfo.colorAttachmentCount = 1;
+    pipelineRenderingInfo.pColorAttachmentFormats = &targetFormat;
+    pipelineRenderingInfo.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
+    pipelineRenderingInfo.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+
     VkGraphicsPipelineCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    info.pNext = &pipelineRenderingInfo;
     info.flags = bd->PipelineCreateFlags;
     info.stageCount = 2;
     info.pStages = stage;
@@ -975,8 +996,8 @@ static void ImGui_ImplVulkan_CreatePipeline(VkDevice device, const VkAllocationC
     info.pColorBlendState = &blend_info;
     info.pDynamicState = &dynamic_state;
     info.layout = bd->PipelineLayout;
-    info.renderPass = renderPass;
-    info.subpass = subpass;
+    info.renderPass = nullptr;
+    info.subpass = 0;
     VkResult err = vkCreateGraphicsPipelines(device, pipelineCache, 1, &info, allocator, pipeline);
     check_vk_result(err);
 }
@@ -1084,7 +1105,7 @@ bool ImGui_ImplVulkan_CreateDeviceObjects()
         }
     }
 
-    ImGui_ImplVulkan_CreatePipeline(v->Device, v->Allocator, v->PipelineCache, bd->RenderPass, v->MSAASamples, &bd->Pipeline, bd->Subpass);
+    ImGui_ImplVulkan_CreatePipeline(v->Device, v->Allocator, v->PipelineCache, v->MSAASamples, &bd->Pipeline, bd->Subpass, bd->TargetFormat);
 
     return true;
 }
@@ -1151,7 +1172,7 @@ bool    ImGui_ImplVulkan_LoadFunctions(PFN_vkVoidFunction(*loader_func)(const ch
     return true;
 }
 
-bool    ImGui_ImplVulkan_Init(ImGui_ImplVulkan_InitInfo* info, VkRenderPass render_pass)
+bool    ImGui_ImplVulkan_Init(ImGui_ImplVulkan_InitInfo* info, VkFormat targetFormat)
 {
     IM_ASSERT(g_FunctionsLoaded && "Need to call ImGui_ImplVulkan_LoadFunctions() if IMGUI_IMPL_VULKAN_NO_PROTOTYPES or VK_NO_PROTOTYPES are set!");
 
@@ -1172,11 +1193,11 @@ bool    ImGui_ImplVulkan_Init(ImGui_ImplVulkan_InitInfo* info, VkRenderPass rend
     IM_ASSERT(info->DescriptorPool != VK_NULL_HANDLE);
     IM_ASSERT(info->MinImageCount >= 2);
     IM_ASSERT(info->ImageCount >= info->MinImageCount);
-    IM_ASSERT(render_pass != VK_NULL_HANDLE);
+    IM_ASSERT(targetFormat != VK_FORMAT_UNDEFINED);
 
     bd->VulkanInitInfo = *info;
-    bd->RenderPass = render_pass;
     bd->Subpass = info->Subpass;
+    bd->TargetFormat = targetFormat;
 
     ImGui_ImplVulkan_CreateDeviceObjects();
 

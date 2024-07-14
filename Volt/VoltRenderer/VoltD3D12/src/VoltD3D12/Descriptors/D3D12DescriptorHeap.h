@@ -22,7 +22,7 @@ namespace Volt::RHI
 		D3D12DescriptorHeap(const DescriptorHeapSpecification& specification);
 		~D3D12DescriptorHeap();
 
-		D3D12DescriptorPointer Allocate();
+		D3D12DescriptorPointer Allocate(const uint32_t descriptorIndex = std::numeric_limits<uint32_t>::max());
 		void Free(D3D12DescriptorPointer descriptor);
 
 		// This will invalidate all allocated descriptors

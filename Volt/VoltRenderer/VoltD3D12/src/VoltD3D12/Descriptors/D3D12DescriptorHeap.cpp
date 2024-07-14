@@ -3,6 +3,8 @@
 
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 
+#include <VoltRHI/RHIProxy.h>
+
 namespace Volt::RHI
 {
 	namespace Utility
@@ -52,35 +54,86 @@ namespace Volt::RHI
 
 	D3D12DescriptorHeap::~D3D12DescriptorHeap()
 	{
+		if (!m_descriptorHeap)
+		{
+			return;
+		}
+
+		RHIProxy::GetInstance().DestroyResource([descriptorHeap = m_descriptorHeap]() mutable
+		{
+			descriptorHeap = nullptr;
+		});
+
 		m_descriptorHeap = nullptr;
 	}
 
-	D3D12DescriptorPointer D3D12DescriptorHeap::Allocate()
+	D3D12DescriptorPointer D3D12DescriptorHeap::Allocate(const uint32_t descriptorIndex)
 	{
+		VT_PROFILE_FUNCTION();
 		std::scoped_lock lock{ m_mutex };
+
+		const bool allocateAtLocation = descriptorIndex != std::numeric_limits<uint32_t>::max();
 
 		if (!m_availiableDescriptors.empty())
 		{
-			D3D12DescriptorPointer descriptor = m_availiableDescriptors.back();
-			m_availiableDescriptors.pop_back();
+			if (allocateAtLocation)
+			{
+				auto it = std::find_if(m_availiableDescriptors.begin(), m_availiableDescriptors.end(), [&](const D3D12DescriptorPointer& descriptorPointer)
+				{
+					uint64_t descriptorOffset = descriptorPointer.GetCPUPointer() - m_descriptorHeap->GetCPUDescriptorHandleForHeapStart().ptr;
+					descriptorOffset /= static_cast<uint32_t>(m_descriptorSize);
 
-			return descriptor;
+					return descriptorOffset == descriptorIndex;
+				});
+
+				if (it != m_availiableDescriptors.end())
+				{
+					D3D12DescriptorPointer descriptor = *it;
+					m_availiableDescriptors.erase(it);
+					return descriptor;
+				}
+			}
+			else
+			{
+				D3D12DescriptorPointer descriptor = m_availiableDescriptors.back();
+				m_availiableDescriptors.pop_back();
+				return descriptor;
+			}
 		}
 
-		if (m_currentDescriptorCount + 1 >= m_maxDescriptorCount)
+		uint32_t descriptorOffset = m_currentDescriptorCount * m_descriptorSize;
+
+		if (allocateAtLocation)
 		{
-			return {};
+			if (descriptorIndex + 1 > m_maxDescriptorCount)
+			{
+				return {};
+			}
+
+			if (descriptorIndex >= m_currentDescriptorCount)
+			{
+				m_currentDescriptorCount = descriptorIndex + 1;
+			}
+
+			descriptorOffset = descriptorIndex * m_descriptorSize;
+		}
+		else
+		{
+			if (m_currentDescriptorCount + 1 > m_maxDescriptorCount)
+			{
+				return {};
+			}
+
+			m_currentDescriptorCount++;
 		}
 
-		const uint32_t newDescriptorOffset = m_currentDescriptorCount * m_descriptorSize;
-		m_currentDescriptorCount++;
 
 		D3D12DescriptorPointer result{};
-		result.cpuPointer = m_startPointer.cpuPointer + static_cast<uint64_t>(newDescriptorOffset);
+		result.cpuPointer = m_startPointer.cpuPointer + static_cast<uint64_t>(descriptorOffset);
 		
 		if (m_supportsGPUDescriptors)
 		{
-			result.gpuPointer = m_startPointer.gpuPointer + static_cast<uint64_t>(newDescriptorOffset);
+			result.gpuPointer = m_startPointer.gpuPointer + static_cast<uint64_t>(descriptorOffset);
 		}
 
 		result.parentHeapHash = m_hash;
@@ -89,6 +142,8 @@ namespace Volt::RHI
 
 	void D3D12DescriptorHeap::Free(D3D12DescriptorPointer descriptor)
 	{
+		VT_PROFILE_FUNCTION();
+
 		std::scoped_lock lock{ m_mutex };
 		m_availiableDescriptors.emplace_back(descriptor);
 	}
@@ -101,11 +156,13 @@ namespace Volt::RHI
 
 	bool D3D12DescriptorHeap::IsAllocationSupported(D3D12DescriptorType descriptorType) const
 	{
-		return m_descriptorType == descriptorType && m_currentDescriptorCount < m_maxDescriptorCount && m_availiableDescriptors.empty();
+		return m_descriptorType == descriptorType && (m_currentDescriptorCount < m_maxDescriptorCount || !m_availiableDescriptors.empty());
 	}
 
 	void D3D12DescriptorHeap::AllocateHeap(uint32_t maxDescriptorCount)
 	{
+		VT_PROFILE_FUNCTION();
+
 		D3D12_DESCRIPTOR_HEAP_DESC desc{};
 		desc.Type = Utility::GetDescriptorType(m_descriptorType);
 		desc.Flags = m_supportsGPUDescriptors ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
@@ -116,5 +173,10 @@ namespace Volt::RHI
 		VT_D3D12_CHECK(d3d12Device->CreateDescriptorHeap(&desc, VT_D3D12_ID(m_descriptorHeap)));
 
 		m_startPointer.cpuPointer = m_descriptorHeap->GetCPUDescriptorHandleForHeapStart().ptr;
+		
+		if (m_supportsGPUDescriptors)
+		{
+			m_startPointer.gpuPointer = m_descriptorHeap->GetGPUDescriptorHandleForHeapStart().ptr;
+		}
 	}
 }

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Volt/Asset/Asset.h"
-#include "Volt/Rendering/Resources/ResourceHandle.h"
 
+#include <VoltRHI/Descriptors/ResourceHandle.h>
 #include <VoltRHI/Core/RHICommon.h>
 #include <VoltRHI/Images/Image2D.h>
 

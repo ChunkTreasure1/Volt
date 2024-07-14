@@ -3,8 +3,8 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Rendering/RenderGraph/RenderGraphCommon.h"
 #include "Volt/Rendering/RenderGraph/Resources/RenderGraphResourceHandle.h"
-#include "Volt/Rendering/Resources/ResourceHandle.h"
 
+#include <VoltRHI/Descriptors/ResourceHandle.h>
 #include <VoltRHI/Core/RHICommon.h>
 #include <VoltRHI/Shader/Shader.h>
 #include <VoltRHI/Pipelines/RenderPipeline.h>
@@ -150,6 +150,13 @@ namespace Volt
 	class RenderContext
 	{
 	public:
+		struct RenderGraphConstants
+		{
+			ResourceHandle constatsBufferIndex;
+			ResourceHandle shaderValidationBuffer;
+			uint32_t constantsOffset;
+		};
+
 		RenderContext(RefPtr<RHI::CommandBuffer> commandBuffer);
 		~RenderContext();
 
@@ -163,6 +170,7 @@ namespace Volt
 		void CopyBuffer(RenderGraphResourceHandle src, RenderGraphResourceHandle dst, const size_t size);
 
 		void MappedBufferUpload(RenderGraphResourceHandle buffer, const void* data, const size_t size);
+		void PushConstants(const void* data, const uint32_t size);
 
 		void DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ);
 		void DispatchMeshTasksIndirect(RenderGraphResourceHandle commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride);
@@ -211,8 +219,10 @@ namespace Volt
 
 		void BindDescriptorTableIfRequired();
 
-		void SetPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer);
-		void SetCurrentPassIndex(Weak<RenderGraphPassNodeBase> currentPassNode);
+		void SetPerPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer);
+		void SetRenderGraphConstantsBuffer(WeakPtr<RHI::UniformBuffer> constantsBuffer);
+
+		void SetCurrentPass(Weak<RenderGraphPassNodeBase> currentPassNode);
 		void SetRenderGraphInstance(RenderGraph* renderGraph);
 		void UploadConstantsData();
 
@@ -222,17 +232,14 @@ namespace Volt
 
 		const RHI::ShaderRenderGraphConstantsData& GetRenderGraphConstantsData();
 
-		RefPtr<RHI::DescriptorTable> GetOrCreateDescriptorTable(WeakPtr<RHI::RenderPipeline> renderPipeline);
-		RefPtr<RHI::DescriptorTable> GetOrCreateDescriptorTable(WeakPtr<RHI::ComputePipeline> computePipeline);
-
 		// Internal state
 		bool m_descriptorTableIsBound = false; // This needs to be checked in every call that uses resources
 
 		WeakPtr<RHI::RenderPipeline> m_currentRenderPipeline;
 		WeakPtr<RHI::ComputePipeline> m_currentComputePipeline;
-		RefPtr<RHI::DescriptorTable> m_currentDescriptorTable;
 
-		WeakPtr<RHI::StorageBuffer> m_passConstantsBuffer;
+		WeakPtr<RHI::StorageBuffer> m_perPassConstantsBuffer;
+		WeakPtr<RHI::UniformBuffer> m_renderGraphConstantsBuffer;
 
 		uint32_t m_currentPassIndex = 0;
 		Weak<RenderGraphPassNodeBase> m_currentPassNode;
@@ -240,10 +247,8 @@ namespace Volt
 
 		RefPtr<RHI::CommandBuffer> m_commandBuffer;
 
-		std::unordered_map<void*, RefPtr<RHI::DescriptorTable>> m_descriptorTableCache;
-	
 		// #TODO_Ivar: Should be changed
-		std::vector<uint8_t> m_passConstantsBufferData;
+		std::vector<uint8_t> m_perPassConstantsBufferData;
 
 #ifdef VT_DEBUG
 		BoundPipelineData m_boundPipelineData;
@@ -268,7 +273,7 @@ namespace Volt
 		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
 #endif
 
-		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(T));
+		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(T));
 	}
 
 	template<typename F>
@@ -288,7 +293,7 @@ namespace Volt
 		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
 #endif
 
-		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, data.data(), data.size() * sizeof(F));
+		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, data.data(), data.size() * sizeof(F));
 	}
 
 	template<typename F, size_t COUNT>
@@ -308,6 +313,6 @@ namespace Volt
 		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
 #endif
 
-		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, data.data(), COUNT * sizeof(F));
+		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, data.data(), COUNT * sizeof(F));
 	}
 }

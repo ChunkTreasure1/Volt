@@ -118,7 +118,10 @@ namespace Volt
 			return s_computePipelineCache.at(hash);
 		}
 
-		RefPtr<RHI::ComputePipeline> pipeline = RHI::ComputePipeline::Create(Get(name), useGlobalResouces);
+		auto shader = Get(name);
+		VT_ENSURE(shader);
+
+		RefPtr<RHI::ComputePipeline> pipeline = RHI::ComputePipeline::Create(shader, useGlobalResouces);
 		s_computePipelineCache[hash] = pipeline;
 
 		return pipeline;
@@ -127,6 +130,7 @@ namespace Volt
 	RefPtr<RHI::RenderPipeline> ShaderMap::GetRenderPipeline(const RHI::RenderPipelineCreateInfo& pipelineInfo)
 	{
 		VT_PROFILE_FUNCTION();
+		VT_ENSURE(pipelineInfo.shader);
 
 		const size_t hash = Utility::GetRenderPipelineHash(pipelineInfo);
 		

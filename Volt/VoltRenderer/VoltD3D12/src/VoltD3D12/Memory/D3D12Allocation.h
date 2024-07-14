@@ -33,7 +33,7 @@ namespace Volt::RHI
 
 		void* GetHandleImpl() const override;
 
-		ComPtr<ID3D12Resource> m_resource;
+		ID3D12Resource* m_resource = nullptr;
 		D3D12MA::Allocation* m_allocation = nullptr;
 		size_t m_allocationHash = 0;
 		uint64_t m_size = 0;
@@ -60,7 +60,7 @@ namespace Volt::RHI
 
 		void* GetHandleImpl() const override;
 
-		ComPtr<ID3D12Resource> m_resource;
+		ID3D12Resource* m_resource = nullptr;
 		D3D12MA::Allocation* m_allocation = nullptr;
 		size_t m_allocationHash = 0;
 		uint64_t m_size = 0;
@@ -87,8 +87,7 @@ namespace Volt::RHI
 	private:
 		friend class D3D12TransientHeap;
 
-		ComPtr<ID3D12Resource> m_resource;
-		//VkDeviceMemory_T* m_memoryHandle = nullptr;
+		ID3D12Resource* m_resource = nullptr;
 		size_t m_allocationHash = 0;
 		uint64_t m_size = 0;
 
@@ -117,8 +116,7 @@ namespace Volt::RHI
 	private:
 		friend class D3D12TransientHeap;
 
-		ComPtr<ID3D12Resource> m_resource;
-		//VkDeviceMemory_T* m_memoryHandle = nullptr;
+		ID3D12Resource* m_resource = nullptr;
 		size_t m_allocationHash = 0;
 		uint64_t m_size = 0;
 

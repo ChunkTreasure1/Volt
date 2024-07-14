@@ -201,6 +201,7 @@ namespace Volt::RHI
 		}
 
 		outResult.preProcessedResult = data.shaderSource;
+		ErasePreProcessData(outResult);
 		return true;
 	}
 

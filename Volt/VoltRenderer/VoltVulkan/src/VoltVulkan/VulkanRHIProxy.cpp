@@ -9,6 +9,7 @@
 #include "VoltVulkan/Buffers/VulkanStorageBuffer.h"
 
 #include "VoltVulkan/Descriptors/VulkanDescriptorTable.h"
+#include "VoltVulkan/Descriptors/VulkanBindlessDescriptorTable.h"
 
 #include "VoltVulkan/Graphics/VulkanDeviceQueue.h"
 #include "VoltVulkan/Graphics/VulkanGraphicsContext.h"
@@ -53,44 +54,34 @@ namespace Volt::RHI
 		return RefPtr<VulkanCommandBuffer>::Create(count, queueType);
 	}
 
-	RefPtr<CommandBuffer> VulkanRHIProxy::CreateCommandBuffer(WeakPtr<Swapchain> swapchain) const
-	{
-		return RefPtr<VulkanCommandBuffer>::Create(swapchain);
-	}
-
 	RefPtr<IndexBuffer> VulkanRHIProxy::CreateIndexBuffer(std::span<const uint32_t> indices) const
 	{
 		return RefPtr<VulkanIndexBuffer>::Create(indices);
 	}
 
-	RefPtr<VertexBuffer> VulkanRHIProxy::CreateVertexBuffer(const uint32_t size, const void* data) const
+	RefPtr<VertexBuffer> VulkanRHIProxy::CreateVertexBuffer(const void* data, const uint32_t size, const uint32_t stride) const
 	{
-		return RefPtr<VulkanVertexBuffer>::Create(size, data);
+		return RefPtr<VulkanVertexBuffer>::Create(data, size, stride);
 	}
 
-	RefPtr<StorageBuffer> VulkanRHIProxy::CreateStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
+	RefPtr<StorageBuffer> VulkanRHIProxy::CreateStorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator) const
 	{
-		return RefPtr<VulkanStorageBuffer>::Create(count, elementSize, name, bufferUsage, memoryUsage);
+		return RefPtr<VulkanStorageBuffer>::Create(count, elementSize, name, bufferUsage, memoryUsage, allocator);
 	}
 
-	RefPtr<StorageBuffer> VulkanRHIProxy::CreateStorageBuffer(const size_t size, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
+	RefPtr<UniformBuffer> VulkanRHIProxy::CreateUniformBuffer(const uint32_t size, const void* data, const uint32_t count, std::string_view name) const
 	{
-		return RefPtr<VulkanStorageBuffer>::Create(size, name, bufferUsage, memoryUsage);
-	}
-
-	RefPtr<StorageBuffer> VulkanRHIProxy::CreateStorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
-	{
-		return RefPtr<VulkanStorageBuffer>::Create(size, customAllocator, name, bufferUsage, memoryUsage);
-	}
-
-	RefPtr<UniformBuffer> VulkanRHIProxy::CreateUniformBuffer(const uint32_t size, const void* data) const
-	{
-		return RefPtr<VulkanUniformBuffer>::Create(size, data);
+		return RefPtr<VulkanUniformBuffer>::Create(size, data, count, name);
 	}
 
 	RefPtr<DescriptorTable> VulkanRHIProxy::CreateDescriptorTable(const DescriptorTableCreateInfo& createInfo) const
 	{
 		return RefPtr<VulkanDescriptorTable>::Create(createInfo);
+	}
+
+	RefPtr<BindlessDescriptorTable> VulkanRHIProxy::CreateBindlessDescriptorTable() const
+	{
+		return RefPtr<VulkanBindlessDescriptorTable>::Create();
 	}
 
 	RefPtr<DeviceQueue> VulkanRHIProxy::CreateDeviceQueue(const DeviceQueueCreateInfo& createInfo) const
@@ -118,14 +109,9 @@ namespace Volt::RHI
 		return RefPtr<VulkanSwapchain>::Create(window);
 	}
 
-	RefPtr<Image2D> VulkanRHIProxy::CreateImage2D(const ImageSpecification& specification, const void* data) const
+	RefPtr<Image2D> VulkanRHIProxy::CreateImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const
 	{
-		return RefPtr<VulkanImage2D>::Create(specification, data);
-	}
-
-	RefPtr<Image2D> VulkanRHIProxy::CreateImage2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data) const
-	{
-		return RefPtr<VulkanImage2D>::Create(specification, customAllocator, data);
+		return RefPtr<VulkanImage2D>::Create(specification, data, allocator);
 	}
 
 	RefPtr<Image2D> VulkanRHIProxy::CreateImage2D(const SwapchainImageSpecification& specification) const
@@ -143,9 +129,9 @@ namespace Volt::RHI
 		return RefPtr<VulkanSamplerState>::Create(createInfo);
 	}
 
-	Scope<DefaultAllocator> VulkanRHIProxy::CreateDefaultAllocator() const
+	RefPtr<DefaultAllocator> VulkanRHIProxy::CreateDefaultAllocator() const
 	{
-		return CreateScope<VulkanDefaultAllocator>();
+		return RefPtr<VulkanDefaultAllocator>::Create();
 	}
 
 	RefPtr<TransientAllocator> VulkanRHIProxy::CreateTransientAllocator() const

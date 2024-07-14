@@ -82,9 +82,16 @@ namespace Volt::RHI
 			i++;
 		}
 
-		auto currentFenceData = executeInfo.commandBuffers.front()->As<D3D12CommandBuffer>()->GetCurrentSemaphore();
-
 		m_commandQueue->ExecuteCommandLists(static_cast<UINT>(cmdLists.size()), cmdLists.data());
-		m_commandQueue->Signal(currentFenceData->GetHandle<ID3D12Fence*>(), currentFenceData->IncrementAndGetValue());
+
+		for (const auto& cmdBuffer : executeInfo.commandBuffers)
+		{
+			auto currentFenceData = cmdBuffer->As<D3D12CommandBuffer>()->GetCurrentSemaphore();
+
+			auto val = currentFenceData->IncrementAndGetValue();
+			m_commandQueue->Signal(currentFenceData->GetHandle<ID3D12Fence*>(), val);
+
+			//RHILog::Log(LogSeverity::Trace, "Signaling value {}", val);
+		}
 	}
 }

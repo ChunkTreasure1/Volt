@@ -4,6 +4,7 @@
 
 #include <VoltRHI/Core/RHICommon.h>
 #include <VoltRHI/Graphics/Swapchain.h>
+#include <VoltRHI/Buffers/CommandBuffer.h>
 
 struct VkSwapchainKHR_T;
 struct VkRenderPass_T;
@@ -46,15 +47,9 @@ namespace Volt::RHI
 		const uint32_t GetFramesInFlight() const override;
 		const PixelFormat GetFormat() const override;
 		RefPtr<Image2D> GetCurrentImage() const override;
+		RefPtr<CommandBuffer> GetCommandBuffer() const override;
 
-		inline VkRenderPass_T* GetRenderPass() const { return m_renderPass; }
-		inline VkCommandBuffer_T* GetCommandBuffer(const uint32_t index) const { return m_perFrameInFlightData.at(index).commandBuffer; }
-		inline VkCommandPool_T* GetCommandPool(const uint32_t index) const { return m_perFrameInFlightData.at(index).commandPool; }
-		inline VkFence_T* GetFence(const uint32_t index) const { return m_perFrameInFlightData.at(index).fence; }
-		inline VkImage_T* GetCurrentVkImage() const { return m_perImageData.at(m_currentImage).image; }
 		inline VkImage_T* GetImageAtIndex(const uint32_t index) const { return m_perImageData.at(index).image; }
-
-		VkFramebuffer_T* GetCurrentFramebuffer() const;
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -66,12 +61,7 @@ namespace Volt::RHI
 		void QuerySwapchainCapabilities();
 
 		void CreateSwapchain(const uint32_t width, const uint32_t height, bool enableVSync);
-		void CreateImageViews();
-		void CreateRenderPass();
-		void CreateFramebuffers();
 		void CreateSyncObjects();
-		void CreateCommandPools();
-		void CreateCommandBuffers();
 
 		void GetNextFrameIndex();
 
@@ -88,20 +78,13 @@ namespace Volt::RHI
 
 		struct PerFrameInFlightData
 		{
-			VkFence_T* fence = nullptr;
 			VkSemaphore_T* renderSemaphore = nullptr;
 			VkSemaphore_T* presentSemaphore = nullptr;
-
-			VkCommandPool_T* commandPool = nullptr;
-			VkCommandBuffer_T* commandBuffer = nullptr;
 		};
 
 		struct PerImageData
 		{
 			VkImage_T* image = nullptr;
-			VkImageView_T* imageView = nullptr;
-			VkFramebuffer_T* framebuffer = nullptr;
-
 			RefPtr<Image2D> imageReference;
 		};
 
@@ -119,10 +102,11 @@ namespace Volt::RHI
 
 		SwapchainCapabilities m_capabilities{};
 
+		RefPtr<CommandBuffer> m_commandBuffer;
+
 		std::vector<PerFrameInFlightData> m_perFrameInFlightData{};
 		std::vector<PerImageData> m_perImageData{};
 
-		VkRenderPass_T* m_renderPass = nullptr;
 		VkSwapchainKHR_T* m_swapchain = nullptr;
 		VkSurfaceKHR_T* m_surface = nullptr;
 

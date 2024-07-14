@@ -10,11 +10,6 @@ namespace Volt::RHI
 		return RHIProxy::GetInstance().CreateCommandBuffer(count, queueType);
 	}
 
-	RefPtr<CommandBuffer> CommandBuffer::Create(WeakPtr<Swapchain> swapchain)
-	{
-		return RHIProxy::GetInstance().CreateCommandBuffer(swapchain);
-	}
-
 	RefPtr<CommandBuffer> CommandBuffer::Create()
 	{
 		return RHIProxy::GetInstance().CreateCommandBuffer(1, QueueType::Graphics);

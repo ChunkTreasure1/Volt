@@ -37,7 +37,6 @@ namespace Volt::RHI
 	
 		GLFWwindow* m_windowPtr = nullptr;
 		WeakPtr<Swapchain> m_swapchain;
-		RefPtr<CommandBuffer> m_commandBuffer;
 		VkDescriptorPool_T* m_descriptorPool;
 	};
 }

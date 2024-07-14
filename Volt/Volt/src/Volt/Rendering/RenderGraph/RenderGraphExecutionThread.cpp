@@ -5,7 +5,6 @@
 #include "Volt/Core/Threading/ThreadSafeQueue.h"
 #include "Volt/Rendering/RenderGraph/RenderGraph.h"
 
-#include "Volt/Utility/FunctionQueue.h"
 #include "Volt/Platform/ThreadUtility.h"
 
 #include "Volt/Rendering/Resources/BindlessResourcesManager.h"
@@ -15,6 +14,8 @@
 #include <VoltRHI/Graphics/DeviceQueue.h>
 
 #include <VoltRHI/Graphics/Swapchain.h>
+
+#include <CoreUtilities/Containers/FunctionQueue.h>
 
 namespace Volt
 {

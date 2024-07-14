@@ -9,6 +9,7 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Shader/ShaderUtility.h>
 #include <VoltRHI/Shader/ShaderCompiler.h>
+#include <VoltRHI/Globals.h>
 
 #include <spirv_cross/spirv_glsl.hpp>
 #include <spirv-tools/libspirv.h>
@@ -119,6 +120,11 @@ namespace Volt::RHI
 		return dataBuffer;
 	}
 
+	bool VulkanShader::HasConstants() const
+	{
+		return m_resources.constantsBuffer.IsValid();
+	}
+
 	void* VulkanShader::GetHandleImpl() const
 	{
 		return nullptr;
@@ -210,7 +216,7 @@ namespace Volt::RHI
 				auto& descriptorBinding = descriptorSetBindings[set].emplace_back();
 				descriptorBinding.binding = binding;
 				descriptorBinding.descriptorCount = 1;
-				descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptorBinding.descriptorType = binding == Globals::RENDER_GRAPH_CONSTANTS_BINDING ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				descriptorBinding.stageFlags = static_cast<VkShaderStageFlags>(data.usageStages);
 			}
 		}
@@ -346,7 +352,7 @@ namespace Volt::RHI
 				if (isBindlessMap[set][binding.binding].value)
 				{
 					flags = bindlessFlags;
-					if (!usingDescriptorBuffers)
+					if (!usingDescriptorBuffers && binding.descriptorType != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC && binding.descriptorType != VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC)
 					{
 						info.flags |= VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
 						flags |= VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;

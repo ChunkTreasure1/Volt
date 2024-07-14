@@ -19,7 +19,6 @@ namespace Volt::RHI
 	{
 	public:
 		VulkanCommandBuffer(const uint32_t count, QueueType queueType);
-		VulkanCommandBuffer(WeakPtr<Swapchain> swapchain);
 		~VulkanCommandBuffer() override;
 
 		void Begin() override;
@@ -27,7 +26,6 @@ namespace Volt::RHI
 		void RestartAfterFlush() override;
 		void Execute() override;
 		void ExecuteAndWait() override;
-		void WaitForLastFence() override;
 		void WaitForFences() override;
 
 		void SetEvent(WeakPtr<Event> event) override;
@@ -55,7 +53,9 @@ namespace Volt::RHI
 		void BindVertexBuffers(const StackVector<WeakPtr<StorageBuffer>, MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding) override;
 		void BindIndexBuffer(WeakPtr<IndexBuffer> indexBuffer) override;
 		void BindIndexBuffer(WeakPtr<StorageBuffer> indexBuffer) override;
+
 		void BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable) override;
+		void BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable) override;
 
 		void BeginRendering(const RenderingInfo& renderingInfo) override;
 		void EndRendering() override;
@@ -80,6 +80,8 @@ namespace Volt::RHI
 		void CopyImageToBuffer(WeakPtr<Image2D> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip) override;
 		void CopyImage(WeakPtr<Image2D> srcImage, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height) override;
 
+		void UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData) override;
+
 		const uint32_t GetCurrentIndex() const override;
 		const QueueType GetQueueType() const override;
 
@@ -91,6 +93,7 @@ namespace Volt::RHI
 	private:
 		friend class VulkanDescriptorTable;
 		friend class VulkanDescriptorBufferTable;
+		friend class VulkanBindlessDescriptorTable;
 
 		inline static constexpr uint32_t MAX_QUERIES = 64;
 
@@ -115,7 +118,6 @@ namespace Volt::RHI
 		uint32_t m_currentCommandBufferIndex = 0;
 		uint32_t m_lastCommandBufferIndex = 0;
 
-		bool m_isSwapchainTarget = false;
 		bool m_hasTimestampSupport = false;
 
 		uint32_t m_commandBufferCount = 0;
@@ -134,6 +136,5 @@ namespace Volt::RHI
 		// Internal state
 		WeakPtr<RenderPipeline> m_currentRenderPipeline;
 		WeakPtr<ComputePipeline> m_currentComputePipeline;
-		WeakPtr<Swapchain> m_swapchainTarget;
 	};
 }

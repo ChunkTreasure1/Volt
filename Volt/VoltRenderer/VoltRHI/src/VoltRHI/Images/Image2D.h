@@ -1,20 +1,14 @@
 #pragma once
 
 #include "VoltRHI/Core/RHIResource.h"
+#include "VoltRHI/Memory/Allocator.h"
 
 #include <CoreUtilities/Buffer/Buffer.h>
 
 namespace Volt::RHI
 {
 	class ImageView;
-	class Allocator;
 	class Swapchain;
-
-	struct SwapchainImageSpecification
-	{
-		Swapchain* swapchain = nullptr;
-		uint32_t imageIndex;
-	};
 
 	class VTRHI_API Image2D : public RHIResource
 	{
@@ -27,11 +21,11 @@ namespace Volt::RHI
 		virtual const RefPtr<ImageView> GetArrayView(const int32_t mip = -1) = 0;
 
 		virtual const ImageAspect GetImageAspect() const = 0;
-		virtual const ImageLayout GetImageLayout() const = 0;
 
 		virtual const uint32_t GetWidth() const = 0;
 		virtual const uint32_t GetHeight() const = 0;
 		virtual const uint32_t GetMipCount() const = 0;
+		virtual const uint32_t GetLayerCount() const = 0;
 		virtual const PixelFormat GetFormat() const = 0;
 		virtual const ImageUsage GetUsage() const = 0;
 		virtual const uint32_t CalculateMipCount() const = 0;
@@ -40,8 +34,7 @@ namespace Volt::RHI
 		template<typename T>
 		VT_INLINE T ReadPixel(uint32_t x, uint32_t y);
 
-		static RefPtr<Image2D> Create(const ImageSpecification& specification, const void* data = nullptr);
-		static RefPtr<Image2D> Create(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data = nullptr);
+		static RefPtr<Image2D> Create(const ImageSpecification& specification, const void* data = nullptr, RefPtr<Allocator> customAllocator = nullptr);
 		static RefPtr<Image2D> Create(const SwapchainImageSpecification& specification);
 
 	protected:

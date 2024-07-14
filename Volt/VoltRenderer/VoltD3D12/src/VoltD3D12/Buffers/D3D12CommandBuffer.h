@@ -1,21 +1,22 @@
 #pragma once
 
 #include "VoltD3D12/Common/ComPtr.h"
+#include "VoltD3D12/Descriptors/DescriptorCommon.h"
 
 #include <VoltRHI/Synchronization/Semaphore.h>
 #include <VoltRHI/Buffers/CommandBuffer.h>
 
 struct ID3D12Fence;
 struct ID3D12CommandAllocator;
-struct ID3D12GraphicsCommandList1;
+struct ID3D12GraphicsCommandList6;
 
 namespace Volt::RHI
 {
+	class D3D12DescriptorHeap;
 	class D3D12CommandBuffer final : public CommandBuffer
 	{
 	public:
 		D3D12CommandBuffer(const uint32_t count, QueueType queueType);
-		D3D12CommandBuffer(WeakPtr<Swapchain> swapchain);
 		~D3D12CommandBuffer() override;
 
 		void Begin() override;
@@ -23,7 +24,6 @@ namespace Volt::RHI
 		void End() override;
 		void Execute() override;
 		void ExecuteAndWait() override;
-		void WaitForLastFence() override;
 		void WaitForFences() override;
 		void SetEvent(WeakPtr<Event> event) override;
 
@@ -51,7 +51,9 @@ namespace Volt::RHI
 		void BindVertexBuffers(const StackVector<WeakPtr<StorageBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding) override;
 		void BindIndexBuffer(WeakPtr<IndexBuffer> indexBuffer) override;
 		void BindIndexBuffer(WeakPtr<StorageBuffer> indexBuffer) override;
+
 		void BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable) override;
+		void BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable) override;
 
 		void BeginRendering(const RenderingInfo& renderingInfo) override;
 		void EndRendering() override;
@@ -76,6 +78,8 @@ namespace Volt::RHI
 		void CopyImageToBuffer(WeakPtr<Image2D> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip) override;
 		void CopyImage(WeakPtr<Image2D> srcImage, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height) override;
 
+		void UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData) override;
+
 		const uint32_t GetCurrentIndex() const override;
 		const QueueType GetQueueType() const override;
 
@@ -86,16 +90,20 @@ namespace Volt::RHI
 
 	private:
 		friend class D3D12DescriptorTable;
+		friend class D3D12BindlessDescriptorTable;
 
 		void Invalidate();
 		void Release();
 
+		void BindPipelineInternal();
+
 		const uint32_t GetCurrentCommandListIndex() const;
+		D3D12DescriptorPointer CreateTempDescriptorPointer();
 
 		struct CommandListData
 		{
 			ComPtr<ID3D12CommandAllocator> commandAllocator;
-			ComPtr<ID3D12GraphicsCommandList> commandList;
+			ComPtr<ID3D12GraphicsCommandList7> commandList;
 			RefPtr<Semaphore> fence;
 		};
 
@@ -104,12 +112,15 @@ namespace Volt::RHI
 		uint32_t m_commandListCount = 0;
 		uint32_t m_currentCommandListIndex = 0;
 
-		bool m_isSwapchainTarget = false;
 		QueueType m_queueType;
 
 		// Internal state
-		WeakPtr<Swapchain> m_swapchainTarget;
 		WeakPtr<RenderPipeline> m_currentRenderPipeline;
 		WeakPtr<ComputePipeline> m_currentComputePipeline;
+
+		bool m_pipelineNeedsToBeBound = false;
+
+		std::vector<std::vector<D3D12DescriptorPointer>> m_allocatedDescriptors;
+		Scope<D3D12DescriptorHeap> m_descriptorHeap;
 	};
 }

@@ -8,12 +8,13 @@
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 
 #include "VoltD3D12/Descriptors/D3D12DescriptorTable.h"
+#include "VoltD3D12/Descriptors/D3D12BindlessDescriptorTable.h"
 
-#include <VoltRHI/Buffers/UniformBuffer.h>
-#include <VoltRHI/Buffers/StorageBuffer.h>
-#include <VoltRHI/Buffers/VertexBuffer.h>
-#include <VoltRHI/Buffers/IndexBuffer.h>
-#include <VoltRHI/Buffers/BufferView.h>
+#include "VoltD3D12/Buffers/D3D12UniformBuffer.h"
+#include "VoltD3D12/Buffers/D3D12StorageBuffer.h"
+#include "VoltD3D12/Buffers/D3D12VertexBuffer.h"
+#include "VoltD3D12/Buffers/D3D12IndexBuffer.h"
+#include "VoltD3D12/Buffers/D3D12BufferView.h"
 #include "VoltD3D12/Buffers/D3D12CommandBuffer.h"
 
 #include "VoltD3D12/ImGui/D3D12ImGuiImplementation.h"
@@ -24,10 +25,11 @@
 #include "VoltD3D12/Pipelines/D3D12RenderPipeline.h"
 #include "VoltD3D12/Pipelines/D3D12ComputePipeline.h"
 
-#include <VoltRHI/Memory/TransientHeap.h>
+#include "VoltD3D12/Memory/D3D12TransientHeap.h"
+#include "VoltD3D12/Memory/D3D12TransientAllocator.h"
 #include "VoltD3D12/Memory/D3D12DefaultAllocator.h"
 
-#include <VoltRHI/Images/SamplerState.h>
+#include "VoltD3D12/Images/D3D12SamplerState.h"
 #include "VoltD3D12/Images/D3D12ImageView.h"
 #include "VoltD3D12/Images/D3D12Image2D.h"
 
@@ -44,7 +46,7 @@ namespace Volt::RHI
 	
 	RefPtr<BufferView> D3D12RHIProxy::CreateBufferView(const BufferViewSpecification& specification) const
 	{
-		return RefPtr<BufferView>();
+		return RefPtr<D3D12BufferView>::Create(specification);
 	}
 	
 	RefPtr<CommandBuffer> D3D12RHIProxy::CreateCommandBuffer(const uint32_t count, QueueType queueType) const
@@ -52,44 +54,34 @@ namespace Volt::RHI
 		return RefPtr<D3D12CommandBuffer>::Create(count, queueType);
 	}
 	
-	RefPtr<CommandBuffer> D3D12RHIProxy::CreateCommandBuffer(WeakPtr<Swapchain> swapchain) const
-	{
-		return RefPtr<D3D12CommandBuffer>::Create(swapchain);
-	}
-	
 	RefPtr<IndexBuffer> D3D12RHIProxy::CreateIndexBuffer(std::span<const uint32_t> indices) const
 	{
-		return RefPtr<IndexBuffer>();
+		return RefPtr<D3D12IndexBuffer>::Create(indices);
 	}
 	
-	RefPtr<VertexBuffer> D3D12RHIProxy::CreateVertexBuffer(const uint32_t size, const void* data) const
+	RefPtr<VertexBuffer> D3D12RHIProxy::CreateVertexBuffer(const void* data, const uint32_t size, const uint32_t stride) const
 	{
-		return RefPtr<VertexBuffer>();
+		return RefPtr<D3D12VertexBuffer>::Create(data, size, stride);
 	}
 	
-	RefPtr<StorageBuffer> D3D12RHIProxy::CreateStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
+	RefPtr<StorageBuffer> D3D12RHIProxy::CreateStorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage, RefPtr<Allocator> allocator) const
 	{
-		return RefPtr<StorageBuffer>();
+		return RefPtr<D3D12StorageBuffer>::Create(count, elementSize, name, bufferUsage, memoryUsage, allocator);
 	}
-	
-	RefPtr<StorageBuffer> D3D12RHIProxy::CreateStorageBuffer(const size_t size, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
+
+	RefPtr<UniformBuffer> D3D12RHIProxy::CreateUniformBuffer(const uint32_t size, const void* data, const uint32_t count, std::string_view name) const
 	{
-		return RefPtr<StorageBuffer>();
-	}
-	
-	RefPtr<StorageBuffer> D3D12RHIProxy::CreateStorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, const BufferUsage bufferUsage, const MemoryUsage memoryUsage) const
-	{
-		return RefPtr<StorageBuffer>();
-	}
-	
-	RefPtr<UniformBuffer> D3D12RHIProxy::CreateUniformBuffer(const uint32_t size, const void* data) const
-	{
-		return RefPtr<UniformBuffer>();
+		return RefPtr<D3D12UniformBuffer>::Create(size, data, count, name);
 	}
 	
 	RefPtr<DescriptorTable> D3D12RHIProxy::CreateDescriptorTable(const DescriptorTableCreateInfo& createInfo) const
 	{
 		return RefPtr<D3D12DescriptorTable>::Create(createInfo);
+	}
+
+	RefPtr<BindlessDescriptorTable> D3D12RHIProxy::CreateBindlessDescriptorTable() const
+	{
+		return RefPtr<D3D12BindlessDescriptorTable>::Create();
 	}
 	
 	RefPtr<DeviceQueue> D3D12RHIProxy::CreateDeviceQueue(const DeviceQueueCreateInfo& createInfo) const
@@ -117,14 +109,9 @@ namespace Volt::RHI
 		return RefPtr<D3D12Swapchain>::Create(window);
 	}
 	
-	RefPtr<Image2D> D3D12RHIProxy::CreateImage2D(const ImageSpecification& specification, const void* data) const
+	RefPtr<Image2D> D3D12RHIProxy::CreateImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const
 	{
-		return RefPtr<D3D12Image2D>::Create(specification, data);
-	}
-	
-	RefPtr<Image2D> D3D12RHIProxy::CreateImage2D(const ImageSpecification& specification, RefPtr<Allocator> customAllocator, const void* data) const
-	{
-		return RefPtr<D3D12Image2D>::Create(specification, customAllocator, data);
+		return RefPtr<D3D12Image2D>::Create(specification, data, allocator);
 	}
 	
 	RefPtr<Image2D> D3D12RHIProxy::CreateImage2D(const SwapchainImageSpecification& specification) const
@@ -139,22 +126,22 @@ namespace Volt::RHI
 	
 	RefPtr<SamplerState> D3D12RHIProxy::CreateSamplerState(const SamplerStateCreateInfo& createInfo) const
 	{
-		return RefPtr<SamplerState>();
+		return RefPtr<D3D12SamplerState>::Create(createInfo);
 	}
 	
-	Scope<DefaultAllocator> D3D12RHIProxy::CreateDefaultAllocator() const
+	RefPtr<DefaultAllocator> D3D12RHIProxy::CreateDefaultAllocator() const
 	{
-		return CreateScope<D3D12DefaultAllocator>();
+		return RefPtr<D3D12DefaultAllocator>::Create();
 	}
 	
 	RefPtr<TransientAllocator> D3D12RHIProxy::CreateTransientAllocator() const
 	{
-		return RefPtr<TransientAllocator>();
+		return RefPtr<D3D12TransientAllocator>::Create();
 	}
 	
 	RefPtr<TransientHeap> D3D12RHIProxy::CreateTransientHeap(const TransientHeapCreateInfo& createInfo) const
 	{
-		return RefPtr<TransientHeap>();
+		return RefPtr<D3D12TransientHeap>::Create(createInfo);
 	}
 	
 	RefPtr<RenderPipeline> D3D12RHIProxy::CreateRenderPipeline(const RenderPipelineCreateInfo& createInfo) const

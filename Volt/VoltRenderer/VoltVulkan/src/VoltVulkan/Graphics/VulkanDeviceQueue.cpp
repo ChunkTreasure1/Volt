@@ -41,6 +41,8 @@ namespace Volt::RHI
 
 	void VulkanDeviceQueue::WaitForQueue()
 	{
+		VT_PROFILE_FUNCTION();
+
 		std::scoped_lock lock{ m_executeMutex };
 		vkQueueWaitIdle(m_queue);
 	}

@@ -10,30 +10,6 @@ struct VkImageCreateInfo;
 
 namespace Volt::RHI
 {
-	inline static constexpr uint32_t MAX_PAGE_COUNT = 5;
-
-	struct PageAllocation
-	{
-		VkDeviceMemory_T* handle = nullptr;
-		uint64_t size = 0;
-		uint64_t alignment = 0;
-
-		uint64_t usedSize = 0;
-		uint64_t tail = 0;
-
-		std::vector<AllocationBlock> availableBlocks;
-
-		inline const uint64_t GetRemainingSize() const
-		{
-			return size - std::min(usedSize, size);
-		}
-
-		inline const uint64_t GetRemainingTailSize() const
-		{
-			return size - tail;
-		}
-	};
-
 	class VulkanTransientHeap : public TransientHeap
 	{
 	public:

@@ -51,7 +51,7 @@ namespace std
 	{
 		std::size_t operator()(const UUID64& uuid) const
 		{
-			return (uint64_t)uuid;
+			return static_cast<size_t>(uuid);
 		}
 	};
 
@@ -60,7 +60,7 @@ namespace std
 	{
 		std::size_t operator()(const UUID32& uuid) const
 		{
-			return (uint32_t)uuid;
+			return static_cast<size_t>(uuid);
 		}
 	};
 }

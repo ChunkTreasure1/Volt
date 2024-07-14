@@ -31,6 +31,11 @@ project "tracy"
 		'{COPY} "bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/"%{prj.name}".dll" "../../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox"'
 	}
 
+	postbuildcommands
+	{
+		'{COPY} "bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/"%{prj.name}".dll" "../../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher"'
+	}
+
 	warnings "off"
 
 	filter "system:windows"

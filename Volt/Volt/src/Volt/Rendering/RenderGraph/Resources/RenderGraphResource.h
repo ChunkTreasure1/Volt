@@ -1,8 +1,8 @@
 #pragma once
 
 #include "RenderGraphResourceHandle.h"
-#include "Volt/Rendering/Resources/ResourceHandle.h"
 
+#include <VoltRHI/Descriptors/ResourceHandle.h>
 #include <VoltRHI/Core/RHICommon.h>
 
 namespace Volt
@@ -45,9 +45,9 @@ namespace Volt
 		Weak<RenderGraphPassNodeBase> lastUsage;
 
 		RenderGraphResourceHandle handle;
-		RenderGraphBarrierInfo currentState;
 
 		bool isExternal = false;
+		bool isGlobal = false;
 
 		virtual ResourceType GetResourceType() const = 0;
 

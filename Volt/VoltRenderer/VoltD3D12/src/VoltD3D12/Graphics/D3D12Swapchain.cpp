@@ -7,13 +7,13 @@
 #define GLFW_NATIVE_INCLUDE_NONE
 #include <GLFW/glfw3native.h>
 
-#include "VoltD3D12/Common/D3D12DescriptorHeapManager.h"
-
 #include "VoltD3D12/Graphics/D3D12DeviceQueue.h"
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 #include "VoltD3D12/Graphics/D3D12PhysicalGraphicsDevice.h"
 
 #include "VoltD3D12/Descriptors/DescriptorUtility.h"
+
+#include <VoltRHI/Utility/ResourceUtility.h>
 
 namespace Volt::RHI
 {
@@ -43,6 +43,8 @@ namespace Volt::RHI
 	D3D12Swapchain::D3D12Swapchain(GLFWwindow* window)
 	{
 		m_windowHandle = window;
+		m_commandBuffer = CommandBuffer::Create(GetFramesInFlight());
+
 		Invalidate(m_width, m_height, m_enableVsync);
 	}
 
@@ -58,39 +60,58 @@ namespace Volt::RHI
 
 	void D3D12Swapchain::BeginFrame()
 	{
+		VT_PROFILE_FUNCTION();
+
 		m_currentImageIndex = m_swapchain->GetCurrentBackBufferIndex();
-		WaitForFenceValue(m_perFrameFenceValues[m_currentImageIndex]);
+		m_commandBuffer->Begin();
 	}
 
 	void D3D12Swapchain::Present()
 	{
-		m_perFrameFenceValues[m_currentImageIndex] = Signal(m_fenceValue);
+		VT_PROFILE_FUNCTION();
+
+		{
+			ResourceBarrierInfo barrier{};
+			barrier.type = BarrierType::Image;
+			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), m_perImageData.at(m_currentImageIndex).imageReference);
+
+			barrier.imageBarrier().dstAccess = BarrierAccess::ShaderRead;
+			barrier.imageBarrier().dstStage = BarrierStage::AllGraphics;
+			barrier.imageBarrier().dstLayout = ImageLayout::Present;
+			barrier.imageBarrier().resource = m_perImageData.at(m_currentImageIndex).imageReference;
+
+			m_commandBuffer->ResourceBarrier({ barrier });
+		}
+
+		m_commandBuffer->End();
+		m_commandBuffer->Execute();
 
 		VT_D3D12_CHECK(m_swapchain->Present(m_enableVsync, m_supportsTearing ? DXGI_PRESENT_ALLOW_TEARING : 0));
 	}
 
 	void D3D12Swapchain::Resize(const uint32_t width, const uint32_t height, bool enableVSync)
 	{
+		VT_PROFILE_FUNCTION();
+
 		m_width = width;
 		m_height = height;
 		m_enableVsync = enableVSync;
 
 		{
-			uint64_t fenceVal = Signal(m_fenceValue);
-			WaitForFenceValue(fenceVal);
+			m_commandBuffer->WaitForFences();
 		}
 
 		for (uint32_t i = 0; i < MAX_SWAPCHAIN_IMAGES; i++)
 		{
+			m_perImageData[i].imageReference = nullptr;
 			m_perImageData[i].resource.Reset();
-			m_perFrameFenceValues[i] = m_perFrameFenceValues[m_currentImageIndex];
 		}
 
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		VT_D3D12_CHECK(m_swapchain->GetDesc(&swapChainDesc));
 		VT_D3D12_CHECK(m_swapchain->ResizeBuffers(MAX_SWAPCHAIN_IMAGES, m_width, m_height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
 
-		CreateRTVs();
+		GetSwapchainImages();
 	}
 
 	VT_NODISCARD const uint32_t D3D12Swapchain::GetCurrentFrame() const
@@ -115,7 +136,12 @@ namespace Volt::RHI
 
 	RefPtr<Image2D> D3D12Swapchain::GetCurrentImage() const
 	{
-		return RefPtr<Image2D>();
+		return m_perImageData.at(m_currentImageIndex).imageReference;
+	}
+
+	RefPtr<CommandBuffer> D3D12Swapchain::GetCommandBuffer() const
+	{
+		return RefPtr<CommandBuffer>();
 	}
 
 	const PixelFormat D3D12Swapchain::GetFormat() const
@@ -126,26 +152,11 @@ namespace Volt::RHI
 	void D3D12Swapchain::Invalidate(const uint32_t width, const uint32_t height, bool enableVSync)
 	{
 		CreateSwapchain(width, height);
-		CreateRTVs();
-		CreateFence();
-
-		for (uint32_t i = 0; i < MAX_SWAPCHAIN_IMAGES; i++)
-		{
-			m_perFrameFenceValues[i] = 0;
-		}
+		GetSwapchainImages();
 	}
 
 	void D3D12Swapchain::Release()
 	{
-		if (m_fenceEventHandle)
-		{
-			::CloseHandle(m_fenceEventHandle);
-		}
-
-		for (const auto& data : m_perImageData)
-		{
-			DescriptorUtility::FreeDescriptorPointer(data.descriptorPointer);
-		}
 	}
 
 	void D3D12Swapchain::CreateSwapchain(const uint32_t width, const uint32_t height)
@@ -183,10 +194,8 @@ namespace Volt::RHI
 		VT_D3D12_CHECK(swapchain1.As(&m_swapchain));
 	}
 
-	void D3D12Swapchain::CreateRTVs()
+	void D3D12Swapchain::GetSwapchainImages()
 	{
-		auto d3d12Device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
-
 		for (uint32_t i = 0; i < MAX_SWAPCHAIN_IMAGES; i++)
 		{
 			ComPtr<ID3D12Resource> backBuffer;
@@ -195,42 +204,12 @@ namespace Volt::RHI
 			const std::wstring name = L"Swapchain Target - Index " + std::to_wstring(i);
 			backBuffer->SetName(name.c_str());
 
-			if (!m_perImageData[i].descriptorPointer.IsValid())
-			{
-				m_perImageData[i].descriptorPointer = DescriptorUtility::AllocateDescriptorPointer(D3D12DescriptorType::RTV);
-			}
-			
 			m_perImageData[i].resource = backBuffer;
-
-			d3d12Device->CreateRenderTargetView(backBuffer.Get(), nullptr, D3D12_CPU_DESCRIPTOR_HANDLE(m_perImageData[i].descriptorPointer.GetCPUPointer()));
-		}
-	}
-
-	void D3D12Swapchain::CreateFence()
-	{
-		auto d3d12Device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
-		VT_D3D12_CHECK(d3d12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, VT_D3D12_ID(m_fence)));
 		
-		m_fenceEventHandle = ::CreateEvent(NULL, FALSE, FALSE, NULL);
-		assert(m_fenceEventHandle && "Failed to create fence handle!");
-	}
-	
-	uint64_t D3D12Swapchain::Signal(uint64_t& fenceValue)
-	{
-		ID3D12CommandQueue* cmdQueue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics)->GetHandle<ID3D12CommandQueue*>();
-
-		uint64_t signalValue = ++fenceValue;
-		VT_D3D12_CHECK(cmdQueue->Signal(m_fence.Get(), fenceValue));
-
-		return signalValue;
-	}
-
-	void D3D12Swapchain::WaitForFenceValue(uint64_t fenceValue)
-	{
-		if (m_fence->GetCompletedValue() < fenceValue)
-		{
-			VT_D3D12_CHECK(m_fence->SetEventOnCompletion(fenceValue, m_fenceEventHandle));
-			::WaitForSingleObject(m_fenceEventHandle, static_cast<DWORD>(UINT64_MAX));
+			SwapchainImageSpecification spec{};
+			spec.swapchain = this;
+			spec.imageIndex = i;
+			m_perImageData[i].imageReference = Image2D::Create(spec);
 		}
 	}
 }

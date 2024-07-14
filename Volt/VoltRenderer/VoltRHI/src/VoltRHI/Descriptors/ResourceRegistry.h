@@ -1,0 +1,60 @@
+#pragma once
+
+#include "VoltRHI/Descriptors/ResourceHandle.h"
+#include "VoltRHI/Core/RHICommon.h"
+
+#include <CoreUtilities/Containers/FunctionQueue.h>
+
+#include <span>
+
+namespace Volt::RHI
+{
+	class RHIInterface;
+
+	struct RegisteredResource
+	{
+		ResourceHandle handle;
+		uint32_t referenceCount = 0;
+		ImageUsage imageUsage;
+		uint32_t userData;
+
+		WeakPtr<RHIInterface> resource;
+	};
+
+	class VTRHI_API ResourceRegistry
+	{
+	public:
+		ResourceRegistry(uint32_t handleSize);
+
+		ResourceHandle RegisterResource(WeakPtr<RHIInterface> resource, ImageUsage imageUsage = ImageUsage::None, uint32_t userData = 0);
+		void UnregisterResource(ResourceHandle handle);
+
+		ResourceHandle GetResourceHandle(WeakPtr<RHIInterface> resource);
+
+		void Update();
+		void MarkAsDirty(ResourceHandle handle);
+		void ClearDirtyResources();
+
+		VT_INLINE VT_NODISCARD std::mutex& GetMutex() { return m_mutex; }
+		VT_INLINE VT_NODISCARD std::span<const ResourceHandle> GetDirtyResources() const { return m_dirtyResources; }
+		VT_INLINE VT_NODISCARD const RegisteredResource& GetResource(ResourceHandle resourceHandle) const { return m_resources.at(resourceHandle); }
+
+	private:
+		friend class BindlessResourcesManager;
+
+		inline static constexpr uint64_t FRAME_COUNT = 2;
+
+		std::vector<RegisteredResource> m_resources;
+		std::vector<ResourceHandle> m_vacantResourceHandles;
+		std::vector<ResourceHandle> m_dirtyResources;
+		std::vector<FunctionQueue> m_removalQueue;
+
+		std::unordered_map<size_t, ResourceHandle> m_resourceHashToHandle;
+
+		ResourceHandle m_currentMaxHandle = ResourceHandle(0u);
+
+		uint32_t m_handleSize;
+		uint64_t m_frameIndex = 0;
+		std::mutex m_mutex;
+	};
+}

@@ -75,7 +75,7 @@ void ValidateResourceAccess(uint handleType, uint shouldBeType)
         error.userdata0 = handleType;
         error.userdata1 = shouldBeType;
 
-        WriteRuntimeError(error, u_RWByteAddressBuffer[u_pushConstantData.shaderValidationBuffer]);
+        WriteRuntimeError(error, u_RWByteAddressBuffer[u_renderGraphConstants.shaderValidationBuffer]);
     }
 }
 
@@ -170,6 +170,6 @@ static VulkanUniformResourceDescriptorHeapInternal g_uniformDescriptorHeap;
 template<typename T>
 T GetConstants()
 {
-    return u_ByteAddressBuffer[u_pushConstantData.constantsBufferIndex].Load<T>(u_pushConstantData.constantsOffset);
+    return u_ByteAddressBuffer[u_renderGraphConstants.constantsBufferIndex].Load<T>(u_renderGraphConstants.constantsOffset);
 }
 #endif

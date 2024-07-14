@@ -4,6 +4,8 @@
 #include "VoltRHI/Core/RHICommon.h"
 #include "VoltRHI/Images/ImageView.h"
 
+#include "VoltRHI/Descriptors/BindlessDescriptorTable.h"
+
 #include <CoreUtilities/Pointers/WeakPtr.h>
 #include <CoreUtilities/Containers/StackVector.h>
 
@@ -38,7 +40,6 @@ namespace Volt::RHI
 
 		virtual void Execute() = 0;
 		virtual void ExecuteAndWait() = 0;
-		virtual void WaitForLastFence() = 0;
 		virtual void WaitForFences() = 0;
 
 		virtual void SetEvent(WeakPtr<Event> event) = 0;
@@ -66,7 +67,9 @@ namespace Volt::RHI
 		virtual void BindVertexBuffers(const StackVector<WeakPtr<StorageBuffer>, MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding) = 0;
 		virtual void BindIndexBuffer(WeakPtr<IndexBuffer> indexBuffer) = 0;
 		virtual void BindIndexBuffer(WeakPtr<StorageBuffer> indexBuffer) = 0;
+
 		virtual void BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable) = 0;
+		virtual void BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable) = 0;
 
 		virtual void BeginRendering(const RenderingInfo& renderingInfo) = 0;
 		virtual void EndRendering() = 0;
@@ -91,11 +94,12 @@ namespace Volt::RHI
 		virtual void CopyImageToBuffer(WeakPtr<Image2D> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip) = 0;
 		virtual void CopyImage(WeakPtr<Image2D> srcImage, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height) = 0;
 
+		virtual void UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData) = 0;
+
 		virtual const uint32_t GetCurrentIndex() const = 0;
 		virtual const QueueType GetQueueType() const = 0;
 
 		static RefPtr<CommandBuffer> Create(const uint32_t count, QueueType queueType = QueueType::Graphics);
-		static RefPtr<CommandBuffer> Create(WeakPtr<Swapchain> swapchain);
 		static RefPtr<CommandBuffer> Create();
 
 	protected:

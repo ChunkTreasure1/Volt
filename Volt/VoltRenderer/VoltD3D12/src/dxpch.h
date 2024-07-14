@@ -20,11 +20,11 @@
 
 //Windows stuff
 #include <wrl.h>
-#include <d3d12.h>
+#include <d3d12/d3d12.h>
 #include <dxgi.h>
 #include <dxgi1_6.h>
-#include <d3d12sdklayers.h>
-#include "VoltD3D12/Common/d3dx12.h"
+#include <d3d12/d3d12sdklayers.h>
+#include <d3d12/d3dx12/d3dx12.h>
 
 #include <string>
 #include <istream>
@@ -132,11 +132,11 @@ namespace Volt
 				case PixelFormat::R32G32B32A32_UINT: return DXGI_FORMAT_R32G32B32A32_UINT;
 				case PixelFormat::R32G32B32A32_SINT: return DXGI_FORMAT_R32G32B32A32_SINT;
 				case PixelFormat::R32G32B32A32_SFLOAT: return DXGI_FORMAT_R32G32B32A32_FLOAT;
-				case PixelFormat::D16_UNORM: return DXGI_FORMAT_D16_UNORM;
-				case PixelFormat::X8_D24_UNORM_PACK32: return DXGI_FORMAT_D24_UNORM_S8_UINT;
-				case PixelFormat::D24_UNORM_S8_UINT: return DXGI_FORMAT_D24_UNORM_S8_UINT;
-				case PixelFormat::D32_SFLOAT_S8_UINT: return DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
-				case PixelFormat::D32_SFLOAT: return DXGI_FORMAT_D32_FLOAT;
+
+				case PixelFormat::D16_UNORM: return DXGI_FORMAT_R16_TYPELESS;
+				case PixelFormat::X8_D24_UNORM_PACK32: return DXGI_FORMAT_R24G8_TYPELESS;
+				case PixelFormat::D32_SFLOAT_S8_UINT: return DXGI_FORMAT_R32G8X24_TYPELESS;
+				case PixelFormat::D32_SFLOAT: return DXGI_FORMAT_R32_TYPELESS;
 
 				case PixelFormat::BC1_RGB_UNORM_BLOCK: return DXGI_FORMAT_BC1_UNORM;
 				case PixelFormat::BC1_RGB_SRGB_BLOCK: return DXGI_FORMAT_BC1_UNORM_SRGB;
@@ -154,8 +154,12 @@ namespace Volt
 				case PixelFormat::BC6H_SFLOAT_BLOCK: return DXGI_FORMAT_BC6H_SF16;
 				case PixelFormat::BC7_UNORM_BLOCK: return DXGI_FORMAT_BC7_UNORM;
 				case PixelFormat::BC7_SRGB_BLOCK: return DXGI_FORMAT_BC7_UNORM_SRGB;
+
 				case PixelFormat::B10G11R11_UFLOAT_PACK32: return DXGI_FORMAT_R11G11B10_FLOAT;
+				case PixelFormat::A2B10G10R10_UNORM_PACK32: return DXGI_FORMAT_R10G10B10A2_UNORM;
 			}
+
+			VT_ENSURE(false);
 			return DXGI_FORMAT_UNKNOWN;
 		}
 	}

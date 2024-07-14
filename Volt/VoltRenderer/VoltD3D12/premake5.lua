@@ -29,10 +29,11 @@ project "VoltD3D12"
 	{
 		"src/",
 		"../VoltRHI/src",
+		"vendor/d3d12",
 
-		"../VoltD3D12/vendor/dxc/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.dxc}"
 	}
 
 	defines
@@ -52,6 +53,7 @@ project "VoltD3D12"
 
 		"d3d12.lib",
 		"DXGI.lib",
+		"dxguid.lib",
 
 		"%{Library.VoltRHI}",
 		"%{Library.dxc}",

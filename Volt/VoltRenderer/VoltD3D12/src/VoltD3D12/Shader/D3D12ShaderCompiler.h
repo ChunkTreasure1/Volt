@@ -32,7 +32,7 @@ namespace Volt::RHI
 		void ReflectAllStages(const Specification& specification, CompilationResultData& inOutData, const std::unordered_map<ShaderStage, ID3D12ShaderReflection*>& reflectionData);
 		void ReflectStage(ShaderStage stage, const Specification& specification, CompilationResultData& inOutData, ID3D12ShaderReflection* reflectionData);
 
-		bool TryAddShaderBinding(const std::string& name, uint32_t set, uint32_t binding, CompilationResultData& outData);
+		bool TryAddShaderBinding(const std::string& name, uint32_t set, uint32_t binding, ShaderRegisterType registerType, CompilationResultData& outData);
 
 		IDxcCompiler3* m_hlslCompiler = nullptr;
 		IDxcUtils* m_hlslUtils = nullptr;

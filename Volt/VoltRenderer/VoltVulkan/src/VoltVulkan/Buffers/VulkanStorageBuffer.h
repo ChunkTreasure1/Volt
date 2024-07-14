@@ -12,16 +12,13 @@ namespace Volt::RHI
 	class VulkanStorageBuffer : public StorageBuffer
 	{
 	public:
-		VulkanStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
-		VulkanStorageBuffer(const size_t size, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
-		VulkanStorageBuffer(const size_t size, RefPtr<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage);
+		VulkanStorageBuffer(uint32_t count, uint64_t elementSize, std::string_view name, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU, RefPtr<Allocator> allocator = nullptr);
 		~VulkanStorageBuffer() override;
 
-		void ResizeByteSize(const size_t byteSize) override;
-		void Resize(const uint32_t size) override;
+		void Resize(const uint64_t size) override;
+		void ResizeWithCount(const uint32_t count) override;
 
-		const size_t GetElementSize() const override;
-		const size_t GetSize() const override;
+		const uint64_t GetElementSize() const override;
 		const uint32_t GetCount() const override;
 		WeakPtr<Allocation> GetAllocation() const override;
 
@@ -41,20 +38,18 @@ namespace Volt::RHI
 		void* MapInternal() override;
 
 	private:
-		void Invalidate(const size_t byteSize);
+		void Invalidate(const uint64_t byteSize);
 		void Release();
 
-		size_t m_elementSize = 0;
-		size_t m_byteSize = 0;
-		uint32_t m_size = 0;
+		uint64_t m_elementSize = 0;
+		uint64_t m_byteSize = 0;
+		uint32_t m_count = 0;
 
 		std::string m_name;
 
 		RefPtr<BufferView> m_view;
 		RefPtr<Allocation> m_allocation;
-		WeakPtr<Allocator> m_customAllocator;
-
-		bool m_allocatedUsingCustomAllocator = false;
+		WeakPtr<Allocator> m_allocator;
 
 		BufferUsage m_bufferUsage = BufferUsage::StorageBuffer;
 		MemoryUsage m_memoryUsage = MemoryUsage::GPU;

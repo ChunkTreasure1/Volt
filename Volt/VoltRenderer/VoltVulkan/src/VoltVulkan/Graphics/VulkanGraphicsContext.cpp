@@ -6,7 +6,7 @@
 
 #include "VoltVulkan/Memory/VulkanTransientHeap.h"
 
-#include "VoltVulkan/Descriptors/VulkanBindlessManager.h"
+#include "VoltVulkan/Descriptors/VulkanBindlessDescriptorLayoutManager.h"
 
 #include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
@@ -121,14 +121,19 @@ namespace Volt::RHI
 		Shutdown();
 	}
 
-	Allocator& VulkanGraphicsContext::GetDefaultAllocatorImpl()
+	RefPtr<Allocator> VulkanGraphicsContext::GetDefaultAllocatorImpl()
 	{
-		return *m_defaultAllocator;
+		return m_defaultAllocator;
 	}
 
 	RefPtr<Allocator> VulkanGraphicsContext::GetTransientAllocatorImpl()
 	{
 		return m_transientAllocator;
+	}
+
+	RefPtr<ResourceStateTracker> VulkanGraphicsContext::GetResourceStateTrackerImpl()
+	{
+		return m_resourceStateTracker;
 	}
 
 	RefPtr<GraphicsDevice> VulkanGraphicsContext::GetGraphicsDevice() const
@@ -139,7 +144,7 @@ namespace Volt::RHI
 	RefPtr<PhysicalGraphicsDevice> VulkanGraphicsContext::GetPhysicalGraphicsDevice() const
 	{
 		return m_physicalDevice;
-	}
+	} 
 
 	void* VulkanGraphicsContext::GetHandleImpl() const
 	{
@@ -156,15 +161,16 @@ namespace Volt::RHI
 		graphicsDeviceInfo.physicalDevice = m_physicalDevice;
 		m_graphicsDevice = GraphicsDevice::Create(graphicsDeviceInfo);
 	
+		m_resourceStateTracker = RefPtr<ResourceStateTracker>::Create();
 		m_defaultAllocator = DefaultAllocator::Create();
 		m_transientAllocator = TransientAllocator::Create();
 
-		VulkanBindlessManager::CreateGlobalDescriptorLayout();
+		VulkanBindlessDescriptorLayoutManager::CreateGlobalDescriptorLayout();
 	}
 
 	void VulkanGraphicsContext::Shutdown()
 	{
-		VulkanBindlessManager::DestroyGlobalDescriptorLayout();
+		VulkanBindlessDescriptorLayoutManager::DestroyGlobalDescriptorLayout();
 
 		m_defaultAllocator = nullptr;
 		m_transientAllocator = nullptr;
