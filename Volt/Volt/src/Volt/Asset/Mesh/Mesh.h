@@ -12,14 +12,14 @@
 #include "Volt/Rendering/Resources/BindlessResource.h"
 #include "Volt/Rendering/GPUScene.h"
 
+#include <VoltRHI/Buffers/StorageBuffer.h>
+
 namespace Volt
 {
 	namespace RHI
 	{
 		class VertexBuffer;
 		class IndexBuffer;
-
-		class StorageBuffer;
 	}
 
 	class Material;
@@ -92,7 +92,10 @@ namespace Volt
 		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
 		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexMaterialBuffer() const { return m_vertexMaterialBuffer; }
 		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexAnimationInfoBuffer() const { return m_vertexAnimationDataBuffer; }
-		inline BindlessResourceRef<RHI::StorageBuffer> GetIndexStorageBuffer() const { return m_indexBuffer; }
+		inline BindlessResourceRef<RHI::StorageBuffer> GetIndexBuffer() const { return m_indexBuffer; }
+
+		inline BindlessResourceRef<RHI::StorageBuffer> GetMeshletDataBuffer() const { return m_meshletDataBuffer; }
+		inline BindlessResourceRef<RHI::StorageBuffer> GetMeshletBuffer() const { return m_meshletsBuffer; }
 
 		VT_NODISCARD VT_INLINE const VertexContainer& GetVertexContainer() const { return m_vertexContainer; }
 
@@ -113,24 +116,23 @@ namespace Volt
 		void InitializeWithVertices(const std::vector<Vertex>& vertices);
 
 		std::vector<SubMesh> m_subMeshes;
-		VertexContainer m_meshletVertexContainer;
-
-		std::vector<uint32_t> m_indices;
-
 		std::vector<Meshlet> m_meshlets;
-		std::vector<uint32_t> m_meshletIndices;
+
+		VertexContainer m_vertexContainer{};
+		std::vector<uint32_t> m_indices;
+		std::vector<uint32_t> m_meshletData;
 
 		MaterialTable m_materialTable;
 
+		BindlessResourceRef<RHI::StorageBuffer> m_indexBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexPositionsBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexMaterialBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexAnimationInfoBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexBoneInfluencesBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexBoneWeightsBuffer;
-		BindlessResourceRef<RHI::StorageBuffer> m_indexBuffer;
 
-		BindlessResourceRef<RHI::StorageBuffer> m_meshletIndexBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_meshletsBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> m_meshletDataBuffer;
 
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexAnimationDataBuffer;
 
@@ -142,7 +144,5 @@ namespace Volt
 		glm::vec3 m_averageScale{ 1.f };
 		std::map<uint32_t, BoundingSphere> m_subMeshBoundingSpheres;
 
-		// Prototype vertex stuff
-		VertexContainer m_vertexContainer;
 	};
 }

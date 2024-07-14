@@ -1,0 +1,9 @@
+name: "PreDepthMeshShader"
+internal: true
+sources:
+  - entryPoint: "MainMS"
+    shaderStage: "ms"
+    filePath: "Engine/Shaders/Source/MeshShaders/PreDepthMeshShader.hlsl"
+  - entryPoint: "MainPS"
+    shaderStage: "ps"
+    filePath: "Engine/Shaders/Source/MeshShaders/PreDepthMeshShader.hlsl"

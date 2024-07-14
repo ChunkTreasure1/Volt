@@ -10,6 +10,7 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
 #include <VoltRHI/RHIProxy.h>
+#include <VoltRHI/RHILog.h>
 
 #include <vulkan/vulkan.h>
 
@@ -70,6 +71,12 @@ namespace Volt::RHI
 
 		// Create Pipeline
 		{
+			if (!vulkanShader.GetPipelineStageInfos().contains(ShaderStage::Compute))
+			{
+				RHILog::LogTagged(LogSeverity::Error, "[VulkanComputePipeline]", "Invalid shader supplied to pipeline!");
+				return;
+			}
+
 			const auto& firstStage = vulkanShader.GetPipelineStageInfos().at(ShaderStage::Compute);
 
 			VkPipelineShaderStageCreateInfo computeStageInfo{};

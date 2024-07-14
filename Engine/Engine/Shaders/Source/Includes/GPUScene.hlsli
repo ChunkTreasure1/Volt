@@ -42,9 +42,9 @@ struct GPUMesh
     TypedBuffer<uint16_t> vertexBoneInfluencesBuffer;
 
     TypedBuffer<float> vertexBoneWeightsBuffer; // Should be packed
-    TypedBuffer<uint> indexBuffer;
-    TypedBuffer<uint> meshletIndexBuffer;
+    TypedBuffer<uint> meshletDataBuffer;
     TypedBuffer<Meshlet> meshletsBuffer;
+    uint padding;
     
     uint vertexStartOffset;
     uint meshletCount;

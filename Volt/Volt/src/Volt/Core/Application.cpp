@@ -83,6 +83,7 @@ namespace Volt
 		windowProperties.windowMode = info.windowMode;
 		windowProperties.iconPath = info.iconPath;
 		windowProperties.cursorPath = info.cursorPath;
+		windowProperties.useTitlebar = info.isRuntime;
 
 		SetupWindowPreferences(windowProperties);
 

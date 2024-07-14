@@ -95,7 +95,7 @@ namespace Volt::RHI
 		barrier.bufferBarrier().dstStage = BarrierStage::Copy;
 		barrier.bufferBarrier().dstAccess = BarrierAccess::CopyDest;
 		barrier.bufferBarrier().offset = 0;
-		barrier.bufferBarrier().size = size;
+		barrier.bufferBarrier().size = m_allocation->GetSize();
 		barrier.bufferBarrier().resource = WeakPtr<VulkanStorageBuffer>(this);
 
 		cmdBuffer->ResourceBarrier({ barrier });

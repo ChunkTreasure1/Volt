@@ -1,0 +1,9 @@
+name: "ObjectIDMeshShader"
+internal: true
+sources:
+  - entryPoint: "MainMS"
+    shaderStage: "ms"
+    filePath: "Engine/Shaders/Source/MeshShaders/ObjectIDMeshShader.hlsl"
+  - entryPoint: "MainPS"
+    shaderStage: "ps"
+    filePath: "Engine/Shaders/Source/MeshShaders/ObjectIDMeshShader.hlsl"

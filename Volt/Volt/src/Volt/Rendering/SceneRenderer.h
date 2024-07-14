@@ -80,9 +80,13 @@ namespace Volt
 
 	private:
 		void OnRender(Ref<Camera> camera);
+		void OnRender2(Ref<Camera> camera);
 
 		void BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard, const CullPrimitivesData& cullPrimitivesData);
 		void RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard& blackboard, const CullPrimitivesData& cullPrimitivesData);
+
+		void BuildMeshPass2(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard);
+		void SetupMeshPassConstants(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard& blackboard);
 
 		void SetupFrameData(RenderGraphBlackboard& blackboard, Ref<Camera> camera);
 
@@ -91,6 +95,12 @@ namespace Volt
 		void UploadLightBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+
+
+		void AddPreDepthPass2(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddObjectIDPass2(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddVisibilityBufferPass2(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+
 
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddObjectIDPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);

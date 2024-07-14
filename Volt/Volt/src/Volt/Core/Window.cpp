@@ -75,7 +75,7 @@ namespace Volt
 
 		glfwWindowHint(GLFW_SAMPLES, 0);
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_TITLEBAR, Application::Get().GetInfo().isRuntime || m_properties.useTitlebar ? GLFW_TRUE : GLFW_FALSE);
+		glfwWindowHint(GLFW_TITLEBAR, m_properties.useTitlebar ? GLFW_TRUE : GLFW_FALSE);
 		glfwWindowHint(GLFW_AUTO_ICONIFY, false);
 
 		GLFWmonitor* primaryMonitor = nullptr;
@@ -305,6 +305,12 @@ namespace Volt
 			WindowDragDropEvent event(count, paths);
 			data.eventCallback(event);
 		});
+
+		if (!m_properties.useTitlebar)
+		{
+			glfwSetWindowSize(m_window, static_cast<int32_t>(createWidth + 1), static_cast<int32_t>(createHeight + 1));
+			glfwSetWindowSize(m_window, static_cast<int32_t>(createWidth), static_cast<int32_t>(createHeight));
+		}
 	}
 
 	void Window::Release()

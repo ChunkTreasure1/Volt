@@ -83,6 +83,8 @@ namespace Volt
 		inline std::span<const IndirectGPUCommand> GetMeshCommands() const { return m_meshCommands; }
 		inline std::span<const IndirectMeshTaskCommand> GetMeshShaderCommands() const { return m_meshShaderCommands; }
 
+		inline std::span<const GPUMesh> GetGPUMeshes() const { return m_gpuMeshes; }
+		inline std::span<const ObjectDrawData> GetObjectDrawData() const { return m_objectDrawData; }
 	private:
 		void UploadGPUMeshes(std::vector<GPUMesh>& gpuMeshes);
 		void UploadObjectDrawData(std::vector<ObjectDrawData>& objectDrawData);
@@ -103,6 +105,8 @@ namespace Volt
 
 		std::vector<UUID64> m_animatedRenderObjects;
 		std::vector<RenderObject> m_renderObjects;
+
+		std::vector<GPUMesh> m_gpuMeshes;
 		std::vector<ObjectDrawData> m_objectDrawData;
 
 		std::vector<size_t> m_invalidRenderObjectIndices;

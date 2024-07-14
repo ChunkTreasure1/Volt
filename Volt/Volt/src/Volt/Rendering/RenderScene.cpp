@@ -103,6 +103,7 @@ namespace Volt
 
 		m_invalidRenderObjectIndices.clear();
 		m_invalidMaterials.clear();
+		m_gpuMeshes.clear();
 
 		for (size_t i = 0; i < m_renderObjects.size(); i++)
 		{
@@ -132,8 +133,7 @@ namespace Volt
 			return;
 		}
 
-		std::vector<GPUMesh> gpuMeshes;
-		BuildGPUMeshes(gpuMeshes);
+		BuildGPUMeshes(m_gpuMeshes);
 
 		m_objectDrawData.clear();
 		BuildObjectDrawData(m_objectDrawData);
@@ -150,7 +150,7 @@ namespace Volt
 		
 		BuildMeshletBuffer(m_objectDrawData);
 
-		UploadGPUMeshes(gpuMeshes);
+		UploadGPUMeshes(m_gpuMeshes);
 		UploadObjectDrawData(m_objectDrawData);
 		UploadGPUMeshlets();
 		UploadGPUMaterials();
@@ -481,7 +481,7 @@ namespace Volt
 			m_gpuMeshletsBuffer->MarkAsDirty();
 		}
 
-		m_gpuMeshletsBuffer->GetResource()->SetData(m_sceneMeshlets.data(), sizeof(Meshlet) * m_sceneMeshlets.size());
+		//m_gpuMeshletsBuffer->GetResource()->SetData(m_sceneMeshlets.data(), sizeof(Meshlet) * m_sceneMeshlets.size());
 	}
 
 	void RenderScene::BuildGPUMeshes(std::vector<GPUMesh>& gpuMeshes)

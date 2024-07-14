@@ -15,13 +15,12 @@ struct PositionData
     float3 positions[3];
 };
 
-uint3 LoadTriangleIndices(TypedBuffer<uint> indexBuffer, uint indexOffset, uint vertexOffset)
+uint3 LoadTriangleIndices(TypedBuffer<uint> meshletDataBuffer, uint offset, uint vertexOffset, uint3 meshletTriIndices)
 {
     uint3 result;
-
-    result.x = indexBuffer.Load(indexOffset + 0) + vertexOffset;
-    result.y = indexBuffer.Load(indexOffset + 1) + vertexOffset;
-    result.z = indexBuffer.Load(indexOffset + 2) + vertexOffset;
+    result.x = meshletDataBuffer.Load(offset + meshletTriIndices.x) + vertexOffset;
+    result.y = meshletDataBuffer.Load(offset + meshletTriIndices.y) + vertexOffset;
+    result.z = meshletDataBuffer.Load(offset + meshletTriIndices.z) + vertexOffset;
 
     return result;
 }

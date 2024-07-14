@@ -63,6 +63,7 @@ namespace Volt::RHI
 	RefPtr<Allocation> VulkanDefaultAllocator::CreateBuffer(const size_t size, BufferUsage usage, MemoryUsage memoryUsage)
 	{
 		VT_PROFILE_FUNCTION();
+		VT_ENSURE(size > 0);
 
 		const size_t hash = Utility::GetHashFromBufferSpec(size, usage, memoryUsage);
 

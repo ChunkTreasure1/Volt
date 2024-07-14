@@ -12,7 +12,7 @@
 
 struct Constants
 {
-    UniformTexture<uint> visibilityBuffer;
+    UniformTexture<uint2> visibilityBuffer;
     UniformTypedBuffer<uint> materialCountBuffer;
     UniformTypedBuffer<uint> materialStartBuffer;
     UniformTypedBuffer<uint2> pixelCollection;
@@ -86,16 +86,18 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     }
     
     const float2 pixelPosition = constants.pixelCollection.Load(pixelIndex) + 0.5f;
-    const uint visibilityValues = constants.visibilityBuffer.Load2D(int3(pixelPosition, 0));
+    const uint2 visibilityValues = constants.visibilityBuffer.Load2D(int3(pixelPosition, 0));
     
-    const uint triangleId = UnpackTriangleID(visibilityValues);
-    const uint meshletId = UnpackMeshletID(visibilityValues);
+    const uint objectId = visibilityValues.x;
+    const uint triangleId = UnpackTriangleID(visibilityValues.y);
+    const uint meshletId = UnpackMeshletID(visibilityValues.y);
     
-    const Meshlet meshlet = scene.meshletsBuffer.Load(meshletId);
-    const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(meshlet.objectId);
-    const GPUMesh mesh = scene.meshesBuffer.Load(meshlet.meshId);
+    const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(objectId);
+    const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
+    const Meshlet meshlet = mesh.meshletsBuffer.Load(meshletId);
 
-    const uint3 triIndices = LoadTriangleIndices(mesh.meshletIndexBuffer, mesh.meshletIndexStartOffset + meshlet.triangleOffset + triangleId, meshlet.vertexOffset + mesh.vertexStartOffset);
+    const uint3 meshletTriIndices = UnpackPrimitive(mesh.meshletDataBuffer.Load(meshlet.dataOffset + meshlet.vertexCount + triangleId)); 
+    const uint3 triIndices = LoadTriangleIndices(mesh.meshletDataBuffer, meshlet.dataOffset, mesh.vertexStartOffset, meshletTriIndices);
     const PositionData vertexPositions = LoadVertexPositions(mesh.vertexPositionsBuffer, triIndices);
 
     const float4 worldPositions[] = 

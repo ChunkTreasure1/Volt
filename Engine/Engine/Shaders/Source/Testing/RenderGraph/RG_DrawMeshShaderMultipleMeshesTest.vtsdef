@@ -1,0 +1,9 @@
+name: "RG_DrawMeshShaderMultipleMeshesTest"
+internal: true
+sources:
+  - entryPoint: "MainMS"
+    shaderStage: "ms"
+    filePath: "Engine/Shaders/Source/Testing/RenderGraph/RG_DrawMeshShaderMultipleMeshesTest.hlsl"
+  - entryPoint: "MainPS"
+    shaderStage: "ps"
+    filePath: "Engine/Shaders/Source/Testing/RenderGraph/RG_DrawMeshShaderMultipleMeshesTest.hlsl"

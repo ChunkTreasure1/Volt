@@ -17,9 +17,9 @@ namespace Volt
 		ResourceHandle vertexBoneInfluencesBuffer;
 
 		ResourceHandle vertexBoneWeightsBuffer;
-		ResourceHandle indexBuffer;
-		ResourceHandle meshletIndexBuffer;
+		ResourceHandle meshletDataBuffer;
 		ResourceHandle meshletsBuffer;
+		uint32_t padding;
 
 		uint32_t vertexStartOffset;
 		uint32_t meshletCount;

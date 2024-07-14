@@ -7,7 +7,7 @@ struct Constants
 {
     GPUScene gpuScene;
 
-    TTexture<uint> visibilityBuffer;
+    TTexture<uint2> visibilityBuffer;
     TypedBuffer<uint> materialStartBuffer;
     
     RWTypedBuffer<uint> currentMaterialCountBuffer;
@@ -26,15 +26,14 @@ void main(uint3 threadId : SV_DispatchThreadID)
         return;
     }
     
-    const uint pixelValue = constants.visibilityBuffer.Load2D(int3(threadId.xy, 0));
+    const uint2 pixelValue = constants.visibilityBuffer.Load2D(int3(threadId.xy, 0));
     
-    if (pixelValue == UINT32_MAX)
+    if (pixelValue.x == UINT32_MAX)
     {
         return;
     }
     
-    const Meshlet meshlet = constants.gpuScene.meshletsBuffer.Load(UnpackMeshletID(pixelValue));
-    const ObjectDrawData objectData = constants.gpuScene.objectDrawDataBuffer.Load(meshlet.objectId);
+    const ObjectDrawData objectData = constants.gpuScene.objectDrawDataBuffer.Load(pixelValue.x);
     if (objectData.materialId == UINT32_MAX)
     {
         return;
