@@ -10,6 +10,8 @@
 #include "Barycentrics.hlsli"
 #include "VisibilityBuffer.hlsli"
 
+#include "Transform.hlsli"
+
 struct Constants
 {
     UniformTexture<uint2> visibilityBuffer;
@@ -105,9 +107,9 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
 
     const float4 worldPositions[] = 
     {
-        mul(drawData.transform, float4(vertexPositions.positions[0], 1.f)),
-        mul(drawData.transform, float4(vertexPositions.positions[1], 1.f)),
-        mul(drawData.transform, float4(vertexPositions.positions[2], 1.f))
+        float4(drawData.transform.GetWorldPosition(vertexPositions.positions[0]), 1.f),
+        float4(drawData.transform.GetWorldPosition(vertexPositions.positions[1]), 1.f),
+        float4(drawData.transform.GetWorldPosition(vertexPositions.positions[2]), 1.f),
     };
 
     const float4 clipPositions[] =
@@ -125,8 +127,8 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     
     const float3x3 worldRotationMatrix = (float3x3)drawData.transform;
 
-    const float3 normal = normalize(mul(worldRotationMatrix, normalize(InterpolateFloat3(derivatives, materialData.normals))));
-    const float3 tangent = normalize(mul(worldRotationMatrix, normalize(InterpolateFloat3(derivatives, materialData.tangents))));
+    const float3 normal = normalize(drawData.transform.RotateVector(normalize(InterpolateFloat3(derivatives, materialData.normals))));
+    const float3 tangent = normalize(drawData.transform.RotateVector(normalize(InterpolateFloat3(derivatives, materialData.tangents))));
     const float3x3 TBN = CalculateTBN(normal, tangent);
     
     const GPUMaterial material = scene.materialsBuffer.Load(constants.materialId);

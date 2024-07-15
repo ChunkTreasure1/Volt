@@ -524,7 +524,9 @@ namespace Volt
 			objectDrawData.boundingSphereRadius = boundingSphere.radius * maxScale;
 		}
 
-		objectDrawData.transform = transform;
+		objectDrawData.position = entity.GetPosition();
+		objectDrawData.scale = entity.GetScale();
+		objectDrawData.rotation = entity.GetRotation();
 		objectDrawData.meshId = meshId;
 		objectDrawData.entityId = entity.GetID();
 		objectDrawData.materialId = GetMaterialIndex(renderObject.material);

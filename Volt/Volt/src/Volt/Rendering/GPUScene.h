@@ -29,8 +29,10 @@ namespace Volt
 
 	struct ObjectDrawData
 	{
-		glm::mat4 transform;
-		
+		glm::quat rotation;
+		glm::vec3 position;
+		glm::vec3 scale;
+
 		uint32_t meshId;
 		uint32_t materialId;
 		uint32_t meshletStartOffset;
@@ -41,7 +43,6 @@ namespace Volt
 
 		uint32_t isAnimated;
 		uint32_t boneOffset;
-		glm::uvec2 padding;
 	};
 
 	struct GPUMaterial

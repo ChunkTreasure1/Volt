@@ -63,9 +63,8 @@ void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
     if (groupThreadId < meshlet.vertexCount)
     {
         const uint vertexIndex = mesh.meshletDataBuffer[vertexOffset + groupThreadId] + mesh.vertexStartOffset;
-        const float4x4 transform = drawData.transform;
 
-        float4 position = mul(dirLight.viewProjections[u_perDrawData.viewIndex], mul(transform, float4(mesh.vertexPositionsBuffer.Load(vertexIndex), 1.f)));
+        float4 position = mul(dirLight.viewProjections[u_perDrawData.viewIndex], float4(drawData.transform.GetWorldPosition(mesh.vertexPositionsBuffer.Load(vertexIndex)), 1.f));
 
         vertices[groupThreadId].position = TransformSVPosition(position);
     }

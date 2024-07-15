@@ -3,6 +3,7 @@
 #include "Vertex.hlsli"
 #include "Resources.hlsli"
 #include "BoundingVolumes.hlsli"
+#include "Transform.hlsli"
 
 #define MAX_LOD_COUNT 8
 
@@ -31,7 +32,7 @@ struct Meshlet
 
 struct GPUMesh
 {
-    TypedBuffer<VertexPositionData> vertexPositionsBuffer;
+    TypedBuffer<float3> vertexPositionsBuffer;
     TypedBuffer<VertexMaterialData> vertexMaterialBuffer;
     TypedBuffer<VertexAnimationInfo> vertexAnimationInfoBuffer;
     TypedBuffer<uint16_t> vertexBoneInfluencesBuffer;
@@ -49,8 +50,8 @@ struct GPUMesh
 
 struct ObjectDrawData
 {
-    float4x4 transform;
-    
+    Transform transform;
+
     uint meshId;
     uint materialId;
     uint meshletStartOffset;
@@ -60,7 +61,6 @@ struct ObjectDrawData
 
     uint isAnimated;
     uint boneOffset;
-    uint2 padding;
 };
 
 struct GPUScene

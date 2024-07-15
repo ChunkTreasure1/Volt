@@ -42,12 +42,8 @@ void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
     if (groupThreadId < meshlet.vertexCount)
     {
         const uint vertexIndex = mesh.meshletDataBuffer[vertexOffset + groupThreadId] + mesh.vertexStartOffset;
-        const float4x4 transform = drawData.transform;
 
-        const float3x3 worldNormalRotation = (float3x3)transform;
-        const float3x3 cameraNormalRotation = (float3x3)viewData.view;
-
-        float4 position = mul(viewData.viewProjection, mul(transform, float4(mesh.vertexPositionsBuffer.Load(vertexIndex), 1.f)));
+        float4 position = mul(viewData.viewProjection, float4(drawData.transform.GetWorldPosition(mesh.vertexPositionsBuffer.Load(vertexIndex)), 1.f));
 
         vertices[groupThreadId].position = TransformSVPosition(position);
         vertices[groupThreadId].objectId = drawData.entityId;

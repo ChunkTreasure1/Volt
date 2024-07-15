@@ -1,6 +1,7 @@
 #pragma once
 
 #define NUM_MS_THREADS 64
+#define NUM_AS_THREADS 64
 #define NUM_MAX_OUT_TRIS 64
 #define NUM_MAX_OUT_VERTS 64
 
@@ -8,6 +9,12 @@
 #include "GPUScene.hlsli"
 #include "Utility.hlsli"
 #include "MeshletHelpers.hlsli"
+
+struct MeshAmplificationPayload
+{
+    uint drawId;
+    uint meshletIndices[NUM_AS_THREADS];
+};
 
 #ifndef OVERRIDE_DEFAULT_CONSTANTS
 struct Constants

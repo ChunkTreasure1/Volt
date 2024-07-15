@@ -25,12 +25,12 @@ uint3 LoadTriangleIndices(TypedBuffer<uint> meshletDataBuffer, uint offset, uint
     return result;
 }
 
-PositionData LoadVertexPositions(TypedBuffer<VertexPositionData> positionsBuffer, uint3 triIndices)
+PositionData LoadVertexPositions(TypedBuffer<float3> positionsBuffer, uint3 triIndices)
 {
     PositionData result;
-    result.positions[0] = positionsBuffer.Load(triIndices.x).position;
-    result.positions[1] = positionsBuffer.Load(triIndices.y).position;
-    result.positions[2] = positionsBuffer.Load(triIndices.z).position;
+    result.positions[0] = positionsBuffer.Load(triIndices.x);
+    result.positions[1] = positionsBuffer.Load(triIndices.y);
+    result.positions[2] = positionsBuffer.Load(triIndices.z);
 
     return result;
 }
