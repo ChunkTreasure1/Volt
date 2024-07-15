@@ -1,11 +1,11 @@
 #include "vtpch.h"
 #include "DirectionalShadowTechnique.h"
 
-#include "Volt/Rendering/RenderingTechniques/CullingTechnique.h"
 #include "Volt/Rendering/RenderGraph/RenderGraph.h"
 #include "Volt/Rendering/RenderGraph/RenderGraphBlackboard.h"
 #include "Volt/Rendering/RenderGraph/Resources/RenderGraphTextureResource.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
+#include "Volt/Rendering/RenderScene.h"
 #include "Volt/Rendering/RendererCommon.h"
 #include "Volt/Rendering/Camera/Camera.h"
 
@@ -20,8 +20,6 @@ namespace Volt
 
 	DirectionalShadowData DirectionalShadowTechnique::Execute(Ref<Camera> camera, Ref<RenderScene> renderScene, const DirectionalLightData& light)
 	{
-		m_renderGraph.BeginMarker("Directional Shadow");
-
 		constexpr float SIZE = 1000.f;
 
 		Ref<Camera> shadowCamera = CreateRef<Camera>(-SIZE, SIZE, -SIZE, SIZE, 1.f, 10'000.f);
@@ -29,11 +27,11 @@ namespace Volt
 
 		shadowCamera->SetView(view);
 
-		CullingTechnique culling{ m_renderGraph, m_blackboard };
-		const CullPrimitivesData cullPrimitivesData = culling.Execute(shadowCamera, renderScene, CullingMode::None, glm::vec2{ 1024, 1024 }, DirectionalLightData::CASCADE_COUNT);
-
 		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
 		const auto& gpuSceneData = m_blackboard.Get<GPUSceneData>();
+
+		const auto& gpuMeshes = renderScene->GetGPUMeshes();
+		const auto& objectDrawData = renderScene->GetObjectDrawData();
 
 		DirectionalShadowData& dirShadowData = m_renderGraph.AddPass<DirectionalShadowData>("Directional Shadow",
 		[&](RenderGraph::Builder& builder, DirectionalShadowData& data)
@@ -55,11 +53,6 @@ namespace Volt
 
 			builder.ReadResource(uniformBuffers.viewDataBuffer);
 			builder.ReadResource(uniformBuffers.directionalLightBuffer);
-			builder.ReadResource(cullPrimitivesData.indexBuffer, RenderGraphResourceState::IndexBuffer);
-			builder.ReadResource(cullPrimitivesData.drawCommand, RenderGraphResourceState::IndirectArgument);
-
-			builder.SetHasSideEffect();
-
 		},
 		[=](const DirectionalShadowData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
@@ -68,7 +61,7 @@ namespace Volt
 			info.renderingInfo.depthAttachmentInfo.SetClearColor(1.f, 1.f, 1.f, 1.f);
 
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
-			pipelineInfo.shader = ShaderMap::Get("DirectionalShadow");
+			pipelineInfo.shader = ShaderMap::Get("DirectionalShadowMeshShader");
 			pipelineInfo.depthCompareOperator = RHI::CompareOperator::LessEqual;
 			pipelineInfo.cullMode = RHI::CullMode::Back;
 
@@ -77,20 +70,33 @@ namespace Volt
 			context.BeginRendering(info);
 			context.BindPipeline(pipeline);
 
-			const auto viewDataHandle = resources.GetUniformBuffer(uniformBuffers.viewDataBuffer);
-
-			context.BindIndexBuffer(cullPrimitivesData.indexBuffer);
-
 			GPUSceneData::SetupConstants(context, resources, gpuSceneData);
 
-			context.SetConstant("viewData"_sh, viewDataHandle);
+			context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant("directionalLight"_sh, resources.GetBuffer(uniformBuffers.directionalLightBuffer));
 
-			context.DrawIndexedIndirect(cullPrimitivesData.drawCommand, 0, 1, sizeof(RHI::IndirectDrawIndexedCommand));
+			struct PushConstant
+			{
+				uint32_t drawIndex;
+				uint32_t viewIndex;
+			};
+
+			for (uint32_t i = 0; i < DirectionalLightData::CASCADE_COUNT; i++)
+			{
+				context.BeginMarker(std::format("Cascade: {}", i));
+				for (uint32_t m = 0; const auto & objData : objectDrawData)
+				{
+					PushConstant pushConstants{ m, i };
+
+					context.PushConstants(&pushConstants, sizeof(PushConstant));
+					context.DispatchMeshTasks(gpuMeshes[objData.meshId].meshletCount, 1, 1);
+					m++;
+				}
+				context.EndMarker();
+			}
+
 			context.EndRendering();
 		});
-
-		m_renderGraph.EndMarker();
 
 		return dirShadowData;
 	}

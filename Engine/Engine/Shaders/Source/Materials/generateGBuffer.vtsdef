@@ -1,6 +1,0 @@
-name: "GenerateGBuffer"
-internal: true
-sources:
-  - entryPoint: "main"
-    shaderStage: "cs"
-    filePath: "Engine/Shaders/Source/Materials/GenerateGBuffer_cs.hlsl"

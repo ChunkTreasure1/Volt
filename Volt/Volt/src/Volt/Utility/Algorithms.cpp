@@ -13,7 +13,7 @@ namespace Volt::Algo
 		auto& threadPool = Application::GetThreadPool();
 
 		const uint32_t threadCount = std::min(iterationCount, threadPool.GetThreadCount());
-		const uint32_t perThreadIterationCount = Math::DivideRoundUp(iterationCount, threadCount);
+		const uint32_t perThreadIterationCount = iterationCount / threadCount;
 
 		std::vector<std::future<void>> futures;
 		futures.reserve(threadCount);
@@ -48,7 +48,7 @@ namespace Volt::Algo
 		auto& threadPool = Application::GetThreadPool();
 
 		const uint32_t threadCount = std::min(iterationCount, threadPool.GetThreadCount());
-		const uint32_t perThreadIterationCount = Math::DivideRoundUp(iterationCount, threadCount);
+		const uint32_t perThreadIterationCount = iterationCount / threadCount;
 
 		uint32_t iterOffset = 0;
 		for (uint32_t i = 0; i < threadCount; i++)

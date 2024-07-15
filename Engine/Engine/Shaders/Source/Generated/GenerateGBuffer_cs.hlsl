@@ -94,7 +94,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     
     const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(objectId);
     const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
-    const Meshlet meshlet = mesh.meshletsBuffer.Load(meshletId);
+    const Meshlet meshlet = mesh.meshletsBuffer.Load(mesh.meshletStartOffset + meshletId);
 
     const uint3 meshletTriIndices = UnpackPrimitive(mesh.meshletDataBuffer.Load(meshlet.dataOffset + meshlet.vertexCount + triangleId)); 
     const uint3 triIndices = LoadTriangleIndices(mesh.meshletDataBuffer, meshlet.dataOffset, mesh.vertexStartOffset, meshletTriIndices);

@@ -10,20 +10,15 @@ namespace Volt
 {
 	struct Meshlet
 	{
-		uint32_t vertexOffset;
-		uint32_t triangleOffset;
 		uint32_t vertexCount;
 		uint32_t triangleCount;
-
-		uint32_t objectId;
 		uint32_t meshId;
+
 		uint32_t dataOffset;
-		uint32_t padding;
+		uint32_t cone;
 
 		glm::vec3 boundingSphereCenter;
 		float boundingSphereRadius;
-
-		glm::vec4 cone;
 	};
 
 	struct MeshletNew

@@ -160,6 +160,9 @@ namespace Volt
 		RenderContext(RefPtr<RHI::CommandBuffer> commandBuffer);
 		~RenderContext();
 
+		void BeginMarker(std::string_view markerName, const glm::vec4& markerColor = 1.f);
+		void EndMarker();
+
 		void BeginRendering(const RenderingInfo& renderingInfo);
 		void EndRendering();
 

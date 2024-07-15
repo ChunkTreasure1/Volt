@@ -129,6 +129,14 @@ namespace Volt
 			uint32_t i2 : 10;
 		};
 
+		struct PackedCone
+		{
+			int8_t x;
+			int8_t y;
+			int8_t z;
+			int8_t cutoff;
+		};
+
 		const uint32_t subMeshCount = static_cast<uint32_t>(m_subMeshes.size());
 		const uint32_t threadCount = Algo::GetThreadCountFromIterationCount(subMeshCount);
 
@@ -138,6 +146,7 @@ namespace Volt
 		auto fu = Algo::ForEachParallelLockable([&](uint32_t threadIdx, uint32_t elementIdx)
 		{
 			auto& meshletData = perThreadMeshletData.at(threadIdx);
+			auto& meshlets = perThreadMeshlets.at(threadIdx);
 
 			auto& subMesh = m_subMeshes.at(elementIdx);
 
@@ -147,16 +156,18 @@ namespace Volt
 			std::vector<uint32_t> tempIndices(subMesh.indexCount);
 			meshopt_optimizeVertexCache(tempIndices.data(), indicesPtr, subMesh.indexCount, subMesh.vertexCount);
 
-			std::vector<meshopt_Meshlet> meshlets(meshopt_buildMeshletsBound(subMesh.indexCount, MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT));
-			std::vector<uint32_t> meshletVertices(meshlets.size()* MAX_VERTEX_COUNT);
-			std::vector<uint8_t> meshletTriangles(meshlets.size()* MAX_TRIANGLE_COUNT * 3);
+			std::vector<meshopt_Meshlet> meshoptMeshlets(meshopt_buildMeshletsBound(subMesh.indexCount, MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT));
+			std::vector<uint32_t> meshletVertices(meshoptMeshlets.size() * MAX_VERTEX_COUNT);
+			std::vector<uint8_t> meshletTriangles(meshoptMeshlets.size() * MAX_TRIANGLE_COUNT * 3);
 
-			meshlets.resize(meshopt_buildMeshlets(meshlets.data(), meshletVertices.data(), meshletTriangles.data(), indicesPtr, static_cast<size_t>(subMesh.indexCount), &vertexPositionsPtr[0].x, static_cast<size_t>(subMesh.vertexCount), sizeof(glm::vec3), MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT, CONE_WEIGHT));
+			meshoptMeshlets.resize(meshopt_buildMeshlets(meshoptMeshlets.data(), meshletVertices.data(), meshletTriangles.data(), indicesPtr, static_cast<size_t>(subMesh.indexCount), &vertexPositionsPtr[0].x, static_cast<size_t>(subMesh.vertexCount), sizeof(glm::vec3), MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT, CONE_WEIGHT));
 
-			subMesh.meshletCount = static_cast<uint32_t>(meshlets.size());
-			subMesh.meshletStartOffset = static_cast<uint32_t>(perThreadMeshlets.at(threadIdx).size());
+			subMesh.meshletCount = static_cast<uint32_t>(meshoptMeshlets.size());
+			subMesh.meshletStartOffset = static_cast<uint32_t>(meshlets.size());
 
-			for (auto& meshlet : meshlets)
+			meshlets.reserve(meshlets.size() + meshoptMeshlets.size());
+
+			for (auto& meshlet : meshoptMeshlets)
 			{
 				meshopt_optimizeMeshlet(&meshletVertices[meshlet.vertex_offset], &meshletTriangles[meshlet.triangle_offset], meshlet.triangle_count, meshlet.vertex_count);
 
@@ -181,16 +192,20 @@ namespace Volt
 
 				meshopt_Bounds bounds = meshopt_computeMeshletBounds(&meshletVertices[meshlet.vertex_offset], &meshletTriangles[meshlet.triangle_offset], meshlet.triangle_count, &vertexPositionsPtr[0].x, static_cast<size_t>(subMesh.vertexCount), sizeof(glm::vec3));
 
-				auto& newMeshlet = perThreadMeshlets.at(threadIdx).emplace_back();
+				auto& newMeshlet = meshlets.emplace_back();
 				newMeshlet.dataOffset = static_cast<uint32_t>(dataOffset);
 				newMeshlet.triangleCount = meshlet.triangle_count;
 				newMeshlet.vertexCount = meshlet.vertex_count;
 				newMeshlet.boundingSphereCenter = glm::vec3{ bounds.center[0], bounds.center[1], bounds.center[2] };
 				newMeshlet.boundingSphereRadius = bounds.radius;
-				newMeshlet.cone[0] = bounds.cone_axis[0];
-				newMeshlet.cone[1] = bounds.cone_axis[1];
-				newMeshlet.cone[2] = bounds.cone_axis[2];
-				newMeshlet.cone[3] = bounds.cone_cutoff;
+
+				PackedCone cone{};
+				cone.x = bounds.cone_axis_s8[0];
+				cone.y = bounds.cone_axis_s8[1];
+				cone.z = bounds.cone_axis_s8[2];
+				cone.cutoff = bounds.cone_cutoff_s8;
+
+				newMeshlet.cone = *reinterpret_cast<uint32_t*>(&cone);
 			}
 
 		}, subMeshCount);
@@ -208,14 +223,23 @@ namespace Volt
 			auto& subMesh = m_subMeshes.at(elementIdx);
 			subMesh.meshletStartOffset += meshletPrefixSums.at(threadIdx);
 
-			for (auto& meshlet : perThreadMeshlets.at(threadIdx))
-			{
-				meshlet.dataOffset += meshletPrefixSums.at(threadIdx);
-			}
-
 		}, subMeshCount);
 
+		auto fu3 = Algo::ForEachParallelLockable([&](uint32_t threadIdx, uint32_t elementIdx)
+		{
+			for (auto& meshlet : perThreadMeshlets.at(elementIdx))
+			{
+				meshlet.dataOffset += indexPrefixSums.at(elementIdx);
+			}
+
+		}, static_cast<uint32_t>(perThreadMeshlets.size()));
+
 		for (const auto& f : fu2)
+		{
+			f.wait();
+		}
+
+		for (const auto& f : fu3)
 		{
 			f.wait();
 		}

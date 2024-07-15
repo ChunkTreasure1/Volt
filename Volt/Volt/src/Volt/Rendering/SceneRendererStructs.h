@@ -42,25 +42,6 @@ namespace Volt
 		RenderGraphResourceHandle irradiance;
 	};
 
-	struct CullObjectsData
-	{
-		RenderGraphResourceHandle meshletToObjectIdAndOffset;
-		RenderGraphResourceHandle meshletCount;
-	};
-
-	struct CullMeshletsData
-	{
-		RenderGraphResourceHandle survivingMeshlets;
-		RenderGraphResourceHandle survivingMeshletCount;
-	};
-
-
-	struct CullPrimitivesData
-	{
-		RenderGraphResourceHandle indexBuffer;
-		RenderGraphResourceHandle drawCommand;
-	};
-
 	struct UniformBuffersData
 	{
 		RenderGraphResourceHandle viewDataBuffer;
@@ -72,7 +53,6 @@ namespace Volt
 		RenderGraphResourceHandle meshesBuffer;
 		RenderGraphResourceHandle materialsBuffer;
 		RenderGraphResourceHandle objectDrawDataBuffer;
-		RenderGraphResourceHandle meshletsBuffer;
 		RenderGraphResourceHandle bonesBuffer;
 
 		static void SetupInputs(RenderGraph::Builder& builder, const GPUSceneData& data);

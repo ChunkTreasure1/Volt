@@ -37,6 +37,8 @@ namespace Volt::RHI
 		const auto& shaderResources = m_shader->GetResources();
 		VulkanShader& vulkanShader = m_shader->AsRef<VulkanShader>();
 
+		const auto descriptorSetLayouts = VulkanBindlessDescriptorLayoutManager::GetGlobalDescriptorSetLayouts();
+
 		// Create Pipeline Layout
 		{
 			VkPushConstantRange pushConstantRange{};
@@ -52,8 +54,6 @@ namespace Volt::RHI
 
 			if (m_useGlobalResouces)
 			{
-				const auto descriptorSetLayouts = VulkanBindlessDescriptorLayoutManager::GetGlobalDescriptorSetLayouts();
-
 				info.setLayoutCount = shaderResources.renderGraphConstantsData.IsValid() ? 2 : 1;
 				info.pSetLayouts = descriptorSetLayouts.data();
 			}

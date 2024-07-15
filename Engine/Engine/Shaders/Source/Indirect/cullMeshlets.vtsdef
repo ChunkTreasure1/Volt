@@ -1,6 +1,0 @@
-name: "CullMeshlets"
-internal: true
-sources:
-  - entryPoint: "main"
-    shaderStage: "cs"
-    filePath: "Engine/Shaders/Source/Indirect/CullMeshlets_cs.hlsl"

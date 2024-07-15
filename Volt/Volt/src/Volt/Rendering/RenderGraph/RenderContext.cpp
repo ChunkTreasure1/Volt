@@ -26,6 +26,16 @@ namespace Volt
 	{
 	}
 
+	void RenderContext::BeginMarker(std::string_view markerName, const glm::vec4& markerColor)
+	{
+		m_commandBuffer->BeginMarker(markerName, { markerColor.x, markerColor.y, markerColor.z, markerColor.w });
+	}
+
+	void RenderContext::EndMarker()
+	{
+		m_commandBuffer->EndMarker();
+	}
+
 	void RenderContext::BeginRendering(const RenderingInfo& renderingInfo)
 	{
 		VT_PROFILE_FUNCTION();

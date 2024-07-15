@@ -7,12 +7,15 @@
 #include "Resources.hlsli"
 #include "GPUScene.hlsli"
 #include "Utility.hlsli"
+#include "MeshletHelpers.hlsli"
 
+#ifndef OVERRIDE_DEFAULT_CONSTANTS
 struct Constants
 {
     GPUScene gpuScene;
     UniformBuffer<ViewData> viewData;
 };
+#endif
 
 float4 TransformSVPosition(float4 position)
 {

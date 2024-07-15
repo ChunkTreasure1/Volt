@@ -18,20 +18,15 @@ struct GPUMaterial
 
 struct Meshlet
 {
-    uint vertexOffset;
-    uint triangleOffset;
     uint vertexCount;
     uint triangleCount;
-    
-    uint objectId;
     uint meshId;
+    
     uint dataOffset;
-    uint padding;
+    uint cone;
     
     float3 boundingSphereCenter;
     float boundingSphereRadius;
-    
-    float4 cone;
 };
 
 struct GPUMesh
@@ -73,6 +68,5 @@ struct GPUScene
     UniformTypedBuffer<GPUMesh> meshesBuffer;
     UniformTypedBuffer<GPUMaterial> materialsBuffer;
     UniformTypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    UniformTypedBuffer<Meshlet> meshletsBuffer;
     UniformTypedBuffer<float4x4> bonesBuffer;
 };

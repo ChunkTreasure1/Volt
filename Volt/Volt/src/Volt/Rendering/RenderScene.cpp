@@ -29,7 +29,6 @@ namespace Volt
 		m_gpuMeshesBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(GPUMesh), "GPU Meshes", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 		m_gpuMaterialsBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(GPUMaterial), "GPU Materials", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 		m_objectDrawDataBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(ObjectDrawData), "Object Draw Data", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
-		m_gpuMeshletsBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(Meshlet), "GPU Meshlets", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 		m_gpuBonesBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(glm::mat4), "GPU Bones", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 
 		m_materialChangedCallbackID = AssetManager::RegisterAssetChangedCallback(AssetType::Material, [&](AssetHandle handle, AssetChangedState state) 
@@ -148,15 +147,10 @@ namespace Volt
 			m_currentBoneCount += static_cast<uint32_t>(renderObject.motionWeaver->GetSkeleton()->GetJointCount());
 		}
 		
-		BuildMeshletBuffer(m_objectDrawData);
-
 		UploadGPUMeshes(m_gpuMeshes);
 		UploadObjectDrawData(m_objectDrawData);
-		UploadGPUMeshlets();
 		UploadGPUMaterials();
 		//UploadGPUScene();
-
-		BuildMeshCommands();
 	}
 
 	void RenderScene::Update(RenderGraph& renderGraph)
@@ -388,7 +382,6 @@ namespace Volt
 		gpuScene.meshesBuffer = GetGPUMeshesBuffer().GetResource();
 		gpuScene.materialsBuffer = GetGPUMaterialsBuffer().GetResource();
 		gpuScene.objectDrawDataBuffer = GetObjectDrawDataBuffer().GetResource();
-		gpuScene.meshletsBuffer = GetGPUMeshletsBuffer().GetResource();
 		gpuScene.bonesBuffer = m_gpuBonesBuffer->GetResource();
 		return gpuScene;
 	}
@@ -473,17 +466,6 @@ namespace Volt
 		}
 	}
 
-	void RenderScene::UploadGPUMeshlets()
-	{
-		if (m_gpuMeshletsBuffer->GetResource()->GetCount() < static_cast<uint32_t>(m_sceneMeshlets.size()))
-		{
-			m_gpuMeshletsBuffer->GetResource()->ResizeWithCount(static_cast<uint32_t>(m_sceneMeshlets.size()));
-			m_gpuMeshletsBuffer->MarkAsDirty();
-		}
-
-		//m_gpuMeshletsBuffer->GetResource()->SetData(m_sceneMeshlets.data(), sizeof(Meshlet) * m_sceneMeshlets.size());
-	}
-
 	void RenderScene::BuildGPUMeshes(std::vector<GPUMesh>& gpuMeshes)
 	{
 		for (uint32_t currentIndex = 0; const auto & mesh : m_individualMeshes)
@@ -548,101 +530,5 @@ namespace Volt
 		objectDrawData.materialId = GetMaterialIndex(renderObject.material);
 		objectDrawData.meshletStartOffset = renderObject.meshletStartOffset;
 		objectDrawData.isAnimated = renderObject.IsAnimated();
-	}
-
-	void RenderScene::BuildMeshCommands()
-	{
-		m_meshCommands.clear();
-
-		for (uint32_t index = 0; const auto & obj : m_renderObjects)
-		{
-			Entity entity = m_scene->GetEntityFromUUID(obj.entity);
-			if (!entity)
-			{
-				continue;
-			}
-
-			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
-			const auto& meshlets = obj.mesh->GetMeshlets();
-
-			for (uint32_t meshletIdx = 0; meshletIdx < subMesh.meshletCount; meshletIdx++)
-			{
-				const auto& currentMeshlet = meshlets.at(subMesh.meshletStartOffset + meshletIdx);
-
-				auto& newCommand = m_meshCommands.emplace_back();
-				newCommand.command.vertexCount = currentMeshlet.triangleCount * 3;
-				newCommand.command.instanceCount = 1;
-				newCommand.command.firstVertex = currentMeshlet.triangleOffset;
-				newCommand.command.firstInstance = 0;
-				newCommand.objectId = index;
-				newCommand.meshId = GetMeshID(obj.mesh, obj.subMeshIndex);
-				newCommand.meshletId = subMesh.meshletStartOffset + meshletIdx;
-			}
-
-			index++;
-		}
-
-		// Mesh shader commands
-		for (uint32_t index = 0; const auto & obj : m_renderObjects)
-		{
-			Entity entity = m_scene->GetEntityFromUUID(obj.entity);
-			if (!entity)
-			{
-				continue;
-			}
-
-			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
-
-			auto& newCommand = m_meshShaderCommands.emplace_back();
-			newCommand.command.x = subMesh.meshletCount;
-			newCommand.command.y = 1;
-			newCommand.command.z = 1;
-			newCommand.objectId = index;
-			newCommand.meshId = GetMeshID(obj.mesh, obj.subMeshIndex);
-
-			index++;
-		}
-	}
-
-	void RenderScene::BuildMeshletBuffer(std::vector<ObjectDrawData>& objectDrawData)
-	{
-		m_sceneMeshlets.clear();
-		m_currentIndexCount = 0;
-
-		for (uint32_t index = 0; auto& obj : m_renderObjects)
-		{
-			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
-			const auto& meshlets = obj.mesh->GetMeshlets();
-
-			const size_t meshletStartOffset = m_sceneMeshlets.size();
-			const uint32_t meshId = GetMeshID(obj.mesh, obj.subMeshIndex);
-
-			if (meshId == std::numeric_limits<uint32_t>::max())
-			{
-				continue;
-			}
-
-			for (uint32_t meshletIdx = 0; meshletIdx < subMesh.meshletCount; meshletIdx++)
-			{
-				const auto& currentMeshlet = meshlets.at(subMesh.meshletStartOffset + meshletIdx);
-
-				auto& newMeshlet = m_sceneMeshlets.emplace_back();
-				newMeshlet.vertexOffset = currentMeshlet.vertexOffset;
-				newMeshlet.triangleOffset = currentMeshlet.triangleOffset;
-				newMeshlet.vertexCount = currentMeshlet.vertexCount;
-				newMeshlet.triangleCount = currentMeshlet.triangleCount;
-				newMeshlet.objectId = index;
-				newMeshlet.meshId = meshId;
-				newMeshlet.boundingSphereRadius = currentMeshlet.boundingSphereRadius;
-				newMeshlet.boundingSphereCenter = currentMeshlet.boundingSphereCenter;
-				newMeshlet.cone = currentMeshlet.cone;
-
-				m_currentIndexCount += newMeshlet.triangleCount * 3;
-			}
-
-			objectDrawData[index].meshletStartOffset = static_cast<uint32_t>(meshletStartOffset);
-			obj.meshletStartOffset = static_cast<uint32_t>(meshletStartOffset);
-			index++;
-		}
 	}
 }

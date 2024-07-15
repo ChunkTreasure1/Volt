@@ -1,9 +1,0 @@
-name: "VisibilityBuffer"
-internal: true
-sources:
-  - entryPoint: "main"
-    shaderStage: "vs"
-    filePath: "Engine/Shaders/Source/Visibility/VisibilityBuffer_vs.hlsl"
-  - entryPoint: "main"
-    shaderStage: "ps"
-    filePath: "Engine/Shaders/Source/Visibility/VisibilityBuffer_ps.hlsl"

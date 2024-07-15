@@ -25,7 +25,7 @@ struct PBRConstants
     UniformTexture<float2> BRDFLuT;
     UniformTexture<float3> environmentIrradiance;
     UniformTexture<float3> environmentRadiance;
-    //UniformTexture<float> directionalShadowMap;
+    UniformTexture<float> directionalShadowMap;
 };
 
 struct PBRInput
@@ -97,10 +97,10 @@ LightOutput CalculateSkyAmbiance(in float3 dirToCamera, in float3 baseReflectivi
 
 float CalculateDirectionalShadow(in DirectionalLight light)
 {
-    //const uint cascadeIndex = GetCascadeIndexFromWorldPosition(light, m_pbrInput.worldPosition, m_viewData.view);
-    //const float3 shadowMapCoords = GetShadowMapCoords(light.viewProjections[cascadeIndex], m_pbrInput.worldPosition);
-    //const float result = CalculateDirectionalShadow_Hard(light, m_shadowSampler, m_pbrConstants.directionalShadowMap, m_pbrInput.normal, cascadeIndex, shadowMapCoords);
-    return 0.f;
+    const uint cascadeIndex = GetCascadeIndexFromWorldPosition(light, m_pbrInput.worldPosition, m_viewData.view);
+    const float3 shadowMapCoords = GetShadowMapCoords(light.viewProjections[cascadeIndex], m_pbrInput.worldPosition);
+    const float result = CalculateDirectionalShadow_Hard(light, m_shadowSampler, m_pbrConstants.directionalShadowMap, m_pbrInput.normal, cascadeIndex, shadowMapCoords);
+    return result;
 }
 
 LightOutput CalculateDirectionalLight(in DirectionalLight light, in float3 dirToCamera, in float3 baseReflectivity)
