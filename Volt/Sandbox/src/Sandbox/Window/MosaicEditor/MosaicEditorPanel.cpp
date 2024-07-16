@@ -304,7 +304,7 @@ const MosaicEditorPanel::IncompatiblePinReason MosaicEditorPanel::CanLinkPins(co
 		std::swap(startParam, endParam);
 	}
 
-	if (!Utility::IsSameType(startParam->typeInfo, endParam->typeInfo))
+	if (!Utility::IsSameType(startParam->typeInfo, endParam->typeInfo) && startParam->typeInfo.baseType != Mosaic::ValueBaseType::Dynamic && endParam->typeInfo.baseType != Mosaic::ValueBaseType::Dynamic)
 	{
 		return IncompatiblePinReason::IncompatibleType;
 	}

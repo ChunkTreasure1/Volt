@@ -18,4 +18,17 @@ namespace Volt::MosaicNodes
 
 	private:
 	};
+
+	class MultiplyNode : public Mosaic::MosaicNode
+	{
+	public:
+		MultiplyNode(Mosaic::MosaicGraph* ownerGraph);
+
+		inline const std::string GetName() const override { return "Multiply"; }
+		inline const std::string GetCategory() const override { return "Math"; }
+		inline const glm::vec4 GetColor() const override { return 1.f; }
+		inline const VoltGUID GetGUID() const override { return "{DF8DCC43-BD0C-42A9-A63D-AE8C1C496A8E}"_guid; }
+
+		const Mosaic::ResultInfo GetShaderCode(const GraphNode<Ref<class Mosaic::MosaicNode>, Ref<Mosaic::MosaicEdge>>& underlyingNode, uint32_t outputIndex, std::string& appendableShaderString) const override;
+	};
 }

@@ -2,7 +2,7 @@
 #include "Material.h"
 
 #include "Volt/Project/ProjectManager.h"
-#include "Volt/MosaicNodes/TextureNodes.h"
+#include "Volt/MosaicNodes/Texture/SampleTextureNode.h"
 #include "Volt/Asset/AssetManager.h"
 
 #include "Volt/Rendering/Renderer.h"
