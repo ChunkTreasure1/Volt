@@ -43,6 +43,7 @@ namespace Volt::MosaicNodes
 		: Mosaic::MosaicNode(ownerGraph)
 	{
 		AddInputParameter("UV", Mosaic::ValueBaseType::Float, 2, false);
+		AddInputParameter("Tiling", Mosaic::ValueBaseType::Float, 2, glm::vec2(1.f), false);
 	
 		AddOutputParameter("RGB", Mosaic::ValueBaseType::Float, 3, false);
 		AddOutputParameter("R", Mosaic::ValueBaseType::Float, 1, false);
@@ -106,10 +107,10 @@ namespace Volt::MosaicNodes
 
 	const Mosaic::ResultInfo SampleTextureNode::GetShaderCode(const GraphNode<Ref<class Mosaic::MosaicNode>, Ref<Mosaic::MosaicEdge>>& underlyingNode, uint32_t outputIndex, std::string& appendableShaderString) const
 	{
-		constexpr const char* nodeStr = "TextureSampler {0} = material.samplers[{1}]; \n"
-										"TTexture<float4> {2} = material.textures[{3}]; \n"
-										"const float4 {4} = {5}.SampleGrad2D({6}, {7}, evalData.texCoordsDX, evalData.texCoordsDY); \n";
-										//"const float4 {6} = {7}.SampleLevel2D({8}, {9}, 0.f); \n";
+		constexpr const char* nodeStr = "TextureSampler {} = material.samplers[{}]; \n"
+										"TTexture<float4> {} = material.textures[{}]; \n"
+										"const float2 {} = {}; \n"
+										"const float4 {} = {}.SampleGrad2D({}, {} * {}, evalData.texCoordsDX * {}.x, evalData.texCoordsDY * {}.y); \n";
 
 		if (m_evaluated)
 		{
@@ -122,22 +123,35 @@ namespace Volt::MosaicNodes
 		const std::string texSamplerVarName = m_graph->GetNextVariableName();
 		const std::string textureVarName = m_graph->GetNextVariableName();
 		const std::string valueVarName = m_graph->GetNextVariableName();
+		const std::string tilingVarName = m_graph->GetNextVariableName();
+
+		std::string texCoordsVarName = "evalData.texCoords";
+		std::string tilingParamString = std::format("{}", GetInputParameter(1).Get<glm::vec2>());
 
 		const uint32_t index = m_textureIndex;
 
-		const bool hasUVInput = !underlyingNode.GetInputEdges().empty();
-
-		std::string texCoordsVarName = "evalData.texCoords";
-		if (hasUVInput)
+		for (const auto& edgeId : underlyingNode.GetInputEdges())
 		{
-			const auto& uvEdge = underlyingNode.GetEdgeFromID(underlyingNode.GetInputEdges().front());
-			const auto& uvNode = underlyingNode.GetNodeFromID(uvEdge.startNode);
+			const auto& edge = underlyingNode.GetEdgeFromID(edgeId);
+			const uint32_t paramIndex = edge.metaDataType->GetParameterInputIndex();
+			const auto& node = underlyingNode.GetNodeFromID(edge.startNode);
 
-			const Mosaic::ResultInfo info = uvNode.nodeData->GetShaderCode(uvNode, uvEdge.metaDataType->GetParameterOutputIndex(), appendableShaderString);
-			texCoordsVarName = info.resultParamName;
+			const Mosaic::ResultInfo info = node.nodeData->GetShaderCode(node, edge.metaDataType->GetParameterOutputIndex(), appendableShaderString);
+
+			// UV
+			if (paramIndex == 0)
+			{
+				texCoordsVarName = info.resultParamName;
+			}
+			// Tiling
+			else if (paramIndex == 1)
+			{
+				tilingParamString = info.resultParamName;
+			}
 		}
 
-		std::string result = std::format(nodeStr, texSamplerVarName, index, textureVarName, index, valueVarName, textureVarName, texSamplerVarName, texCoordsVarName);
+
+		std::string result = std::format(nodeStr, texSamplerVarName, index, textureVarName, index, tilingVarName, tilingParamString, valueVarName, textureVarName, texSamplerVarName, texCoordsVarName, tilingVarName, tilingVarName, tilingVarName);
 		appendableShaderString.append(result);
 
 		Mosaic::ResultInfo resultInfo{};
