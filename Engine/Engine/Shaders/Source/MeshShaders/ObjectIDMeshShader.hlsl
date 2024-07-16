@@ -43,7 +43,14 @@ void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
     if (groupThreadId < vertexCount)
     {
         const uint vertexIndex = mesh.meshletDataBuffer[meshlet.GetVertexOffset() + groupThreadId] + mesh.vertexStartOffset;
-        float4 position = mul(viewData.viewProjection, float4(drawData.transform.GetWorldPosition(mesh.vertexPositionsBuffer.Load(vertexIndex)), 1.f));
+        float4x4 skinningMatrix = IDENTITY_MATRIX;
+        if (drawData.isAnimated)
+        {
+            skinningMatrix = GetSkinningMatrix(mesh, vertexIndex, drawData.boneOffset, constants.gpuScene.bonesBuffer);
+        }
+
+        const float3 skinnedPosition = mul(skinningMatrix, float4(mesh.vertexPositionsBuffer.Load(vertexIndex), 1.f)).xyz;
+        float4 position = mul(viewData.viewProjection, float4(drawData.transform.GetWorldPosition(skinnedPosition), 1.f));
 
         SetupCullingPositions(groupThreadId, position, viewData.renderSize);
 

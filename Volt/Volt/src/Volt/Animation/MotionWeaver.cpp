@@ -39,6 +39,8 @@ namespace Volt
 
 	void Volt::MotionWeaver::Update(float deltaTime)
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (m_Animations.empty())
 		{
 			return;
@@ -53,6 +55,8 @@ namespace Volt
 
 	std::vector<glm::mat4x4> Volt::MotionWeaver::Sample()
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (m_Animations.empty())
 		{
 			return {};

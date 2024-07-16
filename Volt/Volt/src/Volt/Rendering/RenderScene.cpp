@@ -69,6 +69,8 @@ namespace Volt
 
 	void RenderScene::PrepareForUpdate()
 	{
+		VT_PROFILE_FUNCTION();
+
 		std::sort(std::execution::par, m_renderObjects.begin(), m_renderObjects.end(), [](const auto& lhs, const auto& rhs)
 		{
 			if (lhs.mesh < rhs.mesh)
@@ -150,11 +152,12 @@ namespace Volt
 		UploadGPUMeshes(m_gpuMeshes);
 		UploadObjectDrawData(m_objectDrawData);
 		UploadGPUMaterials();
-		//UploadGPUScene();
 	}
 
 	void RenderScene::Update(RenderGraph& renderGraph)
 	{
+		VT_PROFILE_FUNCTION();
+
 		for (const auto& material : m_individualMaterials)
 		{
 			if (material->ClearAndGetIsDirty())
@@ -238,6 +241,7 @@ namespace Volt
 			if (m_gpuBonesBuffer->GetResource()->GetCount() < m_animationBufferStorage.size())
 			{
 				m_gpuBonesBuffer->GetResource()->ResizeWithCount(static_cast<uint32_t>(m_animationBufferStorage.size()));
+				m_gpuBonesBuffer->MarkAsDirty();
 			}
 
 			m_gpuBonesBuffer->GetResource()->SetData(m_animationBufferStorage.data(), m_animationBufferStorage.size() * sizeof(glm::mat4));
@@ -532,5 +536,6 @@ namespace Volt
 		objectDrawData.materialId = GetMaterialIndex(renderObject.material);
 		objectDrawData.meshletStartOffset = renderObject.meshletStartOffset;
 		objectDrawData.isAnimated = renderObject.IsAnimated();
+
 	}
 }

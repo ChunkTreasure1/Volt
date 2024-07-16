@@ -48,7 +48,7 @@ struct Meshlet
 
     uint GetTriangleCount()
     {
-        return vertTriCount.triangleCount; //vertexTriCount & 0xFFFF;
+        return vertTriCount.triangleCount;
     }
 
     uint GetVertexOffset()
@@ -76,7 +76,7 @@ struct GPUMesh
 {
     TypedBuffer<float3> vertexPositionsBuffer;
     TypedBuffer<VertexMaterialData> vertexMaterialBuffer;
-    TypedBuffer<VertexAnimationInfo> vertexAnimationInfoBuffer;
+    TypedBuffer<VertexAnimationData> vertexAnimationInfoBuffer;
     TypedBuffer<uint16_t> vertexBoneInfluencesBuffer;
 
     TypedBuffer<float> vertexBoneWeightsBuffer; // Should be packed

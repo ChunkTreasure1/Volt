@@ -34,6 +34,7 @@ void MainAS(uint groupThreadId : SV_GroupThreadID, uint dispatchThreadId : SV_Di
         visible = !ConeCull(center, radius, coneAxis, coneCutoff, viewData.cameraPosition.xyz);
         visible = visible && viewCenter.z * viewData.cullingFrustum.y - abs(viewCenter.x) * viewData.cullingFrustum.x > -radius;
         visible = visible && viewCenter.z * viewData.cullingFrustum.w - abs(viewCenter.y) * viewData.cullingFrustum.z > -radius;
+        visible = true;    
     }
 
     if (visible)
