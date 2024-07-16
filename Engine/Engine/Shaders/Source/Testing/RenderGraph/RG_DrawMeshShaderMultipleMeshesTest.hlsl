@@ -37,22 +37,26 @@ void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
     const Constants constants = GetConstants<Constants>();
     
     const GPUMesh mesh = constants.gpuMeshesBuffer.Load(u_perDrawData.drawIndex);
-    const float4x4 transform = constants.transformsBuffer.Load(u_perDrawData.drawIndex);
-    
     const Meshlet meshlet = mesh.meshletsBuffer.Load(mesh.meshletStartOffset + groupId);
-    SetMeshOutputCounts(meshlet.vertexCount, meshlet.triangleCount);
+
+    const float4x4 transform = constants.transformsBuffer.Load(u_perDrawData.drawIndex);
+
+    const uint vertexCount = meshlet.GetVertexCount();
+    const uint triCount = meshlet.GetTriangleCount();
+
+    SetMeshOutputCounts(vertexCount, triCount);
 
     uint dataOffset = meshlet.dataOffset;
     uint vertexOffset = dataOffset;
-    uint indexOffset = dataOffset + meshlet.vertexCount;
+    uint indexOffset = dataOffset + vertexCount;
 
-    if (groupThreadId < meshlet.triangleCount)
+    if (groupThreadId < triCount)
     {
         const uint primitive = mesh.meshletDataBuffer.Load(indexOffset + groupThreadId);
         tris[groupThreadId] = UnpackPrimitive(primitive);
     }
 
-    if (groupThreadId < meshlet.vertexCount)
+    if (groupThreadId < vertexCount)
     {
         const uint vertexIndex = mesh.meshletDataBuffer[vertexOffset + groupThreadId] + mesh.vertexStartOffset;
         vertices[groupThreadId].position = mul(constants.viewProjection, mul(constants.transformsBuffer.Load(u_perDrawData.drawIndex), float4(mesh.vertexPositionsBuffer.Load(vertexIndex), 1.f)));

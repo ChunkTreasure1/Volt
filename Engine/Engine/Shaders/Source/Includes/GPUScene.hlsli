@@ -17,17 +17,59 @@ struct GPUMaterial
     uint2 padding;
 };
 
+struct VertexTriangleCount
+{
+    uint vertexCount : 16;
+    uint triangleCount : 16;
+};
+
+struct MeshletCone
+{
+    uint x : 8;
+    uint y : 8;
+    uint z : 8;
+    uint cutoff : 8;
+};
+
 struct Meshlet
 {
-    uint vertexCount;
-    uint triangleCount;
+    VertexTriangleCount vertTriCount;
     uint meshId;
-    
     uint dataOffset;
-    uint cone;
-    
+    MeshletCone cone;
+
     float3 boundingSphereCenter;
     float boundingSphereRadius;
+
+    uint GetVertexCount()
+    {
+        return vertTriCount.vertexCount;
+    }
+
+    uint GetTriangleCount()
+    {
+        return vertTriCount.triangleCount; //vertexTriCount & 0xFFFF;
+    }
+
+    uint GetVertexOffset()
+    {
+        return dataOffset;
+    }
+
+    uint GetIndexOffset()
+    {
+        return dataOffset + GetVertexCount();
+    }
+
+    float3 GetConeAxis()
+    {
+        return float3(cone.x / 127.f, cone.y / 127.f, cone.z / 127.f);
+    }
+
+    float GetConeCutoff()
+    {
+        return float(cone.cutoff / 127.f);
+    }
 };
 
 struct GPUMesh

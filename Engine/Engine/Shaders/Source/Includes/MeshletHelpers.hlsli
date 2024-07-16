@@ -25,3 +25,8 @@ uint3 UnpackPrimitive(uint primitive)
     // Unpacks a 10 bits per index triangle from a 32-bit uint.
     return uint3(primitive & 0x3FF, (primitive >> 10) & 0x3FF, (primitive >> 20) & 0x3FF);
 }
+
+bool ConeCull(float3 center, float radius, float3 coneAxis, float coneCutoff, float3 cameraPosition)
+{
+    return dot(center - cameraPosition, coneAxis) >= coneCutoff * length(center - cameraPosition) + radius;
+}

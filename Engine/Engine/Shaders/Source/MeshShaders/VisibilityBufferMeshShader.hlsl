@@ -3,13 +3,6 @@
 
 #include "MeshletHelpers.hlsli"
 
-struct PerDrawData
-{
-    uint drawIndex;
-};
-
-PUSH_CONSTANT(PerDrawData, u_perDrawData);
-
 struct VertexOutput
 {
     float4 position : SV_Position;
@@ -20,11 +13,13 @@ struct VertexOutput
 struct PrimitiveOutput
 {
     uint primitiveID : SV_PrimitiveID;
+    bool cullPrimitive : SV_CullPrimitive;
 };
 
 [numthreads(NUM_MS_THREADS, 1, 1)]
 [outputtopology("triangle")]
 void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
+            in payload MeshAmplificationPayload payload,
             out indices uint3 tris[NUM_MAX_OUT_TRIS],
             out vertices VertexOutput vertices[NUM_MAX_OUT_VERTS],
             out primitives PrimitiveOutput primitives[NUM_MAX_OUT_TRIS])
@@ -32,33 +27,45 @@ void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
     const Constants constants = GetConstants<Constants>();
     const ViewData viewData = constants.viewData.Load();
 
-    const ObjectDrawData drawData = constants.gpuScene.objectDrawDataBuffer.Load(u_perDrawData.drawIndex);    
+    const ObjectDrawData drawData = constants.gpuScene.objectDrawDataBuffer.Load(payload.drawId);    
     const GPUMesh mesh = constants.gpuScene.meshesBuffer.Load(drawData.meshId);
 
-    const Meshlet meshlet = mesh.meshletsBuffer.Load(mesh.meshletStartOffset + groupId);
-    SetMeshOutputCounts(meshlet.vertexCount, meshlet.triangleCount);
-
-    uint dataOffset = meshlet.dataOffset;
-    uint vertexOffset = dataOffset;
-    uint indexOffset = dataOffset + meshlet.vertexCount;
- 
-    if (groupThreadId < meshlet.triangleCount)
+    uint meshletIndex = payload.meshletIndices[groupId];
+    if (meshletIndex >= mesh.meshletCount)
     {
-        const uint primitive = mesh.meshletDataBuffer.Load(indexOffset + groupThreadId);
-        tris[groupThreadId] = UnpackPrimitive(primitive);
-        primitives[groupThreadId].primitiveID = groupThreadId;
+        return;
     }
 
-    if (groupThreadId < meshlet.vertexCount)
+    const Meshlet meshlet = mesh.meshletsBuffer.Load(mesh.meshletStartOffset + meshletIndex);
+    const uint vertexCount = meshlet.GetVertexCount();
+    const uint triCount = meshlet.GetTriangleCount();
+
+    SetMeshOutputCounts(vertexCount, triCount);
+
+    if (groupThreadId < vertexCount)
     { 
-        const uint vertexIndex = mesh.meshletDataBuffer[vertexOffset + groupThreadId] + mesh.vertexStartOffset;
+        const uint vertexIndex = mesh.meshletDataBuffer[meshlet.GetVertexOffset() + groupThreadId] + mesh.vertexStartOffset;
 
-        float4 position = mul(viewData.viewProjection, float4(drawData.transform.GetWorldPosition(mesh.vertexPositionsBuffer.Load(vertexIndex)), 1.f));
+        float4 position = TransformClipPosition(mul(viewData.viewProjection, float4(drawData.transform.GetWorldPosition(mesh.vertexPositionsBuffer.Load(vertexIndex)), 1.f)));
 
-        vertices[groupThreadId].position = TransformSVPosition(position);
-        vertices[groupThreadId].objectId = u_perDrawData.drawIndex;
-        vertices[groupThreadId].meshletId = groupId;
+        SetupCullingPositions(groupThreadId, position, viewData.renderSize);
+
+        vertices[groupThreadId].position = position;
+        vertices[groupThreadId].objectId = payload.drawId;
+        vertices[groupThreadId].meshletId = meshletIndex;
     } 
+
+    GroupMemoryBarrierWithGroupSync();
+
+    if (groupThreadId < triCount)
+    {
+        const uint primitive = mesh.meshletDataBuffer.Load(meshlet.GetIndexOffset() + groupThreadId);
+        const uint3 indices = UnpackPrimitive(primitive);        
+
+        tris[groupThreadId] = indices;
+        primitives[groupThreadId].primitiveID = groupThreadId;
+        primitives[groupThreadId].cullPrimitive = IsPrimitiveCulled(indices);
+    }
 }
 
 struct ColorOutput

@@ -31,21 +31,24 @@ void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
             out vertices VertexOutput vertices[64])
 {
     const Constants constants = GetConstants<Constants>();
-    
     const Meshlet meshlet = constants.meshletsBuffer.Load(constants.meshletStartOffset + groupId);
-    SetMeshOutputCounts(meshlet.vertexCount, meshlet.triangleCount);
+
+    const uint vertexCount = meshlet.GetVertexCount();
+    const uint triCount = meshlet.GetTriangleCount();
+
+    SetMeshOutputCounts(vertexCount, triCount);
 
     uint dataOffset = meshlet.dataOffset;
     uint vertexOffset = dataOffset;
-    uint indexOffset = dataOffset + meshlet.vertexCount;
+    uint indexOffset = dataOffset + vertexCount;
 
-    if (groupThreadId < meshlet.triangleCount)
+    if (groupThreadId < triCount)
     {
         const uint primitive = constants.meshletDataBuffer.Load(indexOffset + groupThreadId);
         tris[groupThreadId] = UnpackPrimitive(primitive);
     }
 
-    if (groupThreadId < meshlet.vertexCount)
+    if (groupThreadId < vertexCount)
     {
         const uint vertexIndex = constants.meshletDataBuffer[vertexOffset + groupThreadId] + constants.vertexOffset;
         vertices[groupThreadId].position = mul(constants.viewProjection, float4(constants.vertexPositionsBuffer.Load(vertexIndex), 1.f));

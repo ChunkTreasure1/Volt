@@ -129,14 +129,6 @@ namespace Volt
 			uint32_t i2 : 10;
 		};
 
-		struct PackedCone
-		{
-			int8_t x;
-			int8_t y;
-			int8_t z;
-			int8_t cutoff;
-		};
-
 		const uint32_t subMeshCount = static_cast<uint32_t>(m_subMeshes.size());
 		const uint32_t threadCount = Algo::GetThreadCountFromIterationCount(subMeshCount);
 
@@ -194,18 +186,15 @@ namespace Volt
 
 				auto& newMeshlet = meshlets.emplace_back();
 				newMeshlet.dataOffset = static_cast<uint32_t>(dataOffset);
-				newMeshlet.triangleCount = meshlet.triangle_count;
-				newMeshlet.vertexCount = meshlet.vertex_count;
+
+				newMeshlet.vertexTriCount = { meshlet.vertex_count, meshlet.triangle_count };
 				newMeshlet.boundingSphereCenter = glm::vec3{ bounds.center[0], bounds.center[1], bounds.center[2] };
 				newMeshlet.boundingSphereRadius = bounds.radius;
 
-				PackedCone cone{};
-				cone.x = bounds.cone_axis_s8[0];
-				cone.y = bounds.cone_axis_s8[1];
-				cone.z = bounds.cone_axis_s8[2];
-				cone.cutoff = bounds.cone_cutoff_s8;
-
-				newMeshlet.cone = *reinterpret_cast<uint32_t*>(&cone);
+				newMeshlet.cone.x = bounds.cone_axis_s8[0];
+				newMeshlet.cone.y = bounds.cone_axis_s8[1];
+				newMeshlet.cone.z = bounds.cone_axis_s8[2];
+				newMeshlet.cone.cutoff = bounds.cone_cutoff_s8;
 			}
 
 		}, subMeshCount);

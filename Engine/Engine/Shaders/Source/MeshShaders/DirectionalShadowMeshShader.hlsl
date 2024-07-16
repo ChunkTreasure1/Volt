@@ -45,28 +45,27 @@ void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
 
     const ObjectDrawData drawData = constants.gpuScene.objectDrawDataBuffer.Load(u_perDrawData.drawIndex);    
     const GPUMesh mesh = constants.gpuScene.meshesBuffer.Load(drawData.meshId);
-
     const Meshlet meshlet = mesh.meshletsBuffer.Load(mesh.meshletStartOffset + groupId);
-    SetMeshOutputCounts(meshlet.vertexCount, meshlet.triangleCount);
 
-    uint dataOffset = meshlet.dataOffset;
-    uint vertexOffset = dataOffset;
-    uint indexOffset = dataOffset + meshlet.vertexCount;
+    const uint vertexCount = meshlet.GetVertexCount();
+    const uint triCount = meshlet.GetTriangleCount();
 
-    if (groupThreadId < meshlet.triangleCount)
+    SetMeshOutputCounts(vertexCount, triCount);
+
+    if (groupThreadId < triCount)
     {
-        const uint primitive = mesh.meshletDataBuffer.Load(indexOffset + groupThreadId);
+        const uint primitive = mesh.meshletDataBuffer.Load(meshlet.GetIndexOffset() + groupThreadId);
         tris[groupThreadId] = UnpackPrimitive(primitive);
         primitives[groupThreadId].target = u_perDrawData.viewIndex;
     }
 
-    if (groupThreadId < meshlet.vertexCount)
+    if (groupThreadId < vertexCount)
     {
-        const uint vertexIndex = mesh.meshletDataBuffer[vertexOffset + groupThreadId] + mesh.vertexStartOffset;
+        const uint vertexIndex = mesh.meshletDataBuffer[meshlet.GetVertexOffset() + groupThreadId] + mesh.vertexStartOffset;
 
         float4 position = mul(dirLight.viewProjections[u_perDrawData.viewIndex], float4(drawData.transform.GetWorldPosition(mesh.vertexPositionsBuffer.Load(vertexIndex)), 1.f));
 
-        vertices[groupThreadId].position = TransformSVPosition(position);
+        vertices[groupThreadId].position = TransformClipPosition(position);
     }
 }
 

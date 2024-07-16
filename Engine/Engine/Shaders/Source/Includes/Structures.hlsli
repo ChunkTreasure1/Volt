@@ -44,10 +44,11 @@ struct ViewData
     float4x4 viewProjection;
     float4x4 inverseViewProjection;
     float4 cameraPosition;
+    float4 cullingFrustum;
     float2 depthUnpackConsts;
     float nearPlane;
     float farPlane;
-	
+
     // Render Target
     float2 renderSize;
     float2 invRenderSize;

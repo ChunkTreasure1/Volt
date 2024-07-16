@@ -51,6 +51,7 @@ namespace Volt
 		glm::mat4 viewProjection;
 		glm::mat4 inverseViewProjection;
 		glm::vec4 cameraPosition;
+		glm::vec4 cullingFrustum;
 		glm::vec2 depthUnpackConsts;
 		float nearPlane;
 		float farPlane;

@@ -8,14 +8,26 @@
 
 namespace Volt
 {
+	struct MeshletCone
+	{
+		int8_t x;
+		int8_t y;
+		int8_t z;
+		int8_t cutoff;
+	};
+
+	struct MeshletVertexTriangleCount
+	{
+		uint32_t vertexCount : 16;
+		uint32_t triangleCount : 16;
+	};
+
 	struct Meshlet
 	{
-		uint32_t vertexCount;
-		uint32_t triangleCount;
+		MeshletVertexTriangleCount vertexTriCount;
 		uint32_t meshId;
-
 		uint32_t dataOffset;
-		uint32_t cone;
+		MeshletCone cone;
 
 		glm::vec3 boundingSphereCenter;
 		float boundingSphereRadius;

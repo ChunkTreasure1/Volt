@@ -46,6 +46,7 @@
 
 #include "Volt/Utility/ShadowMappingUtility.h"
 #include "Volt/Utility/Noise.h"
+#include "Volt/Math/Math.h"
 
 #include <VoltRHI/Images/Image2D.h>
 #include <VoltRHI/Images/SamplerState.h>
@@ -139,13 +140,13 @@ namespace Volt
 		UploadUniformBuffers(renderGraph, rgBlackboard, camera);
 		UploadLightBuffers(renderGraph, rgBlackboard);
 
-		AddPreDepthPass2(renderGraph, rgBlackboard);
-		AddObjectIDPass2(renderGraph, rgBlackboard);
+		AddPreDepthPass(renderGraph, rgBlackboard);
+		AddObjectIDPass(renderGraph, rgBlackboard);
 
 		DirectionalShadowTechnique dirShadowTechnique{ renderGraph, rgBlackboard };
 		rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene(), m_directionalLightData);
 
-		AddVisibilityBufferPass2(renderGraph, rgBlackboard);
+		AddVisibilityBufferPass(renderGraph, rgBlackboard);
 
 		AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
 
@@ -209,7 +210,7 @@ namespace Volt
 		return m_frameTotalGPUAllocation.load();
 	}
 
-	void SceneRenderer::BuildMeshPass2(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard)
+	void SceneRenderer::BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard)
 	{
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 		GPUSceneData::SetupInputs(builder, blackboard.Get<GPUSceneData>());
@@ -267,6 +268,17 @@ namespace Volt
 			}
 
 			viewData.depthUnpackConsts = { depthLinearizeMul, depthLinearizeAdd };
+
+			const auto& projection = camera->GetProjection();
+			const auto projTranspose = glm::transpose(projection);
+
+			const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
+			const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
+
+			viewData.cullingFrustum.x = frustumX.x;
+			viewData.cullingFrustum.y = frustumX.z;
+			viewData.cullingFrustum.z = frustumY.y;
+			viewData.cullingFrustum.w = frustumY.z;
 
 			// Light Culling
 			viewData.tileCountX = Math::DivideRoundUp(m_width, LightCullingTechnique::TILE_SIZE);
@@ -458,7 +470,7 @@ namespace Volt
 		}
 	}
 
-	void SceneRenderer::AddPreDepthPass2(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	void SceneRenderer::AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		const auto& gpuMeshes = m_scene->GetRenderScene()->GetGPUMeshes();
 		const auto& objectDrawData = m_scene->GetRenderScene()->GetObjectDrawData();
@@ -478,7 +490,7 @@ namespace Volt
 			desc.name = "Normals";
 			data.normals = builder.CreateImage2D(desc);
 
-			BuildMeshPass2(builder, blackboard);
+			BuildMeshPass(builder, blackboard);
 		},
 		[=](const PreDepthData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
@@ -497,7 +509,7 @@ namespace Volt
 			for (uint32_t i = 0; const auto& objData : objectDrawData)
 			{
 				context.PushConstants(&i, sizeof(uint32_t));
-				context.DispatchMeshTasks(gpuMeshes[objData.meshId].meshletCount, 1, 1);
+				context.DispatchMeshTasks(Math::DivideRoundUp(gpuMeshes[objData.meshId].meshletCount, 32u), 1, 1);
 				i++;
 			}
 
@@ -505,7 +517,7 @@ namespace Volt
 		});
 	}
 
-	void SceneRenderer::AddObjectIDPass2(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	void SceneRenderer::AddObjectIDPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		struct Data
 		{
@@ -522,7 +534,7 @@ namespace Volt
 			data.objectIdHandle = builder.CreateImage2D({ RHI::PixelFormat::R32_UINT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "ObjectID" });
 			builder.WriteResource(preDepthHandle);
 
-			BuildMeshPass2(builder, blackboard);
+			BuildMeshPass(builder, blackboard);
 			builder.SetHasSideEffect();
 		},
 		[=](const Data& data, RenderContext& context, const RenderGraphPassResources& resources)
@@ -545,7 +557,7 @@ namespace Volt
 			for (uint32_t i = 0; const auto & objData : objectDrawData)
 			{
 				context.PushConstants(&i, sizeof(uint32_t));
-				context.DispatchMeshTasks(gpuMeshes[objData.meshId].meshletCount, 1, 1);
+				context.DispatchMeshTasks(Math::DivideRoundUp(gpuMeshes[objData.meshId].meshletCount, 32u), 1, 1);
 				i++;
 			}
 			
@@ -555,7 +567,7 @@ namespace Volt
 		renderGraph.QueueImage2DExtraction(data.objectIdHandle, m_objectIDImage);
 	}
 
-	void SceneRenderer::AddVisibilityBufferPass2(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	void SceneRenderer::AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		const auto preDepthHandle = blackboard.Get<PreDepthData>().depth;
 		const auto& gpuMeshes = m_scene->GetRenderScene()->GetGPUMeshes();
@@ -567,7 +579,7 @@ namespace Volt
 			data.visibility = builder.CreateImage2D({ RHI::PixelFormat::R32G32_UINT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "VisibilityBuffer" });
 			builder.WriteResource(preDepthHandle);
 
-			BuildMeshPass2(builder, blackboard);
+			BuildMeshPass(builder, blackboard);
 			builder.SetHasSideEffect();
 		},
 		[=](const VisibilityBufferData& data, RenderContext& context, const RenderGraphPassResources& resources)
@@ -591,7 +603,7 @@ namespace Volt
 			for (uint32_t i = 0; const auto & objData : objectDrawData)
 			{
 				context.PushConstants(&i, sizeof(uint32_t));
-				context.DispatchMeshTasks(gpuMeshes[objData.meshId].meshletCount, 1, 1);
+				context.DispatchMeshTasks(Math::DivideRoundUp(gpuMeshes[objData.meshId].meshletCount, 32u), 1, 1);
 				i++;
 			}
 
