@@ -83,6 +83,7 @@ namespace Volt
 
 		// NOTE: After calling Execute the RenderGraph object is no longer valid to use!
 		void Execute();
+		void ExecuteImmediate();
 
 		template<typename T>
 		T& AddPass(const std::string& name, std::function<void(Builder&, T&)> createFunc, std::function<void(const T&, RenderContext&, const RenderGraphPassResources&)>&& executeFunc);

@@ -8,6 +8,8 @@
 #include "Volt/Project/ProjectManager.h"
 
 #include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
+#include "Volt/Rendering/RenderGraph/RenderGraph.h"
+#include "Volt/Rendering/RenderGraph/RenderContextUtils.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
 #include "Volt/Rendering/Debug/ShaderRuntimeValidator.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
@@ -124,11 +126,12 @@ namespace Volt
 	void Renderer::Initialize()
 	{
 		RenderGraphExecutionThread::Initialize();
-		CreateDefaultResources();
 
 #ifndef VT_DIST
 		s_rendererData->shaderValidator = CreateScope<ShaderRuntimeValidator>();
 #endif
+
+		CreateDefaultResources();
 	}
 
 	void Renderer::Shutdown()
@@ -483,22 +486,51 @@ namespace Volt
 
 		RHI::ImageSpecification spec{};
 		spec.format = RHI::PixelFormat::R16G16_SFLOAT;
-		spec.usage = RHI::ImageUsage::Storage;
+		spec.usage = RHI::ImageUsage::AttachmentStorage;
 		spec.width = BRDFSize;
 		spec.height = BRDFSize;
 		spec.debugName = "BRDFLut";
 
 		s_rendererData->defaultResources.BRDFLuT = RHI::Image2D::Create(spec);
 
-		auto pipeline = ShaderMap::GetComputePipeline("BRDFGeneration", false);
+		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
+
+		RenderGraph renderGraph{ commandBuffer };
+		RenderGraphResourceHandle targetImageHandle = renderGraph.AddExternalImage2D(s_rendererData->defaultResources.BRDFLuT);
+
+		renderGraph.AddPass("BRDF Pass", 
+		[&](RenderGraph::Builder& builder) 
+		{
+			builder.WriteResource(targetImageHandle);
+			builder.SetHasSideEffect();
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources) 
+		{
+			RenderingInfo renderingInfo = context.CreateRenderingInfo(BRDFSize, BRDFSize, { targetImageHandle });
+
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("GenerateBRDF");
+			pipelineInfo.cullMode = RHI::CullMode::None;
+
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+			
+			context.BeginRendering(renderingInfo);
+			RCUtils::DrawFullscreenTriangle(context, pipeline);
+			context.EndRendering();
+		});
+
+		renderGraph.Compile();
+		renderGraph.ExecuteImmediate();
+
+		/*auto pipeline = ShaderMap::GetComputePipeline("BRDFGeneration", false);
 		RHI::DescriptorTableCreateInfo tableInfo{};
 		tableInfo.shader = pipeline->GetShader();
 
 		RefPtr<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
 		descriptorTable->SetImageView("LUT", s_rendererData->defaultResources.BRDFLuT->GetView(), 0);
-		
-		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 		commandBuffer->Begin();
+
+
 
 		{
 			RHI::ResourceBarrierInfo barrier{};
@@ -533,6 +565,6 @@ namespace Volt
 		}
 
 		commandBuffer->End();
-		commandBuffer->Execute();
+		commandBuffer->Execute();*/
 	}
 }

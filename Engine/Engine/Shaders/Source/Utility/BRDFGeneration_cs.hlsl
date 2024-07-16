@@ -6,7 +6,6 @@ static const uint NumSamples = 1024;
 static const float InvNumSamples = 1.0 / float(NumSamples);
 
 RWTexture2D<float2> LUT;
-Texture2D<float2> Test;
 
 // Compute Van der Corput radical inverse
 // See: http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html

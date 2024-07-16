@@ -164,6 +164,7 @@ void ComponentPropertyUtility::DrawComponents(Weak<Volt::Scene> scene, Volt::Ent
 					if (removeComp)
 					{
 						Volt::ComponentRegistry::Helpers::RemoveComponentWithGUID(compTypeDesc->GetGUID(), scene->GetRegistry(), entity);
+						EditorUtils::MarkEntityAsEdited(entity);
 					}
 
 					break;

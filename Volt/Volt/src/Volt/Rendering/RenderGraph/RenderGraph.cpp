@@ -589,6 +589,11 @@ namespace Volt
 		RenderGraphExecutionThread::ExecuteRenderGraph(std::move(*this));
 	}
 
+	void RenderGraph::ExecuteImmediate()
+	{
+		ExecuteInternal();
+	}
+
 	RenderGraphResourceHandle RenderGraph::AddExternalImage2D(RefPtr<RHI::Image2D> image)
 	{
 		VT_ENSURE(image);

@@ -70,7 +70,8 @@ namespace Volt
 			info.mipFilter = mip;
 			info.wrapMode = wrapMode;
 			info.anisotropyLevel = aniso;
-			
+			info.compareOperator = compareOperator;
+
 			return GetSamplerInternal(info);
 		}
 
