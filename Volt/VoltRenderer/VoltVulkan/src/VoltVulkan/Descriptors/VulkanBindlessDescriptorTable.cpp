@@ -394,9 +394,14 @@ namespace Volt::RHI
 
 		if (hasConstantsSet)
 		{
-			RHIProxy::GetInstance().DestroyResource([&, descriptor = descriptorSets[1]]()
+			WeakPtr<VulkanBindlessDescriptorTable> tablePtr = this;
+
+			RHIProxy::GetInstance().DestroyResource([tablePtr, descriptor = descriptorSets[1]]()
 			{
-				m_availiableConstantsSet.emplace_back(descriptor);
+				if (tablePtr)
+				{
+					tablePtr->m_availiableConstantsSet.emplace_back(descriptor);
+				}
 			});
 		}
 	}
