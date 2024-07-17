@@ -50,13 +50,12 @@ namespace Volt
 	void RenderGraphPassResources::ValidateResourceAccess(const RenderGraphResourceHandle resourceHandle) const
 	{
 		const bool isRegisteredForAccess = m_pass.ReadsResource(resourceHandle) || m_pass.WritesResource(resourceHandle) || m_pass.CreatesResource(resourceHandle);
+
 		if (!isRegisteredForAccess)
 		{
-#ifndef VT_DIST
-			VT_DEBUGBREAK();
-#else
 			VT_CORE_ERROR("[RenderGraph] Pass {0} trying to access resource with handle {1}, but it has not been registered for access!", m_pass.name, resourceHandle);
-#endif
 		}
+
+		VT_ENSURE(isRegisteredForAccess);
 	}
 }

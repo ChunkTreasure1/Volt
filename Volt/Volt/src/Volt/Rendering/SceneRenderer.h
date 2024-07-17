@@ -107,6 +107,8 @@ namespace Volt
 		void AddSkyboxPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddFXAAPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle srcImage);
+
 		void AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle srcImage);
 
 		void CreateMainRenderTarget(const uint32_t width, const uint32_t height);

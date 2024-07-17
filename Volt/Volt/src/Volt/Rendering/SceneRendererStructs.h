@@ -112,6 +112,11 @@ namespace Volt
 		RenderGraphResourceHandle colorOutput;
 	};
 
+	struct FXAAOutputData
+	{
+		RenderGraphResourceHandle output;
+	};
+
 	struct FinalCopyData
 	{
 		RenderGraphResourceHandle output;

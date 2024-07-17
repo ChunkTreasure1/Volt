@@ -190,6 +190,7 @@ namespace Volt
 		AddShadingPass(renderGraph, rgBlackboard);
 
 		AddFinalCopyPass(renderGraph, rgBlackboard, rgBlackboard.Get<ShadingOutputData>().colorOutput);
+		AddFXAAPass(renderGraph, rgBlackboard, rgBlackboard.Get<FinalCopyData>().output);
 
 		{
 			RenderGraphBarrierInfo barrier{};
@@ -959,12 +960,51 @@ namespace Volt
 		});
 	}
 
+	void SceneRenderer::AddFXAAPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle srcImage)
+	{
+		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
+
+		blackboard.Add<FXAAOutputData>() = renderGraph.AddPass<FXAAOutputData>("FXAA Pass",
+		[&](RenderGraph::Builder& builder, FXAAOutputData& data)
+		{
+			data.output = builder.AddExternalImage2D(m_outputImage);
+			
+			builder.WriteResource(data.output);
+			builder.ReadResource(srcImage);
+			builder.ReadResource(uniformBuffers.viewDataBuffer);
+		},
+		[=](const FXAAOutputData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { data.output });
+
+			RHI::RenderPipelineCreateInfo pipelineInfo;
+			pipelineInfo.shader = ShaderMap::Get("FXAA");
+			pipelineInfo.depthMode = RHI::DepthMode::None;
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+			context.BeginRendering(info);
+
+			RCUtils::DrawFullscreenTriangle(context, pipeline, [&](RenderContext& context)
+			{
+				context.SetConstant("sceneColor"_sh, resources.GetImage2D(srcImage));
+				context.SetConstant("viewData"_sh, resources.GetBuffer(uniformBuffers.viewDataBuffer));
+				context.SetConstant("linearSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
+			});
+
+			context.EndRendering();
+		});
+	}
+
 	void SceneRenderer::AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle srcImage)
 	{
 		blackboard.Add<FinalCopyData>() = renderGraph.AddPass<FinalCopyData>("Final Copy",
 		[&](RenderGraph::Builder& builder, FinalCopyData& data)
 		{
-			data.output = builder.AddExternalImage2D(GetFinalImage());
+			{
+				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::B10G11R11_UFLOAT_PACK32>(m_width, m_height, RHI::ImageUsage::AttachmentStorage, "Final Copy Output");
+				data.output = builder.CreateImage2D(desc);
+			}
+
 			builder.WriteResource(data.output);
 			builder.ReadResource(srcImage);
 			builder.SetHasSideEffect();

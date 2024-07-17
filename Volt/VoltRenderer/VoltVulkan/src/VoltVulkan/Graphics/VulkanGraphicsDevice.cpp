@@ -120,6 +120,7 @@ namespace Volt::RHI
 			s_enabledFeatures.physicalDeviceFeatures.features.fillModeNonSolid = VK_TRUE;
 			s_enabledFeatures.physicalDeviceFeatures.features.wideLines = VK_TRUE;
 			s_enabledFeatures.physicalDeviceFeatures.features.independentBlend = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.shaderImageGatherExtended = VK_TRUE;
 
 			s_enabledFeatures.physicalDeviceFeatures.features.shaderInt16 = VK_TRUE; // #TODO_Ivar: does not work on older cards
 		}

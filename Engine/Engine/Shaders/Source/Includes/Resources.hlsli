@@ -622,6 +622,12 @@ struct UniformTexture
         return texture.Sample(samplerState.Get(), location);
     }
 
+    T Sample2D(in TextureSampler samplerState, in float2 location, in int2 offset)
+    {
+        Texture2D<T> texture = UNIFORM_DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
+        return texture.Sample(samplerState.Get(), location, offset);
+    }
+
     T Sample2DArray(in TextureSampler samplerState, in float3 location, in int2 offset)
     {
         Texture2DArray<T> texture = UNIFORM_DESCRIPTOR_HEAP(Texture2DArrayHandle<T>, handle);
@@ -859,6 +865,12 @@ struct TTexture
     {
         Texture2D<T> texture = DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
         return texture.Sample(samplerState.Get(), location);
+    }
+
+    T Sample2D(in TextureSampler samplerState, in float2 location, in int2 offset)
+    {
+        Texture2D<T> texture = DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
+        return texture.Sample(samplerState.Get(), location, offset);
     }
 
     T Sample2DArray(in TextureSampler samplerState, in float3 location, in int2 offset)
