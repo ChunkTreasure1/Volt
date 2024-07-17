@@ -35,6 +35,7 @@ struct PBRInput
     float metallic;
     float roughness;
     float3 emissive;
+    float ao;
     
     float3 worldPosition;
     uint2 tileId;
@@ -76,8 +77,7 @@ float3 CalculateSkyAmbiance(in float3 dirToCamera, in float3 baseReflectivity)
     const float3 kD = (1.f - F) * (1.f - m_pbrInput.metallic);
 
     const float3 irradiance = m_pbrConstants.environmentIrradiance.SampleLevelCube(m_pbrConstants.linearSampler, m_pbrInput.normal, 0.f);
-    const float3 diffuse = irradiance * m_pbrInput.albedo.xyz
-;
+    const float3 diffuse = irradiance * m_pbrInput.albedo.xyz;
 
     // #TODO_Ivar: This is quite slow
     uint radianceTextureLevels;
@@ -230,7 +230,7 @@ float3 CalculatePBR(in PBRInput input, in PBRConstants constants)
      
     // Skylight
     {
-        lightOutput += CalculateSkyAmbiance(dirToCamera, baseReflectivity); 
+        lightOutput += CalculateSkyAmbiance(dirToCamera, baseReflectivity) * input.ao; 
     }
     
     // Directional Light

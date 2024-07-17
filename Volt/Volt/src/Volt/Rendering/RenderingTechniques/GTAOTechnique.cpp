@@ -4,7 +4,6 @@
 #include "Volt/Rendering/RenderGraph/RenderGraph.h"
 #include "Volt/Rendering/RenderGraph/RenderGraphBlackboard.h"
 #include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
-#include "Volt/Rendering/SceneRendererStructs.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
 #include "Volt/Rendering/Renderer.h"
 
@@ -49,15 +48,17 @@ namespace Volt
 		}
 	}
 
-	void GTAOTechnique::Execute(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	GTAOOutput GTAOTechnique::Execute(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		renderGraph.BeginMarker("GTAO", { 0.f, 1.f, 0.f, 1.f });
 
 		AddPrefilterDepthPass(renderGraph, blackboard);
 		AddMainPass(renderGraph, blackboard);
-		AddDenoisePass(renderGraph, blackboard);
+		GTAOOutput result = AddDenoisePass(renderGraph, blackboard);
 
 		renderGraph.EndMarker();
+
+		return result;
 	}
 
 	void GTAOTechnique::AddPrefilterDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
@@ -121,6 +122,7 @@ namespace Volt
 			context.SetConstant("outDepthMIP3"_sh, resources.GetImage2D(data.prefilteredDepth, 3));
 			context.SetConstant("outDepthMIP4"_sh, resources.GetImage2D(data.prefilteredDepth, 4));
 			context.SetConstant("sourceDepth"_sh, resources.GetImage2D(preDepthData.depth));
+			context.SetConstant("padding"_sh, 0u);
 			context.SetConstant("pointClampSampler"_sh, pointClampSampler->GetResourceHandle());
 			context.SetConstant("constants.ViewportSize"_sh, data.constants.ViewportSize);
 			context.SetConstant("constants.ViewportPixelSize"_sh, data.constants.ViewportPixelSize);
@@ -139,7 +141,7 @@ namespace Volt
 			context.SetConstant("constants.ThinOccluderCompensation"_sh, data.constants.ThinOccluderCompensation);
 			context.SetConstant("constants.DepthMIPSamplingOffset"_sh, data.constants.DepthMIPSamplingOffset);
 			context.SetConstant("constants.NoiseIndex"_sh, data.constants.NoiseIndex);
-
+			context.SetConstant("constants.Padding0"_sh, 0.f);
 
 			const uint32_t dispatchX = Math::DivideRoundUp(renderData.renderSize.x, 16u);
 			const uint32_t dispatchY = Math::DivideRoundUp(renderData.renderSize.y, 16u);
@@ -185,6 +187,7 @@ namespace Volt
 			context.SetConstant("srcDepth"_sh, resources.GetImage2D(prefilterDepthData.prefilteredDepth));
 			context.SetConstant("viewspaceNormals"_sh, resources.GetImage2D(preDepthData.normals));
 			context.SetConstant("pointClampSampler"_sh, pointClampSampler->GetResourceHandle());
+			context.SetConstant("padding"_sh, glm::uvec3(0));
 			context.SetConstant("constants.ViewportSize"_sh, prefilterDepthData.constants.ViewportSize);
 			context.SetConstant("constants.ViewportPixelSize"_sh, prefilterDepthData.constants.ViewportPixelSize);
 			context.SetConstant("constants.DepthUnpackConsts"_sh, prefilterDepthData.constants.DepthUnpackConsts);
@@ -202,6 +205,7 @@ namespace Volt
 			context.SetConstant("constants.ThinOccluderCompensation"_sh, prefilterDepthData.constants.ThinOccluderCompensation);
 			context.SetConstant("constants.DepthMIPSamplingOffset"_sh, prefilterDepthData.constants.DepthMIPSamplingOffset);
 			context.SetConstant("constants.NoiseIndex"_sh, prefilterDepthData.constants.NoiseIndex);
+			context.SetConstant("constants.Padding0"_sh, 0.f);
 
 			const uint32_t dispatchX = Math::DivideRoundUp(renderSize.x, 16u);
 			const uint32_t dispatchY = Math::DivideRoundUp(renderSize.y, 16u);
@@ -210,14 +214,14 @@ namespace Volt
 		});
 	}
 
-	void GTAOTechnique::AddDenoisePass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	GTAOOutput GTAOTechnique::AddDenoisePass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		const auto& gtaoData = blackboard.Get<GTAOData>();
 		const auto& prefilterDepthData = blackboard.Get<PrefilterDepthData>();
 
 		const glm::uvec2 renderSize = m_constants.ViewportSize;
 
-		blackboard.Add<GTAOOutput>() = renderGraph.AddPass<GTAOOutput>("GTAO Denoise Pass 0",
+		GTAOOutput& output = renderGraph.AddPass<GTAOOutput>("GTAO Denoise Pass 0",
 		[&](RenderGraph::Builder& builder, GTAOOutput& data) 
 		{
 			{
@@ -262,12 +266,15 @@ namespace Volt
 			context.SetConstant("constants.ThinOccluderCompensation"_sh, prefilterDepthData.constants.ThinOccluderCompensation);
 			context.SetConstant("constants.DepthMIPSamplingOffset"_sh, prefilterDepthData.constants.DepthMIPSamplingOffset);
 			context.SetConstant("constants.NoiseIndex"_sh, prefilterDepthData.constants.NoiseIndex);
+			context.SetConstant("constants.Padding0"_sh, 0.f);
 		
 			const uint32_t dispatchX = Math::DivideRoundUp(renderSize.x, 8u);
 			const uint32_t dispatchY = Math::DivideRoundUp(renderSize.y, 8u);
 
 			context.Dispatch(dispatchX, dispatchY, 1);
 		});
+
+		return output;
 	}
 }
 

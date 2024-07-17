@@ -56,9 +56,10 @@ namespace Volt
 			Metalness = 3,
 			Roughness = 4,
 			Emissive = 5,
+			AO = 6,
 
-			VisualizeCascades = 6,
-			VisualizeLightComplexity = 7
+			VisualizeCascades = 7,
+			VisualizeLightComplexity = 8
 		};
 
 		SceneRenderer(const SceneRendererSpecification& specification);

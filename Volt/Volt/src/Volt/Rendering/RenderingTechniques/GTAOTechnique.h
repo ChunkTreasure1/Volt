@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Volt/Rendering/RenderGraph/Resources/RenderGraphResourceHandle.h"
+#include "Volt/Rendering/SceneRendererStructs.h"
 
 namespace Volt
 {
@@ -15,14 +16,14 @@ namespace Volt
 	public:
 		GTAOTechnique(uint64_t frameIndex, const GTAOSettings& settings);
 
-		void Execute(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
+		GTAOOutput Execute(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
 
 	private:
 		friend struct PrefilterDepthData;
 
 		void AddPrefilterDepthPass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
 		void AddMainPass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
-		void AddDenoisePass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
+		GTAOOutput AddDenoisePass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
 
 		struct GTAOConstants
 		{

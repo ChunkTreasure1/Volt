@@ -27,6 +27,7 @@ void RendererSettingsPanel::UpdateMainContent()
 		"Metalness",
 		"Roughness",
 		"Emissive",
+		"AO",
 
 		"VisualizeCascades",
 		"VisualizeLightComplexity"

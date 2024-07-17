@@ -143,11 +143,19 @@ namespace Volt
 		AddPreDepthPass(renderGraph, rgBlackboard);
 		AddObjectIDPass(renderGraph, rgBlackboard);
 
+		GTAOSettings tempSettings{};
+		tempSettings.radius = 50.f;
+		tempSettings.radiusMultiplier = 1.457f;
+		tempSettings.falloffRange = 0.615f;
+		tempSettings.finalValuePower = 2.2f;
+
+		GTAOTechnique gtaoTechnique{ 0 /*m_frameIndex*/, tempSettings };
+		rgBlackboard.Add<GTAOOutput>() = gtaoTechnique.Execute(renderGraph, rgBlackboard);
+
 		DirectionalShadowTechnique dirShadowTechnique{ renderGraph, rgBlackboard };
 		rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene(), m_directionalLightData);
 
 		AddVisibilityBufferPass(renderGraph, rgBlackboard);
-
 		AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
 
 		LightCullingTechnique lightCulling{ renderGraph, rgBlackboard };
@@ -487,7 +495,7 @@ namespace Volt
 			data.depth = builder.CreateImage2D(desc);
 
 			desc.format = RHI::PixelFormat::R16G16B16A16_SFLOAT;
-			desc.name = "Normals";
+			desc.name = "View Normals";
 			data.normals = builder.CreateImage2D(desc);
 
 			BuildMeshPass(builder, blackboard);
@@ -887,6 +895,7 @@ namespace Volt
 		const auto& shadingOutputData = blackboard.Get<ShadingOutputData>();
 		const auto& lightBuffers = blackboard.Get<LightBuffersData>();
 		const auto& lightCullingData = blackboard.Get<LightCullingData>();
+		const auto& gtaoOutput = blackboard.Get<GTAOOutput>();
 
 		const auto& gbufferData = blackboard.Get<GBufferData>();
 		const auto& preDepthData = blackboard.Get<PreDepthData>();
@@ -913,6 +922,7 @@ namespace Volt
 			builder.ReadResource(lightCullingData.visiblePointLightsBuffer);
 			builder.ReadResource(lightCullingData.visibleSpotLightsBuffer);
 			builder.ReadResource(dirShadowData.shadowTexture);
+			builder.ReadResource(gtaoOutput.outputImage);
 
 			builder.SetIsComputePass();
 			builder.SetHasSideEffect(); 
@@ -926,6 +936,7 @@ namespace Volt
 			context.SetConstant("normals"_sh, resources.GetImage2D(gbufferData.normals));
 			context.SetConstant("material"_sh, resources.GetImage2D(gbufferData.material));
 			context.SetConstant("emissive"_sh, resources.GetImage2D(gbufferData.emissive));
+			context.SetConstant("aoTexture"_sh, resources.GetImage2D(gtaoOutput.outputImage));
 			context.SetConstant("depthTexture"_sh, resources.GetImage2D(preDepthData.depth));
 			context.SetConstant("shadingMode"_sh, static_cast<uint32_t>(m_shadingMode));
 

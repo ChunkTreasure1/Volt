@@ -16,9 +16,10 @@ namespace ShadingMode
     static const uint Metalness = 3;
     static const uint Roughness = 4;
     static const uint Emissive = 5;
+    static const uint AO = 6;
 
-    static const uint VisualizeCascades = 6;
-    static const uint VisualizeLightComplexity = 7;
+    static const uint VisualizeCascades = 7;
+    static const uint VisualizeLightComplexity = 8;
 }
 
 struct Constants
@@ -29,12 +30,23 @@ struct Constants
     UniformTexture<float4> normals;
     UniformTexture<float2> material;
     UniformTexture<float3> emissive;
+    UniformTexture<uint> aoTexture;
     UniformTexture<float> depthTexture;
 
     uint shadingMode;
 
     PBRConstants pbrConstants;
 };
+
+float CalculateAO(UniformTexture<uint> aoTex, uint2 pixelCoord)
+{
+#define XE_GTAO_OCCLUSION_TERM_SCALE (1.5f)      // for packing in UNORM (because raw, pre-denoised occlusion term can overshoot 1 but will later average out to 1)
+
+    const float ao = (aoTex.Load2D(int3(pixelCoord, 0)).x >> 24) / 255.f;
+    float finalAO = min(ao * XE_GTAO_OCCLUSION_TERM_SCALE, 1.f);
+
+    return finalAO;
+}
 
 [numthreads(8, 8, 1)]
 void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_GroupIndex)
@@ -64,7 +76,8 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     const float roughness = material.y;
     const float3 emissive = constants.emissive.Load2D(int3(threadId.xy, 0));
     const float3 normal = normalize(constants.normals.Load2D(int3(threadId.xy, 0)).xyz * 2.f - 1.f);
-    
+    const float ao = CalculateAO(constants.aoTexture, threadId.xy);    
+
     const float pixelDepth = constants.depthTexture.Load2D(int3(threadId.xy, 0));
     const float3 worldPosition = ReconstructWorldPosition(viewData, texCoords, pixelDepth);
     
@@ -75,6 +88,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     pbrInput.roughness = roughness;
     pbrInput.emissive = emissive;
     pbrInput.worldPosition = worldPosition;
+    pbrInput.ao = ao;
     pbrInput.tileId = threadId.xy / LIGHT_CULLING_TILE_SIZE;
     
     float3 outputColor = 1.f;
@@ -114,6 +128,12 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
         case ShadingMode::Emissive:
         {
             outputColor = emissive;
+            break;
+        }
+
+        case ShadingMode::AO:
+        {
+            outputColor = ao;
             break;
         }
 
