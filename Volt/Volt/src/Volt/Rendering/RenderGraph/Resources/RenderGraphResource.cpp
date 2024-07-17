@@ -11,7 +11,7 @@ namespace Volt
 	{
 	}
 
-	ResourceHandle RenderGraphPassResources::GetImage2D(const RenderGraphResourceHandle resourceHandle, const uint32_t mip, const uint32_t layer) const
+	ResourceHandle RenderGraphPassResources::GetImage2D(const RenderGraphResourceHandle resourceHandle, const int32_t mip, const int32_t layer) const
 	{
 		ValidateResourceAccess(resourceHandle);
 		auto handle = m_renderGraph.GetImage2D(resourceHandle, mip, layer);

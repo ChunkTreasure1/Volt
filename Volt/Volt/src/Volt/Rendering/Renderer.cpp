@@ -267,6 +267,7 @@ namespace Volt
 			imageSpec.layers = 6;
 			imageSpec.isCubeMap = true;
 			imageSpec.mips = RHI::Utility::CalculateMipCount(CUBE_MAP_SIZE, CUBE_MAP_SIZE);
+			imageSpec.debugName = "Environment - Radiance";
 
 			environmentFiltered = RHI::Image2D::Create(imageSpec);
 
@@ -348,6 +349,7 @@ namespace Volt
 			imageSpec.layers = 6;
 			imageSpec.isCubeMap = true;
 			imageSpec.mips = RHI::Utility::CalculateMipCount(IRRADIANCE_MAP_SIZE, IRRADIANCE_MAP_SIZE);
+			imageSpec.debugName = "Environment - Irradiance";
 
 			irradianceMap = RHI::Image2D::Create(imageSpec);
 		

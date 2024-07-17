@@ -22,7 +22,7 @@ namespace Volt
 	{
 		constexpr float SIZE = 1000.f;
 
-		Ref<Camera> shadowCamera = CreateRef<Camera>(-SIZE, SIZE, -SIZE, SIZE, 1.f, 10'000.f);
+		Ref<Camera> shadowCamera = CreateRef<Camera>(-SIZE, SIZE, -SIZE, SIZE, 1.f, 100'000.f);
 		const glm::mat4 view = glm::lookAtLH(glm::vec3(0.f) - glm::vec3(light.direction) * 1000.f, glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
 
 		shadowCamera->SetView(view);
@@ -36,14 +36,14 @@ namespace Volt
 		DirectionalShadowData& dirShadowData = m_renderGraph.AddPass<DirectionalShadowData>("Directional Shadow",
 		[&](RenderGraph::Builder& builder, DirectionalShadowData& data)
 		{
-			data.renderSize = { 1024, 1024 };
+			data.renderSize = { 2048, 2048 };
 
 			RenderGraphImageDesc imageDesc{};
 			imageDesc.format = RHI::PixelFormat::D32_SFLOAT;
 			imageDesc.width = data.renderSize.x;
 			imageDesc.height = data.renderSize.y;
 			imageDesc.usage = RHI::ImageUsage::Attachment;
-			imageDesc.layers = 5;
+			imageDesc.layers = DirectionalLightData::CASCADE_COUNT;
 			imageDesc.isCubeMap = false;
 			imageDesc.name = "Directional Shadow";
 

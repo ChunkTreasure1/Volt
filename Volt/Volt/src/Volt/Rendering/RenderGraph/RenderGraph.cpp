@@ -982,7 +982,7 @@ namespace Volt
 		return image;
 	}
 
-	ResourceHandle RenderGraph::GetImage2D(const RenderGraphResourceHandle resourceHandle, const uint32_t mip, const uint32_t layer)
+	ResourceHandle RenderGraph::GetImage2D(const RenderGraphResourceHandle resourceHandle, const int32_t mip, const int32_t layer)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -1000,7 +1000,7 @@ namespace Volt
 		return handle;
 	}
 
-	ResourceHandle RenderGraph::GetImage2DArray(const RenderGraphResourceHandle resourceHandle, const uint32_t mip)
+	ResourceHandle RenderGraph::GetImage2DArray(const RenderGraphResourceHandle resourceHandle, const int32_t mip)
 	{
 		VT_PROFILE_FUNCTION();
 
