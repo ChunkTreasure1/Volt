@@ -515,13 +515,12 @@ namespace Volt
 			if (fieldInstance->field.type.IsEntity())
 			{
 				EntityID fieldEnt = *fieldInstance->data.As<EntityID>();
-				if (fieldEnt == Entity::NullID())
+				if (fieldEnt == Entity::NullID() || !s_monoData->sceneContext->IsEntityValid(fieldEnt))
 				{
 					continue;
 				}
 
 				auto fieldEntInstance = GetOrCreateMonoEntity(fieldEnt);
-
 				auto instanceObject = MonoGCManager::GetObjectFromHandle(instance->GetHandle());
 				auto entityObject = MonoGCManager::GetObjectFromHandle(fieldEntInstance->GetHandle());
 
