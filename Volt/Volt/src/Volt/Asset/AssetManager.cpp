@@ -311,7 +311,7 @@ namespace Volt
 	{
 		{
 			ReadLock lock{ m_assetCacheMutex };
-			if (m_assetCache.contains(assetHandle))
+			if (!m_assetCache.contains(assetHandle))
 			{
 				VT_CORE_WARN("[AssetManager] Unable to unload asset with handle {0}, it has not been loaded!", assetHandle);
 				return;

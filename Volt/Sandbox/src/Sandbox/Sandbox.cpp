@@ -280,28 +280,6 @@ void Sandbox::SetupNewSceneData()
 			gameSpec.initialResolution = { m_gameSceneRenderer->GetFinalImage()->GetWidth(), m_gameSceneRenderer->GetFinalImage()->GetHeight() };
 		}
 
-		//{
-		//	settings.enableIDRendering = true;
-		//	settings.enableOutline = true;
-		//	settings.enableDebugRenderer = true;
-		//	settings.enableGrid = true;
-		//	settings.enableUI = lowMemory;
-		//	settings.enableVolumetricFog = true;
-
-		//	//if (Volt::GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
-		//	//{
-		//	//	settings.enableRayTracing = true;
-		//	//}
-
-		//	gameSettings.enableIDRendering = false;
-		//	gameSettings.enableOutline = false;
-		//	gameSettings.enableDebugRenderer = false;
-		//	gameSettings.enableGrid = false;
-		//	gameSettings.enableUI = true;
-		//	gameSettings.enablePostProcessing = true;
-		//	gameSettings.enableVolumetricFog = true;
-		//}
-
 		m_sceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
 		m_gameSceneRenderer = CreateRef<Volt::SceneRenderer>(gameSpec);
 	}
@@ -912,7 +890,7 @@ void Sandbox::RenderGameView()
 			camera->SetPosition(cameraEntity.GetPosition());
 			camera->SetRotation(glm::eulerAngles(cameraEntity.GetRotation()));
 
-			//m_gameSceneRenderer->OnRenderEditor(camera);
+			m_gameSceneRenderer->OnRenderEditor(camera);
 			break;
 		}
 	}
