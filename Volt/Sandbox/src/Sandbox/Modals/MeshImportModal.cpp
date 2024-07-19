@@ -19,7 +19,7 @@ namespace Utility
 {
 	std::filesystem::path GetNonExistingFilePath(const std::filesystem::path& directory, const std::string& fileName)
 	{
-		std::filesystem::path filePath = directory / (fileName + ".vtasset");
+		std::filesystem::path filePath = Volt::AssetManager::GetFilesystemPath(directory / (fileName + ".vtasset"));
 		uint32_t counter = 0;
 
 		while (std::filesystem::exists(filePath))
@@ -28,7 +28,7 @@ namespace Utility
 			counter++;
 		}
 		
-		return filePath;
+ 		return Volt::AssetManager::GetRelativePath(filePath);
 	}
 }
 
