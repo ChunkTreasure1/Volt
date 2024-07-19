@@ -1,0 +1,6 @@
+name: "DrawCallCull"
+internal: true
+sources:
+  - entryPoint: "MainCS"
+    shaderStage: "cs"
+    filePath: "Engine/Shaders/Source/RenderPipeline/DrawCallCull.hlsl"

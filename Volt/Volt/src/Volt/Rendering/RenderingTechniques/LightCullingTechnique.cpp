@@ -46,7 +46,6 @@ namespace Volt
 			builder.ReadResource(lightBuffers.spotLightsBuffer);
 
 			builder.SetIsComputePass();
-			builder.SetHasSideEffect();
 		},
 		[=](const LightCullingData& data, RenderContext& context, const RenderGraphPassResources& resources) 
 		{

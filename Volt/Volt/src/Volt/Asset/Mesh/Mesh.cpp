@@ -308,23 +308,6 @@ namespace Volt
 			m_meshletsBuffer->GetResource()->SetData(m_meshlets.data(), m_meshlets.size() * sizeof(Meshlet));
 		}
 
-		// Create GPU Meshes
-		for (const auto& subMesh : m_subMeshes)
-		{
-			auto& gpuMesh = m_gpuMeshes.emplace_back();
-			gpuMesh.vertexStartOffset = subMesh.vertexStartOffset;
-			gpuMesh.meshletStartOffset = subMesh.meshletStartOffset;
-			gpuMesh.meshletCount = subMesh.meshletCount;
-			gpuMesh.meshletIndexStartOffset = subMesh.meshletIndexStartOffset;
-			gpuMesh.vertexPositionsBuffer = m_vertexPositionsBuffer->GetResourceHandle();
-			gpuMesh.vertexMaterialBuffer = m_vertexMaterialBuffer->GetResourceHandle();
-			gpuMesh.vertexAnimationInfoBuffer = m_vertexAnimationDataBuffer->GetResourceHandle();
-			gpuMesh.vertexBoneWeightsBuffer = m_vertexBoneWeightsBuffer ? m_vertexBoneWeightsBuffer->GetResourceHandle() : Resource::Invalid;
-			gpuMesh.vertexBoneInfluencesBuffer = m_vertexBoneInfluencesBuffer ? m_vertexBoneInfluencesBuffer->GetResourceHandle() : Resource::Invalid;
-			gpuMesh.meshletsBuffer = m_meshletsBuffer->GetResourceHandle();
-			gpuMesh.meshletDataBuffer = m_meshletDataBuffer->GetResourceHandle();
-		}
-
 		for (auto& subMesh : m_subMeshes)
 		{
 			glm::vec3 t, r, s;
@@ -362,6 +345,31 @@ namespace Volt
 			subMeshVertices.insert(subMeshVertices.end(), std::next(m_vertexContainer.positions.begin(), subMesh.vertexStartOffset), std::next(m_vertexContainer.positions.begin(), subMesh.vertexStartOffset + subMesh.vertexCount));
 
 			m_subMeshBoundingSpheres[i] = GetBoundingSphereFromVertices(subMeshVertices);
+			i++;
+		}
+
+		// Create GPU Meshes
+		for (uint32_t i = 0; const auto& subMesh : m_subMeshes)
+		{
+			auto& gpuMesh = m_gpuMeshes.emplace_back();
+			gpuMesh.vertexStartOffset = subMesh.vertexStartOffset;
+			gpuMesh.meshletStartOffset = subMesh.meshletStartOffset;
+			gpuMesh.meshletCount = subMesh.meshletCount;
+			gpuMesh.meshletIndexStartOffset = subMesh.meshletIndexStartOffset;
+			gpuMesh.vertexPositionsBuffer = m_vertexPositionsBuffer->GetResourceHandle();
+			gpuMesh.vertexMaterialBuffer = m_vertexMaterialBuffer->GetResourceHandle();
+			gpuMesh.vertexAnimationInfoBuffer = m_vertexAnimationDataBuffer->GetResourceHandle();
+			gpuMesh.vertexBoneWeightsBuffer = m_vertexBoneWeightsBuffer ? m_vertexBoneWeightsBuffer->GetResourceHandle() : Resource::Invalid;
+			gpuMesh.vertexBoneInfluencesBuffer = m_vertexBoneInfluencesBuffer ? m_vertexBoneInfluencesBuffer->GetResourceHandle() : Resource::Invalid;
+			gpuMesh.meshletsBuffer = m_meshletsBuffer->GetResourceHandle();
+			gpuMesh.meshletDataBuffer = m_meshletDataBuffer->GetResourceHandle();
+			gpuMesh.center = subMesh.transform * glm::vec4(m_subMeshBoundingSpheres.at(i).center, 1.f);
+
+			glm::vec3 t, r, s;
+			Math::Decompose(subMesh.transform, t, r, s);
+
+			gpuMesh.radius = m_subMeshBoundingSpheres.at(i).radius * glm::max(s.x, glm::max(s.y, s.z));
+
 			i++;
 		}
 	}

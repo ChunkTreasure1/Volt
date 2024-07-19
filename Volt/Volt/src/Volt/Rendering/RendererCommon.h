@@ -5,39 +5,11 @@
 
 namespace Volt
 {
-	struct IndirectGPUCommand
+	struct MeshTaskCommand
 	{
-		RHI::IndirectDrawCommand command{};
-		uint32_t objectId{};
-		uint32_t meshId{};
-		uint32_t meshletId{};
-		uint32_t padding{};
-	};
-
-	struct IndirectDrawData
-	{
-		glm::mat4 transform;
-		uint32_t meshId{};
-		uint32_t vertexStartOffset{};
-		uint32_t materialId{};
-
-		uint32_t padding;
-	};
-
-	struct GPUMeshNew
-	{
-		ResourceHandle vertexPositions;
-		ResourceHandle vertexMaterial;
-		ResourceHandle vertexAnimation;
-		ResourceHandle indexBuffer;
-	};
-
-	struct IndirectMeshTaskCommand
-	{
-		RHI::IndirectMeshTasksCommand command{};
-		uint32_t objectId{};
-		uint32_t meshId{};
-		uint32_t padding[3];
+		uint32_t drawId;
+		uint32_t taskCount;
+		uint32_t meshletOffset;
 	};
 
 	///// Rendering Structures /////

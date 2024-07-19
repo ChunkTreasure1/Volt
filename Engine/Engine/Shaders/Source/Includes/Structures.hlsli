@@ -1,29 +1,6 @@
 #ifndef STRUCTURES_H
 #define STRUCTURES_H
 
-struct IndirectGPUCommand
-{
-    uint vertexCount;
-    uint instanceCount;
-    uint firstVertex;
-    uint firstInstance;
-    
-    uint objectId;
-    uint meshId;
-    uint meshletId;
-    uint padding;
-};
-
-struct IndirectDrawData
-{
-    float4x4 transform;
-    uint meshId;
-    uint vertexStartOffset;
-    uint materialId;
-    
-    uint padding;
-};
-
 struct IndirectIndexedCommand
 {
     uint indexCount;
@@ -31,6 +8,13 @@ struct IndirectIndexedCommand
     uint firstIndex;
     int vertexOffset;
     uint firstInstance;
+};
+
+struct MeshTaskCommand
+{
+    uint drawId;
+    uint taskCount;
+    uint meshletOffset;
 };
 
 ///// Rendering Structures /////

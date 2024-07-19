@@ -2,6 +2,7 @@
 #include "RenderingComponents.h"
 
 #include "Volt/Rendering/RenderScene.h"
+#include "Volt/Rendering/Renderer.h"
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Rendering/Material.h"
@@ -122,6 +123,11 @@ namespace Volt
 			const auto materialIndex = mesh->GetSubMeshes().at(i).materialIndex;
 
 			Ref<Material> mat = AssetManager::QueueAsset<Material>(materialTable.GetMaterial(materialIndex));
+			if (!mat)
+			{
+				VT_CORE_WARN("[MeshComponent]: Mesh {} has an invalid material at index {}!", mesh->assetName, materialIndex);
+				mat = Renderer::GetDefaultResources().defaultMaterial;
+			}
 
 			if (static_cast<uint32_t>(data.materials.size()) > materialIndex)
 			{

@@ -73,12 +73,12 @@ namespace Volt
 
 		std::sort(std::execution::par, m_renderObjects.begin(), m_renderObjects.end(), [](const auto& lhs, const auto& rhs)
 		{
-			if (lhs.mesh < rhs.mesh)
+			if (lhs.mesh.GetHash() < rhs.mesh.GetHash())
 			{
 				return true;
 			}
 
-			if (lhs.mesh > rhs.mesh)
+			if (lhs.mesh.GetHash() > rhs.mesh.GetHash())
 			{
 				return false;
 			}
@@ -97,6 +97,7 @@ namespace Volt
 		});
 
 		m_currentIndividualMeshCount = 0;
+		m_currentMeshletCount = 0;
 		m_individualMeshes.clear();
 		m_individualMaterials.clear();
 		m_materialIndexFromAssetHandle.clear();
@@ -512,22 +513,6 @@ namespace Volt
 		const size_t hash = Math::HashCombine(renderObject.mesh.GetHash(), std::hash<uint32_t>()(renderObject.subMeshIndex));
 		const uint32_t meshId = m_meshSubMeshToGPUMeshIndex.contains(hash) ? m_meshSubMeshToGPUMeshIndex.at(hash) : std::numeric_limits<uint32_t>::max();
 
-		glm::mat4 transform = entity.GetTransform();
-
-		if (renderObject.mesh->IsValid())
-		{
-			const auto& subMesh = renderObject.mesh->GetSubMeshes().at(renderObject.subMeshIndex);
-			transform = transform * subMesh.transform;
-
-			BoundingSphere boundingSphere = renderObject.mesh->GetSubMeshBoundingSphere(renderObject.subMeshIndex);
-			const glm::vec3 globalScale = { glm::length(transform[0]), glm::length(transform[1]), glm::length(transform[2]) };
-			const float maxScale = glm::max(glm::max(globalScale.x, globalScale.y), globalScale.z);
-			const glm::vec3 globalCenter = transform * glm::vec4(boundingSphere.center, 1.f);
-		
-			objectDrawData.boundingSphereCenter = globalCenter;
-			objectDrawData.boundingSphereRadius = boundingSphere.radius * maxScale;
-		}
-
 		objectDrawData.position = entity.GetPosition();
 		objectDrawData.scale = entity.GetScale();
 		objectDrawData.rotation = entity.GetRotation();
@@ -537,5 +522,6 @@ namespace Volt
 		objectDrawData.meshletStartOffset = renderObject.meshletStartOffset;
 		objectDrawData.isAnimated = renderObject.IsAnimated();
 
+		m_currentMeshletCount += m_gpuMeshes.at(meshId).meshletCount;
 	}
 }

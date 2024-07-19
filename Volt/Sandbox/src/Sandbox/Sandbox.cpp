@@ -912,7 +912,7 @@ void Sandbox::RenderGameView()
 			camera->SetPosition(cameraEntity.GetPosition());
 			camera->SetRotation(glm::eulerAngles(cameraEntity.GetRotation()));
 
-			m_gameSceneRenderer->OnRenderEditor(camera);
+			//m_gameSceneRenderer->OnRenderEditor(camera);
 			break;
 		}
 	}

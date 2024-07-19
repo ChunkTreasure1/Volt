@@ -1,0 +1,9 @@
+name: "DirectionalShadowMeshShader"
+internal: true
+sources:
+  - entryPoint: "MainMS"
+    shaderStage: "ms"
+    filePath: "Engine/Shaders/Source/RenderPipeline/DirectionalShadowMeshShader.hlsl"
+  - entryPoint: "MainPS"
+    shaderStage: "ps"
+    filePath: "Engine/Shaders/Source/RenderPipeline/DirectionalShadowMeshShader.hlsl"

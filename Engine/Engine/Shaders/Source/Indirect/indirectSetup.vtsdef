@@ -1,6 +1,0 @@
-name: "IndirectSetup"
-internal: true
-sources:
-  - entryPoint: "main"
-    shaderStage: "cs"
-    filePath: "Engine/Shaders/Source/Indirect/IndirectSetup_cs.hlsl"

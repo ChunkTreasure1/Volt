@@ -21,6 +21,9 @@ namespace Volt
 		ResourceHandle meshletsBuffer;
 		uint32_t padding;
 
+		glm::vec3 center;
+		float radius;
+
 		uint32_t vertexStartOffset;
 		uint32_t meshletCount;
 		uint32_t meshletStartOffset;
@@ -37,9 +40,6 @@ namespace Volt
 		uint32_t materialId;
 		uint32_t meshletStartOffset;
 		uint32_t entityId;
-
-		glm::vec3 boundingSphereCenter;
-		float boundingSphereRadius;
 
 		uint32_t isAnimated;
 		uint32_t boneOffset;

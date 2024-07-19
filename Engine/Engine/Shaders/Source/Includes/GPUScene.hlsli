@@ -84,6 +84,8 @@ struct GPUMesh
     TypedBuffer<Meshlet> meshletsBuffer;
     uint padding;
     
+    BoundingSphere boundingSphere;
+
     uint vertexStartOffset;
     uint meshletCount;
     uint meshletStartOffset;
@@ -99,8 +101,6 @@ struct ObjectDrawData
     uint meshletStartOffset;
     uint entityId;
     
-    BoundingSphere boundingSphere;
-
     uint isAnimated;
     uint boneOffset;
 };

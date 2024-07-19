@@ -53,6 +53,7 @@ namespace Volt
 		inline const uint32_t GetIndividualMeshCount() const { return m_currentIndividualMeshCount; }
 		inline const uint32_t GetIndividualMaterialCount() const { return static_cast<uint32_t>(m_individualMaterials.size()); }
 		inline const uint32_t GetIndexCount() const { return m_currentIndexCount; }
+		inline const uint32_t GetMeshletCount() const { return m_currentMeshletCount; }
 
 		Weak<Material> GetMaterialFromID(const uint32_t materialId) const;
 
@@ -132,6 +133,7 @@ namespace Volt
 		uint32_t m_currentIndividualMeshCount = 0;
 		uint32_t m_currentIndexCount = 0;
 		uint32_t m_currentBoneCount = 0;
+		uint32_t m_currentMeshletCount = 0;
 
 		UUID64 m_materialChangedCallbackID;
 		UUID64 m_meshChangedCallbackID;

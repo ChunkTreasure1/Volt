@@ -1,10 +1,11 @@
 #include "PushConstant.hlsli"
 #include "MeshShaderCommon.hlsli"
+#include "MeshShaderCullCommon.hlsli"
 
 struct VertexOutput
 {
     float4 position : SV_Position;
-    float3 normal : NORMAL;
+    uint objectId : OBJECT_ID;
 };
 
 [numthreads(NUM_MS_THREADS, 1, 1)]
@@ -29,15 +30,13 @@ void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
 
     const Meshlet meshlet = mesh.meshletsBuffer.Load(mesh.meshletStartOffset + meshletIndex);
     const uint vertexCount = meshlet.GetVertexCount();
-    const uint triCount = meshlet.GetTriangleCount();    
+    const uint triCount = meshlet.GetTriangleCount();
 
     SetMeshOutputCounts(vertexCount, triCount);
 
     if (groupThreadId < vertexCount)
     {
         const uint vertexIndex = mesh.meshletDataBuffer[meshlet.GetVertexOffset() + groupThreadId] + mesh.vertexStartOffset;
-        const float3x3 cameraNormalRotation = (float3x3)viewData.view;
-        
         float4x4 skinningMatrix = IDENTITY_MATRIX;
         if (drawData.isAnimated)
         {
@@ -45,12 +44,12 @@ void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
         }
 
         const float3 skinnedPosition = mul(skinningMatrix, float4(mesh.vertexPositionsBuffer.Load(vertexIndex), 1.f)).xyz;
-        const float4 position = TransformClipPosition(mul(viewData.viewProjection, float4(drawData.transform.GetWorldPosition(skinnedPosition), 1.f)));
+        float4 position = mul(viewData.viewProjection, float4(drawData.transform.GetWorldPosition(skinnedPosition), 1.f));
 
         SetupCullingPositions(groupThreadId, position, viewData.renderSize);
 
-        vertices[groupThreadId].position = position;
-        vertices[groupThreadId].normal = normalize(mul(cameraNormalRotation, drawData.transform.RotateVector(GetNormal(mesh, vertexIndex))));
+        vertices[groupThreadId].position = TransformClipPosition(position);
+        vertices[groupThreadId].objectId = drawData.entityId;
     }
 
     GroupMemoryBarrierWithGroupSync();
@@ -59,6 +58,7 @@ void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
     {
         const uint primitive = mesh.meshletDataBuffer.Load(meshlet.GetIndexOffset() + groupThreadId);
         const uint3 indices = UnpackPrimitive(primitive);        
+
         tris[groupThreadId] = indices;
         primitives[groupThreadId].cullPrimitive = IsPrimitiveCulled(indices);
     }
@@ -66,13 +66,14 @@ void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
 
 struct ColorOutput
 {
-    [[vt::rgba16f]] float4 normal : SV_Target;
+    [[vt::r32ui]] uint objectId : SV_Target;
     [[vt::d32f]];
 };
 
 ColorOutput MainPS(VertexOutput input)
 {
     ColorOutput output;
-    output.normal = float4(normalize(input.normal), 1.f);
+    output.objectId = input.objectId;
+
     return output;
 }
