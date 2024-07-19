@@ -141,11 +141,14 @@ namespace Volt
 		UploadUniformBuffers(renderGraph, rgBlackboard, camera);
 		UploadLightBuffers(renderGraph, rgBlackboard);
 
-		CullingTechnique cullingTechnique{ renderGraph, rgBlackboard };
-		rgBlackboard.Add<DrawCullingData>() = cullingTechnique.Execute(static_cast<uint32_t>(m_scene->GetRenderScene()->GetObjectDrawData().size()), m_scene->GetRenderScene()->GetMeshletCount());
+		const auto renderScene = m_scene->GetRenderScene();
+		const uint32_t drawCount = renderScene->GetDrawCount();
 
-		if (m_scene->GetRenderScene()->GetObjectDrawData().size() > 0)
+		if (drawCount > 0)
 		{
+			CullingTechnique cullingTechnique{ renderGraph, rgBlackboard };
+			rgBlackboard.Add<DrawCullingData>() = cullingTechnique.Execute(drawCount, renderScene->GetMeshletCount());
+
 			AddPreDepthPass(renderGraph, rgBlackboard);
 			AddObjectIDPass(renderGraph, rgBlackboard);
 
@@ -182,21 +185,17 @@ namespace Volt
 			gbufferData.emissive = renderGraph.CreateImage2D({ RHI::PixelFormat::B10G11R11_UFLOAT_PACK32, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Emissive" });
 
 			AddClearGBufferPass(renderGraph, rgBlackboard);
-
-			renderGraph.BeginMarker("Materials");
-
-			for (uint32_t matId = 0; matId < m_scene->GetRenderScene()->GetIndividualMaterialCount(); matId++)
-			{
-				AddGenerateGBufferPass(renderGraph, rgBlackboard, matId);
-			}
-
-			renderGraph.EndMarker();
+			RenderMaterials(renderGraph, rgBlackboard);
 
 			AddSkyboxPass(renderGraph, rgBlackboard);
 			AddShadingPass(renderGraph, rgBlackboard);
 
 			AddFinalCopyPass(renderGraph, rgBlackboard, rgBlackboard.Get<ShadingOutputData>().colorOutput);
 			AddFXAAPass(renderGraph, rgBlackboard, rgBlackboard.Get<FinalCopyData>().output);
+		}
+		else
+		{
+			RGUtils::ClearImage(renderGraph, renderGraph.AddExternalImage2D(m_outputImage), { 0.1f, 0.1f, 0.1f, 1.f });
 		}
 
 		{
@@ -593,7 +592,7 @@ namespace Volt
 			//	context.DispatchMeshTasks(Math::DivideRoundUp(gpuMeshes[objData.meshId].meshletCount, 32u), 1, 1);
 			//	i++;
 			//}
-			
+
 			context.EndRendering();
 		});
 
@@ -652,16 +651,16 @@ namespace Volt
 	void SceneRenderer::AddClearGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		const auto& gbufferData = blackboard.Get<GBufferData>();
-		
+
 		renderGraph.AddPass("Clear GBuffer",
-		[&](RenderGraph::Builder& builder) 
+		[&](RenderGraph::Builder& builder)
 		{
 			builder.WriteResource(gbufferData.albedo, RenderGraphResourceState::Clear);
 			builder.WriteResource(gbufferData.normals, RenderGraphResourceState::Clear);
 			builder.WriteResource(gbufferData.material, RenderGraphResourceState::Clear);
 			builder.WriteResource(gbufferData.emissive, RenderGraphResourceState::Clear);
 		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
 			context.ClearImage(gbufferData.albedo, { 0.1f, 0.1f, 0.1f, 0.f });
 			context.ClearImage(gbufferData.normals, { 0.f, 0.f, 0.f, 0.f });
@@ -705,9 +704,9 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("GenerateMaterialCount");
 
 			context.BindPipeline(pipeline);
-			
+
 			GPUSceneData::SetupConstants(context, resources, gpuSceneData);
-			
+
 			context.SetConstant("visibilityBuffer"_sh, resources.GetImage2D(visBufferData.visibility));
 			context.SetConstant("materialCountsBuffer"_sh, resources.GetBuffer(data.materialCountBuffer));
 			context.SetConstant("renderSize"_sh, glm::uvec2{ m_width, m_height });
@@ -800,6 +799,18 @@ namespace Volt
 
 			context.Dispatch(Math::DivideRoundUp(materialCount, 32u), 1, 1);
 		});
+	}
+
+	void SceneRenderer::RenderMaterials(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		renderGraph.BeginMarker("Materials");
+
+		for (uint32_t matId = 0; matId < m_scene->GetRenderScene()->GetIndividualMaterialCount(); matId++)
+		{
+			AddGenerateGBufferPass(renderGraph, blackboard, matId);
+		}
+
+		renderGraph.EndMarker();
 	}
 
 	void SceneRenderer::AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, const uint32_t materialId)
@@ -955,7 +966,7 @@ namespace Volt
 			builder.ReadResource(gtaoOutput.outputImage);
 
 			builder.SetIsComputePass();
-			builder.SetHasSideEffect(); 
+			builder.SetHasSideEffect();
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
@@ -997,7 +1008,7 @@ namespace Volt
 		[&](RenderGraph::Builder& builder, FXAAOutputData& data)
 		{
 			data.output = builder.AddExternalImage2D(m_outputImage);
-			
+
 			builder.WriteResource(data.output);
 			builder.ReadResource(srcImage);
 			builder.ReadResource(uniformBuffers.viewDataBuffer);

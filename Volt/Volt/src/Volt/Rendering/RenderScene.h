@@ -54,6 +54,7 @@ namespace Volt
 		inline const uint32_t GetIndividualMaterialCount() const { return static_cast<uint32_t>(m_individualMaterials.size()); }
 		inline const uint32_t GetIndexCount() const { return m_currentIndexCount; }
 		inline const uint32_t GetMeshletCount() const { return m_currentMeshletCount; }
+		inline const uint32_t GetDrawCount() const { return static_cast<uint32_t>(m_objectDrawData.size()); }
 
 		Weak<Material> GetMaterialFromID(const uint32_t materialId) const;
 
