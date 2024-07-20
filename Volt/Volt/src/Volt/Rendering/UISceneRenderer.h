@@ -26,6 +26,8 @@ namespace Volt
 
 		void OnRender(RefPtr<RHI::Image2D> targetImage, const glm::mat4& projectionMatrix);
 
+		VT_NODISCARD VT_INLINE RefPtr<RHI::Image2D> GetIDImage() const { return m_widgetIDImage; }
+
 	private:
 		struct VertexIndexCounts
 		{

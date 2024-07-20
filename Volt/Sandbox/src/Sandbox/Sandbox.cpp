@@ -102,7 +102,7 @@ Sandbox::~Sandbox()
 
 void Sandbox::OnAttach()
 {
-	SelectionManager::Init();
+	SelectionManager::Initialize();
 
 	if (!Volt::ProjectManager::GetProject().isDeprecated)
 	{

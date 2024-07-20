@@ -893,6 +893,10 @@ void ViewportPanel::HandleSingleSelect()
 	{
 		//const auto renderScale = m_sceneRenderer->GetSettings().renderScale;
 		const float renderScale = 1.f;
+		if (!m_sceneRenderer->GetObjectIDImage())
+		{
+			return;
+		}
 
 		uint32_t pixelData = m_sceneRenderer->GetObjectIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX * renderScale), static_cast<uint32_t>(mouseY * renderScale));
 		const bool multiSelect = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);

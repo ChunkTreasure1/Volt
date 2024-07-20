@@ -35,12 +35,22 @@ private:
 	bool OnMouseButtonReleasedEvent(Volt::MouseButtonReleasedEvent& e);
 	bool OnMouseMovedEvent(Volt::MouseMovedEvent& e);
 
+	glm::vec2 GetViewportLocalPosition(const ImVec2& mousePos);
+
 	void UpdateViewport();
+	void UpdateHierarchy();
+	void UpdateDetails();
+
+	void HandleSelection();
+
 	void CreateViewportImage(const uint32_t width, const uint32_t height);
 
 	float m_currentZoom = 1.f;
 	glm::vec2 m_currentPosition = 0.f;
+	
 	glm::vec2 m_previousMousePosition = 0.f;
+	glm::vec2 m_currentMousePosition = 0.f;
+	glm::vec2 m_viewportMouseCoords = 0.f;
 
 	bool m_viewportHovered = false;
 	bool m_middleMouseDown = false;

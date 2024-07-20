@@ -31,6 +31,19 @@ namespace Volt
 			}
 		}
 
+
+		m_uuidToEntityMap[idComp.id] = handle;
 		return newWidget;
+	}
+
+	UIWidget UIScene::GetWidgetFromUUID(const EntityID uuid) const
+	{
+		if (!m_uuidToEntityMap.contains(uuid))
+		{
+			return UIWidget::Null();
+		}
+
+		Ref<const UIScene> scenePtr = shared_from_this();
+		return UIWidget(m_uuidToEntityMap.at(uuid), std::const_pointer_cast<UIScene>(scenePtr));
 	}
 }

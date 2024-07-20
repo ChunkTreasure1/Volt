@@ -4,12 +4,14 @@
 struct Constants
 {
     float4x4 viewProjection;
+    TextureSampler linearSampler;
 };
 
 struct Output
 {
     float4 position : SV_Position;
     float2 texCoords : TEXCOORD;
+    float4 color : COLOR;
     uint imageHandle : IMAGEHANDLE;
 };
 
@@ -19,6 +21,7 @@ Output main(in UIVertex input)
     
     Output output;
     output.position = mul(constants.viewProjection, input.position);
+    output.color = input.color;
     output.texCoords = input.texCoords;
     output.imageHandle = input.imageHandle;
 

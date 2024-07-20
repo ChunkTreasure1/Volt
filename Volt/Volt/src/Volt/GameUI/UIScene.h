@@ -1,5 +1,9 @@
 #pragma once
 
+#include "Volt/Scene/EntityID.h"
+
+#include <CoreUtilities/Containers/Map.h>
+
 #include <entt.hpp>
 
 namespace Volt
@@ -14,12 +18,14 @@ namespace Volt
 		VT_NODISCARD VT_INLINE entt::registry& GetRegistry() { return m_registry; }
 		
 		UIWidget CreateWidget(const std::string& tag = "");
+		UIWidget GetWidgetFromUUID(const EntityID uuid) const;
 
 		template<typename... T, typename F>
 		VT_INLINE void ForEachWithComponents(const F& func);
 
 	private:
 		entt::registry m_registry;
+		vt::map<EntityID, entt::entity> m_uuidToEntityMap;
 	};
 
 	template<typename ...T, typename F>

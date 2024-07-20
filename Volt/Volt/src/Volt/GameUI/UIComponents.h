@@ -103,6 +103,8 @@ namespace Volt
 	struct UIImageComponent
 	{
 		AssetHandle imageHandle = 0;
+		glm::vec3 tint = { 1.f };
+		float alpha = 1.f;
 
 		static void ReflectType(TypeDesc<UIImageComponent>& reflect)
 		{
@@ -110,6 +112,8 @@ namespace Volt
 			reflect.SetLabel("UI Image Component");
 			reflect.SetHidden();
 			reflect.AddMember(&UIImageComponent::imageHandle, "image", "Image", "", Asset::Null(), AssetType::Texture);
+			reflect.AddMember(&UIImageComponent::tint, "tint", "Tint", "", glm::vec3{ 1.f });
+			reflect.AddMember(&UIImageComponent::alpha, "alpha", "Alpha", "", 1.f);
 		}
 
 		REGISTER_COMPONENT(UIImageComponent);

@@ -30,6 +30,7 @@ namespace Volt
 	{
 		glm::vec4 position;
 		glm::vec2 texCoords;
+		glm::vec4 color;
 		ResourceHandle imageHandle = Resource::Invalid;
 		uint32_t id;
 	};
@@ -38,10 +39,10 @@ namespace Volt
 	static constexpr uint32_t s_quadIndexCount = 6;
 	static constexpr glm::vec4 s_quadVertexPositions[s_quadVertexCount] =
 	{
-		{ 0.f, 0.f, 0.f, 1.f },
-		{ 1.f, 0.f, 0.f, 1.f },
-		{ 0.f, 1.f, 0.f, 1.f },
-		{ 1.f, 1.f, 0.f, 1.f }
+		{ 0.f,  0.f, 0.f, 1.f },
+		{ 1.f,  0.f, 0.f, 1.f },
+		{ 0.f, -1.f, 0.f, 1.f },
+		{ 1.f, -1.f, 0.f, 1.f }
 	};
 
 	static constexpr glm::vec2 s_quadVertexTexCoords[s_quadVertexCount] =
@@ -54,8 +55,8 @@ namespace Volt
 
 	static constexpr uint32_t s_quadVertexIndices[s_quadIndexCount] =
 	{
-		0, 2, 1,
-		2, 3, 1
+		0, 1, 2,
+		2, 1, 3
 	};
 
 	UISceneRenderer::UISceneRenderer(const UISceneRendererSpecification& specification)
@@ -193,6 +194,7 @@ namespace Volt
 				context.BindVertexBuffers({ renderingData.vertexBuffer }, 0);
 
 				context.SetConstant("viewProjection"_sh, projectionMatrix);
+				context.SetConstant("linearSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
 
 				context.DrawIndexed(renderingData.indexCount, 1, 0, 0, 0);
 				context.EndRendering();
@@ -260,8 +262,9 @@ namespace Volt
 				for (uint32_t i = 0; i < s_quadVertexCount; i++)
 				{
 					UIVertex& vertex = stagedVertexBufferUpload.AddUploadItem();
-					vertex.position = (s_quadVertexPositions[i] - glm::vec4{ transComp.alignment, 0.f, 0.f }) * glm::vec4{ transComp.size, 1.f, 1.f } + glm::vec4{ transComp.position, 10.f, 0.f };
+					vertex.position = (s_quadVertexPositions[i] - glm::vec4{ transComp.alignment, 0.f, 0.f }) * glm::vec4{ transComp.size, 1.f, 1.f } + glm::vec4{ transComp.position.x, -transComp.position.y, 10.f, 0.f };
 					vertex.texCoords = s_quadVertexTexCoords[i];
+					vertex.color = glm::vec4{ imageComp.tint, imageComp.alpha };
 					vertex.imageHandle = resourceHandle;
 					vertex.id = idComp.id;
 				}
