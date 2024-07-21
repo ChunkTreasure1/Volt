@@ -5,15 +5,26 @@
 #include "MeshShaderConfig.hlsli"
 #include "Utility.hlsli"
 
+namespace CullingType
+{
+    static const uint Perspective = 0;
+    static const uint Orthographic = 1;
+}
+
 struct Constants
 {
     UniformRWTypedBuffer<uint> countBuffer;
     UniformRWTypedBuffer<MeshTaskCommand> taskCommands;
 
     GPUScene gpuScene;
-    UniformBuffer<ViewData> viewData;
+
+    float4x4 viewMatrix;
+    float4 cullingFrustum;
+    float nearPlane;
+    float farPlane;
 
     uint drawCallCount;
+    uint cullingType;
 };
 
 [numthreads(64, 1, 1)]
@@ -26,21 +37,32 @@ void MainCS(uint dispatchThreadId : SV_DispatchThreadID)
         return;
     }
 
-    const ViewData viewData = constants.viewData.Load();
-
     const ObjectDrawData drawData = constants.gpuScene.objectDrawDataBuffer.Load(dispatchThreadId);
     const GPUMesh mesh = constants.gpuScene.meshesBuffer.Load(drawData.meshId);
 
-    const float3 center = mul(viewData.view, float4(drawData.transform.GetWorldPosition(mesh.boundingSphere.center), 1.f)).xyz;
+    const float3 center = mul(constants.viewMatrix, float4(drawData.transform.GetWorldPosition(mesh.boundingSphere.center), 1.f)).xyz;
     const float radius = mesh.boundingSphere.radius * max(drawData.transform.scale.x, max(drawData.transform.scale.y, drawData.transform.scale.z));
 
     bool visible = true;
 
-    visible = visible && center.z * viewData.cullingFrustum.y - abs(center.x) * viewData.cullingFrustum.x > -radius;
-    visible = visible && center.z * viewData.cullingFrustum.w - abs(center.y) * viewData.cullingFrustum.z > -radius;
+    if (constants.cullingType == CullingType::Perspective)
+    {
+        visible = visible && center.z * constants.cullingFrustum.y - abs(center.x) * constants.cullingFrustum.x > -radius;
+        visible = visible && center.z * constants.cullingFrustum.w - abs(center.y) * constants.cullingFrustum.z > -radius;
+        visible = visible && center.z + radius > constants.nearPlane && center.z - radius < constants.farPlane;
+    }
+    else if (constants.cullingType == CullingType::Orthographic)
+    {
+        //float closestX = clamp(center.x, constants.cullingFrustum.x, constants.cullingFrustum.y);
+        //float closestY = clamp(center.y, constants.cullingFrustum.z, constants.cullingFrustum.w);
+        //
+        //float distanceX = center.x - closestX;
+        //float distanceY = center.y - closestY;
+        //
+        //float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+        //visible = visible && distanceSquared < (radius * radius);
+    } 
     
-    visible = visible && center.z + radius > viewData.nearPlane && center.z - radius < viewData.farPlane;
-
     if (visible)
     {
         uint taskGroups = DivideRoundUp(mesh.meshletCount, NUM_AS_THREADS);

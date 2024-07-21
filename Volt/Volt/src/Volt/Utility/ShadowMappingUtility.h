@@ -10,7 +10,15 @@ namespace Volt
 {
 	namespace Utility
 	{
-		inline glm::mat4 CalculateLightSpaceMatrix(Ref<Camera> sceneCamera, const float nearPlane, const float farPlane, const glm::vec3& lightDirection)
+		struct LightSpaceMatrix
+		{
+			glm::mat4 projection;
+			glm::mat4 view;
+
+			glm::vec4 projectionBounds;
+		};
+
+		inline LightSpaceMatrix CalculateLightSpaceMatrix(Ref<Camera> sceneCamera, const float nearPlane, const float farPlane, const glm::vec3& lightDirection)
 		{
 			Ref<Camera> frustumCamera = CreateRef<Camera>(sceneCamera->GetFieldOfView(), sceneCamera->GetAspectRatio(), nearPlane, farPlane, false);
 			frustumCamera->SetView(sceneCamera->GetView());
@@ -64,12 +72,12 @@ namespace Volt
 
 			const glm::mat4 lightProjection = glm::orthoLH(minX, maxX, minY, maxY, minZ, maxZ);
 
-			return lightProjection * view;
+			return { lightProjection, view, { minX, maxX, minY, maxY } };
 		}
 
-		inline const std::vector<glm::mat4> CalculateCascadeMatrices(Ref<Camera> sceneCamera, const glm::vec3& lightDirection, const std::vector<float>& cascades)
+		inline const std::vector<LightSpaceMatrix> CalculateCascadeMatrices(Ref<Camera> sceneCamera, const glm::vec3& lightDirection, const std::vector<float>& cascades)
 		{
-			std::vector<glm::mat4> result{};
+			std::vector<LightSpaceMatrix> result{};
 			for (size_t i = 0; i < cascades.size() + 1; i++)
 			{
 				if (i == 0)

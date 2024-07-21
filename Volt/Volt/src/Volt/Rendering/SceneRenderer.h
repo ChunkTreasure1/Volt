@@ -93,6 +93,7 @@ namespace Volt
 
 		void AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
+		void AddMainCullingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddObjectIDPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
@@ -141,6 +142,5 @@ namespace Volt
 
 		Ref<Scene> m_scene;
 		SceneEnvironment m_sceneEnvironment;
-		DirectionalLightData m_directionalLightData;
 	};
 }

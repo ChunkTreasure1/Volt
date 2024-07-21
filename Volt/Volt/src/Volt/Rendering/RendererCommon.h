@@ -54,6 +54,13 @@ namespace Volt
 		glm::mat4 viewProjections[CASCADE_COUNT];
 	};
 
+	struct DirectionalLightInfo
+	{
+		DirectionalLightData data;
+		glm::vec4 projectionBounds[DirectionalLightData::CASCADE_COUNT];
+		glm::mat4 views[DirectionalLightData::CASCADE_COUNT];
+	};
+
 	struct PointLightData
 	{
 		glm::vec3 position;

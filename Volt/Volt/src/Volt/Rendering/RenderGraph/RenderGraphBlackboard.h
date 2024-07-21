@@ -13,7 +13,7 @@ namespace Volt
 		template<typename T>
 		inline T& Add()
 		{
-			static_assert(sizeof(T) < 512 && "Blackboard data is not allowed to be greater than 512 bytes!");
+			static_assert(sizeof(T) < 1024 && "Blackboard data is not allowed to be greater than 1024 bytes!");
 
 			auto typeIndex = std::type_index{ typeid(T) };
 

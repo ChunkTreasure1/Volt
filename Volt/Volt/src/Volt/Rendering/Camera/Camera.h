@@ -54,6 +54,7 @@ namespace Volt
 
 		inline const Frustum& GetFrustum() const { return m_frustum; }
 		const std::vector<glm::vec4> GetFrustumCorners() const;
+		const glm::vec4 GetFrustumCullingInfo() const;
 		const AABB GetOrthographicFrustum() const;
 
 		glm::vec3 ScreenToWorldRay(const glm::vec2& someCoords, const glm::vec2& aSize);

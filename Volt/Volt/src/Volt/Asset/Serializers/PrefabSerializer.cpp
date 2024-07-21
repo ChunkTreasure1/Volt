@@ -49,7 +49,7 @@ namespace Volt
 				yamlStreamWriter.BeginMap();
 				yamlStreamWriter.SetKey("entity", ref.first);
 				yamlStreamWriter.SetKey("prefabHandle", ref.second.prefabAsset);
-				yamlStreamWriter.SetKey("orefabEntityReference", ref.second.prefabReferenceEntity);
+				yamlStreamWriter.SetKey("prefabEntityReference", ref.second.prefabReferenceEntity);
 				yamlStreamWriter.EndMap();
 			}
 		}

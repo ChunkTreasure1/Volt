@@ -1,6 +1,8 @@
 #include "vtpch.h"
 #include "Camera.h"
 
+#include "Volt/Math/Math.h"
+
 namespace Volt
 {
 	Camera::Camera(float fov, float aspect, float nearPlane, float farPlane, bool reverse)
@@ -97,6 +99,16 @@ namespace Volt
 		}
 
 		return frustumCorners;
+	}
+
+	const glm::vec4 Camera::GetFrustumCullingInfo() const
+	{
+		auto projTranspose = glm::transpose(m_projectionMatrix);
+
+		const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
+		const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
+
+		return { frustumX.x, frustumX.z, frustumY.y, frustumY.z };
 	}
 
 	const AABB Camera::GetOrthographicFrustum() const

@@ -16,11 +16,29 @@ namespace Volt
 	class CullingTechnique
 	{
 	public:
+		enum class Type : uint32_t
+		{
+			Perspective = 0,
+			Orthographic
+		};
+
+		struct Info
+		{
+			Type type = Type::Perspective;
+			glm::mat4 viewMatrix;
+			glm::vec4 cullingFrustum;
+			float nearPlane;
+			float farPlane;
+
+			uint32_t drawCommandCount;
+			uint32_t meshletCount;
+		};
+
 		CullingTechnique(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		DrawCullingData Execute(uint32_t drawCommandCount, uint32_t meshletCount);
+		DrawCullingData Execute(const Info& info);
 
 	private:
-		DrawCullingData AddDrawCallCullingPass(uint32_t drawCommandCount, uint32_t meshletCount);
+		DrawCullingData AddDrawCallCullingPass(const Info& info);
 		void AddTaskSubmitSetupPass(const DrawCullingData& data);
 
 		RenderGraph& m_renderGraph;

@@ -9,6 +9,8 @@
 #include "Volt/Rendering/RendererCommon.h"
 #include "Volt/Rendering/Camera/Camera.h"
 
+#include "Volt/Rendering/RenderingTechniques/CullingTechnique.h"
+
 #include <VoltRHI/Pipelines/RenderPipeline.h>
 
 namespace Volt
@@ -18,85 +20,105 @@ namespace Volt
 	{
 	}
 
-	DirectionalShadowData DirectionalShadowTechnique::Execute(Ref<Camera> camera, Ref<RenderScene> renderScene, const DirectionalLightData& light)
+	DirectionalShadowData DirectionalShadowTechnique::Execute(Ref<Camera> camera, Ref<RenderScene> renderScene)
 	{
 		constexpr float SIZE = 1000.f;
 
+		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
+		const auto& gpuSceneData = m_blackboard.Get<GPUSceneData>();
+		const auto& lightInfo = m_blackboard.Get<DirectionalLightInfo>();
+
 		Ref<Camera> shadowCamera = CreateRef<Camera>(-SIZE, SIZE, -SIZE, SIZE, 1.f, 100'000.f);
-		const glm::mat4 view = glm::lookAtLH(glm::vec3(0.f) - glm::vec3(light.direction) * 1000.f, glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
+		const glm::mat4 view = glm::lookAtLH(glm::vec3(0.f) - glm::vec3(lightInfo.data.direction) * 1000.f, glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
 
 		shadowCamera->SetView(view);
 
-		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
-		const auto& gpuSceneData = m_blackboard.Get<GPUSceneData>();
+		m_renderGraph.BeginMarker("Directional Light Shadow");
 
-		const auto& gpuMeshes = renderScene->GetGPUMeshes();
-		const auto& objectDrawData = renderScene->GetObjectDrawData();
-
-		DirectionalShadowData& dirShadowData = m_renderGraph.AddPass<DirectionalShadowData>("Directional Shadow",
-		[&](RenderGraph::Builder& builder, DirectionalShadowData& data)
+		DirectionalShadowData dirShadowData{};
 		{
-			data.renderSize = { 2048, 2048 };
+			dirShadowData.renderSize = { 2048, 2048 };
 
 			RenderGraphImageDesc imageDesc{};
 			imageDesc.format = RHI::PixelFormat::D32_SFLOAT;
-			imageDesc.width = data.renderSize.x;
-			imageDesc.height = data.renderSize.y;
+			imageDesc.width = dirShadowData.renderSize.x;
+			imageDesc.height = dirShadowData.renderSize.y;
 			imageDesc.usage = RHI::ImageUsage::Attachment;
 			imageDesc.layers = DirectionalLightData::CASCADE_COUNT;
 			imageDesc.isCubeMap = false;
-			imageDesc.name = "Directional Shadow";
+			imageDesc.name = "Directional Light Shadow";
 
-			data.shadowTexture = builder.CreateImage2D(imageDesc);
+			dirShadowData.shadowTexture = m_renderGraph.CreateImage2D(imageDesc);
+		}
 
-			GPUSceneData::SetupInputs(builder, gpuSceneData);
-
-			builder.ReadResource(uniformBuffers.viewDataBuffer);
-			builder.ReadResource(uniformBuffers.directionalLightBuffer);
-		},
-		[=](const DirectionalShadowData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		for (uint32_t i = 0; i < DirectionalLightData::CASCADE_COUNT; i++)
 		{
-			RenderingInfo info = context.CreateRenderingInfo(data.renderSize.x, data.renderSize.y, { data.shadowTexture });
-			info.renderingInfo.layerCount = DirectionalLightData::CASCADE_COUNT;
-			info.renderingInfo.depthAttachmentInfo.SetClearColor(1.f, 1.f, 1.f, 1.f);
+			CullingTechnique::Info cullingInfo{};
+			cullingInfo.type = CullingTechnique::Type::Orthographic;
+			cullingInfo.viewMatrix = lightInfo.views[i];
+			cullingInfo.cullingFrustum = lightInfo.projectionBounds[i];
 
-			RHI::RenderPipelineCreateInfo pipelineInfo{};
-			pipelineInfo.shader = ShaderMap::Get("DirectionalShadowMeshShader");
-			pipelineInfo.depthCompareOperator = RHI::CompareOperator::LessEqual;
-			pipelineInfo.cullMode = RHI::CullMode::Back;
+			cullingInfo.nearPlane = shadowCamera->GetNearPlane();
+			cullingInfo.farPlane = shadowCamera->GetFarPlane();
+			cullingInfo.drawCommandCount = renderScene->GetDrawCount();
+			cullingInfo.meshletCount = renderScene->GetMeshletCount();
 
-			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+			CullingTechnique cullTechnique{ m_renderGraph, m_blackboard };
+			DrawCullingData cullingData = cullTechnique.Execute(cullingInfo);
 
-			context.BeginRendering(info);
-			context.BindPipeline(pipeline);
-
-			GPUSceneData::SetupConstants(context, resources, gpuSceneData);
-
-			context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
-			context.SetConstant("directionalLight"_sh, resources.GetBuffer(uniformBuffers.directionalLightBuffer));
-
-			struct PushConstant
+			m_renderGraph.AddPass(std::format("Directional Light Shadow Cascade {}", i),
+			[&](RenderGraph::Builder& builder)
 			{
-				uint32_t drawIndex;
-				uint32_t viewIndex;
-			};
-
-			for (uint32_t i = 0; i < DirectionalLightData::CASCADE_COUNT; i++)
+				GPUSceneData::SetupInputs(builder, gpuSceneData);
+				
+				builder.WriteResource(dirShadowData.shadowTexture);
+				builder.ReadResource(uniformBuffers.directionalLightBuffer);
+				builder.ReadResource(cullingData.countCommandBuffer, RenderGraphResourceState::IndirectArgument);
+				builder.ReadResource(cullingData.taskCommandsBuffer);
+				builder.SetHasSideEffect();
+			},
+			[=](RenderContext& context, const RenderGraphPassResources& resources)
 			{
-				context.BeginMarker(std::format("Cascade: {}", i));
-				for (uint32_t m = 0; const auto & objData : objectDrawData)
+				RenderingInfo info = context.CreateRenderingInfo(dirShadowData.renderSize.x, dirShadowData.renderSize.y, { dirShadowData.shadowTexture });
+				info.renderingInfo.layerCount = DirectionalLightData::CASCADE_COUNT;
+				info.renderingInfo.depthAttachmentInfo.SetClearColor(1.f, 1.f, 1.f, 1.f);
+				if (i != 0)
 				{
-					PushConstant pushConstants{ m, i };
-
-					context.PushConstants(&pushConstants, sizeof(PushConstant));
-					context.DispatchMeshTasks(gpuMeshes[objData.meshId].meshletCount, 1, 1);
-					m++;
+					info.renderingInfo.depthAttachmentInfo.clearMode = RHI::ClearMode::Load;
 				}
-				context.EndMarker();
-			}
 
-			context.EndRendering();
-		});
+				RHI::RenderPipelineCreateInfo pipelineInfo{};
+				pipelineInfo.shader = ShaderMap::Get("DirectionalShadowMeshShader");
+				pipelineInfo.depthCompareOperator = RHI::CompareOperator::LessEqual;
+				pipelineInfo.cullMode = RHI::CullMode::Back;
+
+				auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+				context.BeginRendering(info);
+				context.BindPipeline(pipeline);
+
+				GPUSceneData::SetupConstants(context, resources, gpuSceneData);
+
+				context.SetConstant("directionalLight"_sh, resources.GetBuffer(uniformBuffers.directionalLightBuffer));
+				context.SetConstant("taskCommands"_sh, resources.GetBuffer(cullingData.taskCommandsBuffer));
+				context.SetConstant("viewMatrix"_sh, cullingInfo.viewMatrix);
+				context.SetConstant("cullingFrustum"_sh, cullingInfo.cullingFrustum);
+				context.SetConstant("renderSize"_sh, dirShadowData.renderSize);
+
+				struct PushConstant
+				{
+					uint32_t viewIndex;
+				};
+
+				PushConstant pushConstants{ i };
+				context.PushConstants(&pushConstants, sizeof(PushConstant));
+				context.DispatchMeshTasksIndirect(cullingData.countCommandBuffer, sizeof(uint32_t), 1, 0);
+
+				context.EndRendering();
+			});
+		}
+
+		m_renderGraph.EndMarker();
 
 		return dirShadowData;
 	}

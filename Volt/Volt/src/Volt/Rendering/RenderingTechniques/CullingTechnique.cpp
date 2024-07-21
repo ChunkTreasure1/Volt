@@ -16,16 +16,16 @@ namespace Volt
 	{
 	}
 
-	DrawCullingData CullingTechnique::Execute(uint32_t drawCommandCount, uint32_t meshletCount)
+	DrawCullingData CullingTechnique::Execute(const Info& info)
 	{
-		if (drawCommandCount == 0)
+		if (info.drawCommandCount == 0)
 		{
 			return {};
 		}
 
 		m_renderGraph.BeginMarker("Draw Call Culling", { 1.f, 0.f, 0.f, 1.f });
 
-		DrawCullingData data = AddDrawCallCullingPass(drawCommandCount, meshletCount);
+		DrawCullingData data = AddDrawCallCullingPass(info);
 		AddTaskSubmitSetupPass(data);
 
 		m_renderGraph.EndMarker();
@@ -33,9 +33,8 @@ namespace Volt
 		return data;
 	}
 
-	DrawCullingData CullingTechnique::AddDrawCallCullingPass(uint32_t drawCommandCount, uint32_t meshletCount)
+	DrawCullingData CullingTechnique::AddDrawCallCullingPass(const Info& info)
 	{
-		const auto& uniformBuffers = m_blackboard.Get<UniformBuffersData>();
 		const auto& gpuSceneData = m_blackboard.Get<GPUSceneData>();
 
 		const auto countCmdBufferDesc = RGUtils::CreateBufferDesc<uint32_t>(4, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, "Count And Command Buffer");
@@ -49,15 +48,15 @@ namespace Volt
 			data.countCommandBuffer = countCmdBufferHandle;
 
 			{
-				const auto desc = RGUtils::CreateBufferDescGPU<MeshTaskCommand>(Math::DivideRoundUp(meshletCount, 32u), "Mesh Task Commands");
+				const auto desc = RGUtils::CreateBufferDescGPU<MeshTaskCommand>(Math::DivideRoundUp(info.meshletCount, 32u), "Mesh Task Commands");
 				data.taskCommandsBuffer = builder.CreateBuffer(desc);
 			}
 
 			GPUSceneData::SetupInputs(builder, gpuSceneData);
 
-			builder.ReadResource(uniformBuffers.viewDataBuffer);
 			builder.WriteResource(countCmdBufferHandle);
 
+			builder.SetHasSideEffect();
 			builder.SetIsComputePass();
 		},
 		[=](const DrawCullingData& data, RenderContext& context, const RenderGraphPassResources& resources) 
@@ -67,14 +66,19 @@ namespace Volt
 			context.BindPipeline(pipeline);
 			context.SetConstant("countBuffer"_sh, resources.GetBuffer(data.countCommandBuffer));
 			context.SetConstant("taskCommands"_sh, resources.GetBuffer(data.taskCommandsBuffer));
-			context.SetConstant("viewData"_sh, resources.GetBuffer(uniformBuffers.viewDataBuffer));
-			context.SetConstant("drawCallCount"_sh, drawCommandCount);
+
+			context.SetConstant("viewMatrix"_sh, info.viewMatrix);
+			context.SetConstant("cullingFrustum"_sh, info.cullingFrustum);
+			context.SetConstant("nearPlane"_sh, info.nearPlane);
+			context.SetConstant("farPlane"_sh, info.farPlane);
+			context.SetConstant("drawCallCount"_sh, info.drawCommandCount);
+			context.SetConstant("cullingType"_sh, static_cast<uint32_t>(info.type));
 
 			GPUSceneData::SetupConstants(context, resources, gpuSceneData);
 		
 			constexpr uint32_t workGroupSize = 64;
 
-			context.Dispatch(Math::DivideRoundUp(drawCommandCount, workGroupSize), 1, 1);
+			context.Dispatch(Math::DivideRoundUp(info.drawCommandCount, workGroupSize), 1, 1);
 		});
 
 		return data;

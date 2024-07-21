@@ -146,9 +146,7 @@ namespace Volt
 
 		if (drawCount > 0)
 		{
-			CullingTechnique cullingTechnique{ renderGraph, rgBlackboard };
-			rgBlackboard.Add<DrawCullingData>() = cullingTechnique.Execute(drawCount, renderScene->GetMeshletCount());
-
+			AddMainCullingPass(renderGraph, rgBlackboard);
 			AddPreDepthPass(renderGraph, rgBlackboard);
 			AddObjectIDPass(renderGraph, rgBlackboard);
 
@@ -162,7 +160,7 @@ namespace Volt
 			rgBlackboard.Add<GTAOOutput>() = gtaoTechnique.Execute(renderGraph, rgBlackboard);
 
 			DirectionalShadowTechnique dirShadowTechnique{ renderGraph, rgBlackboard };
-			rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene(), m_directionalLightData);
+			rgBlackboard.Add<DirectionalShadowData>() = dirShadowTechnique.Execute(camera, m_scene->GetRenderScene());
 
 			AddVisibilityBufferPass(renderGraph, rgBlackboard);
 			AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
@@ -290,17 +288,7 @@ namespace Volt
 			}
 
 			viewData.depthUnpackConsts = { depthLinearizeMul, depthLinearizeAdd };
-
-			const auto& projection = camera->GetProjection();
-			const auto projTranspose = glm::transpose(projection);
-
-			const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
-			const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
-
-			viewData.cullingFrustum.x = frustumX.x;
-			viewData.cullingFrustum.y = frustumX.z;
-			viewData.cullingFrustum.z = frustumY.y;
-			viewData.cullingFrustum.w = frustumY.z;
+			viewData.cullingFrustum = camera->GetFrustumCullingInfo();
 
 			// Light Culling
 			viewData.tileCountX = Math::DivideRoundUp(m_width, LightCullingTechnique::TILE_SIZE);
@@ -330,6 +318,8 @@ namespace Volt
 			});
 
 			renderGraph.AddMappedBufferUpload(buffersData.viewDataBuffer, &viewData, sizeof(ViewData), "Upload view data");
+
+			blackboard.Add<ViewData>() = viewData;
 		}
 
 		// Directional light
@@ -337,7 +327,10 @@ namespace Volt
 			const auto desc = RGUtils::CreateBufferDesc<DirectionalLightData>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Directional Light Data");
 			buffersData.directionalLightBuffer = renderGraph.CreateBuffer(desc);
 
-			m_directionalLightData.intensity = 0.f;
+			DirectionalLightInfo& lightInfo = blackboard.Add<DirectionalLightInfo>();
+			DirectionalLightData& data = lightInfo.data;
+
+			data.intensity = 0.f;
 
 			m_scene->ForEachWithComponents<const DirectionalLightComponent, const IDComponent, const TransformComponent>([&](entt::entity id, const DirectionalLightComponent& dirLightComp, const IDComponent& idComp, const TransformComponent& comp)
 			{
@@ -349,10 +342,10 @@ namespace Volt
 				auto entity = m_scene->GetEntityFromUUID(idComp.id);
 				const glm::vec3 dir = glm::rotate(entity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
 
-				m_directionalLightData.color = dirLightComp.color;
-				m_directionalLightData.intensity = dirLightComp.intensity;
-				m_directionalLightData.direction = { dir, 0.f };
-				m_directionalLightData.castShadows = static_cast<uint32_t>(dirLightComp.castShadows);
+				data.color = dirLightComp.color;
+				data.intensity = dirLightComp.intensity;
+				data.direction = { dir, 0.f };
+				data.castShadows = static_cast<uint32_t>(dirLightComp.castShadows);
 
 				if (dirLightComp.castShadows)
 				{
@@ -361,7 +354,10 @@ namespace Volt
 
 					for (size_t i = 0; i < lightMatrices.size(); i++)
 					{
-						m_directionalLightData.viewProjections[i] = lightMatrices.at(i);
+						const auto& matrices = lightMatrices.at(i);
+						data.viewProjections[i] = matrices.projection * matrices.view;
+						lightInfo.projectionBounds[i] = matrices.projectionBounds;
+						lightInfo.views[i] = matrices.view;
 					}
 
 					for (size_t i = 0; i < cascades.size(); i++)
@@ -369,17 +365,17 @@ namespace Volt
 
 						if (i < cascades.size())
 						{
-							m_directionalLightData.cascadeDistances[i] = cascades.at(i);
+							data.cascadeDistances[i] = cascades.at(i);
 						}
 						else
 						{
-							m_directionalLightData.cascadeDistances[i] = camera->GetFarPlane();
+							data.cascadeDistances[i] = camera->GetFarPlane();
 						}
 					}
 				}
 			});
 
-			renderGraph.AddMappedBufferUpload(buffersData.directionalLightBuffer, &m_directionalLightData, sizeof(DirectionalLightData), "Upload directional light data");
+			renderGraph.AddMappedBufferUpload(buffersData.directionalLightBuffer, &data, sizeof(DirectionalLightData), "Upload directional light data");
 		}
 	}
 
@@ -492,10 +488,26 @@ namespace Volt
 		}
 	}
 
+	void SceneRenderer::AddMainCullingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		const auto& viewData = blackboard.Get<ViewData>();
+		const auto renderScene = m_scene->GetRenderScene();
+
+		CullingTechnique cullingTechnique{ renderGraph, blackboard };
+
+		CullingTechnique::Info info{};
+		info.viewMatrix = viewData.view;
+		info.cullingFrustum = viewData.cullingFrustum;
+		info.nearPlane = viewData.nearPlane;
+		info.farPlane = viewData.farPlane;
+		info.drawCommandCount = renderScene->GetDrawCount();
+		info.meshletCount = renderScene->GetMeshletCount();
+
+		blackboard.Add<DrawCullingData>() = cullingTechnique.Execute(info);
+	}
+
 	void SceneRenderer::AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		//const auto& gpuMeshes = m_scene->GetRenderScene()->GetGPUMeshes();
-		//const auto& objectDrawData = m_scene->GetRenderScene()->GetObjectDrawData();
 		const auto& drawCullingData = blackboard.Get<DrawCullingData>();
 
 		blackboard.Add<PreDepthData>() = renderGraph.AddPass<PreDepthData>("Pre Depth Pass",
@@ -532,14 +544,6 @@ namespace Volt
 			SetupMeshPassConstants(context, resources, blackboard);
 
 			context.DispatchMeshTasksIndirect(drawCullingData.countCommandBuffer, sizeof(uint32_t), 1, 0);
-
-			//for (uint32_t i = 0; const auto& objData : objectDrawData)
-			//{
-			//	context.PushConstants(&i, sizeof(uint32_t));
-			//	context.DispatchMeshTasks(Math::DivideRoundUp(gpuMeshes[objData.meshId].meshletCount, 32u), 1, 1);
-			//	i++;
-			//}
-
 			context.EndRendering();
 		});
 	}
@@ -552,11 +556,7 @@ namespace Volt
 		};
 
 		const auto preDepthHandle = blackboard.Get<PreDepthData>().depth;
-		//const auto& gpuMeshes = m_scene->GetRenderScene()->GetGPUMeshes();
-		//const auto& objectDrawData = m_scene->GetRenderScene()->GetObjectDrawData();
-
 		const auto& drawCullingData = blackboard.Get<DrawCullingData>();
-
 
 		Data& data = renderGraph.AddPass<Data>("Object ID Pass",
 		[&](RenderGraph::Builder& builder, Data& data)
@@ -585,14 +585,6 @@ namespace Volt
 			SetupMeshPassConstants(context, resources, blackboard);
 
 			context.DispatchMeshTasksIndirect(drawCullingData.countCommandBuffer, sizeof(uint32_t), 1, 0);
-
-			//for (uint32_t i = 0; const auto & objData : objectDrawData)
-			//{
-			//	context.PushConstants(&i, sizeof(uint32_t));
-			//	context.DispatchMeshTasks(Math::DivideRoundUp(gpuMeshes[objData.meshId].meshletCount, 32u), 1, 1);
-			//	i++;
-			//}
-
 			context.EndRendering();
 		});
 
@@ -602,11 +594,7 @@ namespace Volt
 	void SceneRenderer::AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		const auto preDepthHandle = blackboard.Get<PreDepthData>().depth;
-		//const auto& gpuMeshes = m_scene->GetRenderScene()->GetGPUMeshes();
-		//const auto& objectDrawData = m_scene->GetRenderScene()->GetObjectDrawData();
-
 		const auto& drawCullingData = blackboard.Get<DrawCullingData>();
-
 
 		blackboard.Add<VisibilityBufferData>() = renderGraph.AddPass<VisibilityBufferData>("Visibility Buffer",
 		[&](RenderGraph::Builder& builder, VisibilityBufferData& data)
@@ -636,14 +624,6 @@ namespace Volt
 			SetupMeshPassConstants(context, resources, blackboard);
 
 			context.DispatchMeshTasksIndirect(drawCullingData.countCommandBuffer, sizeof(uint32_t), 1, 0);
-
-			//for (uint32_t i = 0; const auto & objData : objectDrawData)
-			//{
-			//	context.PushConstants(&i, sizeof(uint32_t));
-			//	context.DispatchMeshTasks(Math::DivideRoundUp(gpuMeshes[objData.meshId].meshletCount, 32u), 1, 1);
-			//	i++;
-			//}
-
 			context.EndRendering();
 		});
 	}
