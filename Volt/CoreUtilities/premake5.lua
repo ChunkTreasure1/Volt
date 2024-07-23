@@ -109,7 +109,7 @@ project "CoreUtilities"
 			"VT_ENABLE_PROFILING"
 		}
 		runtime "Debug"
-		optimize "on"
+		optimize "off"
 		symbols "on"
 
 	filter "configurations:Release"

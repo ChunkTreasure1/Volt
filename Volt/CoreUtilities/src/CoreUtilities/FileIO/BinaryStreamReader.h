@@ -15,6 +15,7 @@ class VTCOREUTIL_API BinaryStreamReader
 {
 public:
 	BinaryStreamReader(const std::filesystem::path& filePath);
+	BinaryStreamReader(const std::filesystem::path& filePath, const size_t maxLoadSize);
 
 	bool IsStreamValid() const;
 

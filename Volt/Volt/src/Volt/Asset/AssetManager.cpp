@@ -274,7 +274,9 @@ namespace Volt
 
 	void AssetManager::DeserializeAssetMetadata(std::filesystem::path assetPath)
 	{
-		BinaryStreamReader streamReader{ assetPath };
+		constexpr size_t assetHeaderSize = sizeof(SerializedAssetMetadata) + sizeof(uint32_t) + sizeof(TypeHeader) * 6;
+
+		BinaryStreamReader streamReader{ assetPath, assetHeaderSize };
 		if (!streamReader.IsStreamValid())
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", assetPath);
