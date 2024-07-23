@@ -45,7 +45,7 @@ namespace Volt
 
 		}
 
-		std::vector<UUID64> transitions;
+		Vector<UUID64> transitions;
 		std::string name;
 
 		UUID64 id{};
@@ -76,7 +76,7 @@ namespace Volt
 		{
 		}
 
-		std::vector<UUID64> transitionFromStates;
+		Vector<UUID64> transitionFromStates;
 
 	};
 
@@ -109,8 +109,8 @@ namespace Volt
 
 		void OnEvent(Event& e);
 
-		inline const std::vector<Ref<StateMachineState>>& GetStates() const { return myStates; }
-		inline const std::vector<Ref<AnimationTransition>>& GetTransitions() const { return myTransitions; }
+		inline const Vector<Ref<StateMachineState>>& GetStates() const { return myStates; }
+		inline const Vector<Ref<AnimationTransition>>& GetTransitions() const { return myTransitions; }
 		inline const std::string& GetEditorState() const { return myState; }
 		inline const AssetHandle GetSkeletonHandle() const { return mySkeletonHandle; }
 
@@ -145,8 +145,8 @@ namespace Volt
 		float myCurrentBlendTotalTime = 0.f;
 		float myCurrentBlendingTime = 0.f;
 
-		std::vector<Ref<StateMachineState>> myStates;
-		std::vector<Ref<AnimationTransition>> myTransitions;
+		Vector<Ref<StateMachineState>> myStates;
+		Vector<Ref<AnimationTransition>> myTransitions;
 
 		AssetHandle mySkeletonHandle = 0;
 	};

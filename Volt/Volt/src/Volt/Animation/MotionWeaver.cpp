@@ -53,7 +53,7 @@ namespace Volt
 		}
 	}
 
-	std::vector<glm::mat4x4> Volt::MotionWeaver::Sample()
+	Vector<glm::mat4x4> Volt::MotionWeaver::Sample()
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -63,7 +63,7 @@ namespace Volt
 		}
 
 		const float percent = m_Time / m_Animations.front()->GetDuration();
-		std::vector<glm::mat4x4> result = m_Animations.front()->Sample(percent, m_Skeleton, true);
+		Vector<glm::mat4x4> result = m_Animations.front()->Sample(percent, m_Skeleton, true);
 
 		return result;
 	}

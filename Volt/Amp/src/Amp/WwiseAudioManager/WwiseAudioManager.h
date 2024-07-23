@@ -1,4 +1,7 @@
 #pragma once
+
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <unordered_map>
 
 namespace Amp
@@ -7,7 +10,7 @@ namespace Amp
 	{
 		const char* myObjName;
 		uint32_t myObjectID;
-		std::vector<uint32_t> myPlayingIDs;
+		Vector<uint32_t> myPlayingIDs;
 	};
 
 	class WwiseAudioManager
@@ -41,7 +44,7 @@ namespace Amp
 		static bool SetParameter(const char* aParameterName, float avalue, uint64_t AkGameObjectID, int32_t aOvertime);
 
 		//TOOL
-		static std::vector<std::string> GetAllEventNames(std::filesystem::path aFilePath);
+		static Vector<std::string> GetAllEventNames(std::filesystem::path aFilePath);
 
 		//LISTENERS
 		static bool RegisterListener(uint32_t aEntityID, const char* aEntityName, bool isDefault);

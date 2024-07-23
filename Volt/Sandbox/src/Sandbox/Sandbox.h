@@ -140,7 +140,7 @@ private:
 	///// File watcher /////
 	Ref<FileWatcher> m_fileWatcher;
 	std::mutex m_fileWatcherMutex;
-	std::vector<std::function<void()>> m_fileChangeQueue;
+	Vector<std::function<void()>> m_fileChangeQueue;
 	////////////////////////
 
 	///// Modals /////

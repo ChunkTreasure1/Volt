@@ -58,7 +58,7 @@ namespace Volt
 		uint32_t index;
 		AssetHandle animationHandle;
 
-		std::vector<SerializedAnimationEvent> events;
+		Vector<SerializedAnimationEvent> events;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const SerializedAnimation& data)
 		{
@@ -80,8 +80,8 @@ namespace Volt
 		AssetHandle skeletonHandle;
 		AssetHandle skinHandle;
 
-		std::vector<SerializedAnimation> animations;
-		std::vector<SerializedJointAttachment> jointAttachments;
+		Vector<SerializedAnimation> animations;
+		Vector<SerializedJointAttachment> jointAttachments;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const AnimatedCharacterSerializationData& data)
 		{
@@ -168,7 +168,7 @@ namespace Volt
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
 
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		AnimatedCharacterSerializationData serializationData{};
 		streamReader.Read(serializationData);

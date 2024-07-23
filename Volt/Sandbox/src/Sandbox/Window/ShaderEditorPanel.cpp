@@ -85,7 +85,7 @@ void ShaderEditorPanel::UpdateMainPanel()
 		return;
 	}
 
-	/*auto& textureDefs = const_cast<std::vector<Volt::ShaderTexture>&>(myCurrentShader->GetResources().shaderTextureDefinitions);
+	/*auto& textureDefs = const_cast<Vector<Volt::ShaderTexture>&>(myCurrentShader->GetResources().shaderTextureDefinitions);
 
 	if (ImGui::Button("Add Texture"))
 	{

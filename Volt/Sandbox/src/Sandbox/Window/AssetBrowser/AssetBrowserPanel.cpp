@@ -443,9 +443,9 @@ bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 	return false;
 }
 
-std::vector<AssetBrowser::DirectoryItem*> AssetBrowserPanel::FindParentDirectoriesOfDirectory(AssetBrowser::DirectoryItem* directory)
+Vector<AssetBrowser::DirectoryItem*> AssetBrowserPanel::FindParentDirectoriesOfDirectory(AssetBrowser::DirectoryItem* directory)
 {
-	std::vector<AssetBrowser::DirectoryItem*> directories;
+	Vector<AssetBrowser::DirectoryItem*> directories;
 	directories.emplace_back(directory);
 
 	for (auto dir = directory->parentDirectory; dir != nullptr; dir = dir->parentDirectory)
@@ -764,7 +764,7 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 	return reload;
 }
 
-void AssetBrowserPanel::RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>& directories, std::vector<Ref<AssetBrowser::AssetItem>>& assets)
+void AssetBrowserPanel::RenderView(Vector<Ref<AssetBrowser::DirectoryItem>>& directories, Vector<Ref<AssetBrowser::AssetItem>>& assets)
 {
 	bool reload = false;
 
@@ -1072,8 +1072,8 @@ void AssetBrowserPanel::Reload()
 
 void AssetBrowserPanel::Search(const std::string& inQuery)
 {
-	std::vector<std::string> queries;
-	std::vector<std::string> types;
+	Vector<std::string> queries;
+	Vector<std::string> types;
 
 	std::string searchQuery = inQuery;
 	searchQuery.push_back(' ');
@@ -1107,7 +1107,7 @@ void AssetBrowserPanel::Search(const std::string& inQuery)
 	}
 }
 
-void AssetBrowserPanel::FindFoldersAndFilesWithQuery(const std::vector<Ref<AssetBrowser::DirectoryItem>>& dirList, std::vector<Ref<AssetBrowser::DirectoryItem>>& directories, std::vector<Ref<AssetBrowser::AssetItem>>& assets, const std::string& query)
+void AssetBrowserPanel::FindFoldersAndFilesWithQuery(const Vector<Ref<AssetBrowser::DirectoryItem>>& dirList, Vector<Ref<AssetBrowser::DirectoryItem>>& directories, Vector<Ref<AssetBrowser::AssetItem>>& assets, const std::string& query)
 {
 	for (const auto& dir : dirList)
 	{
@@ -1142,7 +1142,7 @@ void AssetBrowserPanel::FindFoldersAndFilesWithQuery(const std::vector<Ref<Asset
 
 AssetBrowser::DirectoryItem* AssetBrowserPanel::FindDirectoryWithPath(const std::filesystem::path& path)
 {
-	std::vector<Ref<AssetBrowser::DirectoryItem>> dirList;
+	Vector<Ref<AssetBrowser::DirectoryItem>> dirList;
 	for (const auto& dir : myDirectories)
 	{
 		dirList.emplace_back(dir.second);
@@ -1151,7 +1151,7 @@ AssetBrowser::DirectoryItem* AssetBrowserPanel::FindDirectoryWithPath(const std:
 	return FindDirectoryWithPathRecursivly(dirList, path);
 }
 
-AssetBrowser::DirectoryItem* AssetBrowserPanel::FindDirectoryWithPathRecursivly(const std::vector<Ref<AssetBrowser::DirectoryItem>> dirList, const std::filesystem::path& path)
+AssetBrowser::DirectoryItem* AssetBrowserPanel::FindDirectoryWithPathRecursivly(const Vector<Ref<AssetBrowser::DirectoryItem>> dirList, const std::filesystem::path& path)
 {
 	for (const auto& dir : dirList)
 	{
@@ -1411,7 +1411,7 @@ void AssetBrowserPanel::CreateNewShaderModal()
 {
 	if (UI::BeginModal("New Shader##assetBrowser"))
 	{
-		const std::vector<std::string> shaderTypeOptions = { "PBR", "PBR Transparent", "Particle", "Post Processing", "Decal" };
+		const Vector<std::string> shaderTypeOptions = { "PBR", "PBR Transparent", "Particle", "Post Processing", "Decal" };
 
 		constexpr int32_t PBR_SHADER = 0;
 		constexpr int32_t PBR_TRANSPARENT_SHADER = 1;
@@ -1464,7 +1464,7 @@ void AssetBrowserPanel::CreateNewShaderModal()
 			}
 
 			const std::filesystem::path definitionDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + ".vtsdef");
-			std::vector<std::filesystem::path> shaderPaths;
+			Vector<std::filesystem::path> shaderPaths;
 
 			switch (myNewShaderData.shaderType)
 			{

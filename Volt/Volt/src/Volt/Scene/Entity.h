@@ -90,7 +90,7 @@ namespace Volt
 		Ref<PhysicsActor> GetPhysicsActor() const;
 
 		const Entity GetParent() const;
-		const std::vector<Entity> GetChildren() const;
+		const Vector<Entity> GetChildren() const;
 		const bool HasParent() const;
 
 		void SetVisible(bool state);

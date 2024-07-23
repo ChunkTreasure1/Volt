@@ -12,7 +12,7 @@ namespace GraphKey
 	public:
 		inline static void Update(float deltaTime)
 		{
-			std::vector<UUID64> timersToRemove{};
+			Vector<UUID64> timersToRemove{};
 
 			for (auto& [id, timer] : myTimers)
 			{

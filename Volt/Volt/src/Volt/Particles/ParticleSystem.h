@@ -19,7 +19,7 @@ namespace Volt
 	struct ParticleSystemInternalStorage
 	{
 		int numberOfAliveParticles = 0;
-		std::vector<Particle> particles;
+		Vector<Particle> particles;
 		AssetHandle preset;
 	};
 

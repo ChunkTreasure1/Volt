@@ -19,5 +19,5 @@ private:
 	Scope<efsw::FileWatcher> myFileWatcher;
 	Scope<FileListener> myFileListener;
 
-	std::vector<efsw::WatchID> myWatchIds;
+	Vector<efsw::WatchID> myWatchIds;
 };

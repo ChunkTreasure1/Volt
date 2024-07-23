@@ -48,7 +48,7 @@ void BlendSpaceEditorPanel::UpdateProperties()
 		Volt::AssetManager::Get().SaveAsset(myCurrentBlendSpace);
 	}
 
-	const std::vector<const char*> blendSpaceDimenstions =
+	const Vector<const char*> blendSpaceDimenstions =
 	{
 		"1D",
 		"2D"
@@ -90,7 +90,7 @@ void BlendSpaceEditorPanel::UpdateProperties()
 		ImGui::EndPopup();
 	}
 
-	auto& animations = const_cast<std::vector<std::pair<glm::vec2, Volt::AssetHandle>>&>(myCurrentBlendSpace->GetAnimations());
+	auto& animations = const_cast<Vector<std::pair<glm::vec2, Volt::AssetHandle>>&>(myCurrentBlendSpace->GetAnimations());
 
 	if (UI::BeginProperties("animationValues"))
 	{

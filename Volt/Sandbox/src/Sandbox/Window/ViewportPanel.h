@@ -76,9 +76,9 @@ private:
 	ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
 	SceneState& m_sceneState;
 
-	const std::vector<float> m_snapToGridValues = { 1.f, 10.f, 25.f, 50.f, 100.f, 200.f, 500.f, 1000.f };
-	const std::vector<float> m_snapRotationValues = { 10.f, 30.f, 45.f, 90.f };
-	const std::vector<float> m_snapScaleValues = { 0.01f, 0.1f, 0.25f, 0.5f, 1.f };
+	const Vector<float> m_snapToGridValues = { 1.f, 10.f, 25.f, 50.f, 100.f, 200.f, 500.f, 1000.f };
+	const Vector<float> m_snapRotationValues = { 10.f, 30.f, 45.f, 90.f };
+	const Vector<float> m_snapScaleValues = { 0.01f, 0.1f, 0.25f, 0.5f, 1.f };
 
 	glm::vec2 m_viewportMouseCoords;
 	bool m_midEvent;

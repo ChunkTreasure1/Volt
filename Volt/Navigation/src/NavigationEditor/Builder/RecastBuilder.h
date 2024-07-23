@@ -59,7 +59,7 @@ private:
 	bool m_filterWalkableLowHeightSpans = true;
 
 	// OffMesh
-	std::vector<Volt::AI::NavLinkConnection> m_navLinkConnections;
+	Vector<Volt::AI::NavLinkConnection> m_navLinkConnections;
 
 	// SoloMesh
 	unsigned char* m_triareas;

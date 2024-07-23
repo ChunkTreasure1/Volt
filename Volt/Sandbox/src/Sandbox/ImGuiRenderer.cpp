@@ -606,8 +606,8 @@ void Sandbox::DrawMenuBar()
 				ImGui::EndMenu();
 			}
 
-			std::map<std::string, std::vector<Ref<EditorWindow>>> categorizedEditors;
-			std::vector<Ref<EditorWindow>> uncategorizedEditors;
+			std::map<std::string, Vector<Ref<EditorWindow>>> categorizedEditors;
+			Vector<Ref<EditorWindow>> uncategorizedEditors;
 
 			for (const auto& window : EditorLibrary::GetPanels())
 			{
@@ -716,7 +716,7 @@ void Sandbox::DrawMenuBar()
 			{
 				//TODO:ANDREAS Hard coded, change later
 				std::filesystem::path defaultPath = Volt::ProjectManager::GetAudioBanksDirectory();
-				std::vector<std::string> eventNames = Amp::WwiseAudioManager::GetAllEventNames(defaultPath);
+				Vector<std::string> eventNames = Amp::WwiseAudioManager::GetAllEventNames(defaultPath);
 
 				Volt::EnumGenerator generator{ "WWiseEvents"};
 				for (auto& event : eventNames)

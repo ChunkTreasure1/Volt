@@ -19,5 +19,5 @@ public:
 private:
 	bool OnRenderEvent(Volt::AppRenderEvent& e);
 
-	std::vector<Scope<RenderingTestBase>> m_renderingTests;
+	Vector<Scope<RenderingTestBase>> m_renderingTests;
 };

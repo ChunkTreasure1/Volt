@@ -91,6 +91,6 @@ namespace Volt
 		uint32_t myLockFlags = 0;
 		physx::PxRigidActor* myRigidActor;
 
-		std::vector<Ref<ColliderShape>> myColliders;
+		Vector<Ref<ColliderShape>> myColliders;
 	};
 }

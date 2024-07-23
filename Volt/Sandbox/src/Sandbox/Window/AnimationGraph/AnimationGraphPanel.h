@@ -105,13 +105,13 @@ private:
 
 	void DrawLayeredBlendPerBoneProperties(Ref<GraphKey::Node> node);
 
-	const std::vector<UUID64> GetSelectedStates() const;
-	const std::vector<UUID64> GetSelectedTransitions() const;
+	const Vector<UUID64> GetSelectedStates() const;
+	const Vector<UUID64> GetSelectedTransitions() const;
 
 	inline const GraphDepthEntry& GetLastEntry() const { return myGraphDepth.back(); }
 
 	NewAnimationGraphData myNewAnimGraphData{};
-	std::vector<GraphDepthEntry> myGraphDepth;
+	Vector<GraphDepthEntry> myGraphDepth;
 	Ref<Volt::AnimationGraphAsset> myCurrentAsset;
 
 	bool myShouldReconstruct = false;

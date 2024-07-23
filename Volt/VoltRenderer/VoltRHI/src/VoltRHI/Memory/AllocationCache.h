@@ -5,6 +5,7 @@
 
 #include <CoreUtilities/Core.h>
 #include <CoreUtilities/Pointers/RefPtr.h>
+#include <CoreUtilities/Containers/Vector.h>
 
 namespace Volt::RHI
 {
@@ -16,8 +17,8 @@ namespace Volt::RHI
 	
 	struct AllocationsToRemove
 	{
-		std::vector<RefPtr<Allocation>> imageAllocations;
-		std::vector<RefPtr<Allocation>> bufferAllocations;
+		Vector<RefPtr<Allocation>> imageAllocations;
+		Vector<RefPtr<Allocation>> bufferAllocations;
 	};
 
 	class VTRHI_API AllocationCache
@@ -36,7 +37,7 @@ namespace Volt::RHI
 		std::mutex m_imageAllocationMutex;
 		std::mutex m_bufferAllocationMutex;
 
-		std::vector<AllocationContainer> m_imageAllocations;
-		std::vector<AllocationContainer> m_bufferAllocations;
+		Vector<AllocationContainer> m_imageAllocations;
+		Vector<AllocationContainer> m_bufferAllocations;
 	};
 }

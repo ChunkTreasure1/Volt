@@ -82,9 +82,9 @@ namespace Nexus
 		return m_aliasMap[in_id];
 	}
 
-	std::vector<TYPE::CLIENT_ID> ConnectionManager::GetIdList()
+	Vector<TYPE::CLIENT_ID> ConnectionManager::GetIdList()
 	{
-		std::vector<TYPE::CLIENT_ID> ret;
+		Vector<TYPE::CLIENT_ID> ret;
 		for (auto _pair : m_clientIDs)
 		{
 			ret.push_back(_pair.first);

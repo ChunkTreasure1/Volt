@@ -156,20 +156,20 @@ namespace Volt
 		RenderGraphResourceHandle TryGetRegisteredExternalResource(WeakPtr<RHI::RHIResource> resource);
 		void RegisterExternalResource(WeakPtr<RHI::RHIResource> resource, RenderGraphResourceHandle handle);
 
-		std::vector<Image2DExtractionInfo> m_image2DExtractions;
-		std::vector<BufferExtractionInfo> m_bufferExtractions;
+		Vector<Image2DExtractionInfo> m_image2DExtractions;
+		Vector<BufferExtractionInfo> m_bufferExtractions;
 
-		std::vector<std::vector<MarkerFunction>> m_standaloneMarkers; // Pass -> Markers
-		std::vector<std::vector<RenderGraphResourceHandle>> m_surrenderableResources; // Pass -> Resources
-		std::vector<Ref<RenderGraphPassNodeBase>> m_passNodes;
-		std::vector<Ref<RenderGraphResourceNodeBase>> m_resourceNodes;
+		Vector<Vector<MarkerFunction>> m_standaloneMarkers; // Pass -> Markers
+		Vector<Vector<RenderGraphResourceHandle>> m_surrenderableResources; // Pass -> Resources
+		Vector<Ref<RenderGraphPassNodeBase>> m_passNodes;
+		Vector<Ref<RenderGraphResourceNodeBase>> m_resourceNodes;
 
-		std::vector<std::vector<ResourceUsageInfo>> m_resourceBarriers; // Pass -> Transitions
-		std::vector<std::vector<ResourceUsageInfo>> m_standaloneBarriers;
+		Vector<Vector<ResourceUsageInfo>> m_resourceBarriers; // Pass -> Transitions
+		Vector<Vector<ResourceUsageInfo>> m_standaloneBarriers;
 		
 		vt::map<WeakPtr<RHI::RHIResource>, RenderGraphResourceHandle> m_registeredExternalResources;
 
-		std::vector<uint8_t*> m_temporaryAllocations;
+		Vector<uint8_t*> m_temporaryAllocations;
 
 
 		struct RegisteredImageView
@@ -178,8 +178,8 @@ namespace Volt
 			RHI::ImageViewType viewType;
 		};
 
-		std::vector<ResourceHandle> m_registeredBufferResources;
-		std::vector<RegisteredImageView> m_registeredImageResources;
+		Vector<ResourceHandle> m_registeredBufferResources;
+		Vector<RegisteredImageView> m_registeredImageResources;
 
 		uint32_t m_passIndex = 0;
 		RenderGraphResourceHandle m_resourceIndex = 0;

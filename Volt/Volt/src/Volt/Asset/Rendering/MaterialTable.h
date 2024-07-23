@@ -21,13 +21,13 @@ namespace Volt
 		inline const bool IsValid() const { return !m_materials.empty(); }
 		inline const uint32_t GetSize() const { return static_cast<uint32_t>(m_materials.size()); }
 
-		std::vector<AssetHandle>::iterator begin() { return m_materials.begin(); }
-		std::vector<AssetHandle>::iterator end() { return m_materials.end(); }
+		Vector<AssetHandle>::iterator begin() { return m_materials.begin(); }
+		Vector<AssetHandle>::iterator end() { return m_materials.end(); }
 
-		const std::vector<AssetHandle>::const_iterator begin() const { return m_materials.cbegin(); }
-		const std::vector<AssetHandle>::const_iterator end() const { return m_materials.cend(); }
+		const Vector<AssetHandle>::const_iterator begin() const { return m_materials.cbegin(); }
+		const Vector<AssetHandle>::const_iterator end() const { return m_materials.cend(); }
 		
 	private:
-		std::vector<AssetHandle> m_materials;
+		Vector<AssetHandle> m_materials;
 	};
 }

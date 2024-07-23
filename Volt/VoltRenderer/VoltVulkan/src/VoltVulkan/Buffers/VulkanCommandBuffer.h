@@ -62,7 +62,7 @@ namespace Volt::RHI
 
 		void PushConstants(const void* data, const uint32_t size, const uint32_t offset) override;
 
-		void ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers) override;
+		void ResourceBarrier(const Vector<ResourceBarrierInfo>& resourceBarriers) override;
 
 		void BeginMarker(std::string_view markerLabel, const std::array<float, 4>& markerColor) override;
 		void EndMarker();
@@ -113,7 +113,7 @@ namespace Volt::RHI
 			VkFence_T* fence = nullptr;
 		};
 
-		std::vector<CommandBufferData> m_commandBuffers;
+		Vector<CommandBufferData> m_commandBuffers;
 
 		uint32_t m_currentCommandBufferIndex = 0;
 		uint32_t m_lastCommandBufferIndex = 0;
@@ -128,10 +128,10 @@ namespace Volt::RHI
 		uint32_t m_nextAvailableTimestampQuery = 0; // The two first are command buffer total
 		uint32_t m_lastAvailableTimestampQuery = 0;
 
-		std::vector<VkQueryPool_T*> m_timestampQueryPools;
-		std::vector<uint32_t> m_timestampCounts;
-		std::vector<std::vector<uint64_t>> m_timestampQueryResults;
-		std::vector<std::vector<float>> m_executionTimes;
+		Vector<VkQueryPool_T*> m_timestampQueryPools;
+		Vector<uint32_t> m_timestampCounts;
+		Vector<Vector<uint64_t>> m_timestampQueryResults;
+		Vector<Vector<float>> m_executionTimes;
 
 		// Internal state
 		WeakPtr<RenderPipeline> m_currentRenderPipeline;

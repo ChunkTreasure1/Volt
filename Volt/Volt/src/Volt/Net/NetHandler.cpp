@@ -43,7 +43,7 @@ namespace Volt
 		if (!m_handleTick) return;
 		m_backend->HandleTick(deltaTime);
 
-		NetEvent e = NetEvent(eNetEvent::NIL, 0, std::vector<uint8_t>());
+		NetEvent e = NetEvent(eNetEvent::NIL, 0, Vector<uint8_t>());
 		while (m_eventContainer.GetIncomming(e))
 		{
 			NetContractContainer::Execute(e.GetId(), e.GetEvent(), e.GetData());

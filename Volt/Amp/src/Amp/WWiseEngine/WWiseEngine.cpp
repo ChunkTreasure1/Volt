@@ -146,9 +146,9 @@ namespace Amp
 		return true;
 	}
 
-	std::vector<std::string> WWiseEngine::GetBankNames()
+	Vector<std::string> WWiseEngine::GetBankNames()
 	{
-		std::vector<std::string> bankNames;
+		Vector<std::string> bankNames;
 
 		for (auto bank : myLoadedBanks)
 		{

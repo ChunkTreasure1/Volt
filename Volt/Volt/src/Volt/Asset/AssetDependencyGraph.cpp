@@ -77,7 +77,7 @@ namespace Volt
 		}
 	}
 
-	const std::vector<AssetHandle> AssetDependencyGraph::GetAssetDependencyChain(AssetHandle handle) const
+	const Vector<AssetHandle> AssetDependencyGraph::GetAssetDependencyChain(AssetHandle handle) const
 	{
 		if (!DoAssetExistInGraph(handle))
 		{
@@ -85,7 +85,7 @@ namespace Volt
 			return {};
 		}
 
-		std::vector<AssetHandle> result;
+		Vector<AssetHandle> result;
 		result.emplace_back(handle);
 
 		const auto& node = m_graph.GetNodeFromID(m_assetNodeIds.at(handle));
@@ -104,7 +104,7 @@ namespace Volt
 		return result;
 	}
 
-	const std::vector<AssetHandle> AssetDependencyGraph::GetAssetsDependentOn(AssetHandle handle) const
+	const Vector<AssetHandle> AssetDependencyGraph::GetAssetsDependentOn(AssetHandle handle) const
 	{
 		if (!DoAssetExistInGraph(handle))
 		{
@@ -112,7 +112,7 @@ namespace Volt
 			return {};
 		}
 
-		std::vector<AssetHandle> result;
+		Vector<AssetHandle> result;
 		result.emplace_back(handle);
 
 		const auto& node = m_graph.GetNodeFromID(m_assetNodeIds.at(handle));

@@ -11,7 +11,7 @@ namespace Volt::RHI
 	{
 		inline static bool IsDefaultType(std::string_view str)
 		{
-			static std::vector<std::string_view> baseTypes =
+			static Vector<std::string_view> baseTypes =
 			{
 				"bool",
 				"int",
@@ -67,11 +67,11 @@ namespace Volt::RHI
 			return newStr;
 		}
 
-		inline const std::vector<std::string> SplitStringsByCharacter(const std::string& src, const char character)
+		inline const Vector<std::string> SplitStringsByCharacter(const std::string& src, const char character)
 		{
 			std::istringstream iss(src);
 
-			std::vector<std::string> result;
+			Vector<std::string> result;
 			std::string token;
 
 			while (std::getline(iss, token, character))
@@ -361,8 +361,8 @@ namespace Volt::RHI
 
 		std::string structSubStr = processedSource.substr(openBracketLoc, closeBracketLoc - openBracketLoc);
 
-		std::vector<BufferElement> inputElements{};
-		std::vector<BufferElement> instanceInputElements{};
+		Vector<BufferElement> inputElements{};
+		Vector<BufferElement> instanceInputElements{};
 
 		size_t currentInputSemiColLoc = structSubStr.find_first_of(';');
 		while (currentInputSemiColLoc != std::string::npos)

@@ -68,7 +68,7 @@ namespace GraphKey
 		static const std::string& GetCategory(const std::string& name);
 
 		inline static const std::unordered_map<std::string, RegistryEntry>& GetRegistry() { return myRegistry; }
-		static const std::vector<RegistryEntry> GetNodesOfGraphType(GraphType type);
+		static const Vector<RegistryEntry> GetNodesOfGraphType(GraphType type);
 
 	private:
 		Registry() = delete;

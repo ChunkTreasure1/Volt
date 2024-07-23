@@ -32,7 +32,7 @@ namespace Volt
 
 		void SpawnThread();
 
-		std::vector<std::thread> m_workerThreads;
+		Vector<std::thread> m_workerThreads;
 
 		bool m_hasBeenInitialized = false;
 		bool m_shouldStop = false;

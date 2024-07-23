@@ -20,7 +20,7 @@ namespace Volt::RHI
 				throw std::runtime_error("[PhysicalDevice] Failed to find GPU with Vulkan support!");
 			}
 
-			std::vector<VkPhysicalDevice> devices{ deviceCount };
+			Vector<VkPhysicalDevice> devices{ deviceCount };
 			VT_VK_CHECK(vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data()));
 
 			VkPhysicalDevice nonDiscreteDevice = nullptr;
@@ -56,7 +56,7 @@ namespace Volt::RHI
 			uint32_t queueFamilyCount = 0;
 			vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
 
-			std::vector<VkQueueFamilyProperties> queueFamilyProperties{ queueFamilyCount };
+			Vector<VkQueueFamilyProperties> queueFamilyProperties{ queueFamilyCount };
 			vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
 
 			PhysicalDeviceQueueFamilyIndices result{};

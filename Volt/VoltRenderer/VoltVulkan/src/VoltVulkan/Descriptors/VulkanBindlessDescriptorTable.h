@@ -17,7 +17,7 @@ namespace Volt::RHI
 	class VulkanBindlessDescriptorTable : public BindlessDescriptorTable
 	{
 	public:
-		VulkanBindlessDescriptorTable();
+		VulkanBindlessDescriptorTable(uint64_t framesInFlight);
 		~VulkanBindlessDescriptorTable() override;
 
 		ResourceHandle RegisterBuffer(WeakPtr<StorageBuffer> storageBuffer) override;
@@ -61,12 +61,12 @@ namespace Volt::RHI
 		std::list<DescriptorImageInfo> m_activeDescriptorImageInfos;
 		std::list<DescriptorBufferInfo> m_activeDescriptorBufferInfos;
 
-		std::vector<DescriptorWrite> m_activeDescriptorWrites;
+		Vector<DescriptorWrite> m_activeDescriptorWrites;
 
 		VkDescriptorPool_T* m_descriptorPool = nullptr;
 		VkDescriptorSet_T* m_mainDescriptorSet = nullptr;
 
-		std::vector<VkDescriptorSet_T*> m_availiableConstantsSet;
+		Vector<VkDescriptorSet_T*> m_availiableConstantsSet;
 
 		uint32_t m_offsetIndex = 0;
 		uint32_t m_offsetStride = 0;

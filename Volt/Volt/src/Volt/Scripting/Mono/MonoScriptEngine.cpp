@@ -61,8 +61,8 @@ namespace Volt
 		std::unordered_map<EntityID, Ref<MonoScriptEntity>> scriptEntities;
 		std::unordered_map<std::string, MonoScriptFieldMap> scriptFieldsDefault;
 
-		std::vector<UUID64> scriptOnCreateQueue;
-		std::vector<UUID64> scriptDestroyQueue;
+		Vector<UUID64> scriptOnCreateQueue;
+		Vector<UUID64> scriptDestroyQueue;
 
 		bool enableDebugging = false;
 		std::mutex mutex;
@@ -813,7 +813,7 @@ namespace Volt
 	{
 		if (!s_monoData->scriptEntities.contains(id))
 		{
-			std::vector<uint64_t> scriptIds;
+			Vector<uint64_t> scriptIds;
 			Entity entity = s_monoData->sceneContext->GetEntityFromUUID(id);
 			if (!entity)
 			{
@@ -836,7 +836,7 @@ namespace Volt
 
 	Volt::MonoScriptFieldMap& MonoScriptEngine::GetDefaultScriptFieldMap(std::string fullClassName)
 	{
-		VT_CORE_ASSERT(EntityClassExists(fullClassName), "Class does not exist!");
+		VT_ASSERT_MSG(EntityClassExists(fullClassName), "Class does not exist!");
 
 		return s_monoData->scriptFieldsDefault[fullClassName];
 	}
@@ -848,7 +848,7 @@ namespace Volt
 			return;
 		}
 
-		std::vector<uint64_t> scriptIds;
+		Vector<uint64_t> scriptIds;
 		Ref<MonoScriptEntity> monoEntity = CreateRef<MonoScriptEntity>(entity, scriptIds, s_monoData->coreEntityClass);
 
 		ScriptParams Params;
@@ -958,7 +958,7 @@ namespace Volt
 		}
 
 		MonoDomain* rootDomain = mono_jit_init("VoltJITRuntime");
-		VT_CORE_ASSERT(rootDomain, "Root domain not initialized!");
+		VT_ASSERT_MSG(rootDomain, "Root domain not initialized!");
 
 		s_monoData->rootDomain = rootDomain;
 
@@ -1010,12 +1010,12 @@ namespace Volt
 		return handle;
 	}
 
-	const std::vector<std::string> MonoScriptEngine::GetReferencedAssembliesName(MonoImage* image)
+	const Vector<std::string> MonoScriptEngine::GetReferencedAssembliesName(MonoImage* image)
 	{
 		const MonoTableInfo* tableInfo = mono_image_get_table_info(image, MONO_TABLE_ASSEMBLYREF);
 		int32_t rows = mono_table_info_get_rows(tableInfo);
 
-		std::vector<std::string> names = { "System.Configuration", "Mono.Security", "System.Xml", "System.Net" };
+		Vector<std::string> names = { "System.Configuration", "Mono.Security", "System.Xml", "System.Net" };
 		for (int32_t i = 0; i < rows; i++)
 		{
 			uint32_t colos[MONO_ASSEMBLYREF_SIZE];
@@ -1028,7 +1028,7 @@ namespace Volt
 		return names;
 	}
 
-	void MonoScriptEngine::LoadReferencedAssemblies(const std::vector<std::string>& assemblyNames)
+	void MonoScriptEngine::LoadReferencedAssemblies(const Vector<std::string>& assemblyNames)
 	{
 		const std::filesystem::path baseAssemblyPath = ProjectManager::GetEngineDirectory() / "Scripts" / "mono" / "lib" / "mono" / "4.5";
 

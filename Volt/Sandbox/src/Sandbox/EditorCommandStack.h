@@ -22,8 +22,8 @@ public:
 	void Update(const int aMaxStackSize);
 
 private:
-	inline static std::vector<Ref<EditorCommand>> myUndoStack;
-	inline static std::vector<Ref<EditorCommand>> myRedoStack;
+	inline static Vector<Ref<EditorCommand>> myUndoStack;
+	inline static Vector<Ref<EditorCommand>> myRedoStack;
 };
 
 template<typename T>
@@ -143,7 +143,7 @@ private:
 
 struct MultiGizmoCommand : EditorCommand
 {
-	MultiGizmoCommand(Weak<Volt::Scene> scene, const std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>>& entities)
+	MultiGizmoCommand(Weak<Volt::Scene> scene, const Vector<std::pair<Volt::EntityID, Volt::TransformComponent>>& entities)
 		: myPreviousTransforms(entities), myScene(scene)
 	{
 	}
@@ -158,7 +158,7 @@ struct MultiGizmoCommand : EditorCommand
 		}
 
 		auto scenePtr = myScene;
-		std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>> currentTransforms;
+		Vector<std::pair<Volt::EntityID, Volt::TransformComponent>> currentTransforms;
 
 		for (const auto& [id, oldComp] : myPreviousTransforms)
 		{
@@ -183,7 +183,7 @@ struct MultiGizmoCommand : EditorCommand
 		}
 
 		auto scenePtr = myScene;
-		std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>> currentTransforms;
+		Vector<std::pair<Volt::EntityID, Volt::TransformComponent>> currentTransforms;
 
 		for (const auto& [id, oldComp] : myPreviousTransforms)
 		{
@@ -201,7 +201,7 @@ struct MultiGizmoCommand : EditorCommand
 	}
 
 private:
-	std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>> myPreviousTransforms;
+	Vector<std::pair<Volt::EntityID, Volt::TransformComponent>> myPreviousTransforms;
 	Weak<Volt::Scene> myScene;
 };
 
@@ -213,7 +213,7 @@ enum class ObjectStateAction
 
 struct ObjectStateCommand : EditorCommand
 {
-	ObjectStateCommand(std::vector<Volt::Entity> anEntityList, ObjectStateAction anAction) :
+	ObjectStateCommand(Vector<Volt::Entity> anEntityList, ObjectStateAction anAction) :
 		myEntities(anEntityList), myAction(anAction)
 	{
 		if (anAction == ObjectStateAction::Delete)
@@ -225,7 +225,7 @@ struct ObjectStateCommand : EditorCommand
 	ObjectStateCommand(Volt::Entity anEntity, ObjectStateAction anAction) :
 		myAction(anAction)
 	{
-		std::vector<Volt::Entity> list;
+		Vector<Volt::Entity> list;
 		list.push_back(anEntity);
 		myEntities = list;
 	}
@@ -296,7 +296,7 @@ private:
 	}
 
 	//Wire::Registry myRegistry;
-	std::vector<Volt::Entity> myEntities;
+	Vector<Volt::Entity> myEntities;
 	ObjectStateAction myAction;
 };
 
@@ -314,7 +314,7 @@ struct ParentChildData
 
 struct ParentingCommand : EditorCommand
 {
-	ParentingCommand(std::vector<Ref<ParentChildData>> aData, ParentingAction anAction) :
+	ParentingCommand(Vector<Ref<ParentChildData>> aData, ParentingAction anAction) :
 		myData(aData), myAction(anAction)
 	{}
 
@@ -370,6 +370,6 @@ struct ParentingCommand : EditorCommand
 	}
 
 private:
-	std::vector<Ref<ParentChildData>> myData;
+	Vector<Ref<ParentChildData>> myData;
 	ParentingAction myAction;
 };

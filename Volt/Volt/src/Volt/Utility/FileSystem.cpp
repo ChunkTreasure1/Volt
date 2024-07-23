@@ -31,9 +31,9 @@ std::filesystem::path FileSystem::PickFolderDialogue()
 	return "";
 }
 
-std::filesystem::path FileSystem::SaveFileDialogue(const std::vector<FileFilter>& filters)
+std::filesystem::path FileSystem::SaveFileDialogue(const Vector<FileFilter>& filters)
 {
-	std::vector<nfdfilteritem_t> filterItems{};
+	Vector<nfdfilteritem_t> filterItems{};
 	for (const auto& filter : filters)
 	{
 		filterItems.emplace_back(filter.name.c_str(), filter.extensions.c_str());
@@ -137,9 +137,9 @@ bool FileSystem::OpenFileExternally(const std::filesystem::path& aPath)
 	return true;
 }
 
-std::filesystem::path FileSystem::OpenFileDialogue(const std::vector<FileFilter>& filters)
+std::filesystem::path FileSystem::OpenFileDialogue(const Vector<FileFilter>& filters)
 {
-	std::vector<nfdfilteritem_t> filterItems{};
+	Vector<nfdfilteritem_t> filterItems{};
 	for (const auto& filter : filters)
 	{
 		filterItems.emplace_back(filter.name.c_str(), filter.extensions.c_str());

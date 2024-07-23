@@ -238,7 +238,7 @@ namespace Volt::RHI
 
 	void VulkanDescriptorBufferTable::Bind(CommandBuffer& commandBuffer)
 	{
-		std::vector<VkDescriptorBufferBindingInfoEXT> descriptorBindingBufferInfos{};
+		Vector<VkDescriptorBufferBindingInfoEXT> descriptorBindingBufferInfos{};
 
 		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer.AsRef<VulkanCommandBuffer>();
 		const VkPipelineBindPoint bindPoint = vulkanCommandBuffer.m_currentRenderPipeline ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;

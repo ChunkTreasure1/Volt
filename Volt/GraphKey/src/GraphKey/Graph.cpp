@@ -283,9 +283,9 @@ namespace GraphKey
 		return false;
 	}
 
-	const std::vector<Ref<Node>> Graph::GetNodesOfType(const std::string& type)
+	const Vector<Ref<Node>> Graph::GetNodesOfType(const std::string& type)
 	{
-		std::vector<Ref<Node>> result{};
+		Vector<Ref<Node>> result{};
 
 		for (const auto& n : myNodes)
 		{
@@ -454,8 +454,8 @@ namespace GraphKey
 
 			YAML::Node nodeSpecific;
 
-			std::vector<Attribute> inputs;
-			std::vector<Attribute> outputs;
+			Vector<Attribute> inputs;
+			Vector<Attribute> outputs;
 		};
 
 		struct LinkData
@@ -479,10 +479,10 @@ namespace GraphKey
 			UUID64 id;
 		};
 
-		std::vector<NodeData> nodes;
-		std::vector<LinkData> links;
-		std::vector<Parameter> parameters;
-		std::vector<Event> events;
+		Vector<NodeData> nodes;
+		Vector<LinkData> links;
+		Vector<Parameter> parameters;
+		Vector<Event> events;
 
 		streamReader.ForEach("Nodes", [&]()
 		{

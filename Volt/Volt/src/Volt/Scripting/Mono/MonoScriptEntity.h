@@ -27,7 +27,7 @@ namespace Volt
 	class MonoScriptEntity
 	{
 	public:
-		MonoScriptEntity(const EntityID& id, const std::vector<uint64_t>& scripts, Ref<MonoScriptClass> klass);
+		MonoScriptEntity(const EntityID& id, const Vector<uint64_t>& scripts, Ref<MonoScriptClass> klass);
 		~MonoScriptEntity();
 
 		void UpdateTimers();

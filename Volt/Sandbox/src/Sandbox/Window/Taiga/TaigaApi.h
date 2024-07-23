@@ -42,8 +42,8 @@ public:
 	TaigaAPI() = delete;
 
 	static bool Auth(const std::string& username, const std::string& password, TaigaGeneralInfo& info);
-	static bool GetProjects(const TaigaGeneralInfo& info, std::vector<ItemEntry>& outProjects);
-	static bool GetUserstories(const TaigaGeneralInfo& info, std::vector<ItemEntry>& outUserstories);
-	static bool GetTasks(const TaigaGeneralInfo& info, std::vector<ItemEntry>& outTasks);
-	static bool GetIssues(const TaigaGeneralInfo& info, std::vector<ItemEntry>& outIssues);
+	static bool GetProjects(const TaigaGeneralInfo& info, Vector<ItemEntry>& outProjects);
+	static bool GetUserstories(const TaigaGeneralInfo& info, Vector<ItemEntry>& outUserstories);
+	static bool GetTasks(const TaigaGeneralInfo& info, Vector<ItemEntry>& outTasks);
+	static bool GetIssues(const TaigaGeneralInfo& info, Vector<ItemEntry>& outIssues);
 };

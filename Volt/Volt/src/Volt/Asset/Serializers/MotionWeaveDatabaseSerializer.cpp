@@ -15,7 +15,7 @@ namespace Volt
 
 	struct MotionWeaveDatabaseSerializationData
 	{
-		std::vector<SerializedAnimation> animations;
+		Vector<SerializedAnimation> animations;
 		AssetHandle skeleton = Asset::Null();
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const MotionWeaveDatabaseSerializationData& data)
@@ -73,7 +73,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		MotionWeaveDatabaseSerializationData serializationData{};
 		streamReader.Read(serializationData);

@@ -40,7 +40,7 @@ namespace Volt::RHI
 		virtual void SetConstantsBuffer(WeakPtr<UniformBuffer> constantsBuffer) = 0;
 		virtual void Bind(CommandBuffer& commandBuffer) = 0;
 
-		static RefPtr<BindlessDescriptorTable> Create();
+		static RefPtr<BindlessDescriptorTable> Create(const uint64_t framesInFlight);
 
 	protected:
 		BindlessDescriptorTable() = default;

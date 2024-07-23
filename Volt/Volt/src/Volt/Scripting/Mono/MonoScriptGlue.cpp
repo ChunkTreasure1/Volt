@@ -509,7 +509,7 @@ namespace Volt
 		const auto compName = MonoScriptUtils::GetStringFromMonoString(componentType);
 		const VoltGUID guid = VoltGUID::FromStringInternal(compName.c_str() + 1);
 
-		std::vector<EntityID> entities;
+		Vector<EntityID> entities;
 
 		scene->GetRegistry().each([&](const entt::entity id)
 		{
@@ -526,7 +526,7 @@ namespace Volt
 		const auto scriptName = MonoScriptUtils::GetStringFromMonoString(scriptType);
 		auto entities = scene->GetAllEntitiesWith<MonoScriptComponent>();
 
-		std::vector<uint32_t> removeEntities;
+		Vector<uint32_t> removeEntities;
 
 		auto wantedMonoScriptClass = MonoScriptEngine::GetScriptClass(scriptName);
 		if (!wantedMonoScriptClass)
@@ -2282,7 +2282,7 @@ namespace Volt
 
 	inline static MonoArray* Input_GetAllKeyPressed()
 	{
-		std::vector<int> tempKeyVec = Input::GetAllKeyPressed();
+		Vector<int> tempKeyVec = Input::GetAllKeyPressed();
 
 		MonoArray* array = mono_array_new(MonoScriptEngine::GetAppDomain(), MonoScriptEngine::GetEntityClass()->GetClass(), tempKeyVec.size());
 
@@ -2953,7 +2953,7 @@ namespace Volt
 
 	inline static MonoArray* Physics_OverlapBox(glm::vec3* origin, glm::vec3* halfSize, uint32_t layerMask)
 	{
-		std::vector<Entity> tempHitList;
+		Vector<Entity> tempHitList;
 		bool hasHit = Physics::GetScene()->OverlapBox(*origin, *halfSize, tempHitList, layerMask);
 
 		if (!hasHit) return nullptr;
@@ -2978,7 +2978,7 @@ namespace Volt
 
 	inline static MonoArray* Physics_OverlapSphere(glm::vec3* origin, float radius, uint32_t layerMask)
 	{
-		std::vector<Entity> tempHitList;
+		Vector<Entity> tempHitList;
 		bool hasHit = Physics::GetScene()->OverlapSphere(*origin, radius, tempHitList, layerMask);
 
 		if (!hasHit) return nullptr;
@@ -4837,7 +4837,7 @@ namespace Volt
 
 	inline static void NetEvent_TriggerEventFromNetId(Nexus::TYPE::REP_ID id, eNetEvent netEvent, MonoArray* data)
 	{
-		std::vector<uint8_t> byteVec;
+		Vector<uint8_t> byteVec;
 		byteVec.resize(mono_array_length(data));
 
 		for (int i = 0; i < byteVec.size(); i++)

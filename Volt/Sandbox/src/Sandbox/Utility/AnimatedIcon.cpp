@@ -24,8 +24,8 @@ AnimatedIcon::AnimatedIcon(const std::filesystem::path& firstFrame, uint32_t fra
 		Volt::TextureImporter::ImportTexture(path, *myTextures.back());
 	}
 
-	VT_CORE_ASSERT(!myTextures.empty(), "No frames found!");
-	VT_CORE_ASSERT(myTextures.size() == frameCount, "Not all frames loaded!");
+	VT_ASSERT_MSG(!myTextures.empty(), "No frames found!");
+	VT_ASSERT_MSG(myTextures.size() == frameCount, "Not all frames loaded!");
 	myCurrentTexture = myTextures[0];
 }
 

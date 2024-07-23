@@ -81,7 +81,7 @@ namespace Volt::RHI
 		uint32_t applicationNameLength = 0;
 		AFTERMATH_CHECK_ERROR(GFSDK_Aftermath_GpuCrashDump_GetDescriptionSize(decoder, GFSDK_Aftermath_GpuCrashDumpDescriptionKey_ApplicationName, &applicationNameLength));
 	
-		//std::vector<char> applicationName(applicationNameLength, '\0');
+		//Vector<char> applicationName(applicationNameLength, '\0');
 
 		//AFTERMATH_CHECK_ERROR(GFSDK_Aftermath_GpuCrashDump_GetDescription(decoder, GFSDK_Aftermath_GpuCrashDumpDescriptionKey_ApplicationName, 
 		//	uint32_t(applicationName.size()), applicationName.data()));

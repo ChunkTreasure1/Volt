@@ -230,7 +230,7 @@ namespace Volt
 			return;
 		}
 
-		std::vector<std::filesystem::path> layerPaths;
+		Vector<std::filesystem::path> layerPaths;
 
 		for (const auto& it : std::filesystem::directory_iterator(layersFolderPath))
 		{
@@ -240,7 +240,7 @@ namespace Volt
 			}
 		}
 
-		std::vector<SceneLayer> sceneLayers;
+		Vector<SceneLayer> sceneLayers;
 
 		for (const auto& layerPath : layerPaths)
 		{
@@ -376,7 +376,7 @@ namespace Volt
 			return;
 		}
 
-		std::vector<std::filesystem::path> entityPaths;
+		Vector<std::filesystem::path> entityPaths;
 
 		for (const auto& it : std::filesystem::directory_iterator(layersFolderPath))
 		{
@@ -393,7 +393,7 @@ namespace Volt
 
 		const uint32_t iterationCount = static_cast<uint32_t>(entityPaths.size());
 
-		std::vector<Ref<Scene>> dummyScenes{};
+		Vector<Ref<Scene>> dummyScenes{};
 		dummyScenes.resize(iterationCount);
 
 		auto futures = Algo::ForEachParallelLockable([&dummyScenes, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
@@ -462,7 +462,7 @@ namespace Volt
 			return;
 		}
 
-		std::vector<std::filesystem::path> entityPaths;
+		Vector<std::filesystem::path> entityPaths;
 
 		for (const auto& it : std::filesystem::directory_iterator(layersFolderPath))
 		{
@@ -479,7 +479,7 @@ namespace Volt
 
 		const uint32_t iterationCount = static_cast<uint32_t>(entityPaths.size());
 
-		std::vector<std::unordered_map<WorldCellID, std::vector<EntityID>>> threadCellEntities{};
+		Vector<std::unordered_map<WorldCellID, Vector<EntityID>>> threadCellEntities{};
 		threadCellEntities.resize(Algo::GetThreadCountFromIterationCount(iterationCount));
 
 		auto futures = Algo::ForEachParallelLockable([&threadCellEntities, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
@@ -855,7 +855,7 @@ namespace Volt
 					VT_CORE_ERROR("Could not open entVp file!");
 				}
 
-				std::vector<uint8_t> totalData;
+				Vector<uint8_t> totalData;
 				const size_t srcSize = vpFile.seekg(0, std::ios::end).tellg();
 				totalData.resize(srcSize);
 				vpFile.seekg(0, std::ios::beg);
@@ -1078,7 +1078,7 @@ namespace Volt
 			return;
 		}
 
-		std::vector<std::filesystem::path> entityPaths;
+		Vector<std::filesystem::path> entityPaths;
 
 		for (const auto& it : std::filesystem::directory_iterator(layersFolderPath))
 		{
@@ -1109,7 +1109,7 @@ namespace Volt
 
 		const uint32_t iterationCount = static_cast<uint32_t>(entityPaths.size());
 
-		std::vector<Ref<Scene>> dummyScenes{};
+		Vector<Ref<Scene>> dummyScenes{};
 		dummyScenes.resize(iterationCount);
 
 		auto futures = Algo::ForEachParallelLockable([&dummyScenes, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)

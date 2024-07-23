@@ -38,13 +38,13 @@ namespace GraphKey
 
 	const std::string& Registry::GetCategory(const std::string& name)
 	{
-		VT_CORE_ASSERT(myCategories.contains(name), "Node not registered");
+		VT_ASSERT_MSG(myCategories.contains(name), "Node not registered");
 		return myCategories.at(name);
 	}
 
-	const std::vector<RegistryEntry> Registry::GetNodesOfGraphType(GraphType type)
+	const Vector<RegistryEntry> Registry::GetNodesOfGraphType(GraphType type)
 	{
-		std::vector<RegistryEntry> result;
+		Vector<RegistryEntry> result;
 
 		for (const auto& [name, data] : myRegistry)
 		{

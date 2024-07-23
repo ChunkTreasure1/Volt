@@ -68,11 +68,11 @@ namespace Volt
 		inline const BindlessResource<RHI::StorageBuffer>& GetGPUMaterialsBuffer() const { return *m_gpuMaterialsBuffer; }
 		inline const BindlessResource<RHI::StorageBuffer>& GetObjectDrawDataBuffer() const { return *m_objectDrawDataBuffer; }
 
-		std::vector<RenderObject>::iterator begin() { return m_renderObjects.begin(); }
-		std::vector<RenderObject>::iterator end() { return m_renderObjects.end(); }
+		Vector<RenderObject>::iterator begin() { return m_renderObjects.begin(); }
+		Vector<RenderObject>::iterator end() { return m_renderObjects.end(); }
 
-		const std::vector<RenderObject>::const_iterator cbegin() const { return m_renderObjects.cbegin(); }
-		const std::vector<RenderObject>::const_iterator cend() const { return m_renderObjects.cend(); }
+		const Vector<RenderObject>::const_iterator cbegin() const { return m_renderObjects.cbegin(); }
+		const Vector<RenderObject>::const_iterator cend() const { return m_renderObjects.cend(); }
 
 		inline const RenderObject& GetRenderObjectAt(const size_t index) const { return m_renderObjects.at(index); }
 		const RenderObject& GetRenderObjectFromID(UUID64 id) const;
@@ -80,24 +80,24 @@ namespace Volt
 		inline std::span<const GPUMesh> GetGPUMeshes() const { return m_gpuMeshes; }
 		inline std::span<const ObjectDrawData> GetObjectDrawData() const { return m_objectDrawData; }
 	private:
-		void UploadGPUMeshes(std::vector<GPUMesh>& gpuMeshes);
-		void UploadObjectDrawData(std::vector<ObjectDrawData>& objectDrawData);
+		void UploadGPUMeshes(Vector<GPUMesh>& gpuMeshes);
+		void UploadObjectDrawData(Vector<ObjectDrawData>& objectDrawData);
 
 		void UploadGPUMaterials();
 		void BuildGPUMaterial(Weak<Material> material, GPUMaterial& gpuMaterial);
 
-		void BuildGPUMeshes(std::vector<GPUMesh>& gpuMeshes);
+		void BuildGPUMeshes(Vector<GPUMesh>& gpuMeshes);
 
-		void BuildObjectDrawData(std::vector<ObjectDrawData>& objectDrawData);
+		void BuildObjectDrawData(Vector<ObjectDrawData>& objectDrawData);
 		void BuildSinlgeObjectDrawData(ObjectDrawData& objectDrawData, const RenderObject& renderObject);
 
-		std::vector<UUID64> m_animatedRenderObjects;
-		std::vector<RenderObject> m_renderObjects;
+		Vector<UUID64> m_animatedRenderObjects;
+		Vector<RenderObject> m_renderObjects;
 
-		std::vector<GPUMesh> m_gpuMeshes;
-		std::vector<ObjectDrawData> m_objectDrawData;
+		Vector<GPUMesh> m_gpuMeshes;
+		Vector<ObjectDrawData> m_objectDrawData;
 
-		std::vector<size_t> m_invalidRenderObjectIndices;
+		Vector<size_t> m_invalidRenderObjectIndices;
 
 		struct InvalidMaterial
 		{
@@ -112,18 +112,18 @@ namespace Volt
 			size_t index;
 		};
 
-		std::vector<InvalidMaterial> m_invalidMaterials;
-		std::vector<InvalidMesh> m_invalidMeshes;
+		Vector<InvalidMaterial> m_invalidMaterials;
+		Vector<InvalidMesh> m_invalidMeshes;
 
 		std::unordered_map<UUID64, uint32_t> m_objectIndexFromRenderObjectID;
 		std::unordered_map<AssetHandle, size_t> m_materialIndexFromAssetHandle;
 		std::unordered_map<size_t, size_t> m_meshIndexFromMeshAssetHash;
 
-		std::vector<Weak<Mesh>> m_individualMeshes;
-		std::vector<Weak<Material>> m_individualMaterials;
+		Vector<Weak<Mesh>> m_individualMeshes;
+		Vector<Weak<Material>> m_individualMaterials;
 		std::unordered_map<size_t, uint32_t> m_meshSubMeshToGPUMeshIndex;
 
-		std::vector<glm::mat4> m_animationBufferStorage;
+		Vector<glm::mat4> m_animationBufferStorage;
 
 		BindlessResourceScope<RHI::StorageBuffer> m_gpuMeshesBuffer;
 		BindlessResourceScope<RHI::StorageBuffer> m_gpuMaterialsBuffer;

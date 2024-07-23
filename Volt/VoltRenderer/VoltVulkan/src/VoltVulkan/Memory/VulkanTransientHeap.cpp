@@ -278,7 +278,7 @@ namespace Volt::RHI
 		uint64_t finalOffset = allocBlock.offset;
 		uint64_t finalSize = allocBlock.size;
 
-		std::vector<size_t> blocksToMerge;
+		Vector<size_t> blocksToMerge;
 
 		for (size_t index = 0; const auto & block : pageAllocation.availableBlocks)
 		{

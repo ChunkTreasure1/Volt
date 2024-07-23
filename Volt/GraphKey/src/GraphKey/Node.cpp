@@ -22,7 +22,7 @@ namespace GraphKey
 
 	const bool Node::InputHasData(uint32_t index)
 	{
-		VT_CORE_ASSERT(index < inputs.size(), "Index out of bounds!");
+		VT_ASSERT_MSG(index < inputs.size(), "Index out of bounds!");
 		return inputs.at(index).data.has_value();
 	}
 
@@ -98,7 +98,7 @@ namespace GraphKey
 			return (uint32_t)std::distance(outputs.begin(), itOutputs);
 		}
 
-		VT_CORE_ASSERT(false, "");
+		VT_ASSERT(false);
 		return 0;
 	}
 }

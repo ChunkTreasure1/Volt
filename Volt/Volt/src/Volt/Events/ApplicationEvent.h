@@ -222,7 +222,7 @@ namespace Volt
 			}
 		}
 
-		inline const std::vector <std::filesystem::path>& GetPaths() const { return m_paths; }
+		inline const Vector <std::filesystem::path>& GetPaths() const { return m_paths; }
 
 		std::string ToString() const override
 		{
@@ -235,7 +235,7 @@ namespace Volt
 		EVENT_CLASS_CATEGORY(EventCategoryApplication);
 
 	private:
-		std::vector<std::filesystem::path> m_paths;
+		Vector<std::filesystem::path> m_paths;
 	};
 
 	class OnScenePlayEvent : public Event

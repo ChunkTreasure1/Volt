@@ -34,7 +34,7 @@ namespace Volt
 			{
 				return owner;
 			}
-			VT_CORE_ASSERT(false, "OONGA BOONGA something went horribly wrong");
+			VT_ASSERT_MSG(false, "OONGA BOONGA something went horribly wrong");
 		
 			return false;
 		}
@@ -56,8 +56,8 @@ namespace Volt
 	class NetContractContainer
 	{
 	public:
-		static void Execute(Volt::EntityID in_id, eNetEvent in_method, const std::vector<uint8_t>& in_data);
-		static void Execute(Nexus::TYPE::REP_ID in_id, eNetEvent in_method, const std::vector<uint8_t>& in_data);
+		static void Execute(Volt::EntityID in_id, eNetEvent in_method, const Vector<uint8_t>& in_data);
+		static void Execute(Nexus::TYPE::REP_ID in_id, eNetEvent in_method, const Vector<uint8_t>& in_data);
 
 		static std::string GetMethod(const AssetHandle& in_handle, eNetEvent in_method);
 		static std::string GetMethod(const Ref<NetContract> in_contract, eNetEvent in_method);

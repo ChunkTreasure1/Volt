@@ -81,7 +81,7 @@ struct EditorSettings
 	NetworkSettings networkSettings;
 	AssetBrowserSettings assetBrowserSettings;
 
-	std::vector<PanelState> panelStates;
+	Vector<PanelState> panelStates;
 };
 
 class EditorWindow;

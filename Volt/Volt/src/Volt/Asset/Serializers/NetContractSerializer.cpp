@@ -51,7 +51,7 @@ namespace Volt
 	struct EntityNetRule
 	{
 		EntityID entityId;
-		std::vector<SerializedNetRule> rules;
+		Vector<SerializedNetRule> rules;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const EntityNetRule& data)
 		{
@@ -69,8 +69,8 @@ namespace Volt
 	struct NetContractSerializationData
 	{
 		AssetHandle prefab;
-		std::vector<NetCall> calls;
-		std::vector<EntityNetRule> rules;
+		Vector<NetCall> calls;
+		Vector<EntityNetRule> rules;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const NetContractSerializationData& data)
 		{
@@ -146,7 +146,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		NetContractSerializationData serializationData{};
 		streamReader.Read(serializationData);

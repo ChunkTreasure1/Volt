@@ -53,7 +53,7 @@ private:
 	bool myMidEvent = false;
 	std::shared_ptr<PropertyEvent> myLastValue;
 	glm::vec3 myLastValue2;
-	std::vector<std::shared_ptr<PropertyEvent>> myUndoList;
-	std::vector<std::shared_ptr<PropertyEvent>> myRedoList;
+	Vector<std::shared_ptr<PropertyEvent>> myUndoList;
+	Vector<std::shared_ptr<PropertyEvent>> myRedoList;
 	int myMaxEventListSize;
 };

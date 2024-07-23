@@ -8,7 +8,6 @@ namespace Volt
 {
 	void SerializedAssetMetadata::Serialize(BinaryStreamWriter& streamWriter, const SerializedAssetMetadata& data)
 	{
-		streamWriter.Write(data.magic);
 		streamWriter.Write(data.handle);
 		streamWriter.Write(data.type);
 		streamWriter.Write(data.version);
@@ -16,7 +15,6 @@ namespace Volt
 
 	void SerializedAssetMetadata::Deserialize(BinaryStreamReader& streamReader, SerializedAssetMetadata& outData)
 	{
-		streamReader.Read(outData.magic);
 		streamReader.Read(outData.handle);
 		streamReader.Read(outData.type);
 		streamReader.Read(outData.version);

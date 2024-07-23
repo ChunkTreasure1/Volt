@@ -342,7 +342,7 @@ void NetPanel::DrawVirtualPacketConstructor()
 				int32_t currentIndex = 0;
 
 				std::unordered_map<int32_t, int32_t> indexToValueMap;
-				std::vector<std::string> constantNames;
+				Vector<std::string> constantNames;
 
 				for (uint32_t index = 0; const auto & constant : netEnumType->GetConstants())
 				{
@@ -369,7 +369,7 @@ void NetPanel::DrawVirtualPacketConstructor()
 		}
 		if (ImGui::Button("Internal Debug##netpanelinternaldebugeventbtn", { regionAvail.x, 0 }))
 		{
-			Volt::NetEvent eventIn(Volt::eNetEvent::Hit, 10, std::vector<uint8_t>({ 1, 2, 23, 11, 4, 1, 2, 2, 9, 2, 9 }));
+			Volt::NetEvent eventIn(Volt::eNetEvent::Hit, 10, Vector<uint8_t>({ 1, 2, 23, 11, 4, 1, 2, 2, 9, 2, 9 }));
 			Nexus::Packet ePac = SerializeNetEventPacket(eventIn);
 			Volt::NetEvent eventOut;
 			ePac > eventOut;

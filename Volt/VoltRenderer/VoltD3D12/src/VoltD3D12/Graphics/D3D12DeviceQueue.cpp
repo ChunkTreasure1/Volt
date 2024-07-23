@@ -70,11 +70,10 @@ namespace Volt::RHI
 	{
 		if (executeInfo.commandBuffers.empty())
 		{
-			VT_RHI_DEBUGBREAK();
 			return;
 		}
 
-		std::vector<ID3D12CommandList*> cmdLists(executeInfo.commandBuffers.size());
+		Vector<ID3D12CommandList*> cmdLists(executeInfo.commandBuffers.size());
 
 		for (size_t i = 0; auto & cmdBuffer : executeInfo.commandBuffers)
 		{

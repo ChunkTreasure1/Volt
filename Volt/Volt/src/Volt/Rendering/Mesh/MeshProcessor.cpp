@@ -10,18 +10,18 @@
 
 namespace Volt
 {
-	ProcessedMeshResult MeshProcessor::ProcessMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const MaterialTable& materialTable, const std::vector<SubMesh>& subMeshes)
+	ProcessedMeshResult MeshProcessor::ProcessMesh(const Vector<Vertex>& vertices, const Vector<uint32_t>& indices, const MaterialTable& materialTable, const Vector<SubMesh>& subMeshes)
 	{
-		std::vector<Vertex> resultVertices;
-		std::vector<uint32_t> resultIndices;
-		std::vector<Meshlet> resultMeshlets;
-		std::vector<SubMesh> resultSubMeshes = subMeshes;
+		Vector<Vertex> resultVertices;
+		Vector<uint32_t> resultIndices;
+		Vector<Meshlet> resultMeshlets;
+		Vector<SubMesh> resultSubMeshes = subMeshes;
 
 		ProcessedMeshResult result;
 
 		for (auto& subMesh : resultSubMeshes)
 		{
-			std::vector<uint32_t> tempIndices;
+			Vector<uint32_t> tempIndices;
 			tempIndices.resize(subMesh.indexCount);
 
 			const uint32_t* indexStartPtr = &indices.at(subMesh.indexStartOffset);
@@ -48,7 +48,7 @@ namespace Volt
 					uint32_t count = 0;
 				};
 
-				std::vector<std::unordered_set<Edge>> meshletBorderEdges;
+				Vector<std::unordered_set<Edge>> meshletBorderEdges;
 				meshletBorderEdges.resize(lod0MeshletData.meshlets.size());
 
 				//for (uint32_t meshletIndex = 0; const auto& meshlet : lod0MeshletData.meshlets)
@@ -118,9 +118,9 @@ namespace Volt
 
 		const size_t maxMeshletCount = meshopt_buildMeshletsBound(indexCount, MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT);
 
-		std::vector<meshopt_Meshlet> tempMeshlets(maxMeshletCount);
-		std::vector<uint32_t> tempVertices(maxMeshletCount * MAX_VERTEX_COUNT);
-		std::vector<uint8_t> tempTriangles(maxMeshletCount * MAX_TRIANGLE_COUNT	* 3);
+		Vector<meshopt_Meshlet> tempMeshlets(maxMeshletCount);
+		Vector<uint32_t> tempVertices(maxMeshletCount * MAX_VERTEX_COUNT);
+		Vector<uint8_t> tempTriangles(maxMeshletCount * MAX_TRIANGLE_COUNT	* 3);
 
 		const size_t meshletCount = meshopt_buildMeshlets(tempMeshlets.data(), tempVertices.data(), tempTriangles.data(), indices, indexCount,
 			&vertices[0].position.x, vertexCount, sizeof(Vertex), MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT, CONE_WEIGHT);
@@ -170,12 +170,12 @@ namespace Volt
 	{
 		constexpr size_t MAX_TRIANGLE_COUNT = 64;
 
-		std::vector<idx_t> xadj;
+		Vector<idx_t> xadj;
 		xadj.resize(vertices.size() + 1);
 
-		std::vector<idx_t> adjcny;
+		Vector<idx_t> adjcny;
 
-		std::vector<std::set<uint32_t>> adjecencies;
+		Vector<std::set<uint32_t>> adjecencies;
 		adjecencies.resize(vertices.size());
 
 		for (size_t i = 0; i < indices.size(); i += 3)
@@ -220,7 +220,7 @@ namespace Volt
 		idx_t options[METIS_NOPTIONS];
 		METIS_SetDefaultOptions(options);
 
-		std::vector<idx_t> part(numVertices, 0);
+		Vector<idx_t> part(numVertices, 0);
 		int r = METIS_PartGraphKway(&numVertices, &numConstraints, xadj.data(), adjcny.data(), nullptr, nullptr, nullptr, &numParts, nullptr, nullptr, nullptr, &edgesCut, part.data());
 
 		MeshletGenerationResult result{};
@@ -233,8 +233,8 @@ namespace Volt
 
 		if (r == METIS_OK)
 		{
-			std::vector<uint32_t> elementCount(numParts, 0);
-			std::vector<Range> ranges(numParts);
+			Vector<uint32_t> elementCount(numParts, 0);
+			Vector<Range> ranges(numParts);
 
 			for (size_t i = 0; i < part.size(); i++)
 			{
@@ -251,7 +251,7 @@ namespace Volt
 
 			result.meshletIndices.reserve(indices.size());
 
-			std::vector<std::vector<uint32_t>> perMeshletIndices;
+			Vector<Vector<uint32_t>> perMeshletIndices;
 			perMeshletIndices.resize(numParts);
 
 			for (uint32_t i = 0; i < static_cast<uint32_t>(vertices.size()); ++i)

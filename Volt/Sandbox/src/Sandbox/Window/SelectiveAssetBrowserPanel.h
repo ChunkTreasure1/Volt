@@ -17,7 +17,7 @@ private:
 
 	Volt::AssetType mySelectiveAssetType;
 
-	std::vector<AssetData> myAllAssetsOfType;
+	Vector<AssetData> myAllAssetsOfType;
 	std::function<void(Volt::AssetHandle asset)> myOpenFileCallback;
 
 	float myThumbnailSize = 70.f;

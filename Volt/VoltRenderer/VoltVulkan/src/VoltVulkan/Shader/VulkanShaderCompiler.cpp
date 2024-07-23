@@ -171,7 +171,7 @@ namespace Volt::RHI
 
 		const std::wstring wEntryPoint = ::Utility::ToWString(sourceEntry.entryPoint);
 
-		std::vector<const wchar_t*> arguments =
+		Vector<const wchar_t*> arguments =
 		{
 			sourceEntry.filePath.c_str(),
 			L"-E",
@@ -325,7 +325,7 @@ namespace Volt::RHI
 
 	void VulkanShaderCompiler::ReflectStage(ShaderStage stage, const Specification& specification, CompilationResultData& inOutData)
 	{
-		spirv_cross::Compiler compiler{ inOutData.shaderData[stage] };
+		spirv_cross::Compiler compiler{ inOutData.shaderData[stage].data(), inOutData.shaderData[stage].size() };
 		const auto resources = compiler.get_shader_resources();
 
 		for (const auto& ubo : resources.uniform_buffers)
@@ -502,8 +502,8 @@ namespace Volt::RHI
 
 	bool VulkanShaderCompiler::PreprocessSource(const ShaderStage shaderStage, const std::filesystem::path& filepath, std::string& outSource)
 	{
-		std::vector<std::wstring> wIncludeDirs;
-		std::vector<const wchar_t*> wcIncludeDirs;
+		Vector<std::wstring> wIncludeDirs;
+		Vector<const wchar_t*> wcIncludeDirs;
 
 		for (const auto& includeDir : m_includeDirectories)
 		{
@@ -515,7 +515,7 @@ namespace Volt::RHI
 			wcIncludeDirs.push_back(includeDir.c_str());
 		}
 
-		std::vector<const wchar_t*> arguments =
+		Vector<const wchar_t*> arguments =
 		{
 			filepath.c_str(),
 			L"-P", // Preproccess
@@ -533,7 +533,7 @@ namespace Volt::RHI
 			arguments.push_back(includeDir);
 		}
 
-		std::vector<std::wstring> wMacros;
+		Vector<std::wstring> wMacros;
 		for (const auto& macro : m_macros)
 		{
 			wMacros.push_back(::Utility::ToWString(macro));

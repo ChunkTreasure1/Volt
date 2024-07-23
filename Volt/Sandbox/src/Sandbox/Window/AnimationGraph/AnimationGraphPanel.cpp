@@ -1039,9 +1039,9 @@ void AnimationGraphPanel::DrawLayeredBlendPerBoneProperties(Ref<GraphKey::Node> 
 
 }
 
-const std::vector<UUID64> AnimationGraphPanel::GetSelectedStates() const
+const Vector<UUID64> AnimationGraphPanel::GetSelectedStates() const
 {
-	std::vector<ed::NodeId> selectedNodeIds;
+	Vector<ed::NodeId> selectedNodeIds;
 	selectedNodeIds.resize(ed::GetSelectedObjectCount());
 
 	int32_t nodeCount = ed::GetSelectedNodes(selectedNodeIds.data(), (int32_t)selectedNodeIds.size());
@@ -1049,7 +1049,7 @@ const std::vector<UUID64> AnimationGraphPanel::GetSelectedStates() const
 
 	auto stateMachine = GetLastEntry().stateMachine;
 
-	std::vector<UUID64> result;
+	Vector<UUID64> result;
 	for (const auto& n : stateMachine->GetStates())
 	{
 		auto it = std::find_if(selectedNodeIds.begin(), selectedNodeIds.end(), [&](const ed::NodeId& id)
@@ -1066,9 +1066,9 @@ const std::vector<UUID64> AnimationGraphPanel::GetSelectedStates() const
 	return result;
 }
 
-const std::vector<UUID64> AnimationGraphPanel::GetSelectedTransitions() const
+const Vector<UUID64> AnimationGraphPanel::GetSelectedTransitions() const
 {
-	std::vector<ed::LinkId> selectedLinkIds;
+	Vector<ed::LinkId> selectedLinkIds;
 	selectedLinkIds.resize(ed::GetSelectedObjectCount());
 
 	int32_t linkCount = ed::GetSelectedLinks(selectedLinkIds.data(), (int32_t)selectedLinkIds.size());
@@ -1076,7 +1076,7 @@ const std::vector<UUID64> AnimationGraphPanel::GetSelectedTransitions() const
 
 	auto stateMachine = GetLastEntry().stateMachine;
 
-	std::vector<UUID64> result;
+	Vector<UUID64> result;
 	for (const auto& l : stateMachine->GetTransitions())
 	{
 		auto it = std::find_if(selectedLinkIds.begin(), selectedLinkIds.end(), [&](const ed::LinkId& id)

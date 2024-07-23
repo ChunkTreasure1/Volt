@@ -17,10 +17,10 @@ namespace Volt
 {
 	BindlessResourcesManager::BindlessResourcesManager()
 	{
-		VT_CORE_ASSERT(!s_instance, "Instance should be null!");
+		VT_ASSERT_MSG(!s_instance, "Instance should be null!");
 		s_instance = this;
 
-		m_bindlessDescriptorTable = RHI::BindlessDescriptorTable::Create();
+		m_bindlessDescriptorTable = RHI::BindlessDescriptorTable::Create(Application::Get().GetWindow().GetSwapchain().GetFramesInFlight());
 	}
 
 	BindlessResourcesManager::~BindlessResourcesManager()

@@ -746,7 +746,7 @@ void CharacterEditorPanel::UpdateJointAttachmentViewPanel()
 		myActivateJointSearch = true;
 	}
 
-	auto& jointAttachments = const_cast<std::vector<Volt::AnimatedCharacter::JointAttachment>&>(myCurrentCharacter->GetJointAttachments());
+	auto& jointAttachments = const_cast<Vector<Volt::AnimatedCharacter::JointAttachment>&>(myCurrentCharacter->GetJointAttachments());
 
 	const auto totalWidth = ImGui::GetContentRegionAvail().x;
 
@@ -853,7 +853,7 @@ void CharacterEditorPanel::AddJointAttachmentPopup()
 
 	if (UI::BeginPopup("addJointAttachment", ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 	{
-		std::vector<std::string> jointNames;
+		Vector<std::string> jointNames;
 		for (const auto& joint : myCurrentCharacter->GetSkeleton()->GetJoints())
 		{
 			jointNames.emplace_back(joint.name);
@@ -876,7 +876,7 @@ void CharacterEditorPanel::AddJointAttachmentPopup()
 
 		// List child
 		{
-			auto& jointAttachments = const_cast<std::vector<Volt::AnimatedCharacter::JointAttachment>&>(myCurrentCharacter->GetJointAttachments());
+			auto& jointAttachments = const_cast<Vector<Volt::AnimatedCharacter::JointAttachment>&>(myCurrentCharacter->GetJointAttachments());
 
 			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 			ImGui::BeginChild("scrolling", ImGui::GetContentRegionAvail());

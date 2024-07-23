@@ -443,7 +443,7 @@ namespace Volt
 
 	Entity Scene::CreateEntityWithUUID(const EntityID& uuid, const std::string& tag)
 	{
-		VT_CORE_ASSERT(!m_entityRegistry.Contains(uuid), "Entity must not exist!");
+		VT_ASSERT_MSG(!m_entityRegistry.Contains(uuid), "Entity must not exist!");
 
 		entt::entity id = m_registry.create();
 
@@ -570,7 +570,7 @@ namespace Volt
 
 	void Scene::InvalidateEntityTransform(const EntityID& entityUUID)
 	{
-		std::vector<EntityID> entityStack;
+		Vector<EntityID> entityStack;
 		entityStack.reserve(10);
 		entityStack.push_back(entityUUID);
 
@@ -849,9 +849,9 @@ namespace Volt
 		return transform;
 	}
 
-	const std::vector<Entity> Scene::FlattenEntityHeirarchy(Entity entity)
+	const Vector<Entity> Scene::FlattenEntityHeirarchy(Entity entity)
 	{
-		std::vector<Entity> result;
+		Vector<Entity> result;
 		result.emplace_back(entity);
 
 		for (auto child : entity.GetChildren())
@@ -869,7 +869,7 @@ namespace Volt
 
 	const Scene::TQS Scene::GetWorldTQS(Entity entity) const
 	{
-		std::vector<Entity> hierarchy{};
+		Vector<Entity> hierarchy{};
 		hierarchy.emplace_back(entity);
 
 		Entity currentEntity = entity;
@@ -1070,7 +1070,7 @@ namespace Volt
 		return false;
 	}
 
-	void Scene::SetLayers(const std::vector<SceneLayer>& sceneLayers)
+	void Scene::SetLayers(const Vector<SceneLayer>& sceneLayers)
 	{
 		m_sceneLayers = sceneLayers;
 
@@ -1381,9 +1381,9 @@ namespace Volt
 		m_entityRegistry.ClearEditedEntities();
 	}
 
-	const std::vector<Entity> Scene::GetAllEntities() const
+	const Vector<Entity> Scene::GetAllEntities() const
 	{
-		std::vector<Entity> result{};
+		Vector<Entity> result{};
 		result.reserve(m_registry.alive());
 
 		m_registry.each([&](const entt::entity id)
@@ -1394,9 +1394,9 @@ namespace Volt
 		return result;
 	}
 
-	const std::vector<Entity> Scene::GetAllEditedEntities() const
+	const Vector<Entity> Scene::GetAllEditedEntities() const
 	{
-		std::vector<Entity> entities;
+		Vector<Entity> entities;
 
 		for (const auto& entity : m_entityRegistry.GetEditedEntities())
 		{
@@ -1406,9 +1406,9 @@ namespace Volt
 		return entities;
 	}
 
-	const std::vector<EntityID> Scene::GetAllRemovedEntities() const
+	const Vector<EntityID> Scene::GetAllRemovedEntities() const
 	{
-		std::vector<EntityID> entities;
+		Vector<EntityID> entities;
 
 		for (const auto& entity : m_entityRegistry.GetRemovedEntities())
 		{

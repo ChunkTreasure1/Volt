@@ -62,9 +62,9 @@ namespace Volt::RHI
 		Buffer m_hostDescriptorBuffer;
 		DescriptorTypeOffsets m_descriptorTypeOffsets{};
 
-		std::vector<uint64_t> m_descriptorSetLayoutSizes{};
+		Vector<uint64_t> m_descriptorSetLayoutSizes{};
 
-		std::vector<uint32_t> m_usedDescriptorSets;
+		Vector<uint32_t> m_usedDescriptorSets;
 		std::map<uint32_t, uint64_t> m_descriptorSetOffsets{};
 
 		std::map<uint32_t, std::map<uint32_t, uint64_t>> m_descriptorSetBindingOffsets;

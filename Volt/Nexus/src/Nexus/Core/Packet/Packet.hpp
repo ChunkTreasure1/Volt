@@ -14,14 +14,14 @@ namespace Nexus
 	{		
 		TYPE::CLIENT_ID ownerID = 0;
 		ePacketID id = ePacketID::NIL;
-		std::vector<TYPE::BYTE> body;
+		Vector<TYPE::BYTE> body;
 
 		size_t Size() const { return sizeof(ePacketID) + sizeof(TYPE::CLIENT_ID) + body.size(); }
 		bool TooBig(size_t amount) { return (Size() + amount) > PACKET_SIZE ? true : false; }
 
-		std::vector<char> WGet()
+		Vector<char> WGet()
 		{
-			std::vector<char> rVec;
+			Vector<char> rVec;
 			rVec.resize(Size());
 			memcpy(rVec.data(), &ownerID, sizeof(ePacketID));
 			memcpy(rVec.data() + sizeof(TYPE::CLIENT_ID), &id, sizeof(ePacketID));

@@ -62,9 +62,9 @@ namespace Volt
 		return myKeyStates[keyCode] == KeyState::Pressed;
 	}
 
-	std::vector<int> Input::GetAllKeyPressed()
+	Vector<int> Input::GetAllKeyPressed()
 	{
-		std::vector<int> keyPressedVec;
+		Vector<int> keyPressedVec;
 		for(int i = 0; i < myKeyStates.size(); i++)
 		{
 			if (myKeyStates[i] == KeyState::Pressed)

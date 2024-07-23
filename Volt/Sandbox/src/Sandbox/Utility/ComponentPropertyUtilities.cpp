@@ -410,7 +410,7 @@ bool ComponentPropertyUtility::DrawComponentEnum(Weak<Volt::Scene> scene, Volt::
 	int32_t currentIndex = 0;
 
 	std::unordered_map<int32_t, int32_t> indexToValueMap;
-	std::vector<std::string> constantNames;
+	Vector<std::string> constantNames;
 
 	for (uint32_t index = 0; const auto & constant : constants)
 	{
@@ -676,7 +676,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 
 					int32_t enumVal = scriptInstance->GetField<int32_t>(name);
 
-					std::vector<std::string> valueNames{};
+					Vector<std::string> valueNames{};
 					for (const auto& [valueName, val] : enumValues)
 					{
 						valueNames.emplace_back(valueName);
@@ -813,7 +813,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 
 					int32_t& enumVal = (int32_t&)*currentField->data.As<uint32_t>();
 
-					std::vector<std::string> valueNames{};
+					Vector<std::string> valueNames{};
 					for (const auto& [valueName, val] : enumValues)
 					{
 						valueNames.emplace_back(valueName);

@@ -329,7 +329,7 @@ void ParticleEmitterEditor::DrawPropertiesPanel()
 			if (ImGui::CollapsingHeader("Rendering##emitterRenderMode"))
 			{
 				static int selectedRenderMode = (int)myCurrentPreset->type;
-				std::vector<std::string> emitterModes = { "Mesh","Particle" };
+				Vector<std::string> emitterModes = { "Mesh","Particle" };
 
 				if (UI::Combo("Emitter Type", selectedRenderMode, emitterModes))
 				{

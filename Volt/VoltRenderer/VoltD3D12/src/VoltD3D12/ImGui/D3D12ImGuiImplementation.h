@@ -38,6 +38,6 @@ namespace Volt::RHI
 		const uint32_t m_framesInFlight = 0;
 
 		Scope<D3D12DescriptorHeap> m_descriptorHeap;
-		mutable std::vector<vt::map<size_t, D3D12DescriptorPointer>> m_descriptorCache;
+		mutable Vector<vt::map<size_t, D3D12DescriptorPointer>> m_descriptorCache;
 	};
 }

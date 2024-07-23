@@ -52,7 +52,7 @@ namespace Volt::RHI
 
 		PhysicalDeviceQueueFamilyIndices m_queueFamilyIndices{};
 
-		std::vector<ExtensionProperties> m_availiableExtensions;
+		Vector<ExtensionProperties> m_availiableExtensions;
 
 		PhysicalDeviceProperties m_deviceProperties;
 		PhysicalDeviceCreateInfo m_createInfo{};

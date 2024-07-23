@@ -45,6 +45,6 @@ namespace Volt
 		};
 
 		std::unordered_map<RenderGraphResourceHandle, ResourceInfo> m_allocatedResources;
-		std::unordered_map<size_t, std::vector<RenderGraphResourceHandle>> m_surrenderedResources;
+		std::unordered_map<size_t, Vector<RenderGraphResourceHandle>> m_surrenderedResources;
 	};
 }

@@ -43,12 +43,12 @@ private:
 	struct TempJoint
 	{
 		std::string name;
-		std::vector<TempJoint> childJoints;
+		Vector<TempJoint> childJoints;
 	};
 
 	struct TempSkeleton
 	{
-		std::vector<TempJoint> joints;
+		Vector<TempJoint> joints;
 	};
 
 	bool OnRenderEvent(Volt::AppRenderEvent& e);
@@ -89,7 +89,7 @@ private:
 	bool myActivateJointSearch = false;
 	std::string myJointSearchQuery;
 
-	std::vector<Volt::Entity> myJointAttachmentEntities;
+	Vector<Volt::Entity> myJointAttachmentEntities;
 
 	Volt::AssetHandle mySkinHandle = Volt::Asset::Null();
 	Volt::AssetHandle mySkeletonHandle = Volt::Asset::Null();;

@@ -2,9 +2,9 @@
 
 #include "Volt/Scene/EntityID.h"
 
-#include <glm/glm.hpp>
+#include <CoreUtilities/Containers/Vector.h>
 
-#include <vector>
+#include <glm/glm.hpp>
 
 namespace Volt
 {
@@ -15,7 +15,7 @@ namespace Volt
 	struct WorldCell
 	{
 		WorldCellID cellId = 0;
-		std::vector<EntityID> cellEntities;
+		Vector<EntityID> cellEntities;
 		glm::ivec3 origin;
 
 		bool isLoaded = false;

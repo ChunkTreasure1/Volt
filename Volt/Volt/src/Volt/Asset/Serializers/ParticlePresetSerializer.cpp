@@ -31,7 +31,7 @@ namespace Volt
 		float startVelocity;
 		float endVelocity;
 
-		std::vector<glm::vec3> sizes;
+		Vector<glm::vec3> sizes;
 
 		bool isBurst;
 		float burstInterval;
@@ -41,7 +41,7 @@ namespace Volt
 		AssetHandle meshMaterial;
 		ParticlePreset::eType type;
 
-		std::vector<glm::vec4> colors;
+		Vector<glm::vec4> colors;
 	
 		static void Serialize(BinaryStreamWriter& streamWriter, const ParticlePresetSerializationData& data)
 		{
@@ -173,7 +173,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!")
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		ParticlePresetSerializationData serializationData{};
 		streamReader.Read(serializationData);

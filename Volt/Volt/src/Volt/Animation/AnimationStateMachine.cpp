@@ -227,7 +227,7 @@ namespace Volt
 			}
 
 			default:
-				VT_CORE_ASSERT(false, "State type construction not implemented.");
+				VT_ASSERT_MSG(false, "State type construction not implemented.");
 				break;
 		}
 		if (id != 0)
@@ -530,7 +530,7 @@ namespace Volt
 
 		const float t = myCurrentBlendingTime / myCurrentBlendTotalTime;
 
-		std::vector<Volt::Animation::TRS> result{ currentSample.pose.size() };
+		Vector<Volt::Animation::TRS> result{ currentSample.pose.size() };
 		for (size_t i = 0; i < result.size(); i++)
 		{
 			const auto& aTRS = lastSample.pose.at(i);

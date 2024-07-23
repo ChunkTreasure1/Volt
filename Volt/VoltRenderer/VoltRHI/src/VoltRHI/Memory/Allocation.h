@@ -3,6 +3,7 @@
 #include "VoltRHI/Core/RHIInterface.h"
 
 #include <CoreUtilities/UUID.h>
+#include <CoreUtilities/Containers/Vector.h>
 
 namespace Volt::RHI
 {
@@ -24,7 +25,7 @@ namespace Volt::RHI
 		uint64_t usedSize = 0;
 		uint64_t tail = 0;
 
-		std::vector<AllocationBlock> availableBlocks;
+		Vector<AllocationBlock> availableBlocks;
 
 		VT_NODISCARD VT_INLINE const uint64_t GetRemainingSize() const
 		{

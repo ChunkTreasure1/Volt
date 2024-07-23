@@ -18,7 +18,7 @@
 
 namespace Volt
 {
-	void NetContractContainer::Execute(Volt::EntityID in_id, eNetEvent in_method, const std::vector<uint8_t>& in_data)
+	void NetContractContainer::Execute(Volt::EntityID in_id, eNetEvent in_method, const Vector<uint8_t>& in_data)
 	{
 		auto entity = SceneManager::GetActiveScene()->GetEntityFromUUID(in_id);
 		if (!entity.HasComponent<PrefabComponent>())
@@ -30,7 +30,7 @@ namespace Volt
 		CallMonoMethod(entity, GetMethod(handle, in_method), in_data);
 	}
 
-	void NetContractContainer::Execute(Nexus::TYPE::REP_ID in_id, eNetEvent in_method, const std::vector<uint8_t>& in_data)
+	void NetContractContainer::Execute(Nexus::TYPE::REP_ID in_id, eNetEvent in_method, const Vector<uint8_t>& in_data)
 	{
 		auto* backend = Volt::Application::Get().GetNetHandler().GetBackend().get();
 		if (!backend) return;

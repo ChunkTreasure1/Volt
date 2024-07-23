@@ -14,10 +14,10 @@ namespace V012
 
 		const std::filesystem::path assetsPath = project.projectDirectory / project.assetsDirectory;
 
-		std::vector<std::filesystem::path> animGraphsToConvert;
-		std::vector<std::filesystem::path> characterAssets;
-		std::vector<std::filesystem::path> layerAssets;
-		std::vector<std::filesystem::path> prefabAssets;
+		Vector<std::filesystem::path> animGraphsToConvert;
+		Vector<std::filesystem::path> characterAssets;
+		Vector<std::filesystem::path> layerAssets;
+		Vector<std::filesystem::path> prefabAssets;
 		for (const auto& entry : std::filesystem::recursive_directory_iterator(assetsPath))
 		{
 			if (entry.path().extension().string() == ".vtanimgraph")
@@ -83,7 +83,7 @@ namespace V012
 			Volt::AssetHandle skinHandle = 0;
 		};
 
-		std::vector<AnimGraphDescriptor> animGraphDescriptors;
+		Vector<AnimGraphDescriptor> animGraphDescriptors;
 		animGraphDescriptors.resize(animGraphsToConvert.size());
 
 		for (const auto& animGraphPath : animGraphsToConvert)
@@ -95,7 +95,7 @@ namespace V012
 
 					if (!metaStreamReader.OpenFile(animGraphPath.string() + ".vtmeta"))
 					{
-						VT_CORE_ASSERT(false);
+						VT_ASSERT(false);
 					}
 
 					Volt::AssetHandle characterAssetHandle = 0;

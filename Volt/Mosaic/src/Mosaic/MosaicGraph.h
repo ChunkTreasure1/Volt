@@ -46,7 +46,7 @@ namespace Mosaic
 		uint32_t m_currentVariableCount = 0;
 		std::string m_editorState;
 
-		std::vector<uint32_t> m_availiableTextureIndices;
+		Vector<uint32_t> m_availiableTextureIndices;
 
 		uint32_t m_textureCount = 0;
 		uint32_t m_currentTextureIndex = 0;

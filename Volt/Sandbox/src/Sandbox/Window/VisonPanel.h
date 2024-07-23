@@ -31,19 +31,19 @@ public:
 	Volt::Entity GetSelectedCamera() { return myVisionCams[mySelectedCamera]; }
 
 	Volt::Entity CreateNewTrigger();
-	const std::vector<Volt::Entity> GetAllCameraTriggers();
+	const Vector<Volt::Entity> GetAllCameraTriggers();
 
 	Volt::Entity CreateNewCamera();
-	const std::vector<Volt::Entity> GetAllCameras();
+	const Vector<Volt::Entity> GetAllCameras();
 	void UpdateSelectedCamera();
 
 private:
 	int mySelectedCamera = -1;
 
-	std::vector<std::pair<Volt::CameraComponent, Volt::VisionCameraComponent>> myVTCamComponents;
+	Vector<std::pair<Volt::CameraComponent, Volt::VisionCameraComponent>> myVTCamComponents;
 
-	std::vector<Volt::Entity> myVisionCams;
-	std::vector<Volt::Entity> myCameraTriggers;
+	Vector<Volt::Entity> myVisionCams;
+	Vector<Volt::Entity> myCameraTriggers;
 
 	bool myNewSettingsSaved = false;
 	bool myToManyDirectors = false;

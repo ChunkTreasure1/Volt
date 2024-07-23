@@ -31,16 +31,22 @@ namespace Volt
 
 		std::atomic_bool isExecuting;
 		std::atomic_bool isRunning;
+
+		RenderGraphExecutionThread::ExecutionMode executionMode;
 	};
 
 	inline static Scope<RenderGraphThreadData> s_data;
 
-	void RenderGraphExecutionThread::Initialize()
+	void RenderGraphExecutionThread::Initialize(RenderGraphExecutionThread::ExecutionMode executionMode)
 	{
 		s_data = CreateScope<RenderGraphThreadData>();
 		s_data->isRunning = true;
+		s_data->executionMode = executionMode;
 
-		InitializeThread();
+		if (executionMode == RenderGraphExecutionThread::ExecutionMode::Multithreaded)
+		{
+			InitializeThread();
+		}
 	}
 
 	void RenderGraphExecutionThread::Shutdown()
@@ -64,23 +70,33 @@ namespace Volt
 
 	void RenderGraphExecutionThread::WaitForFinishedExecution()
 	{
-		std::unique_lock lock{ s_data->mutex };
-		s_data->waitForExecutionVariable.wait(lock, []() { return !s_data->isExecuting.load() && s_data->executionQueue.empty(); });
+		if (s_data->executionMode == RenderGraphExecutionThread::ExecutionMode::Multithreaded)
+		{
+			std::unique_lock lock{ s_data->mutex };
+			s_data->waitForExecutionVariable.wait(lock, []() { return !s_data->isExecuting.load() && s_data->executionQueue.empty(); });
+		}
+		else
+		{
+			ExecuteGraphs();
+		}
 	}
 
 	void RenderGraphExecutionThread::InitializeThread()
 	{
-		s_data->executionThread = CreateScope<std::thread>(&RenderGraphExecutionThread::RT_ExecuteGraph);
+		s_data->executionThread = CreateScope<std::thread>(&RenderGraphExecutionThread::RT_ExecuteGraphs);
 		SetThreadName(s_data->executionThread->native_handle(), "RenderGraphExecutionThread");
 	}
 
 	void RenderGraphExecutionThread::ShutdownThread()
 	{
-		s_data->executeVariable.notify_one();
-		s_data->executionThread->join();
+		if (s_data->executionMode == RenderGraphExecutionThread::ExecutionMode::Multithreaded)
+		{
+			s_data->executeVariable.notify_one();
+			s_data->executionThread->join();
+		}
 	}
 
-	void RenderGraphExecutionThread::RT_ExecuteGraph()
+	void RenderGraphExecutionThread::RT_ExecuteGraphs()
 	{
 		VT_PROFILE_THREAD("RenderGraphExecutionThread");
 
@@ -97,7 +113,7 @@ namespace Volt
 			}
 
 			// #TODO_Ivar: This really shouldn't be here
-			RHI::GraphicsContext::GetDevice()->GetDeviceQueue(RHI::QueueType::Graphics)->WaitForQueue();
+			//RHI::GraphicsContext::GetDevice()->GetDeviceQueue(RHI::QueueType::Graphics)->WaitForQueue();
 
 			std::function<void()> executeFunction{};
 			while (s_data->executionQueue.try_pop(executeFunction))
@@ -108,6 +124,16 @@ namespace Volt
 			}
 
 			s_data->waitForExecutionVariable.notify_one();
+		}
+	}
+	void RenderGraphExecutionThread::ExecuteGraphs()
+	{
+		std::function<void()> executeFunction{};
+		while (s_data->executionQueue.try_pop(executeFunction))
+		{
+			s_data->isExecuting = true;
+			executeFunction();
+			s_data->isExecuting = false;
 		}
 	}
 }

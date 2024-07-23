@@ -17,7 +17,7 @@ namespace Volt
 		void UploadTo(RenderGraph& renderGraph, RenderGraphResourceHandle dstBuffer);
 
 	private:
-		std::vector<T> m_data;
+		Vector<T> m_data;
 		std::atomic<uint32_t> m_currentIndex = 0;
 	};
 

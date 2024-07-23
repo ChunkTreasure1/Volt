@@ -50,7 +50,7 @@ namespace GraphKey
 		void RemoveNode(UUID64 id);
 		void RemoveLink(UUID64 id);
 
-		const std::vector<Ref<Node>> GetNodesOfType(const std::string& type);
+		const Vector<Ref<Node>> GetNodesOfType(const std::string& type);
 
 		Attribute* GetAttributeByID(const UUID64 id) const;
 		Link* GetLinkByID(const UUID64 id);
@@ -60,14 +60,14 @@ namespace GraphKey
 		const bool IsAttributeLinked(const UUID64 id) const;
 
 		inline const Volt::EntityID GetEntity() const { return myEntity; }
-		inline std::vector<Ref<Node>>& GetNodes() { return myNodes; }
-		inline std::vector<Link>& GetLinks() { return myLinks; }
-		inline std::vector<GraphParameter>& GetBlackboard() { return myParentBlackboard ? *myParentBlackboard : myBlackboard; }
-		inline std::vector<GraphEvent>& GetEvents() { return myGraphEvents; }
+		inline Vector<Ref<Node>>& GetNodes() { return myNodes; }
+		inline Vector<Link>& GetLinks() { return myLinks; }
+		inline Vector<GraphParameter>& GetBlackboard() { return myParentBlackboard ? *myParentBlackboard : myBlackboard; }
+		inline Vector<GraphEvent>& GetEvents() { return myGraphEvents; }
 		inline EventSystem& GetEventSystem() { return myEventSystem; }
 
 		inline void SetEntity(Volt::EntityID id) { myEntity = id; }
-		inline void SetParentBlackboard(std::vector<GraphParameter>* blackboard) { myParentBlackboard = blackboard; }
+		inline void SetParentBlackboard(Vector<GraphParameter>* blackboard) { myParentBlackboard = blackboard; }
 
 		void AddEvent(const std::string& name, const UUID64 id = {});
 		const std::string GetEventNameFromId(const UUID64 id);
@@ -105,14 +105,14 @@ namespace GraphKey
 	private:
 		EventSystem myEventSystem;
 
-		std::vector<GraphParameter>* myParentBlackboard = nullptr;
-		std::vector<GraphParameter> myBlackboard;
-		std::vector<GraphEvent> myGraphEvents;
+		Vector<GraphParameter>* myParentBlackboard = nullptr;
+		Vector<GraphParameter> myBlackboard;
+		Vector<GraphEvent> myGraphEvents;
 
 		Volt::EntityID myEntity = Volt::Entity::NullID();
 
-		std::vector<Ref<Node>> myNodes;
-		std::vector<Link> myLinks;
+		Vector<Ref<Node>> myNodes;
+		Vector<Link> myLinks;
 		std::string myName;
 	};
 

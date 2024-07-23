@@ -159,7 +159,7 @@ void MeshPreviewPanel::UpdateProperties()
 
 			if (mySelectedSubMesh != -1)
 			{
-				std::vector<std::string> subMaterialNames;
+				Vector<std::string> subMaterialNames;
 				//for (const auto& [index, subMat] : myCurrentMesh->GetMaterial()->GetSubMaterials())
 				//{
 				//	subMaterialNames.emplace_back(subMat->GetName());

@@ -25,13 +25,13 @@ namespace Volt
 
 		struct Mesh
 		{
-			std::vector<Primitive> primitives;
+			Vector<Primitive> primitives;
 		};
 
 		struct Node
 		{
 			Node* parent;
-			std::vector<Node> children;
+			Vector<Node> children;
 			Mesh mesh;
 			glm::mat4 transform = { 1.f };
 		};

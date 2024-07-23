@@ -18,6 +18,11 @@ project "CoreUtilities"
 	AddCommonLinkOptions()
 	AddCommonDefines()
 
+	linkoptions 
+	{
+		"/ignore:4075",
+	}
+
 	buildoptions 
 	{
 		"/bigobj"
@@ -104,7 +109,7 @@ project "CoreUtilities"
 			"VT_ENABLE_PROFILING"
 		}
 		runtime "Debug"
-		optimize "off"
+		optimize "on"
 		symbols "on"
 
 	filter "configurations:Release"

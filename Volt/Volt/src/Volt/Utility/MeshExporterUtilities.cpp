@@ -8,10 +8,10 @@
 
 namespace Volt
 {
-	Ref<Volt::Mesh> MeshExporterUtilities::CombineMeshes(Ref<Volt::Scene> scene, const std::vector<entt::entity>& entities, Ref<Volt::Material> material, float unitModifier)
+	Ref<Volt::Mesh> MeshExporterUtilities::CombineMeshes(Ref<Volt::Scene> scene, const Vector<entt::entity>& entities, Ref<Volt::Material> material, float unitModifier)
 	{
-		std::vector<Volt::Vertex> v;
-		std::vector<uint32_t> i;
+		Vector<Volt::Vertex> v;
+		Vector<uint32_t> i;
 
 		for (uint32_t entIndex = 0; entIndex < entities.size(); entIndex++)
 		{
@@ -22,7 +22,7 @@ namespace Volt
 			auto vertexContainer = mesh->GetVertexContainer();
 			auto indices = mesh->GetIndices();
 
-			std::vector<Vertex> vertices;
+			Vector<Vertex> vertices;
 
 			for (const auto& submesh : mesh->GetSubMeshes())
 			{
@@ -55,10 +55,10 @@ namespace Volt
 		return (!v.empty()) ? CreateRef<Volt::Mesh>(v, i, material) : nullptr;
 	}
 
-	Ref<Volt::Mesh> MeshExporterUtilities::CombineMeshes(const std::vector<Ref<Volt::Mesh>>& meshes, const std::vector<glm::mat4>& transforms, Ref<Volt::Material> material)
+	Ref<Volt::Mesh> MeshExporterUtilities::CombineMeshes(const Vector<Ref<Volt::Mesh>>& meshes, const Vector<glm::mat4>& transforms, Ref<Volt::Material> material)
 	{
-		std::vector<Volt::Vertex> v;
-		std::vector<uint32_t> i;
+		Vector<Volt::Vertex> v;
+		Vector<uint32_t> i;
 
 		for (uint32_t meshIndex = 0; meshIndex < meshes.size(); meshIndex++)
 		{
@@ -67,7 +67,7 @@ namespace Volt
 			auto vertexContainer = mesh->GetVertexContainer();
 			auto indices = mesh->GetIndices();
 
-			std::vector<Vertex> vertices;
+			Vector<Vertex> vertices;
 
 			for (const auto& submesh : mesh->GetSubMeshes())
 			{
@@ -98,9 +98,9 @@ namespace Volt
 		return (!v.empty()) ? CreateRef<Volt::Mesh>(v, i, material) : nullptr;
 	}
 
-	std::vector<Ref<Volt::Mesh>> MeshExporterUtilities::GetMeshes(const std::vector<Volt::Entity>& entities)
+	Vector<Ref<Volt::Mesh>> MeshExporterUtilities::GetMeshes(const Vector<Volt::Entity>& entities)
 	{
-		std::vector<Ref<Volt::Mesh>> meshes;
+		Vector<Ref<Volt::Mesh>> meshes;
 
 		for (uint32_t entIndex = 0; entIndex < entities.size(); entIndex++)
 		{

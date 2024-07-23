@@ -126,7 +126,7 @@ namespace Volt
 		void DetachFromActor(physx::PxRigidActor* actor) override;
 
 	private:
-		std::vector<physx::PxShape*> myShapes;
+		Vector<physx::PxShape*> myShapes;
 		glm::vec3 myOffset = 0.f;
 	};
 
@@ -146,7 +146,7 @@ namespace Volt
 		void DetachFromActor(physx::PxRigidActor* actor) override;
 
 	private:
-		std::vector<physx::PxShape*> myShapes;
+		Vector<physx::PxShape*> myShapes;
 		glm::vec3 myOffset = 0.f;
 	};
 }

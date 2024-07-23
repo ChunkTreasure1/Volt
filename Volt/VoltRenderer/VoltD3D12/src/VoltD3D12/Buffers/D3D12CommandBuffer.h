@@ -60,7 +60,7 @@ namespace Volt::RHI
 
 		void PushConstants(const void* data, const uint32_t size, const uint32_t offset) override;
 
-		void ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers) override;
+		void ResourceBarrier(const Vector<ResourceBarrierInfo>& resourceBarriers) override;
 
 		void BeginMarker(std::string_view markerLabel, const std::array<float, 4>& markerColor) override;
 		void EndMarker() override;
@@ -107,7 +107,7 @@ namespace Volt::RHI
 			RefPtr<Semaphore> fence;
 		};
 
-		std::vector<CommandListData> m_commandLists;
+		Vector<CommandListData> m_commandLists;
 
 		uint32_t m_commandListCount = 0;
 		uint32_t m_currentCommandListIndex = 0;
@@ -120,7 +120,7 @@ namespace Volt::RHI
 
 		bool m_pipelineNeedsToBeBound = false;
 
-		std::vector<std::vector<D3D12DescriptorPointer>> m_allocatedDescriptors;
+		Vector<Vector<D3D12DescriptorPointer>> m_allocatedDescriptors;
 		Scope<D3D12DescriptorHeap> m_descriptorHeap;
 	};
 }

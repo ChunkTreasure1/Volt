@@ -140,7 +140,7 @@ namespace Volt
 	public:
 		~IComponentTypeDesc() override = default;
 
-		[[nodiscard]] virtual const std::vector<ComponentMember>& GetMembers() const = 0;
+		[[nodiscard]] virtual const Vector<ComponentMember>& GetMembers() const = 0;
 		[[nodiscard]] virtual const bool IsHidden() const = 0;
 		[[nodiscard]] virtual ComponentMember* FindMemberByOffset(const ptrdiff_t offset) = 0;
 		[[nodiscard]] virtual ComponentMember* FindMemberByName(std::string_view name) = 0;
@@ -156,8 +156,8 @@ namespace Volt
 	public:
 		~IEnumTypeDesc() override = default;
 
-		[[nodiscard]] virtual const std::vector<EnumConstant>& GetConstants() const = 0;
-		[[nodiscard]] virtual const std::vector<std::string> GetConstantNames() const = 0;
+		[[nodiscard]] virtual const Vector<EnumConstant>& GetConstants() const = 0;
+		[[nodiscard]] virtual const Vector<std::string> GetConstantNames() const = 0;
 	};
 
 	class IArrayTypeDesc : public CommonTypeDesc<ValueType::Array>
@@ -311,7 +311,7 @@ namespace Volt
 		[[nodiscard]] inline const VoltGUID& GetGUID() const override { return m_guid; }
 		[[nodiscard]] inline const std::string_view GetLabel() const override { return m_componentLabel; }
 		[[nodiscard]] inline const std::string_view GetDescription() const override { return m_componentDescription; }
-		[[nodiscard]] inline const std::vector<ComponentMember>& GetMembers() const override { return m_members; }
+		[[nodiscard]] inline const Vector<ComponentMember>& GetMembers() const override { return m_members; }
 		[[nodiscard]] inline const bool IsHidden() const override { return m_isHidden; }
 
 		void OnMemberChanged(void* objectPtr, Entity entity) const override;
@@ -341,14 +341,14 @@ namespace Volt
 
 			const ptrdiff_t offset = Utility::GetMemberOffset(memberPtr);
 			const bool hasMemberWithOffset = FindMemberByOffset(offset) != nullptr;
-			VT_CORE_ASSERT(!hasMemberWithOffset, "Member with offset has already been registered");
+			VT_ASSERT_MSG(!hasMemberWithOffset, "Member with offset has already been registered");
 			if (hasMemberWithOffset)
 			{
 				return *nullMember;
 			}
 
 			const bool hasMemberWithName = FindMemberByName(name) != nullptr;
-			VT_CORE_ASSERT(!hasMemberWithName, "Member with name has already been registered!");
+			VT_ASSERT_MSG(!hasMemberWithName, "Member with name has already been registered!");
 			if (hasMemberWithName)
 			{
 				return *nullMember;
@@ -388,7 +388,7 @@ namespace Volt
 		}
 
 	private:
-		std::vector<ComponentMember> m_members;
+		Vector<ComponentMember> m_members;
 
 		VoltGUID m_guid = VoltGUID::Null();
 		std::string m_componentLabel;
@@ -416,15 +416,15 @@ namespace Volt
 		[[nodiscard]] inline const VoltGUID& GetGUID() const override { return m_guid; }
 		[[nodiscard]] inline const std::string_view GetLabel() const override { return m_enumLabel; }
 		[[nodiscard]] inline const std::string_view GetDescription() const override { return m_enumDescription; }
-		[[nodiscard]] inline const std::vector<EnumConstant>& GetConstants() const override { return m_constants; }
-		[[nodiscard]] const std::vector<std::string> GetConstantNames() const override;
+		[[nodiscard]] inline const Vector<EnumConstant>& GetConstants() const override { return m_constants; }
+		[[nodiscard]] const Vector<std::string> GetConstantNames() const override;
 
 	private:
 		VoltGUID m_guid = VoltGUID::Null();
 		std::string m_enumLabel;
 		std::string m_enumDescription;
 
-		std::vector<EnumConstant> m_constants;
+		Vector<EnumConstant> m_constants;
 		T m_defaultValue = static_cast<T>(0);
 	};
 
@@ -552,9 +552,9 @@ namespace Volt
 	}
 
 	template<Enum T>
-	inline const std::vector<std::string> EnumTypeDesc<T>::GetConstantNames() const
+	inline const Vector<std::string> EnumTypeDesc<T>::GetConstantNames() const
 	{
-		std::vector<std::string> result{};
+		Vector<std::string> result{};
 
 		for (const auto& constant : m_constants)
 		{
@@ -660,49 +660,49 @@ namespace Volt
 	}
 }
 
-DECLARE_ARRAY_TYPE(std::vector);
+DECLARE_ARRAY_TYPE(Vector);
 
 namespace Volt
 {
-	template<typename ELEMENT_TYPE> inline void ReflectType(TypeDesc<std::vector<ELEMENT_TYPE>>& desc)
+	template<typename ELEMENT_TYPE> inline void ReflectType(TypeDesc<Vector<ELEMENT_TYPE>>& desc)
 	{
-		desc.SetLabel("std::vector");
+		desc.SetLabel("Vector");
 		desc.SetSizeFunction([](const void* array) -> size_t
 		{
-			const std::vector<ELEMENT_TYPE>& ptr = *reinterpret_cast<const std::vector<ELEMENT_TYPE>*>(array);
+			const Vector<ELEMENT_TYPE>& ptr = *reinterpret_cast<const Vector<ELEMENT_TYPE>*>(array);
 			return ptr.size();
 		});
 
 		desc.SetAtFunction([](void* array, size_t pos) -> void*
 		{
-			return &(*reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array))[pos];
+			return &(*reinterpret_cast<Vector<ELEMENT_TYPE>*>(array))[pos];
 		});
 
 		desc.SetConstAtFunction([](const void* array, size_t pos) -> const void*
 		{
-			return &(*reinterpret_cast<const std::vector<ELEMENT_TYPE>*>(array)).at(pos);
+			return &(*reinterpret_cast<const Vector<ELEMENT_TYPE>*>(array)).at(pos);
 		});
 
 		desc.SetPushBackFunction([](void* array, const void* value) -> void
 		{
-			(*reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array)).push_back(*reinterpret_cast<const ELEMENT_TYPE*>(value));
+			(*reinterpret_cast<Vector<ELEMENT_TYPE>*>(array)).push_back(*reinterpret_cast<const ELEMENT_TYPE*>(value));
 		});
 
 		desc.SetEmplaceBackFunction([](void* array, const void* value) -> void*
 		{
 			if (!value)
 			{
-				return &(*reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array)).emplace_back();
+				return &(*reinterpret_cast<Vector<ELEMENT_TYPE>*>(array)).emplace_back();
 			}
 			else
 			{
-				return &(*reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array)).emplace_back(*reinterpret_cast<const ELEMENT_TYPE*>(value));
+				return &(*reinterpret_cast<Vector<ELEMENT_TYPE>*>(array)).emplace_back(*reinterpret_cast<const ELEMENT_TYPE*>(value));
 			}
 		});
 
 		desc.SetEraseFunction([](void* array, size_t pos) 
 		{
-			std::vector<ELEMENT_TYPE>& vecRef = *reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array);
+			Vector<ELEMENT_TYPE>& vecRef = *reinterpret_cast<Vector<ELEMENT_TYPE>*>(array);
 			vecRef.erase(vecRef.begin() + pos);
 		});
 	}

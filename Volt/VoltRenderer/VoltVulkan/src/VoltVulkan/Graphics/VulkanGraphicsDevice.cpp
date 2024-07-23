@@ -125,9 +125,9 @@ namespace Volt::RHI
 			s_enabledFeatures.physicalDeviceFeatures.features.shaderInt16 = VK_TRUE; // #TODO_Ivar: does not work on older cards
 		}
 
-		inline static std::vector<const char*> GetEnabledExtensions(WeakPtr<VulkanPhysicalGraphicsDevice> physicalDevice)
+		inline static Vector<const char*> GetEnabledExtensions(WeakPtr<VulkanPhysicalGraphicsDevice> physicalDevice)
 		{
-			std::vector<const char*> enabledExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+			Vector<const char*> enabledExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 			//if (physicalDevice->IsExtensionAvailiable(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME))
 			//{

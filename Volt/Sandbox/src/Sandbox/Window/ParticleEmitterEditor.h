@@ -31,7 +31,7 @@ private:
 	{
 		float emittionTimer = 0;
 		int numberOfAliveParticles = 0;
-		std::vector<Volt::Particle> particles;
+		Vector<Volt::Particle> particles;
 	};
 
 	bool OnRenderEvent(Volt::AppRenderEvent& e);
@@ -55,8 +55,8 @@ private:
 
 	Volt::Entity myEmitterEntity;
 
-	std::vector<std::string> myPresets;
-	std::vector<std::string> myShapes{ "Sphere", "Cone" };
+	Vector<std::string> myPresets;
+	Vector<std::string> myShapes{ "Sphere", "Cone" };
 
 	glm::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
 	glm::vec2 myViewportSize = { 1280.f, 720.f };

@@ -45,8 +45,8 @@ namespace Utils
 			const std::string allLetters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 			size_t stringOffset = definitionData.find_first_of(allLetters);
-			std::vector<std::string> enumNames;
-			std::vector<uint64_t> enumValues;
+			Vector<std::string> enumNames;
+			Vector<uint64_t> enumValues;
 			while (stringOffset != std::string::npos)
 			{
 				size_t memberNameEndOffset = definitionData.find_first_not_of(allLetters, stringOffset);

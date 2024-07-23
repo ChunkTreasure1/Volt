@@ -1,8 +1,8 @@
 #pragma once
 
 #include "CoreUtilities/UUID.h"
+#include "CoreUtilities/Containers/Vector.h"
 
-#include <vector>
 #include <unordered_map>
 #include <ranges>
 
@@ -31,10 +31,10 @@ struct GraphNode
 	UUID64 id = 0;
 	NodeDataType nodeData{};
 
-	std::vector<UUID64> edges;
+	Vector<UUID64> edges;
 
-	const std::vector<UUID64> GetInputEdges() const;
-	const std::vector<UUID64> GetOutputEdges() const;
+	const Vector<UUID64> GetInputEdges() const;
+	const Vector<UUID64> GetOutputEdges() const;
 
 	const GraphEdge<EdgeMetadataType>& GetEdgeFromID(const UUID64 edgeId) const;
 	const GraphNode<NodeDataType, EdgeMetadataType>& GetNodeFromID(const UUID64 nodeId) const;
@@ -78,8 +78,8 @@ public:
 	inline const auto& GetEdges() const { return m_edges; }
 
 private:
-	std::vector<GraphNode<NodeDataType, EdgeMetadataType>> m_nodes;
-	std::vector<GraphEdge<EdgeMetadataType>> m_edges;
+	Vector<GraphNode<NodeDataType, EdgeMetadataType>> m_nodes;
+	Vector<GraphEdge<EdgeMetadataType>> m_edges;
 };
 
 template<typename NodeDataType, typename EdgeMetadataType>
@@ -233,7 +233,7 @@ inline GraphNode<NodeDataType, EdgeMetadataType>& Graph<NodeDataType, EdgeMetada
 }
 
 template<typename NodeDataType, typename EdgeMetadataType>
-inline const std::vector<UUID64> GraphNode<NodeDataType, EdgeMetadataType>::GetInputEdges() const
+inline const Vector<UUID64> GraphNode<NodeDataType, EdgeMetadataType>::GetInputEdges() const
 {
 	auto view = edges | std::views::filter([&](UUID64 edgeId)
 	{
@@ -241,7 +241,7 @@ inline const std::vector<UUID64> GraphNode<NodeDataType, EdgeMetadataType>::GetI
 		return edge.endNode == id;
 	});
 
-	return std::vector<UUID64>{ view.begin(), view.end() };
+	return Vector<UUID64>{ view.begin(), view.end() };
 }
 
 template<typename NodeDataType, typename EdgeMetadataType>
@@ -269,7 +269,7 @@ inline void GraphNode<NodeDataType, EdgeMetadataType>::RemoveEdge(const UUID64 e
 }
 
 template<typename NodeDataType, typename EdgeMetadataType>
-inline const std::vector<UUID64> GraphNode<NodeDataType, EdgeMetadataType>::GetOutputEdges() const
+inline const Vector<UUID64> GraphNode<NodeDataType, EdgeMetadataType>::GetOutputEdges() const
 {
 	auto view = edges | std::views::filter([&](UUID64 edgeId)
 	{
@@ -277,5 +277,5 @@ inline const std::vector<UUID64> GraphNode<NodeDataType, EdgeMetadataType>::GetO
 		return edge.startNode == id;
 	});
 
-	return std::vector<UUID64>{ view.begin(), view.end() };
+	return Vector<UUID64>{ view.begin(), view.end() };
 }

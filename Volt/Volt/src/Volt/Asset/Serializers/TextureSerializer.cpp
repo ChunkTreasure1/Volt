@@ -27,7 +27,7 @@ namespace Volt
 	struct TextureHeader
 	{
 		RHI::PixelFormat format; // Should be one of the BC formats
-		std::vector<TextureMip> mips;
+		Vector<TextureMip> mips;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const TextureHeader& data)
 		{
@@ -66,7 +66,7 @@ namespace Volt
 			}
 		}
 
-		std::vector<Mip> mips;
+		Vector<Mip> mips;
 	};
 
 	void TextureSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
@@ -193,7 +193,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		TextureHeader textureHeader{};
 		streamReader.Read(textureHeader);

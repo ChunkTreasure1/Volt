@@ -51,7 +51,7 @@ namespace NodeGraph
 		}
 	}
 
-	void Editor::CreateNode(const UUID64 id, const std::vector<UUID64> pins)
+	void Editor::CreateNode(const UUID64 id, const Vector<UUID64> pins)
 	{
 		Node newNode{ id, pins };
 		GetBackend().nodes.emplace_back(newNode);
@@ -108,15 +108,15 @@ namespace NodeGraph
 		myBackend->nodes.erase(it);
 	}
 
-	const std::vector<UUID64> Editor::GetSelectedNodes()
+	const Vector<UUID64> Editor::GetSelectedNodes()
 	{
-		std::vector<ed::NodeId> selectedNodeIds;
+		Vector<ed::NodeId> selectedNodeIds;
 		selectedNodeIds.resize(ed::GetSelectedObjectCount());
 
 		int32_t nodeCount = ed::GetSelectedNodes(selectedNodeIds.data(), (int32_t)selectedNodeIds.size());
 		selectedNodeIds.resize(nodeCount);
 
-		std::vector<UUID64> result;
+		Vector<UUID64> result;
 		for (const auto& n : myBackend->nodes)
 		{
 			auto it = std::find_if(selectedNodeIds.begin(), selectedNodeIds.end(), [&](const ed::NodeId& id)
@@ -133,15 +133,15 @@ namespace NodeGraph
 		return result;
 	}
 
-	const std::vector<UUID64> Editor::GetSelectedLinks()
+	const Vector<UUID64> Editor::GetSelectedLinks()
 	{
-		std::vector<ed::LinkId> selectedLinkIds;
+		Vector<ed::LinkId> selectedLinkIds;
 		selectedLinkIds.resize(ed::GetSelectedObjectCount());
 
 		int32_t linkCount = ed::GetSelectedLinks(selectedLinkIds.data(), (int32_t)selectedLinkIds.size());
 		selectedLinkIds.resize(linkCount);
 
-		std::vector<UUID64> result;
+		Vector<UUID64> result;
 		for (const auto& l : myBackend->links)
 		{
 			auto it = std::find_if(selectedLinkIds.begin(), selectedLinkIds.end(), [&](const ed::LinkId& id)

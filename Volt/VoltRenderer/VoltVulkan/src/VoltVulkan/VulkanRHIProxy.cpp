@@ -79,9 +79,9 @@ namespace Volt::RHI
 		return RefPtr<VulkanDescriptorTable>::Create(createInfo);
 	}
 
-	RefPtr<BindlessDescriptorTable> VulkanRHIProxy::CreateBindlessDescriptorTable() const
+	RefPtr<BindlessDescriptorTable> VulkanRHIProxy::CreateBindlessDescriptorTable(const uint64_t framesInFlight) const
 	{
-		return RefPtr<VulkanBindlessDescriptorTable>::Create();
+		return RefPtr<VulkanBindlessDescriptorTable>::Create(framesInFlight);
 	}
 
 	RefPtr<DeviceQueue> VulkanRHIProxy::CreateDeviceQueue(const DeviceQueueCreateInfo& createInfo) const

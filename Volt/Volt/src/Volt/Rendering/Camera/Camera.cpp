@@ -76,11 +76,11 @@ namespace Volt
 		}
 	}
 
-	const std::vector<glm::vec4> Camera::GetFrustumCorners() const
+	const Vector<glm::vec4> Camera::GetFrustumCorners() const
 	{
 		const auto inv = glm::inverse(m_projectionMatrix * m_viewMatrix);
 
-		std::vector<glm::vec4> frustumCorners;
+		Vector<glm::vec4> frustumCorners;
 
 		for (uint32_t x = 0; x < 2; ++x)
 		{

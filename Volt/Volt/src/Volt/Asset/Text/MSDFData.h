@@ -9,6 +9,6 @@ namespace Volt
 	struct MSDFData
 	{
 		msdf_atlas::FontGeometry fontGeometry;
-		std::vector<msdf_atlas::GlyphGeometry> glyphs;
+		Vector<msdf_atlas::GlyphGeometry> glyphs;
 	};
 }

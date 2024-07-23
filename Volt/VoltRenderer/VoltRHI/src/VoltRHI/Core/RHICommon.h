@@ -2,6 +2,7 @@
 #include "VoltRHI/Core/Core.h"
 
 #include <CoreUtilities/Containers/StackVector.h>
+#include <CoreUtilities/Containers/Vector.h>
 #include <CoreUtilities/Variant.h>
 #include <CoreUtilities/Pointers/WeakPtr.h>
 
@@ -764,7 +765,7 @@ namespace Volt::RHI
 
 	struct ImageCopyData
 	{
-		std::vector<ImageCopySubData> copySubData;
+		Vector<ImageCopySubData> copySubData;
 	};
 
 	struct ImageBarrier

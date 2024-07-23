@@ -6,7 +6,7 @@
 
 namespace Volt
 {
-	const std::vector<glm::mat4> Animation::SampleStartTime(float aStartTime, Ref<Skeleton> aSkeleton, bool looping)
+	const Vector<glm::mat4> Animation::SampleStartTime(float aStartTime, Ref<Skeleton> aSkeleton, bool looping)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -32,7 +32,7 @@ namespace Volt
 			}
 		}
 
-		std::vector<glm::mat4> result;
+		Vector<glm::mat4> result;
 		result.resize(aSkeleton->GetJointCount(), glm::mat4(1.f));
 
 		if (result.empty())
@@ -87,7 +87,7 @@ namespace Volt
 		return result;
 	}
 
-	const std::vector<glm::mat4> Animation::Sample(float samplePercent, Ref<Skeleton> skeleton, bool looping)
+	const Vector<glm::mat4> Animation::Sample(float samplePercent, Ref<Skeleton> skeleton, bool looping)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -120,7 +120,7 @@ namespace Volt
 		const uint32_t frameIndexAfterTime = looping ? ((frameIndexBeforeTime + 1) % (frameCount)) : std::clamp(frameIndexBeforeTime + 1, 0u, frameCount - 1);
 		const float percentageBetweenFrames = (samplePercent * frameCount) - frameIndexBeforeTime;
 
-		std::vector<glm::mat4> result;
+		Vector<glm::mat4> result;
 		result.resize(skeleton->GetJointCount(), glm::mat4(1.f));
 
 		if (result.empty())
@@ -136,8 +136,8 @@ namespace Volt
 		const Pose blendedPose = GetBlendedPose(currentFrame, nextFrame, percentageBetweenFrames);
 		//B
 
-		const std::vector<Skeleton::Joint>& joints = skeleton->GetJoints();
-		const std::vector<glm::mat4>& invBindPose = skeleton->GetInverseBindPose();
+		const Vector<Skeleton::Joint>& joints = skeleton->GetJoints();
+		const Vector<glm::mat4>& invBindPose = skeleton->GetInverseBindPose();
 
 		for (size_t i = 0; i < joints.size(); i++)
 		{
@@ -166,11 +166,11 @@ namespace Volt
 		return result;
 	}
 
-	const std::vector<glm::mat4> Animation::Sample(uint32_t frameIndex, Ref<Skeleton> aSkeleton)
+	const Vector<glm::mat4> Animation::Sample(uint32_t frameIndex, Ref<Skeleton> aSkeleton)
 	{
 		VT_PROFILE_FUNCTION();
 
-		std::vector<glm::mat4> result;
+		Vector<glm::mat4> result;
 		result.resize(aSkeleton->GetJointCount(), glm::mat4(1.f));
 
 		if (result.empty())
@@ -216,9 +216,9 @@ namespace Volt
 		return result;
 	}
 
-	std::vector<glm::mat4> Animation::LocalPoseToGlobalMatrices(const Pose& localPose, Ref<Skeleton> aSkeleton)
+	Vector<glm::mat4> Animation::LocalPoseToGlobalMatrices(const Pose& localPose, Ref<Skeleton> aSkeleton)
 	{
-		return std::vector<glm::mat4>();
+		return Vector<glm::mat4>();
 	}
 
 	void Animation::BlendPoseWith(Pose& target, const Pose& poseToBlendWith, float blendFactor)
@@ -267,7 +267,7 @@ namespace Volt
 		return result;
 	}
 
-	const std::vector<Animation::TRS> Animation::SampleTRS(float aStartTime, Ref<Skeleton> aSkeleton, bool looping, float speed) const
+	const Vector<Animation::TRS> Animation::SampleTRS(float aStartTime, Ref<Skeleton> aSkeleton, bool looping, float speed) const
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -302,7 +302,7 @@ namespace Volt
 			}
 		}
 
-		std::vector<TRS> result;
+		Vector<TRS> result;
 		result.resize(aSkeleton->GetJointCount(), TRS{});
 
 		const Pose& currentFrame = m_frames.at(currentFrameIndex);

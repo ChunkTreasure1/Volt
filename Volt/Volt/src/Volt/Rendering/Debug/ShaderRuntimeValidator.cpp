@@ -85,7 +85,7 @@ namespace Volt
 
 		if (m_stagingBuffer)
 		{
-			std::vector<uint8_t> bufferData{};
+			Vector<uint8_t> bufferData{};
 			bufferData.resize(m_stagingBuffer->GetResource()->GetByteSize());
 
 			uint8_t* stagingPtr = m_stagingBuffer->GetResource()->Map<uint8_t>();
@@ -111,7 +111,7 @@ namespace Volt
 		return m_errorBuffer->GetResourceHandle();
 	}
 
-	void ShaderRuntimeValidator::ProcessValidationBuffer(const std::vector<uint8_t>& dataBuffer)
+	void ShaderRuntimeValidator::ProcessValidationBuffer(const Vector<uint8_t>& dataBuffer)
 	{
 		m_validationErrors.clear();
 

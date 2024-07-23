@@ -5,10 +5,10 @@
 
 namespace Volt::RHI
 {
-	ResourceRegistry::ResourceRegistry(uint32_t handleSize)
-		: m_handleSize(handleSize)
+	ResourceRegistry::ResourceRegistry(uint32_t handleSize, uint64_t frameCount)
+		: m_handleSize(handleSize), m_framesInFlight(frameCount)
 	{
-		m_removalQueue.resize(FRAME_COUNT);
+		m_removalQueue.resize(m_framesInFlight);
 	}
 
 	void ResourceRegistry::Update()
@@ -16,7 +16,7 @@ namespace Volt::RHI
 		std::scoped_lock lock{ m_mutex };
 
 		m_removalQueue.at(m_frameIndex).Flush();
-		m_frameIndex = (m_frameIndex + 1) % FRAME_COUNT;
+		m_frameIndex = (m_frameIndex + 1) % m_framesInFlight;
 	}
 
 	void ResourceRegistry::MarkAsDirty(ResourceHandle handle)
@@ -87,7 +87,7 @@ namespace Volt::RHI
 
 		if (handle >= m_resources.size())
 		{
-			RHILog::LogTagged(LogSeverity::Warning, "[ResourceRegistry]","Resource with handle{0} is not valid!", handle.Get());
+			RHILog::LogTagged(LogSeverity::Warning, "[ResourceRegistry]","Resource with handle {0} is not valid!", handle.Get());
 			return;
 		}
 

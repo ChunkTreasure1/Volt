@@ -193,7 +193,7 @@ namespace Volt::RHI
 			CalculateOffsetAndStride();
 		}
 
-		BufferLayout(std::vector<BufferElement> aElements)
+		BufferLayout(Vector<BufferElement> aElements)
 			: m_elements(aElements), m_stride(0)
 		{
 			CalculateOffsetAndStride();
@@ -243,7 +243,7 @@ namespace Volt::RHI
 		}
 
 		VT_NODISCARD VT_INLINE const uint32_t GetStride() const { return m_stride; }
-		VT_NODISCARD VT_INLINE const std::vector<BufferElement>& GetElements() const { return m_elements; }
+		VT_NODISCARD VT_INLINE const Vector<BufferElement>& GetElements() const { return m_elements; }
 		VT_NODISCARD VT_INLINE const bool IsValid() const { return !m_elements.empty(); }
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const BufferLayout& data)
@@ -280,7 +280,7 @@ namespace Volt::RHI
 			}
 		}
 
-		std::vector<BufferElement> m_elements;
+		Vector<BufferElement> m_elements;
 		uint32_t m_stride = 0;
 	};
 }

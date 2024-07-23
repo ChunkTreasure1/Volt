@@ -91,7 +91,7 @@
 
 Sandbox::Sandbox()
 {
-	VT_ASSERT(!s_instance, "Sandbox already exists!");
+	VT_ASSERT_MSG(!s_instance, "Sandbox already exists!");
 	s_instance = this;
 }
 

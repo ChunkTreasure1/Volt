@@ -7,7 +7,7 @@
 
 FileWatcher::FileWatcher()
 {
-	VT_CORE_ASSERT(!myInstance, "Instance already exists!");
+	VT_ASSERT_MSG(!myInstance, "Instance already exists!");
 	myInstance = this;
 
 	myFileWatcher = CreateScope<efsw::FileWatcher>();

@@ -149,8 +149,8 @@ public:
 	static bool OpenFileExternally(const std::filesystem::path& aPath);
 
 	static std::filesystem::path PickFolderDialogue();
-	static std::filesystem::path OpenFileDialogue(const std::vector<FileFilter>& filters);
-	static std::filesystem::path SaveFileDialogue(const std::vector<FileFilter>& filters);
+	static std::filesystem::path OpenFileDialogue(const Vector<FileFilter>& filters);
+	static std::filesystem::path SaveFileDialogue(const Vector<FileFilter>& filters);
 	static std::filesystem::path GetDocumentsPath();
 
 	static bool HasEnvironmentVariable(const std::string& key);

@@ -205,7 +205,7 @@ namespace Volt
 		void SetConstant(const StringHash& name, const ResourceHandle& data);
 
 		template<typename F>
-		void SetConstant(const StringHash& name, const std::vector<F>& data);
+		void SetConstant(const StringHash& name, const Vector<F>& data);
 
 		template<typename F, size_t COUNT>
 		void SetConstant(const StringHash& name, const std::array<F, COUNT>& data);
@@ -251,7 +251,7 @@ namespace Volt
 		RefPtr<RHI::CommandBuffer> m_commandBuffer;
 
 		// #TODO_Ivar: Should be changed
-		std::vector<uint8_t> m_perPassConstantsBufferData;
+		Vector<uint8_t> m_perPassConstantsBufferData;
 
 #ifdef VT_DEBUG
 		BoundPipelineData m_boundPipelineData;
@@ -280,7 +280,7 @@ namespace Volt
 	}
 
 	template<typename F>
-	inline void RenderContext::SetConstant(const StringHash& name, const std::vector<F>& data)
+	inline void RenderContext::SetConstant(const StringHash& name, const Vector<F>& data)
 	{
 		VT_PROFILE_FUNCTION();
 

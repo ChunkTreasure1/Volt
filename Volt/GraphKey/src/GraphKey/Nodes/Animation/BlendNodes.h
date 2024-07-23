@@ -48,8 +48,8 @@ namespace GraphKey
 		void Sample();
 
 		const std::array<std::pair<float, Volt::AssetHandle>, 2> FindClosestKeys1D(Ref<Volt::BlendSpace> blendSpace, float blendValue);
-		const std::vector<Volt::Animation::TRS> TrySampleAnimation(Volt::AssetHandle animationHandle);
-		const std::vector<std::pair<float, Volt::AssetHandle>> GetSortedAnimationWeights(Ref<Volt::BlendSpace> blendSpace, const glm::vec2& blendValue);
+		const Vector<Volt::Animation::TRS> TrySampleAnimation(Volt::AssetHandle animationHandle);
+		const Vector<std::pair<float, Volt::AssetHandle>> GetSortedAnimationWeights(Ref<Volt::BlendSpace> blendSpace, const glm::vec2& blendValue);
 		const size_t GetSkeletonJointCount() const;
 	};
 
@@ -69,16 +69,16 @@ namespace GraphKey
 		void Serialize(YAMLStreamWriter& out) override;
 		void Deserialize(YAMLStreamReader& node) override;
 
-		inline std::vector<BlendFilter>& GetBlendIncludeFilters() { return myIncludeFilters; }
-		inline std::vector<BlendFilter>& GetBlendExcludeFilters() { return myExcludeFilters; }
+		inline Vector<BlendFilter>& GetBlendIncludeFilters() { return myIncludeFilters; }
+		inline Vector<BlendFilter>& GetBlendExcludeFilters() { return myExcludeFilters; }
 
 		Ref<Node> CreateCopy(Graph* ownerGraph, Volt::EntityID entity = Volt::EntityID(0)) override;
 
 	private:
 		void TryApplyLayeredBlendPerBone();
 
-		std::vector<BlendFilter> myIncludeFilters;
-		std::vector<BlendFilter> myExcludeFilters;
+		Vector<BlendFilter> myIncludeFilters;
+		Vector<BlendFilter> myExcludeFilters;
 	};
 
 	struct RotateBoneNode : public Node

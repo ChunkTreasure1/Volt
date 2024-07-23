@@ -23,9 +23,9 @@ namespace Volt
 			}
 		}
 
-		std::vector<glm::vec3> DtNavMesh::FindPath(glm::vec3 start, glm::vec3 end, glm::vec3 polySearchDistance)
+		Vector<glm::vec3> DtNavMesh::FindPath(glm::vec3 start, glm::vec3 end, glm::vec3 polySearchDistance)
 		{
-			std::vector<glm::vec3> resultPath;
+			Vector<glm::vec3> resultPath;
 
 			if (!myNavMesh || !myNavMeshQuery) { return resultPath; }
 
@@ -80,7 +80,7 @@ namespace Volt
 				return resultPath;
 			}
 
-			std::vector<glm::vec3> straightPathPositions;
+			Vector<glm::vec3> straightPathPositions;
 			uint32_t straightPathSize = 0;
 
 			straightPathPositions.resize(MAX_PATH_SIZE);

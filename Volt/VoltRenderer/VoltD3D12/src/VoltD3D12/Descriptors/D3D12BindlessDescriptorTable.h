@@ -15,7 +15,7 @@ namespace Volt::RHI
 	class D3D12BindlessDescriptorTable : public BindlessDescriptorTable
 	{
 	public:
-		D3D12BindlessDescriptorTable();
+		D3D12BindlessDescriptorTable(const uint64_t framesInFlight);
 		~D3D12BindlessDescriptorTable() override;
 
 		ResourceHandle RegisterBuffer(WeakPtr<StorageBuffer> storageBuffer) override;
@@ -53,8 +53,8 @@ namespace Volt::RHI
 		ResourceRegistry m_mainRegistry;
 		ResourceRegistry m_samplerRegistry;
 
-		std::vector<DescriptorCopyInfo> m_activeDescriptorCopies;
-		std::vector<DescriptorCopyInfo> m_activeSamplerDescriptorCopies;
+		Vector<DescriptorCopyInfo> m_activeDescriptorCopies;
+		Vector<DescriptorCopyInfo> m_activeSamplerDescriptorCopies;
 
 		vt::map<ResourceHandle, D3D12DescriptorPointer> m_allocatedDescriptorPointers;
 		vt::map<ResourceHandle, D3D12DescriptorPointer> m_allocatedSamplerDescriptorPointers;

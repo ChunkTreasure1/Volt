@@ -373,7 +373,7 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
-		std::vector<VkFence> fences{};
+		Vector<VkFence> fences{};
 		for (const auto& cmdBuffer : m_commandBuffers)
 		{
 			fences.emplace_back(cmdBuffer.fence);
@@ -901,13 +901,13 @@ namespace Volt::RHI
 		GraphicsContext::GetResourceStateTracker()->TransitionResource(barrierInfo.resource, barrierInfo.dstStage, barrierInfo.dstAccess, barrierInfo.dstLayout);
 	}
 
-	void VulkanCommandBuffer::ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers)
+	void VulkanCommandBuffer::ResourceBarrier(const Vector<ResourceBarrierInfo>& resourceBarriers)
 	{
 		VT_PROFILE_FUNCTION();
 
-		std::vector<VkImageMemoryBarrier2> imageBarriers{};
-		std::vector<VkBufferMemoryBarrier2> bufferBarriers{};
-		std::vector<VkMemoryBarrier2> memoryBarriers{};
+		Vector<VkImageMemoryBarrier2> imageBarriers{};
+		Vector<VkBufferMemoryBarrier2> bufferBarriers{};
+		Vector<VkMemoryBarrier2> memoryBarriers{};
 
 		for (const auto& resourceBarrier : resourceBarriers)
 		{
@@ -1218,7 +1218,7 @@ namespace Volt::RHI
 		
 		auto& vkImage = dstImage->AsRef<VulkanImage2D>();
 
-		std::vector<VkBufferImageCopy> copyRegions;
+		Vector<VkBufferImageCopy> copyRegions;
 		copyRegions.reserve(copyData.copySubData.size());
 
 		const uint64_t stagingSize = Utility::CalculateStagingBufferSize(copyData);
@@ -1342,7 +1342,7 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::Release()
 	{
 		auto device = GraphicsContext::GetDevice();
-		std::vector<VkFence> fences{};
+		Vector<VkFence> fences{};
 		for (const auto& cmdBuffer : m_commandBuffers)
 		{
 			fences.emplace_back(cmdBuffer.fence);
@@ -1382,7 +1382,7 @@ namespace Volt::RHI
 			VT_VK_CHECK(vkCreateQueryPool(device->GetHandle<VkDevice>(), &info, nullptr, &pool));
 		}
 
-		m_timestampCounts = std::vector<uint32_t>(3, 0u);
+		m_timestampCounts = Vector<uint32_t>(3, 0u);
 		m_timestampQueryResults.resize(m_commandBufferCount);
 		m_executionTimes.resize(m_commandBufferCount);
 

@@ -41,20 +41,20 @@ private:
 	bool OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent& e);
 	bool OnRenderEvent(Volt::AppRenderEvent& e);
 
-	std::vector<AssetBrowser::DirectoryItem*> FindParentDirectoriesOfDirectory(AssetBrowser::DirectoryItem* directory);
+	Vector<AssetBrowser::DirectoryItem*> FindParentDirectoriesOfDirectory(AssetBrowser::DirectoryItem* directory);
 
 	void RenderControlsBar(float height);
 	bool RenderDirectory(const Ref<AssetBrowser::DirectoryItem> dirData);
-	void RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>& directories, std::vector<Ref<AssetBrowser::AssetItem>>& assets);
+	void RenderView(Vector<Ref<AssetBrowser::DirectoryItem>>& directories, Vector<Ref<AssetBrowser::AssetItem>>& assets);
 	void RenderWindowRightClickPopup();
 
 	void DeleteFilesModal();
 
 	void Search(const std::string& query);
-	void FindFoldersAndFilesWithQuery(const std::vector<Ref<AssetBrowser::DirectoryItem>>& dirList, std::vector<Ref<AssetBrowser::DirectoryItem>>& directories, std::vector<Ref<AssetBrowser::AssetItem>>& assets, const std::string& query);
+	void FindFoldersAndFilesWithQuery(const Vector<Ref<AssetBrowser::DirectoryItem>>& dirList, Vector<Ref<AssetBrowser::DirectoryItem>>& directories, Vector<Ref<AssetBrowser::AssetItem>>& assets, const std::string& query);
 
 	AssetBrowser::DirectoryItem* FindDirectoryWithPath(const std::filesystem::path& path);
-	AssetBrowser::DirectoryItem* FindDirectoryWithPathRecursivly(const std::vector<Ref<AssetBrowser::DirectoryItem>> dirList, const std::filesystem::path& path);
+	AssetBrowser::DirectoryItem* FindDirectoryWithPathRecursivly(const Vector<Ref<AssetBrowser::DirectoryItem>> dirList, const std::filesystem::path& path);
 
 	void CreatePrefabAndSetupEntities(Volt::EntityID entity);
 	void SetupEntityAsPrefab(Volt::EntityID entity, Volt::AssetHandle prefabId);
@@ -93,7 +93,7 @@ private:
 	Ref<Volt::Scene>& myEditorScene;
 	Ref<PreviewRenderer> myPreviewRenderer;
 
-	std::vector<AssetBrowser::DirectoryItem*> myDirectoryButtons;
+	Vector<AssetBrowser::DirectoryItem*> myDirectoryButtons;
 
 	AssetBrowser::DirectoryItem* myAssetsDirectory = nullptr;
 
@@ -104,16 +104,16 @@ private:
 	glm::vec2 myViewBounds[2];
 
 	std::string mySearchQuery;
-	std::vector<Ref<AssetBrowser::DirectoryItem>> mySearchDirectories;
-	std::vector<Ref<AssetBrowser::AssetItem>> mySearchAssets;
+	Vector<Ref<AssetBrowser::DirectoryItem>> mySearchDirectories;
+	Vector<Ref<AssetBrowser::AssetItem>> mySearchAssets;
 
 	///// Mesh import data //////
 	AssetData myMeshToImport;
 	MeshImportData myMeshImportData;
 	Volt::AssetType myAssetMask = Volt::AssetType::None;
 	
-	std::vector<std::filesystem::path> myDragDroppedMeshes;
-	std::vector<std::filesystem::path> myDragDroppedTextures;
+	Vector<std::filesystem::path> myDragDroppedMeshes;
+	Vector<std::filesystem::path> myDragDroppedTextures;
 
 	bool myIsImporting = false;
 

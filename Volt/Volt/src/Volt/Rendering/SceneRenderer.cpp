@@ -349,7 +349,7 @@ namespace Volt
 
 				if (dirLightComp.castShadows)
 				{
-					const std::vector<float> cascades = { camera->GetFarPlane() / 50.f, camera->GetFarPlane() / 25.f, camera->GetFarPlane() / 10 };
+					const Vector<float> cascades = { camera->GetFarPlane() / 50.f, camera->GetFarPlane() / 25.f, camera->GetFarPlane() / 10 };
 					const auto lightMatrices = Utility::CalculateCascadeMatrices(camera, dir, cascades);
 
 					for (size_t i = 0; i < lightMatrices.size(); i++)
@@ -385,7 +385,7 @@ namespace Volt
 
 		// Point lights
 		{
-			std::vector<PointLightData> pointLights{};
+			Vector<PointLightData> pointLights{};
 
 			m_scene->ForEachWithComponents<const PointLightComponent, const IDComponent, const TransformComponent>([&](entt::entity entityId, const PointLightComponent& comp, const IDComponent& idComp, const TransformComponent& transComp)
 			{
@@ -415,7 +415,7 @@ namespace Volt
 
 		// Spot lights
 		{
-			std::vector<SpotLightData> spotLights{};
+			Vector<SpotLightData> spotLights{};
 
 			m_scene->ForEachWithComponents<const SpotLightComponent, const IDComponent, const TransformComponent>([&](entt::entity entityId, const SpotLightComponent& comp, const IDComponent& idComp, const TransformComponent& transComp)
 			{

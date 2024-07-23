@@ -94,7 +94,7 @@ namespace Volt::RHI
 		virtual RefPtr<UniformBuffer> CreateUniformBuffer(const uint32_t size, const void* data, const uint32_t count, std::string_view name) const = 0;
 
 		virtual RefPtr<DescriptorTable> CreateDescriptorTable(const DescriptorTableCreateInfo& createInfo) const = 0;
-		virtual RefPtr<BindlessDescriptorTable> CreateBindlessDescriptorTable() const = 0;
+		virtual RefPtr<BindlessDescriptorTable> CreateBindlessDescriptorTable(const uint64_t framesInFlight) const = 0;
 
 		virtual RefPtr<DeviceQueue> CreateDeviceQueue(const DeviceQueueCreateInfo& createInfo) const = 0;
 		virtual RefPtr<GraphicsContext> CreateGraphicsContext(const GraphicsContextCreateInfo& createInfo) const = 0;

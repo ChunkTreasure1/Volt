@@ -39,8 +39,8 @@ namespace Volt::RHI
 		VT_NODISCARD RefPtr<TransientHeap> CreateNewImageHeap();
 		VT_NODISCARD RefPtr<TransientHeap> CreateNewBufferHeap();
 
-		std::vector<RefPtr<TransientHeap>> m_bufferHeaps;
-		std::vector<RefPtr<TransientHeap>> m_imageHeaps;
+		Vector<RefPtr<TransientHeap>> m_bufferHeaps;
+		Vector<RefPtr<TransientHeap>> m_imageHeaps;
 
 		AllocationCache m_allocationCache{};
 	};

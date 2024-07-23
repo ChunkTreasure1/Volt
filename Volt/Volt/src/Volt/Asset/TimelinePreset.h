@@ -3,6 +3,8 @@
 #include "Volt/Asset/Asset.h"
 #include "Volt/Scene/EntityID.h"
 
+#include <CoreUtilities/Containers/Vector.h>
+
 namespace Volt
 {
 	enum class TrackObjectType : uint32_t
@@ -57,14 +59,14 @@ namespace Volt
 
 		EntityID targetEntity = EntityID(0);
 
-		std::vector<Keyframe> keyframes = std::vector<Keyframe>();
-		std::vector<Clip> clips = std::vector<Clip>();
+		Vector<Keyframe> keyframes = Vector<Keyframe>();
+		Vector<Clip> clips = Vector<Clip>();
 	};
 
 	class TimelinePreset : public Asset
 	{
 	public:
-		std::vector<Track> myTracks = std::vector<Track>();
+		Vector<Track> myTracks = Vector<Track>();
 
 		int maxLength = 300;
 

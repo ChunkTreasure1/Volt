@@ -25,7 +25,7 @@ public:
 private:
 	bool Animate(Volt::AppUpdateEvent& e);
 
-	std::vector<Ref<Volt::Texture2D>> myTextures;
+	Vector<Ref<Volt::Texture2D>> myTextures;
 	Ref<Volt::Texture2D> myCurrentTexture;
 
 	float myAnimationTime = 0.f;

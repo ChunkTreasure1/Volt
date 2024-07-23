@@ -16,7 +16,7 @@ namespace Volt::BehaviorTree
 	namespace Nil
 	{
 		inline static const Link link = { 0,0,0 };
-		inline static const std::vector<Link> linkVec;
+		inline static const Vector<Link> linkVec;
 		inline static const UUID64 id = UUID64(0);
 	}
 

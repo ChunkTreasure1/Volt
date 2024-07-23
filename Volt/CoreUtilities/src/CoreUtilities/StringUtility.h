@@ -28,11 +28,11 @@ namespace Utility
 		return newStr;
 	}
 
-	inline const std::vector<std::string> SplitStringsByCharacter(const std::string& src, const char character)
+	inline const Vector<std::string> SplitStringsByCharacter(const std::string& src, const char character)
 	{
 		std::istringstream iss(src);
 
-		std::vector<std::string> result;
+		Vector<std::string> result;
 		std::string token;
 
 		while (std::getline(iss, token, character))

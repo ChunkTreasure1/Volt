@@ -26,7 +26,7 @@ namespace Volt
 		{
 			auto typeIndex = std::type_index{ typeid(T) };
 
-			VT_CORE_ASSERT(m_blackboard.contains(typeIndex), "Blackboard does not contain type!");
+			VT_ASSERT_MSG(m_blackboard.contains(typeIndex), "Blackboard does not contain type!");
 			return std::any_cast<T&>(m_blackboard.at(typeIndex));
 		}
 
@@ -35,7 +35,7 @@ namespace Volt
 		{
 			auto typeIndex = std::type_index{ typeid(T) };
 
-			VT_CORE_ASSERT(m_blackboard.contains(typeIndex), "Blackboard does not contain type!");
+			VT_ASSERT_MSG(m_blackboard.contains(typeIndex), "Blackboard does not contain type!");
 			return std::any_cast<const T&>(m_blackboard.at(typeIndex));
 		}
 

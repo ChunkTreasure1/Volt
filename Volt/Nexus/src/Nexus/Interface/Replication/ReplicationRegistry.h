@@ -20,8 +20,8 @@ namespace Nexus
 		Ref<T> GetAs(TYPE::REP_ID id);
 		Ref<Replicated> Get(TYPE::REP_ID id);
 		TYPE::REP_ID GetLinked(TYPE::REP_ID owner, std::string key);
-		std::vector<TYPE::REP_ID> GetAllOwner(TYPE::CLIENT_ID owner);
-		std::vector<TYPE::REP_ID> GetAllType(TYPE::eReplicatedType type);
+		Vector<TYPE::REP_ID> GetAllOwner(TYPE::CLIENT_ID owner);
+		Vector<TYPE::REP_ID> GetAllType(TYPE::eReplicatedType type);
 
 		bool IdExist(TYPE::REP_ID id);
 		TYPE::REP_ID GetNewId();

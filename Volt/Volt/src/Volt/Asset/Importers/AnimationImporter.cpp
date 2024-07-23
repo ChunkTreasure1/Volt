@@ -41,7 +41,7 @@ namespace Volt
 			return false;
 		}
 
-		std::vector<uint8_t> totalData;
+		Vector<uint8_t> totalData;
 		totalData.resize(input.seekg(0, std::ios::end).tellg());
 		input.seekg(0, std::ios::beg);
 		input.read(reinterpret_cast<char*>(totalData.data()), totalData.size());
@@ -57,7 +57,7 @@ namespace Volt
 		AnimationHeader header = *(AnimationHeader*)&totalData[0];
 		size_t offset = sizeof(AnimationHeader);
 
-		std::vector<Animation::Pose> frames;
+		Vector<Animation::Pose> frames;
 		frames.resize(header.frameCount);
 
 		for (uint32_t i = 0; i < header.frameCount; i++)
@@ -100,7 +100,7 @@ namespace Volt
 	{
 		Ref<Animation> animation = std::reinterpret_pointer_cast<Animation>(asset);
 
-		std::vector<uint8_t> outData;
+		Vector<uint8_t> outData;
 
 		AnimationHeader header{};
 		header.perFrameTransformCount = (uint32_t)animation->m_frames.front().localTRS.size();

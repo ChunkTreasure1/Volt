@@ -19,8 +19,8 @@ namespace Volt::RHI
 {
 	struct VertexAttributeData
 	{
-		std::vector<VkVertexInputBindingDescription> bindingDescriptions;
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+		Vector<VkVertexInputBindingDescription> bindingDescriptions;
+		Vector<VkVertexInputAttributeDescription> attributeDescriptions;
 	};
 
 	namespace Utility
@@ -171,7 +171,7 @@ namespace Volt::RHI
 			blendInfo.blendConstants[2] = 0.f;
 			blendInfo.blendConstants[3] = 0.f;
 
-			std::vector<VkPipelineColorBlendAttachmentState> blendAttachments{};
+			Vector<VkPipelineColorBlendAttachmentState> blendAttachments{};
 			for (const auto& outputFormat : shaderResources.outputFormats)
 			{
 				if (Utility::IsDepthFormat(outputFormat) || Utility::IsStencilFormat(outputFormat))
@@ -228,7 +228,7 @@ namespace Volt::RHI
 			VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
 			dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 
-			std::vector<VkDynamicState> dynamicStates =
+			Vector<VkDynamicState> dynamicStates =
 			{
 				VK_DYNAMIC_STATE_VIEWPORT,
 				VK_DYNAMIC_STATE_SCISSOR,
@@ -237,7 +237,7 @@ namespace Volt::RHI
 			dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 			dynamicStateInfo.pDynamicStates = dynamicStates.data();
 
-			std::vector<PixelFormat> outputFormats{};
+			Vector<PixelFormat> outputFormats{};
 			PixelFormat depthFormat = PixelFormat::UNDEFINED;
 			PixelFormat stencilFormat = PixelFormat::UNDEFINED;
 
@@ -264,7 +264,7 @@ namespace Volt::RHI
 			pipelineRenderingInfo.depthAttachmentFormat = static_cast<VkFormat>(depthFormat);
 			pipelineRenderingInfo.stencilAttachmentFormat = static_cast<VkFormat>(stencilFormat);
 
-			std::vector<VkPipelineShaderStageCreateInfo> pipelineStageInfos{};
+			Vector<VkPipelineShaderStageCreateInfo> pipelineStageInfos{};
 
 			for (const auto& [stage, stageInfo] : vulkanShader.GetPipelineStageInfos())
 			{

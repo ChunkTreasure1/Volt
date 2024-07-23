@@ -76,7 +76,7 @@ namespace Volt
 		//Ref<CommandBuffer> commandBuffer;
 		//Ref<Image2D> depthImage;
 
-		std::vector<SpriteCommand> spriteCommands;
+		Vector<SpriteCommand> spriteCommands;
 	};
 
 	Scope<UIRendererData> s_uiRendererData;
@@ -263,7 +263,7 @@ namespace Volt
 		DrawSprite(RefPtr<RHI::Image2D>(nullptr), position, scale, rotation, color, offset);
 	}
 
-	static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)
+	static bool NextLine(int32_t aIndex, const Vector<int32_t>& aLines)
 	{
 		for (int32_t line : aLines)
 		{
@@ -299,7 +299,7 @@ namespace Volt
 		auto& fontGeom = font->GetMSDFData()->fontGeometry;
 		const auto& metrics = fontGeom.getMetrics();
 
-		std::vector<int32_t> nextLines;
+		Vector<int32_t> nextLines;
 
 		// Find new lines
 		{

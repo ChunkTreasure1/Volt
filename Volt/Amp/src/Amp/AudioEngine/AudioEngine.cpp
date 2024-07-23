@@ -173,9 +173,9 @@ namespace Amp
 		return nullptr;
 	}
 
-	std::vector<std::string> AudioEngine::GetAllEventNames()
+	Vector<std::string> AudioEngine::GetAllEventNames()
 	{
-		std::vector<std::string> eventNames;
+		Vector<std::string> eventNames;
 		for (auto& event : events)
 		{
 			eventNames.emplace_back(event.first);

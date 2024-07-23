@@ -128,7 +128,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(binaryStreamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		Buffer buffer{};
 		binaryStreamReader.Read(buffer);

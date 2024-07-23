@@ -48,9 +48,9 @@ namespace Volt
 		bool Linecast(const glm::vec3& origin, const glm::vec3& destination, RaycastHit* outHit);
 		bool Linecast(const glm::vec3& origin, const glm::vec3& destination, RaycastHit* outHit, uint32_t layerMask);
 
-		bool OverlapBox(const glm::vec3& origin, const glm::vec3& halfSize, std::vector<Entity>& buffer, uint32_t layerMask = 0);
-		bool OverlapCapsule(const glm::vec3& origin, float radius, float halfHeight, std::vector<Entity>& buffer, uint32_t layerMask = 0);
-		bool OverlapSphere(const glm::vec3& origin, float radius, std::vector<Entity>& buffer, uint32_t layerMask = 0);
+		bool OverlapBox(const glm::vec3& origin, const glm::vec3& halfSize, Vector<Entity>& buffer, uint32_t layerMask = 0);
+		bool OverlapCapsule(const glm::vec3& origin, float radius, float halfHeight, Vector<Entity>& buffer, uint32_t layerMask = 0);
+		bool OverlapSphere(const glm::vec3& origin, float radius, Vector<Entity>& buffer, uint32_t layerMask = 0);
 
 		inline const bool IsValid() const { return myPhysXScene != nullptr; }
 
@@ -68,13 +68,13 @@ namespace Volt
 		physx::PxScene* myPhysXScene = nullptr;
 		physx::PxControllerManager* myControllerManager = nullptr;
 
-		std::vector<Ref<PhysicsActor>> myPhysicsActors;
-		std::vector<Ref<PhysicsControllerActor>> myControllerActors;
+		Vector<Ref<PhysicsActor>> myPhysicsActors;
+		Vector<Ref<PhysicsControllerActor>> myControllerActors;
 
 		std::unordered_map<entt::entity, Ref<PhysicsActor>> m_physicsActorFromEntityIDMap;
 		std::unordered_map<entt::entity, Ref<PhysicsControllerActor>> m_physicsControllerActorFromEntityIDMap;
 
-		std::vector<std::function<void()>> myFunctionQueue;
+		Vector<std::function<void()>> myFunctionQueue;
 
 		Scene* myEntityScene;
 

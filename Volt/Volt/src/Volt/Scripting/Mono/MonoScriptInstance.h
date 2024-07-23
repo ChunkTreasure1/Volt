@@ -95,7 +95,7 @@ namespace Volt
 
 		GCHandle myHandle = nullptr;
 
-		std::vector<std::string> myFieldNames;
+		Vector<std::string> myFieldNames;
 		inline static Buffer myFieldBuffer;
 		inline static constexpr uint32_t DEFAULT_FIELD_ALLOC_SIZE = 40;
 	};

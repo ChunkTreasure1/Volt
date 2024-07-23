@@ -34,10 +34,10 @@ public:
 	template<typename T>
 	static Ref<T> Get();
 
-	inline static const std::vector<PanelInfo>& GetPanels() { return s_editors; }
+	inline static const Vector<PanelInfo>& GetPanels() { return s_editors; }
 
 private:
-	inline static std::vector<PanelInfo> s_editors;
+	inline static Vector<PanelInfo> s_editors;
 };
 
 template<typename T, typename ...Args>

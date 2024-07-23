@@ -1,3 +1,5 @@
+#include "Vector.h"
+#include "Vector.h"
 //
 // Copyright (c) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
 //
@@ -911,7 +913,7 @@ private:
 
 #ifndef _D3D12MA_VECTOR
 /*
-Dynamically resizing continuous array. Class with interface similar to std::vector.
+Dynamically resizing continuous array. Class with interface similar to Vector.
 T must be POD because constructors and destructors are not called and memcpy is
 used for these objects.
 */

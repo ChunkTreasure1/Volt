@@ -37,7 +37,7 @@ namespace GraphKey
 			SetOutputData(0, a);
 		}
 
-		std::vector<Volt::Animation::TRS> result{ a.pose.size() };
+		Vector<Volt::Animation::TRS> result{ a.pose.size() };
 		for (size_t i = 0; i < result.size(); i++)
 		{
 			const auto& aTRS = a.pose.at(i);
@@ -90,7 +90,7 @@ namespace GraphKey
 			return;
 		}
 
-		std::vector<Volt::Animation::TRS> result{ additive.pose.size() };
+		Vector<Volt::Animation::TRS> result{ additive.pose.size() };
 		for (size_t i = 0; i < result.size(); i++)
 		{
 			const auto& baseTRS = base.pose.at(i);
@@ -158,7 +158,7 @@ namespace GraphKey
 				// Calculate current T between the closest animations
 				const float t = std::clamp((blendSpaceValue.x - closestAnims.at(0).first) / (closestAnims.at(1).first - closestAnims.at(0).first), 0.f, 1.f);
 
-				std::vector<Volt::Animation::TRS> result{ minAnimSample.size() };
+				Vector<Volt::Animation::TRS> result{ minAnimSample.size() };
 				for (size_t i = 0; i < result.size(); i++)
 				{
 					const auto& aTRS = minAnimSample.at(i);
@@ -181,7 +181,7 @@ namespace GraphKey
 				const auto sortedAnims = GetSortedAnimationWeights(blendSpace, blendSpaceValue);
 				const size_t jointCount = GetSkeletonJointCount();
 
-				std::vector<Volt::Animation::TRS> result{ jointCount };
+				Vector<Volt::Animation::TRS> result{ jointCount };
 
 				for (size_t i = 1; i < sortedAnims.size(); i++)
 				{
@@ -253,7 +253,7 @@ namespace GraphKey
 		return { std::pair{ closestMinValue, closestMinAnim }, std::pair{ closestMaxValue, closestMaxAnim } };
 	}
 
-	const std::vector<Volt::Animation::TRS> BlendSpaceNode::TrySampleAnimation(Volt::AssetHandle animationHandle)
+	const Vector<Volt::Animation::TRS> BlendSpaceNode::TrySampleAnimation(Volt::AssetHandle animationHandle)
 	{
 		Volt::AnimationGraphAsset* animGraph = reinterpret_cast<Volt::AnimationGraphAsset*>(myGraph);
 		const auto skeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(animGraph->GetSkeletonHandle());
@@ -276,15 +276,15 @@ namespace GraphKey
 		return anim->SampleTRS(animGraph->GetStartTime(), skeleton, true);
 	}
 
-	const std::vector<std::pair<float, Volt::AssetHandle>> BlendSpaceNode::GetSortedAnimationWeights(Ref<Volt::BlendSpace> blendSpace, const glm::vec2& blendValue)
+	const Vector<std::pair<float, Volt::AssetHandle>> BlendSpaceNode::GetSortedAnimationWeights(Ref<Volt::BlendSpace> blendSpace, const glm::vec2& blendValue)
 	{
 		if (blendSpace->GetAnimations().size() < 3)
 		{
 			return {};
 		}
 
-		std::vector<std::pair<float, Volt::AssetHandle>> weights;
-		std::vector<std::pair<float, Volt::AssetHandle>> distances;
+		Vector<std::pair<float, Volt::AssetHandle>> weights;
+		Vector<std::pair<float, Volt::AssetHandle>> distances;
 
 		for (const auto& [value, anim] : blendSpace->GetAnimations())
 		{
@@ -426,8 +426,8 @@ namespace GraphKey
 			SetOutputData(0, basePose);
 		}
 
-		std::vector<int32_t> includedBones;
-		std::vector<int32_t> excludedBones;
+		Vector<int32_t> includedBones;
+		Vector<int32_t> excludedBones;
 
 		for (const auto& filter : myIncludeFilters)
 		{
@@ -447,7 +447,7 @@ namespace GraphKey
 			}
 		}
 
-		std::vector<Volt::Animation::TRS> result{ basePose.pose.size() };
+		Vector<Volt::Animation::TRS> result{ basePose.pose.size() };
 		for (size_t i = 0; i < result.size(); i++)
 		{
 			bool shouldSkip = true;

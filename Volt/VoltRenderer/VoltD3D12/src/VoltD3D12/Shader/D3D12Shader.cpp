@@ -97,7 +97,7 @@ namespace Volt::RHI
 		range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 	}
 
-	inline DescriptorRangeInfo AddDescriptorToRange(vt::map<uint32_t, std::vector<size_t>>& rangesMap, std::vector<D3D12_DESCRIPTOR_RANGE>& ranges, uint32_t space, uint32_t binding, D3D12_DESCRIPTOR_RANGE_TYPE rangeType)
+	inline DescriptorRangeInfo AddDescriptorToRange(vt::map<uint32_t, Vector<size_t>>& rangesMap, Vector<D3D12_DESCRIPTOR_RANGE>& ranges, uint32_t space, uint32_t binding, D3D12_DESCRIPTOR_RANGE_TYPE rangeType)
 	{
 		if (rangesMap.contains(space))
 		{
@@ -133,7 +133,7 @@ namespace Volt::RHI
 		return { rangeIndex, 0 };
 	}
 
-	inline void SetupDescriptorOffsets(vt::map<uint32_t, std::vector<size_t>>& rangesMap, std::vector<D3D12_DESCRIPTOR_RANGE>& ranges)
+	inline void SetupDescriptorOffsets(vt::map<uint32_t, Vector<size_t>>& rangesMap, Vector<D3D12_DESCRIPTOR_RANGE>& ranges)
 	{
 		uint32_t descriptorCount = 0;
 		for (const auto& [space, rangeIndices] : rangesMap)
@@ -157,12 +157,12 @@ namespace Volt::RHI
 
 	void D3D12Shader::CreateRootSignature()
 	{
-		std::vector<D3D12_ROOT_PARAMETER> rootParameters{};
+		Vector<D3D12_ROOT_PARAMETER> rootParameters{};
 
-		std::vector<D3D12_DESCRIPTOR_RANGE> descriptorRanges;
-		std::vector<D3D12_DESCRIPTOR_RANGE> samplerRanges;
-		vt::map<uint32_t, std::vector<size_t>> bindingToDescriptorRanges;
-		vt::map<uint32_t, std::vector<size_t>> samplerBindingToDescriptorRanges;
+		Vector<D3D12_DESCRIPTOR_RANGE> descriptorRanges;
+		Vector<D3D12_DESCRIPTOR_RANGE> samplerRanges;
+		vt::map<uint32_t, Vector<size_t>> bindingToDescriptorRanges;
+		vt::map<uint32_t, Vector<size_t>> samplerBindingToDescriptorRanges;
 
 		// Handle push constants / root constants
 		if (m_resources.constantsBuffer.IsValid())
@@ -339,7 +339,7 @@ namespace Volt::RHI
 		return m_resources;
 	}
 
-	const std::vector<ShaderSourceEntry>& D3D12Shader::GetSourceEntries() const
+	const Vector<ShaderSourceEntry>& D3D12Shader::GetSourceEntries() const
 	{
 		return m_specification.sourceEntries;
 	}

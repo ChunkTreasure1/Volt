@@ -34,8 +34,8 @@ namespace Volt::RHI
 
 		AllocationCache m_allocationCache{};
 
-		std::vector<RefPtr<Allocation>> m_activeImageAllocations;
-		std::vector<RefPtr<Allocation>> m_activeBufferAllocations;
+		Vector<RefPtr<Allocation>> m_activeImageAllocations;
+		Vector<RefPtr<Allocation>> m_activeBufferAllocations;
 	
 		std::mutex m_bufferAllocationMutex;
 		std::mutex m_imageAllocationMutex;

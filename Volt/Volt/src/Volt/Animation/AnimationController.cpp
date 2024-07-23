@@ -21,7 +21,7 @@ namespace Volt
 		myGraph = graph->CreateCopy(entity.GetID());
 	}
 
-	const std::vector<glm::mat4> AnimationController::Sample()
+	const Vector<glm::mat4> AnimationController::Sample()
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -42,7 +42,7 @@ namespace Volt
 		const auto sample = outputPoseNode->Sample(true, 0.f);
 		const auto& invBindPose = skeleton->GetInverseBindPose();
 
-		std::vector<glm::mat4> result{};
+		Vector<glm::mat4> result{};
 		result.resize(sample.pose.size());
 
 		myRootMotion = sample.rootTRS;

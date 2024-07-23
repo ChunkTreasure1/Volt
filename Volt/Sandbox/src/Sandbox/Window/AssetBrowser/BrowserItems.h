@@ -57,6 +57,6 @@ namespace AssetBrowser
 //
 //	DirectoryItem* parentDirectory;
 //
-//	std::vector<Ref<AssetItem>> assets;
-//	std::vector<Ref<DirectoryItem>> subDirectories;
+//	Vector<Ref<AssetItem>> assets;
+//	Vector<Ref<DirectoryItem>> subDirectories;
 //};

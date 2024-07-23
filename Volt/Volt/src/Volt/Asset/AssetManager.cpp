@@ -45,7 +45,7 @@ namespace Volt
 {
 	AssetManager::AssetManager()
 	{
-		VT_CORE_ASSERT(!s_instance, "AssetManager already exists!");
+		VT_ASSERT_MSG(!s_instance, "AssetManager already exists!");
 		s_instance = this;
 
 		Initialize();
@@ -119,12 +119,12 @@ namespace Volt
 		}
 	}
 
-	const std::vector<AssetHandle> AssetManager::GetAllAssetsOfType(AssetType wantedAssetType)
+	const Vector<AssetHandle> AssetManager::GetAllAssetsOfType(AssetType wantedAssetType)
 	{
 		auto& instance = Get();
 
 		ReadLock lock{ instance.m_assetRegistryMutex };
-		std::vector<AssetHandle> result;
+		Vector<AssetHandle> result;
 
 		for (const auto& [handle, metadata] : instance.m_assetRegistry)
 		{
@@ -282,21 +282,15 @@ namespace Volt
 		}
 
 		uint32_t value = 0;
-		if (streamReader.TryRead(value))
+		bool couldReadValue = streamReader.TryRead(value);
+		if (!couldReadValue || value != SerializedAssetMetadata::AssetMagic)
 		{
-			if (value == SceneSerializer::ENTITY_MAGIC_VAL)
-			{
-				return;
-			}
+			return;
 		}
 
 		streamReader.ResetHead();
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
-		if (serializedMetadata.magic != SerializedAssetMetadata::AssetMagic)
-		{
-			return;
-		}
 
 		{
 			WriteLock lock{ m_assetRegistryMutex };
@@ -553,7 +547,7 @@ namespace Volt
 			return;
 		}
 
-		std::vector<AssetHandle> filesToMove{};
+		Vector<AssetHandle> filesToMove{};
 		{
 			ReadLock lock{ m_assetRegistryMutex };
 			const std::string sourceDirLower = ::Utility::ToLower(sourceDir.string());
@@ -671,7 +665,7 @@ namespace Volt
 			return true;
 		}
 
-		VT_CORE_ASSERT(metadata.type == asset->GetType(), "Asset type does not match meta type!");
+		VT_ASSERT_MSG(metadata.type == asset->GetType(), "Asset type does not match meta type!");
 
 		return metadata.type == asset->GetType();
 	}
@@ -783,7 +777,7 @@ namespace Volt
 			return;
 		}
 
-		std::vector<AssetHandle> filesToRemove{};
+		Vector<AssetHandle> filesToRemove{};
 		{
 			ReadLock lock{ m_assetRegistryMutex };
 			const std::string sourceDirLower = ::Utility::ToLower(folderPath.string());
@@ -839,7 +833,7 @@ namespace Volt
 		Get().m_dependencyGraph->AddDependencyToAsset(handle, dependency);
 	}
 
-	std::vector<AssetHandle> AssetManager::GetAssetsDependentOn(AssetHandle handle)
+	Vector<AssetHandle> AssetManager::GetAssetsDependentOn(AssetHandle handle)
 	{
 		if (handle == Asset::Null())
 		{
@@ -1309,9 +1303,9 @@ namespace Volt
 		return pathClean;
 	}
 
-	std::vector<std::filesystem::path> AssetManager::GetEngineAssetFiles()
+	Vector<std::filesystem::path> AssetManager::GetEngineAssetFiles()
 	{
-		std::vector<std::filesystem::path> files;
+		Vector<std::filesystem::path> files;
 		const std::string ext(".vtasset");
 
 		// Engine Directory
@@ -1338,9 +1332,9 @@ namespace Volt
 		return files;
 	}
 
-	std::vector<std::filesystem::path> AssetManager::GetProjectAssetFiles()
+	Vector<std::filesystem::path> AssetManager::GetProjectAssetFiles()
 	{
-		std::vector<std::filesystem::path> files;
+		Vector<std::filesystem::path> files;
 		std::string ext(".vtasset");
 
 		// Project Directory

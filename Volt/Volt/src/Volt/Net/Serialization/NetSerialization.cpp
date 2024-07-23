@@ -429,7 +429,7 @@ Nexus::Packet& operator<(Nexus::Packet& packet, const Volt::RepRPCData& rpcData)
 
 Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepRPCData& rpcData)
 {
-	std::vector<std::string> monoElements;
+	Vector<std::string> monoElements;
 	packet >> rpcData.repId >> rpcData.rpcId;
 
 	std::string monoData;

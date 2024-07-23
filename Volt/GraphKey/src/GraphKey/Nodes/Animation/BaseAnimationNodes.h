@@ -9,7 +9,7 @@ namespace GraphKey
 	struct AnimationOutputData
 	{
 		Volt::Animation::TRS rootTRS;
-		std::vector<Volt::Animation::TRS> pose;
+		Vector<Volt::Animation::TRS> pose;
 	};
 
 	struct OutputPoseNode : public Node

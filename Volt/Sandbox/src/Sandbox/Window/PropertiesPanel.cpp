@@ -266,7 +266,7 @@ void PropertiesPanel::AddComponentPopup()
 	ImGui::SetNextWindowSize({ 250.f, 500.f });
 	if (UI::BeginPopup("AddComponent" + m_id, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 	{
-		std::vector<std::string> componentNames;
+		Vector<std::string> componentNames;
 		std::unordered_map<std::string, VoltGUID> nameToGUIDMap;
 
 		const auto& componentRegistry = Volt::ComponentRegistry::GetRegistry();
@@ -364,8 +364,8 @@ void PropertiesPanel::AddMonoScriptPopup()
 	{
 		const auto& scriptInfo = Volt::MonoScriptEngine::GetRegisteredClasses();
 
-		std::vector<std::string> scriptNames;
-		std::vector<std::string> fullScriptNames;
+		Vector<std::string> scriptNames;
+		Vector<std::string> fullScriptNames;
 
 		for (const auto& klass : scriptInfo)
 		{

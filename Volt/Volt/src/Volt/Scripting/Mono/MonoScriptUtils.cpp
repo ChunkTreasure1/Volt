@@ -125,7 +125,7 @@ namespace Volt
 	// THIS IS NOT WORKING ATM
 // -----
 
-	MonoArray* MonoScriptUtils::InternalCreateMonoArray(const std::string& aNamespace, const std::string& aClass, const std::vector<void*> data)
+	MonoArray* MonoScriptUtils::InternalCreateMonoArray(const std::string& aNamespace, const std::string& aClass, const Vector<void*> data)
 	{
 		auto& coreAssembly = MonoScriptEngine::GetCoreAssembly();
 		MonoClass* elementClass = mono_class_from_name(coreAssembly.assemblyImage, aNamespace.c_str(), aClass.c_str());
@@ -148,7 +148,7 @@ namespace Volt
 
 	// -----
 
-	MonoArray* MonoScriptUtils::CreateMonoArrayUInt32(const std::vector<uint32_t>& vector)
+	MonoArray* MonoScriptUtils::CreateMonoArrayUInt32(const Vector<uint32_t>& vector)
 	{
 		auto& coreAssembly = MonoScriptEngine::GetCoreAssembly();
 		MonoArray* array = mono_array_new(coreAssembly.domain, mono_get_uint32_class(), vector.size());
@@ -159,7 +159,7 @@ namespace Volt
 		return array;
 	}
 
-	MonoArray* MonoScriptUtils::CreateMonoArrayUInt64(const std::vector<uint64_t>& vector)
+	MonoArray* MonoScriptUtils::CreateMonoArrayUInt64(const Vector<uint64_t>& vector)
 	{
 		auto& coreAssembly = MonoScriptEngine::GetCoreAssembly();
 		MonoArray* array = mono_array_new(coreAssembly.domain, mono_get_uint64_class(), vector.size());
@@ -170,10 +170,10 @@ namespace Volt
 		return array;
 	}
 
-	MonoArray* MonoScriptUtils::CreateMonoArrayEntity(const std::vector<EntityID>& vector)
+	MonoArray* MonoScriptUtils::CreateMonoArrayEntity(const Vector<EntityID>& vector)
 	{
 		auto& coreAssembly = MonoScriptEngine::GetCoreAssembly();
-		std::vector<MonoObject*> monoVector;
+		Vector<MonoObject*> monoVector;
 
 		for (uint16_t i = 0; i < vector.size(); ++i)
 		{
@@ -193,10 +193,10 @@ namespace Volt
 		return array;
 	}
 
-	MonoArray* MonoScriptUtils::CreateMonoArrayEntity(const std::vector<Entity>& vector)
+	MonoArray* MonoScriptUtils::CreateMonoArrayEntity(const Vector<Entity>& vector)
 	{
 		auto& coreAssembly = MonoScriptEngine::GetCoreAssembly();
-		std::vector<MonoObject*> monoVector;
+		Vector<MonoObject*> monoVector;
 
 		for (uint16_t i = 0; i < vector.size(); ++i)
 		{

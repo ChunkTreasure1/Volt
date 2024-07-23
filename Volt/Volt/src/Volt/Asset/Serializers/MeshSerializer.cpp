@@ -10,14 +10,14 @@ namespace Volt
 {
 	struct MeshSerializationData_V1
 	{
-		std::vector<AssetHandle> materials;
-		std::vector<Vertex> vertices;
-		std::vector<uint32_t> indices;
+		Vector<AssetHandle> materials;
+		Vector<Vertex> vertices;
+		Vector<uint32_t> indices;
 
 		glm::vec3 boundingSphereCenter;
 		float boundingSphereRadius;
 
-		std::vector<SubMesh> subMeshes;
+		Vector<SubMesh> subMeshes;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const MeshSerializationData_V1& data)
 		{
@@ -42,20 +42,20 @@ namespace Volt
 
 	struct MeshSerializationData_V2
 	{
-		std::vector<glm::vec3> vertexPositions;
-		std::vector<VertexMaterialData> vertexMaterialData;
-		std::vector<VertexAnimationInfo> vertexAnimationInfo;
-		std::vector<VertexAnimationData> vertexAnimationData;
-		std::vector<uint16_t> vertexBoneInfluences;
-		std::vector<float> vertexBoneWeights;
-		std::vector<uint32_t> indices;
+		Vector<glm::vec3> vertexPositions;
+		Vector<VertexMaterialData> vertexMaterialData;
+		Vector<VertexAnimationInfo> vertexAnimationInfo;
+		Vector<VertexAnimationData> vertexAnimationData;
+		Vector<uint16_t> vertexBoneInfluences;
+		Vector<float> vertexBoneWeights;
+		Vector<uint32_t> indices;
 
-		std::vector<AssetHandle> materials;
+		Vector<AssetHandle> materials;
 
 		glm::vec3 boundingSphereCenter;
 		float boundingSphereRadius;
 
-		std::vector<SubMesh> subMeshes;
+		Vector<SubMesh> subMeshes;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const MeshSerializationData_V2& data)
 		{

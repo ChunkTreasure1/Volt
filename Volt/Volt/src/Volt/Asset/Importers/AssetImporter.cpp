@@ -492,7 +492,7 @@ namespace Volt
 		uint32_t dimension = 0;
 		glm::vec2 horizontalValues;
 		glm::vec2 verticalValues;
-		std::vector<std::pair<glm::vec2, AssetHandle>> animations;
+		Vector<std::pair<glm::vec2, AssetHandle>> animations;
 
 		streamReader.EnterScope("BlendSpace");
 

@@ -127,7 +127,7 @@ namespace Volt
 			markerCount += markers.size();
 		}
 
-		VT_CORE_ASSERT(markerCount % 2u == 0, "There must be a EndMarker for every BeginMarker!");
+		VT_ASSERT_MSG(markerCount % 2u == 0, "There must be a EndMarker for every BeginMarker!");
 #endif
 
 		///// Calculate Ref Count //////
@@ -152,7 +152,7 @@ namespace Volt
 		}
 
 		///// Cull Passes /////
-		std::vector<Weak<RenderGraphResourceNodeBase>> unreferencedResources{};
+		Vector<Weak<RenderGraphResourceNodeBase>> unreferencedResources{};
 		for (auto& node : m_resourceNodes)
 		{
 			if (node->refCount == 0)
@@ -172,14 +172,14 @@ namespace Volt
 			}
 
 			auto producer = unreferencedNode->producer;
-			VT_CORE_ASSERT(producer, "Node should always have a producer!");
+			VT_ASSERT_MSG(producer, "Node should always have a producer!");
 
 			if (producer->hasSideEffect)
 			{
 				continue;
 			}
 
-			VT_CORE_ASSERT(producer->refCount > 0, "Ref count cannot be zero at this time!");
+			VT_ASSERT_MSG(producer->refCount > 0, "Ref count cannot be zero at this time!");
 
 			producer->refCount--;
 			if (producer->refCount == 0)
@@ -238,7 +238,7 @@ namespace Volt
 		///// Setup resource barriers /////
 
 		// Keep track of all resources usages
-		std::vector<std::vector<RHI::ResourceState>> resourceUsages;
+		Vector<Vector<RHI::ResourceState>> resourceUsages;
 		resourceUsages.resize(m_resourceIndex);
 
 		auto createResourceFunc = [&](Ref<RenderGraphPassNodeBase> currentPass, const RenderGraphPassResourceAccess& access) -> void
@@ -687,7 +687,7 @@ namespace Volt
 
 			if (!m_resourceBarriers.at(passNode->index).empty())
 			{
-				std::vector<RHI::ResourceBarrierInfo> barrierInfos{};
+				Vector<RHI::ResourceBarrierInfo> barrierInfos{};
 
 				for (const auto& transition : m_resourceBarriers.at(passNode->index))
 				{
@@ -738,7 +738,7 @@ namespace Volt
 		// Add the barriers specified after last pass
 		if (!m_standaloneBarriers.empty())
 		{
-			std::vector<RHI::ResourceBarrierInfo> barrierInfos{};
+			Vector<RHI::ResourceBarrierInfo> barrierInfos{};
 			barrierInfos.reserve(m_standaloneBarriers.size());
 
 			for (const auto& barriers : m_standaloneBarriers)
@@ -875,7 +875,7 @@ namespace Volt
 
 	RenderGraphResourceHandle RenderGraph::CreateImage2D(const RenderGraphImageDesc& textureDesc)
 	{
-		VT_CORE_ASSERT(textureDesc.width > 0 && textureDesc.height > 0, "Width and height must not be zero!");
+		VT_ASSERT_MSG(textureDesc.width > 0 && textureDesc.height > 0, "Width and height must not be zero!");
 
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphImage2D>> node = CreateRef<RenderGraphResourceNode<RenderGraphImage2D>>();
@@ -892,7 +892,7 @@ namespace Volt
 
 	RenderGraphResourceHandle RenderGraph::CreateImage3D(const RenderGraphImageDesc& textureDesc)
 	{
-		VT_CORE_ASSERT(textureDesc.width > 0 && textureDesc.height > 0, "Width and height must not be zero!");
+		VT_ASSERT_MSG(textureDesc.width > 0 && textureDesc.height > 0, "Width and height must not be zero!");
 
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphTexture3D>> node = CreateRef<RenderGraphResourceNode<RenderGraphTexture3D>>();
@@ -909,7 +909,7 @@ namespace Volt
 
 	RenderGraphResourceHandle RenderGraph::CreateBuffer(const RenderGraphBufferDesc& bufferDesc)
 	{
-		VT_CORE_ASSERT(bufferDesc.elementSize > 0 && bufferDesc.count > 0, "Size must not be zero!");
+		VT_ASSERT_MSG(bufferDesc.elementSize > 0 && bufferDesc.count > 0, "Size must not be zero!");
 
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphBuffer>>();
@@ -928,7 +928,7 @@ namespace Volt
 
 	RenderGraphResourceHandle RenderGraph::CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc)
 	{
-		VT_CORE_ASSERT(bufferDesc.elementSize > 0 && bufferDesc.count > 0, "Size must not be zero!");
+		VT_ASSERT_MSG(bufferDesc.elementSize > 0 && bufferDesc.count > 0, "Size must not be zero!");
 
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphUniformBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphUniformBuffer>>();

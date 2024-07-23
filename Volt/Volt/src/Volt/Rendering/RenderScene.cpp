@@ -407,7 +407,7 @@ namespace Volt
 		return *it;
 	}
 
-	void RenderScene::UploadGPUMeshes(std::vector<GPUMesh>& gpuMeshes)
+	void RenderScene::UploadGPUMeshes(Vector<GPUMesh>& gpuMeshes)
 	{
 		if (m_gpuMeshesBuffer->GetResource()->GetCount() < static_cast<uint32_t>(gpuMeshes.size()))
 		{
@@ -417,7 +417,7 @@ namespace Volt
 		m_gpuMeshesBuffer->GetResource()->SetData(gpuMeshes.data(), sizeof(GPUMesh) * gpuMeshes.size());
 	}
 
-	void RenderScene::UploadObjectDrawData(std::vector<ObjectDrawData>& objectDrawData)
+	void RenderScene::UploadObjectDrawData(Vector<ObjectDrawData>& objectDrawData)
 	{
 		if (m_objectDrawDataBuffer->GetResource()->GetCount() < static_cast<uint32_t>(objectDrawData.size()))
 		{
@@ -436,7 +436,7 @@ namespace Volt
 			m_gpuMaterialsBuffer->MarkAsDirty();
 		}
 
-		std::vector<GPUMaterial> gpuMaterials;
+		Vector<GPUMaterial> gpuMaterials;
 
 		for (const auto& material : m_individualMaterials)
 		{
@@ -471,7 +471,7 @@ namespace Volt
 		}
 	}
 
-	void RenderScene::BuildGPUMeshes(std::vector<GPUMesh>& gpuMeshes)
+	void RenderScene::BuildGPUMeshes(Vector<GPUMesh>& gpuMeshes)
 	{
 		for (uint32_t currentIndex = 0; const auto & mesh : m_individualMeshes)
 		{
@@ -491,7 +491,7 @@ namespace Volt
 		}
 	}
 
-	void RenderScene::BuildObjectDrawData(std::vector<ObjectDrawData>& objectDrawData)
+	void RenderScene::BuildObjectDrawData(Vector<ObjectDrawData>& objectDrawData)
 	{
 		m_objectIndexFromRenderObjectID.clear();
 

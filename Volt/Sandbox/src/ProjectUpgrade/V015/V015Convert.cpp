@@ -30,9 +30,9 @@ namespace V015
 {
 	inline static std::unordered_map<Volt::AssetHandle, Volt::AssetMetadata> s_oldMetadata;
 
-	inline std::vector<std::filesystem::path> GetEngineMetaFiles()
+	inline Vector<std::filesystem::path> GetEngineMetaFiles()
 	{
-		std::vector<std::filesystem::path> files;
+		Vector<std::filesystem::path> files;
 		const std::string ext(".vtmeta");
 
 		// Engine Directory
@@ -59,9 +59,9 @@ namespace V015
 		return files;
 	}
 
-	inline std::vector<std::filesystem::path> GetProjectMetaFiles()
+	inline Vector<std::filesystem::path> GetProjectMetaFiles()
 	{
-		std::vector<std::filesystem::path> files;
+		Vector<std::filesystem::path> files;
 		std::string ext(".vtmeta");
 
 		// Project Directory
@@ -139,7 +139,7 @@ namespace V015
 
 		std::filesystem::path filePath = metaRoot["filePath"].as<std::string>();
 
-		std::vector<Volt::AssetHandle> dependencies;
+		Vector<Volt::AssetHandle> dependencies;
 		if (metaRoot["Dependencies"])
 		{
 			for (const auto& d : metaRoot["Dependencies"])

@@ -9,7 +9,13 @@ namespace Volt
 	class RenderGraphExecutionThread
 	{
 	public:
-		static void Initialize();
+		enum class ExecutionMode
+		{
+			Multithreaded,
+			Singlethreaded
+		};
+
+		static void Initialize(ExecutionMode executionMode);
 		static void Shutdown();
 
 		static void ExecuteRenderGraph(RenderGraph&& renderGraph);
@@ -19,7 +25,10 @@ namespace Volt
 		static void InitializeThread();
 		static void ShutdownThread();
 
-		static void RT_ExecuteGraph();
+		static void RT_ExecuteGraphs();
+
+		// Note: Used for single threaded graph execution
+		static void ExecuteGraphs();
 
 		~RenderGraphExecutionThread() = delete;
 		RenderGraphExecutionThread() = delete;

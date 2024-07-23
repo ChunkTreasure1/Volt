@@ -66,10 +66,10 @@ namespace Volt
 		}
 
 		inline const size_t GetJointCount() const { return m_joints.size(); }
-		inline const std::vector<glm::mat4>& GetInverseBindPose() const { return m_inverseBindPose; }
-		inline const std::vector<Animation::TRS>& GetRestPose() const { return m_restPose; }
-		inline const std::vector<Joint>& GetJoints() const { return m_joints; }
-		inline const std::vector<JointAttachment>& GetJointAttachments() const { return m_jointAttachments; }
+		inline const Vector<glm::mat4>& GetInverseBindPose() const { return m_inverseBindPose; }
+		inline const Vector<Animation::TRS>& GetRestPose() const { return m_restPose; }
+		inline const Vector<Joint>& GetJoints() const { return m_joints; }
+		inline const Vector<JointAttachment>& GetJointAttachments() const { return m_jointAttachments; }
 
 		const JointAttachment& GetJointAttachmentFromName(std::string_view name) const;
 		const JointAttachment& GetJointAttachmentFromID(const UUID64& id) const;
@@ -89,10 +89,10 @@ namespace Volt
 		friend class SkeletonImporter;
 		friend class SkeletonSerializer;
 
-		std::vector<Joint> m_joints;
-		std::vector<JointAttachment> m_jointAttachments;
-		std::vector<Animation::TRS> m_restPose;
-		std::vector<glm::mat4> m_inverseBindPose;
+		Vector<Joint> m_joints;
+		Vector<JointAttachment> m_jointAttachments;
+		Vector<Animation::TRS> m_restPose;
+		Vector<glm::mat4> m_inverseBindPose;
 
 		std::unordered_map<std::string, size_t> m_jointNameToIndex;
 

@@ -132,7 +132,7 @@ namespace Volt
 	struct RelationshipComponent
 	{
 		EntityID parent = EntityID(0);
-		std::vector<EntityID> children;
+		Vector<EntityID> children;
 
 		static void ReflectType(TypeDesc<RelationshipComponent>& reflect)
 		{
@@ -140,7 +140,7 @@ namespace Volt
 			reflect.SetLabel("Relationship Component");
 			reflect.SetHidden();
 			reflect.AddMember(&RelationshipComponent::parent, "parent", "Parent", "", EntityID(0));
-			reflect.AddMember(&RelationshipComponent::children, "children", "Children", "", std::vector<EntityID>{});
+			reflect.AddMember(&RelationshipComponent::children, "children", "Children", "", Vector<EntityID>{});
 		}
 
 		REGISTER_COMPONENT(RelationshipComponent);
@@ -181,8 +181,8 @@ namespace Volt
 		EntityID sceneRootEntity = EntityID(0);
 		uint32_t version = 0;
 
-		std::vector<PrefabComponentLocalChange> componentLocalChanges;
-		std::vector<PrefabScriptLocalChange> scriptLocalChanges;
+		Vector<PrefabComponentLocalChange> componentLocalChanges;
+		Vector<PrefabScriptLocalChange> scriptLocalChanges;
 
 		bool isDirty = false;
 
@@ -195,8 +195,8 @@ namespace Volt
 			reflect.AddMember(&PrefabComponent::prefabEntity, "prefabEntity", "Prefab Entity", "", EntityID(0));
 			reflect.AddMember(&PrefabComponent::sceneRootEntity, "sceneRootEntity", "Scene Root Entity", "", EntityID(0));
 			reflect.AddMember(&PrefabComponent::version, "version", "Version", "", 0);
-			reflect.AddMember(&PrefabComponent::componentLocalChanges, "componentLocalChanges", "Component Local Changes", "", std::vector<PrefabComponentLocalChange>{});
-			reflect.AddMember(&PrefabComponent::scriptLocalChanges, "scriptLocalChanges", "Script Local Changes", "", std::vector<PrefabScriptLocalChange>{});
+			reflect.AddMember(&PrefabComponent::componentLocalChanges, "componentLocalChanges", "Component Local Changes", "", Vector<PrefabComponentLocalChange>{});
+			reflect.AddMember(&PrefabComponent::scriptLocalChanges, "scriptLocalChanges", "Script Local Changes", "", Vector<PrefabScriptLocalChange>{});
 		}
 
 		REGISTER_COMPONENT(PrefabComponent);
@@ -212,8 +212,8 @@ namespace Volt
 
 	struct MonoScriptComponent
 	{
-		std::vector<std::string> scriptNames;
-		std::vector<UUID64> scriptIds;
+		Vector<std::string> scriptNames;
+		Vector<UUID64> scriptIds;
 
 		static constexpr VoltGUID guid = "{CF0E9A06-FB14-4B56-BC9C-5557E808B829}"_guid;
 

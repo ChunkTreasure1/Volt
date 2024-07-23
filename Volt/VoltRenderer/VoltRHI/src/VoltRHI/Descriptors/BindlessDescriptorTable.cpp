@@ -5,8 +5,8 @@
 
 namespace Volt::RHI
 {
-	RefPtr<BindlessDescriptorTable> BindlessDescriptorTable::Create()
+	RefPtr<BindlessDescriptorTable> BindlessDescriptorTable::Create(const uint64_t framesInFlight)
 	{
-		return RHIProxy::GetInstance().CreateBindlessDescriptorTable();
+		return RHIProxy::GetInstance().CreateBindlessDescriptorTable(framesInFlight);
 	}
 }

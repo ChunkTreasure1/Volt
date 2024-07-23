@@ -78,7 +78,7 @@ namespace Volt
 		Scope<ShaderRuntimeValidator> shaderValidator;
 #endif
 
-		std::vector<FunctionQueue> deletionQueue;
+		Vector<FunctionQueue> deletionQueue;
 		std::unordered_map<size_t, BindlessResourceRef<RHI::SamplerState>> samplers;
 
 		DefaultResources defaultResources;
@@ -125,7 +125,7 @@ namespace Volt
 
 	void Renderer::Initialize()
 	{
-		RenderGraphExecutionThread::Initialize();
+		RenderGraphExecutionThread::Initialize(RenderGraphExecutionThread::ExecutionMode::Multithreaded);
 
 #ifndef VT_DIST
 		s_rendererData->shaderValidator = CreateScope<ShaderRuntimeValidator>();
@@ -150,6 +150,7 @@ namespace Volt
 		//});
 
 		s_rendererData->deletionQueue.at(currentFrame).Flush();
+		s_rendererData->bindlessResourcesManager->Update();
 	}
 
 	const uint32_t Renderer::GetFramesInFlight()
@@ -293,7 +294,7 @@ namespace Volt
 			RHI::DescriptorTableCreateInfo tableInfo{};
 			tableInfo.shader = pipeline->GetShader();
 
-			std::vector<RefPtr<RHI::DescriptorTable>> descriptorTables;
+			Vector<RefPtr<RHI::DescriptorTable>> descriptorTables;
 			for (uint32_t i = 0; i < imageSpec.mips; i++)
 			{
 				descriptorTables.emplace_back(RHI::DescriptorTable::Create(tableInfo));
@@ -422,8 +423,6 @@ namespace Volt
 
 	void Renderer::EndOfFrameUpdate()
 	{
-		s_rendererData->bindlessResourcesManager->Update();
-
 #ifndef VT_DIST
 		//s_rendererData->shaderValidator->Update();
 
@@ -523,50 +522,5 @@ namespace Volt
 
 		renderGraph.Compile();
 		renderGraph.ExecuteImmediate();
-
-		/*auto pipeline = ShaderMap::GetComputePipeline("BRDFGeneration", false);
-		RHI::DescriptorTableCreateInfo tableInfo{};
-		tableInfo.shader = pipeline->GetShader();
-
-		RefPtr<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
-		descriptorTable->SetImageView("LUT", s_rendererData->defaultResources.BRDFLuT->GetView(), 0);
-		commandBuffer->Begin();
-
-
-
-		{
-			RHI::ResourceBarrierInfo barrier{};
-			barrier.type = RHI::BarrierType::Image;
-			RHI::ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), s_rendererData->defaultResources.BRDFLuT);
-
-			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderWrite;
-			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderWrite;
-			barrier.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader;
-			barrier.imageBarrier().resource = s_rendererData->defaultResources.BRDFLuT;
-
-			commandBuffer->ResourceBarrier({ barrier });
-		}
-
-		commandBuffer->BindPipeline(pipeline);
-		commandBuffer->BindDescriptorTable(descriptorTable);
-
-		const uint32_t groupCount = Math::DivideRoundUp(BRDFSize, 32u);
-		commandBuffer->Dispatch(groupCount, groupCount, 1);
-
-		{
-			RHI::ResourceBarrierInfo barrier{};
-			barrier.type = RHI::BarrierType::Image;
-			RHI::ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), s_rendererData->defaultResources.BRDFLuT);
-
-			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
-			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
-			barrier.imageBarrier().dstStage = RHI::BarrierStage::PixelShader | RHI::BarrierStage::ComputeShader;
-			barrier.imageBarrier().resource = s_rendererData->defaultResources.BRDFLuT;
-
-			commandBuffer->ResourceBarrier({ barrier });
-		}
-
-		commandBuffer->End();
-		commandBuffer->Execute();*/
 	}
 }

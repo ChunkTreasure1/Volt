@@ -255,7 +255,7 @@ namespace Volt::RHI
 
 		uint32_t maxSets = 0;
 
-		std::vector<VkDescriptorPoolSize> poolSizes{};
+		Vector<VkDescriptorPoolSize> poolSizes{};
 		for (const auto& [type, count] : shaderPoolSizes)
 		{
 			poolSizes.emplace_back(static_cast<VkDescriptorType>(type), count);

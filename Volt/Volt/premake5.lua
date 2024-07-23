@@ -165,6 +165,7 @@ project "Volt"
 			"VT_ENABLE_VALIDATION",
 			"VT_ENABLE_PROFILING"
 		}
+
 		runtime "Debug"
 		optimize "off"
 		symbols "on"

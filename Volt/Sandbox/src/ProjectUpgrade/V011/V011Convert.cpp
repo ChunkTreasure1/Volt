@@ -46,7 +46,7 @@ namespace V011
 
 		const std::filesystem::path assetsPath = project.projectDirectory / project.assetsDirectory;
 
-		std::vector<std::filesystem::path> metaFilesToConvert;
+		Vector<std::filesystem::path> metaFilesToConvert;
 
 		for (const auto& entry : std::filesystem::recursive_directory_iterator(assetsPath))
 		{
@@ -64,7 +64,7 @@ namespace V011
 			std::filesystem::path assetFilePath;
 		};
 
-		std::vector<AssetDescriptor> assetDescriptors;
+		Vector<AssetDescriptor> assetDescriptors;
 
 		for (const auto& metaPath : metaFilesToConvert)
 		{

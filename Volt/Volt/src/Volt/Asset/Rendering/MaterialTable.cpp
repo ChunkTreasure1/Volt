@@ -15,7 +15,7 @@ namespace Volt
 
 	AssetHandle MaterialTable::GetMaterial(uint32_t index) const
 	{
-		VT_CORE_ASSERT(static_cast<size_t>(index) < m_materials.size(), "Trying to access invalid material!");
+		VT_ASSERT_MSG(static_cast<size_t>(index) < m_materials.size(), "Trying to access invalid material!");
 		return m_materials.at(index);
 	}
 

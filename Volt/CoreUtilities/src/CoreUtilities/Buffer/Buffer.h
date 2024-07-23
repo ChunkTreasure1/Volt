@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreUtilities/Core.h"
+#include "CoreUtilities/Containers/Vector.h"
 
 #include <fstream>
 #include <cassert>
@@ -136,7 +137,7 @@ inline Buffer Buffer::ReadFromFile(const std::filesystem::path& targetPath)
 		return {};
 	}
 
-	std::vector<uint8_t> totalData;
+	Vector<uint8_t> totalData;
 	const size_t srcSize = file.seekg(0, std::ios::end).tellg();
 	totalData.resize(srcSize);
 	file.seekg(0, std::ios::beg);

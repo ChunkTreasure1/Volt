@@ -38,8 +38,8 @@ namespace Volt
 	private:
 		void UploadToInternal(RenderGraph& renderGraph, RefPtr<RHI::StorageBuffer> dstBuffer);
 
-		std::vector<T> m_data;
-		std::vector<uint32_t> m_dataIndices;
+		Vector<T> m_data;
+		Vector<uint32_t> m_dataIndices;
 		std::atomic<uint32_t> m_currentIndex = 0;
 	};
 

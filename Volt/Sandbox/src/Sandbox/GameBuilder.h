@@ -8,7 +8,7 @@
 struct BuildInfo
 {
 	std::filesystem::path buildDirectory;
-	std::vector<Volt::AssetHandle> sceneHandles = {};
+	Vector<Volt::AssetHandle> sceneHandles = {};
 };
 
 class GameBuilder

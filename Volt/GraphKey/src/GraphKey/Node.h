@@ -48,7 +48,7 @@ namespace GraphKey
 		std::string name;
 		UUID64 id{};
 
-		std::vector<UUID64> links;
+		Vector<UUID64> links;
 		std::function<void()> function;
 
 		std::any data;
@@ -105,8 +105,8 @@ namespace GraphKey
 		UUID64 id{};
 		Volt::EntityID nodeEntity = Volt::Entity::NullID();
 
-		std::vector<Attribute> inputs;
-		std::vector<Attribute> outputs;
+		Vector<Attribute> inputs;
+		Vector<Attribute> outputs;
 
 		std::string editorState;
 		bool isHeaderless = false;
@@ -170,7 +170,7 @@ namespace GraphKey
 	template<typename T>
 	inline const T& Node::GetInput(uint32_t index)
 	{
-		VT_CORE_ASSERT(index < inputs.size(), "Index out of bounds!");
+		VT_ASSERT_MSG(index < inputs.size(), "Index out of bounds!");
 
 		// If the requested input does not have a value, try to get it from the connected node
 		if (!inputs[index].links.empty())
@@ -232,7 +232,7 @@ namespace GraphKey
 	template<typename T>
 	inline void Node::SetOutputData(uint32_t index, const T& data)
 	{
-		VT_CORE_ASSERT(index < outputs.size(), "Index out of bounds!");
+		VT_ASSERT_MSG(index < outputs.size(), "Index out of bounds!");
 
 		outputs[index].data = data;
 

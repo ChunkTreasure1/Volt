@@ -32,14 +32,14 @@ namespace Volt::RHI
 		BufferLayout vertexLayout{};
 		BufferLayout instanceLayout{};
 	
-		std::vector<PixelFormat> outputFormats;
+		Vector<PixelFormat> outputFormats;
 	};
 
 	struct ShaderSpecification
 	{
 		std::string_view name;
-		std::vector<ShaderSourceEntry> sourceEntries;
-		std::vector<std::string> permutations;
+		Vector<ShaderSourceEntry> sourceEntries;
+		Vector<std::string> permutations;
 		bool forceCompile = false;
 	};
 
@@ -49,7 +49,7 @@ namespace Volt::RHI
 		virtual const bool Reload(bool forceCompile) = 0;
 		virtual std::string_view GetName() const = 0;
 		virtual const ShaderResources& GetResources() const = 0;
-		virtual const std::vector<ShaderSourceEntry>& GetSourceEntries() const = 0;
+		virtual const Vector<ShaderSourceEntry>& GetSourceEntries() const = 0;
 		virtual ShaderDataBuffer GetConstantsBuffer() const = 0;
 		virtual bool HasConstants() const = 0;
 		virtual const ShaderResourceBinding& GetResourceBindingFromName(std::string_view name) const = 0;

@@ -8,14 +8,14 @@
 
 namespace Volt::Algo
 {
-	std::vector<std::future<void>> ForEachParallelLockable(std::function<void(uint32_t threadIdx, uint32_t elementIdx)>&& func, uint32_t iterationCount)
+	Vector<std::future<void>> ForEachParallelLockable(std::function<void(uint32_t threadIdx, uint32_t elementIdx)>&& func, uint32_t iterationCount)
 	{
 		auto& threadPool = Application::GetThreadPool();
 
 		const uint32_t threadCount = std::min(iterationCount, threadPool.GetThreadCount());
 		const uint32_t perThreadIterationCount = iterationCount / threadCount;
 
-		std::vector<std::future<void>> futures;
+		Vector<std::future<void>> futures;
 		futures.reserve(threadCount);
 
 		uint32_t iterOffset = 0;
@@ -43,7 +43,7 @@ namespace Volt::Algo
 
 	void ForEachParallel(std::function<void(uint32_t, uint32_t)>&& func, uint32_t iterationCount)
 	{
-		VT_CORE_ASSERT(iterationCount > 0, "Iteration count must be greater than zero!");
+		VT_ASSERT_MSG(iterationCount > 0, "Iteration count must be greater than zero!");
 
 		auto& threadPool = Application::GetThreadPool();
 
@@ -73,7 +73,7 @@ namespace Volt::Algo
 
 	uint32_t GetThreadCountFromIterationCount(uint32_t iterationCount)
 	{
-		VT_CORE_ASSERT(iterationCount > 0, "Iteration count must be greater than zero!");
+		VT_ASSERT_MSG(iterationCount > 0, "Iteration count must be greater than zero!");
 
 		auto& threadPool = Application::GetThreadPool();
 		const uint32_t threadCount = std::min(iterationCount, threadPool.GetThreadCount());

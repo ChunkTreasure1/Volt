@@ -1,12 +1,13 @@
 #include "rhipch.h"
 #include "ShaderCache.h"
 
+#include "VoltRHI/Graphics/GraphicsContext.h"
+#include "VoltRHI/Utility/HashUtility.h"
+#include "VoltRHI/RHILog.h"
+
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 #include <CoreUtilities/FileIO/BinaryStreamReader.h>
 #include <CoreUtilities/TimeUtility.h>
-
-#include "VoltRHI/Graphics/GraphicsContext.h"
-#include "VoltRHI/Utility/HashUtility.h"
 
 namespace Volt::RHI
 {
@@ -37,7 +38,7 @@ namespace Volt::RHI
 
 	struct SerializedShaderData
 	{
-		std::vector<uint32_t> shaderData;
+		Vector<uint32_t> shaderData;
 		ShaderStage stage;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const SerializedShaderData& data)
@@ -120,7 +121,7 @@ namespace Volt::RHI
 			return {};
 		}
 
-		std::vector<SerializedShaderData> serializedShaderData;
+		Vector<SerializedShaderData> serializedShaderData;
 		streamReader.Read(serializedShaderData);
 
 		CachedShaderResult result{};
@@ -139,11 +140,11 @@ namespace Volt::RHI
 		streamReader.Read(resultData.constants);
 		streamReader.Read(resultData.bindings);
 
-		std::vector<SerializedShaderResource<ShaderConstantBuffer>> uniformBuffers;
-		std::vector<SerializedShaderResource<ShaderStorageBuffer>> storageBuffers;
-		std::vector<SerializedShaderResource<ShaderStorageImage>> storageImages;
-		std::vector<SerializedShaderResource<ShaderImage>> images;
-		std::vector<SerializedShaderResource<ShaderSampler>> samplers;
+		Vector<SerializedShaderResource<ShaderConstantBuffer>> uniformBuffers;
+		Vector<SerializedShaderResource<ShaderStorageBuffer>> storageBuffers;
+		Vector<SerializedShaderResource<ShaderStorageImage>> storageImages;
+		Vector<SerializedShaderResource<ShaderImage>> images;
+		Vector<SerializedShaderResource<ShaderSampler>> samplers;
 
 		streamReader.Read(uniformBuffers);
 		streamReader.Read(storageBuffers);
@@ -196,7 +197,7 @@ namespace Volt::RHI
 		streamWriter.Write(SHADER_CACHE_VERSION);
 		streamWriter.Write(cachedShaderHeader);
 
-		std::vector<SerializedShaderData> serializedShaderData;
+		Vector<SerializedShaderData> serializedShaderData;
 
 		for (const auto& [stage, shaderData] : compilationResult.shaderData)
 		{
@@ -219,11 +220,11 @@ namespace Volt::RHI
 
 		streamWriter.Write(compilationResult.bindings);
 
-		std::vector<SerializedShaderResource<ShaderConstantBuffer>> uniformBuffers;
-		std::vector<SerializedShaderResource<ShaderStorageBuffer>> storageBuffers;
-		std::vector<SerializedShaderResource<ShaderStorageImage>> storageImages;
-		std::vector<SerializedShaderResource<ShaderImage>> images;
-		std::vector<SerializedShaderResource<ShaderSampler>> samplers;
+		Vector<SerializedShaderResource<ShaderConstantBuffer>> uniformBuffers;
+		Vector<SerializedShaderResource<ShaderStorageBuffer>> storageBuffers;
+		Vector<SerializedShaderResource<ShaderStorageImage>> storageImages;
+		Vector<SerializedShaderResource<ShaderImage>> images;
+		Vector<SerializedShaderResource<ShaderSampler>> samplers;
 
 		for (const auto& [set, bindings] : compilationResult.uniformBuffers)
 		{

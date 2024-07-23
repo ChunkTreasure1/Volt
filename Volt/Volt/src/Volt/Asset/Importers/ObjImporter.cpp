@@ -6,7 +6,7 @@
 
 namespace Volt
 {
-	void ObjImporter::ExportMeshImpl(std::vector<Ref<Mesh>> assets, const std::filesystem::path& path)
+	void ObjImporter::ExportMeshImpl(Vector<Ref<Mesh>> assets, const std::filesystem::path& path)
 	{
 		std::ofstream file;
 		file.open(Volt::AssetManager::GetContextPath(path) / path);

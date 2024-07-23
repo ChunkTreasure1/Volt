@@ -13,7 +13,7 @@ void BinaryStreamWriter::WriteToDisk(const std::filesystem::path& targetFilepath
 	const uint8_t* writePtr = m_data.data();
 	size_t size = m_data.size();
 
-	std::vector<uint8_t> compressedData;
+	Vector<uint8_t> compressedData;
 	if (compress)
 	{
 		compressedData.resize(compressionEncodingHeaderSize);
@@ -54,7 +54,7 @@ void BinaryStreamWriter::WriteToDisk(const std::filesystem::path& targetFilepath
 	stream.close();
 }
 
-bool BinaryStreamWriter::GetCompressed(std::vector<uint8_t>& result, size_t compressedDataOffset)
+bool BinaryStreamWriter::GetCompressed(Vector<uint8_t>& result, size_t compressedDataOffset)
 {
 	constexpr uint32_t CHUNK_SIZE = 16384;
 	constexpr size_t compressionEncodingHeaderSize = sizeof(uint32_t) + sizeof(uint8_t) + sizeof(size_t);
@@ -131,7 +131,6 @@ void BinaryStreamWriter::WriteData(const void* data, const size_t size)
 size_t BinaryStreamWriter::Write(const void* data, const size_t size)
 {
 	TypeHeader header{};
-	header.baseTypeSize = sizeof(void*);
 	header.totalTypeSize = static_cast<uint32_t>(size);
 
 	WriteTypeHeader(header);

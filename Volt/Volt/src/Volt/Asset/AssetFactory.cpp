@@ -68,7 +68,7 @@ namespace Volt
 		m_assetFactoryFunctions[AssetType::PostProcessingMaterial] = []() { return nullptr; };
 		m_assetFactoryFunctions[AssetType::PostProcessingStack] = []() { return nullptr; };
 
-		VT_CORE_ASSERT(m_assetFactoryFunctions.size() == static_cast<size_t>(AssetType::Count) - 1, "All assets must have registered create functions!");
+		VT_ENSURE_MSG(m_assetFactoryFunctions.size() == static_cast<size_t>(AssetType::Count) - 1, "All assets must have registered create functions!");
 	}
 	
 	void AssetFactory::Shutdown()

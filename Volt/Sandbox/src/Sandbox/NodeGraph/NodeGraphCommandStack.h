@@ -65,8 +65,8 @@ public:
 	void Redo(Args&&...);
 
 private:
-	std::vector<Scope<NodeGraphCommand>> myUndoCommands;
-	std::vector<Scope<NodeGraphCommand>> myRedoCommands;
+	Vector<Scope<NodeGraphCommand>> myUndoCommands;
+	Vector<Scope<NodeGraphCommand>> myRedoCommands;
 };
 
 template<typename T, typename ...Args>

@@ -151,7 +151,7 @@ namespace Volt
 
 		Ref<RegisteredConsoleVariable<T>> consoleVariable = CreateRef<RegisteredConsoleVariable<T>>(tempVarName, defaultValue, description);
 
-		VT_CORE_ASSERT(!s_registeredVariables.contains(tempVarName), "Command variable with name already registered!");
+		VT_ASSERT_MSG(!s_registeredVariables.contains(tempVarName), "Command variable with name already registered!");
 		s_registeredVariables[tempVarName] = consoleVariable;
 
 		return consoleVariable;
@@ -174,7 +174,7 @@ namespace Volt
 	inline ConsoleVariableRef<T>::ConsoleVariableRef(std::string_view variableName)
 	{
 		m_variableReference = ConsoleVariableRegistry::FindVariable(variableName);
-		VT_CORE_ASSERT(m_variableReference, "Variable with name not found!");
+		VT_ASSERT_MSG(m_variableReference, "Variable with name not found!");
 	}
 
 	inline Weak<RegisteredConsoleVariableBase> ConsoleVariableRegistry::GetVariable(const std::string& variableName)

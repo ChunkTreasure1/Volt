@@ -216,7 +216,7 @@ void MaterialEditorPanel::UpdateProperties()
 		//if (mySelectedSubMaterial)
 		//{
 		//	UI::Header("Shader");
-		//	std::vector<std::string> shaderNames;
+		//	Vector<std::string> shaderNames;
 		//	shaderNames.emplace_back("None");
 		//	for (const auto& [name, shader] : Volt::ShaderRegistry::GetShaderRegistry())
 		//	{
@@ -279,7 +279,7 @@ void MaterialEditorPanel::UpdateProperties()
 		//			}
 		//		}
 
-		//		const std::vector<const char*> materialTypes =
+		//		const Vector<const char*> materialTypes =
 		//		{
 		//			"Opaque",
 		//			"Transparent",
@@ -386,7 +386,7 @@ void MaterialEditorPanel::UpdateProperties()
 		//	{
 		//		if (UI::BeginProperties("Advanced"))
 		//		{
-		//			const std::vector<const char*> topologyStrings = { "Triangle List", "Line List", "Triangle Strip", "Path List", "Point List" };
+		//			const Vector<const char*> topologyStrings = { "Triangle List", "Line List", "Triangle Strip", "Path List", "Point List" };
 		//			auto currentTopology = mySelectedSubMaterial->GetTopology();
 
 		//			if (UI::ComboProperty("Topology", *(int32_t*)&currentTopology, topologyStrings))
@@ -394,7 +394,7 @@ void MaterialEditorPanel::UpdateProperties()
 		//				mySelectedSubMaterial->SetTopology(currentTopology);
 		//			}
 
-		//			const std::vector<const char*> cullModeStrings = { "Front", "Back", "Front And Back", "None" };
+		//			const Vector<const char*> cullModeStrings = { "Front", "Back", "Front And Back", "None" };
 		//			auto currentCullMode = mySelectedSubMaterial->GetCullMode();
 
 		//			if (UI::ComboProperty("Cull Mode", *(int32_t*)&currentCullMode, cullModeStrings))
@@ -402,7 +402,7 @@ void MaterialEditorPanel::UpdateProperties()
 		//				mySelectedSubMaterial->SetCullMode(currentCullMode);
 		//			}
 
-		//			const std::vector<const char*> fillModeStrings = { "Solid", "Wireframe" };
+		//			const Vector<const char*> fillModeStrings = { "Solid", "Wireframe" };
 		//			auto currentFillMode = mySelectedSubMaterial->GetFillMode();
 
 		//			if (UI::ComboProperty("Fill Mode", *(int32_t*)&currentFillMode, fillModeStrings))
@@ -410,7 +410,7 @@ void MaterialEditorPanel::UpdateProperties()
 		//				mySelectedSubMaterial->SetFillMode(currentFillMode);
 		//			}
 
-		//			const std::vector<const char*> depthModeStrings = { "Read", "Write", "Read/Write", "None" };
+		//			const Vector<const char*> depthModeStrings = { "Read", "Write", "Read/Write", "None" };
 		//			auto currentDepthMode = mySelectedSubMaterial->GetDepthMode();
 
 		//			if (UI::ComboProperty("Depth Mode", *(int32_t*)&currentDepthMode, depthModeStrings))

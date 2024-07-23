@@ -39,9 +39,9 @@ namespace Volt
 		bool isCulled = false;
 		bool hasSideEffect = false;
 
-		std::vector<RenderGraphPassResourceAccess> resourceReads;
-		std::vector<RenderGraphPassResourceAccess> resourceWrites;
-		std::vector<RenderGraphPassResourceAccess> resourceCreates;
+		Vector<RenderGraphPassResourceAccess> resourceReads;
+		Vector<RenderGraphPassResourceAccess> resourceWrites;
+		Vector<RenderGraphPassResourceAccess> resourceCreates;
 
 		virtual void Execute(RenderGraph& frameGraph, RenderContext& context) = 0;
 

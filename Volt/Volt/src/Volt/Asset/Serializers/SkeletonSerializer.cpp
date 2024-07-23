@@ -9,11 +9,11 @@ namespace Volt
 	struct SkeletonSerializationData
 	{
 		std::string name;
-		std::vector<Skeleton::Joint> joints;
+		Vector<Skeleton::Joint> joints;
 		std::unordered_map<std::string, size_t> jointNameToIndex;
-		std::vector<Skeleton::JointAttachment> jointAttachments;
-		std::vector<glm::mat4> inverseBindPose;
-		std::vector<Animation::TRS> restPose;
+		Vector<Skeleton::JointAttachment> jointAttachments;
+		Vector<glm::mat4> inverseBindPose;
+		Vector<Animation::TRS> restPose;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const SkeletonSerializationData& data)
 		{
@@ -77,7 +77,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		SkeletonSerializationData serializationData{};
 		streamReader.Read(serializationData);

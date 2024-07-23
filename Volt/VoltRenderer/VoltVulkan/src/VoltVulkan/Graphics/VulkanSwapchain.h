@@ -96,16 +96,16 @@ namespace Volt::RHI
 			Extent2D minImageExtent{};
 			Extent2D maxImageExtent{};
 
-			std::vector<PresentMode> presentModes{};
-			std::vector<SurfaceFormat> surfaceFormats{};
+			Vector<PresentMode> presentModes{};
+			Vector<SurfaceFormat> surfaceFormats{};
 		};
 
 		SwapchainCapabilities m_capabilities{};
 
 		RefPtr<CommandBuffer> m_commandBuffer;
 
-		std::vector<PerFrameInFlightData> m_perFrameInFlightData{};
-		std::vector<PerImageData> m_perImageData{};
+		Vector<PerFrameInFlightData> m_perFrameInFlightData{};
+		Vector<PerImageData> m_perImageData{};
 
 		VkSwapchainKHR_T* m_swapchain = nullptr;
 		VkSurfaceKHR_T* m_surface = nullptr;

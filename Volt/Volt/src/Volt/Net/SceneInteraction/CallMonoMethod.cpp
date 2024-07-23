@@ -9,12 +9,12 @@
 #include "Volt/Utility/StringUtility.h"
 
 
-std::vector<void*> Volt::GetMonoArguments(const std::vector<uint8_t>& in_data)
+Vector<void*> Volt::GetMonoArguments(const Vector<uint8_t>& in_data)
 {
-	if (in_data.empty()) return std::vector<void*>();
+	if (in_data.empty()) return Vector<void*>();
 
 	uint8_t argCount = in_data[0];
-	std::vector<void*> data;
+	Vector<void*> data;
 	data.resize(argCount);
 
 	size_t index = 1;
@@ -31,7 +31,7 @@ std::vector<void*> Volt::GetMonoArguments(const std::vector<uint8_t>& in_data)
 	return data;
 }
 
-bool Volt::CallMonoMethod(const Entity& in_entity, const std::string& in_method, const std::vector<uint8_t>& in_data)
+bool Volt::CallMonoMethod(const Entity& in_entity, const std::string& in_method, const Vector<uint8_t>& in_data)
 {
 	if (in_method == "") return false;
 	auto monoElements = ::Utility::SplitStringsByCharacter(in_method, '.');

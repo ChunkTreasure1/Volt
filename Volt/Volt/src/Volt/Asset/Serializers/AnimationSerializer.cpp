@@ -10,8 +10,8 @@ namespace Volt
 	{
 		float duration;
 		uint32_t framesPerSecond;
-		std::vector<Animation::Pose> frames;
-		std::vector<Animation::Event> events;
+		Vector<Animation::Pose> frames;
+		Vector<Animation::Event> events;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const AnimationSerializationData& data)
 		{
@@ -70,7 +70,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!")
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		AnimationSerializationData serializationData{};
 		streamReader.Read(serializationData);

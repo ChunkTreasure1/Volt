@@ -410,7 +410,7 @@ namespace Volt
 	void RenderContext::InitializeCurrentPipelineConstantsValidation()
 	{
 #ifdef VT_DEBUG
-		VT_CORE_ASSERT(m_currentRenderPipeline || m_currentComputePipeline, "A pipeline must be bound!");
+		VT_ASSERT_MSG(m_currentRenderPipeline || m_currentComputePipeline, "A pipeline must be bound!");
 	
 		m_boundPipelineData.uniformHasBeenSetMap.clear();
 
@@ -428,7 +428,7 @@ namespace Volt
 
 		for (const auto& [hash, value] : m_boundPipelineData.uniformHasBeenSetMap)
 		{
-			VT_CORE_ASSERT(value, "All constants must have been set!");
+			VT_ASSERT_MSG(value, "All constants must have been set!");
 		}
 #endif
 	}

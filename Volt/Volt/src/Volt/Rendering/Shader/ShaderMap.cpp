@@ -147,7 +147,7 @@ namespace Volt
 
 	void ShaderMap::LoadShaders()
 	{
-		const std::vector<std::filesystem::path> searchPaths =
+		const Vector<std::filesystem::path> searchPaths =
 		{
 			ProjectManager::GetEngineDirectory() / "Engine" / "Shaders",
 			ProjectManager::GetAssetsDirectory()
@@ -199,7 +199,7 @@ namespace Volt
 			}
 		}
 
-		std::vector<std::future<void>> shaderFutures;
+		Vector<std::future<void>> shaderFutures;
 		std::mutex shaderMapMutex;
 
 		for (const auto& searchPath : searchPaths)
@@ -252,7 +252,7 @@ namespace Volt
 		VT_CORE_INFO("[ShaderMap]: Shader import finished in {0} seconds!", timer.GetTime<Time::Seconds>());
 	}
 
-	std::vector<std::filesystem::path> ShaderMap::FindShaderIncludes(const std::filesystem::path& filePath)
+	Vector<std::filesystem::path> ShaderMap::FindShaderIncludes(const std::filesystem::path& filePath)
 	{
 		constexpr const char* INCLUDE_KEYWORD = "#include";
 
@@ -270,7 +270,7 @@ namespace Volt
 
 		input.close();
 		
-		std::vector<std::filesystem::path> resultIncludes{};
+		Vector<std::filesystem::path> resultIncludes{};
 
 		size_t offset = shaderString.find(INCLUDE_KEYWORD, 0);
 		while (offset != std::string::npos)

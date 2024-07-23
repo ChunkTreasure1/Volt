@@ -33,7 +33,7 @@ namespace Volt
 
 	private:
 		static void LoadShaders();
-		static std::vector<std::filesystem::path> FindShaderIncludes(const std::filesystem::path& filePath);
+		static Vector<std::filesystem::path> FindShaderIncludes(const std::filesystem::path& filePath);
 		static void RegisterShader(const std::string& name, RefPtr<RHI::Shader> shader);
 
 		inline static vt::map<std::string, RefPtr<RHI::Shader>> s_shaderMap;

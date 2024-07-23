@@ -35,7 +35,7 @@ namespace Volt::RHI
 		void CreateInstance();
 
 		const bool CheckValidationLayerSupport() const;
-		const std::vector<const char*> GetRequiredExtensions() const;
+		const Vector<const char*> GetRequiredExtensions() const;
 
 		VkInstance_T* m_instance = nullptr;
 		VkDebugUtilsMessengerEXT_T* m_debugMessenger = nullptr;

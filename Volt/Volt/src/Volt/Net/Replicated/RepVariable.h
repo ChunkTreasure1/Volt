@@ -61,7 +61,7 @@ namespace Volt
 		if (m_field.netData.boundFunction == "") return true;
 		auto monoClass = m_scriptInstance->GetClass();
 		std::string boundFunction = (monoClass->GetNamespace() + "." + monoClass->GetClassName() + "." + m_field.netData.boundFunction);
-		CallMonoMethod(SceneManager::GetActiveScene()->GetEntityFromUUID(m_entityId), boundFunction, std::vector<uint8_t>());
+		CallMonoMethod(SceneManager::GetActiveScene()->GetEntityFromUUID(m_entityId), boundFunction, Vector<uint8_t>());
 
 		return true;
 	}

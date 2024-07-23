@@ -17,9 +17,9 @@ namespace Volt
 {
 	namespace Utility
 	{
-		VT_NODISCARD std::vector<uint32_t> ElementCountPrefixSum(const std::vector<VertexContainer>& elements)
+		VT_NODISCARD Vector<uint32_t> ElementCountPrefixSum(const Vector<VertexContainer>& elements)
 		{
-			std::vector<uint32_t> prefixSums(elements.size());
+			Vector<uint32_t> prefixSums(elements.size());
 
 			prefixSums.resize(elements.size());
 			prefixSums[0] = 0;
@@ -72,12 +72,12 @@ namespace Volt
 		return { origin, radius };
 	}
 
-	inline static BoundingSphere GetBoundingSphereFromVertices(const std::vector<glm::vec3>& vertices)
+	inline static BoundingSphere GetBoundingSphereFromVertices(const Vector<glm::vec3>& vertices)
 	{
 		return GetBoundingSphereFromVertices(vertices.data(), vertices.size());
 	}
 
-	Mesh::Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material> aMaterial)
+	Mesh::Mesh(Vector<Vertex> aVertices, Vector<uint32_t> aIndices, Ref<Material> aMaterial)
 	{
 		InitializeWithVertices(aVertices);
 		m_indices = aIndices;
@@ -96,7 +96,7 @@ namespace Volt
 		Construct();
 	}
 
-	Mesh::Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, const MaterialTable& materialTable, const std::vector<SubMesh>& subMeshes)
+	Mesh::Mesh(Vector<Vertex> aVertices, Vector<uint32_t> aIndices, const MaterialTable& materialTable, const Vector<SubMesh>& subMeshes)
 	{
 		InitializeWithVertices(aVertices);
 		m_indices = aIndices;
@@ -116,7 +116,7 @@ namespace Volt
 
 	void Mesh::Construct()
 	{
-		VT_CORE_ASSERT(!m_indices.empty() && !m_vertexContainer.positions.empty(), "Indices and vertices must not be empty!");
+		VT_ASSERT_MSG(!m_indices.empty() && !m_vertexContainer.positions.empty(), "Indices and vertices must not be empty!");
 		
 		constexpr size_t MAX_VERTEX_COUNT = 64;
 		constexpr size_t MAX_TRIANGLE_COUNT = 64;
@@ -132,8 +132,8 @@ namespace Volt
 		const uint32_t subMeshCount = static_cast<uint32_t>(m_subMeshes.size());
 		const uint32_t threadCount = Algo::GetThreadCountFromIterationCount(subMeshCount);
 
-		std::vector<std::vector<uint32_t>> perThreadMeshletData(threadCount);
-		std::vector<std::vector<Meshlet>> perThreadMeshlets(threadCount);
+		Vector<Vector<uint32_t>> perThreadMeshletData(threadCount);
+		Vector<Vector<Meshlet>> perThreadMeshlets(threadCount);
 
 		auto fu = Algo::ForEachParallelLockable([&](uint32_t threadIdx, uint32_t elementIdx)
 		{
@@ -145,12 +145,12 @@ namespace Volt
 			const uint32_t* indicesPtr = &m_indices.at(subMesh.indexStartOffset);
 			const glm::vec3* vertexPositionsPtr = &m_vertexContainer.positions.at(subMesh.vertexStartOffset);
 
-			std::vector<uint32_t> tempIndices(subMesh.indexCount);
+			Vector<uint32_t> tempIndices(subMesh.indexCount);
 			meshopt_optimizeVertexCache(tempIndices.data(), indicesPtr, subMesh.indexCount, subMesh.vertexCount);
 
-			std::vector<meshopt_Meshlet> meshoptMeshlets(meshopt_buildMeshletsBound(subMesh.indexCount, MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT));
-			std::vector<uint32_t> meshletVertices(meshoptMeshlets.size() * MAX_VERTEX_COUNT);
-			std::vector<uint8_t> meshletTriangles(meshoptMeshlets.size() * MAX_TRIANGLE_COUNT * 3);
+			Vector<meshopt_Meshlet> meshoptMeshlets(meshopt_buildMeshletsBound(subMesh.indexCount, MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT));
+			Vector<uint32_t> meshletVertices(meshoptMeshlets.size() * MAX_VERTEX_COUNT);
+			Vector<uint8_t> meshletTriangles(meshoptMeshlets.size() * MAX_TRIANGLE_COUNT * 3);
 
 			meshoptMeshlets.resize(meshopt_buildMeshlets(meshoptMeshlets.data(), meshletVertices.data(), meshletTriangles.data(), indicesPtr, static_cast<size_t>(subMesh.indexCount), &vertexPositionsPtr[0].x, static_cast<size_t>(subMesh.vertexCount), sizeof(glm::vec3), MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT, CONE_WEIGHT));
 
@@ -341,7 +341,7 @@ namespace Volt
 
 		for (uint32_t i = 0; auto & subMesh : m_subMeshes)
 		{
-			std::vector<glm::vec3> subMeshVertices;
+			Vector<glm::vec3> subMeshVertices;
 			subMeshVertices.insert(subMeshVertices.end(), std::next(m_vertexContainer.positions.begin(), subMesh.vertexStartOffset), std::next(m_vertexContainer.positions.begin(), subMesh.vertexStartOffset + subMesh.vertexCount));
 
 			m_subMeshBoundingSpheres[i] = GetBoundingSphereFromVertices(subMeshVertices);
@@ -393,7 +393,7 @@ namespace Volt
 		return result;
 	}
 
-	void Mesh::InitializeWithVertices(const std::vector<Vertex>& vertices)
+	void Mesh::InitializeWithVertices(const Vector<Vertex>& vertices)
 	{
 		m_vertexContainer.Resize(vertices.size());
 

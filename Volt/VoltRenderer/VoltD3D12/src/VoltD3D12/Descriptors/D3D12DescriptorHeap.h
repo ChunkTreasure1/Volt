@@ -42,7 +42,7 @@ namespace Volt::RHI
 		bool m_supportsGPUDescriptors = false;
 
 		D3D12DescriptorPointer m_startPointer{};
-		std::vector<D3D12DescriptorPointer> m_availiableDescriptors;
+		Vector<D3D12DescriptorPointer> m_availiableDescriptors;
 		uint32_t m_currentDescriptorCount = 0;
 
 		std::mutex m_mutex;

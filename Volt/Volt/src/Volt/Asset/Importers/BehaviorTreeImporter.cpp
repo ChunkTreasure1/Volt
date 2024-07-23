@@ -44,9 +44,7 @@ namespace Volt
 		}
 		catch (std::exception& e)
 		{
-			e;
-
-			VT_CORE_ASSERT("{0} conains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
+			VT_ASSERT_MSG(false, std::format("{0} conains invalid YAML! Please correct it! Error: {1}", metadata.filePath.string(), e.what()));
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -54,10 +52,10 @@ namespace Volt
 		root = root["Behavior Tree"];
 
 		YAML::Node sequenceNodes = root["SequenceIDs"];
-		for (const auto& n : sequenceNodes.as<std::vector<UUID64>>())
+		for (const auto& n : sequenceNodes.as<Vector<UUID64>>())
 			behaviorTree->CreateNode<BehaviorTree::Sequence>(n);
 		YAML::Node selectorNodes = root["SelectorIDs"];
-		for (const auto& n : selectorNodes.as<std::vector<UUID64>>())
+		for (const auto& n : selectorNodes.as<Vector<UUID64>>())
 			behaviorTree->CreateNode<BehaviorTree::Selector>(n);
 
 		// OH NO...
@@ -115,10 +113,10 @@ namespace Volt
 		Ref<BehaviorTree::Tree> tree = std::reinterpret_pointer_cast<BehaviorTree::Tree>(asset);
 		UUID64 rootID = tree->GetRoot();
 
-		std::vector<UUID64> decoratorVec;
-		std::vector<UUID64> selectorVec;
-		std::vector<UUID64> sequenceVec;
-		std::vector<UUID64> leafVec;
+		Vector<UUID64> decoratorVec;
+		Vector<UUID64> selectorVec;
+		Vector<UUID64> sequenceVec;
+		Vector<UUID64> leafVec;
 
 		for (const auto& n : tree->GetNodeManager().m_nodes)
 		{

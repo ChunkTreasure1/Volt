@@ -79,9 +79,9 @@ namespace Volt::RHI
 		return RefPtr<D3D12DescriptorTable>::Create(createInfo);
 	}
 
-	RefPtr<BindlessDescriptorTable> D3D12RHIProxy::CreateBindlessDescriptorTable() const
+	RefPtr<BindlessDescriptorTable> D3D12RHIProxy::CreateBindlessDescriptorTable(const uint64_t framesInFlight) const
 	{
-		return RefPtr<D3D12BindlessDescriptorTable>::Create();
+		return RefPtr<D3D12BindlessDescriptorTable>::Create(framesInFlight);
 	}
 	
 	RefPtr<DeviceQueue> D3D12RHIProxy::CreateDeviceQueue(const DeviceQueueCreateInfo& createInfo) const

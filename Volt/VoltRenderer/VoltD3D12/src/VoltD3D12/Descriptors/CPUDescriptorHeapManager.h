@@ -25,6 +25,6 @@ namespace Volt::RHI
 		Scope<D3D12DescriptorHeap> CreateDescriptorHeap(D3D12DescriptorType descriptorType);
 
 		std::mutex m_mutex;
-		std::vector<Scope<D3D12DescriptorHeap>> m_descriptorHeaps;
+		Vector<Scope<D3D12DescriptorHeap>> m_descriptorHeaps;
 	};
 }

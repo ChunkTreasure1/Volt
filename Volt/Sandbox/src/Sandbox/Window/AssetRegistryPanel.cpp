@@ -30,7 +30,7 @@ void AssetRegistryPanel::UpdateMainContent()
 		ImGui::PushStyleColor(ImGuiCol_Button, { 1.f, 0.f, 0.f, 1.f });
 		if (ImGui::Button("Remove Reds"))
 		{
-			static std::vector<std::filesystem::path> pathsToClear;
+			static Vector<std::filesystem::path> pathsToClear;
 			for (const auto& [handle, metadata] : Volt::AssetManager::Get().GetAssetRegistry())
 			{
 				const std::filesystem::path completePath = Volt::AssetManager::GetContextPath(metadata.filePath) / metadata.filePath;

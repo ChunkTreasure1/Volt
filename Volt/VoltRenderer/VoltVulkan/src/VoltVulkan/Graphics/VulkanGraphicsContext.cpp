@@ -21,7 +21,7 @@
 
 namespace Volt::RHI
 {
-	static const std::vector<VkValidationFeatureEnableEXT> s_enabledValidationFeatures = { /*VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT, /*VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT*/};
+	static const Vector<VkValidationFeatureEnableEXT> s_enabledValidationFeatures = { /*VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT, /*VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT*/};
 
 	namespace Utility
 	{
@@ -250,7 +250,7 @@ namespace Volt::RHI
 		uint32_t layerCount = 0;
 		VT_VK_CHECK(vkEnumerateInstanceLayerProperties(&layerCount, nullptr));
 
-		std::vector<VkLayerProperties> layerProperties{ layerCount };
+		Vector<VkLayerProperties> layerProperties{ layerCount };
 		VT_VK_CHECK(vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data()));
 
 		for (const char* layerName : s_validationLayers)
@@ -274,13 +274,13 @@ namespace Volt::RHI
 		return true;
 	}
 
-	const std::vector<const char*> VulkanGraphicsContext::GetRequiredExtensions() const
+	const Vector<const char*> VulkanGraphicsContext::GetRequiredExtensions() const
 	{
 		uint32_t extensionCount = 0;
 		const char** extensions = nullptr;
 
 		extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
-		std::vector<const char*> extensionsVector{ extensions, extensions + extensionCount };
+		Vector<const char*> extensionsVector{ extensions, extensions + extensionCount };
 		extensionsVector.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
 		return extensionsVector;

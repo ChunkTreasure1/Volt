@@ -19,17 +19,17 @@ namespace Volt
 
 		void Update();
 		const ResourceHandle GetCurrentErrorBufferHandle() const;
-		const std::vector<std::string>& GetValidationErrors() const { return m_validationErrors; }
+		const Vector<std::string>& GetValidationErrors() const { return m_validationErrors; }
 
 	private:
-		void ProcessValidationBuffer(const std::vector<uint8_t>& dataBuffer);
+		void ProcessValidationBuffer(const Vector<uint8_t>& dataBuffer);
 
 		BindlessResourceScope<RHI::StorageBuffer> m_errorBuffer;
 		BindlessResourceScope<RHI::StorageBuffer> m_stagingBuffer;
 
 		RefPtr<RHI::CommandBuffer> m_commandBuffer;
 
-		std::vector<std::string> m_validationErrors;
+		Vector<std::string> m_validationErrors;
 	};
 }
 

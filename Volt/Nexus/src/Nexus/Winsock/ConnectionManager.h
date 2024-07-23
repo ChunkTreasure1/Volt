@@ -20,7 +20,7 @@ namespace Nexus
 
 		const std::unordered_map<TYPE::CLIENT_ID, std::string>& GetAliasMap() { return m_aliasMap; }
 		const std::unordered_map<TYPE::CLIENT_ID, sockaddr_in>& GetClientIDs() { return m_clientIDs; }
-		std::vector<TYPE::CLIENT_ID> GetIdList();
+		Vector<TYPE::CLIENT_ID> GetIdList();
 
 		// Should not be used i think
 		bool ValidateConnection(const TYPE::CLIENT_ID& in_id, const sockaddr_in& in_addr);

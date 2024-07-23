@@ -717,7 +717,7 @@ namespace Volt::RHI
 
 		auto& cmdData = m_commandLists.at(m_currentCommandListIndex);
 
-		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvViews;
+		Vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvViews;
 		rtvViews.reserve(renderingInfo.colorAttachments.Size());
 
 		D3D12_CPU_DESCRIPTOR_HANDLE* dsvView = nullptr;
@@ -904,13 +904,13 @@ namespace Volt::RHI
 		GraphicsContext::GetResourceStateTracker()->TransitionResource(barrierInfo.resource, barrierInfo.dstStage, barrierInfo.dstAccess, barrierInfo.dstLayout);
 	}
 	
-	void D3D12CommandBuffer::ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers)
+	void D3D12CommandBuffer::ResourceBarrier(const Vector<ResourceBarrierInfo>& resourceBarriers)
 	{
 		VT_PROFILE_FUNCTION();
 
-		std::vector<D3D12_GLOBAL_BARRIER> globalBarriers;
-		std::vector<D3D12_TEXTURE_BARRIER> textureBarriers;
-		std::vector<D3D12_BUFFER_BARRIER> bufferBarriers;
+		Vector<D3D12_GLOBAL_BARRIER> globalBarriers;
+		Vector<D3D12_TEXTURE_BARRIER> textureBarriers;
+		Vector<D3D12_BUFFER_BARRIER> bufferBarriers;
 
 		for (const auto& resourceBarrier : resourceBarriers)
 		{
@@ -932,7 +932,7 @@ namespace Volt::RHI
 			}
 		}
 
-		std::vector<D3D12_BARRIER_GROUP> barrierGroups{};
+		Vector<D3D12_BARRIER_GROUP> barrierGroups{};
 
 		if (!globalBarriers.empty())
 		{
@@ -1065,7 +1065,7 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData)
 	{
-		std::vector<D3D12_SUBRESOURCE_DATA> subResources;
+		Vector<D3D12_SUBRESOURCE_DATA> subResources;
 		subResources.reserve(copyData.copySubData.size());
 
 		for (const auto& subData : copyData.copySubData)

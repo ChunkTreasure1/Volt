@@ -113,7 +113,7 @@ namespace Volt
 		}
 	}
 
-	void WorldEngine::AddEntitiesToCell(WorldCellID cellId, const std::vector<EntityID>& entities)
+	void WorldEngine::AddEntitiesToCell(WorldCellID cellId, const Vector<EntityID>& entities)
 	{
 		auto cellIt = std::find_if(m_cells.begin(), m_cells.end(), [cellId](const WorldCell& cell) 
 		{

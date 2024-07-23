@@ -17,7 +17,7 @@ namespace Utility
 {
 	inline bool ShouldSkipDLL(const std::filesystem::path& path)
 	{
-		const std::vector<std::string> skipItems =
+		const Vector<std::string> skipItems =
 		{
 			"dpp",
 			"libcrypto-1_1-x64",
@@ -34,14 +34,14 @@ namespace Utility
 
 	inline bool ShouldSkipAsset(const std::filesystem::path& path)
 	{
-		const std::vector<Volt::AssetType> skipItems =
+		const Vector<Volt::AssetType> skipItems =
 		{
 			Volt::AssetType::None,
 			Volt::AssetType::MeshSource,
 			Volt::AssetType::MonoScript
 		};
 
-		const std::vector<std::string> skipExtensions =
+		const Vector<std::string> skipExtensions =
 		{
 			".png",
 			".jpeg",
@@ -66,7 +66,7 @@ namespace Utility
 
 	inline bool ShouldSkipFileType(const std::filesystem::path& path)
 	{
-		const std::vector<std::string> includeExtensions =
+		const Vector<std::string> includeExtensions =
 		{
 			".yaml",
 			".bank",

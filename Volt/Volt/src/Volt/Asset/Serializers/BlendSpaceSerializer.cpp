@@ -18,7 +18,7 @@ namespace Volt
 		glm::vec2 horizontalValues;
 		glm::vec2 verticalValues;
 
-		std::vector<SerializedAnimation> animations;
+		Vector<SerializedAnimation> animations;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const BlendSpaceSerializationData& data)
 		{
@@ -83,7 +83,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		BlendSpaceSerializationData serializationData{};
 		streamReader.Read(serializationData);

@@ -58,7 +58,7 @@ namespace Volt
 		void UpdateEntityInSceneInternal(Entity sceneEntity, EntityID forcedPrefabEntity);
 
 		Entity InstantiateEntity(Weak<Scene> targetScene, Entity prefabEntity);
-		const std::vector<Entity> FlattenEntityHeirarchy(Entity entity);
+		const Vector<Entity> FlattenEntityHeirarchy(Entity entity);
 
 		Ref<Scene> m_prefabScene;
 		std::unordered_map<EntityID, PrefabReferenceData> m_prefabReferencesMap; // Maps this prefabs entity to an entity in another prefab

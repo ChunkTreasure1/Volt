@@ -63,7 +63,7 @@ namespace Volt
 	Application::Application(const ApplicationInfo& info)
 		: m_frameTimer(100)
 	{
-		VT_CORE_ASSERT(!s_instance, "Application already exists!");
+		VT_ASSERT_MSG(!s_instance, "Application already exists!");
 		s_instance = this;
 
 		m_info = info;

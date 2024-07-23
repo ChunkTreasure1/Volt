@@ -202,8 +202,8 @@ namespace Volt::RHI
 			uint32_t flags;
 		};
 
-		std::vector<MemoryType> memoryTypes;
-		std::vector<MemoryHeap> memoryHeaps;
+		Vector<MemoryType> memoryTypes;
+		Vector<MemoryHeap> memoryHeaps;
 	};
 
 	struct PhysicalDeviceProperties

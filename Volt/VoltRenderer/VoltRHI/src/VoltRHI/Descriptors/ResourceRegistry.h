@@ -24,7 +24,7 @@ namespace Volt::RHI
 	class VTRHI_API ResourceRegistry
 	{
 	public:
-		ResourceRegistry(uint32_t handleSize);
+		ResourceRegistry(uint32_t handleSize, uint64_t framesInFlight);
 
 		ResourceHandle RegisterResource(WeakPtr<RHIInterface> resource, ImageUsage imageUsage = ImageUsage::None, uint32_t userData = 0);
 		void UnregisterResource(ResourceHandle handle);
@@ -42,12 +42,10 @@ namespace Volt::RHI
 	private:
 		friend class BindlessResourcesManager;
 
-		inline static constexpr uint64_t FRAME_COUNT = 2;
-
-		std::vector<RegisteredResource> m_resources;
-		std::vector<ResourceHandle> m_vacantResourceHandles;
-		std::vector<ResourceHandle> m_dirtyResources;
-		std::vector<FunctionQueue> m_removalQueue;
+		Vector<RegisteredResource> m_resources;
+		Vector<ResourceHandle> m_vacantResourceHandles;
+		Vector<ResourceHandle> m_dirtyResources;
+		Vector<FunctionQueue> m_removalQueue;
 
 		std::unordered_map<size_t, ResourceHandle> m_resourceHashToHandle;
 
@@ -55,6 +53,7 @@ namespace Volt::RHI
 
 		uint32_t m_handleSize;
 		uint64_t m_frameIndex = 0;
+		uint64_t m_framesInFlight = 0;
 		std::mutex m_mutex;
 	};
 }

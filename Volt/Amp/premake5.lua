@@ -54,35 +54,39 @@ project "Amp"
 		pchsource ""
 
 	filter "system:windows"
+		defines
+		{
+			"VT_PLATFORM_WINDOWS"
+		}
 		systemversion "latest"
 
-		filter "configurations:Debug"
-			defines 
-			{ 
-				"VT_DEBUG", 
-				"VT_ENABLE_ASSERTS",
-				"VT_ENABLE_VALIDATION",
-				"VT_ENABLE_PROFILING"
-			}
-			runtime "Debug"
-			optimize "off"
-			symbols "on"
+	filter "configurations:Debug"
+		defines 
+		{ 
+			"VT_DEBUG", 
+			"VT_ENABLE_ASSERTS",
+			"VT_ENABLE_VALIDATION",
+			"VT_ENABLE_PROFILING"
+		}
+		runtime "Debug"
+		optimize "off"
+		symbols "on"
 
-		filter "configurations:Release"
-			defines 
-			{ 
-				"VT_RELEASE", 
-				"VT_ENABLE_ASSERTS",
-				"VT_ENABLE_VALIDATION",
-				"VT_ENABLE_PROFILING",
-				"NDEBUG"
-			}
-			runtime "Release"
-			optimize "on"
-			symbols "on"
+	filter "configurations:Release"
+		defines 
+		{ 
+			"VT_RELEASE", 
+			"VT_ENABLE_ASSERTS",
+			"VT_ENABLE_VALIDATION",
+			"VT_ENABLE_PROFILING",
+			"NDEBUG"
+		}
+		runtime "Release"
+		optimize "on"
+		symbols "on"
 
-		filter "configurations:Dist"
-			defines { "VT_DIST", "NDEBUG" }
-			runtime "Release"
-			optimize "on"
-			symbols "off"
+	filter "configurations:Dist"
+		defines { "VT_DIST", "NDEBUG" }
+		runtime "Release"
+		optimize "on"
+		symbols "off"

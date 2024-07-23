@@ -127,12 +127,12 @@ void P4Implementation::RefreshWorkspacesImpl()
 	m_client.Run("clients", &m_workspacesCU);
 }
 
-const std::vector<std::string>& P4Implementation::GetWorkspacesImpl()
+const Vector<std::string>& P4Implementation::GetWorkspacesImpl()
 {
 	return m_workspacesCU.GetData();
 }
 
-const std::vector<std::string>& P4Implementation::GetStreamsImpl()
+const Vector<std::string>& P4Implementation::GetStreamsImpl()
 {
 	return m_streamsCU.GetData();
 }

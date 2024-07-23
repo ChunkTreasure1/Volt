@@ -49,10 +49,10 @@ namespace Volt::RHI
 
 	void VulkanDeviceQueue::Execute(const DeviceQueueExecuteInfo& executeInfo)
 	{
-		std::vector<VkCommandBufferSubmitInfo> vulkanCommandBuffers;
+		Vector<VkCommandBufferSubmitInfo> vulkanCommandBuffers;
 		vulkanCommandBuffers.reserve(executeInfo.commandBuffers.size());
 
-		std::vector<VkSemaphoreSubmitInfo> signalSemaphoreInfos{};
+		Vector<VkSemaphoreSubmitInfo> signalSemaphoreInfos{};
 		signalSemaphoreInfos.reserve(executeInfo.signalSemaphores.size());
 
 		VkFence waitFence = nullptr;

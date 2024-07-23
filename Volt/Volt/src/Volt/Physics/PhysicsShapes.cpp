@@ -121,8 +121,8 @@ namespace Volt
 
 	void BoxColliderShape::DetachFromActor(physx::PxRigidActor* actor)
 	{
-		VT_CORE_ASSERT(actor, "Actor is null!");
-		VT_CORE_ASSERT(myShape, "Shape is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
+		VT_ASSERT_MSG(myShape, "Shape is null!");
 		actor->detachShape(*myShape);
 	}
 
@@ -198,8 +198,8 @@ namespace Volt
 
 	void SphereColliderShape::DetachFromActor(physx::PxRigidActor* actor)
 	{
-		VT_CORE_ASSERT(actor, "Actor is null!");
-		VT_CORE_ASSERT(myShape, "Shape is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
+		VT_ASSERT_MSG(myShape, "Shape is null!");
 		actor->detachShape(*myShape);
 	}
 
@@ -301,8 +301,8 @@ namespace Volt
 
 	void CapsuleColliderShape::DetachFromActor(physx::PxRigidActor* actor)
 	{
-		VT_CORE_ASSERT(actor, "Actor is null!");
-		VT_CORE_ASSERT(myShape, "Shape is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
+		VT_ASSERT_MSG(myShape, "Shape is null!");
 		actor->detachShape(*myShape);
 	}
 
@@ -323,12 +323,12 @@ namespace Volt
 		}
 
 		const std::string colliderName = AssetManager::Get().GetFilePathFromAssetHandle(component.colliderMesh).stem().string() + std::to_string(component.colliderMesh) + "Convex";
-		std::vector<MeshColliderData> meshColliderData;
+		Vector<MeshColliderData> meshColliderData;
 		CookingResult result = CookingResult::Failure;
 
 		if (MeshColliderCache::IsCached(colliderName))
 		{
-			std::vector<MeshColliderData> cachedData = MeshColliderCache::Get(colliderName).colliderData;
+			Vector<MeshColliderData> cachedData = MeshColliderCache::Get(colliderName).colliderData;
 			if (component.subMeshIndex != -1)
 			{
 				meshColliderData.emplace_back(cachedData.at(component.subMeshIndex));
@@ -435,12 +435,12 @@ namespace Volt
 		}
 
 		const std::string colliderName = AssetManager::Get().GetFilePathFromAssetHandle(component.colliderMesh).stem().string() + std::to_string(component.colliderMesh) + "Triangle";
-		std::vector<MeshColliderData> meshColliderData;
+		Vector<MeshColliderData> meshColliderData;
 		CookingResult result = CookingResult::Failure;
 
 		if (MeshColliderCache::IsCached(colliderName))
 		{
-			std::vector<MeshColliderData> cachedData = MeshColliderCache::Get(colliderName).colliderData;
+			Vector<MeshColliderData> cachedData = MeshColliderCache::Get(colliderName).colliderData;
 			if (component.subMeshIndex != -1)
 			{
 				meshColliderData.emplace_back(cachedData.at(component.subMeshIndex));

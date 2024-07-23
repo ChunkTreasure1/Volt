@@ -42,7 +42,7 @@ namespace Volt
 				m_resourceHandle = BindlessResourcesManager::Get().RegisterSamplerState(m_resource);
 			}
 
-			VT_CORE_ASSERT(m_resourceHandle != Resource::Invalid, "Resource type not implemented!");
+			VT_ASSERT_MSG(m_resourceHandle != Resource::Invalid, "Resource type not implemented!");
 		}
 
 		~BindlessResource()

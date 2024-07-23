@@ -14,10 +14,10 @@ public:
 
 private:
 	uint32_t myMaxMessages = 1000;
-	std::vector<LogCallbackData> myLogMessages;
-	std::vector<LogCallbackData> myCurrentLogMessages;
+	Vector<LogCallbackData> myLogMessages;
+	Vector<LogCallbackData> myCurrentLogMessages;
 
-	std::vector<std::string> myCategories;
+	Vector<std::string> myCategories;
 
 	std::mutex m_logMutex;
 };

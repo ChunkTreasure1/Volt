@@ -3,6 +3,8 @@
 
 #include "zlib.h"
 
+#include <CoreUtilities/Containers/Vector.h>
+
 constexpr size_t compressionEncodingHeaderSize = sizeof(uint32_t) + sizeof(uint8_t) + sizeof(size_t);
 
 BinaryStreamReader::BinaryStreamReader(const std::filesystem::path& filePath)
@@ -59,7 +61,8 @@ BinaryStreamReader::BinaryStreamReader(const std::filesystem::path& filePath)
 
 void BinaryStreamReader::ReadData(void* outData, const TypeHeader& serializedTypeHeader, const TypeHeader& constructedTypeHeader)
 {
-	assert(serializedTypeHeader.baseTypeSize == constructedTypeHeader.baseTypeSize && "Base Type sizes must match!");
+	VT_UNUSED(constructedTypeHeader);
+
 	memcpy_s(outData, serializedTypeHeader.totalTypeSize, &m_data[m_currentOffset], serializedTypeHeader.totalTypeSize);
 	m_currentOffset += serializedTypeHeader.totalTypeSize;
 }
@@ -83,7 +86,7 @@ bool BinaryStreamReader::Decompress(size_t compressedDataOffset)
 
 	uint32_t srcOffset = static_cast<uint32_t>(compressedDataOffset);
 
-	std::vector<uint8_t> tempResult{};
+	Vector<uint8_t> tempResult{};
 
 	do
 	{
@@ -150,8 +153,6 @@ bool BinaryStreamReader::IsStreamValid() const
 void BinaryStreamReader::Read(void* data)
 {
 	TypeHeader typeHeader{};
-	typeHeader.baseTypeSize = sizeof(void*);
-
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 	ReadData(data, serializedTypeHeader, typeHeader);
 }

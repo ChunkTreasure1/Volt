@@ -10,7 +10,7 @@ namespace Volt::RHI
 	{
 		std::string preProcessedResult;
 	
-		std::vector<PixelFormat> outputFormats;
+		Vector<PixelFormat> outputFormats;
 		BufferLayout vertexLayout;
 		BufferLayout instanceLayout;
 		ShaderRenderGraphConstantsData renderGraphConstants;

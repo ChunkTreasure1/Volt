@@ -24,8 +24,8 @@ namespace Volt::RHI
 
 	struct ShaderCompilerCreateInfo
 	{
-		std::vector<std::filesystem::path> includeDirectories;
-		std::vector<std::string> initialMacros;
+		Vector<std::filesystem::path> includeDirectories;
+		Vector<std::string> initialMacros;
 	
 		ShaderCompilerFlags flags = ShaderCompilerFlags::None;
 	};
@@ -50,10 +50,10 @@ namespace Volt::RHI
 		struct CompilationResultData
 		{
 			CompilationResult result = CompilationResult::Failure;
-			std::unordered_map<ShaderStage, std::vector<uint32_t>> shaderData;
+			std::unordered_map<ShaderStage, Vector<uint32_t>> shaderData;
 
 			// Pixel Shader
-			std::vector<RHI::PixelFormat> outputFormats;
+			Vector<RHI::PixelFormat> outputFormats;
 			
 			// Vertex Shader
 			RHI::BufferLayout vertexLayout;

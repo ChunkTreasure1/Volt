@@ -28,16 +28,16 @@ public:
 	virtual void end();
 
 	Ref<Volt::Mesh> GetDebugMesh() const;
-	std::vector<NavMeshLine> GetDebugLines() const;
+	Vector<NavMeshLine> GetDebugLines() const;
 
 private:
 	duDebugDrawPrimitives myPrimitive;
 
-	std::vector<Volt::Vertex> myLineVertices;
+	Vector<Volt::Vertex> myLineVertices;
 
-	std::vector<Volt::Vertex> myVertices;
-	std::vector<Volt::SubMesh> mySubmeshes;
-	std::vector<uint32_t> myIndices;
+	Vector<Volt::Vertex> myVertices;
+	Vector<Volt::SubMesh> mySubmeshes;
+	Vector<uint32_t> myIndices;
 };
 
 class NavMeshDebugDrawer
@@ -49,8 +49,8 @@ public:
 	static void Shutdown();
 
 	static void DrawNavMesh();
-	static void DrawLinks(const std::vector<Volt::AI::NavLinkConnection>& links);
-	static void DrawPath(const std::vector<glm::vec3>& path);
+	static void DrawLinks(const Vector<Volt::AI::NavLinkConnection>& links);
+	static void DrawPath(const Vector<glm::vec3>& path);
 
 	static void CompileDebugMesh(Volt::AI::NavMesh* navmesh);
 

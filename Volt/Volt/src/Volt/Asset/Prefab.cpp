@@ -45,7 +45,7 @@ namespace Volt
 
 		// Set scene root entity & update prefab references
 		{
-			std::vector<Entity> flatInstantiatedHeirarchy = FlattenEntityHeirarchy(newEntity);
+			Vector<Entity> flatInstantiatedHeirarchy = FlattenEntityHeirarchy(newEntity);
 			for (auto& entity : flatInstantiatedHeirarchy)
 			{
 				if (m_prefabReferencesMap.contains(entity.GetID()))
@@ -85,7 +85,7 @@ namespace Volt
 
 		// Update all entities prefab versions
 		{
-			std::vector<Entity> flatHeirarchy = FlattenEntityHeirarchy(srcEntity);
+			Vector<Entity> flatHeirarchy = FlattenEntityHeirarchy(srcEntity);
 			for (auto& entity : flatHeirarchy)
 			{
 				entity.GetComponent<PrefabComponent>().version = m_version;
@@ -302,8 +302,8 @@ namespace Volt
 
 	void Prefab::ValidatePrefabUpdate(Entity srcEntity)
 	{
-		std::vector<EntityID> entitiesToRemove;
-		std::vector<Entity> srcHeirarchy = FlattenEntityHeirarchy(srcEntity);
+		Vector<EntityID> entitiesToRemove;
+		Vector<Entity> srcHeirarchy = FlattenEntityHeirarchy(srcEntity);
 
 		Entity srcPrefabEntity = m_prefabScene->GetEntityFromUUID(srcEntity.GetComponent<PrefabComponent>().prefabEntity);
 
@@ -530,9 +530,9 @@ namespace Volt
 		return newEntity;
 	}
 
-	const std::vector<Entity> Prefab::FlattenEntityHeirarchy(Entity entity)
+	const Vector<Entity> Prefab::FlattenEntityHeirarchy(Entity entity)
 	{
-		std::vector<Entity> result;
+		Vector<Entity> result;
 
 		result.emplace_back(entity);
 

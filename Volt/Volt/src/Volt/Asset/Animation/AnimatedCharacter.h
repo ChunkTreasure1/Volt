@@ -34,17 +34,17 @@ namespace Volt
 		AnimatedCharacter() = default;
 		~AnimatedCharacter() override = default;
 
-		const std::vector<glm::mat4> SampleAnimation(uint32_t index, float aStartTime, bool looping = true) const;
-		const std::vector<glm::mat4> SampleAnimation(uint32_t index, uint32_t frameIndex) const;
+		const Vector<glm::mat4> SampleAnimation(uint32_t index, float aStartTime, bool looping = true) const;
+		const Vector<glm::mat4> SampleAnimation(uint32_t index, uint32_t frameIndex) const;
 		const float GetAnimationDuration(uint32_t index) const;
 
 		inline const std::map<uint32_t, Ref<Animation>>& GetAnimations() const { return myAnimations; }
 		inline const size_t GetAnimationCount() const { return myAnimations.size(); }
 		inline const bool HasAnimationEvents(const uint32_t animationIndex) const { return myAnimationEvents.contains(animationIndex); }
-		inline const std::vector<Event>& GetAnimationEvents(uint32_t animationIndex) const { return myAnimationEvents.at(animationIndex); }
-		inline const std::map<uint32_t,std::vector<Event>>& GetAnimationEventsAndIndex(uint32_t) const { return myAnimationEvents; }
+		inline const Vector<Event>& GetAnimationEvents(uint32_t animationIndex) const { return myAnimationEvents.at(animationIndex); }
+		inline const std::map<uint32_t,Vector<Event>>& GetAnimationEventsAndIndex(uint32_t) const { return myAnimationEvents; }
 
-		inline const std::vector<JointAttachment>& GetJointAttachments() const { return myJointAttachments; };
+		inline const Vector<JointAttachment>& GetJointAttachments() const { return myJointAttachments; };
 		const JointAttachment GetJointAttachmentFromName(const std::string& name) const;
 		const JointAttachment GetJointAttachmentFromID(const UUID64& id) const;
 		const bool HasJointAttachment(const std::string& attachmentName) const;
@@ -74,8 +74,8 @@ namespace Volt
 		Ref<Mesh> mySkin;
 
 		std::map<uint32_t, Ref<Animation>> myAnimations;
-		std::map<uint32_t, std::vector<Event>> myAnimationEvents;
+		std::map<uint32_t, Vector<Event>> myAnimationEvents;
 	
-		std::vector<JointAttachment> myJointAttachments;
+		Vector<JointAttachment> myJointAttachments;
 	};
 }

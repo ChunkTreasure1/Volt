@@ -58,6 +58,7 @@ project "Nexus"
 
 		defines
 		{
+			"VT_PLATFORM_WINDOWS",
 			"_WINSOCKAPI_",
 			"_WINSOCK_DEPRECATED_NO_WARNINGS",
 		}

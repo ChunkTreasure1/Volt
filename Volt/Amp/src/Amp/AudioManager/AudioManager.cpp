@@ -46,10 +46,10 @@ namespace Amp
 		return myAudioEngine.FindEvent(aPath);
 	}
 
-	std::vector<std::string> AudioManager::GetAllEventNames()
+	Vector<std::string> AudioManager::GetAllEventNames()
 	{
-		std::vector<std::string> unsortedNames = myAudioEngine.GetAllEventNames();
-		std::vector<std::string> sortedNames = unsortedNames;
+		Vector<std::string> unsortedNames = myAudioEngine.GetAllEventNames();
+		Vector<std::string> sortedNames = unsortedNames;
 
 		std::sort(sortedNames.begin(), sortedNames.end(), EventNameSorter);
 

@@ -2,13 +2,13 @@
 
 #include <Volt/Core/Base.h>
 
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <glm/glm.hpp>
 
 #include <DetourNavMesh.h>
 #include <DetourNavMeshQuery.h>
 #include <DetourTileCache.h>
-
-#include <vector>
 
 namespace Volt
 {
@@ -19,7 +19,7 @@ namespace Volt
 		public:
 			DtNavMesh(Ref<dtNavMesh> navmesh, Ref<dtTileCache> tilecache = nullptr);
 
-			std::vector<glm::vec3> FindPath(glm::vec3 start, glm::vec3 end, glm::vec3 polySearchDistance);
+			Vector<glm::vec3> FindPath(glm::vec3 start, glm::vec3 end, glm::vec3 polySearchDistance);
 
 			Ref<dtNavMesh>& GetNavMesh() { return myNavMesh; };
 			Ref<dtNavMeshQuery>& GetNavMeshQuery() { return myNavMeshQuery; };

@@ -109,7 +109,7 @@ namespace Volt::RHI
 		return m_resources.bindings.at(nameStr);
 	}
 
-	const std::vector<ShaderSourceEntry>& VulkanShader::GetSourceEntries() const
+	const Vector<ShaderSourceEntry>& VulkanShader::GetSourceEntries() const
 	{
 		return m_specification.sourceEntries;
 	}
@@ -183,7 +183,7 @@ namespace Volt::RHI
 		return ShaderCompiler::TryCompile(compileSpec);
 	}
 
-	void VulkanShader::LoadAndCreateShaders(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderData)
+	void VulkanShader::LoadAndCreateShaders(const std::unordered_map<ShaderStage, Vector<uint32_t>>& shaderData)
 	{
 		auto device = GraphicsContext::GetDevice();
 
@@ -206,7 +206,7 @@ namespace Volt::RHI
 			bool value = false;
 		};
 
-		std::map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> descriptorSetBindings{};
+		std::map<uint32_t, Vector<VkDescriptorSetLayoutBinding>> descriptorSetBindings{};
 		std::map<uint32_t, std::map<uint32_t, DefaultValue>> isBindlessMap{};
 
 		for (const auto& [set, bindings] : m_resources.uniformBuffers)
@@ -338,7 +338,7 @@ namespace Volt::RHI
 				info.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT;
 			}
 
-			std::vector<VkDescriptorBindingFlags> bindingFlags{};
+			Vector<VkDescriptorBindingFlags> bindingFlags{};
 
 			VkDescriptorSetLayoutBindingFlagsCreateInfo extendedInfo{};
 			extendedInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;

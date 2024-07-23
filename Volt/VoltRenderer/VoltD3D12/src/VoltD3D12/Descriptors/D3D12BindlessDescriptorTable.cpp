@@ -20,8 +20,8 @@
 
 namespace Volt::RHI
 {
-	D3D12BindlessDescriptorTable::D3D12BindlessDescriptorTable()
-		: m_mainRegistry(2), m_samplerRegistry(1)
+	D3D12BindlessDescriptorTable::D3D12BindlessDescriptorTable(const uint64_t framesInFlight)
+		: m_mainRegistry(2, framesInFlight), m_samplerRegistry(1, framesInFlight)
 	{
 		m_activeDescriptorCopies.reserve(100);
 		m_activeSamplerDescriptorCopies.reserve(10);
@@ -239,9 +239,9 @@ namespace Volt::RHI
 
 		if (!m_activeDescriptorCopies.empty())
 		{
-			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> srcHandles(m_activeDescriptorCopies.size());
-			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> dstHandles(m_activeDescriptorCopies.size());
-			std::vector<uint32_t> copySizes(m_activeDescriptorCopies.size(), 1u);
+			Vector<D3D12_CPU_DESCRIPTOR_HANDLE> srcHandles(m_activeDescriptorCopies.size());
+			Vector<D3D12_CPU_DESCRIPTOR_HANDLE> dstHandles(m_activeDescriptorCopies.size());
+			Vector<uint32_t> copySizes(m_activeDescriptorCopies.size(), 1u);
 
 			for (size_t i = 0; i < m_activeDescriptorCopies.size(); i++)
 			{
@@ -254,9 +254,9 @@ namespace Volt::RHI
 
 		if (!m_activeSamplerDescriptorCopies.empty())
 		{
-			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> srcHandles(m_activeSamplerDescriptorCopies.size());
-			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> dstHandles(m_activeSamplerDescriptorCopies.size());
-			std::vector<uint32_t> copySizes(m_activeSamplerDescriptorCopies.size(), 1u);
+			Vector<D3D12_CPU_DESCRIPTOR_HANDLE> srcHandles(m_activeSamplerDescriptorCopies.size());
+			Vector<D3D12_CPU_DESCRIPTOR_HANDLE> dstHandles(m_activeSamplerDescriptorCopies.size());
+			Vector<uint32_t> copySizes(m_activeSamplerDescriptorCopies.size(), 1u);
 
 			for (size_t i = 0; i < m_activeSamplerDescriptorCopies.size(); i++)
 			{

@@ -27,7 +27,7 @@ namespace Volt
 			VT_CORE_ERROR("Could not open mesh file!");
 		}
 
-		std::vector<uint8_t> totalData;
+		Vector<uint8_t> totalData;
 		const size_t srcSize = file.seekg(0, std::ios::end).tellg();
 		totalData.resize(srcSize);
 		file.seekg(0, std::ios::beg);
@@ -77,7 +77,7 @@ namespace Volt
 		const uint32_t nameCount = *(uint32_t*)&totalData[offset];
 		offset += sizeof(uint32_t);
 
-		std::vector<std::string> names;
+		Vector<std::string> names;
 		names.reserve(nameCount);
 
 		for (uint32_t i = 0; i < subMeshCount; i++)

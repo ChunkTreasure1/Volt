@@ -17,7 +17,7 @@ namespace Volt
 		AnimationController(Ref<Volt::AnimationGraphAsset> graph);
 		AnimationController(Ref<Volt::AnimationGraphAsset> graph, Entity entity);
 
-		const std::vector<glm::mat4> Sample();
+		const Vector<glm::mat4> Sample();
 
 		inline Ref<Volt::AnimationGraphAsset> GetGraph() const { return myGraph; }
 		inline const auto& GetRootMotion() const { return myRootMotion; }
@@ -38,6 +38,6 @@ namespace Volt
 
 		float myCurrentStartTime = 0.f;
 
-		std::unordered_map<UUID64, std::vector<Entity>> myAttachedEntities;
+		std::unordered_map<UUID64, Vector<Entity>> myAttachedEntities;
 	};
 }

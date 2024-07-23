@@ -18,7 +18,7 @@ const char* VKResultToString(int32_t result);
 
 #else
 
-#define VT_VK_CHECK(x) if ((x) != VK_SUCCESS) { RHILog::Log(LogSeverity::Error, std::format("Vulkan Error: {0}", VKResultToString(x))); VT_RHI_DEBUGBREAK(); }
+#define VT_VK_CHECK(x) VT_ASSERT_MSG((x) == VK_SUCCESS, std::format("Vulkan Error: {0}", VKResultToString(x)).c_str())
 
 #endif
 

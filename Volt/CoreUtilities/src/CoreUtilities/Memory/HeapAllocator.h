@@ -26,6 +26,32 @@ public:
 		delete ptr;
 	}
 
+	VT_INLINE static void* AllocateUninitialized(size_t size, size_t alignment)
+	{
+		void* result;
+		if (alignment <= MIN_PLATFORM_ALIGNMENT)
+		{
+			result = malloc(size);
+		}
+		else
+		{
+#ifdef VT_PLATFORM_WINDOWS
+			result = _aligned_malloc(size, alignment);
+#else
+			result = malloc(size);
+#endif
+		}
+
+		VT_PROFILE_ALLOC(result, size);
+		return result;
+	}
+
+	VT_INLINE static void FreeUninitialized(void* ptr)
+	{
+		VT_PROFILE_FREE(ptr);
+		delete[](char*)ptr;
+	}
+
 private:
-	inline static uint64_t s_totalAllocated = 0;
+	inline static std::atomic<uint64_t> s_totalAllocated = 0;
 };

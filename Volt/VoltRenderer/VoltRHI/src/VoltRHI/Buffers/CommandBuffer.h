@@ -8,6 +8,7 @@
 
 #include <CoreUtilities/Pointers/WeakPtr.h>
 #include <CoreUtilities/Containers/StackVector.h>
+#include <CoreUtilities/Containers/Vector.h>
 
 #include <span>
 
@@ -76,7 +77,7 @@ namespace Volt::RHI
 
 		virtual void PushConstants(const void* data, const uint32_t size, const uint32_t offset) = 0;
 
-		virtual void ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers) = 0;
+		virtual void ResourceBarrier(const Vector<ResourceBarrierInfo>& resourceBarriers) = 0;
 
 		virtual void BeginMarker(std::string_view markerLabel, const std::array<float, 4>& markerColor) = 0;
 		virtual void EndMarker() = 0;

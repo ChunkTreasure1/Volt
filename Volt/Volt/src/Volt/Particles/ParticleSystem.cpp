@@ -82,8 +82,8 @@ void Volt::ParticleSystem::Update(entt::registry& registry, Weak<Scene> scene, c
 		}
 	});
 
-	std::vector<entt::entity> emittersToRemove{};
-	std::vector<std::future<void>> futures{};
+	Vector<entt::entity> emittersToRemove{};
+	Vector<std::future<void>> futures{};
 	std::mutex emittersToRemoveMutex;
 
 	auto& threadPool = Application::GetThreadPool();
@@ -104,7 +104,7 @@ void Volt::ParticleSystem::Update(entt::registry& registry, Weak<Scene> scene, c
 
 			const auto forward = entity.GetForward();
 
-			std::vector<Particle>& p_vec = particleStorage.particles;
+			Vector<Particle>& p_vec = particleStorage.particles;
 			for (int index = 0; index < particleStorage.numberOfAliveParticles; index++)
 			{
 				Particle& p = p_vec[index];

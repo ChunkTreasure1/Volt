@@ -65,7 +65,7 @@ namespace Volt
 		Nexus::TYPE::CLIENT_ID ownerId;
 		Nexus::TYPE::REP_ID variableStartId;
 		Volt::AssetHandle handle;
-		std::vector<Ref<Volt::RepData>> componentData;
+		Vector<Ref<Volt::RepData>> componentData;
 	};
 
 	struct VariableData

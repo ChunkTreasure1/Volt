@@ -37,8 +37,8 @@ namespace Volt
 		
 		Scene* myCurrentScene = nullptr;
 
-		std::vector<StartValue> myEntityStartValues;
-		std::vector<std::pair<int, float>> myCurrentKeyAndTime;
+		Vector<StartValue> myEntityStartValues;
+		Vector<std::pair<int, float>> myCurrentKeyAndTime;
 		float myCurrentPlaybackTime = 0.f;
 		bool myIsPlaying = false;
 		TimelinePreset myTimelinePreset;

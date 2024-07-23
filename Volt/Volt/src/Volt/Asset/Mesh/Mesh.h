@@ -26,14 +26,14 @@ namespace Volt
 
 	struct VertexContainer
 	{
-		std::vector<glm::vec3> positions;
-		std::vector<VertexMaterialData> materialData;
+		Vector<glm::vec3> positions;
+		Vector<VertexMaterialData> materialData;
 		
-		std::vector<VertexAnimationInfo> animationInfo;
-		std::vector<VertexAnimationData> animationData;
+		Vector<VertexAnimationInfo> animationInfo;
+		Vector<VertexAnimationData> animationData;
 
-		std::vector<uint16_t> boneInfluences;
-		std::vector<float> boneWeights;
+		Vector<uint16_t> boneInfluences;
+		Vector<float> boneWeights;
 
 		VT_INLINE size_t Size() const
 		{
@@ -65,14 +65,14 @@ namespace Volt
 	{
 	public:
 		Mesh() = default;
-		Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material> aMaterial);
-		Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, const MaterialTable& materialTable, const std::vector<SubMesh>& subMeshes);
+		Mesh(Vector<Vertex> aVertices, Vector<uint32_t> aIndices, Ref<Material> aMaterial);
+		Mesh(Vector<Vertex> aVertices, Vector<uint32_t> aIndices, const MaterialTable& materialTable, const Vector<SubMesh>& subMeshes);
 		~Mesh() override;
 
 		void Construct();
 
-		inline const std::vector<SubMesh>& GetSubMeshes() const { return m_subMeshes; }
-		inline std::vector<SubMesh>& GetSubMeshesMutable() { return m_subMeshes; }
+		inline const Vector<SubMesh>& GetSubMeshes() const { return m_subMeshes; }
+		inline Vector<SubMesh>& GetSubMeshesMutable() { return m_subMeshes; }
 
 		inline const MaterialTable& GetMaterialTable() const { return m_materialTable; }
 		void SetMaterial(Ref<Material> material, uint32_t index);
@@ -80,12 +80,12 @@ namespace Volt
 		inline const size_t GetVertexCount() const { return m_vertexContainer.Size(); }
 		inline const size_t GetIndexCount() const { return m_indices.size(); }
 
-		inline const std::vector<uint32_t>& GetIndices() const { return m_indices; }
-		inline const std::vector<Meshlet>& GetMeshlets() const { return m_meshlets; }
+		inline const Vector<uint32_t>& GetIndices() const { return m_indices; }
+		inline const Vector<Meshlet>& GetMeshlets() const { return m_meshlets; }
 
 		inline const BoundingSphere& GetBoundingSphere() const { return m_boundingSphere; }
 		inline const BoundingBox& GetBoundingBox() const { return m_boundingBox; }
-		inline const std::vector<GPUMesh>& GetGPUMeshes() const { return m_gpuMeshes; }
+		inline const Vector<GPUMesh>& GetGPUMeshes() const { return m_gpuMeshes; }
 
 		inline const BoundingSphere& GetSubMeshBoundingSphere(const uint32_t index) const { return m_subMeshBoundingSpheres.at(index);  }
 
@@ -113,14 +113,14 @@ namespace Volt
 
 		VertexMaterialData GetMaterialDataFromVertex(const Vertex& vertex);
 
-		void InitializeWithVertices(const std::vector<Vertex>& vertices);
+		void InitializeWithVertices(const Vector<Vertex>& vertices);
 
-		std::vector<SubMesh> m_subMeshes;
-		std::vector<Meshlet> m_meshlets;
+		Vector<SubMesh> m_subMeshes;
+		Vector<Meshlet> m_meshlets;
 
 		VertexContainer m_vertexContainer{};
-		std::vector<uint32_t> m_indices;
-		std::vector<uint32_t> m_meshletData;
+		Vector<uint32_t> m_indices;
+		Vector<uint32_t> m_meshletData;
 
 		MaterialTable m_materialTable;
 
@@ -139,7 +139,7 @@ namespace Volt
 		BoundingSphere m_boundingSphere;
 		BoundingBox m_boundingBox;
 
-		std::vector<GPUMesh> m_gpuMeshes;
+		Vector<GPUMesh> m_gpuMeshes;
 
 		glm::vec3 m_averageScale{ 1.f };
 		std::map<uint32_t, BoundingSphere> m_subMeshBoundingSpheres;

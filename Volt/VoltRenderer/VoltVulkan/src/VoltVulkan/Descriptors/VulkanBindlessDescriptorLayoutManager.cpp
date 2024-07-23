@@ -19,7 +19,7 @@ namespace Volt::RHI
 	{
 		// Setup main descriptor set layout
 		{
-			std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings;
+			Vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings;
 
 			{
 				auto& binding = descriptorSetLayoutBindings.emplace_back();
@@ -139,7 +139,7 @@ namespace Volt::RHI
 				info.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT;
 			}
 
-			std::vector<VkDescriptorBindingFlags> bindingFlags{};
+			Vector<VkDescriptorBindingFlags> bindingFlags{};
 
 			VkDescriptorSetLayoutBindingFlagsCreateInfo extendedInfo{};
 			extendedInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;

@@ -31,7 +31,7 @@ namespace Volt
 		static void OnEvent(Event& e);
 
 		static bool IsKeyPressed(int keyCode);
-		static std::vector<int> GetAllKeyPressed();
+		static Vector<int> GetAllKeyPressed();
 		static bool IsKeyReleased(int keyCode);
 		static bool IsMouseButtonPressed(int button);
 		static bool IsMouseButtonReleased(int button);

@@ -26,13 +26,13 @@ namespace Volt::RHI
 
 		const bool Reload(bool forceCompile) override;
 		std::string_view GetName() const override;
-		const std::vector<ShaderSourceEntry>& GetSourceEntries() const override;
+		const Vector<ShaderSourceEntry>& GetSourceEntries() const override;
 		const ShaderResources& GetResources() const override;
 		ShaderDataBuffer GetConstantsBuffer() const override;
 		VT_NODISCARD bool HasConstants() const override;
 		const ShaderResourceBinding& GetResourceBindingFromName(std::string_view name) const override;
 
-		VT_NODISCARD VT_INLINE const std::unordered_map<ShaderStage, std::vector<uint32_t>>& GetShaderStageData() const { return m_shaderStageData; }
+		VT_NODISCARD VT_INLINE const std::unordered_map<ShaderStage, Vector<uint32_t>>& GetShaderStageData() const { return m_shaderStageData; }
 		VT_NODISCARD VT_INLINE ComPtr<ID3D12RootSignature> GetRootSignature() const { return m_rootSignature; }
 
 		VT_NODISCARD uint32_t GetDescriptorIndexFromDescriptorHash(const size_t hash);
@@ -52,7 +52,7 @@ namespace Volt::RHI
 
 		ShaderCompiler::CompilationResultData CompileOrGetBinary(bool forceCompile);
 
-		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_shaderStageData;
+		std::unordered_map<ShaderStage, Vector<uint32_t>> m_shaderStageData;
 		std::unordered_map<ShaderStage, ShaderSourceInfo> m_shaderSources;
 
 		vt::map<size_t, DescriptorRangeInfo> m_bindingToDescriptorRangeInfo; // Hash is space + binding + type

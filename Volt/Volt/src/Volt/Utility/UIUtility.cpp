@@ -106,7 +106,7 @@ int32_t UI::LevenshteinDistance(const std::string& str1, const std::string& str2
 {
 	int32_t m = (int32_t)str1.length();
 	int32_t n = (int32_t)str2.length();
-	std::vector<std::vector<int>> dp(m + 1, std::vector<int>(n + 1));
+	Vector<Vector<int>> dp(m + 1, Vector<int>(n + 1));
 
 	// Initializing the first row and column as 0
 	for (int i = 0; i <= m; i++)
@@ -140,7 +140,7 @@ int32_t UI::LevenshteinDistance(const std::string& str1, const std::string& str2
 	return dp[m][n];
 }
 
-const std::vector<std::string> UI::GetEntriesMatchingQuery(const std::string& query, const std::vector<std::string>& entries)
+const Vector<std::string> UI::GetEntriesMatchingQuery(const std::string& query, const Vector<std::string>& entries)
 {
 	std::multimap<int32_t, std::string> scores{};
 
@@ -150,7 +150,7 @@ const std::vector<std::string> UI::GetEntriesMatchingQuery(const std::string& qu
 		scores.emplace(score, entry);
 	}
 
-	std::vector<std::string> result{};
+	Vector<std::string> result{};
 	for (const auto& [score, entry] : scores)
 	{
 		if (!Utility::StringContains(Utility::ToLower(entry), Utility::ToLower(query)))
@@ -686,7 +686,7 @@ void UI::EndProperties()
 	ImGui::PopStyleVar(2);
 }
 
-bool UI::ComboProperty(const std::string& text, int& currentItem, const std::vector<const char*>& items, float width)
+bool UI::ComboProperty(const std::string& text, int& currentItem, const Vector<const char*>& items, float width)
 {
 	bool changed = false;
 
@@ -706,7 +706,7 @@ bool UI::ComboProperty(const std::string& text, int& currentItem, const std::vec
 	return changed;
 }
 
-bool UI::Combo(const std::string& text, int& currentItem, const std::vector<const char*>& items, float width)
+bool UI::Combo(const std::string& text, int& currentItem, const Vector<const char*>& items, float width)
 {
 	bool changed = false;
 
@@ -725,7 +725,7 @@ bool UI::Combo(const std::string& text, int& currentItem, const std::vector<cons
 	return changed;
 }
 
-bool UI::Combo(const std::string& text, int& currentItem, const std::vector<std::string>& strItems, float width)
+bool UI::Combo(const std::string& text, int& currentItem, const Vector<std::string>& strItems, float width)
 {
 	bool changed = false;
 
@@ -735,7 +735,7 @@ bool UI::Combo(const std::string& text, int& currentItem, const std::vector<std:
 
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	std::vector<const char*> items;
+	Vector<const char*> items;
 	std::for_each(strItems.begin(), strItems.end(), [&](const std::string& string) { items.emplace_back(string.c_str()); });
 
 	ImGui::SetNextItemWidth(width);
@@ -848,7 +848,7 @@ bool UI::Combo(const std::string& text, int& currentItem, const char** items, ui
 	return changed;
 }
 
-bool UI::ComboProperty(const std::string& text, int& currentItem, const std::vector<std::string>& strItems, float width)
+bool UI::ComboProperty(const std::string& text, int& currentItem, const Vector<std::string>& strItems, float width)
 {
 	bool changed = false;
 
@@ -859,7 +859,7 @@ bool UI::ComboProperty(const std::string& text, int& currentItem, const std::vec
 
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	std::vector<const char*> items;
+	Vector<const char*> items;
 	std::for_each(strItems.begin(), strItems.end(), [&](const std::string& string) { items.emplace_back(string.c_str()); });
 
 	changed = DrawItem((width == 0.f) ? ImGui::GetColumnWidth() : width, [&]() 

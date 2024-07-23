@@ -29,7 +29,7 @@ namespace Volt
 		static bool ShouldCollide(uint32_t layer, uint32_t otherLayer);
 		static bool IsValid(uint32_t layerId);
 
-		inline static std::vector<PhysicsLayer>& GetLayers() { return myLayers; }
+		inline static Vector<PhysicsLayer>& GetLayers() { return myLayers; }
 
 		static PhysicsLayer& GetLayer(uint32_t layerId);
 		static PhysicsLayer& GetLayer(const std::string& layerName);
@@ -41,7 +41,7 @@ namespace Volt
 
 		static uint32_t GetNextLayerId();
 
-		inline static std::vector<PhysicsLayer> myLayers;
+		inline static Vector<PhysicsLayer> myLayers;
 		inline static PhysicsLayer myNullLayer;
 	};
 }

@@ -260,7 +260,7 @@ void ViewportPanel::UpdateContent()
 
 	if (UI::ImageButton("##play", UI::GetTextureID(playIcon), { buttonSize, buttonSize }))
 	{
-		static std::vector<Ref<EditorWindow>> fullscreenDeactivatedWindows;
+		static Vector<Ref<EditorWindow>> fullscreenDeactivatedWindows;
 
 		if (m_sceneState == SceneState::Edit)
 		{
@@ -432,7 +432,7 @@ void ViewportPanel::UpdateContent()
 		ImGui::Selectable("Entities", &settings.sceneSettings.showEntityGizmos);
 		ImGui::Selectable("Bounding Spheres", &settings.sceneSettings.showBoundingSpheres);
 
-		static const std::vector<const char*> colliderModes =
+		static const Vector<const char*> colliderModes =
 		{
 			"None",
 			"Selected",
@@ -444,7 +444,7 @@ void ViewportPanel::UpdateContent()
 
 		ImGui::Selectable("Environment Probes", &settings.sceneSettings.showEnvironmentProbes);
 
-		static const std::vector<const char*> navmeshModes =
+		static const Vector<const char*> navmeshModes =
 		{
 			"None",
 			"All",
@@ -609,7 +609,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 		case VT_KEY_BACKSPACE:
 		case VT_KEY_DELETE:
 		{
-			std::vector<Volt::Entity> entitiesToRemove;
+			Vector<Volt::Entity> entitiesToRemove;
 
 			auto selection = SelectionManager::GetSelectedEntities();
 			for (const auto& selectedEntity : selection)
@@ -863,7 +863,7 @@ void ViewportPanel::DuplicateSelection()
 {
 	m_editorCameraController->ForceLooseControl();
 
-	std::vector<Volt::Entity> duplicated;
+	Vector<Volt::Entity> duplicated;
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
 		if (SelectionManager::IsAnyParentSelected(ent, m_editorScene))
@@ -956,7 +956,7 @@ void ViewportPanel::HandleMultiSelect()
 	{
 		auto renderScale = m_sceneRenderer->GetSettings().renderScale;
 
-		const std::vector<uint32_t> data = m_sceneRenderer->GetIDImage()->ReadPixelRange<uint32_t>(
+		const Vector<uint32_t> data = m_sceneRenderer->GetIDImage()->ReadPixelRange<uint32_t>(
 			(uint32_t)(minDragBoxX * renderScale), (uint32_t)(minDragBoxY * renderScale),
 			(uint32_t)(maxDragBoxX * renderScale), (uint32_t)(maxDragBoxY * renderScale));
 
@@ -1022,7 +1022,7 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 
 void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 {
-	std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>> previousTransforms;
+	Vector<std::pair<Volt::EntityID, Volt::TransformComponent>> previousTransforms;
 
 	for (const auto& entId : SelectionManager::GetSelectedEntities())
 	{

@@ -12,7 +12,7 @@
 						StrBuf msg; \
 						e.Fmt(&msg); \
 						VT_CORE_ERROR("VCS: {0}", msg.Text()); \
-						VT_ASSERT(false, ""); \
+						VT_ASSERT(false); \
 					} \
 
 class P4Implementation final : public VersionControl
@@ -39,8 +39,8 @@ protected:
 	void SwitchWorkspaceImpl(const std::string& newStream) override;
 	void RefreshWorkspacesImpl() override;
 
-	const std::vector<std::string>& GetWorkspacesImpl() override;
-	const std::vector<std::string>& GetStreamsImpl() override;
+	const Vector<std::string>& GetWorkspacesImpl() override;
+	const Vector<std::string>& GetStreamsImpl() override;
 	bool IsConnectedImpl() override;
 
 private:

@@ -391,7 +391,7 @@ namespace Volt::RHI
 
 		VT_VK_CHECK(vkGetSwapchainImagesKHR(device->GetHandle<VkDevice>(), m_swapchain, &m_totalImageCount, nullptr));
 
-		std::vector<VkImage> images{};
+		Vector<VkImage> images{};
 
 		m_perImageData.clear();
 		m_perImageData.resize(m_totalImageCount);

@@ -34,7 +34,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setLinearDamping(drag);
 	}
@@ -48,7 +48,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setAngularDamping(drag);
 	}
@@ -68,7 +68,7 @@ namespace Volt
 		myRigidBodyData.mass = mass;
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		physx::PxRigidBodyExt::setMassAndUpdateInertia(*actor, mass);
 	}
@@ -83,7 +83,7 @@ namespace Volt
 		myRigidBodyData.isKinematic = isKinematic;
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, isKinematic);
 	}
@@ -110,7 +110,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 		actor->setKinematicTarget(PhysXUtilities::ToPhysXTransform(position, rotation));
 	}
 
@@ -123,7 +123,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setLinearVelocity(PhysXUtilities::ToPhysXVector(velocity));
 	}
@@ -137,7 +137,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setAngularVelocity(PhysXUtilities::ToPhysXVector(velocity));
 	}
@@ -151,7 +151,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setMaxLinearVelocity(velocity);
 	}
@@ -165,7 +165,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setMaxAngularVelocity(velocity);
 	}
@@ -184,7 +184,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return PhysXUtilities::FromPhysXVector(actor->getLinearVelocity());
 	}
@@ -198,7 +198,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return PhysXUtilities::FromPhysXVector(actor->getAngularVelocity());
 	}
@@ -212,7 +212,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return actor->getMaxLinearVelocity();
 	}
@@ -226,7 +226,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return actor->getMaxAngularVelocity();
 	}
@@ -240,7 +240,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 		physx::PxTransform target;
 		actor->getKinematicTarget(target);
 		return PhysXUtilities::FromPhysXVector(target.p);
@@ -255,7 +255,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 		physx::PxTransform target;
 		actor->getKinematicTarget(target);
 		return PhysXUtilities::FromPhysXQuat(target.q);
@@ -318,7 +318,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 		actor->addForce(PhysXUtilities::ToPhysXVector(aForce), (physx::PxForceMode::Enum)aForceMode);
 	}
 
@@ -331,7 +331,7 @@ namespace Volt
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 		actor->addTorque(PhysXUtilities::ToPhysXVector(torque), (physx::PxForceMode::Enum)aForceMode);
 	}
 

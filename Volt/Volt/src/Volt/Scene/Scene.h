@@ -100,7 +100,7 @@ namespace Volt
 		void RemoveLayer(const std::string& layerName);
 		void RemoveLayer(uint32_t layerId);
 		void MoveToLayer(Entity entity, uint32_t targetLayer);
-		void SetLayers(const std::vector<SceneLayer>& sceneLayers); // #TODO_Ivar: We probably don't want to expose this
+		void SetLayers(const Vector<SceneLayer>& sceneLayers); // #TODO_Ivar: We probably don't want to expose this
 		void SetActiveLayer(uint32_t layerId);
 		bool LayerExists(uint32_t layerId);
 
@@ -109,8 +109,8 @@ namespace Volt
 		void InvalidateRenderScene();
 
 		inline const uint32_t GetActiveLayer() const { return m_sceneLayers.at(m_activeLayerIndex).id; }
-		inline const std::vector<SceneLayer>& GetLayers() const { return m_sceneLayers; }
-		inline std::vector<SceneLayer>& GetLayersMutable() { return m_sceneLayers; }
+		inline const Vector<SceneLayer>& GetLayers() const { return m_sceneLayers; }
+		inline Vector<SceneLayer>& GetLayersMutable() { return m_sceneLayers; }
 
 		inline const MonoScriptFieldCache& GetScriptFieldCache() const { return m_monoFieldCache; }
 		inline MonoScriptFieldCache& GetScriptFieldCache() { return m_monoFieldCache; }
@@ -150,17 +150,17 @@ namespace Volt
 		inline ParticleSystem& GetParticleSystem() { return m_particleSystem; }
 
 		template<typename... T>
-		const std::vector<Entity> GetAllEntitiesWith() const;
+		const Vector<Entity> GetAllEntitiesWith() const;
 		
 		template<typename... T>
-		std::vector<Entity> GetAllEntitiesWith();
+		Vector<Entity> GetAllEntitiesWith();
 
 		template<typename... T, typename F>
 		void ForEachWithComponents(const F& func);
 
-		const std::vector<Entity> GetAllEntities() const;
-		const std::vector<Entity> GetAllEditedEntities() const;
-		const std::vector<EntityID> GetAllRemovedEntities() const;
+		const Vector<Entity> GetAllEntities() const;
+		const Vector<Entity> GetAllEditedEntities() const;
+		const Vector<EntityID> GetAllRemovedEntities() const;
 
 		static const std::set<AssetHandle> GetDependencyList(const std::filesystem::path& scenePath);
 		static bool IsSceneFullyLoaded(const std::filesystem::path& scenePath);
@@ -195,7 +195,7 @@ namespace Volt
 		bool PostFrameUpdateEvent(const AppPostFrameUpdateEvent& e);
 
 		const glm::mat4 GetWorldTransform(Entity entity) const;
-		const std::vector<Entity> FlattenEntityHeirarchy(Entity entity);
+		const Vector<Entity> FlattenEntityHeirarchy(Entity entity);
 
 		///// Component Functions /////
 		void RigidbodyComponent_OnCreate(entt::registry& registry, entt::entity id);
@@ -229,10 +229,10 @@ namespace Volt
 		std::string m_name = "New Scene";
 		entt::registry m_registry;
 
-		std::vector<SceneLayer> m_sceneLayers;
+		Vector<SceneLayer> m_sceneLayers;
 
 		std::mutex m_removeEntityMutex;
-		std::vector<EntityID> m_entityRemoveQueue;
+		Vector<EntityID> m_entityRemoveQueue;
 
 		mutable std::unordered_map<EntityID, glm::mat4> m_cachedEntityTransforms;
 		mutable std::shared_mutex m_cachedEntityTransformMutex;
@@ -256,9 +256,9 @@ namespace Volt
 	};
 
 	template<typename ...T>
-	inline std::vector<Entity> Scene::GetAllEntitiesWith()
+	inline Vector<Entity> Scene::GetAllEntitiesWith()
 	{
-		std::vector<Entity> result{};
+		Vector<Entity> result{};
 
 		auto view = m_registry.view<T...>();
 		for (const auto& ent : view)
@@ -270,9 +270,9 @@ namespace Volt
 	}
 
 	template<typename ...T>
-	inline const std::vector<Entity> Scene::GetAllEntitiesWith() const
+	inline const Vector<Entity> Scene::GetAllEntitiesWith() const
 	{
-		std::vector<Entity> result{};
+		Vector<Entity> result{};
 
 		auto view = m_registry.view<T...>();
 		for (const auto& ent : view)

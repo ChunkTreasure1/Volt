@@ -2,6 +2,7 @@
 
 #include "CoreUtilities/FileIO/StreamCommon.h"
 #include "CoreUtilities/Buffer/Buffer.h"
+#include "CoreUtilities/Containers/Vector.h"
 
 #include <fstream>
 #include <vector>
@@ -30,10 +31,10 @@ public:
 	void Read(Buffer& data);
 
 	template<typename F>
-	void Read(std::vector<F>& data);
+	void Read(Vector<F>& data);
 
 	template<typename F>
-	void ReadRaw(std::vector<F>& data);
+	void ReadRaw(Vector<F>& data);
 
 	template<typename F, size_t COUNT>
 	void Read(std::array<F, COUNT>& data);
@@ -47,14 +48,14 @@ public:
 	void Read(void* data);
 
 	void ResetHead();
+	TypeHeader ReadTypeHeader();
 
 private:
-	TypeHeader ReadTypeHeader();
 	void ReadData(void* outData, const TypeHeader& serializedTypeHeader, const TypeHeader& constructedTypeHeader);
 
 	bool Decompress(size_t compressedDataOffset);
 
-	std::vector<uint8_t> m_data;
+	Vector<uint8_t> m_data;
 	size_t m_currentOffset = 0;
 	bool m_streamValid = false;
 	bool m_compressed = false;
@@ -66,18 +67,16 @@ inline void BinaryStreamReader::Read(T& outData)
 	constexpr size_t typeSize = sizeof(T);
 
 	TypeHeader typeHeader{};
-	typeHeader.baseTypeSize = static_cast<uint16_t>(typeSize);
 	typeHeader.totalTypeSize = static_cast<uint32_t>(typeSize);
 
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 
-	if constexpr (std::is_trivial<T>())
+	if constexpr (std::is_trivial_v<T>)
 	{
 		ReadData(&outData, serializedTypeHeader, typeHeader);
 	}
 	else
 	{
-		assert(serializedTypeHeader.baseTypeSize == typeHeader.baseTypeSize && "Base Type sizes must match!");
 		T::Deserialize(*this, outData);
 	}
 }
@@ -88,17 +87,16 @@ inline bool BinaryStreamReader::TryRead(T& outData)
 	constexpr size_t typeSize = sizeof(T);
 
 	TypeHeader typeHeader{};
-	typeHeader.baseTypeSize = static_cast<uint16_t>(typeSize);
 	typeHeader.totalTypeSize = static_cast<uint32_t>(typeSize);
 
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 
-	if (serializedTypeHeader.baseTypeSize != typeHeader.baseTypeSize)
+	if (serializedTypeHeader.totalTypeSize != typeHeader.totalTypeSize)
 	{
 		return false;
 	}
 
-	if constexpr (std::is_trivial<T>())
+	if constexpr (std::is_trivial_v<T>)
 	{
 		ReadData(&outData, serializedTypeHeader, typeHeader);
 	}
@@ -114,7 +112,6 @@ template<>
 inline void BinaryStreamReader::Read(std::string& data)
 {
 	TypeHeader typeHeader{};
-	typeHeader.baseTypeSize = sizeof(std::string);
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 
 	data.resize(serializedTypeHeader.totalTypeSize);
@@ -128,7 +125,6 @@ template<>
 inline void BinaryStreamReader::Read(Buffer& data)
 {
 	TypeHeader typeHeader{};
-	typeHeader.baseTypeSize = sizeof(Buffer);
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 
 	data.Resize(serializedTypeHeader.totalTypeSize);
@@ -139,15 +135,14 @@ inline void BinaryStreamReader::Read(Buffer& data)
 }
 
 template<typename F>
-inline void BinaryStreamReader::Read(std::vector<F>& data)
+inline void BinaryStreamReader::Read(Vector<F>& data)
 {
 	TypeHeader typeHeader{};
-	typeHeader.baseTypeSize = sizeof(std::vector<F>);
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 
 	data.resize(serializedTypeHeader.totalTypeSize);
 
-	if constexpr (std::is_trivial<F>())
+	if constexpr (std::is_trivial_v<F>)
 	{
 		// We must multiply type size to get correct byte size
 		serializedTypeHeader.totalTypeSize *= sizeof(F);
@@ -163,10 +158,9 @@ inline void BinaryStreamReader::Read(std::vector<F>& data)
 }
 
 template<typename F>
-inline void BinaryStreamReader::ReadRaw(std::vector<F>& data)
+inline void BinaryStreamReader::ReadRaw(Vector<F>& data)
 {
 	TypeHeader typeHeader{};
-	typeHeader.baseTypeSize = sizeof(std::vector<F>);
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 
 	data.resize(serializedTypeHeader.totalTypeSize);
@@ -178,10 +172,9 @@ template<typename F, size_t COUNT>
 inline void BinaryStreamReader::Read(std::array<F, COUNT>& data)
 {
 	TypeHeader typeHeader{};
-	typeHeader.baseTypeSize = sizeof(std::array<F, COUNT>);
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 
-	if constexpr (std::is_trivial<F>())
+	if constexpr (std::is_trivial_v<F>)
 	{
 		// We must multiply type size to get correct byte size
 		serializedTypeHeader.totalTypeSize *= sizeof(F);
@@ -200,7 +193,6 @@ template<typename Key, typename Value>
 inline void BinaryStreamReader::Read(std::map<Key, Value>& data)
 {
 	TypeHeader typeHeader{};
-	typeHeader.baseTypeSize = sizeof(std::map<Key, Value>);
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 
 	const size_t elementCount = serializedTypeHeader.totalTypeSize;
@@ -209,10 +201,9 @@ inline void BinaryStreamReader::Read(std::map<Key, Value>& data)
 	{
 		Key key{};
 
-		if constexpr (std::is_trivial<Key>())
+		if constexpr (std::is_trivial_v<Key>)
 		{
 			TypeHeader keyTypeHeader{};
-			keyTypeHeader.baseTypeSize = sizeof(Key);
 			keyTypeHeader.totalTypeSize = sizeof(Value);
 
 			ReadData(&key, keyTypeHeader, keyTypeHeader);
@@ -224,10 +215,9 @@ inline void BinaryStreamReader::Read(std::map<Key, Value>& data)
 
 		Value value{};
 
-		if constexpr (std::is_trivial<Value>())
+		if constexpr (std::is_trivial_v<Value>)
 		{
 			TypeHeader valueTypeHeader{};
-			valueTypeHeader.baseTypeSize = sizeof(Value);
 			valueTypeHeader.totalTypeSize = sizeof(Value);
 
 			TypeHeader valueSerializedTypeHeader = ReadTypeHeader();
@@ -246,7 +236,6 @@ template<typename Key, typename Value>
 inline void BinaryStreamReader::Read(std::unordered_map<Key, Value>& data)
 {
 	TypeHeader typeHeader{};
-	typeHeader.baseTypeSize = sizeof(std::unordered_map<Key, Value>);
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 
 	const size_t elementCount = serializedTypeHeader.totalTypeSize;
@@ -255,11 +244,9 @@ inline void BinaryStreamReader::Read(std::unordered_map<Key, Value>& data)
 	{
 		Key key{};
 
-		if constexpr (std::is_trivial<Key>())
+		if constexpr (std::is_trivial_v<Key>)
 		{
 			TypeHeader keyTypeHeader{};
-			keyTypeHeader.baseTypeSize = sizeof(Key);
-
 			ReadData(&key, keyTypeHeader, keyTypeHeader);
 		}
 		else if constexpr (std::is_same<Key, std::string>::value)
@@ -273,10 +260,9 @@ inline void BinaryStreamReader::Read(std::unordered_map<Key, Value>& data)
 		 
 		Value value{};
 
-		if constexpr (std::is_trivial<Value>())
+		if constexpr (std::is_trivial_v<Value>)
 		{
 			TypeHeader valueTypeHeader{};
-			valueTypeHeader.baseTypeSize = sizeof(Value);
 			valueTypeHeader.totalTypeSize = sizeof(Value);
 
 			ReadData(&value, valueTypeHeader, valueTypeHeader);

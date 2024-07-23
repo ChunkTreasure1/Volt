@@ -215,7 +215,7 @@ private:
 
 	const Volt::Entity GetEntityFromCurrentNewPin();
 
-	const std::vector<std::string> GetEventNamesFromCurrentNewPin();
+	const Vector<std::string> GetEventNamesFromCurrentNewPin();
 
 	const glm::vec4 GetColorFromAttribute(const GraphKey::Attribute& attr);
 	void DrawPinIcon(const GraphKey::Attribute& pin, bool connected, ImColor color, int32_t alpha);
@@ -230,8 +230,8 @@ private:
 	std::string mySearchQuery;
 	std::string myContextSearchQuery;
 
-	std::vector<Ref<GraphKey::Node>> myNodeCopies;
-	std::vector<GraphKey::Link> myLinkCopies;
+	Vector<Ref<GraphKey::Node>> myNodeCopies;
+	Vector<GraphKey::Link> myLinkCopies;
 
 	bool myShouldMoveCopies = false;
 	bool myActivateSearchWidget = false;
@@ -588,7 +588,7 @@ inline const IONodeGraphEditor<graphType, EditorBackend>::IncompatiblePinReason 
 template<GraphKey::GraphType TGraphType, typename EditorBackend>
 inline void IONodeGraphEditor<TGraphType, EditorBackend>::AddNode(Ref<GraphKey::Node> node)
 {
-	std::vector<UUID64> pins;
+	Vector<UUID64> pins;
 	for (auto& i : node->inputs)
 	{
 		pins.emplace_back(i.id);
@@ -734,7 +734,7 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnBeginCreate()
 		else if (ed::AcceptNewItem(ImColor{ 1.f, 1.f, 1.f }, 2.f))
 		{
 			auto inputDirAttr = startAttr->direction == GraphKey::AttributeDirection::Input ? startAttr : endAttr;
-			std::vector<UUID64> linksToRemove{};
+			Vector<UUID64> linksToRemove{};
 			if (!inputDirAttr->links.empty())
 			{
 				linksToRemove.insert(linksToRemove.end(), inputDirAttr->links.begin(), inputDirAttr->links.end());
@@ -747,7 +747,7 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnBeginCreate()
 
 			//if (myGraphType == GraphKey::GraphType::Animation && startAttr->type == GraphKey::AttributeType::AnimationPose)
 			//{
-			//	std::vector<UUID64> linksToRemove{};
+			//	Vector<UUID64> linksToRemove{};
 
 			//	if (!startAttr->links.empty())
 			//	{
@@ -849,7 +849,7 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnPaste()
 		UUID64 id{};
 	};
 
-	std::vector<std::pair<std::pair<GraphKey::Attribute*, GraphKey::Attribute*>, GraphKey::Link>> linksToCopy;
+	Vector<std::pair<std::pair<GraphKey::Attribute*, GraphKey::Attribute*>, GraphKey::Link>> linksToCopy;
 
 	for (const auto& n : myNodeCopies)
 	{
@@ -927,7 +927,7 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnPaste()
 		}
 	}
 
-	std::vector<GraphKey::Link> newLinks{};
+	Vector<GraphKey::Link> newLinks{};
 	for (auto& [attributes, link] : linksToCopy)
 	{
 		auto& input = attributes.first;
@@ -1053,9 +1053,9 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::DrawGraphDataPanel()
 template<GraphKey::GraphType graphType, typename EditorBackend>
 inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNodeList(std::string& query, std::type_index typeIndex)
 {
-	std::map<std::string, std::vector<std::string>> nodeCategories;
-	std::vector<std::string> paramNodeNames{};
-	std::vector<std::string> eventNodeNames{};
+	std::map<std::string, Vector<std::string>> nodeCategories;
+	Vector<std::string> paramNodeNames{};
+	Vector<std::string> eventNodeNames{};
 
 	Ref<GraphKey::Node> node;
 
@@ -1209,7 +1209,7 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 
 				if (nodeInCategory && ImGui::TreeNodeEx(category.c_str()))
 				{
-					std::vector<std::string> tempNames = names;
+					Vector<std::string> tempNames = names;
 					if (!query.empty())
 					{
 						tempNames = UI::GetEntriesMatchingQuery(query, names);
@@ -1342,7 +1342,7 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawBackgroundContextMe
 			if (auto* startedAtPin = myOpenGraph->GetAttributeByID(myNewNodeLinkPinId))
 			{
 				auto& pins = startedAtPin->direction == GraphKey::AttributeDirection::Input ? node->outputs : node->inputs;
-				VT_CORE_ASSERT(!pins.empty());
+				VT_ASSERT(!pins.empty());
 
 				for (auto& pin : pins)
 				{
@@ -1358,7 +1358,7 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawBackgroundContextMe
 
 						if (myGraphType == GraphKey::GraphType::Animation && startPin->type == GraphKey::AttributeType::Flow)
 						{
-							std::vector<UUID64> linksToRemove{};
+							Vector<UUID64> linksToRemove{};
 
 							if (!startPin->links.empty())
 							{
@@ -1488,7 +1488,7 @@ inline const Volt::Entity IONodeGraphEditor<TGraphType, EditorBackend>::GetEntit
 }
 
 template<GraphKey::GraphType TGraphType, typename EditorBackend>
-inline const std::vector<std::string> IONodeGraphEditor<TGraphType, EditorBackend>::GetEventNamesFromCurrentNewPin()
+inline const Vector<std::string> IONodeGraphEditor<TGraphType, EditorBackend>::GetEventNamesFromCurrentNewPin()
 {
 	auto entity = GetEntityFromCurrentNewPin();
 	if (!entity)
@@ -1508,7 +1508,7 @@ inline const std::vector<std::string> IONodeGraphEditor<TGraphType, EditorBacken
 	//}
 
 	//const auto& events = comp.graph->GetEvents();
-	//std::vector<std::string> result{};
+	//Vector<std::string> result{};
 	//for (const auto& e : events)
 	//{
 	//	result.emplace_back(e.name);

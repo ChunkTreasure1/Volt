@@ -20,9 +20,9 @@ Ref<AssetBrowser::DirectoryItem> AssetDirectoryProcessor::ProcessDirectories(con
 		bool isDirectory;
 	};
 
-	std::vector<AssetEntryData> assetEntries;
+	Vector<AssetEntryData> assetEntries;
 
-	std::vector<std::filesystem::path> pathsToProcess;
+	Vector<std::filesystem::path> pathsToProcess;
 	pathsToProcess.emplace_back(path);
 
 	while (!pathsToProcess.empty())

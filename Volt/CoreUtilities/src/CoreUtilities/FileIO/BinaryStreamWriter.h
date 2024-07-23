@@ -2,6 +2,7 @@
 
 #include "CoreUtilities/FileIO/StreamCommon.h"
 #include "CoreUtilities/Buffer/Buffer.h"
+#include "CoreUtilities/Containers/Vector.h"
 
 #include <vector>
 #include <array>
@@ -19,7 +20,7 @@ public:
 	[[nodiscard]] const size_t GetBinarySizeOfType(const T& object) const;
 
 	template<> [[nodiscard]] const size_t GetBinarySizeOfType(const std::string& object) const;
-	template<typename F> [[nodiscard]] const size_t GetBinarySizeOfType(const std::vector<F>& object) const;
+	template<typename F> [[nodiscard]] const size_t GetBinarySizeOfType(const Vector<F>& object) const;
 	template<typename F, size_t COUNT> [[nodiscard]] const size_t GetBinarySizeOfType(const std::array<F, COUNT>& object) const;
 	template<typename Key, typename Value> [[nodiscard]] const size_t GetBinarySizeOfType(const std::map<Key, Value>& object) const;
 	template<typename Key, typename Value> [[nodiscard]] const size_t GetBinarySizeOfType(const std::unordered_map<Key, Value>& object) const;
@@ -34,10 +35,10 @@ public:
 	size_t Write(const Buffer& buffer);
 
 	template<typename F>
-	size_t Write(const std::vector<F>& data);
+	size_t Write(const Vector<F>& data);
 
 	template<typename F>
-	size_t WriteRaw(const std::vector<F>& data);
+	size_t WriteRaw(const Vector<F>& data);
 
 	template<typename F, size_t COUNT>
 	size_t Write(const std::array<F, COUNT>& data);
@@ -51,12 +52,12 @@ public:
 	size_t Write(const void* data, const size_t size);
 
 private:
-	bool GetCompressed(std::vector<uint8_t>& result, size_t compressedDataOffset = 0);
+	bool GetCompressed(Vector<uint8_t>& result, size_t compressedDataOffset = 0);
 
 	void WriteTypeHeader(const TypeHeader& typeHeader);
 	void WriteData(const void* data, const size_t size);
 
-	std::vector<uint8_t> m_data;
+	Vector<uint8_t> m_data;
 };
 
 template<typename T>
@@ -83,7 +84,7 @@ inline const size_t BinaryStreamWriter::GetBinarySizeOfType(const std::string& o
 }
 
 template<typename F>
-inline const size_t BinaryStreamWriter::GetBinarySizeOfType(const std::vector<F>& object) const
+inline const size_t BinaryStreamWriter::GetBinarySizeOfType(const Vector<F>& object) const
 {
 	constexpr size_t typeHeaderSize = sizeof(TypeHeader);
 	return object.size() * sizeof(F) + typeHeaderSize;
@@ -116,12 +117,11 @@ inline size_t BinaryStreamWriter::Write(const T& data)
 	constexpr size_t typeSize = sizeof(T);
 
 	TypeHeader header{};
-	header.baseTypeSize = typeSize;
-	header.totalTypeSize = typeSize;
+	header.totalTypeSize = static_cast<uint32_t>(typeSize);
 
 	WriteTypeHeader(header);
 
-	if constexpr (std::is_trivial<T>())
+	if constexpr (std::is_trivial_v<T>)
 	{
 		WriteData(&data, typeSize);
 	}
@@ -137,7 +137,6 @@ template<>
 inline size_t BinaryStreamWriter::Write(const std::string& data)
 {
 	TypeHeader header{};
-	header.baseTypeSize = sizeof(std::string);
 	header.totalTypeSize = static_cast<uint32_t>(data.size());
 
 	WriteTypeHeader(header);
@@ -153,7 +152,6 @@ template<>
 inline size_t BinaryStreamWriter::Write(const Buffer& buffer)
 {
 	TypeHeader header{};
-	header.baseTypeSize = sizeof(Buffer);
 	header.totalTypeSize = static_cast<uint32_t>(buffer.GetSize());
 
 	WriteTypeHeader(header);
@@ -166,10 +164,9 @@ inline size_t BinaryStreamWriter::Write(const Buffer& buffer)
 }
 
 template<typename F>
-inline size_t BinaryStreamWriter::Write(const std::vector<F>& data)
+inline size_t BinaryStreamWriter::Write(const Vector<F>& data)
 {
 	TypeHeader header{};
-	header.baseTypeSize = sizeof(std::vector<F>);
 	header.totalTypeSize = static_cast<uint32_t>(data.size());
 
 	WriteTypeHeader(header);
@@ -193,10 +190,9 @@ inline size_t BinaryStreamWriter::Write(const std::vector<F>& data)
 }
 
 template<typename F>
-inline size_t BinaryStreamWriter::WriteRaw(const std::vector<F>& data)
+inline size_t BinaryStreamWriter::WriteRaw(const Vector<F>& data)
 {
 	TypeHeader header{};
-	header.baseTypeSize = sizeof(std::vector<F>);
 	header.totalTypeSize = static_cast<uint32_t>(data.size());
 
 	WriteTypeHeader(header);
@@ -214,7 +210,6 @@ inline size_t BinaryStreamWriter::Write(const std::array<F, COUNT>& data)
 	static_assert(COUNT != 0);
 
 	TypeHeader header{};
-	header.baseTypeSize = sizeof(std::array<F, COUNT>);
 	header.totalTypeSize = COUNT;
 
 	WriteTypeHeader(header);
@@ -238,7 +233,6 @@ template<typename Key, typename Value>
 inline size_t BinaryStreamWriter::Write(const std::map<Key, Value>& data)
 {
 	TypeHeader header{};
-	header.baseTypeSize = sizeof(std::map<Key, Value>);
 	header.totalTypeSize = static_cast<uint32_t>(data.size());
 
 	WriteTypeHeader(header);
@@ -271,7 +265,6 @@ template<typename Key, typename Value>
 inline size_t BinaryStreamWriter::Write(const std::unordered_map<Key, Value>& data)
 {
 	TypeHeader header{};
-	header.baseTypeSize = sizeof(std::unordered_map<Key, Value>);
 	header.totalTypeSize = static_cast<uint32_t>(data.size());
 
 	WriteData(&header, sizeof(header));

@@ -12,11 +12,11 @@ namespace Volt::RHI
 {
 	namespace Utility
 	{
-		static std::vector<D3D12_INPUT_ELEMENT_DESC> CreateVertexLayout(const BufferLayout& vertexLayout, const BufferLayout& instanceLayout)
+		static Vector<D3D12_INPUT_ELEMENT_DESC> CreateVertexLayout(const BufferLayout& vertexLayout, const BufferLayout& instanceLayout)
 		{
 			assert(!vertexLayout.GetElements().empty());
 			
-			std::vector<D3D12_INPUT_ELEMENT_DESC> result{};
+			Vector<D3D12_INPUT_ELEMENT_DESC> result{};
 			result.reserve(vertexLayout.GetElements().size() + instanceLayout.GetElements().size());
 
 			uint32_t semanticIndex = 0;
@@ -158,7 +158,7 @@ namespace Volt::RHI
 			}
 		}
 
-		std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout;
+		Vector<D3D12_INPUT_ELEMENT_DESC> inputLayout;
 
 		if (shaderResources.vertexLayout.IsValid())
 		{

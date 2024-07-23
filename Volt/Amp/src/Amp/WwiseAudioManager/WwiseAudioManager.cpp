@@ -157,11 +157,11 @@ namespace Amp
 		return Amp::WWiseEngine::Get().SetParameter(aParameterName, avalue, AkGameObjectID, aOvertime);
 	}
 
-	std::vector<std::string> WwiseAudioManager::GetAllEventNames(std::filesystem::path aFilePath)
+	Vector<std::string> WwiseAudioManager::GetAllEventNames(std::filesystem::path aFilePath)
 	{
-		std::vector<std::string> strings;
+		Vector<std::string> strings;
 
-		std::vector<std::string> bankNames = Amp::WWiseEngine::Get().GetBankNames();
+		Vector<std::string> bankNames = Amp::WWiseEngine::Get().GetBankNames();
 
 		for (auto bankName : bankNames)
 		{

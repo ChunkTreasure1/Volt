@@ -3,7 +3,9 @@
 #include "VoltVulkan/Descriptors/VulkanDescriptorCommon.h"
 
 #include <VoltRHI/Descriptors/DescriptorTable.h>
+
 #include <CoreUtilities/Pointers/WeakPtr.h>
+#include <CoreUtilities/Containers/Vector.h>
 
 struct VkDescriptorPool_T;
 struct VkDescriptorSet_T;
@@ -56,8 +58,8 @@ namespace Volt::RHI
 		WeakPtr<Shader> m_shader;
 		bool m_isDirty = false;
 
-		std::vector<DescriptorWrite> m_descriptorWrites;
-		std::vector<DescriptorWrite> m_activeDescriptorWrites;
+		Vector<DescriptorWrite> m_descriptorWrites;
+		Vector<DescriptorWrite> m_activeDescriptorWrites;
 
 		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, DescriptorImageInfo>>> m_imageDescriptorInfos; // Set -> Binding -> Array Index
 		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, DescriptorBufferInfo>>> m_bufferDescriptorInfos; // Set -> Binding -> Array Index

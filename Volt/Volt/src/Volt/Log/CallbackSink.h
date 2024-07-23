@@ -1,7 +1,8 @@
 #pragma once
 
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <spdlog/sinks/base_sink.h>
-#include <vector>
 #include <functional>
 
 struct LogCallbackData
@@ -64,5 +65,5 @@ private:
 	{
 	}
 
-	std::vector<std::function<void(const LogCallbackData&)>> m_callbacks;
+	Vector<std::function<void(const LogCallbackData&)>> m_callbacks;
 };

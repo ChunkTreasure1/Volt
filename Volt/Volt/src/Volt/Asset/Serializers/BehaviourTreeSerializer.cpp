@@ -72,12 +72,12 @@ namespace Volt
 
 	struct BehaviourTreeSerializationData
 	{
-		std::vector<UUID64> sequenceIDs;
-		std::vector<UUID64> selectorIDs;
-		std::vector<SerializedDecorator> decorators;
-		std::vector<SerializedLeaf> leafs;
-		std::vector<SerializedLink> links;
-		std::vector<SerializedPosition> positions;
+		Vector<UUID64> sequenceIDs;
+		Vector<UUID64> selectorIDs;
+		Vector<SerializedDecorator> decorators;
+		Vector<SerializedLeaf> leafs;
+		Vector<SerializedLink> links;
+		Vector<SerializedPosition> positions;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const BehaviourTreeSerializationData& data)
 		{
@@ -187,7 +187,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		BehaviourTreeSerializationData serializationData{};
 		streamReader.Read(serializationData);

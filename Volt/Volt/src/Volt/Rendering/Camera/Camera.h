@@ -53,7 +53,7 @@ namespace Volt
 		inline const glm::vec2& GetSubpixelOffset() const { return m_subpixelOffset; }
 
 		inline const Frustum& GetFrustum() const { return m_frustum; }
-		const std::vector<glm::vec4> GetFrustumCorners() const;
+		const Vector<glm::vec4> GetFrustumCorners() const;
 		const glm::vec4 GetFrustumCullingInfo() const;
 		const AABB GetOrthographicFrustum() const;
 

@@ -37,8 +37,8 @@ namespace Volt::RHI
 		IDxcCompiler3* m_hlslCompiler = nullptr;
 		IDxcUtils* m_hlslUtils = nullptr;
 
-		std::vector<std::filesystem::path> m_includeDirectories;
-		std::vector<std::string> m_macros;
+		Vector<std::filesystem::path> m_includeDirectories;
+		Vector<std::string> m_macros;
 		ShaderCompilerFlags m_flags = ShaderCompilerFlags::None;
 		std::filesystem::path m_cacheDirectory;
 	};

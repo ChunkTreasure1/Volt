@@ -17,7 +17,7 @@ namespace Volt
 		void RunEvents();
 
 	private:
-		std::vector<std::function<void()>> myFrameEvents;
+		Vector<std::function<void()>> myFrameEvents;
 	};
 
 	class CharacterControllerContactListener : public physx::PxQueryFilterCallback

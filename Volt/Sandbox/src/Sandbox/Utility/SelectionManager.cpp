@@ -6,7 +6,7 @@
 
 void SelectionManager::Initialize()
 {
-	m_entities[SelectionContext::Scene] = std::vector<Volt::EntityID>();
+	m_entities[SelectionContext::Scene] = Vector<Volt::EntityID>();
 }
 
 bool SelectionManager::Select(Volt::EntityID entity, SelectionContext context)

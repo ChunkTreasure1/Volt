@@ -7,7 +7,7 @@ namespace Volt
 {
 	struct DebugRenderData
 	{
-		//std::vector<std::function<void(SceneRenderer::PerThreadData&)>> functionQueue;
+		//Vector<std::function<void(SceneRenderer::PerThreadData&)>> functionQueue;
 	};
 
 	Scope<DebugRenderData> s_debugRenderData;
@@ -139,7 +139,7 @@ namespace Volt
 
 	void DebugRenderer::DrawLineSphere(const glm::vec3& center, float radius, const glm::vec4& color)
 	{
-		/*std::vector<glm::vec3> positions;
+		/*Vector<glm::vec3> positions;
 		positions.reserve(36);
 
 		for (float i = 0; i <= 360; i += 10.f)

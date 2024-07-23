@@ -70,7 +70,7 @@ namespace Volt
 		static void UnregisterAssetChangedCallback(AssetType assetType, UUID64 id);
 
 		static void AddDependencyToAsset(AssetHandle handle, AssetHandle dependency);
-		static std::vector<AssetHandle> GetAssetsDependentOn(AssetHandle handle);
+		static Vector<AssetHandle> GetAssetsDependentOn(AssetHandle handle);
 
 		static bool IsLoaded(AssetHandle handle);
 
@@ -130,12 +130,12 @@ namespace Volt
 		static const ImporterType& GetImporterForType();
 
 		template<typename T>
-		static const std::vector<Ref<T>> GetAllCachedAssetsOfType();
+		static const Vector<Ref<T>> GetAllCachedAssetsOfType();
 
 		template<typename T>
-		static const std::vector<AssetHandle> GetAllAssetsOfType();
+		static const Vector<AssetHandle> GetAllAssetsOfType();
 
-		static const std::vector<AssetHandle> GetAllAssetsOfType(AssetType assetType);
+		static const Vector<AssetHandle> GetAllAssetsOfType(AssetType assetType);
 
 	private:
 		inline static AssetManager* s_instance = nullptr;
@@ -160,8 +160,8 @@ namespace Volt
 
 		static const std::filesystem::path GetCleanAssetFilePath(const std::filesystem::path& path);
 		
-		std::vector<std::filesystem::path> GetEngineAssetFiles();
-		std::vector<std::filesystem::path> GetProjectAssetFiles();
+		Vector<std::filesystem::path> GetEngineAssetFiles();
+		Vector<std::filesystem::path> GetProjectAssetFiles();
 
 		std::unordered_map<AssetType, Scope<AssetSerializer>> m_assetSerializers;
 		std::unordered_map<AssetType, AssetCreateFunction> m_assetCreateFunctions;
@@ -182,8 +182,8 @@ namespace Volt
 			AssetChangedState state;
 		};
 
-		std::unordered_map<AssetType, std::vector<AssetChangedCallbackInfo>> m_assetChangedCallbacks;
-		std::vector<AssetChangedQueueInfo> m_assetChangedQueue;
+		std::unordered_map<AssetType, Vector<AssetChangedCallbackInfo>> m_assetChangedCallbacks;
+		Vector<AssetChangedQueueInfo> m_assetChangedQueue;
 		std::mutex m_assetChangedQueueMutex;
 		Scope<AssetFactory> m_assetFactory;
 		Scope<AssetDependencyGraph> m_dependencyGraph;
@@ -363,19 +363,16 @@ namespace Volt
 	inline const ImporterType& AssetManager::GetImporterForType()
 	{
 		const auto type = Type::GetStaticType();
-		if (!Get().m_assetSerializers.contains(type))
-		{
-			VT_CORE_ASSERT(false, "Importer for type does not exist!");
-		}
+		VT_ASSERT_MSG(Get().m_assetSerializers.contains(type), "Importer for type does not exist!");
 
 		return (ImporterType&)*Get().m_assetSerializers.at(type);
 	}
 	template<typename T>
-	inline const std::vector<Ref<T>> AssetManager::GetAllCachedAssetsOfType()
+	inline const Vector<Ref<T>> AssetManager::GetAllCachedAssetsOfType()
 	{
 		ReadLock lock{ Get().m_assetCacheMutex };
 
-		std::vector<Ref<T>> result{};
+		Vector<Ref<T>> result{};
 
 		for (const auto& [handle, asset] : Get().m_assetCache)
 		{
@@ -389,7 +386,7 @@ namespace Volt
 	}
 
 	template<typename T>
-	inline const std::vector<AssetHandle> AssetManager::GetAllAssetsOfType()
+	inline const Vector<AssetHandle> AssetManager::GetAllAssetsOfType()
 	{
 		return GetAllAssetsOfType(T::GetStaticType());
 	}

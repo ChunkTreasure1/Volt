@@ -592,7 +592,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 	return imported;
 }
 
-ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImportData& aImportData, const std::vector<std::filesystem::path>& meshesToImport)
+ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImportData& aImportData, const Vector<std::filesystem::path>& meshesToImport)
 {
 	ImportState imported = ImportState::None;
 
@@ -704,7 +704,7 @@ ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImport
 	return imported;
 }
 
-void EditorUtils::MeshExportModal(const std::string& aId, std::filesystem::path aDirectoryPath, MeshImportData& aExportData, std::vector<Ref<Volt::Mesh>> aMeshesToExport)
+void EditorUtils::MeshExportModal(const std::string& aId, std::filesystem::path aDirectoryPath, MeshImportData& aExportData, Vector<Ref<Volt::Mesh>> aMeshesToExport)
 {
 	if (aMeshesToExport.empty()) { return; }
 
@@ -767,7 +767,7 @@ void EditorUtils::ImportTexture(const std::filesystem::path& sourcePath)
 	//DirectX::ScratchImage mippedImage{};
 	//DirectX::GenerateMipMaps(image, DirectX::TEX_FILTER_CUBIC, (size_t)mipCount, mippedImage);
 
-	//std::vector<DirectX::Image> dxImages{};
+	//Vector<DirectX::Image> dxImages{};
 
 	//uint32_t mipWidth = metadata.width;
 	//uint32_t mipHeight = metadata.height;

@@ -50,8 +50,8 @@ namespace Volt::RHI
 		uint32_t m_descriptorTableRootParamStartIndex = 0;
 
 		vt::map<uint32_t, vt::map<uint32_t, vt::map<ShaderRegisterType, AllocatedDescriptorInfo>>> m_allocatedDescriptorPointers;
-		std::vector<DescriptorCopyInfo> m_activeDescriptorCopies;
-		std::vector<DescriptorCopyInfo> m_activeSamplerDescriptorCopies;
+		Vector<DescriptorCopyInfo> m_activeDescriptorCopies;
+		Vector<DescriptorCopyInfo> m_activeSamplerDescriptorCopies;
 
 		Scope<D3D12DescriptorHeap> m_mainHeap;
 		Scope<D3D12DescriptorHeap> m_samplerHeap;

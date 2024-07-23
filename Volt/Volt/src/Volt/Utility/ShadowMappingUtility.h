@@ -75,9 +75,9 @@ namespace Volt
 			return { lightProjection, view, { minX, maxX, minY, maxY } };
 		}
 
-		inline const std::vector<LightSpaceMatrix> CalculateCascadeMatrices(Ref<Camera> sceneCamera, const glm::vec3& lightDirection, const std::vector<float>& cascades)
+		inline const Vector<LightSpaceMatrix> CalculateCascadeMatrices(Ref<Camera> sceneCamera, const glm::vec3& lightDirection, const Vector<float>& cascades)
 		{
-			std::vector<LightSpaceMatrix> result{};
+			Vector<LightSpaceMatrix> result{};
 			for (size_t i = 0; i < cascades.size() + 1; i++)
 			{
 				if (i == 0)

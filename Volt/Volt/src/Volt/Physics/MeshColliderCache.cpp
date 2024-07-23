@@ -68,7 +68,7 @@ namespace Volt
 			return;
 		}
 
-		std::vector<uint8_t> totalData;
+		Vector<uint8_t> totalData;
 		const size_t srcSize = input.seekg(0, std::ios::end).tellg();
 		totalData.resize(srcSize);
 		input.seekg(0, std::ios::beg);
@@ -89,7 +89,7 @@ namespace Volt
 			const size_t collSize = *(size_t*)&totalData[offset];
 			offset += sizeof(offset);
 
-			std::vector<uint8_t> collData;
+			Vector<uint8_t> collData;
 			collData.resize(collSize);
 
 			auto& cached = cachedData.colliderData.emplace_back();
