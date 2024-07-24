@@ -104,6 +104,10 @@ private:
 	bool LoadScene(Volt::OnSceneTransitionEvent& e);
 
 	void HandleCircuitTellEvents( const Circuit::TellEvent& e);
+	void HandleCircuitWindowEventCallback(Volt::Event& e);
+
+	static Circuit::KeyCode VoltKeyCodeToCircuitKeyCode(uint32_t keyCode);
+	static Circuit::KeyCode VoltMouseCodeToCircuitKeyCode(uint32_t keyCode);
 
 	void CreateWatches();
 

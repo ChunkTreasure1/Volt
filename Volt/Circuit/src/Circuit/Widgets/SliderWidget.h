@@ -7,7 +7,6 @@ template <typename T>
 class Observer;
 namespace Circuit
 {
-
 	class SliderWidget : public Widget
 	{
 	public:
@@ -25,6 +24,8 @@ namespace Circuit
 		CIRCUIT_API void Build(const Arguments& args);
 
 		virtual void OnPaint(CircuitPainter& painter) override;
+		CIRCUIT_API void OnInputEvent(InputEvent& inputEvent) override;
+
 
 		CIRCUIT_API float GetValue() const;
 		CIRCUIT_API void SetValue(float value);
@@ -41,5 +42,9 @@ namespace Circuit
 		//unsigned int m_OnValueChangeHandle;
 		float m_MinValue;
 		float m_MaxValue;
+
+		static constexpr uint32_t s_sliderWidth = 200;
+		static constexpr uint32_t s_sliderHeight = 10;
+		static constexpr uint32_t s_sliderHandleRadius = 10;
 	};
 }

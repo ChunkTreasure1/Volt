@@ -305,6 +305,13 @@ namespace Volt
 			WindowDragDropEvent event(count, paths);
 			data.eventCallback(event);
 		});
+
+		//TODO: this is a hack to make the glfw window 'actually' remove the titlebar, for some reason the titlebar exists before we resize the window
+		if (!m_properties.useTitlebar)
+		{
+			glfwSetWindowSize(m_window, static_cast<int32_t>(createWidth + 1), static_cast<int32_t>(createHeight + 1));
+			glfwSetWindowSize(m_window, static_cast<int32_t>(createWidth), static_cast<int32_t>(createHeight));
+		}
 	}
 
 	void Window::Release()

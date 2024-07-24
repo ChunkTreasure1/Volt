@@ -4,7 +4,6 @@
 #define CreateWidget(InWidgetType) \
 	CircuitDeclare<InWidgetType>() <<= InWidgetType::Arguments()
 
-
 #define CIRCUIT_BEGIN_ARGS(InWidgetType) \
 	public: \
 	struct Arguments : public CircuitBaseArgsTemplate<InWidgetType>\
@@ -15,7 +14,6 @@
 
 #define CIRCUIT_END_ARGS() \
 	};
-
 
 #define CIRCUIT_ARGUMENT_VARIABLE(ArgType, ArgName) \
 	ArgType _##ArgName
@@ -30,8 +28,6 @@
 #define CIRCUIT_ARGUMENT(ArgType, ArgName) \
 	CIRCUIT_ARGUMENT_VARIABLE(ArgType, ArgName); \
 	CIRCUIT_ARGUMENT_FUNCTION(ArgType, ArgName)
-
-
 
 template<typename WidgetType>
 struct CircuitDeclare

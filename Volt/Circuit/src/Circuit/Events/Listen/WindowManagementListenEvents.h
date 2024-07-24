@@ -12,7 +12,7 @@ namespace Circuit
 		~WindowOpenedListenEvent() = default;
 
 		const InterfaceWindowHandle& GetWindowHandle() const { return m_WindowHandle; }
-
+		LISTEN_EVENT_CLASS_TYPE(CircuitListenEventType::WindowOpened)
 	private:
 		const InterfaceWindowHandle m_WindowHandle;
 	};
@@ -24,6 +24,7 @@ namespace Circuit
 		~WindowClosedListenEvent() = default;
 
 		const InterfaceWindowHandle& GetWindowHandle() const { return m_WindowHandle; }
+		LISTEN_EVENT_CLASS_TYPE(CircuitListenEventType::WindowClosed)
 
 	private:
 		const InterfaceWindowHandle m_WindowHandle;
@@ -37,6 +38,7 @@ namespace Circuit
 
 		const InterfaceWindowHandle& GetWindowHandle() const { return m_WindowHandle; }
 		const glm::vec2& GetSize() const { return m_size; }
+		LISTEN_EVENT_CLASS_TYPE(CircuitListenEventType::WindowResized)
 
 	private:
 		const InterfaceWindowHandle m_WindowHandle;

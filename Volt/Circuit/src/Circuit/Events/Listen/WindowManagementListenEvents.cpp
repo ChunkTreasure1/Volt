@@ -4,18 +4,18 @@
 namespace Circuit
 {
 	WindowOpenedListenEvent::WindowOpenedListenEvent(InterfaceWindowHandle windowHandle)
-		: ListenEvent(CircuitListenEventType::WindowOpened)
+		: ListenEvent()
 		, m_WindowHandle(windowHandle)
 	{
 	}
 
 	WindowClosedListenEvent::WindowClosedListenEvent(InterfaceWindowHandle windowHandle)
-		: ListenEvent(CircuitListenEventType::WindowClosed)
+		: ListenEvent()
 		, m_WindowHandle(windowHandle)
 	{
 	}
 	WindowResizedListenEvent::WindowResizedListenEvent(InterfaceWindowHandle windowHandle, const glm::vec2& size)
-		: ListenEvent(CircuitListenEventType::WindowResized)
+		: ListenEvent()
 		, m_WindowHandle(windowHandle)
 		, m_size(size)
 	{

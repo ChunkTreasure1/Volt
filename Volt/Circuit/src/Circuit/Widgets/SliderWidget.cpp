@@ -6,6 +6,8 @@
 #include "Circuit/Widgets/Primitives/CircleWidget.h"
 #include "Delegates/Observer.h"
 
+#include "Circuit/Input/CircuitInput.h"
+
 #include "Circuit/CircuitPainter.h"
 
 namespace Circuit
@@ -31,10 +33,7 @@ namespace Circuit
 
 	void SliderWidget::OnPaint(CircuitPainter& painter)
 	{
-		const uint32_t sliderWidth = 200;
-		const uint32_t sliderHeight = 10;
-		const uint32_t sliderHandleRadius = 10;
-		const float leftRectWidth = sliderWidth * GetValueNormalized();
+		const float leftRectWidth = s_sliderWidth * GetValueNormalized();
 
 		const CircuitColor unfilledColor = 0x555555ff;
 		const CircuitColor filledColor = 0xffa500ff;
@@ -42,17 +41,36 @@ namespace Circuit
 
 
 		//left rect
-		painter.AddRect(GetX(), GetY(), leftRectWidth, sliderHeight, filledColor);
+		painter.AddRect(GetX(), GetY(), leftRectWidth, s_sliderHeight, filledColor);
 
 		//right rect
-		painter.AddRect(GetX() + leftRectWidth, GetY(), sliderWidth - leftRectWidth, sliderHeight, unfilledColor);
+		painter.AddRect(GetX() + leftRectWidth, GetY(), s_sliderWidth - leftRectWidth, s_sliderHeight, unfilledColor);
 
 		//handle outer
-		painter.AddCircle(GetX() + leftRectWidth, GetY() + sliderHeight/2, sliderHandleRadius, handleColor);
+		painter.AddCircle(GetX() + leftRectWidth, GetY() + s_sliderHeight/2, s_sliderHandleRadius, handleColor);
 
 		//handle inner
-		painter.AddCircle(GetX() + leftRectWidth, GetY() + sliderHeight/2, (sliderHeight / 3), filledColor);
+		painter.AddCircle(GetX() + leftRectWidth, GetY() + s_sliderHeight/2, (s_sliderHeight / 3), filledColor);
 
+	}
+
+	void SliderWidget::OnInputEvent(InputEvent& inputEvent)
+	{
+		if (inputEvent.GetKeyCode() != KeyCode::Mouse_LB)
+		{
+			return;
+		}
+
+		//if()
+
+		if (inputEvent.WasJustPressed())
+		{
+
+		}
+		else if (inputEvent.WasJustReleased())
+		{
+
+		}
 	}
 
 	float SliderWidget::GetValue() const

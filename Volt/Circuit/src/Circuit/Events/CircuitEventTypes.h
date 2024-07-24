@@ -16,9 +16,18 @@ namespace Circuit
 		OnKeyPressed, // first time key is pressed
 		OnKeyReleased, // key is released
 
+		//Window Events
 		WindowOpened,
 		WindowClosed,
 
 		WindowResized,
+
+		//WindowTitlebarHittest,
+
+
+		//input events
+		KeyPressed,KeyReleased,	KeyTyped,
+		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled, MouseMovedViewport,
+		
 	};
 }

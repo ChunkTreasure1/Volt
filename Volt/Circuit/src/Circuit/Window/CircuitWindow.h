@@ -30,6 +30,8 @@ namespace Circuit
 
 		CIRCUIT_API std::vector<CircuitDrawCommand> GetDrawCommands();
 
+		void OnInputEvent(class InputEvent& inputEvent);
+
 		//takes ownership of the widget
 		CIRCUIT_API void SetWidget(std::unique_ptr<Widget> widget);
 		template<class WidgetType>

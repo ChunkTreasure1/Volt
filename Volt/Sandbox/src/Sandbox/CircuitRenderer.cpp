@@ -81,28 +81,6 @@ CircuitOutputData& CircuitRenderer::AddCircuitPrimitivesPass(Volt::RenderGraph& 
 
 	Volt::RenderGraphResourceHandle uiCommandsBufferHandle;
 	std::vector<Circuit::CircuitDrawCommand> cmds = m_targetCircuitWindow.GetDrawCommands();
-	/*cmds.resize(2);
-	{
-		Circuit::CircuitDrawCommand& tcmd = cmds[0];
-		tcmd.pixelPos = { 256, 256 };
-		tcmd.rotation = 0.f;
-		tcmd.scale = 1.f;
-		tcmd.radiusHalfSize.x = 100.f;
-		tcmd.radiusHalfSize.y = 100.f;
-		tcmd.type = Circuit::CircuitPrimitiveType::Rect;
-		tcmd.primitiveGroup = 0;
-	}
-
-	{
-		Circuit::CircuitDrawCommand& tcmd = cmds[1];
-		tcmd.pixelPos = { 256, 400 };
-		tcmd.rotation = 0.25f;
-		tcmd.scale = 1.f;
-		tcmd.radiusHalfSize.x = 100.f;
-		tcmd.radiusHalfSize.y = 100.f;
-		tcmd.type = Circuit::CircuitPrimitiveType::Circle;
-		tcmd.primitiveGroup = 0;
-	}*/
 
 	const size_t commandsCount = cmds.size();
 	if (commandsCount > 0)

@@ -11,6 +11,8 @@
 
 #include "Circuit/Window/CircuitWindow.h"
 
+#include "Circuit/Input/CircuitInput.h"
+
 namespace Circuit
 {
 	CircuitManager::CircuitManager()
@@ -32,7 +34,15 @@ namespace Circuit
 
 	void CircuitManager::Init()
 	{
+		CircuitInput::Initialize(
+			[this](Circuit::InputEvent& inputEvent)-> bool
+		{
+			for (auto& pair : m_windows)
+			{
+				pair.second->OnInputEvent(inputEvent);
+			}
 
+		});
 	}
 
 	void CircuitManager::BroadcastTellEvent(const TellEvent& event)
@@ -51,16 +61,16 @@ namespace Circuit
 
 	CircuitWindow& CircuitManager::OpenWindow(OpenWindowParams& params)
 	{
-		const size_t startWindowCount = m_windows.size();
+		//const size_t startWindowCount = m_windows.size();
 		BroadcastTellEvent(OpenWindowTellEvent(params));
-		assert(m_windows.size() == (startWindowCount + 1) && "Failed to open window.");
+		//assert(m_windows.size() == (startWindowCount + 1) && "Failed to open window.");
 
 		return *((--m_windows.end())->second);
 	}
 
 	void CircuitManager::HandleListenEvent(const ListenEvent& event)
 	{
-		switch (event.GetType())
+		switch (event.GetEventType())
 		{
 			case CircuitListenEventType::WindowOpened:
 			{

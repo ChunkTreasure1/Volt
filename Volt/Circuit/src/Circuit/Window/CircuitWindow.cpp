@@ -29,6 +29,10 @@ namespace Circuit
 		m_widget->OnPaint(painter);
 		return painter.GetCommands();
 	}
+	void CircuitWindow::OnInputEvent(InputEvent& inputEvent)
+	{
+		m_widget->OnInputEvent(inputEvent);
+	}
 	void CircuitWindow::SetWidget(std::unique_ptr<Widget> widget)
 	{
 		m_widget = std::move(widget);
