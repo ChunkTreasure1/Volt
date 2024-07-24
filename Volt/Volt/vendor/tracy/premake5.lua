@@ -11,6 +11,7 @@ project "tracy"
 	{
 		"public/*.cpp",
 		"public/*.hpp",
+		"**.natvis"
 	}
 
 	includedirs

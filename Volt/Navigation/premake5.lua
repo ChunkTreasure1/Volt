@@ -23,6 +23,7 @@ project "Navigation"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
+		"**.natvis",
 		
 		"vendor/Recast/**.h",
 		"vendor/Recast/**.cpp",

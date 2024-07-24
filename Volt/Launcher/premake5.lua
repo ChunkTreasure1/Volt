@@ -39,6 +39,7 @@ project "Launcher"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
+		"**.natvis",
 
 		"resource.h",
 		"Launcher.rc",

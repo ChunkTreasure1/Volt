@@ -23,6 +23,7 @@ project "VoltD3D12"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
+		"**.natvis",
 	}
 
 	includedirs

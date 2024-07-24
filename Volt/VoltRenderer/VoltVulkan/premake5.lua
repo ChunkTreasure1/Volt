@@ -24,6 +24,7 @@ project "VoltVulkan"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
+		"**.natvis",
 	}
 
 	includedirs

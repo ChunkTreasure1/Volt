@@ -33,6 +33,7 @@ project "CoreUtilities"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
+		"**.natvis",
 	}
 
 	includedirs

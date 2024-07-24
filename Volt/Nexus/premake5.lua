@@ -22,7 +22,8 @@ project "Nexus"
 	{
 		"src/**.h",
 		"src/**.cpp",
-		"src/**.hpp"
+		"src/**.hpp",
+		"**.natvis",
 	}
 
 	includedirs

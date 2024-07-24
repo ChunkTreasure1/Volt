@@ -54,6 +54,7 @@ project "Sandbox"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
+		"**.natvis",
 
 		"resource.h",
 		"Sandbox.rc",

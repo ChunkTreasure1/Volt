@@ -24,6 +24,7 @@ project "VoltRHI"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
+		"**.natvis",
 	}
 
 	includedirs

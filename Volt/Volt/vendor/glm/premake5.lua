@@ -12,7 +12,8 @@ project "glm"
 		"glm/**.h",
 		"glm/**.cpp",
 		"glm/**.hpp",
-		"glm/**.inl"
+		"glm/**.inl",
+		"**.natvis"
 	}
 
 	includedirs

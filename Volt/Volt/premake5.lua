@@ -28,6 +28,7 @@ project "Volt"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
+		"**.natvis",
 
 		"%{IncludeDir.tinyddsloader}/**.h",
 		"%{IncludeDir.TinyGLTF}/**.h",
