@@ -289,6 +289,7 @@ inline constexpr void Vector<T>::swap(Vector<T>& other)
 {
 	std::swap(m_ptrBegin, other.m_ptrBegin);
 	std::swap(m_ptrEnd, other.m_ptrEnd);
+	std::swap(m_ptrCapacity, other.m_ptrCapacity);
 }
 
 template<typename T>
