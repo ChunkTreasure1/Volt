@@ -22,6 +22,12 @@ namespace ShadingMode
     static const uint VisualizeLightComplexity = 8;
 }
 
+namespace VisualizationMode
+{
+    static const uint VisualizeCascades = 1;
+    static const uint VisualizeLightComplexity = 2;
+}
+
 struct Constants
 {
     UniformRWTexture<float4> output;
@@ -34,6 +40,7 @@ struct Constants
     UniformTexture<float> depthTexture;
 
     uint shadingMode;
+    uint visualizationMode;
 
     PBRConstants pbrConstants;
 };
@@ -137,18 +144,21 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
             break;
         }
 
-        case ShadingMode::VisualizeCascades:
+        default:
+            break;
+    };
+
+    switch (constants.visualizationMode)
+    {
+        case VisualizationMode::VisualizeCascades:
         {
-            outputColor = CalculatePBR(pbrInput, constants.pbrConstants);
             outputColor = outputColor * 0.2f + GetCascadeColorFromIndex(GetCascadeIndexFromWorldPosition(constants.pbrConstants.directionalLight.Load(0), worldPosition, viewData.view)) * 0.5f;
             break;
         }
 
-        case ShadingMode::VisualizeLightComplexity:
+        case VisualizationMode::VisualizeLightComplexity:
         {
-            outputColor = CalculatePBR(pbrInput, constants.pbrConstants);
             outputColor = outputColor * 0.2f + GetLightComplexityGradient(GetLightCount(constants.pbrConstants.visiblePointLights, viewData.tileCountX, pbrInput.tileId));
-
             break;
         }
 

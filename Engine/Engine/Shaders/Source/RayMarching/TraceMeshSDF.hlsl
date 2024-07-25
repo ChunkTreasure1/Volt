@@ -85,6 +85,8 @@ Output MainPS(FullscreenTriangleVertex input)
         }
     }
 
+    clip(!isValid || !isHit ? -1.f : 1.f);
+
     Output output;
     output.output = float3(isHit, 0.f, 0.f);
 

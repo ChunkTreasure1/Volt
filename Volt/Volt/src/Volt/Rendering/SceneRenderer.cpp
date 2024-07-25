@@ -188,7 +188,10 @@ namespace Volt
 			AddSkyboxPass(renderGraph, rgBlackboard);
 			AddShadingPass(renderGraph, rgBlackboard);
 
-			//AddVisualizeSDFPass(renderGraph, rgBlackboard, renderGraph.AddExternalImage2D(m_outputImage));
+			if (m_visualizationMode == VisualizationMode::VisualizeMeshSDF)
+			{
+				AddVisualizeSDFPass(renderGraph, rgBlackboard, rgBlackboard.Get<ShadingOutputData>().colorOutput);
+			}
 
 			AddFinalCopyPass(renderGraph, rgBlackboard, rgBlackboard.Get<ShadingOutputData>().colorOutput);
 			AddFXAAPass(renderGraph, rgBlackboard, rgBlackboard.Get<FinalCopyData>().output);
@@ -964,6 +967,7 @@ namespace Volt
 			context.SetConstant("aoTexture"_sh, resources.GetImage2D(gtaoOutput.outputImage));
 			context.SetConstant("depthTexture"_sh, resources.GetImage2D(preDepthData.depth));
 			context.SetConstant("shadingMode"_sh, static_cast<uint32_t>(m_shadingMode));
+			context.SetConstant("visualizationMode"_sh, static_cast<uint32_t>(m_visualizationMode));
 
 			// PBR Constants
 			context.SetConstant("pbrConstants.viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
@@ -1070,6 +1074,7 @@ namespace Volt
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
 			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { dstImage });
+			info.renderingInfo.colorAttachments.At(0).clearMode = RHI::ClearMode::Load;
 
 			RHI::RenderPipelineCreateInfo pipelineInfo;
 			pipelineInfo.shader = ShaderMap::Get("TraceMeshSDF");

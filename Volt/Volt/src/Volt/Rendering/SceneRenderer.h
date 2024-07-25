@@ -57,9 +57,14 @@ namespace Volt
 			Roughness = 4,
 			Emissive = 5,
 			AO = 6,
+		};
 
-			VisualizeCascades = 7,
-			VisualizeLightComplexity = 8
+		enum class VisualizationMode : uint32_t
+		{
+			None = 0,
+			VisualizeCascades = 1,
+			VisualizeLightComplexity = 2,
+			VisualizeMeshSDF = 3
 		};
 
 		SceneRenderer(const SceneRendererSpecification& specification);
@@ -70,6 +75,9 @@ namespace Volt
 		void Resize(const uint32_t width, const uint32_t height);
 		inline void SetShadingMode(ShadingMode shadingMode) { m_shadingMode = shadingMode; }
 		inline ShadingMode GetShadingMode() const { return m_shadingMode; }
+
+		inline void SetVisualizationMode(VisualizationMode visMode) { m_visualizationMode = visMode; }
+		inline VisualizationMode GetVisualizationMode() const { return m_visualizationMode; }
 
 		RefPtr<RHI::Image2D> GetFinalImage();
 		RefPtr<RHI::Image2D> GetObjectIDImage();
@@ -134,6 +142,7 @@ namespace Volt
 
 		RefPtr<RHI::CommandBuffer> m_commandBuffer;
 		ShadingMode m_shadingMode = ShadingMode::Shaded;
+		VisualizationMode m_visualizationMode = VisualizationMode::None;
 		PreviousFrameData m_previousFrameData;
 
 		std::atomic<uint64_t> m_frameTotalGPUAllocation;
