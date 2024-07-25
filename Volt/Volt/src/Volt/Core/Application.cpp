@@ -14,8 +14,6 @@
 #include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
 
-#include "Volt/Core/ScopedTimer.h"
-
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Project/SessionPreferences.h"

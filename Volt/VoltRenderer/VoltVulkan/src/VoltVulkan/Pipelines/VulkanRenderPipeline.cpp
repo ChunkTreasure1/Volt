@@ -27,7 +27,7 @@ namespace Volt::RHI
 	{
 		static VertexAttributeData CreateVertexLayout(const BufferLayout& vertexLayout, const BufferLayout& instanceLayout)
 		{
-			assert(!vertexLayout.GetElements().empty());
+			VT_ASSERT(!vertexLayout.GetElements().empty());
 
 			VertexAttributeData result{};
 
@@ -109,7 +109,7 @@ namespace Volt::RHI
 			pushConstantRange.offset = shaderResources.constants.offset;
 			pushConstantRange.stageFlags = static_cast<VkShaderStageFlags>(shaderResources.constants.stageFlags);
 
-			assert(pushConstantRange.size <= 128 && "Push constant range must be less or equal to 128 bytes to support all platforms!");
+			VT_ASSERT(pushConstantRange.size <= 128 && "Push constant range must be less or equal to 128 bytes to support all platforms!");
 
 			const auto descriptorSetLayouts = VulkanBindlessDescriptorLayoutManager::GetGlobalDescriptorSetLayouts();
 

@@ -188,12 +188,14 @@ namespace Volt
 			AddSkyboxPass(renderGraph, rgBlackboard);
 			AddShadingPass(renderGraph, rgBlackboard);
 
+			//AddVisualizeSDFPass(renderGraph, rgBlackboard, renderGraph.AddExternalImage2D(m_outputImage));
+
 			AddFinalCopyPass(renderGraph, rgBlackboard, rgBlackboard.Get<ShadingOutputData>().colorOutput);
 			AddFXAAPass(renderGraph, rgBlackboard, rgBlackboard.Get<FinalCopyData>().output);
 		}
 		else
 		{
-			RGUtils::ClearImage(renderGraph, renderGraph.AddExternalImage2D(m_outputImage), { 0.1f, 0.1f, 0.1f, 1.f });
+			RGUtils::ClearImage2D(renderGraph, renderGraph.AddExternalImage2D(m_outputImage), { 0.1f, 0.1f, 0.1f, 1.f });
 		}
 
 		{
@@ -461,10 +463,12 @@ namespace Volt
 			const auto gpuScene = m_scene->GetRenderScene()->GetGPUSceneBuffers();
 
 			auto& bufferData = blackboard.Add<GPUSceneData>();
-			bufferData.meshesBuffer = renderGraph.AddExternalBuffer(gpuScene.meshesBuffer);
-			bufferData.materialsBuffer = renderGraph.AddExternalBuffer(gpuScene.materialsBuffer);
-			bufferData.primitiveDrawDataBuffer = renderGraph.AddExternalBuffer(gpuScene.primitiveDrawDataBuffer);
-			bufferData.bonesBuffer = renderGraph.AddExternalBuffer(gpuScene.bonesBuffer);
+			bufferData.meshesBuffer = renderGraph.AddExternalBuffer(gpuScene.meshesBuffer->GetResource());
+			bufferData.sdfMeshesBuffer = renderGraph.AddExternalBuffer(gpuScene.sdfMeshesBuffer->GetResource());
+			bufferData.materialsBuffer = renderGraph.AddExternalBuffer(gpuScene.materialsBuffer->GetResource());
+			bufferData.primitiveDrawDataBuffer = renderGraph.AddExternalBuffer(gpuScene.primitiveDrawDataBuffer->GetResource());
+			bufferData.sdfPrimitiveDrawDataBuffer = renderGraph.AddExternalBuffer(gpuScene.sdfPrimitiveDrawDataBuffer->GetResource());
+			bufferData.bonesBuffer = renderGraph.AddExternalBuffer(gpuScene.bonesBuffer->GetResource());
 		}
 
 		// Environment map
@@ -642,10 +646,10 @@ namespace Volt
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			context.ClearImage(gbufferData.albedo, { 0.1f, 0.1f, 0.1f, 0.f });
-			context.ClearImage(gbufferData.normals, { 0.f, 0.f, 0.f, 0.f });
-			context.ClearImage(gbufferData.material, { 0.f, 0.f, 0.f, 0.f });
-			context.ClearImage(gbufferData.emissive, { 0.f, 0.f, 0.f, 0.f });
+			context.ClearImage2D(gbufferData.albedo, { 0.1f, 0.1f, 0.1f, 0.f });
+			context.ClearImage2D(gbufferData.normals, { 0.f, 0.f, 0.f, 0.f });
+			context.ClearImage2D(gbufferData.material, { 0.f, 0.f, 0.f, 0.f });
+			context.ClearImage2D(gbufferData.emissive, { 0.f, 0.f, 0.f, 0.f });
 		});
 	}
 
@@ -1049,17 +1053,40 @@ namespace Volt
 		});
 	}
 
-	void SceneRenderer::AddVisualizeSDFPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	void SceneRenderer::AddVisualizeSDFPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle dstImage)
 	{
+		const auto& gpuSceneData = blackboard.Get<GPUSceneData>();
+		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
+
 		renderGraph.AddPass("Visualize SDF",
-			[&](RenderGraph::Builder& builder)
+		[&](RenderGraph::Builder& builder)
+		{
+			GPUSceneData::SetupInputs(builder, gpuSceneData);
+
+			builder.WriteResource(dstImage);
+			builder.ReadResource(uniformBuffers.viewDataBuffer);
+			builder.SetHasSideEffect();
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { dstImage });
+
+			RHI::RenderPipelineCreateInfo pipelineInfo;
+			pipelineInfo.shader = ShaderMap::Get("TraceMeshSDF");
+			pipelineInfo.depthMode = RHI::DepthMode::None;
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+			context.BeginRendering(info);
+
+			RCUtils::DrawFullscreenTriangle(context, pipeline, [&](RenderContext& context)
 			{
-				
-			},
-			[=](RenderContext& context, const RenderGraphPassResources& resources)
-			{
-				
+				GPUSceneData::SetupConstants(context, resources, gpuSceneData);
+				context.SetConstant("pointSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest>()->GetResourceHandle());
+				context.SetConstant("viewData"_sh, resources.GetBuffer(uniformBuffers.viewDataBuffer));
 			});
+
+			context.EndRendering();
+		});
 	}
 
 	void SceneRenderer::CreateMainRenderTarget(const uint32_t width, const uint32_t height)

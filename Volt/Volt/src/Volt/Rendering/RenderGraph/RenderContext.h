@@ -168,7 +168,8 @@ namespace Volt
 
 		const RenderingInfo CreateRenderingInfo(const uint32_t width, const uint32_t height, const StackVector<RenderGraphResourceHandle, RHI::MAX_ATTACHMENT_COUNT>& attachments);
 
-		void ClearImage(RenderGraphResourceHandle handle, const glm::vec4& clearColor);
+		void ClearImage2D(RenderGraphResourceHandle handle, const glm::vec4& clearColor);
+		void ClearImage3D(RenderGraphResourceHandle handle, const glm::vec4& clearColor);
 
 		void CopyBuffer(RenderGraphResourceHandle src, RenderGraphResourceHandle dst, const size_t size);
 

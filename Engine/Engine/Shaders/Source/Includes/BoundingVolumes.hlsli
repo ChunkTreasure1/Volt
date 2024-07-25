@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Ray.hlsli"
+
 struct BoundingSphere
 {
     float3 center;
@@ -17,7 +19,7 @@ struct BoundingSphere
 
 struct BoundingBox
 {
-    float SquaredDistPointAABB(float3 p, float3 bmin, float3 bmax)
+    float SquaredDistPointAABB(float3 p, float3 imin, float3 imax)
     {
         float sqDist = 0.f;
         
@@ -25,8 +27,8 @@ struct BoundingBox
         for (int i = 0; i < 3; ++i)
         {
             float v = p[i];
-            if (v < bmin[i]) sqDist += (bmin[i] - v) * (bmin[i] - v);
-            if (v > bmax[i]) sqDist += (v - bmax[i]) * (v - bmax[i]);
+            if (v < imin[i]) sqDist += (imin[i] - v) * (imin[i] - v);
+            if (v > imax[i]) sqDist += (v - imax[i]) * (v - imax[i]);
         }
 
         return sqDist;
@@ -34,10 +36,33 @@ struct BoundingBox
 
     bool Intersects(in BoundingSphere sphere)
     {
-        const float sqDist = SquaredDistPointAABB(sphere.center, min, max);
+        const float sqDist = SquaredDistPointAABB(sphere.center, bmin, bmax);
         return sqDist <= sphere.radius * sphere.radius;
     }
 
-    float3 min;
-    float3 max;
+    float Intersects(in Ray ray)
+    {
+        float3 invDir = 1.f / ray.direction;
+
+        float t1 = (bmin[0] - ray.origin[0]) * invDir[0];
+        float t2 = (bmax[0] - ray.origin[0]) * invDir[0];
+    
+        float tmin = min(t1, t2);
+        float tmax = max(t1, t2);
+
+        for (int i = 0; i < 3; ++i)
+        {
+            t1 = (bmin[i] - ray.origin[i]) * invDir[i];
+            t2 = (bmax[i] - ray.origin[i]) * invDir[i];
+
+            tmin = max(tmin, min(min(t1, t2), tmax));
+            tmax = min(tmax, max(max(t1, t2), tmin));
+        }
+         
+        return tmax > max(tmin, 0.f);   
+    } 
+
+    float3 bmax;
+    float3 bmin;
+
 };

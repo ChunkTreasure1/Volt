@@ -19,16 +19,25 @@ namespace Volt
 		ResourceHandle vertexBoneWeightsBuffer;
 		ResourceHandle meshletDataBuffer;
 		ResourceHandle meshletsBuffer;
-		ResourceHandle sdfBuffer;
 
 		glm::vec3 center;
 		float radius;
 
-		uint32_t sdfStartOffset;
 		uint32_t vertexStartOffset;
 		uint32_t meshletCount;
 		uint32_t meshletStartOffset;
 		uint32_t meshletIndexStartOffset;
+	};
+
+	struct GPUMeshSDF
+	{
+		ResourceHandle sdfTexture;
+		glm::vec3 size;
+
+		glm::vec3 min;
+		float padding1;
+		glm::vec3 max;
+		float padding2;
 	};
 
 	struct PrimitiveDrawData
@@ -46,6 +55,16 @@ namespace Volt
 		uint32_t boneOffset;
 	};
 
+	struct SDFPrimitiveDrawData
+	{
+		glm::quat rotation;
+		glm::vec3 position;
+		glm::vec3 scale;
+
+		uint32_t meshSDFId;
+		uint32_t primtiveId;
+	};
+
 	struct GPUMaterial
 	{
 		ResourceHandle textures[16];
@@ -54,14 +73,5 @@ namespace Volt
 		uint32_t textureCount = 0;
 		uint32_t materialFlags = 0;
 		glm::uvec2 padding;
-	};
-
-	struct GPUScene
-	{
-		ResourceHandle meshesBuffer;
-		ResourceHandle materialsBuffer;
-		ResourceHandle primitiveDrawDataBuffer;
-		ResourceHandle meshletsBuffer;
-		ResourceHandle bonesBuffer;
 	};
 }

@@ -28,5 +28,6 @@ namespace Volt::RGUtils
 		return { format, width, height, usage, name };
 	}
 
-	extern void ClearImage(RenderGraph& renderGraph, RenderGraphResourceHandle image, const glm::vec4& clearColor, const std::string& passName = "");
+	extern void ClearImage2D(RenderGraph& renderGraph, RenderGraphResourceHandle image, const glm::vec4& clearColor, const std::string& passName = "");
+	extern void ClearImage3D(RenderGraph& renderGraph, RenderGraphResourceHandle image, const glm::vec4& clearColor, const std::string& passName = "");
 }

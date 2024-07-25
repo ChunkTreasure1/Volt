@@ -506,7 +506,10 @@ namespace Volt::RHI
 		VideoDecode = BIT(12),
 		VideoEncode = BIT(13),
 		Clear = BIT(14),
-		VertexInput = BIT(15)
+		VertexInput = BIT(15),
+
+		MeshShader = BIT(16),
+		AmplificationShader = BIT(17)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(BarrierStage);

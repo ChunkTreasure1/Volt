@@ -53,6 +53,7 @@ namespace Volt::RHI
 
 		ResourceRegistry m_image2DRegistry;
 		ResourceRegistry m_image2DArrayRegistry;
+		ResourceRegistry m_image3DRegistry;
 		ResourceRegistry m_imageCubeRegistry;
 
 		ResourceRegistry m_bufferRegistry;

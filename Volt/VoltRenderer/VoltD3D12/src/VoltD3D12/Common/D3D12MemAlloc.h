@@ -2201,7 +2201,7 @@ allocDesc.ExtraHeapFlags = D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES;
 
 D3D12MA::Allocation* alloc;
 hr = allocator->AllocateMemory(&allocDesc, &finalAllocInfo, &alloc);
-assert(alloc != NULL && alloc->GetHeap() != NULL);
+VT_ASSERT(alloc != NULL && alloc->GetHeap() != NULL);
 
 ID3D12Resource* res1;
 hr = allocator->CreateAliasingResource(

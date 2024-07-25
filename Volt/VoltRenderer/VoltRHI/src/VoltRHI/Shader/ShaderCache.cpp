@@ -7,7 +7,7 @@
 
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 #include <CoreUtilities/FileIO/BinaryStreamReader.h>
-#include <CoreUtilities/TimeUtility.h>
+#include <CoreUtilities/Time/TimeUtility.h>
 
 namespace Volt::RHI
 {
@@ -80,7 +80,7 @@ namespace Volt::RHI
 	ShaderCache::ShaderCache(const ShaderCacheCreateInfo& cacheInfo)
 		: m_info(cacheInfo)
 	{
-		assert(s_instance == nullptr);
+		VT_ASSERT(s_instance == nullptr);
 		s_instance = this;
 	}
 
@@ -91,7 +91,7 @@ namespace Volt::RHI
 
 	CachedShaderResult ShaderCache::TryGetCachedShader(const ShaderCompiler::Specification& shaderSpecification)
 	{
-		assert(s_instance);
+		VT_ASSERT(s_instance);
 
 		uint64_t lastWriteTime = 0;
 		for (const auto& [stage, sourceInfo] : shaderSpecification.shaderSourceInfo)
@@ -187,7 +187,7 @@ namespace Volt::RHI
 
 	void ShaderCache::CacheShader(const ShaderCompiler::Specification& shaderSpec, const ShaderCompiler::CompilationResultData& compilationResult)
 	{
-		assert(s_instance);
+		VT_ASSERT(s_instance);
 
 		BinaryStreamWriter streamWriter{};
 

@@ -15,6 +15,7 @@
 #include <VoltRHI/Buffers/UniformBuffer.h>
 #include <VoltRHI/Images/ImageUtility.h>
 #include <VoltRHI/Images/ImageView.h>
+#include <VoltRHI/Images/Image3D.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Utility/ResourceUtility.h>
 
@@ -75,6 +76,12 @@ namespace Volt
 						outState.stage = RHI::BarrierStage::Clear;
 						outState.layout = RHI::ImageLayout::RenderTarget;
 					}
+				}
+				else if (resource->GetResourceType() == ResourceType::Image3D)
+				{
+					outState.access = RHI::BarrierAccess::RenderTarget;
+					outState.stage = RHI::BarrierStage::Clear;
+					outState.layout = RHI::ImageLayout::RenderTarget;
 				}
 			}
 		}
@@ -249,7 +256,7 @@ namespace Volt
 			RHI::ResourceState& newState = resourceUsages.at(access.handle).emplace_back();
 			RHI::BarrierType barrierType = RHI::BarrierType::None;
 
-			if (resourceType == ResourceType::Image2D)
+			if (resourceType == ResourceType::Image2D || resourceType == ResourceType::Image3D)
 			{
 				if (currentPass->isComputePass)
 				{
@@ -326,6 +333,10 @@ namespace Volt
 				{
 					initialState = RHI::GraphicsContext::GetResourceStateTracker()->GetCurrentResourceState(GetBufferRaw(access.handle));
 				}
+				else if (resourceType == ResourceType::Image3D)
+				{
+					initialState = RHI::GraphicsContext::GetResourceStateTracker()->GetCurrentResourceState(GetImage3DRaw(access.handle));
+				}
 
 				hasInitialState = true;
 			}
@@ -343,7 +354,7 @@ namespace Volt
 			{
 				Utility::SetupForcedState(access.forcedState, resourceNode, newState);
 
-				if (resourceType == ResourceType::Image2D)
+				if (resourceType == ResourceType::Image2D || resourceType == ResourceType::Image3D)
 				{
 					barrierType = RHI::BarrierType::Image;
 				}
@@ -382,10 +393,35 @@ namespace Volt
 
 					barrierType = RHI::BarrierType::Image;
 				}
+				else if (resourceType == ResourceType::Image3D)
+				{
+					if (currentPass->isComputePass)
+					{
+						newState.access = RHI::BarrierAccess::ShaderWrite;
+						newState.stage = RHI::BarrierStage::ComputeShader;
+						newState.layout = RHI::ImageLayout::ShaderWrite;
+					}
+					else
+					{
+						newState.access = RHI::BarrierAccess::RenderTarget;
+						newState.stage = RHI::BarrierStage::RenderTarget;
+						newState.layout = RHI::ImageLayout::RenderTarget;
+					}
+
+					barrierType = RHI::BarrierType::Image;
+				}
 				else if (resourceType == ResourceType::Buffer || resourceType == ResourceType::UniformBuffer)
 				{
 					newState.access = RHI::BarrierAccess::ShaderWrite;
-					newState.stage = RHI::BarrierStage::ComputeShader | RHI::BarrierStage::PixelShader;
+					if (currentPass->isComputePass)
+					{
+						newState.stage = RHI::BarrierStage::ComputeShader;
+					}
+					else
+					{
+						newState.stage = RHI::BarrierStage::VertexShader | RHI::BarrierStage::PixelShader | RHI::BarrierStage::MeshShader | RHI::BarrierStage::AmplificationShader;
+					}
+
 					barrierType = RHI::BarrierType::Buffer;
 				}
 			}
@@ -439,6 +475,10 @@ namespace Volt
 				{
 					initialState = RHI::GraphicsContext::GetResourceStateTracker()->GetCurrentResourceState(GetBufferRaw(access.handle));
 				}
+				else if (resourceType == ResourceType::Image3D)
+				{
+					initialState = RHI::GraphicsContext::GetResourceStateTracker()->GetCurrentResourceState(GetImage3DRaw(access.handle));
+				}
 
 				hasInitialState = true;
 			}
@@ -456,7 +496,7 @@ namespace Volt
 			{
 				Utility::SetupForcedState(access.forcedState, resourceNode, newState);
 
-				if (resourceType == ResourceType::Image2D)
+				if (resourceType == ResourceType::Image2D || resourceType == ResourceType::Image3D)
 				{
 					barrierType = RHI::BarrierType::Image;
 				}
@@ -467,7 +507,7 @@ namespace Volt
 			}
 			else
 			{
-				if (resourceType == ResourceType::Image2D)
+				if (resourceType == ResourceType::Image2D || resourceType == ResourceType::Image3D)
 				{
 					newState.access = RHI::BarrierAccess::ShaderRead;
 					newState.layout = RHI::ImageLayout::ShaderRead;
@@ -486,7 +526,14 @@ namespace Volt
 				else if (resourceType == ResourceType::Buffer || resourceType == ResourceType::UniformBuffer)
 				{
 					newState.access = RHI::BarrierAccess::ShaderRead;
-					newState.stage = RHI::BarrierStage::ComputeShader | RHI::BarrierStage::PixelShader;
+					if (currentPass->isComputePass)
+					{
+						newState.stage = RHI::BarrierStage::ComputeShader;
+					}
+					else
+					{
+						newState.stage = RHI::BarrierStage::VertexShader | RHI::BarrierStage::PixelShader | RHI::BarrierStage::MeshShader | RHI::BarrierStage::AmplificationShader;
+					}
 					barrierType = RHI::BarrierType::Buffer;
 				}
 			}
@@ -591,7 +638,12 @@ namespace Volt
 
 	void RenderGraph::ExecuteImmediate()
 	{
-		ExecuteInternal();
+		ExecuteInternal(false);
+	}
+
+	void RenderGraph::ExecuteImmediateAndWait()
+	{
+		ExecuteInternal(true);
 	}
 
 	RenderGraphResourceHandle RenderGraph::AddExternalImage2D(RefPtr<RHI::Image2D> image)
@@ -605,6 +657,30 @@ namespace Volt
 
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphImage2D>> node = CreateRef<RenderGraphResourceNode<RenderGraphImage2D>>();
+		node->handle = resourceHandle;
+		node->isExternal = true;
+		node->resourceInfo.isExternal = true;
+		node->resourceInfo.description.format = image->GetFormat();
+
+		m_resourceNodes.push_back(node);
+		m_transientResourceSystem.AddExternalResource(resourceHandle, image);
+
+		RegisterExternalResource(image, INVALID_RESOURCE_HANDLE);
+
+		return resourceHandle;
+	}
+
+	RenderGraphResourceHandle RenderGraph::AddExternalImage3D(RefPtr<RHI::Image3D> image)
+	{
+		VT_ENSURE(image);
+
+		if (RenderGraphResourceHandle registeredHandle = TryGetRegisteredExternalResource(image); registeredHandle != INVALID_RESOURCE_HANDLE)
+		{
+			return registeredHandle;
+		}
+
+		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
+		Ref<RenderGraphResourceNode<RenderGraphImage3D>> node = CreateRef<RenderGraphResourceNode<RenderGraphImage3D>>();
 		node->handle = resourceHandle;
 		node->isExternal = true;
 		node->resourceInfo.isExternal = true;
@@ -664,7 +740,7 @@ namespace Volt
 		return resourceHandle;
 	}
 
-	void RenderGraph::ExecuteInternal()
+	void RenderGraph::ExecuteInternal(bool waitForCompletion)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -778,7 +854,15 @@ namespace Volt
 
 		BindlessResourcesManager::Get().PrepareForRender();
 
-		m_commandBuffer->Execute();
+		if (waitForCompletion)
+		{
+			m_commandBuffer->ExecuteAndWait();
+		}
+		else
+		{
+			m_commandBuffer->Execute();
+		}
+
 
 		if (m_totalAllocatedSizeCallback)
 		{
@@ -892,10 +976,10 @@ namespace Volt
 
 	RenderGraphResourceHandle RenderGraph::CreateImage3D(const RenderGraphImageDesc& textureDesc)
 	{
-		VT_ASSERT_MSG(textureDesc.width > 0 && textureDesc.height > 0, "Width and height must not be zero!");
+		VT_ASSERT_MSG(textureDesc.width > 0 && textureDesc.height > 0 && textureDesc.depth > 0, "Width, height and depth must not be zero!");
 
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
-		Ref<RenderGraphResourceNode<RenderGraphTexture3D>> node = CreateRef<RenderGraphResourceNode<RenderGraphTexture3D>>();
+		Ref<RenderGraphResourceNode<RenderGraphImage3D>> node = CreateRef<RenderGraphResourceNode<RenderGraphImage3D>>();
 		node->handle = resourceHandle;
 		node->resourceInfo.description = textureDesc;
 		node->isExternal = false;
@@ -982,6 +1066,20 @@ namespace Volt
 		return image;
 	}
 
+	WeakPtr<RHI::Image3D> RenderGraph::GetImage3DRaw(const RenderGraphResourceHandle resourceHandle)
+	{
+		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
+		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage3D>>().resourceInfo;
+
+		auto image = m_transientResourceSystem.AquireImage3D(resourceHandle, imageDesc.description);
+		auto view = image->GetView();
+
+		// #TODO_Ivar: Move this section to it's own function
+		m_registeredImageResources.emplace_back(BindlessResourcesManager::Get().RegisterImageView(view), view->GetViewType());
+
+		return image;
+	}
+
 	ResourceHandle RenderGraph::GetImage2D(const RenderGraphResourceHandle resourceHandle, const int32_t mip, const int32_t layer)
 	{
 		VT_PROFILE_FUNCTION();
@@ -1009,6 +1107,24 @@ namespace Volt
 
 		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
 		auto view = image->GetArrayView(mip);
+
+		VT_ENSURE(!view->IsSwapchainView());
+
+		ResourceHandle handle = BindlessResourcesManager::Get().RegisterImageView(view);
+		m_registeredImageResources.emplace_back(handle, view->GetViewType());
+
+		return handle;
+	}
+
+	ResourceHandle RenderGraph::GetImage3D(const RenderGraphResourceHandle resourceHandle, const int32_t mip, const int32_t layer)
+	{
+		VT_PROFILE_FUNCTION();
+
+		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
+		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage3D>>().resourceInfo;
+
+		auto image = m_transientResourceSystem.AquireImage3D(resourceHandle, imageDesc.description);
+		auto view = image->GetView(mip, layer);
 
 		VT_ENSURE(!view->IsSwapchainView());
 
@@ -1086,7 +1202,12 @@ namespace Volt
 			}
 
 			case ResourceType::Image3D:
+			{
+				const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage3D>>().resourceInfo;
+				result = m_transientResourceSystem.AquireImage3D(resourceHandle, imageDesc.description);
+
 				break;
+			}
 
 			case ResourceType::Buffer:
 			{
@@ -1124,6 +1245,20 @@ namespace Volt
 			m_registeredImageResources.emplace_back(BindlessResourcesManager::Get().RegisterImageView(view), view->GetViewType());
 		}
 
+		return image;
+	}
+
+	RefPtr<RHI::Image3D> RenderGraph::GetImage3DRawRef(const RenderGraphResourceHandle resourceHandle)
+	{
+		VT_PROFILE_FUNCTION();
+
+		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
+		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage3D>>().resourceInfo;
+
+		auto image = m_transientResourceSystem.AquireImage3DRef(resourceHandle, imageDesc.description);
+		auto view = image->GetView();
+
+		m_registeredImageResources.emplace_back(BindlessResourcesManager::Get().RegisterImageView(view), view->GetViewType());
 		return image;
 	}
 
@@ -1387,6 +1522,11 @@ namespace Volt
 	RenderGraphResourceHandle RenderGraph::Builder::AddExternalImage2D(RefPtr<RHI::Image2D> image)
 	{
 		return m_renderGraph.AddExternalImage2D(image);
+	}
+
+	RenderGraphResourceHandle RenderGraph::Builder::AddExternalImage3D(RefPtr<RHI::Image3D> image)
+	{
+		return m_renderGraph.AddExternalImage3D(image);
 	}
 
 	RenderGraphResourceHandle RenderGraph::Builder::AddExternalBuffer(RefPtr<RHI::StorageBuffer> buffer)

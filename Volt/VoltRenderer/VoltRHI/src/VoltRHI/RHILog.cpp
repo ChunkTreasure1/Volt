@@ -5,7 +5,7 @@ namespace Volt::RHI
 {
 	RHILog::RHILog()
 	{
-		assert(s_instance == nullptr && "Instance should not be set!");
+		VT_ASSERT(s_instance == nullptr && "Instance should not be set!");
 		s_instance = this;
 	}
 	

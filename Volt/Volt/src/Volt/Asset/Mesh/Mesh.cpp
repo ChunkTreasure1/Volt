@@ -12,6 +12,8 @@
 #include <VoltRHI/Buffers/VertexBuffer.h>
 #include <VoltRHI/Buffers/IndexBuffer.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
+#include <VoltRHI/Images/Image3D.h>
+#include <VoltRHI/Images/ImageView.h>
 
 #include <meshoptimizer/meshoptimizer.h>
 
@@ -367,34 +369,6 @@ namespace Volt
 			i++;
 		}
 
-		// Create SDF data
-		SDFGenerator sdfGenerator{};
-		auto res = sdfGenerator.Generate(*this);
-		Vector<uint32_t> sdfOffsets(res.size());
-		
-		{		
-			size_t totalSDFDataCount = 0;
-
-			for (const auto& sdf : res)
-			{
-				totalSDFDataCount += sdf.sdf.size();
-			}
-
-			Vector<float> totalSDFData;
-			totalSDFData.reserve(totalSDFDataCount);
-
-			for (uint32_t i = 0; const auto& sdf : res)
-			{
-				sdfOffsets[i] = static_cast<uint32_t>(totalSDFData.size());
-				totalSDFData.append(sdf.sdf);
-
-				i++;
-			}
-
-			m_sdfDataBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(totalSDFData.size()), sizeof(float), "SDF Data Buffer" + meshName);
-			m_sdfDataBuffer->GetResource()->SetData(totalSDFData.data(), totalSDFData.size() * sizeof(float));
-		}
-
 		// Create GPU Meshes
 		for (uint32_t i = 0; const auto& subMesh : m_subMeshes)
 		{
@@ -410,11 +384,6 @@ namespace Volt
 			gpuMesh.vertexBoneInfluencesBuffer = m_vertexBoneInfluencesBuffer ? m_vertexBoneInfluencesBuffer->GetResourceHandle() : Resource::Invalid;
 			gpuMesh.meshletsBuffer = m_meshletsBuffer->GetResourceHandle();
 			gpuMesh.meshletDataBuffer = m_meshletDataBuffer->GetResourceHandle();
-			
-			gpuMesh.sdfBuffer = m_sdfDataBuffer->GetResourceHandle();
-			gpuMesh.sdfStartOffset = sdfOffsets[i];
-			
-			
 			gpuMesh.center = subMesh.transform * glm::vec4(m_subMeshBoundingSpheres.at(i).center, 1.f);
 
 			glm::vec3 t, r, s;
@@ -425,6 +394,25 @@ namespace Volt
 			i++;
 		}
 
+		// Create SDF data
+		{
+			SDFGenerator sdfGenerator{};
+			auto res = sdfGenerator.Generate(*this);
+		
+			m_gpuMeshSDFs.reserve(res.size());
+
+			for (uint32_t i = 0; const auto& sdf : res)
+			{
+				auto& gpuSDF = m_gpuMeshSDFs.emplace_back();
+				gpuSDF.min = sdf.min;
+				gpuSDF.max = sdf.max;
+				gpuSDF.size = sdf.size;
+				gpuSDF.sdfTexture = sdf.sdfTexture->GetResourceHandle();
+
+				m_sdfTextures[i] = sdf.sdfTexture;
+				i++;
+			}
+		}
 	}
 
 	void Mesh::SetMaterial(Ref<Material> material, uint32_t index)

@@ -11,7 +11,18 @@ namespace Volt::RHI::Utility
 	{
 		VkImageCreateInfo imageInfo{};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageInfo.imageType = imageSpecification.depth > 1 ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D; // #TODO_Ivar: Will this be an issue with 1x1x1 image3ds?
+		if (imageSpecification.imageType == ResourceType::Image2D)
+		{
+			imageInfo.imageType = VK_IMAGE_TYPE_2D;
+		}
+		else if (imageSpecification.imageType == ResourceType::Image3D)
+		{
+			imageInfo.imageType = VK_IMAGE_TYPE_3D;
+		}
+		else
+		{
+			imageInfo.imageType = VK_IMAGE_TYPE_MAX_ENUM;
+		}
 		imageInfo.usage = Utility::GetVkImageUsageFlags(imageSpecification.usage, imageSpecification.format);
 		imageInfo.extent.width = imageSpecification.width;
 		imageInfo.extent.height = imageSpecification.height;
@@ -28,10 +39,12 @@ namespace Volt::RHI::Utility
 		{
 			imageInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 		}
-		else if (imageSpecification.layers > 1 && imageSpecification.depth > 1)
+		else if (imageSpecification.layers > 1 && imageSpecification.depth > 1) // #TODO_Ivar: Why is this > 1? Shouldn't this apply only if depth is 1?
 		{
 			imageInfo.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
 		}
+
+		VT_ASSERT(imageInfo.imageType != VK_IMAGE_TYPE_MAX_ENUM);
 
 		return imageInfo;
 	}

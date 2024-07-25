@@ -18,6 +18,7 @@ namespace Volt::RHI::Utility
 		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(spec.anisoLevel)));
 		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(static_cast<bool>(spec.isCubeMap)));
 		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(memoryUsage)));
+		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(spec.imageType)));
 
 		return hash;
 	}

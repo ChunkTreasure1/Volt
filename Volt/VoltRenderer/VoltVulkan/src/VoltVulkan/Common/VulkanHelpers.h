@@ -50,7 +50,7 @@ namespace Volt::RHI
 
 			}
 
-			assert(false && "Topology not supported!");
+			VT_ASSERT(false && "Topology not supported!");
 			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		}
 
@@ -62,7 +62,7 @@ namespace Volt::RHI
 				case FillMode::Wireframe: return VK_POLYGON_MODE_LINE;
 			}
 
-			assert(false && "Fill mode not supported!");
+			VT_ASSERT(false && "Fill mode not supported!");
 			return VK_POLYGON_MODE_FILL;
 		}
 
@@ -76,7 +76,7 @@ namespace Volt::RHI
 				case CullMode::None: return VK_CULL_MODE_NONE;
 			}
 
-			assert(false && "Cull mode not supported!");
+			VT_ASSERT(false && "Cull mode not supported!");
 			return VK_CULL_MODE_BACK_BIT;
 		}
 
@@ -137,7 +137,7 @@ namespace Volt::RHI
 				case CompareOperator::Always: return VK_COMPARE_OP_ALWAYS;
 			}
 
-			assert(false && "Compare operator not supported!");
+			VT_ASSERT(false && "Compare operator not supported!");
 			return VK_COMPARE_OP_LESS;
 		}
 

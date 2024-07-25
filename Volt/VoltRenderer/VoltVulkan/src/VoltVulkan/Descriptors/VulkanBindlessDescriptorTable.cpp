@@ -50,7 +50,7 @@ namespace Volt::RHI
 
 	VulkanBindlessDescriptorTable::VulkanBindlessDescriptorTable(uint64_t framesInFlight)
 		: m_image2DRegistry(1, framesInFlight), m_image2DArrayRegistry(1, framesInFlight), m_imageCubeRegistry(1, framesInFlight),
-		m_bufferRegistry(1, framesInFlight), m_samplerRegistry(1, framesInFlight)
+		m_bufferRegistry(1, framesInFlight), m_samplerRegistry(1, framesInFlight), m_image3DRegistry(1, framesInFlight)
 	{
 		m_activeDescriptorWrites.reserve(100);
 		Invalidate();
@@ -84,6 +84,10 @@ namespace Volt::RHI
 		{
 			return m_imageCubeRegistry.RegisterResource(imageView, imageView->GetImageUsage());
 		}
+		else if (viewType == ImageViewType::View3D)
+		{
+			return m_image3DRegistry.RegisterResource(imageView, imageView->GetImageUsage());
+		}
 
 		VT_ENSURE(false);
 		return Resource::Invalid;
@@ -104,7 +108,7 @@ namespace Volt::RHI
 	void VulkanBindlessDescriptorTable::UnregisterImageView(ResourceHandle handle, ImageViewType viewType)
 	{
 		VT_PROFILE_FUNCTION();
-		VT_ENSURE(viewType == RHI::ImageViewType::View2D || viewType == RHI::ImageViewType::View2DArray || viewType == RHI::ImageViewType::ViewCube);
+		VT_ENSURE(viewType == RHI::ImageViewType::View2D || viewType == RHI::ImageViewType::View2DArray || viewType == RHI::ImageViewType::ViewCube || viewType == ImageViewType::View3D);
 
 		if (viewType == RHI::ImageViewType::View2D)
 		{
@@ -117,6 +121,10 @@ namespace Volt::RHI
 		else if (viewType == RHI::ImageViewType::ViewCube)
 		{
 			m_imageCubeRegistry.UnregisterResource(handle);
+		}
+		else if (viewType == ImageViewType::View3D)
+		{
+			m_image3DRegistry.UnregisterResource(handle);
 		}
 	}
 
@@ -149,6 +157,10 @@ namespace Volt::RHI
 		{
 			m_imageCubeRegistry.MarkAsDirty(handle);
 		}
+		else if (viewType == RHI::ImageViewType::View3D)
+		{
+			m_image3DRegistry.MarkAsDirty(handle);
+		}
 	}
 
 	void VulkanBindlessDescriptorTable::MarkSamplerStateAsDirty(ResourceHandle handle)
@@ -169,6 +181,7 @@ namespace Volt::RHI
 		m_image2DRegistry.Update();
 		m_image2DArrayRegistry.Update();
 		m_imageCubeRegistry.Update();
+		m_image3DRegistry.Update();
 		m_samplerRegistry.Update();
 		m_bufferRegistry.Update();
 	}
@@ -308,6 +321,44 @@ namespace Volt::RHI
 				}
 			}
 			m_imageCubeRegistry.ClearDirtyResources();
+		}
+
+		// Image3D
+		{
+			std::scoped_lock lock{ m_image3DRegistry.GetMutex() };
+			for (const auto& resourceHandle : m_image3DRegistry.GetDirtyResources())
+			{
+				const auto& resourceData = m_image3DRegistry.GetResource(resourceHandle);
+				VT_ENSURE(resourceData.imageUsage != RHI::ImageUsage::None);
+
+				const auto imageView = resourceData.resource.As<RHI::ImageView>();
+
+				DescriptorImageInfo baseImageInfo{};
+				baseImageInfo.sampler = nullptr;
+				baseImageInfo.imageView = imageView->GetHandle<VkImageView>();
+
+				// Read Only
+				{
+					baseImageInfo.imageLayout = static_cast<uint32_t>(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+					auto& imageInfo = m_activeDescriptorImageInfos.emplace_back(baseImageInfo);
+
+					auto& descriptorWrite = m_activeDescriptorWrites.emplace_back();
+					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::TEXTURE3D_BINDING, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, m_mainDescriptorSet, resourceHandle.Get());
+					descriptorWrite.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&imageInfo);
+				}
+
+				// Read-Write
+				if (resourceData.imageUsage == RHI::ImageUsage::Storage || resourceData.imageUsage == RHI::ImageUsage::AttachmentStorage)
+				{
+					baseImageInfo.imageLayout = static_cast<uint32_t>(VK_IMAGE_LAYOUT_GENERAL);
+					auto& imageInfo = m_activeDescriptorImageInfos.emplace_back(baseImageInfo);
+
+					auto& descriptorWrite = m_activeDescriptorWrites.emplace_back();
+					Utility::InitializeDescriptorWrite(descriptorWrite, VulkanBindlessDescriptorLayoutManager::RWTEXTURE3D_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, m_mainDescriptorSet, resourceHandle.Get());
+					descriptorWrite.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&imageInfo);
+				}
+			}
+			m_image3DRegistry.ClearDirtyResources();
 		}
 
 		// Samplers

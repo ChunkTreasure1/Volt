@@ -18,7 +18,7 @@ namespace Volt::RHI
 				case FillMode::Wireframe: return D3D12_FILL_MODE_WIREFRAME;
 			}
 
-			assert(false && "Fill mode not supported!");
+			VT_ASSERT(false && "Fill mode not supported!");
 			return D3D12_FILL_MODE_SOLID;
 		}
 
@@ -32,7 +32,7 @@ namespace Volt::RHI
 				case CullMode::None: return D3D12_CULL_MODE_NONE;
 			}
 
-			assert(false && "Cull mode not supported!");
+			VT_ASSERT(false && "Cull mode not supported!");
 			return D3D12_CULL_MODE_BACK;
 		}
 
@@ -50,7 +50,7 @@ namespace Volt::RHI
 				case CompareOperator::Always: return D3D12_COMPARISON_FUNC_ALWAYS;
 			}
 
-			assert(false && "Compare operator not supported!");
+			VT_ASSERT(false && "Compare operator not supported!");
 			return D3D12_COMPARISON_FUNC_LESS;
 		}
 
@@ -66,7 +66,7 @@ namespace Volt::RHI
 
 			}
 
-			assert(false && "Topology not supported!");
+			VT_ASSERT(false && "Topology not supported!");
 			return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		}
 

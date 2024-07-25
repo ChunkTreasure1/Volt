@@ -23,6 +23,7 @@ namespace Volt::RHI
 	class DescriptorTable;
 
 	class Image2D;
+	class Image3D;
 	class StorageBuffer;
 	class Allocation;
 	class Swapchain;
@@ -87,11 +88,13 @@ namespace Volt::RHI
 		virtual const float GetExecutionTime(uint32_t timestampIndex) const = 0;
 
 		virtual void ClearImage(WeakPtr<Image2D> image, std::array<float, 4> clearColor) = 0;
+		virtual void ClearImage(WeakPtr<Image3D> image, std::array<float, 4> clearColor) = 0;
 		virtual void ClearBuffer(WeakPtr<StorageBuffer> buffer, const uint32_t value) = 0;
 
 		virtual void UpdateBuffer(WeakPtr<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data) = 0;
 		virtual void CopyBufferRegion(WeakPtr<Allocation> srcResource, const size_t srcOffset, WeakPtr<Allocation> dstResource, const size_t dstOffset, const size_t size) = 0;
 		virtual void CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip = 0) = 0;
+		virtual void CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image3D> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip = 0) = 0;
 		virtual void CopyImageToBuffer(WeakPtr<Image2D> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip) = 0;
 		virtual void CopyImage(WeakPtr<Image2D> srcImage, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height) = 0;
 

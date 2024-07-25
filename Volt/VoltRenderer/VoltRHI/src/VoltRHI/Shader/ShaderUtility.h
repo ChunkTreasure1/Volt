@@ -5,7 +5,6 @@
 
 #include <filesystem>
 #include <fstream>
-#include <cassert>
 
 namespace Volt::RHI
 {
@@ -90,7 +89,7 @@ namespace Volt::RHI
 				case ShaderStage::Mesh:			 return L"ms_6_6";
 			}
 
-			assert(false);
+			VT_ASSERT(false);
 			return L"";
 		}
 

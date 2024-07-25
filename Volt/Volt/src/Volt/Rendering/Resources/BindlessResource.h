@@ -11,12 +11,17 @@ namespace Volt
 		class StorageBuffer;
 		class ImageView;
 		class SamplerState;
+
+		class Image2D;
+		class Image3D;
 	}
 
 	template<typename T>
 	concept BindlessResourceType = std::is_same<T, RHI::StorageBuffer>::value || 
 								   std::is_same<T, RHI::ImageView>::value || 
-								   std::is_same<T, RHI::SamplerState>::value;
+								   std::is_same<T, RHI::SamplerState>::value ||
+								   std::is_same<T, RHI::Image3D>::value ||
+								   std::is_same<T, RHI::Image2D>::value;
 
 	template<BindlessResourceType T>
 	class BindlessResource
@@ -42,6 +47,11 @@ namespace Volt
 				m_resourceHandle = BindlessResourcesManager::Get().RegisterSamplerState(m_resource);
 			}
 
+			else if constexpr (std::is_same<T, RHI::Image3D>::value || std::is_same<T, RHI::Image2D>::value)
+			{
+				m_resourceHandle = BindlessResourcesManager::Get().RegisterImageView(m_resource->GetView());
+			}
+
 			VT_ASSERT_MSG(m_resourceHandle != Resource::Invalid, "Resource type not implemented!");
 		}
 
@@ -61,6 +71,11 @@ namespace Volt
 				{
 					BindlessResourcesManager::Get().UnregisterSamplerState(m_resourceHandle);
 				}
+
+				else if constexpr (std::is_same<T, RHI::Image3D>::value || std::is_same<T, RHI::Image2D>::value)
+				{
+					BindlessResourcesManager::Get().UnregisterImageView(m_resourceHandle, m_resource->GetView()->GetViewType());
+				}
 			}
 		}
 
@@ -77,6 +92,11 @@ namespace Volt
 			else if constexpr (std::is_same<T, RHI::SamplerState>::value)
 			{
 				BindlessResourcesManager::Get().MarkSamplerStateAsDirty(m_resourceHandle);
+			}
+
+			else if constexpr (std::is_same<T, RHI::Image3D>::value || std::is_same<T, RHI::Image2D>::value)
+			{
+				BindlessResourcesManager::Get().MarkImageViewAsDirty(m_resourceHandle, m_resource->GetView()->GetViewType());
 			}
 		}
 

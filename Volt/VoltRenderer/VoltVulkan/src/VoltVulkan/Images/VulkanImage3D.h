@@ -37,6 +37,7 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
+		void InitializeWithData(const void* data);
 		void TransitionToLayout(ImageLayout targetLayout);
 
 		ImageSpecification m_specification;

@@ -39,7 +39,8 @@
 #include "Volt/Utility/FileSystem.h"
 
 #include "Volt/Utility/YAMLSerializationHelpers.h"
-#include "Volt/Core/ScopedTimer.h"
+
+#include <CoreUtilities/Time/ScopedTimer.h>
 
 namespace Volt
 {

@@ -51,8 +51,10 @@ namespace Volt
 	struct GPUSceneData
 	{
 		RenderGraphResourceHandle meshesBuffer;
+		RenderGraphResourceHandle sdfMeshesBuffer;
 		RenderGraphResourceHandle materialsBuffer;
 		RenderGraphResourceHandle primitiveDrawDataBuffer;
+		RenderGraphResourceHandle sdfPrimitiveDrawDataBuffer;
 		RenderGraphResourceHandle bonesBuffer;
 
 		static void SetupInputs(RenderGraph::Builder& builder, const GPUSceneData& data);

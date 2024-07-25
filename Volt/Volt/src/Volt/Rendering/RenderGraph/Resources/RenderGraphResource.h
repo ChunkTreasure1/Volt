@@ -75,7 +75,7 @@ namespace Volt
 		RenderGraphPassResources(RenderGraph& renderGraph, RenderGraphPassNodeBase& pass);
 		
 		ResourceHandle GetImage2D(const RenderGraphResourceHandle resourceHandle, const int32_t mip = -1, const int32_t layer = -1) const;
-		//RefPtr<RHI::Image3D> GetImage3D(const RenderGraphResourceHandle resourceHandle); // #TODO: Implement Image3D first
+		ResourceHandle GetImage3D(const RenderGraphResourceHandle resourceHandle, const int32_t mip = -1, const int32_t layer = -1) const;
 		ResourceHandle GetBuffer(const RenderGraphResourceHandle resourceHandle) const;
 		ResourceHandle GetUniformBuffer(const RenderGraphResourceHandle resourceHandle) const;
 

@@ -113,7 +113,7 @@ namespace Volt
 
 		void AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle srcImage);
 
-		void AddVisualizeSDFPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddVisualizeSDFPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle dstImage);
 
 		void CreateMainRenderTarget(const uint32_t width, const uint32_t height);
 

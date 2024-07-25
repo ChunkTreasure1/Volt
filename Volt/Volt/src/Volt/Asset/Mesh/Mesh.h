@@ -21,6 +21,8 @@ namespace Volt
 	{
 		class VertexBuffer;
 		class IndexBuffer;
+
+		class Image3D;
 	}
 
 	class Material;
@@ -87,6 +89,7 @@ namespace Volt
 		inline const BoundingSphere& GetBoundingSphere() const { return m_boundingSphere; }
 		inline const BoundingBox& GetBoundingBox() const { return m_boundingBox; }
 		inline const Vector<GPUMesh>& GetGPUMeshes() const { return m_gpuMeshes; }
+		inline const Vector<GPUMeshSDF>& GetGPUMeshSDFs() const { return m_gpuMeshSDFs; }
 
 		inline const BoundingSphere& GetSubMeshBoundingSphere(const uint32_t index) const { return m_subMeshBoundingSpheres.at(index);  }
 		inline const BoundingBox& GetSubMeshBoundingBox(const uint32_t index) const { return m_subMeshBoundingBoxes.at(index);  }
@@ -133,17 +136,18 @@ namespace Volt
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexBoneInfluencesBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexBoneWeightsBuffer;
 
-		BindlessResourceRef<RHI::StorageBuffer> m_sdfDataBuffer;
-
 		BindlessResourceRef<RHI::StorageBuffer> m_meshletsBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_meshletDataBuffer;
 
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexAnimationDataBuffer;
 
+		vt::map<uint32_t, BindlessResourceRef<RHI::Image3D>> m_sdfTextures;
+
 		BoundingSphere m_boundingSphere;
 		BoundingBox m_boundingBox;
 
 		Vector<GPUMesh> m_gpuMeshes;
+		Vector<GPUMeshSDF> m_gpuMeshSDFs;
 
 		glm::vec3 m_averageScale{ 1.f };
 		vt::map<uint32_t, BoundingSphere> m_subMeshBoundingSpheres;

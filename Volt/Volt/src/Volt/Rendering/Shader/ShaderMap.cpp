@@ -5,7 +5,6 @@
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
 
 #include "Volt/Core/Application.h"
-#include "Volt/Core/ScopedTimer.h"
 
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Math/Math.h"
@@ -13,6 +12,8 @@
 #include <VoltRHI/Shader/Shader.h>
 #include <VoltRHI/Pipelines/RenderPipeline.h>
 #include <VoltRHI/Pipelines/ComputePipeline.h>
+
+#include <CoreUtilities/Time/ScopedTimer.h>
 
 namespace Volt
 {

@@ -12,7 +12,7 @@ namespace Volt::RHI
 		
 		if (result != S_OK)
 		{
-			assert(false && "Failed to create default HLSL include handler");
+			VT_ASSERT(false && "Failed to create default HLSL include handler");
 		}
 	}
 

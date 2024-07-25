@@ -10,7 +10,6 @@
 #include <VoltRHI/Shader/ShaderPreProcessor.h>
 #include <VoltRHI/Shader/ShaderCache.h>
 
-#include <CoreUtilities/TimeUtility.h>
 #include <CoreUtilities/StringUtility.h>
 
 #ifdef _WIN32

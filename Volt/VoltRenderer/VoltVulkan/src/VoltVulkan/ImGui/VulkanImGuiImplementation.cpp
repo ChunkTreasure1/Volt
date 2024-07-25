@@ -34,7 +34,7 @@ namespace Volt::RHI
 					using namespace std::chrono_literals;
 					std::this_thread::sleep_for(3s);
 				}
-				assert(false);
+				VT_ASSERT(false);
 			}
 		}
 	}

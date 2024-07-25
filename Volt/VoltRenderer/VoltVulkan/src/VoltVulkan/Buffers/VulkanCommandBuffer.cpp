@@ -16,6 +16,7 @@
 #include "VoltVulkan/Descriptors/VulkanDescriptorBufferTable.h"
 
 #include "VoltVulkan/Images/VulkanImage2D.h"
+#include "VoltVulkan/Images/VulkanImage3D.h"
 #include "VoltVulkan/Buffers/VulkanStorageBuffer.h"
 #include "VoltVulkan/Synchronization/VulkanSemaphore.h"
 
@@ -130,6 +131,16 @@ namespace Volt::RHI
 			if (EnumValueContainsFlag(barrierStage, BarrierStage::VideoEncode))
 			{
 				result |= VK_PIPELINE_STAGE_2_VIDEO_ENCODE_BIT_KHR;
+			}
+
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::MeshShader))
+			{
+				result |= VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT;
+			}
+
+			if (EnumValueContainsFlag(barrierStage, BarrierStage::AmplificationShader))
+			{
+				result |= VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT;
 			}
 
 			return result;
@@ -858,7 +869,20 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		VT_ENSURE(barrierInfo.resource != nullptr);
-		auto& vkImage = barrierInfo.resource->AsRef<VulkanImage2D>();
+
+		VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM;
+
+		if (barrierInfo.resource->GetType() == ResourceType::Image2D)
+		{
+			auto& vkImage = barrierInfo.resource->AsRef<VulkanImage2D>();
+			aspectFlags = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
+		}
+		else if (barrierInfo.resource->GetType() == ResourceType::Image3D)
+		{
+			aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
+		}
+
+		VT_ASSERT(aspectFlags != VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM);
 
 		outBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
 		outBarrier.pNext = nullptr;
@@ -891,12 +915,12 @@ namespace Volt::RHI
 
 		outBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		outBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		outBarrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
+		outBarrier.subresourceRange.aspectMask = aspectFlags;
 		outBarrier.subresourceRange.baseArrayLayer = barrierInfo.subResource.baseArrayLayer;
 		outBarrier.subresourceRange.baseMipLevel = barrierInfo.subResource.baseMipLevel;
 		outBarrier.subresourceRange.layerCount = barrierInfo.subResource.layerCount == ALL_LAYERS ? VK_REMAINING_ARRAY_LAYERS : barrierInfo.subResource.layerCount;
 		outBarrier.subresourceRange.levelCount = barrierInfo.subResource.levelCount == ALL_MIPS ? VK_REMAINING_MIP_LEVELS : barrierInfo.subResource.levelCount;
-		outBarrier.image = vkImage.GetHandle<VkImage>();
+		outBarrier.image = barrierInfo.resource->GetHandle<VkImage>();
 
 		GraphicsContext::GetResourceStateTracker()->TransitionResource(barrierInfo.resource, barrierInfo.dstStage, barrierInfo.dstAccess, barrierInfo.dstLayout);
 	}
@@ -1032,7 +1056,7 @@ namespace Volt::RHI
 
 		VulkanImage2D& vkImage = image->AsRef<VulkanImage2D>();
 
-		const VkImageAspectFlags imageAspect = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
+		VkImageAspectFlags imageAspect = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
 		const uint32_t index = GetCurrentCommandBufferIndex();
 
 		VkImageSubresourceRange range{};
@@ -1068,6 +1092,34 @@ namespace Volt::RHI
 		}
 	}
 
+	void VulkanCommandBuffer::ClearImage(WeakPtr<Image3D> image, std::array<float, 4> clearColor)
+	{
+		VT_PROFILE_FUNCTION();
+
+		const VkImageAspectFlags imageAspect = VK_IMAGE_ASPECT_COLOR_BIT;
+		const uint32_t index = GetCurrentCommandBufferIndex();
+
+		VkImageSubresourceRange range{};
+		range.aspectMask = imageAspect;
+		range.baseArrayLayer = 0;
+		range.baseMipLevel = 0;
+		range.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		range.levelCount = VK_REMAINING_MIP_LEVELS;
+
+		const auto& currentState = GraphicsContext::GetResourceStateTracker()->GetCurrentResourceState(image);
+
+		// This is a bit of a hack due to the differences in clearing images between Vulkan and D3D12
+		const VkImageLayout layout = EnumValueContainsFlag(currentState.stage, BarrierStage::Clear) ? VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL : Utility::GetVkImageLayoutFromImageLayout(currentState.layout);
+
+		VkClearColorValue vkClearColor{};
+		vkClearColor.float32[0] = clearColor[0];
+		vkClearColor.float32[1] = clearColor[1];
+		vkClearColor.float32[2] = clearColor[2];
+		vkClearColor.float32[3] = clearColor[3];
+
+		vkCmdClearColorImage(m_commandBuffers.at(index).commandBuffer, image->GetHandle<VkImage>(), layout, &vkClearColor, 1, &range);
+	}
+
 	void VulkanCommandBuffer::ClearBuffer(WeakPtr<StorageBuffer> buffer, const uint32_t value)
 	{
 		VT_PROFILE_FUNCTION();
@@ -1081,7 +1133,7 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
-		assert(dataSize <= 65536 && "Size must not exceed MAX_UPDATE_SIZE!");
+		VT_ASSERT(dataSize <= 65536 && "Size must not exceed MAX_UPDATE_SIZE!");
 
 		VulkanStorageBuffer& vkBuffer = dstBuffer->AsRef<VulkanStorageBuffer>();
 		const uint32_t index = GetCurrentCommandBufferIndex();
@@ -1121,6 +1173,29 @@ namespace Volt::RHI
 
 		region.imageOffset = { 0, 0, 0 };
 		region.imageExtent = { width, height, 1 };
+
+		const auto& currentState = GraphicsContext::GetResourceStateTracker()->GetCurrentResourceState(dstImage);
+		vkCmdCopyBufferToImage(m_commandBuffers.at(index).commandBuffer, srcBuffer->GetResourceHandle<VkBuffer>(), dstImage->GetHandle<VkImage>(), Utility::GetVkImageLayoutFromImageLayout(currentState.layout), 1, &region);
+	}
+
+	void VulkanCommandBuffer::CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image3D> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip)
+	{
+		VT_PROFILE_FUNCTION();
+
+		const uint32_t index = GetCurrentCommandBufferIndex();
+
+		VkBufferImageCopy region{};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel = mip;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
+
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = { width, height, depth };
 
 		const auto& currentState = GraphicsContext::GetResourceStateTracker()->GetCurrentResourceState(dstImage);
 		vkCmdCopyBufferToImage(m_commandBuffers.at(index).commandBuffer, srcBuffer->GetResourceHandle<VkBuffer>(), dstImage->GetHandle<VkImage>(), Utility::GetVkImageLayoutFromImageLayout(currentState.layout), 1, &region);
@@ -1302,7 +1377,7 @@ namespace Volt::RHI
 					queueFamilyIndex = queueFamilies.transferFamilyQueueIndex;
 					break;
 				default:
-					assert(false);
+					VT_ASSERT(false);
 					break;
 			}
 

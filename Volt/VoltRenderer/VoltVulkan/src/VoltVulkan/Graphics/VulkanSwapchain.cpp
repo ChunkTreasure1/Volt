@@ -90,7 +90,7 @@ namespace Volt::RHI
 		VkBool32 supportsPresent = VK_FALSE;
 		VT_VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(vulkanPhysicalDevice.GetHandle<VkPhysicalDevice>(), queueFamilies.graphicsFamilyQueueIndex, m_surface, &supportsPresent));
 
-		assert(supportsPresent && "Device does not have present support!");
+		VT_ASSERT(supportsPresent && "Device does not have present support!");
 
 		m_commandBuffer = CommandBuffer::Create(GetFramesInFlight());
 

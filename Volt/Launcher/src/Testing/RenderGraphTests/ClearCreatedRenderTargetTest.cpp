@@ -31,7 +31,7 @@ bool RG_ClearCreatedRenderTargetTest::RunTest()
 	},
 	[=](RenderContext& context, const RenderGraphPassResources& resources)
 	{
-		context.ClearImage(testImageHandle, { 0.f, 0.f, 0.f, 0.f });
+		context.ClearImage2D(testImageHandle, { 0.f, 0.f, 0.f, 0.f });
 	});
 
 	renderGraph.Compile();

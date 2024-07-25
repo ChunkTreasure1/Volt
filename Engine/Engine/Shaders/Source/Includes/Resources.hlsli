@@ -762,7 +762,7 @@ struct UniformRWTexture
         return texture.Load(location);
     }
     
-    T Load3D(in int4 location)
+    T Load3D(in int3 location)
     {
         RWTexture3D<T> texture = UNIFORM_DESCRIPTOR_HEAP(RWTexture3DHandle<T>, handle);
         return texture.Load(location);
@@ -1007,7 +1007,7 @@ struct RWTexture
         return texture.Load(location);
     }
     
-    T Load3D(in int4 location)
+    T Load3D(in int3 location)
     {
         RWTexture3D<T> texture = DESCRIPTOR_HEAP(RWTexture3DHandle<T>, handle);
         return texture.Load(location);

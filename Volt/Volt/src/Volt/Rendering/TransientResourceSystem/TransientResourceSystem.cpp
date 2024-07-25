@@ -11,6 +11,7 @@
 #include <VoltRHI/Buffers/UniformBuffer.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Images/Image2D.h>
+#include <VoltRHI/Images/Image3D.h>
 
 namespace Volt
 {
@@ -28,6 +29,11 @@ namespace Volt
 	WeakPtr<RHI::Image2D> TransientResourceSystem::AquireImage2D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
 	{
 		return AquireImage2DRef(resourceHandle, imageDesc);
+	}
+
+	WeakPtr<RHI::Image3D> TransientResourceSystem::AquireImage3D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
+	{
+		return AquireImage3DRef(resourceHandle, imageDesc);
 	}
 
 	WeakPtr<RHI::StorageBuffer> TransientResourceSystem::AquireBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
@@ -78,6 +84,55 @@ namespace Volt
 		imageSpec.initializeImage = false;
 
 		RefPtr<RHI::Image2D> image = RHI::Image2D::Create(imageSpec, nullptr, RHI::GraphicsContext::GetTransientAllocator());
+
+		ResourceInfo info{};
+		info.resource = image;
+		info.isOriginal = true;
+
+		m_allocatedResources[resourceHandle] = info;
+
+		return image;
+	}
+
+	RefPtr<RHI::Image3D> TransientResourceSystem::AquireImage3DRef(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (m_allocatedResources.contains(resourceHandle))
+		{
+			return m_allocatedResources.at(resourceHandle).resource.As<RHI::Image3D>();
+		}
+
+		const size_t hash = Utility::GetHashFromImageDesc(imageDesc);
+		if (s_enableMemoryAliasingCVar.GetValue() && m_surrenderedResources.contains(hash))
+		{
+			if (!m_surrenderedResources.at(hash).empty())
+			{
+				RenderGraphResourceHandle surrenderedHandle = m_surrenderedResources.at(hash).back();
+				m_surrenderedResources.at(hash).pop_back();
+
+				RefPtr<RHI::RHIResource> resource = m_allocatedResources.at(surrenderedHandle).resource;
+				m_allocatedResources[resourceHandle].resource = resource;
+
+				return resource.As<RHI::Image3D>();
+			}
+		}
+
+		RHI::ImageSpecification imageSpec{};
+		imageSpec.width = imageDesc.width;
+		imageSpec.height = imageDesc.height;
+		imageSpec.depth = imageDesc.depth;
+		imageSpec.layers = imageDesc.layers;
+		imageSpec.mips = imageDesc.mips;
+
+		imageSpec.format = imageDesc.format;
+		imageSpec.usage = imageDesc.usage;
+		imageSpec.debugName = imageDesc.name;
+		imageSpec.isCubeMap = imageDesc.isCubeMap;
+		imageSpec.initializeImage = false;
+		imageSpec.imageType = RHI::ResourceType::Image3D;
+
+		RefPtr<RHI::Image3D> image = RHI::Image3D::Create(imageSpec, nullptr, RHI::GraphicsContext::GetTransientAllocator());
 
 		ResourceInfo info{};
 		info.resource = image;

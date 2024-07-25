@@ -64,7 +64,7 @@ namespace Volt
 			RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc, RenderGraphResourceState forceState = RenderGraphResourceState::None);
 
 			RenderGraphResourceHandle AddExternalImage2D(RefPtr<RHI::Image2D> image);
-			//RenderGraphResourceHandle AddExternalImage3D(RefPtr<RHI::Image3D> image);
+			RenderGraphResourceHandle AddExternalImage3D(RefPtr<RHI::Image3D> image);
 			RenderGraphResourceHandle AddExternalBuffer(RefPtr<RHI::StorageBuffer> buffer);
 			RenderGraphResourceHandle AddExternalUniformBuffer(RefPtr<RHI::UniformBuffer> buffer);
 
@@ -84,6 +84,7 @@ namespace Volt
 		// NOTE: After calling Execute the RenderGraph object is no longer valid to use!
 		void Execute();
 		void ExecuteImmediate();
+		void ExecuteImmediateAndWait();
 
 		template<typename T>
 		T& AddPass(const std::string& name, std::function<void(Builder&, T&)> createFunc, std::function<void(const T&, RenderContext&, const RenderGraphPassResources&)>&& executeFunc);
@@ -104,7 +105,7 @@ namespace Volt
 		void SetTotalAllocatedSizeCallback(TotalAllocatedSizeCallback&& callback);
 
 		RenderGraphResourceHandle AddExternalImage2D(RefPtr<RHI::Image2D> image);
-		//RenderGraphResourceHandle AddExternalImage3D(RefPtr<RHI::Image3D> image);
+		RenderGraphResourceHandle AddExternalImage3D(RefPtr<RHI::Image3D> image);
 		RenderGraphResourceHandle AddExternalBuffer(RefPtr<RHI::StorageBuffer> buffer);
 		RenderGraphResourceHandle AddExternalUniformBuffer(RefPtr<RHI::UniformBuffer> buffer);
 
@@ -113,9 +114,9 @@ namespace Volt
 		RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc);
 		RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
 
-		ResourceHandle GetImage2D(const RenderGraphResourceHandle resourceHandle, const int32_t mip = 0, const int32_t layer = 0);
-		ResourceHandle GetImage2DArray(const RenderGraphResourceHandle resourceHandle, const int32_t mip = 0);
-		//RefPtr<RHI::Image3D> GetImage3D(const RenderGraphResourceHandle resourceHandle); // #TODO: Implement Image3D first
+		ResourceHandle GetImage2D(const RenderGraphResourceHandle resourceHandle, const int32_t mip = -1, const int32_t layer = -1);
+		ResourceHandle GetImage2DArray(const RenderGraphResourceHandle resourceHandle, const int32_t mip = -1);
+		ResourceHandle GetImage3D(const RenderGraphResourceHandle resourceHandle, const int32_t mip = -1, const int32_t layer = -1);
 		ResourceHandle GetBuffer(const RenderGraphResourceHandle resourceHandle);
 		ResourceHandle GetUniformBuffer(const RenderGraphResourceHandle resourceHandle);
 
@@ -127,7 +128,7 @@ namespace Volt
 
 		inline static constexpr RenderGraphResourceHandle INVALID_RESOURCE_HANDLE = std::numeric_limits<RenderGraphResourceHandle>::max();
 
-		void ExecuteInternal();
+		void ExecuteInternal(bool waitForCompletion);
 		void InsertStandaloneMarkers(const uint32_t passIndex);
 		void DestroyResources();
 		void AllocateConstantsBuffer();
@@ -147,10 +148,12 @@ namespace Volt
 
 		WeakPtr<RHI::ImageView> GetImage2DView(const RenderGraphResourceHandle resourceHandle);
 		WeakPtr<RHI::Image2D> GetImage2DRaw(const RenderGraphResourceHandle resourceHandle);
+		WeakPtr<RHI::Image3D> GetImage3DRaw(const RenderGraphResourceHandle resourceHandle);
 		WeakPtr<RHI::StorageBuffer> GetBufferRaw(const RenderGraphResourceHandle resourceHandle);
 		WeakPtr<RHI::RHIResource> GetResourceRaw(const RenderGraphResourceHandle resourceHandle);
 
 		RefPtr<RHI::Image2D> GetImage2DRawRef(const RenderGraphResourceHandle resourceHandle);
+		RefPtr<RHI::Image3D> GetImage3DRawRef(const RenderGraphResourceHandle resourceHandle);
 		RefPtr<RHI::StorageBuffer> GetBufferRawRef(const RenderGraphResourceHandle resourceHandle);
 
 		RenderGraphResourceHandle TryGetRegisteredExternalResource(WeakPtr<RHI::RHIResource> resource);

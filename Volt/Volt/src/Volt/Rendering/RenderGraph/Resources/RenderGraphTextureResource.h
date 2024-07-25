@@ -25,7 +25,7 @@ namespace Volt
 		RHI::ImageUsage usage = RHI::ImageUsage::Attachment;
 		RHI::ClearMode clearMode = RHI::ClearMode::Clear;
 
-		std::string_view name;
+		std::string name;
 
 		uint32_t width = 1;
 		uint32_t height = 1;
@@ -66,7 +66,7 @@ namespace Volt
 		}
 	};
 
-	struct RenderGraphTexture3D
+	struct RenderGraphImage3D
 	{
 		RenderGraphImageDesc description{};
 		bool isExternal = false;

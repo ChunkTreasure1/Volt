@@ -14,7 +14,7 @@ namespace Volt::RHI
 	{
 		static Vector<D3D12_INPUT_ELEMENT_DESC> CreateVertexLayout(const BufferLayout& vertexLayout, const BufferLayout& instanceLayout)
 		{
-			assert(!vertexLayout.GetElements().empty());
+			VT_ASSERT(!vertexLayout.GetElements().empty());
 			
 			Vector<D3D12_INPUT_ELEMENT_DESC> result{};
 			result.reserve(vertexLayout.GetElements().size() + instanceLayout.GetElements().size());

@@ -17,7 +17,7 @@
 namespace Volt::RHI
 {
 	VulkanImage3D::VulkanImage3D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator)
-		: m_specification(specification)
+		: m_specification(specification), m_allocator(allocator)
 	{
 		if (!allocator)
 		{
@@ -68,7 +68,7 @@ namespace Volt::RHI
 
 		if (data)
 		{
-			// #TODO_Ivar: Implement data initialization
+			InitializeWithData(data);
 		}
 
 		if (m_specification.initializeImage)
@@ -225,6 +225,54 @@ namespace Volt::RHI
 	void* VulkanImage3D::GetHandleImpl() const
 	{
 		return m_allocation->GetResourceHandle<VkImage>();
+	}
+
+	void VulkanImage3D::InitializeWithData(const void* data)
+	{
+		const VkDeviceSize bufferSize = m_specification.width * m_specification.height * m_specification.depth * Utility::GetByteSizePerPixelFromFormat(m_specification.format) * m_specification.layers;
+	
+		RefPtr<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator()->CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
+
+		auto* stagingData = stagingAlloc->Map<void>();
+		memcpy_s(stagingData, bufferSize, data, bufferSize);
+		stagingAlloc->Unmap();
+
+		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
+
+		commandBuffer->Begin();
+
+		{
+			RHI::ResourceBarrierInfo barrier{};
+			barrier.type = RHI::BarrierType::Image;
+			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), this);
+
+			barrier.imageBarrier().dstStage = RHI::BarrierStage::Copy;
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::CopyDest;
+			barrier.imageBarrier().dstLayout = RHI::ImageLayout::CopyDest;
+			barrier.imageBarrier().resource = this;
+
+			commandBuffer->ResourceBarrier({ barrier });
+		}
+
+		commandBuffer->CopyBufferToImage(stagingAlloc, this, m_specification.width, m_specification.height, m_specification.depth);
+
+		{
+			RHI::ResourceBarrierInfo barrier{};
+			barrier.type = RHI::BarrierType::Image;
+			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), this);
+
+			barrier.imageBarrier().dstStage = RHI::BarrierStage::PixelShader | RHI::BarrierStage::ComputeShader;
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
+			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
+			barrier.imageBarrier().resource = this;
+
+			commandBuffer->ResourceBarrier({ barrier });
+		}
+
+		commandBuffer->End();
+		commandBuffer->ExecuteAndWait();
+
+		GraphicsContext::GetDefaultAllocator()->DestroyBuffer(stagingAlloc);
 	}
 
 	void VulkanImage3D::TransitionToLayout(ImageLayout targetLayout)

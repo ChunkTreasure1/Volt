@@ -22,7 +22,7 @@ namespace Volt::RHI
 
 	void ShaderDataBuffer::SetSize(const size_t size)
 	{
-		assert(size <= 128);
+		VT_ASSERT(size <= 128);
 		m_size = size;
 	}
 

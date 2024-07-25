@@ -1016,6 +1016,9 @@ namespace Volt::RHI
 		}
 	}
 
+	void D3D12CommandBuffer::ClearImage(WeakPtr<Image3D> image, std::array<float, 4> clearColor)
+	{ }
+
 	void D3D12CommandBuffer::ClearBuffer(WeakPtr<StorageBuffer> buffer, const uint32_t value)
 	{
 		VT_PROFILE_FUNCTION();
@@ -1052,6 +1055,10 @@ namespace Volt::RHI
 	}
 
 	void D3D12CommandBuffer::CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip)
+	{
+	}
+
+	void D3D12CommandBuffer::CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image3D> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip)
 	{
 	}
 

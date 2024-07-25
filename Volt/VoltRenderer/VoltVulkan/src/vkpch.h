@@ -20,5 +20,3 @@
 #include <numeric>
 
 #include <future>
-
-#include <cassert>

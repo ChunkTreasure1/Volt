@@ -10,6 +10,7 @@
 #include <VoltRHI/Buffers/StorageBuffer.h>
 #include <VoltRHI/Buffers/UniformBuffer.h>
 #include <VoltRHI/Descriptors/DescriptorTable.h>
+#include <VoltRHI/Images/Image3D.h>
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 
@@ -103,12 +104,21 @@ namespace Volt
 		return result;
 	}
 
-	void RenderContext::ClearImage(RenderGraphResourceHandle handle, const glm::vec4& clearColor)
+	void RenderContext::ClearImage2D(RenderGraphResourceHandle handle, const glm::vec4& clearColor)
 	{
 		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(handle);
 
 		const auto image = m_renderGraph->GetImage2DRaw(handle);
+		m_commandBuffer->ClearImage(image, { clearColor.x, clearColor.y, clearColor.z, clearColor.w });
+	}
+
+	void RenderContext::ClearImage3D(RenderGraphResourceHandle handle, const glm::vec4& clearColor)
+	{
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		resourceAccess.ValidateResourceAccess(handle);
+
+		const auto image = m_renderGraph->GetImage3DRaw(handle);
 		m_commandBuffer->ClearImage(image, { clearColor.x, clearColor.y, clearColor.z, clearColor.w });
 	}
 
