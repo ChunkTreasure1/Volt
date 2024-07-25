@@ -40,5 +40,6 @@ VTCOREUTIL_API void AssertionFailure(std::string_view expression);
 	} while(0)
 
 #else
-#define VT_ENUSRE(expression)
+#define VT_ENSURE(expression)
+#define VT_ENSURE_MSG(expression, message)
 #endif

@@ -61,6 +61,11 @@ project "VoltD3D12"
 		"%{Library.Aftermath}"
 	}
 
+	dependson
+	{
+		"VoltRHI"
+	}
+
 	postbuildcommands
 	{
 		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox"'

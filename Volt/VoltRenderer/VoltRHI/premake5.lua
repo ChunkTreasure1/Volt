@@ -46,6 +46,11 @@ project "VoltRHI"
 		"%{Library.Aftermath}"
 	}
 
+	dependson
+	{
+		"CoreUtilities"
+	}
+
 	defines
 	{
 		"TRACY_IMPORTS",

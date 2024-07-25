@@ -18,7 +18,13 @@ const char* VKResultToString(int32_t result);
 
 #else
 
+#ifdef VT_ENABLE_ASSERTS
+
 #define VT_VK_CHECK(x) VT_ASSERT_MSG((x) == VK_SUCCESS, std::format("Vulkan Error: {0}", VKResultToString(x)).c_str())
+
+#else
+#define VT_VK_CHECK(x) x
+#endif
 
 #endif
 
