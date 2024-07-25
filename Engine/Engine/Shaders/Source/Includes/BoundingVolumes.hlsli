@@ -17,6 +17,12 @@ struct BoundingSphere
     }
 };
 
+struct IntersectionResult
+{
+    float t;
+    bool hit;
+};
+
 struct BoundingBox
 {
     float SquaredDistPointAABB(float3 p, float3 imin, float3 imax)
@@ -59,7 +65,7 @@ struct BoundingBox
             tmax = min(tmax, max(max(t1, t2), tmin));
         }
          
-        return tmax > max(tmin, 0.f);   
+        return tmax > max(tmin, 0.f) ? tmin : -1.f;
     } 
 
     float3 bmax;

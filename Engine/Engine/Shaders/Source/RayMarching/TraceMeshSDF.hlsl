@@ -11,6 +11,8 @@ struct Constants
     UniformBuffer<ViewData> viewData;
 
     TextureSampler pointSampler;
+    
+    uint primitiveCount;
 };
 
 struct Output
@@ -22,9 +24,9 @@ static const float RESOLUTION = 1.f;
 
 float Intersect(SDFPrimitiveDrawData sdfPrimitive, GPUMeshSDF sdfMesh, TextureSampler pointSampler, Ray ray)
 {
-    const float maxDist = 500.f;
+    const float maxDist = 2000.f;
     float h = 0.5f;
-    float t = 0.f;
+    float t = ray.t;
 
     for (uint i = 0; i < 500; ++i)
     {
@@ -48,15 +50,36 @@ float Intersect(SDFPrimitiveDrawData sdfPrimitive, GPUMeshSDF sdfMesh, TextureSa
         t += h;
     }
 
-    return h;
+    if (t >= maxDist)
+    {
+        t = -1.f;
+    }
+
+    return t;
+}
+
+float TraceSDFPrimitive(SDFPrimitiveDrawData sdfPrimitive, GPUMeshSDF sdfMesh, TextureSampler pointSampler, Ray ray)
+{
+    BoundingBox bb;
+    bb.bmin = sdfMesh.min + sdfPrimitive.transform.position;
+    bb.bmax = sdfMesh.max + sdfPrimitive.transform.position;
+
+    float intersectionResult = bb.Intersects(ray);
+    bool isHit = false;
+
+    if (intersectionResult > 0.f)
+    {
+        ray.t = intersectionResult;
+        intersectionResult = Intersect(sdfPrimitive, sdfMesh, pointSampler, ray);
+    }
+
+    return intersectionResult;
 }
 
 Output MainPS(FullscreenTriangleVertex input)
 {
     const Constants constants = GetConstants<Constants>();
     const ViewData viewData = constants.viewData.Load();
-    const SDFPrimitiveDrawData sdfPrimitive = constants.gpuScene.sdfPrimitiveDrawDataBuffer.Load(0);   
-    const GPUMeshSDF sdfMesh = constants.gpuScene.sdfMeshesBuffer.Load(sdfPrimitive.meshSDFId);
 
     const float2 pixelPos = input.position.xy;
     
@@ -66,29 +89,29 @@ Output MainPS(FullscreenTriangleVertex input)
 
     Ray ray;
     ray.direction = worldDir;
-    ray.length = 100000.f;
+    ray.t = 0.f;
     ray.origin = viewData.cameraPosition.xyz;
 
-    BoundingBox bb;
-    bb.bmin = sdfMesh.min + sdfPrimitive.transform.position;
-    bb.bmax = sdfMesh.max + sdfPrimitive.transform.position;
- 
-    bool isValid = bb.Intersects(ray);
-    bool isHit = false;
+    float result = 100000.f;
+    bool hasHit = false;
 
-    if (isValid)
+    for (uint i = 0; i < constants.primitiveCount; ++i)
     {
-        float t = Intersect(sdfPrimitive, sdfMesh, constants.pointSampler, ray);
-        if (t < 0.f)
+        const SDFPrimitiveDrawData sdfPrimitive = constants.gpuScene.sdfPrimitiveDrawDataBuffer.Load(i);   
+        const GPUMeshSDF sdfMesh = constants.gpuScene.sdfMeshesBuffer.Load(sdfPrimitive.meshSDFId);
+
+        float intersectionRes = TraceSDFPrimitive(sdfPrimitive, sdfMesh, constants.pointSampler, ray);
+        if (intersectionRes > 0.f)
         {
-            isHit = true;
+            result = min(intersectionRes, result);
+            hasHit = true;
         }
     }
 
-    clip(!isValid || !isHit ? -1.f : 1.f);
+    clip(!hasHit ? -1.f : 1.f);
 
     Output output;
-    output.output = float3(isHit, 0.f, 0.f);
+    output.output = float3(hasHit, 0.f, 0.f);
 
     return output;
 }

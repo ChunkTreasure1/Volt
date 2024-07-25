@@ -71,8 +71,9 @@ namespace Volt
 
 		while (true)
 		{
-			bool pop = false;
+			VT_PROFILE_SCOPE("Execute Task");
 
+			bool pop = false;
 			std::function<void()> task;
 
 			{
@@ -89,10 +90,7 @@ namespace Volt
 				return;
 			}
 
-			{
-				VT_PROFILE_SCOPE("Execute Task");
-				task();
-			}
+			task();
 		}
 	}
 }

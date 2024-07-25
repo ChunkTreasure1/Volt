@@ -1062,6 +1062,8 @@ namespace Volt
 		const auto& gpuSceneData = blackboard.Get<GPUSceneData>();
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 
+		const uint32_t sdfPrimitiveCount = m_scene->GetRenderScene()->GetSDFPrimitiveCount();
+
 		renderGraph.AddPass("Visualize SDF",
 		[&](RenderGraph::Builder& builder)
 		{
@@ -1088,6 +1090,7 @@ namespace Volt
 				GPUSceneData::SetupConstants(context, resources, gpuSceneData);
 				context.SetConstant("pointSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest>()->GetResourceHandle());
 				context.SetConstant("viewData"_sh, resources.GetBuffer(uniformBuffers.viewDataBuffer));
+				context.SetConstant("primitiveCount"_sh, sdfPrimitiveCount);
 			});
 
 			context.EndRendering();

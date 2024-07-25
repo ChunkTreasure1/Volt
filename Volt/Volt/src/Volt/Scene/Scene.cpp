@@ -51,7 +51,7 @@
 
 #include <Navigation/Core/NavigationSystem.h>
 
-#include <CoreUtilities/TimeUtility.h>
+#include <CoreUtilities/Time/TimeUtility.h>
 
 #include <stack>
 #include <ranges>

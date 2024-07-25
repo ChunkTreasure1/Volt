@@ -209,7 +209,7 @@ bool EditorCameraController::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		else if (Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT))
 		{
 			//DisableMouse();
-			ArcZoom(deltaPos.x + deltaPos.y);
+			ArcZoom((deltaPos.x + deltaPos.y) * m_sensitivity);
 		}
 		else
 		{
