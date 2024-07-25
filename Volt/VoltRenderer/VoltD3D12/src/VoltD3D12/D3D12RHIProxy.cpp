@@ -32,6 +32,7 @@
 #include "VoltD3D12/Images/D3D12SamplerState.h"
 #include "VoltD3D12/Images/D3D12ImageView.h"
 #include "VoltD3D12/Images/D3D12Image2D.h"
+#include <VoltRHI/Images/Image3D.h>
 
 #include "VoltD3D12/Synchronization/D3D12Semaphore.h"
 #include <VoltRHI/Synchronization/Fence.h>
@@ -117,6 +118,11 @@ namespace Volt::RHI
 	RefPtr<Image2D> D3D12RHIProxy::CreateImage2D(const SwapchainImageSpecification& specification) const
 	{
 		return RefPtr<D3D12Image2D>::Create(specification);
+	}
+
+	RefPtr<Image3D> D3D12RHIProxy::CreateImage3D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const
+	{
+		return RefPtr<Image3D>();
 	}
 	
 	RefPtr<ImageView> D3D12RHIProxy::CreateImageView(const ImageViewSpecification& specification) const

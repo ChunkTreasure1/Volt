@@ -35,7 +35,7 @@ void MainAS(uint groupThreadId : SV_GroupThreadID, uint2 groupId : SV_GroupID)
     const uint taskIndex = groupId.x * NUM_AS_THREADS + groupId.y;
 
     const MeshTaskCommand command = constants.taskCommands.Load(taskIndex);
-    const ObjectDrawData drawData = constants.gpuScene.objectDrawDataBuffer.Load(command.drawId);    
+    const PrimitiveDrawData drawData = constants.gpuScene.primitiveDrawDataBuffer.Load(command.drawId);    
     const GPUMesh mesh = constants.gpuScene.meshesBuffer.Load(drawData.meshId);
 
     const uint meshletIndex = command.meshletOffset + groupThreadId;
@@ -100,7 +100,7 @@ void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
     const Constants constants = GetConstants<Constants>();
     const DirectionalLight dirLight = constants.directionalLight.Load();
 
-    const ObjectDrawData drawData = constants.gpuScene.objectDrawDataBuffer.Load(payload.drawId);    
+    const PrimitiveDrawData drawData = constants.gpuScene.primitiveDrawDataBuffer.Load(payload.drawId);    
     const GPUMesh mesh = constants.gpuScene.meshesBuffer.Load(drawData.meshId);
 
     uint meshletIndex = payload.meshletIndices[groupId];

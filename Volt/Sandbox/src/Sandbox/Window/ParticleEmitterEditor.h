@@ -6,7 +6,7 @@
 #include <Volt/Events/ApplicationEvent.h>
 #include <Volt/Particles/Particle.h>
 
-#include <vector>
+
 
 namespace Volt
 {

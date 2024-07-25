@@ -37,7 +37,7 @@ void MainCS(uint dispatchThreadId : SV_DispatchThreadID)
         return;
     }
 
-    const ObjectDrawData drawData = constants.gpuScene.objectDrawDataBuffer.Load(dispatchThreadId);
+    const PrimitiveDrawData drawData = constants.gpuScene.primitiveDrawDataBuffer.Load(dispatchThreadId);
     const GPUMesh mesh = constants.gpuScene.meshesBuffer.Load(drawData.meshId);
 
     const float3 center = mul(constants.viewMatrix, float4(drawData.transform.GetWorldPosition(mesh.boundingSphere.center), 1.f)).xyz;

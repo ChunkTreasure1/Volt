@@ -279,7 +279,7 @@ namespace Volt::RHI
 
 			spec.viewType = ImageViewType::ViewCube;
 		}
-		else if (m_specification.layers > 1)
+		else if (m_specification.layers > 1 && layer == -1)
 		{
 			spec.viewType = ImageViewType::View2DArray;
 		}
@@ -370,7 +370,7 @@ namespace Volt::RHI
 		VkDebugUtilsObjectNameInfoEXT nameInfo{};
 		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 		nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
-		
+
 		if (m_isSwapchainImage)
 		{
 			nameInfo.objectHandle = (uint64_t)m_swapchainImageData.image;
@@ -496,7 +496,7 @@ namespace Volt::RHI
 		region.bufferOffset = 0;
 		region.bufferRowLength = 0;
 		region.bufferImageHeight = 0;
-		
+
 		region.imageSubresource.aspectMask = aspectFlags;
 		region.imageSubresource.mipLevel = 0;
 		region.imageSubresource.baseArrayLayer = 0;
@@ -515,13 +515,13 @@ namespace Volt::RHI
 		commandBuffer->ExecuteAndWait();
 
 		uint8_t* mappedMemory = stagingAlloc->Map<uint8_t>();
-		
+
 		const uint32_t perPixelSize = Utility::GetByteSizePerPixelFromFormat(m_specification.format);
 		const uint32_t bufferIndex = (x + y * m_specification.width) * perPixelSize;
 
 		Buffer buffer{ stride };
 		buffer.Copy(&mappedMemory[bufferIndex], stride);
-		
+
 		stagingAlloc->Unmap();
 
 		GraphicsContext::GetDefaultAllocator()->DestroyBuffer(stagingAlloc);
@@ -533,37 +533,35 @@ namespace Volt::RHI
 		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 		commandBuffer->Begin();
 
+		RHI::ResourceBarrierInfo barrier{};
+		barrier.type = RHI::BarrierType::Image;
+		ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), this);
+
+		if (targetLayout == ImageLayout::ShaderRead)
 		{
-			RHI::ResourceBarrierInfo barrier{};
-			barrier.type = RHI::BarrierType::Image;
-			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), this);
-
-			if (targetLayout == ImageLayout::ShaderRead)
-			{
-				barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
-				barrier.imageBarrier().dstStage = RHI::BarrierStage::AllGraphics;
-			}
-			else if (targetLayout == ImageLayout::ShaderWrite)
-			{
-				barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderWrite;
-				barrier.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader | RHI::BarrierStage::PixelShader;
-			}
-			else if (targetLayout == ImageLayout::DepthStencilWrite)
-			{
-				barrier.imageBarrier().dstAccess = RHI::BarrierAccess::DepthStencilWrite;
-				barrier.imageBarrier().dstStage = RHI::BarrierStage::DepthStencil;
-			}
-			else if (targetLayout == ImageLayout::RenderTarget)
-			{
-				barrier.imageBarrier().dstAccess = RHI::BarrierAccess::RenderTarget;
-				barrier.imageBarrier().dstStage = RHI::BarrierStage::RenderTarget;
-			}
-
-			barrier.imageBarrier().dstLayout = targetLayout;
-			barrier.imageBarrier().resource = this;
-
-			commandBuffer->ResourceBarrier({ barrier });
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
+			barrier.imageBarrier().dstStage = RHI::BarrierStage::AllGraphics;
 		}
+		else if (targetLayout == ImageLayout::ShaderWrite)
+		{
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderWrite;
+			barrier.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader | RHI::BarrierStage::PixelShader;
+		}
+		else if (targetLayout == ImageLayout::DepthStencilWrite)
+		{
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::DepthStencilWrite;
+			barrier.imageBarrier().dstStage = RHI::BarrierStage::DepthStencil;
+		}
+		else if (targetLayout == ImageLayout::RenderTarget)
+		{
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::RenderTarget;
+			barrier.imageBarrier().dstStage = RHI::BarrierStage::RenderTarget;
+		}
+
+		barrier.imageBarrier().dstLayout = targetLayout;
+		barrier.imageBarrier().resource = this;
+
+		commandBuffer->ResourceBarrier({ barrier });
 
 		commandBuffer->End();
 		commandBuffer->Execute();

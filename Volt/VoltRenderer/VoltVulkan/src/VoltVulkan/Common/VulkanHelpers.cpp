@@ -11,7 +11,7 @@ namespace Volt::RHI::Utility
 	{
 		VkImageCreateInfo imageInfo{};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageInfo.imageType = imageSpecification.depth > 1 ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D;
+		imageInfo.imageType = imageSpecification.depth > 1 ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D; // #TODO_Ivar: Will this be an issue with 1x1x1 image3ds?
 		imageInfo.usage = Utility::GetVkImageUsageFlags(imageSpecification.usage, imageSpecification.format);
 		imageInfo.extent.width = imageSpecification.width;
 		imageInfo.extent.height = imageSpecification.height;

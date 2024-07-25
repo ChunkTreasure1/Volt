@@ -27,5 +27,10 @@ namespace Volt::RHI
 		ImageViewSpecification m_specification{};
 
 		VkImageView_T* m_imageView = nullptr;
+
+		PixelFormat m_format;
+		ImageAspect m_imageAspect;
+		ImageUsage m_imageUsage;
+		bool m_isSwapchainImage;
 	};
 }

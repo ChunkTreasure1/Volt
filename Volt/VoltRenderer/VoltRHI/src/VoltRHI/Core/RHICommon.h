@@ -448,6 +448,7 @@ namespace Volt::RHI
 
 		View1DArray,
 		View2DArray,
+		View3DArray,
 		
 		ViewCube,
 		ViewCubeArray

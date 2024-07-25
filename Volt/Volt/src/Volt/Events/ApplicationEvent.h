@@ -5,7 +5,7 @@
 #include "Volt/Asset/Asset.h"
 
 #include <sstream>
-#include <vector>
+
 #include <filesystem>
 
 namespace Volt

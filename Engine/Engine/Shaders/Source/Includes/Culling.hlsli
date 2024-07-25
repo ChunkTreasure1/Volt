@@ -35,7 +35,7 @@ bool IsInFrustum_Perspective(in PerspectiveFrustumInfo info, in BoundingSphere s
     return visible;
 }
 
-bool IsInFrustum_Orthographic(in AABB bb, in BoundingSphere sphere)
+bool IsInFrustum_Orthographic(in BoundingBox bb, in BoundingSphere sphere)
 {
     return bb.Intersects(sphere);
 }

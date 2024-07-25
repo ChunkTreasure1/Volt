@@ -92,7 +92,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     const uint triangleId = UnpackTriangleID(visibilityValues.y);
     const uint meshletId = UnpackMeshletID(visibilityValues.y);
     
-    const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(objectId);
+    const PrimitiveDrawData drawData = scene.primitiveDrawDataBuffer.Load(objectId);
     const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
     const Meshlet meshlet = mesh.meshletsBuffer.Load(mesh.meshletStartOffset + meshletId);
 

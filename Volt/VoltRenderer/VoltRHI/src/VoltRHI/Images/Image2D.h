@@ -34,7 +34,7 @@ namespace Volt::RHI
 		template<typename T>
 		VT_INLINE T ReadPixel(uint32_t x, uint32_t y);
 
-		static RefPtr<Image2D> Create(const ImageSpecification& specification, const void* data = nullptr, RefPtr<Allocator> customAllocator = nullptr);
+		static RefPtr<Image2D> Create(const ImageSpecification& specification, const void* data = nullptr, RefPtr<Allocator> allocator = nullptr);
 		static RefPtr<Image2D> Create(const SwapchainImageSpecification& specification);
 
 	protected:

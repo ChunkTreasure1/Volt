@@ -3,7 +3,7 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Rendering/Camera/Camera.h"
 
-#include <vector>
+
 #include <glm/glm.hpp>
 
 namespace Volt

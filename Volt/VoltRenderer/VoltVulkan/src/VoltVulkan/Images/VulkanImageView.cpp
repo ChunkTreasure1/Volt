@@ -5,6 +5,7 @@
 #include "VoltVulkan/Common/VulkanCommon.h"
 
 #include <VoltRHI/Images/Image2D.h>
+#include <VoltRHI/Images/Image3D.h>
 #include <VoltRHI/Images/ImageUtility.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
@@ -19,10 +20,25 @@ namespace Volt::RHI
 		: m_specification(specification)
 	{
 		auto image = specification.image;
-		const auto format = image->GetFormat();
+		if (image->GetType() == ResourceType::Image2D)
+		{
+			auto image2D = image->As<Image2D>();
+			m_format = image2D->GetFormat();
+			m_imageUsage = image2D->GetUsage();
+			m_imageAspect = image2D->GetImageAspect();
+			m_isSwapchainImage = image2D->IsSwapchainImage();
+		}
+		else if (image->GetType() == ResourceType::Image3D)
+		{
+			auto image3D = image->As<Image3D>();
+			m_format = image3D->GetFormat();
+			m_imageUsage = image3D->GetUsage();
+			m_imageAspect = ImageAspect::Color;
+			m_isSwapchainImage = false;
+		}
 
-		VkImageAspectFlags aspectMask = Utility::IsDepthFormat(format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		if (Utility::IsStencilFormat(format))
+		VkImageAspectFlags aspectMask = Utility::IsDepthFormat(m_format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		if (Utility::IsStencilFormat(m_format))
 		{
 			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		}
@@ -30,7 +46,7 @@ namespace Volt::RHI
 		VkImageViewCreateInfo viewInfo{};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		viewInfo.viewType = Utility::VoltToVulkanViewType(specification.viewType);
-		viewInfo.format = Utility::VoltToVulkanFormat(specification.image->GetFormat());
+		viewInfo.format = Utility::VoltToVulkanFormat(m_format);
 		viewInfo.flags = 0;
 		viewInfo.subresourceRange = {};
 		viewInfo.subresourceRange.aspectMask = aspectMask;
@@ -57,12 +73,12 @@ namespace Volt::RHI
 
 	const PixelFormat VulkanImageView::GetFormat() const
 	{
-		return m_specification.image->GetFormat();
+		return m_format;
 	}
 
 	const ImageAspect VulkanImageView::GetImageAspect() const
 	{
-		return m_specification.image->GetImageAspect();
+		return m_imageAspect;
 	}
 
 	const uint64_t VulkanImageView::GetDeviceAddress() const
@@ -72,7 +88,7 @@ namespace Volt::RHI
 
 	const ImageUsage VulkanImageView::GetImageUsage() const
 	{
-		return m_specification.image->GetUsage();
+		return m_imageUsage;
 	}
 
 	const ImageViewType VulkanImageView::GetViewType() const
@@ -82,7 +98,7 @@ namespace Volt::RHI
 
 	const bool VulkanImageView::IsSwapchainView() const
 	{
-		return m_specification.image->IsSwapchainImage();
+		return m_isSwapchainImage;
 	}
 
 	void* VulkanImageView::GetHandleImpl() const

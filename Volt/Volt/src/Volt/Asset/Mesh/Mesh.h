@@ -13,6 +13,7 @@
 #include "Volt/Rendering/GPUScene.h"
 
 #include <VoltRHI/Buffers/StorageBuffer.h>
+#include <CoreUtilities/Containers/Map.h>
 
 namespace Volt
 {
@@ -88,6 +89,7 @@ namespace Volt
 		inline const Vector<GPUMesh>& GetGPUMeshes() const { return m_gpuMeshes; }
 
 		inline const BoundingSphere& GetSubMeshBoundingSphere(const uint32_t index) const { return m_subMeshBoundingSpheres.at(index);  }
+		inline const BoundingBox& GetSubMeshBoundingBox(const uint32_t index) const { return m_subMeshBoundingBoxes.at(index);  }
 
 		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
 		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexMaterialBuffer() const { return m_vertexMaterialBuffer; }
@@ -131,6 +133,8 @@ namespace Volt
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexBoneInfluencesBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexBoneWeightsBuffer;
 
+		BindlessResourceRef<RHI::StorageBuffer> m_sdfDataBuffer;
+
 		BindlessResourceRef<RHI::StorageBuffer> m_meshletsBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_meshletDataBuffer;
 
@@ -142,7 +146,7 @@ namespace Volt
 		Vector<GPUMesh> m_gpuMeshes;
 
 		glm::vec3 m_averageScale{ 1.f };
-		std::map<uint32_t, BoundingSphere> m_subMeshBoundingSpheres;
-
+		vt::map<uint32_t, BoundingSphere> m_subMeshBoundingSpheres;
+		vt::map<uint32_t, BoundingBox> m_subMeshBoundingBoxes;
 	};
 }

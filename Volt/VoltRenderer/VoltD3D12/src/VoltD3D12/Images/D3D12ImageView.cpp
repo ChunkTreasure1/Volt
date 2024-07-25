@@ -2,6 +2,7 @@
 #include "D3D12ImageView.h"
 
 #include "VoltRHI/Images/ImageUtility.h"
+#include "VoltRHI/Images/Image3D.h"
 #include "VoltD3D12/Images/D3D12Image2D.h"
 
 #include "VoltD3D12/Descriptors/DescriptorUtility.h"
@@ -16,21 +17,36 @@ namespace Volt::RHI
 	D3D12ImageView::D3D12ImageView(const ImageViewSpecification specification) 
 		: m_specification(specification)
 	{
-		auto image = specification.image->As<D3D12Image2D>();
-		const auto imageUsage = image->GetUsage();
+		auto image = specification.image;
+		if (image->GetType() == ResourceType::Image2D)
+		{
+			auto image2D = image->As<Image2D>();
+			m_format = image2D->GetFormat();
+			m_imageUsage = image2D->GetUsage();
+			m_imageAspect = image2D->GetImageAspect();
+			m_isSwapchainImage = image2D->IsSwapchainImage();
+		}
+		else if (image->GetType() == ResourceType::Image3D)
+		{
+			auto image3D = image->As<Image3D>();
+			m_format = image3D->GetFormat();
+			m_imageUsage = image3D->GetUsage();
+			m_imageAspect = ImageAspect::Color;
+			m_isSwapchainImage = false;
+		}
 
 		m_viewUsage = D3D12ViewType::None;
 
-		if (imageUsage == ImageUsage::Attachment)
+		if (m_imageUsage == ImageUsage::Attachment)
 		{
 			CreateRTVDSV();
 		}
-		else if (imageUsage == ImageUsage::AttachmentStorage)	
+		else if (m_imageUsage == ImageUsage::AttachmentStorage)
 		{
 			CreateRTVDSV();
 			CreateUAV();
 		}
-		else if (imageUsage == ImageUsage::Storage)
+		else if (m_imageUsage == ImageUsage::Storage)
 		{
 			CreateUAV();
 		}
@@ -61,7 +77,7 @@ namespace Volt::RHI
 
 	const ImageAspect D3D12ImageView::GetImageAspect() const
 	{
-		return m_specification.image->GetImageAspect();
+		return m_imageAspect;
 	}
 
 	const uint64_t D3D12ImageView::GetDeviceAddress() const
@@ -71,7 +87,7 @@ namespace Volt::RHI
 
 	const ImageUsage D3D12ImageView::GetImageUsage() const
 	{
-		return m_specification.image->GetUsage();
+		return m_imageUsage;
 	}
 
 	const ImageViewType D3D12ImageView::GetViewType() const
@@ -86,14 +102,13 @@ namespace Volt::RHI
 
 	void D3D12ImageView::CreateRTVDSV()
 	{
-		const auto format = m_specification.image->GetFormat();
 		auto* devicePtr = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
 		auto* resourcePtr = m_specification.image->GetHandle<ID3D12Resource*>();
 
-		if (Utility::IsDepthFormat(format))
+		if (Utility::IsDepthFormat(m_format))
 		{
 			D3D12_DEPTH_STENCIL_VIEW_DESC viewDesc{};
-			const auto d3d12Format = ConvertFormatToD3D12Format(format);
+			const auto d3d12Format = ConvertFormatToD3D12Format(m_format);
 			const bool isTypeless = Utility::IsFormatTypeless(d3d12Format);
 
 			if (isTypeless)
@@ -130,7 +145,7 @@ namespace Volt::RHI
 
 			if (m_specification.viewType == ImageViewType::View2D)
 			{
-				viewDesc.Format = ConvertFormatToD3D12Format(format);
+				viewDesc.Format = ConvertFormatToD3D12Format(m_format);
 				viewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 				viewDesc.Texture2D.MipSlice = m_specification.baseMipLevel;
 				viewDesc.Texture2D.PlaneSlice = m_specification.baseArrayLayer;
@@ -145,14 +160,13 @@ namespace Volt::RHI
 
 	void D3D12ImageView::CreateSRV()
 	{
-		const auto format = m_specification.image->GetFormat();
 		auto* devicePtr = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
 		auto* resourcePtr = m_specification.image->GetHandle<ID3D12Resource*>();
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc{};
 		viewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-		const auto d3d12Format = ConvertFormatToD3D12Format(format);
+		const auto d3d12Format = ConvertFormatToD3D12Format(m_format);
 		const bool isTypeless = Utility::IsFormatTypeless(d3d12Format);
 
 		if (isTypeless)
@@ -202,13 +216,12 @@ namespace Volt::RHI
 			return;
 		}
 
-		const auto format = m_specification.image->GetFormat();
 		auto* devicePtr = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
 		auto* resourcePtr = m_specification.image->GetHandle<ID3D12Resource*>();
 
 		D3D12_UNORDERED_ACCESS_VIEW_DESC viewDesc{};
 
-		const auto d3d12Format = ConvertFormatToD3D12Format(format);
+		const auto d3d12Format = ConvertFormatToD3D12Format(m_format);
 		const bool isTypeless = Utility::IsFormatTypeless(d3d12Format);
 
 		if (isTypeless)

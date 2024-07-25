@@ -3,6 +3,8 @@
 #include "VoltVulkan/Core.h"
 #include <VoltRHI/Images/Image2D.h>
 
+#include <CoreUtilities/Containers/Map.h>
+
 struct VkImage_T;
 
 namespace Volt::RHI
@@ -13,8 +15,6 @@ namespace Volt::RHI
 	class VulkanImage2D final : public Image2D
 	{
 	public:
-		using ImageLayoutInt = uint32_t;
-
 		VulkanImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator);
 		VulkanImage2D(const SwapchainImageSpecification& specification);
 		~VulkanImage2D() override;
@@ -67,7 +67,7 @@ namespace Volt::RHI
 
 		ImageAspect m_imageAspect = ImageAspect::None;
 
-		std::map<int32_t, std::map<int32_t, RefPtr<ImageView>>> m_imageViews; // Layer -> Mip -> View
-		std::map<int32_t, RefPtr<ImageView>> m_arrayImageViews;
+		vt::map<int32_t, vt::map<int32_t, RefPtr<ImageView>>> m_imageViews; // Layer -> Mip -> View
+		vt::map<int32_t, RefPtr<ImageView>> m_arrayImageViews;
 	};
 }

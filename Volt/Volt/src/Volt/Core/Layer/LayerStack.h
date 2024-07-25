@@ -2,7 +2,7 @@
 
 #include "Volt/Core/Base.h"
 
-#include <vector>
+
 
 namespace Volt
 {

@@ -82,17 +82,18 @@ struct GPUMesh
     TypedBuffer<float> vertexBoneWeightsBuffer; // Should be packed
     TypedBuffer<uint> meshletDataBuffer;
     TypedBuffer<Meshlet> meshletsBuffer;
-    uint padding;
+    TypedBuffer<float> sdfBuffer;
     
     BoundingSphere boundingSphere;
 
+    uint sdfStartOffset;
     uint vertexStartOffset;
     uint meshletCount;
     uint meshletStartOffset;
     uint meshletIndexStartOffset;
 };
 
-struct ObjectDrawData
+struct PrimitiveDrawData
 {
     Transform transform;
 
@@ -109,6 +110,6 @@ struct GPUScene
 {
     UniformTypedBuffer<GPUMesh> meshesBuffer;
     UniformTypedBuffer<GPUMaterial> materialsBuffer;
-    UniformTypedBuffer<ObjectDrawData> objectDrawDataBuffer;
+    UniformTypedBuffer<PrimitiveDrawData> primitiveDrawDataBuffer;
     UniformTypedBuffer<float4x4> bonesBuffer;
 };

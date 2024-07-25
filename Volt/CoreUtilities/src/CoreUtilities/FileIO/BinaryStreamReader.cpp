@@ -3,7 +3,7 @@
 
 #include "zlib.h"
 
-#include <vector>
+
 
 #include <CoreUtilities/Containers/Vector.h>
 

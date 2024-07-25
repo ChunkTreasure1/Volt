@@ -8,7 +8,7 @@
 #include <Volt/Events/Event.h>
 
 #include <any>
-#include <vector>
+
 #include <string>
 #include <functional>
 

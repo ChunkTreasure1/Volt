@@ -16,8 +16,7 @@ namespace Volt::RHI
 		uint32_t mipCount = 1;
 		uint32_t layerCount = 1;
 
-		//Weak<Image2D> image;
-		Image2D* image = nullptr;
+		RHIResource* image = nullptr;
 	};
 
 	class VTRHI_API ImageView : public RHIInterface

@@ -463,7 +463,7 @@ namespace Volt
 			auto& bufferData = blackboard.Add<GPUSceneData>();
 			bufferData.meshesBuffer = renderGraph.AddExternalBuffer(gpuScene.meshesBuffer);
 			bufferData.materialsBuffer = renderGraph.AddExternalBuffer(gpuScene.materialsBuffer);
-			bufferData.objectDrawDataBuffer = renderGraph.AddExternalBuffer(gpuScene.objectDrawDataBuffer);
+			bufferData.primitiveDrawDataBuffer = renderGraph.AddExternalBuffer(gpuScene.primitiveDrawDataBuffer);
 			bufferData.bonesBuffer = renderGraph.AddExternalBuffer(gpuScene.bonesBuffer);
 		}
 
@@ -1047,6 +1047,19 @@ namespace Volt
 
 			context.EndRendering();
 		});
+	}
+
+	void SceneRenderer::AddVisualizeSDFPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		renderGraph.AddPass("Visualize SDF",
+			[&](RenderGraph::Builder& builder)
+			{
+				
+			},
+			[=](RenderContext& context, const RenderGraphPassResources& resources)
+			{
+				
+			});
 	}
 
 	void SceneRenderer::CreateMainRenderTarget(const uint32_t width, const uint32_t height)

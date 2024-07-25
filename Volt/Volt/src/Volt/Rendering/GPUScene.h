@@ -19,18 +19,19 @@ namespace Volt
 		ResourceHandle vertexBoneWeightsBuffer;
 		ResourceHandle meshletDataBuffer;
 		ResourceHandle meshletsBuffer;
-		uint32_t padding;
+		ResourceHandle sdfBuffer;
 
 		glm::vec3 center;
 		float radius;
 
+		uint32_t sdfStartOffset;
 		uint32_t vertexStartOffset;
 		uint32_t meshletCount;
 		uint32_t meshletStartOffset;
 		uint32_t meshletIndexStartOffset;
 	};
 
-	struct ObjectDrawData
+	struct PrimitiveDrawData
 	{
 		glm::quat rotation;
 		glm::vec3 position;
@@ -59,7 +60,7 @@ namespace Volt
 	{
 		ResourceHandle meshesBuffer;
 		ResourceHandle materialsBuffer;
-		ResourceHandle objectDrawDataBuffer;
+		ResourceHandle primitiveDrawDataBuffer;
 		ResourceHandle meshletsBuffer;
 		ResourceHandle bonesBuffer;
 	};

@@ -2,7 +2,7 @@
 
 #include <msdf-atlas-gen.h>
 
-#include <vector>
+
 
 namespace Volt
 {

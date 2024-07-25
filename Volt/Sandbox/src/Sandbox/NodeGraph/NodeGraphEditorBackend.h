@@ -3,7 +3,7 @@
 #include <Volt/Core/UUID.h>
 #include <Volt/Asset/Asset.h>
 
-#include <vector>
+
 
 namespace NodeGraph
 {

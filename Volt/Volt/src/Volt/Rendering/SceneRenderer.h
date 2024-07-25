@@ -113,6 +113,8 @@ namespace Volt
 
 		void AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle srcImage);
 
+		void AddVisualizeSDFPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+
 		void CreateMainRenderTarget(const uint32_t width, const uint32_t height);
 
 		RefPtr<RHI::Image2D> m_outputImage;

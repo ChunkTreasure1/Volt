@@ -7,7 +7,7 @@
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/Scene.h>
 
-#include <vector>
+
 #include <variant>
 
 enum class PropertyEventType

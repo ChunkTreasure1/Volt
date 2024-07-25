@@ -33,6 +33,7 @@ namespace Volt::RHI
 
 		RefPtr<Image2D> CreateImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const override;
 		RefPtr<Image2D> CreateImage2D(const SwapchainImageSpecification& specification) const override;
+		RefPtr<Image3D> CreateImage3D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const override;
 
 		RefPtr<ImageView> CreateImageView(const ImageViewSpecification& specification) const override;
 		RefPtr<SamplerState> CreateSamplerState(const SamplerStateCreateInfo& createInfo) const override;

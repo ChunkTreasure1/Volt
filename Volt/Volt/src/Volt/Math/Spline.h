@@ -1,7 +1,7 @@
 #pragma once
 #include <Volt/Core/Base.h>
 #include <glm/glm.hpp>
-#include <vector>
+
 #include <Volt/Scene/Scene.h>
 #include "Volt/Scene/Entity.h"
 #include "Volt/Asset/AssetManager.h"

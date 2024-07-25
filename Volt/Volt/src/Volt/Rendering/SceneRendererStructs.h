@@ -52,7 +52,7 @@ namespace Volt
 	{
 		RenderGraphResourceHandle meshesBuffer;
 		RenderGraphResourceHandle materialsBuffer;
-		RenderGraphResourceHandle objectDrawDataBuffer;
+		RenderGraphResourceHandle primitiveDrawDataBuffer;
 		RenderGraphResourceHandle bonesBuffer;
 
 		static void SetupInputs(RenderGraph::Builder& builder, const GPUSceneData& data);

@@ -15,7 +15,7 @@ struct BoundingSphere
     }
 };
 
-struct AABB
+struct BoundingBox
 {
     float SquaredDistPointAABB(float3 p, float3 bmin, float3 bmax)
     {

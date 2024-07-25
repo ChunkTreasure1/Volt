@@ -2,7 +2,7 @@
 
 #include <p4/clientapi.h>
 
-#include <vector>
+
 #include <string>
 
 class StreamsClientUser : public ClientUser

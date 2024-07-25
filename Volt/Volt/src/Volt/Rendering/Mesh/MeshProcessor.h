@@ -6,7 +6,7 @@
 #include "Volt/Rendering/Vertex.h"
 #include "Volt/Rendering/Mesh/MeshCommon.h"
 
-#include <vector>
+
 
 namespace Volt
 {

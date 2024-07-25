@@ -31,7 +31,7 @@ void main(uint3 threadId : SV_DispatchThreadID)
         return;
     }
 
-    const ObjectDrawData objectData = constants.gpuScene.objectDrawDataBuffer.Load(pixelValue.x);
+    const PrimitiveDrawData objectData = constants.gpuScene.primitiveDrawDataBuffer.Load(pixelValue.x);
     if (objectData.materialId == UINT32_MAX)
     {
         return;

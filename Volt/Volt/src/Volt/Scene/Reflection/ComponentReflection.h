@@ -11,7 +11,7 @@
 #include <CoreUtilities/VoltGUID.h>
 
 #include <typeindex>
-#include <vector>
+
 
 #define DECLARE_ARRAY_TYPE(type)											\
 namespace Volt																\

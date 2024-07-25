@@ -8,7 +8,7 @@
 
 #include <CoreUtilities/StringHash.h>
 
-#include <vector>
+
 #include <filesystem>
 #include <map>
 #include <set>

@@ -3,7 +3,7 @@
 #include "VoltD3D12/Descriptors/DescriptorCommon.h"
 #include "VoltD3D12/Common/ComPtr.h"
 
-#include <vector>
+
 
 struct ID3D12DescriptorHeap;
 

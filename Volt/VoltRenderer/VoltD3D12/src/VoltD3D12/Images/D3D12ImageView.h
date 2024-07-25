@@ -35,5 +35,10 @@ namespace Volt::RHI
 		D3D12DescriptorPointer m_rtvDsvDescriptor;
 		D3D12DescriptorPointer m_srvDescriptor;
 		D3D12DescriptorPointer m_uavDescriptor;
+
+		PixelFormat m_format;
+		ImageAspect m_imageAspect;
+		ImageUsage m_imageUsage;
+		bool m_isSwapchainImage;
 	};
 }

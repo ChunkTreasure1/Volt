@@ -2,7 +2,7 @@
 
 #include <Volt/Core/UUID.h>
 
-#include <vector>
+
 #include <functional>
 
 namespace GraphKey

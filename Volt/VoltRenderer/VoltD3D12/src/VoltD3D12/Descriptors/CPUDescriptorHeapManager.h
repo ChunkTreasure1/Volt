@@ -4,7 +4,7 @@
 
 #include <CoreUtilities/Core.h>
 
-#include <vector>
+
 
 namespace Volt::RHI
 {

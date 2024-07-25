@@ -5,7 +5,7 @@
 #include "CoreUtilities/Containers/Vector.h"
 
 #include <fstream>
-#include <vector>
+
 #include <array>
 #include <string>
 #include <map>

@@ -2,7 +2,7 @@
 
 #include "Volt/Rendering/RenderGraph/RenderGraph.h"
 
-#include <vector>
+
 #include <atomic>
 
 namespace Volt

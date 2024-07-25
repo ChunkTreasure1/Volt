@@ -19,7 +19,7 @@ void MainMS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID,
     const Constants constants = GetConstants<Constants>();
     const ViewData viewData = constants.viewData.Load();
 
-    const ObjectDrawData drawData = constants.gpuScene.objectDrawDataBuffer.Load(payload.drawId);    
+    const PrimitiveDrawData drawData = constants.gpuScene.primitiveDrawDataBuffer.Load(payload.drawId);    
     const GPUMesh mesh = constants.gpuScene.meshesBuffer.Load(drawData.meshId);
 
     uint meshletIndex = payload.meshletIndices[groupId];

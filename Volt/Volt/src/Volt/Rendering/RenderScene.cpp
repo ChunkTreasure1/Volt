@@ -28,7 +28,7 @@ namespace Volt
 	{
 		m_gpuMeshesBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(GPUMesh), "GPU Meshes", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 		m_gpuMaterialsBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(GPUMaterial), "GPU Materials", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
-		m_objectDrawDataBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(ObjectDrawData), "Object Draw Data", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
+		m_primitiveDrawDataBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(PrimitiveDrawData), "Object Draw Data", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 		m_gpuBonesBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(glm::mat4), "GPU Bones", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 
 		m_materialChangedCallbackID = AssetManager::RegisterAssetChangedCallback(AssetType::Material, [&](AssetHandle handle, AssetChangedState state) 
@@ -137,21 +137,21 @@ namespace Volt
 
 		BuildGPUMeshes(m_gpuMeshes);
 
-		m_objectDrawData.clear();
-		BuildObjectDrawData(m_objectDrawData);
+		m_primitiveDrawData.clear();
+		BuildPrimitiveDrawData(m_primitiveDrawData);
 		
 		m_currentBoneCount = 0;
 		for (const auto& animatedObject : m_animatedRenderObjects)
 		{
-			auto& objectDrawData = m_objectDrawData.at(m_objectIndexFromRenderObjectID.at(animatedObject));
-			objectDrawData.boneOffset = m_currentBoneCount;
+			auto& primitiveDrawData = m_primitiveDrawData.at(m_objectIndexFromRenderObjectID.at(animatedObject));
+			primitiveDrawData.boneOffset = m_currentBoneCount;
 		
 			const auto& renderObject = GetRenderObjectFromID(animatedObject);
 			m_currentBoneCount += static_cast<uint32_t>(renderObject.motionWeaver->GetSkeleton()->GetJointCount());
 		}
 		
 		UploadGPUMeshes(m_gpuMeshes);
-		UploadObjectDrawData(m_objectDrawData);
+		UploadPrimitiveDrawData(m_primitiveDrawData);
 		UploadGPUMaterials();
 	}
 
@@ -169,16 +169,16 @@ namespace Volt
 
 		if (!m_invalidRenderObjectIndices.empty())
 		{
-			ScatteredBufferUpload<ObjectDrawData> bufferUpload{ m_invalidRenderObjectIndices.size() };
+			ScatteredBufferUpload<PrimitiveDrawData> bufferUpload{ m_invalidRenderObjectIndices.size() };
 
 			for (const auto& invalidObjectIndex : m_invalidRenderObjectIndices)
 			{
 				const auto& renderObject = GetRenderObjectAt(invalidObjectIndex);
 				auto& data = bufferUpload.AddUploadItem(invalidObjectIndex);
-				BuildSinlgeObjectDrawData(data, renderObject);
+				BuildSinlgePrimitiveDrawData(data, renderObject);
 			}
 
-			bufferUpload.UploadTo(renderGraph, *m_objectDrawDataBuffer);
+			bufferUpload.UploadTo(renderGraph, *m_primitiveDrawDataBuffer);
 			m_invalidRenderObjectIndices.clear();
 		}
 
@@ -230,11 +230,11 @@ namespace Volt
 		m_animationBufferStorage.resize(m_currentBoneCount);
 		for (const auto& animatedObject : m_animatedRenderObjects)
 		{
-			const auto& objectDrawData = m_objectDrawData.at(m_objectIndexFromRenderObjectID.at(animatedObject));
+			const auto& primitiveDrawData = m_primitiveDrawData.at(m_objectIndexFromRenderObjectID.at(animatedObject));
 			const auto& renderObject = GetRenderObjectFromID(animatedObject);
 		
 			const auto sample = renderObject.motionWeaver->Sample();
-			memcpy_s(m_animationBufferStorage.data() + objectDrawData.boneOffset, sizeof(glm::mat4) * sample.size(), sample.data(), sizeof(glm::mat4) * sample.size());
+			memcpy_s(m_animationBufferStorage.data() + primitiveDrawData.boneOffset, sizeof(glm::mat4) * sample.size(), sample.data(), sizeof(glm::mat4) * sample.size());
 		}
 
 		if (m_currentBoneCount > 0)
@@ -386,7 +386,7 @@ namespace Volt
 		GPUSceneBuffers gpuScene{};
 		gpuScene.meshesBuffer = GetGPUMeshesBuffer().GetResource();
 		gpuScene.materialsBuffer = GetGPUMaterialsBuffer().GetResource();
-		gpuScene.objectDrawDataBuffer = GetObjectDrawDataBuffer().GetResource();
+		gpuScene.primitiveDrawDataBuffer = GetPrimitiveDrawDataBuffer().GetResource();
 		gpuScene.bonesBuffer = m_gpuBonesBuffer->GetResource();
 		return gpuScene;
 	}
@@ -417,15 +417,15 @@ namespace Volt
 		m_gpuMeshesBuffer->GetResource()->SetData(gpuMeshes.data(), sizeof(GPUMesh) * gpuMeshes.size());
 	}
 
-	void RenderScene::UploadObjectDrawData(Vector<ObjectDrawData>& objectDrawData)
+	void RenderScene::UploadPrimitiveDrawData(Vector<PrimitiveDrawData>& primitiveDrawData)
 	{
-		if (m_objectDrawDataBuffer->GetResource()->GetCount() < static_cast<uint32_t>(objectDrawData.size()))
+		if (m_primitiveDrawDataBuffer->GetResource()->GetCount() < static_cast<uint32_t>(primitiveDrawData.size()))
 		{
-			m_objectDrawDataBuffer->GetResource()->ResizeWithCount(static_cast<uint32_t>(objectDrawData.size()));
-			m_objectDrawDataBuffer->MarkAsDirty();
+			m_primitiveDrawDataBuffer->GetResource()->ResizeWithCount(static_cast<uint32_t>(primitiveDrawData.size()));
+			m_primitiveDrawDataBuffer->MarkAsDirty();
 		}
 
-		m_objectDrawDataBuffer->GetResource()->SetData(objectDrawData.data(), sizeof(ObjectDrawData) * objectDrawData.size());
+		m_primitiveDrawDataBuffer->GetResource()->SetData(primitiveDrawData.data(), sizeof(PrimitiveDrawData) * primitiveDrawData.size());
 	}
 
 	void RenderScene::UploadGPUMaterials()
@@ -491,18 +491,18 @@ namespace Volt
 		}
 	}
 
-	void RenderScene::BuildObjectDrawData(Vector<ObjectDrawData>& objectDrawData)
+	void RenderScene::BuildPrimitiveDrawData(Vector<PrimitiveDrawData>& primitiveDrawData)
 	{
 		m_objectIndexFromRenderObjectID.clear();
 
 		for (const auto& renderObject : m_renderObjects)
 		{
-			BuildSinlgeObjectDrawData(objectDrawData.emplace_back(), renderObject);
-			m_objectIndexFromRenderObjectID[renderObject.id] = static_cast<uint32_t>(objectDrawData.size() - 1);
+			BuildSinlgePrimitiveDrawData(primitiveDrawData.emplace_back(), renderObject);
+			m_objectIndexFromRenderObjectID[renderObject.id] = static_cast<uint32_t>(primitiveDrawData.size() - 1);
 		}
 	}
 
-	void RenderScene::BuildSinlgeObjectDrawData(ObjectDrawData& objectDrawData, const RenderObject& renderObject)
+	void RenderScene::BuildSinlgePrimitiveDrawData(PrimitiveDrawData& primitiveDrawData, const RenderObject& renderObject)
 	{
 		Entity entity = m_scene->GetEntityFromUUID(renderObject.entity);
 		if (!entity)
@@ -513,14 +513,14 @@ namespace Volt
 		const size_t hash = Math::HashCombine(renderObject.mesh.GetHash(), std::hash<uint32_t>()(renderObject.subMeshIndex));
 		const uint32_t meshId = m_meshSubMeshToGPUMeshIndex.contains(hash) ? m_meshSubMeshToGPUMeshIndex.at(hash) : std::numeric_limits<uint32_t>::max();
 
-		objectDrawData.position = entity.GetPosition();
-		objectDrawData.scale = entity.GetScale();
-		objectDrawData.rotation = entity.GetRotation();
-		objectDrawData.meshId = meshId;
-		objectDrawData.entityId = entity.GetID();
-		objectDrawData.materialId = GetMaterialIndex(renderObject.material);
-		objectDrawData.meshletStartOffset = renderObject.meshletStartOffset;
-		objectDrawData.isAnimated = renderObject.IsAnimated();
+		primitiveDrawData.position = entity.GetPosition();
+		primitiveDrawData.scale = entity.GetScale();
+		primitiveDrawData.rotation = entity.GetRotation();
+		primitiveDrawData.meshId = meshId;
+		primitiveDrawData.entityId = entity.GetID();
+		primitiveDrawData.materialId = GetMaterialIndex(renderObject.material);
+		primitiveDrawData.meshletStartOffset = renderObject.meshletStartOffset;
+		primitiveDrawData.isAnimated = renderObject.IsAnimated();
 
 		m_currentMeshletCount += m_gpuMeshes.at(meshId).meshletCount;
 	}

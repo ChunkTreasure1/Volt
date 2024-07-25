@@ -7,6 +7,8 @@
 #include "Volt/Math/Math.h"
 #include "Volt/Utility/Algorithms.h"
 
+#include "Volt/SDF/SDFGenerator.h"
+
 #include <VoltRHI/Buffers/VertexBuffer.h>
 #include <VoltRHI/Buffers/IndexBuffer.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
@@ -235,8 +237,8 @@ namespace Volt
 
 		for (size_t i = 0; i < perThreadMeshlets.size(); i++)
 		{
-			m_meshlets.insert(m_meshlets.end(), perThreadMeshlets.at(i).begin(), perThreadMeshlets.at(i).end());
-			m_meshletData.insert(m_meshletData.end(), perThreadMeshletData.at(i).begin(), perThreadMeshletData.at(i).end());
+			m_meshlets.append(perThreadMeshlets.at(i));
+			m_meshletData.append(perThreadMeshletData.at(i));
 		}
 
 		const std::string meshName = !assetName.empty() ? " - " + assetName : "";
@@ -344,8 +346,53 @@ namespace Volt
 			Vector<glm::vec3> subMeshVertices;
 			subMeshVertices.insert(subMeshVertices.end(), std::next(m_vertexContainer.positions.begin(), subMesh.vertexStartOffset), std::next(m_vertexContainer.positions.begin(), subMesh.vertexStartOffset + subMesh.vertexCount));
 
+			// Find bounding box
+			{
+				glm::vec3 t, r, s;
+				Math::Decompose(subMesh.transform, t, r, s);
+			
+				glm::vec3 subMin = { FLT_MAX, FLT_MAX, FLT_MAX };
+				glm::vec3 subMax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+				for (const auto& vp : subMeshVertices)
+				{
+					subMin = glm::min(subMin, vp);
+					subMax = glm::max(subMax, vp);
+				}
+
+				m_subMeshBoundingBoxes[i] = BoundingBox{ subMax, subMin };
+			}
+
 			m_subMeshBoundingSpheres[i] = GetBoundingSphereFromVertices(subMeshVertices);
 			i++;
+		}
+
+		// Create SDF data
+		SDFGenerator sdfGenerator{};
+		auto res = sdfGenerator.Generate(*this);
+		Vector<uint32_t> sdfOffsets(res.size());
+		
+		{		
+			size_t totalSDFDataCount = 0;
+
+			for (const auto& sdf : res)
+			{
+				totalSDFDataCount += sdf.sdf.size();
+			}
+
+			Vector<float> totalSDFData;
+			totalSDFData.reserve(totalSDFDataCount);
+
+			for (uint32_t i = 0; const auto& sdf : res)
+			{
+				sdfOffsets[i] = static_cast<uint32_t>(totalSDFData.size());
+				totalSDFData.append(sdf.sdf);
+
+				i++;
+			}
+
+			m_sdfDataBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(totalSDFData.size()), sizeof(float), "SDF Data Buffer" + meshName);
+			m_sdfDataBuffer->GetResource()->SetData(totalSDFData.data(), totalSDFData.size() * sizeof(float));
 		}
 
 		// Create GPU Meshes
@@ -363,6 +410,11 @@ namespace Volt
 			gpuMesh.vertexBoneInfluencesBuffer = m_vertexBoneInfluencesBuffer ? m_vertexBoneInfluencesBuffer->GetResourceHandle() : Resource::Invalid;
 			gpuMesh.meshletsBuffer = m_meshletsBuffer->GetResourceHandle();
 			gpuMesh.meshletDataBuffer = m_meshletDataBuffer->GetResourceHandle();
+			
+			gpuMesh.sdfBuffer = m_sdfDataBuffer->GetResourceHandle();
+			gpuMesh.sdfStartOffset = sdfOffsets[i];
+			
+			
 			gpuMesh.center = subMesh.transform * glm::vec4(m_subMeshBoundingSpheres.at(i).center, 1.f);
 
 			glm::vec3 t, r, s;
@@ -372,6 +424,7 @@ namespace Volt
 
 			i++;
 		}
+
 	}
 
 	void Mesh::SetMaterial(Ref<Material> material, uint32_t index)

@@ -4,7 +4,7 @@
 #include <CoreUtilities/FileIO/BinaryStreamReader.h>
 
 #include <string>
-#include <vector>
+
 
 namespace Volt::RHI
 {

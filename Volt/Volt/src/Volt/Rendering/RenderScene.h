@@ -26,7 +26,7 @@ namespace Volt
 	{
 		RefPtr<RHI::StorageBuffer> meshesBuffer;
 		RefPtr<RHI::StorageBuffer> materialsBuffer;
-		RefPtr<RHI::StorageBuffer> objectDrawDataBuffer;
+		RefPtr<RHI::StorageBuffer> primitiveDrawDataBuffer;
 		RefPtr<RHI::StorageBuffer> bonesBuffer;
 	};
 
@@ -54,7 +54,7 @@ namespace Volt
 		inline const uint32_t GetIndividualMaterialCount() const { return static_cast<uint32_t>(m_individualMaterials.size()); }
 		inline const uint32_t GetIndexCount() const { return m_currentIndexCount; }
 		inline const uint32_t GetMeshletCount() const { return m_currentMeshletCount; }
-		inline const uint32_t GetDrawCount() const { return static_cast<uint32_t>(m_objectDrawData.size()); }
+		inline const uint32_t GetDrawCount() const { return static_cast<uint32_t>(m_primitiveDrawData.size()); }
 
 		Weak<Material> GetMaterialFromID(const uint32_t materialId) const;
 
@@ -66,7 +66,7 @@ namespace Volt
 
 		inline const BindlessResource<RHI::StorageBuffer>& GetGPUMeshesBuffer() const { return *m_gpuMeshesBuffer; }
 		inline const BindlessResource<RHI::StorageBuffer>& GetGPUMaterialsBuffer() const { return *m_gpuMaterialsBuffer; }
-		inline const BindlessResource<RHI::StorageBuffer>& GetObjectDrawDataBuffer() const { return *m_objectDrawDataBuffer; }
+		inline const BindlessResource<RHI::StorageBuffer>& GetPrimitiveDrawDataBuffer() const { return *m_primitiveDrawDataBuffer; }
 
 		Vector<RenderObject>::iterator begin() { return m_renderObjects.begin(); }
 		Vector<RenderObject>::iterator end() { return m_renderObjects.end(); }
@@ -78,24 +78,24 @@ namespace Volt
 		const RenderObject& GetRenderObjectFromID(UUID64 id) const;
 
 		inline std::span<const GPUMesh> GetGPUMeshes() const { return m_gpuMeshes; }
-		inline std::span<const ObjectDrawData> GetObjectDrawData() const { return m_objectDrawData; }
+		inline std::span<const PrimitiveDrawData> GetPrimitiveDrawData() const { return m_primitiveDrawData; }
 	private:
 		void UploadGPUMeshes(Vector<GPUMesh>& gpuMeshes);
-		void UploadObjectDrawData(Vector<ObjectDrawData>& objectDrawData);
+		void UploadPrimitiveDrawData(Vector<PrimitiveDrawData>& primitiveDrawData);
 
 		void UploadGPUMaterials();
 		void BuildGPUMaterial(Weak<Material> material, GPUMaterial& gpuMaterial);
 
 		void BuildGPUMeshes(Vector<GPUMesh>& gpuMeshes);
 
-		void BuildObjectDrawData(Vector<ObjectDrawData>& objectDrawData);
-		void BuildSinlgeObjectDrawData(ObjectDrawData& objectDrawData, const RenderObject& renderObject);
+		void BuildPrimitiveDrawData(Vector<PrimitiveDrawData>& primitiveDrawData);
+		void BuildSinlgePrimitiveDrawData(PrimitiveDrawData& primitiveDrawData, const RenderObject& renderObject);
 
 		Vector<UUID64> m_animatedRenderObjects;
 		Vector<RenderObject> m_renderObjects;
 
 		Vector<GPUMesh> m_gpuMeshes;
-		Vector<ObjectDrawData> m_objectDrawData;
+		Vector<PrimitiveDrawData> m_primitiveDrawData;
 
 		Vector<size_t> m_invalidRenderObjectIndices;
 
@@ -127,7 +127,7 @@ namespace Volt
 
 		BindlessResourceScope<RHI::StorageBuffer> m_gpuMeshesBuffer;
 		BindlessResourceScope<RHI::StorageBuffer> m_gpuMaterialsBuffer;
-		BindlessResourceScope<RHI::StorageBuffer> m_objectDrawDataBuffer;
+		BindlessResourceScope<RHI::StorageBuffer> m_primitiveDrawDataBuffer;
 		BindlessResourceScope<RHI::StorageBuffer> m_gpuBonesBuffer;
 
 		Scene* m_scene = nullptr;

@@ -18,6 +18,7 @@
 #include "VoltVulkan/Graphics/VulkanSwapchain.h"
 
 #include "VoltVulkan/Images/VulkanImage2D.h"
+#include "VoltVulkan/Images/VulkanImage3D.h"
 #include "VoltVulkan/Images/VulkanImageView.h"
 #include "VoltVulkan/Images/VulkanSamplerState.h"
 
@@ -117,6 +118,11 @@ namespace Volt::RHI
 	RefPtr<Image2D> VulkanRHIProxy::CreateImage2D(const SwapchainImageSpecification& specification) const
 	{
 		return RefPtr<VulkanImage2D>::Create(specification);
+	}
+
+	RefPtr<Image3D> VulkanRHIProxy::CreateImage3D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const
+	{
+		return RefPtr<VulkanImage3D>::Create(specification, data, allocator);
 	}
 
 	RefPtr<ImageView> VulkanRHIProxy::CreateImageView(const ImageViewSpecification& specification) const
