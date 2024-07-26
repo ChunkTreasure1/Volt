@@ -358,7 +358,7 @@ namespace Volt
 		StackVector<WeakPtr<RHI::StorageBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT> buffers{};
 		for (const auto& buffer : vertexBuffers)
 		{
-			buffers.Emplace() = m_renderGraph->GetBufferRaw(buffer);
+			buffers.EmplaceBack() = m_renderGraph->GetBufferRaw(buffer);
 		}
 
 		m_commandBuffer->BindVertexBuffers(buffers, firstBinding);

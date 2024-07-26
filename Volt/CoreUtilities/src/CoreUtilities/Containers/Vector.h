@@ -10,8 +10,6 @@
 #include <initializer_list>
 #include <iterator>
 
-
-
 template<typename T>
 class Vector
 {
@@ -467,7 +465,7 @@ inline constexpr void Vector<T>::set_capacity(size_type count)
 	{
 		value_type* const newData = Reallocate(count, m_ptrBegin, m_ptrEnd, ShouldMoveTag());
 		Destruct(m_ptrBegin, m_ptrEnd);
-		Internal::Free(m_ptrBegin, static_cast<size_type>(m_ptrCapacity - m_ptrBegin));
+		Internal::Free(m_ptrBegin);
 
 		const ptrdiff_t prevCount = m_ptrEnd - m_ptrBegin;
 		m_ptrBegin = newData;

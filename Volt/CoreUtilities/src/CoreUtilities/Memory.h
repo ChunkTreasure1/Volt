@@ -14,14 +14,24 @@ namespace Internal
 		return reinterpret_cast<T*>(&const_cast<char&>(reinterpret_cast<const volatile char&>(value)));
 	}
 
-	inline void* Allocate(size_t size, size_t alignment)
+	VT_INLINE VT_NODISCARD void* Allocate(size_t size, size_t alignment)
 	{
 		return HeapAllocator::AllocateUninitialized(size, alignment);
 	}
 
-	inline void Free(void* ptr)
+	VT_INLINE void Free(void* ptr)
 	{
 		HeapAllocator::FreeUninitialized(ptr);
+	}
+
+	VT_INLINE VT_NODISCARD void* StackAllocate(size_t size)
+	{
+		return VT_STACK_ALLOCATE(size);
+	}
+
+	VT_INLINE void StackFree(void* ptr)
+	{
+		VT_STACK_FREE(ptr);
 	}
 }
 

@@ -641,7 +641,7 @@ namespace Volt::RHI
 
 		for (const auto& buffer : vertexBuffers)
 		{
-			auto& newView = views.Emplace();
+			auto& newView = views.EmplaceBack();
 			newView.BufferLocation = buffer->GetHandle<ID3D12Resource*>()->GetGPUVirtualAddress();
 			newView.SizeInBytes = static_cast<uint32_t>(buffer->GetByteSize());
 			newView.StrideInBytes = buffer->GetStride();
@@ -659,7 +659,7 @@ namespace Volt::RHI
 
 		for (const auto& buffer : vertexBuffers)
 		{
-			auto& newView = views.Emplace();
+			auto& newView = views.EmplaceBack();
 			newView.BufferLocation = buffer->GetHandle<ID3D12Resource*>()->GetGPUVirtualAddress();
 			newView.SizeInBytes = static_cast<uint32_t>(buffer->GetByteSize());
 			newView.StrideInBytes = static_cast<uint32_t>(buffer->GetElementSize());

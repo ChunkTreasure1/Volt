@@ -49,3 +49,11 @@ inline void VTBaseUnused(const volatile T& x) { (void)x; }
 #else
 	#error "Not defined!"
 #endif
+
+// malloca
+#ifdef VT_PLATFORM_WINDOWS
+	#define VT_STACK_ALLOCATE(x) _malloca(x)
+	#define VT_STACK_FREE(x) _freea(x)
+#else
+	#error "Not defined!"
+#endif

@@ -632,8 +632,8 @@ namespace Volt::RHI
 
 		for (size_t i = 0; i < vertexBuffers.Size(); i++)
 		{
-			vkBuffers.Emplace() = vertexBuffers[i]->GetHandle<VkBuffer>();
-			offsets.Emplace(0u);
+			vkBuffers.EmplaceBack() = vertexBuffers[i]->GetHandle<VkBuffer>();
+			offsets.EmplaceBack(0u);
 		}
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
@@ -651,8 +651,8 @@ namespace Volt::RHI
 
 		for (size_t i = 0; i < vertexBuffers.Size(); i++)
 		{
-			vkBuffers.Emplace() = vertexBuffers[i]->GetHandle<VkBuffer>();
-			offsets.Emplace(0u);
+			vkBuffers.EmplaceBack() = vertexBuffers[i]->GetHandle<VkBuffer>();
+			offsets.EmplaceBack(0u);
 		}
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
@@ -715,7 +715,7 @@ namespace Volt::RHI
 
 		for (const auto& colorAtt : renderingInfo.colorAttachments)
 		{
-			VkRenderingAttachmentInfo& newInfo = colorAttachmentInfo.Emplace();
+			VkRenderingAttachmentInfo& newInfo = colorAttachmentInfo.EmplaceBack();
 			newInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
 			newInfo.imageView = colorAtt.view->GetHandle<VkImageView>();
 			newInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
