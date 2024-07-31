@@ -1,14 +1,13 @@
 #pragma once
 
+#include <CoreUtilities/Concepts.h>
+
 #include <queue>
 #include <set>
 #include <functional>
 
 namespace Volt
 {
-	template<typename T>
-	concept TriviallyCopyable = std::is_trivially_copyable<T>::value;
-
 	template<TriviallyCopyable T>
 	class UniqueQueue
 	{

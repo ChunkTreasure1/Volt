@@ -17,6 +17,19 @@
 // No discard
 #define VT_NODISCARD [[nodiscard]]
 
+#if defined(_MSC_VER)
+#define VT_DISABLE_WARNING(w) \
+	__pragma(warning(push)) \
+	__pragma(warning(disable:w))
+
+#define VT_RESTORE_WARNING() \
+	__pragma(warning(pop))
+
+#else
+#define VT_DISABLE_WARNING()
+#define VT_RESTORE_WARNING()
+#endif
+
 // Optimize
 #ifdef VT_ENABLE_OPTIMIZATION_TOGGLE
 	#ifdef VT_PLATFORM_WINDOWS

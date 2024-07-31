@@ -1,0 +1,9 @@
+name: "VisualizeBricks"
+internal: true
+sources:
+  - entryPoint: "MainVS"
+    shaderStage: "vs"
+    filePath: "Engine/Shaders/Source/SDF/VisualizeBricks.hlsl"
+  - entryPoint: "MainPS"
+    shaderStage: "ps"
+    filePath: "Engine/Shaders/Source/SDF/VisualizeBricks.hlsl"

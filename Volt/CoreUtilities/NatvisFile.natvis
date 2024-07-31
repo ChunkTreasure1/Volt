@@ -2,7 +2,7 @@
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
 	<Type Name="Vector&lt;*&gt;">
-		<DisplayString Condition="m_ptrEnd == m_ptrBegin">[{m_ptrEnd - m_ptrBegin}] {{}}</DisplayString>
+		<DisplayString Condition="m_ptrEnd == m_ptrBegin">[empty] {{}}</DisplayString>
 		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 1">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin} }}</DisplayString>
 		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 2">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)} }}</DisplayString>
 		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 3">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)}, {*(m_ptrBegin+2)} }}</DisplayString>
@@ -21,7 +21,7 @@
 	</Type>
 
 	<Type Name="StackVector&lt;*&gt;">
-		<DisplayString Condition="m_ptrEnd == m_ptrBegin">[{m_ptrEnd - m_ptrBegin}] {{}}</DisplayString>
+		<DisplayString Condition="m_ptrEnd == m_ptrBegin">[empty] {{}}</DisplayString>
 		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 1">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin} }}</DisplayString>
 		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 2">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)} }}</DisplayString>
 		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 3">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)}, {*(m_ptrBegin+2)} }}</DisplayString>

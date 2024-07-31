@@ -1,0 +1,6 @@
+name: "MeshSDFAllocator"
+internal: true
+sources:
+  - entryPoint: "MainCS"
+    shaderStage: "cs"
+    filePath: "Engine/Shaders/Source/SDF/MeshSDFAllocator.hlsl"

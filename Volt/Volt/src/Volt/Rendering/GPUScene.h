@@ -35,9 +35,9 @@ namespace Volt
 		glm::vec3 size;
 
 		glm::vec3 min;
-		float padding1;
 		glm::vec3 max;
-		float padding2;
+		ResourceHandle bricksBuffer;
+		uint32_t brickCount;
 	};
 
 	struct PrimitiveDrawData
@@ -63,6 +63,14 @@ namespace Volt
 
 		uint32_t meshSDFId;
 		uint32_t primtiveId;
+	};
+
+	struct GPUSDFBrick
+	{
+		glm::vec3 min;
+		glm::vec3 max;
+
+		glm::vec3 localCoord;
 	};
 
 	struct GPUMaterial

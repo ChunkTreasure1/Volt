@@ -7,8 +7,12 @@
 #include "Volt/Rendering/RenderGraph/Resources/RenderGraphTextureResource.h"
 #include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
+#include "Volt/Math/AABB.h"
 
 #include <CoreUtilities/Containers/Vector.h>
+#include <CoreUtilities/Containers/SparseBrickMap.h>
+
+#include <libacc/bvh_tree.h>
 
 namespace Volt
 {
@@ -29,145 +33,8 @@ namespace Volt
 		return result;
 	}
 
-	constexpr float RESOLUTION = 1.f; // One point equals 1cm
+	constexpr float VOXEL_SIZE = 5.f; // One point equals 5cm
 	constexpr float TRIANGLE_THICKNESS = 1.f; // 1 cm
-
-	inline float Dot2(const glm::vec3& v) { return glm::dot(v, v); }
-
-	// From https://iquilezles.org/articles/triangledistance/
-	inline float UDFTriangle(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3, const glm::vec3& p)
-	{
-		glm::vec3 v21 = v2 - v1; glm::vec3 p1 = p - v1;
-		glm::vec3 v32 = v3 - v2; glm::vec3 p2 = p - v2;
-		glm::vec3 v13 = v1 - v3; glm::vec3 p3 = p - v3;
-
-		glm::vec3 nor = glm::cross(v21, v13);
-
-		return glm::sqrt(
-			// Inside/outside test
-			(glm::sign(glm::dot(glm::cross(v21, nor), p1)) +
-			 glm::sign(glm::dot(glm::cross(v32, nor), p2)) +
-			 glm::sign(glm::dot(glm::cross(v13, nor), p3)) < 2.f)
-			?
-			// 3 edges
-			glm::min(glm::min(
-			Dot2(v21 * glm::clamp(glm::dot(v21, p1) / Dot2(v21), 0.f, 1.f) - p1),
-			Dot2(v32 * glm::clamp(glm::dot(v32, p2) / Dot2(v32), 0.f, 1.f) - p2)),
-			Dot2(v13 * glm::clamp(glm::dot(v13, p3) / Dot2(v13), 0.f, 1.f) - p3))
-			:
-			//1 face
-			glm::dot(nor, p1) * glm::dot(nor, p1) / Dot2(nor));
-	}
-
-	float PointToTriangleDistance(const glm::vec3& p, const glm::vec3& tv0, const glm::vec3& tv1, const glm::vec3& tv2)
-	{
-		glm::vec3 edge0 = tv1 - tv0;
-		glm::vec3 edge1 = tv2 - tv0;
-		glm::vec3 v0 = tv0 - p;
-
-		float a = glm::dot(edge0, edge0);
-		float b = glm::dot(edge0, edge1);
-		float c = glm::dot(edge1, edge1);
-		float d = glm::dot(edge0, v0);
-		float e = glm::dot(edge1, v0);
-
-		float det = a * c - b * b;
-		float s = b * e - c * d;
-		float t = b * d - a * e;
-
-		if (s + t <= det)
-		{
-			if (s < 0.f)
-			{
-				if (t < 0.f)
-				{
-					if (d < 0.f)
-					{
-						s = glm::clamp(-d / a, 0.f, 1.f);
-						t = 0.f;
-					}
-					else
-					{
-						s = 0.f;
-						t = glm::clamp(-e / c, 0.f, 1.f);
-					}
-				}
-				else
-				{
-					s = 0.f;
-					t = glm::clamp(-e / c, 0.f, 1.f);
-				}
-			}
-			else if (t < 0.f)
-			{
-				s = glm::clamp(-d / a, 0.f, 1.f);
-			}
-			else
-			{
-				float invDet = 1.f / det;
-				s *= invDet;
-				t *= invDet;
-			}
-		}
-		else
-		{
-			if (s < 0.0f)
-			{
-				float tmp0 = b + d;
-				float tmp1 = c + e;
-				if (tmp1 > tmp0)
-				{
-					float numer = tmp1 - tmp0;
-					float denom = a - 2 * b + c;
-					s = glm::clamp(numer / denom, 0.0f, 1.0f);
-					t = 1 - s;
-				}
-				else
-				{
-					t = glm::clamp(-e / c, 0.0f, 1.0f);
-					s = 0.0f;
-				}
-			}
-			else if (t < 0.0f)
-			{
-				if (a + d > b + e)
-				{
-					float numer = c + e - b - d;
-					float denom = a - 2 * b + c;
-					s = glm::clamp(numer / denom, 0.0f, 1.0f);
-					t = 1 - s;
-				}
-				else
-				{
-					s = glm::clamp(-e / c, 0.0f, 1.0f);
-					t = 0.0f;
-				}
-			}
-			else
-			{
-				float numer = c + e - b - d;
-				float denom = a - 2 * b + c;
-				s = glm::clamp(numer / denom, 0.0f, 1.0f);
-				t = 1 - s;
-			}
-		}
-
-		glm::vec3 closestPoint = tv0 + s * edge0 + t * edge1;
-		return glm::length(closestPoint - p);
-	}
-
-	inline float SignedDistance(const glm::vec3& p, const glm::vec3& tv0, const glm::vec3& tv1, const glm::vec3& tv2)
-	{
-		glm::vec3 normal = glm::normalize(glm::cross(tv1 - tv0, tv2 - tv0));
-		float distance = PointToTriangleDistance(p, tv0, tv1, tv2);
-		float sign = glm::dot(p - tv0, normal);
-		return sign < 0.f ? -distance : distance;
-	}
-
-	inline uint32_t Get1DIndex(uint32_t x, uint32_t y, uint32_t z, uint32_t maxX, uint32_t maxY)
-	{
-		return (z * maxX * maxY) + (y * maxX) + x;
-	}
 
 	MeshSDF SDFGenerator::GenerateForSubMesh(Mesh& mesh, const uint32_t subMeshIndex, const SubMesh& subMesh)
 	{
@@ -180,125 +47,264 @@ namespace Volt
 		const float height = glm::max(glm::abs(localMax.y - localMin.y), TRIANGLE_THICKNESS);
 		const float depth = glm::max(glm::abs(localMax.z - localMin.z), TRIANGLE_THICKNESS);
 
-		const uint32_t pointCountWidth = static_cast<uint32_t>(glm::ceil(width / RESOLUTION));
-		const uint32_t pointCountHeight = static_cast<uint32_t>(glm::ceil(height / RESOLUTION));
-		const uint32_t pointCountDepth = static_cast<uint32_t>(glm::ceil(depth / RESOLUTION));
+		const uint32_t pointCountWidth = static_cast<uint32_t>(glm::ceil(width / VOXEL_SIZE));
+		const uint32_t pointCountHeight = static_cast<uint32_t>(glm::ceil(height / VOXEL_SIZE));
+		const uint32_t pointCountDepth = static_cast<uint32_t>(glm::ceil(depth / VOXEL_SIZE));
 
-#if 1
 		const std::string meshName = !mesh.assetName.empty() ? " - " + mesh.assetName : "";
 
-		RHI::ImageSpecification imageSpec{};
-		imageSpec.width = pointCountWidth;
-		imageSpec.height = pointCountHeight;
-		imageSpec.depth = pointCountDepth;
-		imageSpec.format = RHI::PixelFormat::R32_SFLOAT;
-		imageSpec.usage = RHI::ImageUsage::Storage;
-		imageSpec.imageType = RHI::ResourceType::Image3D;
-		imageSpec.debugName = std::format("SDF Texture{} - {}", meshName, subMeshIndex);
-
-		BindlessResourceRef<RHI::Image3D> sdfTexture = BindlessResource<RHI::Image3D>::CreateRef(imageSpec);
-
-		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
-		RenderGraph renderGraph{ commandBuffer };
-
-		RenderGraphResourceHandle sdfTextureHandle = renderGraph.AddExternalImage3D(sdfTexture->GetResource());
-
-		struct PassData
-		{
-			RenderGraphResourceHandle indexBuffer;
-			RenderGraphResourceHandle vertexPositionsBuffer;
-		};
-
-		RGUtils::ClearImage3D(renderGraph, sdfTextureHandle, { 100'000.f });
-
-		renderGraph.AddPass<PassData>("Generate Mesh SDF Pass",
-		[&](RenderGraph::Builder& builder, PassData& data) 
-		{
-			data.indexBuffer = builder.AddExternalBuffer(mesh.GetIndexBuffer()->GetResource());
-			data.vertexPositionsBuffer = builder.AddExternalBuffer(mesh.GetVertexPositionsBuffer()->GetResource());
-
-			builder.WriteResource(sdfTextureHandle);
-
-			builder.ReadResource(data.indexBuffer);
-			builder.ReadResource(data.vertexPositionsBuffer);
-
-			builder.SetHasSideEffect();
-			builder.SetIsComputePass();
-		},
-		[=](const PassData& data, RenderContext& context, const RenderGraphPassResources& resources) 
-		{
-			auto pipeline = ShaderMap::GetComputePipeline("GenerateSDFFromMesh");
-
-			context.BindPipeline(pipeline);
-
-			context.SetConstant("outSDFTexture"_sh, resources.GetImage3D(sdfTextureHandle));
-			context.SetConstant("vertexPositions"_sh, resources.GetBuffer(data.vertexPositionsBuffer));
-			context.SetConstant("indexBuffer"_sh, resources.GetBuffer(data.indexBuffer));
-			context.SetConstant("indexCount"_sh, subMesh.indexCount);
-			context.SetConstant("indexStartOffset"_sh, subMesh.indexStartOffset);
-			context.SetConstant("vertexStartOffset"_sh, subMesh.vertexStartOffset);
-			context.SetConstant("bbMin"_sh, localMin);
-			context.SetConstant("voxelSize"_sh, RESOLUTION);
-			context.SetConstant("size"_sh, glm::uvec3{ pointCountWidth, pointCountHeight, pointCountDepth });
-
-			constexpr uint32_t GROUP_SIZE = 8;
-			context.Dispatch(Math::DivideRoundUp(pointCountWidth, GROUP_SIZE), Math::DivideRoundUp(pointCountHeight, GROUP_SIZE), Math::DivideRoundUp(pointCountDepth, GROUP_SIZE));
-		});
-
-		renderGraph.Compile();
-		renderGraph.ExecuteImmediateAndWait();
-
 		MeshSDF result;
-		result.sdfTexture = sdfTexture;
 		result.size = { pointCountWidth, pointCountHeight, pointCountDepth };
 		result.min = localMin;
 		result.max = localMax;
 
-		return result;
+		// Create 3D grid of RESOLUTION * BRICK_SIZE size.
+		constexpr float BRICK_CELL_SIZE = VOXEL_SIZE * static_cast<float>(BRICK_SIZE);
 
-#elif 0
-		Vector<float> sdfMap(pointCountWidth * pointCountHeight * pointCountDepth, 100'000.f);
+		const uint32_t gridSizeWidth = static_cast<uint32_t>(glm::ceil(width / BRICK_CELL_SIZE));
+		const uint32_t gridSizeHeight = static_cast<uint32_t>(glm::ceil(height / BRICK_CELL_SIZE));
+		const uint32_t gridSizeDepth = static_cast<uint32_t>(glm::ceil(depth / BRICK_CELL_SIZE));
 
 		const auto& meshIndices = mesh.GetIndices();
 		const auto& vertexPositions = mesh.GetVertexContainer().positions;
 
-		for (uint32_t z = 0; z < pointCountDepth; ++z)
+		Vector<SDFBrick> brickGrid;
+		vt::map<size_t, uint32_t> pointToBrickIndex;
+
+		constexpr uint32_t SAMPLE_COUNT = 4;
+		constexpr float MAX_TRACE_DISTANCE = 100000.f;
+
+		auto subMeshIndices = std::span<const uint32_t>(meshIndices.begin() + subMesh.indexStartOffset, meshIndices.begin() + subMesh.indexStartOffset + subMesh.indexCount);
+		auto subMeshVertices = std::span<const glm::vec3>(vertexPositions.begin() + subMesh.vertexStartOffset, vertexPositions.begin() + subMesh.vertexStartOffset + subMesh.vertexCount);
+
+		acc::BVHTree<uint32_t, glm::vec3> subMeshBVH(subMeshIndices, subMeshVertices);
+
+		Vector<glm::vec3> sampleDirections;
+		for (uint32_t sampleIndexX = 0; sampleIndexX < SAMPLE_COUNT; sampleIndexX++)
 		{
-			for (uint32_t y = 0; y < pointCountHeight; ++y)
+			for (uint32_t sampleIndexY = 0; sampleIndexY < SAMPLE_COUNT; sampleIndexY++)
 			{
-				for (uint32_t x = 0; x < pointCountWidth; ++x)
+				float sampleX = sampleIndexX / static_cast<float>(SAMPLE_COUNT - 1); // 0 -> 1
+				float sampleY = sampleIndexY / static_cast<float>(SAMPLE_COUNT - 1) * 2.f - 1.f; // -1 -> 1
+
+				const float phi = sampleX * glm::two_pi<float>();
+				const float theta = glm::acos(sampleY);
+
+				sampleDirections.emplace_back(Math::DirectionToVector({ phi, theta }));
+			}
+		}
+
+		brickGrid.clear();
+		pointToBrickIndex.clear();
+
+		for (uint32_t z = 0; z < gridSizeDepth; ++z)
+		{
+			for (uint32_t y = 0; y < gridSizeHeight; ++y)
+			{
+				for (uint32_t x = 0; x < gridSizeWidth; ++x)
 				{
-					const glm::vec3 pointPos = glm::vec3{ x * RESOLUTION, y * RESOLUTION, z * RESOLUTION } + localMin;
+					const glm::vec3 brickCellPos = (glm::vec3{ x, y, z } *BRICK_CELL_SIZE + BRICK_CELL_SIZE / 2.f) + localMin;
+					const glm::vec3 brickMin = brickCellPos - BRICK_CELL_SIZE / 2.f;
+					const glm::vec3 brickMax = brickCellPos + BRICK_CELL_SIZE / 2.f;
+
+					AABB aabb{ brickMin, brickMax };
+
+					size_t brickHash = Math::HashCombine(std::hash<uint32_t>()(x), std::hash<uint32_t>()(y));
+					brickHash = Math::HashCombine(brickHash, std::hash<uint32_t>()(z));
+
+					bool voxelIntersectsTriangle = false;
 
 					for (uint32_t idx = subMesh.indexStartOffset; idx < subMesh.indexStartOffset + subMesh.indexCount; idx += 3)
 					{
 						const uint32_t idx0 = meshIndices.at(idx + 0) + subMesh.vertexStartOffset;
 						const uint32_t idx1 = meshIndices.at(idx + 1) + subMesh.vertexStartOffset;
 						const uint32_t idx2 = meshIndices.at(idx + 2) + subMesh.vertexStartOffset;
-						
+
 						const glm::vec3& v0 = vertexPositions.at(idx0);
 						const glm::vec3& v1 = vertexPositions.at(idx1);
 						const glm::vec3& v2 = vertexPositions.at(idx2);
-					
-						const uint32_t index = Get1DIndex(x, y, z, pointCountWidth, pointCountHeight);
-						const float distance = SignedDistance(pointPos, v0, v1, v2);
 
-						if (std::abs(distance) < std::abs(sdfMap[index]))
+						if (aabb.IntersectTriangle(v0, v1, v2))
 						{
-							sdfMap[index] = distance;
+							voxelIntersectsTriangle = true;
+							break;
+						}
+					}
+
+					if (!voxelIntersectsTriangle)
+					{
+						continue;
+					}
+
+					uint32_t brickIndex = 0;
+
+					if (!pointToBrickIndex.contains(brickHash))
+					{
+						brickIndex = static_cast<uint32_t>(brickGrid.size());
+						pointToBrickIndex[brickHash] = brickIndex;
+						brickGrid.emplace_back();
+
+						std::fill(brickGrid.back().data, brickGrid.back().data + BRICK_SIZE * BRICK_SIZE * BRICK_SIZE, 100'000.f);
+					}
+					else
+					{
+						brickIndex = pointToBrickIndex.at(brickHash);
+					}
+
+					auto& brick = brickGrid[brickIndex];
+
+					brick.hasData = true;
+					brick.min = brickMin;
+					brick.max = brickMax;
+
+					for (uint32_t bz = 0; bz < BRICK_SIZE; ++bz)
+					{
+						for (uint32_t by = 0; by < BRICK_SIZE; ++by)
+						{
+							for (uint32_t bx = 0; bx < BRICK_SIZE; ++bx)
+							{
+								const glm::vec3 pointPos = brickMin + glm::vec3{ bx * VOXEL_SIZE, by * VOXEL_SIZE, bz * VOXEL_SIZE };
+								const uint32_t voxelIndex = Math::Get1DIndexFrom3DCoord(bx, by, bz, BRICK_SIZE, BRICK_SIZE);
+
+								float minDistance = std::numeric_limits<float>::infinity();
+								minDistance = glm::distance(subMeshBVH.closest_point(pointPos, minDistance), pointPos);
+
+								size_t backfaceHitCount = 0;
+								size_t hitCount = 0;
+
+								for (size_t sample = 0; sample < sampleDirections.size(); sample++)
+								{
+									acc::Ray<glm::vec3> ray{ pointPos, sampleDirections.at(sample), glm::epsilon<float>(), MAX_TRACE_DISTANCE };
+									acc::BVHTree<uint32_t, glm::vec3>::Hit hit;
+
+									if (subMeshBVH.intersect(ray, &hit))
+									{
+										const uint32_t idx0 = subMeshIndices[hit.idx * 3 + 0];
+										const uint32_t idx1 = subMeshIndices[hit.idx * 3 + 1];
+										const uint32_t idx2 = subMeshIndices[hit.idx * 3 + 2];
+
+										const glm::vec3 v0 = subMeshVertices[idx0];
+										const glm::vec3 v1 = subMeshVertices[idx1];
+										const glm::vec3 v2 = subMeshVertices[idx2];
+									
+										const glm::vec3 normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+
+										hitCount++;
+
+										const bool backface = glm::dot(ray.dir, normal) > 0.f;
+										if (backface)
+										{
+											backfaceHitCount++;
+										}
+									}
+								}
+
+								float sdf = minDistance;
+								if (backfaceHitCount > sampleDirections.size() / 2 && hitCount != 0)
+								{
+									sdf *= -1.f;
+								}
+
+								brick.data[voxelIndex] = sdf;
+							}
 						}
 					}
 				}
 			}
 		}
 
-		MeshSDF result;
-		result.sdf = sdfMap;
-		result.size = { pointCountWidth, pointCountHeight, pointCountDepth };
-		result.min = localMin;
-		result.max = localMax;
+		result.brickGrid = brickGrid;
+
+		struct BrickInfo
+		{
+			glm::vec3 min;
+			glm::vec3 max;
+		};
+
+		const uint32_t brickDataCount = BRICK_SIZE * BRICK_SIZE * BRICK_SIZE;
+		const uint32_t brickDataSize = sizeof(float) * brickDataCount;
+
+		Vector<float> brickData(brickGrid.size()* brickDataSize);
+		Vector<BrickInfo> brickInfoData(brickGrid.size());
+
+		uint32_t currentOffset = 0;
+		for (uint32_t index = 0; const auto & brick : brickGrid)
+		{
+			memcpy(&brickData[currentOffset], brick.data, brickDataSize);
+			currentOffset += brickDataCount;
+
+			brickInfoData[index].min = brick.min;
+			brickInfoData[index].max = brick.max;
+
+			index++;
+		}
+
+		// Create brick texture
+		{
+			const uint32_t size = static_cast<uint32_t>(std::ceil(std::pow(static_cast<double>(brickGrid.size()), 1.0 / 3.0))) * BRICK_SIZE;
+			result.size = size;
+
+			RHI::ImageSpecification imageSpec{};
+			imageSpec.width = size;
+			imageSpec.height = size;
+			imageSpec.depth = size;
+			imageSpec.format = RHI::PixelFormat::R32_SFLOAT;
+			imageSpec.usage = RHI::ImageUsage::Storage;
+			imageSpec.imageType = RHI::ResourceType::Image3D;
+			imageSpec.debugName = std::format("SDF Brick Texture{} - {}", meshName, subMeshIndex);
+
+			BindlessResourceRef<RHI::Image3D> brickTexture = BindlessResource<RHI::Image3D>::CreateRef(imageSpec);
+			result.sdfTexture = brickTexture;
+
+			RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
+			RenderGraph renderGraph{ commandBuffer };
+
+			RenderGraphResourceHandle dataBufferHandle = renderGraph.CreateBuffer(RGUtils::CreateBufferDesc<float>(brickData.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Brick Data"));
+			renderGraph.AddMappedBufferUpload(dataBufferHandle, brickData.data(), brickData.size() * sizeof(float), "Upload Brick Data");
+
+			RenderGraphResourceHandle brickInfoBufferHandle = renderGraph.CreateBuffer(RGUtils::CreateBufferDesc<BrickInfo>(brickInfoData.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Brick Info"));
+			renderGraph.AddMappedBufferUpload(brickInfoBufferHandle, brickInfoData.data(), brickInfoData.size() * sizeof(BrickInfo), "Upload Brick Info");
+
+			RenderGraphResourceHandle sdfBricksBufferHandle = renderGraph.CreateBuffer(RGUtils::CreateBufferDesc<GPUSDFBrick>(brickGrid.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "SDF Bricks"));
+			RenderGraphResourceHandle textureHandle = renderGraph.AddExternalImage3D(brickTexture->GetResource());
+
+			RGUtils::ClearImage3D(renderGraph, textureHandle, { 1000.f }, "Clear SDF Image");
+
+			renderGraph.AddPass("Allocate Bricks",
+			[&](RenderGraph::Builder& builder)
+			{
+				builder.ReadResource(dataBufferHandle);
+				builder.ReadResource(brickInfoBufferHandle);
+				builder.WriteResource(textureHandle);
+				builder.WriteResource(sdfBricksBufferHandle);
+
+				builder.SetHasSideEffect();
+				builder.SetIsComputePass();
+			},
+			[=](RenderContext& context, const RenderGraphPassResources& resources)
+			{
+				auto pipeline = ShaderMap::GetComputePipeline("MeshSDFAllocator");
+
+				context.BindPipeline(pipeline);
+
+				context.SetConstant("brickTexture"_sh, resources.GetImage3D(textureHandle));
+				context.SetConstant("bricks"_sh, resources.GetBuffer(sdfBricksBufferHandle));
+				context.SetConstant("brickData"_sh, resources.GetBuffer(dataBufferHandle));
+				context.SetConstant("brickInfo"_sh, resources.GetBuffer(brickInfoBufferHandle));
+				context.SetConstant("brickTextureSize"_sh, size);
+
+				context.Dispatch(static_cast<uint32_t>(brickGrid.size()), 1, 1);
+			});
+
+			RefPtr<RHI::StorageBuffer> targetSDFBrickBuffer;
+			renderGraph.QueueBufferExtraction(sdfBricksBufferHandle, targetSDFBrickBuffer);
+
+			renderGraph.Compile();
+			renderGraph.ExecuteImmediateAndWait();
+
+			result.sdfBricksBuffer = targetSDFBrickBuffer;
+		}
 
 		return result;
-#endif
 	}
 }

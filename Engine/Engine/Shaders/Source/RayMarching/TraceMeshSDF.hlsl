@@ -20,7 +20,7 @@ struct Output
     [[vt::r11f_g11f_b10f]] float3 output : SV_Target0;
 };
 
-static const float RESOLUTION = 1.f;
+static const float RESOLUTION = 5.f;
 
 float Intersect(SDFPrimitiveDrawData sdfPrimitive, GPUMeshSDF sdfMesh, TextureSampler pointSampler, Ray ray)
 {

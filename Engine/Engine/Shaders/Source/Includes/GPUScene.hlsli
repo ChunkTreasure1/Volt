@@ -91,15 +91,23 @@ struct GPUMesh
     uint meshletIndexStartOffset;
 };
 
+struct GPUSDFBrick
+{
+    float3 min;
+    float3 max;
+    float3 localCoords;
+};
+
 struct GPUMeshSDF
 {
     TTexture<float> sdfTexture;
     float3 size;
 
     float3 min;
-    float padding1;
     float3 max;
-    float padding2;
+    
+    TypedBuffer<GPUSDFBrick> bricksBuffer;
+    uint brickCount;
 };
 
 struct PrimitiveDrawData

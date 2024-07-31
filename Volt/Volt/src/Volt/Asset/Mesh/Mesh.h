@@ -12,8 +12,12 @@
 #include "Volt/Rendering/Resources/BindlessResource.h"
 #include "Volt/Rendering/GPUScene.h"
 
+#include "Volt/SDF/SDFGenerator.h"
+
 #include <VoltRHI/Buffers/StorageBuffer.h>
+
 #include <CoreUtilities/Containers/Map.h>
+#include <CoreUtilities/Containers/SparseBrickMap.h>
 
 namespace Volt
 {
@@ -91,6 +95,9 @@ namespace Volt
 		inline const Vector<GPUMesh>& GetGPUMeshes() const { return m_gpuMeshes; }
 		inline const Vector<GPUMeshSDF>& GetGPUMeshSDFs() const { return m_gpuMeshSDFs; }
 
+		VT_NODISCARD VT_INLINE const Vector<SDFBrick>& GetBrickGrid(const uint32_t index) const { return m_brickGrids.at(index); }
+		VT_NODISCARD VT_INLINE const BindlessResourceRef<RHI::StorageBuffer>& GetBrickBuffer(const uint32_t index) const { return m_brickBuffers.at(index); }
+
 		inline const BoundingSphere& GetSubMeshBoundingSphere(const uint32_t index) const { return m_subMeshBoundingSpheres.at(index);  }
 		inline const BoundingBox& GetSubMeshBoundingBox(const uint32_t index) const { return m_subMeshBoundingBoxes.at(index);  }
 
@@ -141,10 +148,12 @@ namespace Volt
 
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexAnimationDataBuffer;
 
-		vt::map<uint32_t, BindlessResourceRef<RHI::Image3D>> m_sdfTextures;
-
 		BoundingSphere m_boundingSphere;
 		BoundingBox m_boundingBox;
+
+		vt::map<uint32_t, BindlessResourceRef<RHI::Image3D>> m_sdfTextures;
+		vt::map<uint32_t, Vector<SDFBrick>> m_brickGrids;
+		vt::map<uint32_t, BindlessResourceRef<RHI::StorageBuffer>> m_brickBuffers;
 
 		Vector<GPUMesh> m_gpuMeshes;
 		Vector<GPUMeshSDF> m_gpuMeshSDFs;

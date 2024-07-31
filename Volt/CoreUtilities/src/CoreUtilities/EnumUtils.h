@@ -1,11 +1,11 @@
 #pragma once
+
+#include <CoreUtilities/Concepts.h>
+
 #include <unordered_map>
 #include <map>
 #include <string>
 #include <cassert>
-
-template<typename T>
-concept Enum = std::is_enum_v<T>;
 
 namespace Utils
 {

@@ -67,6 +67,7 @@ project "Volt"
 		"%{IncludeDir.discord}",
 		"%{IncludeDir.NFDExtended}",
 		"%{IncludeDir.entt}",
+		"%{IncludeDir.libacc}",
 
 		"%{IncludeDir.ffmpeg}",
 		"%{IncludeDir.mono}",

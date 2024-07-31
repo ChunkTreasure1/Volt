@@ -9,6 +9,7 @@
 #include "Volt/Scene/Entity.h"
 
 #include <CoreUtilities/VoltGUID.h>
+#include <CoreUtilities/Concepts.h>
 
 #include <typeindex>
 
@@ -26,9 +27,6 @@ namespace Volt																\
 
 namespace Volt
 {
-	template<typename T>
-	concept Enum = std::is_enum<T>::value;
-
 	template<typename T, class ENABLE = void> class TypeDesc;
 	template<typename T> constexpr bool IsReflectedType();
 	template<typename T> constexpr bool IsArrayType();

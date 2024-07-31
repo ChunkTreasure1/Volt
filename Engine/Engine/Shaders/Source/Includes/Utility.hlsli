@@ -81,3 +81,18 @@ float3 LinearToSRGB(in float3 color)
 
     return sRGB;
 }
+
+uint Get1DIndexFrom3DCoord(uint x, uint y, uint z, uint maxX, uint maxY)
+{
+	return (z * maxX * maxY) + (y * maxX) + x;
+}
+
+uint3 Get3DCoordFrom1DIndex(uint index, uint maxX, uint maxY)
+{
+	uint z = index / (maxX * maxY);
+	index -= (z * maxX * maxY);
+	uint y = index / maxX;
+	uint x = index % maxX;
+
+	return uint3(x, y, z);
+}

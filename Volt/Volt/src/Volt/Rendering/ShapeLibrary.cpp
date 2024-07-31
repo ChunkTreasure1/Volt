@@ -62,27 +62,27 @@ namespace Volt
 		{
 			// Front face
 			0, 1, 3,
-			3, 2, 0,
+			3, 1, 2,
 
 			// Right face
 			4, 5, 7,
-			4, 6, 5,
+			7, 5, 6,
 
 			// Back face
 			8, 9, 11,
-			11, 10, 8,
+			11, 9, 10,
 
 			// Left face
 			12, 13, 15,
-			12, 14, 13,
+			15, 13, 14,
 
 			// Top face
 			16, 17, 19,
-			19, 18, 16,
+			19, 17, 18,
 
 			// Bottom face
 			20, 21, 23,
-			23, 22, 20
+			23, 21, 22
 		};
 
 		Ref<Material> material = AssetManager::CreateMemoryAsset<Material>("Default");

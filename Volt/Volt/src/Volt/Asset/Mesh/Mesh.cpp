@@ -255,7 +255,7 @@ namespace Volt
 		// Vertex positions
 		{
 			const auto& vertexPositions = m_vertexContainer.positions;
-			m_vertexPositionsBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(vertexPositions.size()), sizeof(glm::vec3), "Vertex Positions" + meshName);
+			m_vertexPositionsBuffer = BindlessResource<RHI::StorageBuffer>::CreateRef(static_cast<uint32_t>(vertexPositions.size()), sizeof(glm::vec3), "Vertex Positions" + meshName, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::VertexBuffer);
 			m_vertexPositionsBuffer->GetResource()->SetData(vertexPositions.data(), vertexPositions.size() * sizeof(glm::vec3));
 		}
 
@@ -403,13 +403,18 @@ namespace Volt
 
 			for (uint32_t i = 0; const auto& sdf : res)
 			{
+				m_sdfTextures[i] = sdf.sdfTexture;
+				m_brickGrids[i] = sdf.brickGrid;
+				m_brickBuffers[i] = CreateRef<BindlessResource<RHI::StorageBuffer>>(sdf.sdfBricksBuffer);
+
 				auto& gpuSDF = m_gpuMeshSDFs.emplace_back();
 				gpuSDF.min = sdf.min;
 				gpuSDF.max = sdf.max;
-				gpuSDF.size = sdf.size;
+				gpuSDF.size = sdf.size; 
 				gpuSDF.sdfTexture = sdf.sdfTexture->GetResourceHandle();
+				gpuSDF.bricksBuffer = m_brickBuffers[i]->GetResourceHandle();
+				gpuSDF.brickCount = static_cast<uint32_t>(sdf.brickGrid.size());
 
-				m_sdfTextures[i] = sdf.sdfTexture;
 				i++;
 			}
 		}

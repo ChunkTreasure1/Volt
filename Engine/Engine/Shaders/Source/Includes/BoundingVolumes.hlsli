@@ -46,7 +46,7 @@ struct BoundingBox
         return sqDist <= sphere.radius * sphere.radius;
     }
 
-    float Intersects(in Ray ray)
+    bool Intersects(in Ray ray, out float2 hitTimes)
     {
         float3 invDir = 1.f / ray.direction;
 
@@ -65,7 +65,8 @@ struct BoundingBox
             tmax = min(tmax, max(max(t1, t2), tmin));
         }
          
-        return tmax > max(tmin, 0.f) ? tmin : -1.f;
+        hitTimes = float2(tmin, tmax);
+        return tmax > max(tmin, 0.f);
     } 
 
     float3 bmax;
