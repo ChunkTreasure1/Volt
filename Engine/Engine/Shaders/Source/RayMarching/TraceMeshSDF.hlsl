@@ -8,9 +8,9 @@
 struct Constants
 {
     GPUScene gpuScene;
-    UniformBuffer<ViewData> viewData;
+    vt::UniformBuffer<ViewData> viewData;
 
-    TextureSampler pointSampler;
+    vt::TextureSampler pointSampler;
     
     uint primitiveCount;
 };
@@ -22,7 +22,7 @@ struct Output
 
 static const float RESOLUTION = 5.f;
 
-float Intersect(SDFPrimitiveDrawData sdfPrimitive, GPUMeshSDF sdfMesh, TextureSampler pointSampler, Ray ray)
+float Intersect(SDFPrimitiveDrawData sdfPrimitive, GPUMeshSDF sdfMesh, vt::TextureSampler pointSampler, Ray ray)
 {
     const float maxDist = 2000.f;
     float h = 0.5f;
@@ -46,7 +46,7 @@ float Intersect(SDFPrimitiveDrawData sdfPrimitive, GPUMeshSDF sdfMesh, TextureSa
             continue;
         }
 
-        h = sdfMesh.sdfTexture.Sample3D(pointSampler, uvw);
+        h = sdfMesh.sdfTexture.Sample(pointSampler, uvw);
         t += h;
     }
 
@@ -58,13 +58,14 @@ float Intersect(SDFPrimitiveDrawData sdfPrimitive, GPUMeshSDF sdfMesh, TextureSa
     return t;
 }
 
-float TraceSDFPrimitive(SDFPrimitiveDrawData sdfPrimitive, GPUMeshSDF sdfMesh, TextureSampler pointSampler, Ray ray)
+float TraceSDFPrimitive(SDFPrimitiveDrawData sdfPrimitive, GPUMeshSDF sdfMesh, vt::TextureSampler pointSampler, Ray ray)
 {
     BoundingBox bb;
     bb.bmin = sdfMesh.min + sdfPrimitive.transform.position;
     bb.bmax = sdfMesh.max + sdfPrimitive.transform.position;
 
-    float intersectionResult = bb.Intersects(ray);
+    float2 hitTime;
+    float intersectionResult = bb.Intersects(ray, hitTime);
     bool isHit = false;
 
     if (intersectionResult > 0.f)

@@ -7,11 +7,11 @@ struct Constants
 {
     GPUScene gpuScene;
 
-    TTexture<uint2> visibilityBuffer;
-    TypedBuffer<uint> materialStartBuffer;
+    vt::UniformTex2D<uint2> visibilityBuffer;
+    vt::UniformTypedBuffer<uint> materialStartBuffer;
     
-    RWTypedBuffer<uint> currentMaterialCountBuffer;
-    RWTypedBuffer<uint2> pixelCollectionBuffer;
+    vt::UniformRWTypedBuffer<uint> currentMaterialCountBuffer;
+    vt::UniformRWTypedBuffer<uint2> pixelCollectionBuffer;
 
     uint2 renderSize;
 };
@@ -26,7 +26,7 @@ void main(uint3 threadId : SV_DispatchThreadID)
         return;
     }
     
-    const uint2 pixelValue = constants.visibilityBuffer.Load2D(int3(threadId.xy, 0));
+    const uint2 pixelValue = constants.visibilityBuffer.Load(int3(threadId.xy, 0));
     
     if (pixelValue.x == UINT32_MAX)
     {

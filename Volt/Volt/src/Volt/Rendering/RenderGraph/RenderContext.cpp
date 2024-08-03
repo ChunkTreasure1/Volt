@@ -502,13 +502,101 @@ namespace Volt
 
 #ifdef VT_DEBUG
 		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
+		VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Sampler);
+#endif
+
+		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(ResourceHandle));
+	}
+	
+	void RenderContext::SetConstant(const StringHash& name, const RenderGraphImage2DHandle& data, const int32_t mip, const int32_t layer)
+	{
+		VT_PROFILE_FUNCTION();
+
+		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
+
+		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
+		VT_ENSURE(constantsData.uniforms.contains(name));
+
+		const auto& uniform = constantsData.uniforms.at(name);
+
+#ifdef VT_DEBUG
+		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
+
+		VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2D ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2D ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2DArray ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2DArray ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::TextureCube);
+
+		if (uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2D ||
+				 uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2DArray ||
+				 uniform.type.baseType == RHI::ShaderUniformBaseType::TextureCube)
+		{
+			VT_ENSURE(m_currentPassNode->ReadsResource(data));
+		}
+		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2D ||
+				 uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2DArray)
+		{
+			VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
+		}
+#endif
+
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		const ResourceHandle resourceHandle = resourceAccess.GetImage2D(data, mip, layer);
+
+		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &resourceHandle, sizeof(ResourceHandle));
+	}
+
+	void RenderContext::SetConstant(const StringHash& name, const RenderGraphImage3DHandle& data, const int32_t mip, const int32_t layer)
+	{
+		VT_PROFILE_FUNCTION();
+
+		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
+
+		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
+		VT_ENSURE(constantsData.uniforms.contains(name));
+
+		const auto& uniform = constantsData.uniforms.at(name);
+
+#ifdef VT_DEBUG
+		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
+
+		VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Texture3D ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture3D);
+
+		if (uniform.type.baseType == RHI::ShaderUniformBaseType::Texture3D)
+		{
+			VT_ENSURE(m_currentPassNode->ReadsResource(data));
+		}
+		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture3D)
+		{
+			VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
+		}
+#endif
+
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		const ResourceHandle resourceHandle = resourceAccess.GetImage3D(data, mip, layer);
+
+		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &resourceHandle, sizeof(ResourceHandle));
+	}
+
+	template<>
+	void RenderContext::SetConstant(const StringHash& name, const RenderGraphBufferHandle& data)
+	{
+		VT_PROFILE_FUNCTION();
+
+		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
+
+		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
+		VT_ENSURE(constantsData.uniforms.contains(name));
+
+		const auto& uniform = constantsData.uniforms.at(name);
+
+#ifdef VT_DEBUG
+		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
 
 		VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Buffer ||
-				uniform.type.baseType == RHI::ShaderUniformBaseType::RWBuffer ||
-				uniform.type.baseType == RHI::ShaderUniformBaseType::Texture ||
-				uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture ||
-				uniform.type.baseType == RHI::ShaderUniformBaseType::UniformBuffer ||
-				uniform.type.baseType == RHI::ShaderUniformBaseType::Sampler);
+				uniform.type.baseType == RHI::ShaderUniformBaseType::RWBuffer);
 
 		if (uniform.type.baseType == RHI::ShaderUniformBaseType::Buffer)
 		{
@@ -518,24 +606,40 @@ namespace Volt
 		{
 			VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
 		}
-		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::Texture)
-		{
-			VT_ENSURE(m_currentPassNode->ReadsResource(data));
-		}
-		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture)
-		{
-			VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
-		}
-		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::UniformBuffer)
-		{
-			VT_ENSURE(m_currentPassNode->ReadsResource(data));
-		}
-		//else if (uniform.type.baseType == RHI::ShaderUniformBaseType::Sampler) // #TODO_Ivar: Should we validate samplers?
-		//{
-		//	VT_ENSURE(m_currentPassNode->ReadsResource(data));
-		//}
 #endif
 
-		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(ResourceHandle));
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		const ResourceHandle resourceHandle = resourceAccess.GetBuffer(data);
+
+		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &resourceHandle, sizeof(ResourceHandle));
+	}
+
+	template<>
+	void RenderContext::SetConstant(const StringHash& name, const RenderGraphUniformBufferHandle& data)
+	{
+		VT_PROFILE_FUNCTION();
+
+		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
+
+		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
+		VT_ENSURE(constantsData.uniforms.contains(name));
+
+		const auto& uniform = constantsData.uniforms.at(name);
+
+#ifdef VT_DEBUG
+		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
+
+		VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::UniformBuffer);
+
+		if (uniform.type.baseType == RHI::ShaderUniformBaseType::UniformBuffer)
+		{
+			VT_ENSURE(m_currentPassNode->ReadsResource(data));
+		}
+#endif
+
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		const ResourceHandle resourceHandle = resourceAccess.GetUniformBuffer(data);
+
+		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &resourceHandle, sizeof(ResourceHandle));
 	}
 }

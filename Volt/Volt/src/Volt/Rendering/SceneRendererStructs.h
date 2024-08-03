@@ -58,7 +58,7 @@ namespace Volt
 		RenderGraphBufferHandle bonesBuffer;
 
 		static void SetupInputs(RenderGraph::Builder& builder, const GPUSceneData& data);
-		static void SetupConstants(RenderContext& context, const RenderGraphPassResources& resources, const GPUSceneData& data);
+		static void SetupConstants(RenderContext& context, const GPUSceneData& data);
 	};
 
 	struct LightBuffersData

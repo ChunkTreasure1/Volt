@@ -115,7 +115,7 @@ namespace Volt
 
 			builder.SetIsComputePass();
 		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		[=](RenderContext& context)
 		{
 			constexpr uint32_t sizeInUINT = static_cast<uint32_t>(sizeof(T) / sizeof(uint32_t));
 
@@ -124,9 +124,9 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("ScatterUpload");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("dstBuffer"_sh, resources.GetBuffer(data.dstBuffer));
-			context.SetConstant("srcBuffer"_sh, resources.GetBuffer(data.srcBuffer));
-			context.SetConstant("scatterIndices"_sh, resources.GetBuffer(data.indicesBuffer));
+			context.SetConstant("dstBuffer"_sh, data.dstBuffer);
+			context.SetConstant("srcBuffer"_sh, data.srcBuffer);
+			context.SetConstant("scatterIndices"_sh, data.indicesBuffer);
 			context.SetConstant("typeSizeInUINT"_sh, static_cast<uint32_t>(sizeInUINT));
 			context.SetConstant("copyCount"_sh, data.dataCount);
 			context.Dispatch(groupSize, 1, 1);

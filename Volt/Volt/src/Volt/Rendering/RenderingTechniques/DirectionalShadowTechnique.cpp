@@ -77,7 +77,7 @@ namespace Volt
 				builder.ReadResource(cullingData.taskCommandsBuffer);
 				builder.SetHasSideEffect();
 			},
-			[=](RenderContext& context, const RenderGraphPassResources& resources)
+			[=](RenderContext& context)
 			{
 				RenderingInfo info = context.CreateRenderingInfo(dirShadowData.renderSize.x, dirShadowData.renderSize.y, { dirShadowData.shadowTexture });
 				info.renderingInfo.layerCount = DirectionalLightData::CASCADE_COUNT;
@@ -97,10 +97,10 @@ namespace Volt
 				context.BeginRendering(info);
 				context.BindPipeline(pipeline);
 
-				GPUSceneData::SetupConstants(context, resources, gpuSceneData);
+				GPUSceneData::SetupConstants(context, gpuSceneData);
 
-				context.SetConstant("directionalLight"_sh, resources.GetUniformBuffer(uniformBuffers.directionalLightBuffer));
-				context.SetConstant("taskCommands"_sh, resources.GetBuffer(cullingData.taskCommandsBuffer));
+				context.SetConstant("directionalLight"_sh, uniformBuffers.directionalLightBuffer);
+				context.SetConstant("taskCommands"_sh, cullingData.taskCommandsBuffer);
 				context.SetConstant("viewMatrix"_sh, cullingInfo.viewMatrix);
 				context.SetConstant("cullingFrustum"_sh, cullingInfo.cullingFrustum);
 				context.SetConstant("renderSize"_sh, dirShadowData.renderSize);

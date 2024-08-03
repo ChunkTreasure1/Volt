@@ -4,10 +4,10 @@
 
 struct Constants
 {
-    UniformTexture<float3> sceneColor;
-    UniformBuffer<ViewData> viewData;
+    vt::UniformTex2D<float3> sceneColor;
+    vt::UniformBuffer<ViewData> viewData;
 
-    TextureSampler linearSampler;
+    vt::TextureSampler linearSampler;
 };
 
 struct Output
@@ -35,19 +35,19 @@ Output MainPS(FullscreenTriangleVertex input)
     const Constants constants = GetConstants<Constants>();
     const ViewData viewData = constants.viewData.Load();
     
-    UniformTexture<float3> sceneColor = constants.sceneColor;
-    TextureSampler linearSampler = constants.linearSampler;
+    vt::UniformTex2D<float3> sceneColor = constants.sceneColor;
+    vt::TextureSampler linearSampler = constants.linearSampler;
 
-    float3 colorCenter = sceneColor.Sample2D(linearSampler, input.uv);
+    float3 colorCenter = sceneColor.Sample(linearSampler, input.uv);
 
     // Luma at current fragment
     float lumaCenter = RGBToLuma(colorCenter);
 
     // Luma of four direct neighbours
-    float lumaDown = RGBToLuma(sceneColor.Sample2D(linearSampler, input.uv, int2(0, -1)));
-    float lumaUp = RGBToLuma(sceneColor.Sample2D(linearSampler, input.uv, int2(0, 1)));
-    float lumaLeft = RGBToLuma(sceneColor.Sample2D(linearSampler, input.uv, int2(-1, 0)));
-    float lumaRight = RGBToLuma(sceneColor.Sample2D(linearSampler, input.uv, int2(1, 0)));
+    float lumaDown = RGBToLuma(sceneColor.Sample(linearSampler, input.uv, int2(0, -1)));
+    float lumaUp = RGBToLuma(sceneColor.Sample(linearSampler, input.uv, int2(0, 1)));
+    float lumaLeft = RGBToLuma(sceneColor.Sample(linearSampler, input.uv, int2(-1, 0)));
+    float lumaRight = RGBToLuma(sceneColor.Sample(linearSampler, input.uv, int2(1, 0)));
 
     // Find min and max luma
     float lumaMin = min(lumaCenter, min(min(lumaDown, lumaUp), min(lumaLeft, lumaRight)));
@@ -63,10 +63,10 @@ Output MainPS(FullscreenTriangleVertex input)
     }
 
     // Get the four remaining corners
-    float lumaDownLeft = RGBToLuma(sceneColor.Sample2D(linearSampler, input.uv, int2(-1, -1)));
-    float lumaUpRight = RGBToLuma(sceneColor.Sample2D(linearSampler, input.uv, int2(1, 1)));
-    float lumaUpLeft = RGBToLuma(sceneColor.Sample2D(linearSampler, input.uv, int2(-1, 1)));
-    float lumaDownRight = RGBToLuma(sceneColor.Sample2D(linearSampler, input.uv, int2(1, -1)));
+    float lumaDownLeft = RGBToLuma(sceneColor.Sample(linearSampler, input.uv, int2(-1, -1)));
+    float lumaUpRight = RGBToLuma(sceneColor.Sample(linearSampler, input.uv, int2(1, 1)));
+    float lumaUpLeft = RGBToLuma(sceneColor.Sample(linearSampler, input.uv, int2(-1, 1)));
+    float lumaDownRight = RGBToLuma(sceneColor.Sample(linearSampler, input.uv, int2(1, -1)));
 
     // Combine four edges.
     float lumaDownUp = lumaDown + lumaUp;
@@ -124,8 +124,8 @@ Output MainPS(FullscreenTriangleVertex input)
     float2 uv1 = currentUv - offset;
     float2 uv2 = currentUv + offset;
 
-    float lumaEnd1 = RGBToLuma(sceneColor.Sample2D(linearSampler, uv1));
-    float lumaEnd2 = RGBToLuma(sceneColor.Sample2D(linearSampler, uv2));
+    float lumaEnd1 = RGBToLuma(sceneColor.Sample(linearSampler, uv1));
+    float lumaEnd2 = RGBToLuma(sceneColor.Sample(linearSampler, uv2));
 
     lumaEnd1 -= lumaLocalAverage;
     lumaEnd2 -= lumaLocalAverage;
@@ -151,13 +151,13 @@ Output MainPS(FullscreenTriangleVertex input)
         {
             if (!reached1)
             {
-                lumaEnd1 = RGBToLuma(sceneColor.Sample2D(linearSampler, uv1));
+                lumaEnd1 = RGBToLuma(sceneColor.Sample(linearSampler, uv1));
                 lumaEnd1 = lumaEnd1 - lumaLocalAverage;
             }
 
             if (!reached2)
             {
-                lumaEnd2 = RGBToLuma(sceneColor.Sample2D(linearSampler, uv2));
+                lumaEnd2 = RGBToLuma(sceneColor.Sample(linearSampler, uv2));
                 lumaEnd2 = lumaEnd2 - lumaLocalAverage;
             }
 
@@ -206,7 +206,7 @@ Output MainPS(FullscreenTriangleVertex input)
         finalUv.x += finalOffset * stepLength;
     }
 
-    float3 finalColor = sceneColor.Sample2D(linearSampler, finalUv);
+    float3 finalColor = sceneColor.Sample(linearSampler, finalUv);
     
     Output output;
     output.color = finalColor;

@@ -13,8 +13,8 @@ namespace CullingType
 
 struct Constants
 {
-    UniformRWTypedBuffer<uint> countBuffer;
-    UniformRWTypedBuffer<MeshTaskCommand> taskCommands;
+    vt::UniformRWTypedBuffer<uint> countBuffer;
+    vt::UniformRWTypedBuffer<MeshTaskCommand> taskCommands;
 
     GPUScene gpuScene;
 

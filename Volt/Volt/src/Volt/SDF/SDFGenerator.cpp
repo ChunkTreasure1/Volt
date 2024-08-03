@@ -281,16 +281,16 @@ namespace Volt
 				builder.SetHasSideEffect();
 				builder.SetIsComputePass();
 			},
-			[=](RenderContext& context, const RenderGraphPassResources& resources)
+			[=](RenderContext& context)
 			{
 				auto pipeline = ShaderMap::GetComputePipeline("MeshSDFAllocator");
 
 				context.BindPipeline(pipeline);
 
-				context.SetConstant("brickTexture"_sh, resources.GetImage3D(textureHandle));
-				context.SetConstant("bricks"_sh, resources.GetBuffer(sdfBricksBufferHandle));
-				context.SetConstant("brickData"_sh, resources.GetBuffer(dataBufferHandle));
-				context.SetConstant("brickInfo"_sh, resources.GetBuffer(brickInfoBufferHandle));
+				context.SetConstant("brickTexture"_sh, textureHandle);
+				context.SetConstant("bricks"_sh, sdfBricksBufferHandle);
+				context.SetConstant("brickData"_sh, dataBufferHandle);
+				context.SetConstant("brickInfo"_sh, brickInfoBufferHandle);
 				context.SetConstant("brickTextureSize"_sh, size);
 
 				context.Dispatch(static_cast<uint32_t>(brickGrid.size()), 1, 1);

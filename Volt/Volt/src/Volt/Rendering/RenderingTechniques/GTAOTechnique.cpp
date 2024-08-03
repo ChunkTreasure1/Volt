@@ -110,18 +110,18 @@ namespace Volt
 			builder.ReadResource(preDepthData.depth);
 			builder.SetIsComputePass();
 		},
-		[=](const PrefilterDepthData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](const PrefilterDepthData& data, RenderContext& context) 
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("GTAODepthPrefilter");
 			auto pointClampSampler = Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("outDepthMIP0"_sh, resources.GetImage2D(data.prefilteredDepth, 0));
-			context.SetConstant("outDepthMIP1"_sh, resources.GetImage2D(data.prefilteredDepth, 1));
-			context.SetConstant("outDepthMIP2"_sh, resources.GetImage2D(data.prefilteredDepth, 2));
-			context.SetConstant("outDepthMIP3"_sh, resources.GetImage2D(data.prefilteredDepth, 3));
-			context.SetConstant("outDepthMIP4"_sh, resources.GetImage2D(data.prefilteredDepth, 4));
-			context.SetConstant("sourceDepth"_sh, resources.GetImage2D(preDepthData.depth));
+			context.SetConstant("outDepthMIP0"_sh, data.prefilteredDepth, 0);
+			context.SetConstant("outDepthMIP1"_sh, data.prefilteredDepth, 1);
+			context.SetConstant("outDepthMIP2"_sh, data.prefilteredDepth, 2);
+			context.SetConstant("outDepthMIP3"_sh, data.prefilteredDepth, 3);
+			context.SetConstant("outDepthMIP4"_sh, data.prefilteredDepth, 4);
+			context.SetConstant("sourceDepth"_sh, preDepthData.depth);
 			context.SetConstant("padding"_sh, 0u);
 			context.SetConstant("pointClampSampler"_sh, pointClampSampler->GetResourceHandle());
 			context.SetConstant("constants.ViewportSize"_sh, data.constants.ViewportSize);
@@ -176,16 +176,16 @@ namespace Volt
 			builder.ReadResource(preDepthData.normals);
 			builder.SetIsComputePass();
 		},
-		[=](const GTAOData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](const GTAOData& data, RenderContext& context) 
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("GTAOMainPass");
 			auto pointClampSampler = Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("aoTerm"_sh, resources.GetImage2D(data.aoOutput));
-			context.SetConstant("edges"_sh, resources.GetImage2D(data.edgesOutput));
-			context.SetConstant("srcDepth"_sh, resources.GetImage2D(prefilterDepthData.prefilteredDepth));
-			context.SetConstant("viewspaceNormals"_sh, resources.GetImage2D(preDepthData.normals));
+			context.SetConstant("aoTerm"_sh, data.aoOutput);
+			context.SetConstant("edges"_sh, data.edgesOutput);
+			context.SetConstant("srcDepth"_sh, prefilterDepthData.prefilteredDepth);
+			context.SetConstant("viewspaceNormals"_sh, preDepthData.normals);
 			context.SetConstant("pointClampSampler"_sh, pointClampSampler->GetResourceHandle());
 			context.SetConstant("padding"_sh, glm::uvec3(0));
 			context.SetConstant("constants.ViewportSize"_sh, prefilterDepthData.constants.ViewportSize);
@@ -239,15 +239,15 @@ namespace Volt
 
 			builder.SetIsComputePass();
 		},
-		[=](const GTAOOutput& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[=](const GTAOOutput& data, RenderContext& context)
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("GTAODenoise");
 			auto pointClampSampler = Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
 		
 			context.BindPipeline(pipeline);
-			context.SetConstant("finalAOTerm"_sh, resources.GetImage2D(data.outputImage));
-			context.SetConstant("aoTerm"_sh, resources.GetImage2D(gtaoData.aoOutput));
-			context.SetConstant("edges"_sh, resources.GetImage2D(gtaoData.edgesOutput));
+			context.SetConstant("finalAOTerm"_sh, data.outputImage);
+			context.SetConstant("aoTerm"_sh, gtaoData.aoOutput);
+			context.SetConstant("edges"_sh, gtaoData.edgesOutput);
 			context.SetConstant("pointClampSampler"_sh, pointClampSampler->GetResourceHandle());
 			context.SetConstant("constants.ViewportSize"_sh, prefilterDepthData.constants.ViewportSize);
 			context.SetConstant("constants.ViewportPixelSize"_sh, prefilterDepthData.constants.ViewportPixelSize);

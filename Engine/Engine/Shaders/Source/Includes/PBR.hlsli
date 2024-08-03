@@ -9,23 +9,23 @@
 
 struct PBRConstants
 {
-    UniformBuffer<ViewData> viewData;
+    vt::UniformBuffer<ViewData> viewData;
     
-    UniformTypedBuffer<DirectionalLight> directionalLight;
-    UniformTypedBuffer<PointLight> pointLights;
-    UniformTypedBuffer<SpotLight> spotLights;
+    vt::UniformBuffer<DirectionalLight> directionalLight;
+    vt::UniformTypedBuffer<PointLight> pointLights;
+    vt::UniformTypedBuffer<SpotLight> spotLights;
 
-    UniformTypedBuffer<int> visiblePointLights;
-    UniformTypedBuffer<int> visibleSpotLights;
+    vt::UniformTypedBuffer<int> visiblePointLights;
+    vt::UniformTypedBuffer<int> visibleSpotLights;
     
-    TextureSampler linearSampler;
-    TextureSampler pointLinearClampSampler;
-    TextureSampler shadowSampler;
+    vt::TextureSampler linearSampler;
+    vt::TextureSampler pointLinearClampSampler;
+    vt::TextureSampler shadowSampler;
     
-    UniformTexture<float2> BRDFLuT;
-    UniformTexture<float3> environmentIrradiance;
-    UniformTexture<float3> environmentRadiance;
-    UniformTexture<float> directionalShadowMap;
+    vt::UniformTex2D<float2> BRDFLuT;
+    vt::UniformTexCube<float3> environmentIrradiance;
+    vt::UniformTexCube<float3> environmentRadiance;
+    vt::UniformTex2DArray<float> directionalShadowMap;
 };
 
 struct PBRInput
@@ -51,7 +51,7 @@ static PBRInput m_pbrInput;
 static PBRConstants m_pbrConstants;
 static ViewData m_viewData;
 
-static TextureSampler m_shadowSampler;
+static vt::TextureSampler m_shadowSampler;
 
 float3 CalculateDiffuse(in float3 F)
 {
@@ -76,17 +76,17 @@ float3 CalculateSkyAmbiance(in float3 dirToCamera, in float3 baseReflectivity)
     const float3 F = FresnelSchlickRoughness(baseReflectivity, NdotV, m_pbrInput.roughness);
     const float3 kD = (1.f - F) * (1.f - m_pbrInput.metallic);
 
-    const float3 irradiance = m_pbrConstants.environmentIrradiance.SampleLevelCube(m_pbrConstants.linearSampler, m_pbrInput.normal, 0.f);
+    const float3 irradiance = m_pbrConstants.environmentIrradiance.SampleLevel(m_pbrConstants.linearSampler, m_pbrInput.normal, 0.f);
     const float3 diffuse = irradiance * m_pbrInput.albedo.xyz;
 
     // #TODO_Ivar: This is quite slow
     uint radianceTextureLevels;
     uint width, height;
-    m_pbrConstants.environmentRadiance.GetDimensionsCube(0, width, height, radianceTextureLevels);
+    m_pbrConstants.environmentRadiance.GetDimensions(0, width, height, radianceTextureLevels);
     
     const float3 R = reflect(-dirToCamera, m_pbrInput.normal);
-    const float3 specularIrradiance = m_pbrConstants.environmentRadiance.SampleLevelCube(m_pbrConstants.linearSampler, R, m_pbrInput.roughness * radianceTextureLevels); 
-    const float2 BRDF = m_pbrConstants.BRDFLuT.SampleLevel2D(m_pbrConstants.pointLinearClampSampler, float2(NdotV, m_pbrInput.roughness), 0);
+    const float3 specularIrradiance = m_pbrConstants.environmentRadiance.SampleLevel(m_pbrConstants.linearSampler, R, m_pbrInput.roughness * radianceTextureLevels); 
+    const float2 BRDF = m_pbrConstants.BRDFLuT.SampleLevel(m_pbrConstants.pointLinearClampSampler, float2(NdotV, m_pbrInput.roughness), 0);
     const float3 specular = specularIrradiance * (F * BRDF.x + BRDF.y); 
     
     return kD * diffuse + specular;
@@ -209,7 +209,7 @@ float3 CalculateSpotLights(float3 dirToCamera, float3 baseReflectivity, uint spo
     float3 output = 0.f;
     for (uint i = 0; i < spotLightCount; i++)
     {
-        output += CalculateSpotLight(m_pbrConstants.spotLights.Load(0), dirToCamera, baseReflectivity);
+        output += CalculateSpotLight(m_pbrConstants.spotLights.Load(i), dirToCamera, baseReflectivity);
     }
     
     return output;
@@ -235,7 +235,7 @@ float3 CalculatePBR(in PBRInput input, in PBRConstants constants)
     
     // Directional Light
     {
-        lightOutput += CalculateDirectionalLight(constants.directionalLight.Load(0), dirToCamera, baseReflectivity);
+        lightOutput += CalculateDirectionalLight(constants.directionalLight.Load(), dirToCamera, baseReflectivity);
     }
     
     // Point lights

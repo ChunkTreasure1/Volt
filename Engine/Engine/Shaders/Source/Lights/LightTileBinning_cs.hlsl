@@ -5,14 +5,14 @@
 
 struct Constants
 {
-    UniformTexture<float> depthTexture;
-    UniformBuffer<ViewData> viewData;
+    vt::UniformTex2D<float> depthTexture;
+    vt::UniformBuffer<ViewData> viewData;
     
-    UniformTypedBuffer<PointLight> pointLights;
-    UniformTypedBuffer<SpotLight> spotLights;
+    vt::UniformTypedBuffer<PointLight> pointLights;
+    vt::UniformTypedBuffer<SpotLight> spotLights;
 
-    UniformRWTypedBuffer<int> visiblePointLightIndices;
-    UniformRWTypedBuffer<int> visibleSpotLightIndices;
+    vt::UniformRWTypedBuffer<int> visiblePointLightIndices;
+    vt::UniformRWTypedBuffer<int> visibleSpotLightIndices;
  
     uint2 tileCount;
 };
@@ -45,7 +45,7 @@ void main(uint2 dispatchThreadId : SV_DispatchThreadID, uint groupThreadIndex : 
     GroupMemoryBarrierWithGroupSync();
 
     // Find max and min depth in current tile
-    const float pixelDepthValue = LinearizeDepth(constants.depthTexture.Load2D(int3(dispatchThreadId, 0)), viewData);
+    const float pixelDepthValue = LinearizeDepth(constants.depthTexture.Load(int3(dispatchThreadId, 0)), viewData);
     const uint depthInt = asuint(pixelDepthValue);
     
     InterlockedMin(m_minDepthInt, depthInt);

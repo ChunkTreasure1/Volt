@@ -1336,7 +1336,7 @@ namespace Volt
 		m_registeredExternalResources[resource] = handle;
 	}
 
-	void RenderGraph::AddPass(const std::string& name, std::function<void(RenderGraph::Builder&)> createFunc, std::function<void(RenderContext&, const RenderGraphPassResources&)>&& executeFunc)
+	void RenderGraph::AddPass(const std::string& name, std::function<void(RenderGraph::Builder&)> createFunc, std::function<void(RenderContext&)>&& executeFunc)
 	{
 		static_assert(sizeof(executeFunc) <= 512 && "Execution function must not be larger than 512 bytes!");
 		struct Empty
@@ -1346,9 +1346,9 @@ namespace Volt
 		Ref<RenderGraphPassNode<Empty>> newNode = CreateRef<RenderGraphPassNode<Empty>>();
 		newNode->name = name;
 		newNode->index = m_passIndex++;
-		newNode->executeFunction = [executeFunc](const Empty&, RenderContext& context, const RenderGraphPassResources& resources)
+		newNode->executeFunction = [executeFunc](const Empty&, RenderContext& context)
 		{
-			executeFunc(context, resources);
+			executeFunc(context);
 		};
 
 		m_passNodes.push_back(newNode);
@@ -1375,7 +1375,7 @@ namespace Volt
 		Builder tempBuilder{ *this, newNode };
 		tempBuilder.WriteResource(bufferHandle, RenderGraphResourceState::CopyDest);
 
-		newNode->executeFunction = [tempData, size, bufferHandle](const Empty&, RenderContext& context, const RenderGraphPassResources& resources)
+		newNode->executeFunction = [tempData, size, bufferHandle](const Empty&, RenderContext& context)
 		{
 			context.MappedBufferUpload(bufferHandle, tempData, size);
 		}; 
@@ -1420,7 +1420,7 @@ namespace Volt
 		tempBuilder.WriteResource(bufferHandle, RenderGraphResourceState::CopyDest);
 		tempBuilder.ReadResource(stagingBuffer, RenderGraphResourceState::CopySource);
 
-		newNode->executeFunction = [tempData, size, bufferHandle, stagingBuffer](const Empty&, RenderContext& context, const RenderGraphPassResources& resources)
+		newNode->executeFunction = [tempData, size, bufferHandle, stagingBuffer](const Empty&, RenderContext& context)
 		{
 			context.CopyBuffer(stagingBuffer, bufferHandle, size);
 		};

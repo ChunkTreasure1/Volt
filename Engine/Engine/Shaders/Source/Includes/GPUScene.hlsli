@@ -9,8 +9,8 @@
 
 struct GPUMaterial
 {
-    TTexture<float4> textures[16];
-    TextureSampler samplers[16];
+    vt::Tex2D<float4> textures[16];
+    vt::TextureSampler samplers[16];
     
     uint textureCount;
     uint materialFlags;
@@ -74,14 +74,14 @@ struct Meshlet
 
 struct GPUMesh
 {
-    TypedBuffer<float3> vertexPositionsBuffer;
-    TypedBuffer<VertexMaterialData> vertexMaterialBuffer;
-    TypedBuffer<VertexAnimationData> vertexAnimationInfoBuffer;
-    TypedBuffer<uint16_t> vertexBoneInfluencesBuffer;
+    vt::TypedBuffer<float3> vertexPositionsBuffer;
+    vt::TypedBuffer<VertexMaterialData> vertexMaterialBuffer;
+    vt::TypedBuffer<VertexAnimationData> vertexAnimationInfoBuffer;
+    vt::TypedBuffer<uint16_t> vertexBoneInfluencesBuffer;
 
-    TypedBuffer<float> vertexBoneWeightsBuffer; // Should be packed
-    TypedBuffer<uint> meshletDataBuffer;
-    TypedBuffer<Meshlet> meshletsBuffer;
+    vt::TypedBuffer<float> vertexBoneWeightsBuffer; // Should be packed
+    vt::TypedBuffer<uint> meshletDataBuffer;
+    vt::TypedBuffer<Meshlet> meshletsBuffer;
     
     BoundingSphere boundingSphere;
 
@@ -100,13 +100,13 @@ struct GPUSDFBrick
 
 struct GPUMeshSDF
 {
-    TTexture<float> sdfTexture;
+    vt::Tex3D<float> sdfTexture;
     float3 size;
 
     float3 min;
     float3 max;
     
-    TypedBuffer<GPUSDFBrick> bricksBuffer;
+    vt::TypedBuffer<GPUSDFBrick> bricksBuffer;
     uint brickCount;
 };
 
@@ -133,10 +133,10 @@ struct SDFPrimitiveDrawData
 
 struct GPUScene
 {
-    UniformTypedBuffer<GPUMesh> meshesBuffer;
-    UniformTypedBuffer<GPUMeshSDF> sdfMeshesBuffer;
-    UniformTypedBuffer<GPUMaterial> materialsBuffer;
-    UniformTypedBuffer<PrimitiveDrawData> primitiveDrawDataBuffer;
-    UniformTypedBuffer<SDFPrimitiveDrawData> sdfPrimitiveDrawDataBuffer;
-    UniformTypedBuffer<float4x4> bonesBuffer;
+    vt::UniformTypedBuffer<GPUMesh> meshesBuffer;
+    vt::UniformTypedBuffer<GPUMeshSDF> sdfMeshesBuffer;
+    vt::UniformTypedBuffer<GPUMaterial> materialsBuffer;
+    vt::UniformTypedBuffer<PrimitiveDrawData> primitiveDrawDataBuffer;
+    vt::UniformTypedBuffer<SDFPrimitiveDrawData> sdfPrimitiveDrawDataBuffer;
+    vt::UniformTypedBuffer<float4x4> bonesBuffer;
 };

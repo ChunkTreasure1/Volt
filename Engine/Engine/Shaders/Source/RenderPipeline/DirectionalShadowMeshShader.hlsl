@@ -7,8 +7,8 @@
 struct Constants
 {
     GPUScene gpuScene;
-    UniformBuffer<DirectionalLight> directionalLight;
-    UniformTypedBuffer<MeshTaskCommand> taskCommands;
+    vt::UniformBuffer<DirectionalLight> directionalLight;
+    vt::UniformTypedBuffer<MeshTaskCommand> taskCommands;
 
     float4x4 viewMatrix;
     float4 cullingFrustum;

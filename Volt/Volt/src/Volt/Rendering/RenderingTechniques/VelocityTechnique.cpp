@@ -46,7 +46,7 @@ namespace Volt
 
 			builder.SetHasSideEffect();
 		},
-		[=](const Output& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[=](const Output& data, RenderContext& context)
 		{
 			RenderingInfo info = context.CreateRenderingInfo(renderData.renderSize.x, renderData.renderSize.y, { data.velocityTexture });
 
@@ -64,7 +64,7 @@ namespace Volt
 				context.SetConstant("renderSize"_sh, glm::vec2(renderData.renderSize));
 				context.SetConstant("invRenderSize"_sh, 1.f / glm::vec2(renderData.renderSize));
 				context.SetConstant("jitterOffset"_sh, (renderData.camera->GetSubpixelOffset() - previousData.jitter) * 0.5f);
-				context.SetConstant("depthTexture"_sh, resources.GetImage2D(preDepthData.depth));
+				context.SetConstant("depthTexture"_sh, preDepthData.depth);
 				context.SetConstant("pointSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest>()->GetResourceHandle());
 			});
 

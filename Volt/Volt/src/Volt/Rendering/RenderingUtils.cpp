@@ -30,13 +30,13 @@ namespace Volt::RenderingUtils
 			builder.ReadResource(countBuffer);
 			builder.SetIsComputePass();
 		},
-		[=](const Output& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[=](const Output& data, RenderContext& context)
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("GenerateIndirectArgs");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("indirectArgs"_sh, resources.GetBuffer(data.argsBufferHandle));
-			context.SetConstant("countBuffer"_sh, resources.GetBuffer(countBuffer));
+			context.SetConstant("indirectArgs"_sh, data.argsBufferHandle);
+			context.SetConstant("countBuffer"_sh, countBuffer);
 			context.SetConstant("threadGroupSize"_sh, groupSize);
 
 			context.Dispatch(1, 1, 1);
@@ -61,13 +61,13 @@ namespace Volt::RenderingUtils
 			builder.ReadResource(countBuffer);
 			builder.SetIsComputePass();
 		},
-		[=](const Output& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[=](const Output& data, RenderContext& context)
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("GenerateIndirectArgsWrapped");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("indirectArgs"_sh, resources.GetBuffer(data.argsBufferHandle));
-			context.SetConstant("countBuffer"_sh, resources.GetBuffer(countBuffer));
+			context.SetConstant("indirectArgs"_sh, data.argsBufferHandle);
+			context.SetConstant("countBuffer"_sh, countBuffer);
 			context.SetConstant("groupSize"_sh, groupSize);
 
 			context.Dispatch(1, 1, 1);
@@ -84,7 +84,7 @@ namespace Volt::RenderingUtils
 			builder.ReadResource(sourceImage);
 			builder.WriteResource(destinationImage);
 		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		[=](RenderContext& context)
 		{
 			RenderingInfo info = context.CreateRenderingInfo(renderSize.x, renderSize.y, { destinationImage });
 
@@ -97,7 +97,7 @@ namespace Volt::RenderingUtils
 
 			RCUtils::DrawFullscreenTriangle(context, pipeline, [&](RenderContext& context)
 			{
-				context.SetConstant("color"_sh, resources.GetImage2D(sourceImage));
+				context.SetConstant("color"_sh, sourceImage);
 			});
 
 			context.EndRendering();

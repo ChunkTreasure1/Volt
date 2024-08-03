@@ -4,7 +4,7 @@
 struct Constants
 {
     float4x4 viewProjection;
-    TextureSampler linearSampler;
+    vt::TextureSampler linearSampler;
 };
 
 struct Output

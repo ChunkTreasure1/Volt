@@ -14,18 +14,18 @@
 
 struct Constants
 {
-    UniformTexture<uint2> visibilityBuffer;
-    UniformTypedBuffer<uint> materialCountBuffer;
-    UniformTypedBuffer<uint> materialStartBuffer;
-    UniformTypedBuffer<uint2> pixelCollection;
+    vt::UniformTex2D<uint2> visibilityBuffer;
+    vt::UniformTypedBuffer<uint> materialCountBuffer;
+    vt::UniformTypedBuffer<uint> materialStartBuffer;
+    vt::UniformTypedBuffer<uint2> pixelCollection;
     
     GPUScene gpuScene;
-    UniformBuffer<ViewData> viewData;
+    vt::UniformBuffer<ViewData> viewData;
     
-    UniformRWTexture<float4> albedo;
-    UniformRWTexture<float4> normals;
-    UniformRWTexture<float2> material;
-    UniformRWTexture<float3> emissive;
+    vt::UniformRWTex2D<float4> albedo;
+    vt::UniformRWTex2D<float4> normals;
+    vt::UniformRWTex2D<float2> material;
+    vt::UniformRWTex2D<float3> emissive;
     
     uint materialId;
     
@@ -91,7 +91,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     }
     
     const float2 pixelPosition = constants.pixelCollection.Load(pixelIndex) + 0.5f;
-    const uint2 visibilityValues = constants.visibilityBuffer.Load2D(int3(pixelPosition, 0));
+    const uint2 visibilityValues = constants.visibilityBuffer.Load(int3(pixelPosition, 0));
     
     const uint objectId = visibilityValues.x;
     const uint triangleId = UnpackTriangleID(visibilityValues.y);
@@ -147,8 +147,8 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     float4 albedo = evaluatedMaterial.albedo;
     albedo.xyz = SRGBToLinear(albedo.xyz);
     
-    constants.albedo.Store2D(pixelPosition, albedo);
-    constants.normals.Store2D(pixelPosition, float4(resultNormal * 0.5f + 0.5f, 0.f));
-    constants.material.Store2D(pixelPosition, float2(evaluatedMaterial.metallic, evaluatedMaterial.roughness));
-    constants.emissive.Store2D(pixelPosition, evaluatedMaterial.emissive);
+    constants.albedo.Store(pixelPosition, albedo);
+    constants.normals.Store(pixelPosition, float4(resultNormal * 0.5f + 0.5f, 0.f));
+    constants.material.Store(pixelPosition, float2(evaluatedMaterial.metallic, evaluatedMaterial.roughness));
+    constants.emissive.Store(pixelPosition, evaluatedMaterial.emissive);
 }

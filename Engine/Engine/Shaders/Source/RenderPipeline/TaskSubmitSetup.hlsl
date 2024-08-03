@@ -3,8 +3,8 @@
 
 struct Constants
 {
-    UniformRWTypedBuffer<uint> countCommandBuffer;
-    UniformRWTypedBuffer<MeshTaskCommand> taskCommands;
+    vt::UniformRWTypedBuffer<uint> countCommandBuffer;
+    vt::UniformRWTypedBuffer<MeshTaskCommand> taskCommands;
 };
 
 [numthreads(32, 1, 1)]

@@ -3,9 +3,9 @@
 
 struct Constants
 {
-	UniformRWTexture<float> outSDFTexture;
-    UniformTypedBuffer<float3> vertexPositions;
-    UniformTypedBuffer<uint> indexBuffer;
+	vt::UniformRWTex3D<float> outSDFTexture;
+    vt::UniformTypedBuffer<float3> vertexPositions;
+    vt::UniformTypedBuffer<uint> indexBuffer;
 
     uint indexCount;
     uint indexStartOffset;
@@ -146,9 +146,9 @@ void MainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 
         const float distance = SignedDistance(pointPos, v0, v1, v2);
 
-		if (abs(distance) < abs(constants.outSDFTexture.Load3D(dispatchThreadId)))
+		if (abs(distance) < abs(constants.outSDFTexture.Load(dispatchThreadId)))
 		{
-			constants.outSDFTexture.Store3D(dispatchThreadId, distance);
+			constants.outSDFTexture.Store(dispatchThreadId, distance);
 		}
     }
 }

@@ -5,9 +5,9 @@ struct Constants
 {
     float4x4 viewProjection;
 
-    UniformTypedBuffer<float3> vertexPositionsBuffer;
-    UniformTypedBuffer<Meshlet> meshletsBuffer;
-    UniformTypedBuffer<uint> meshletDataBuffer;
+    vt::UniformTypedBuffer<float3> vertexPositionsBuffer;
+    vt::UniformTypedBuffer<Meshlet> meshletsBuffer;
+    vt::UniformTypedBuffer<uint> meshletDataBuffer;
 
     uint meshletStartOffset;
     uint vertexOffset;

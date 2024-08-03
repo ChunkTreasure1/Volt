@@ -4,11 +4,11 @@
 
 struct Constants
 {
-    UniformTypedBuffer<VertexPositionData> vertexPositions;
-    UniformBuffer<ViewData> viewData;
+    vt::UniformTypedBuffer<VertexPositionData> vertexPositions;
+    vt::UniformBuffer<ViewData> viewData;
 
-    UniformTexture<float3> environmentTexture;
-    TextureSampler linearSampler;
+    vt::UniformTexCube<float3> environmentTexture;
+    vt::TextureSampler linearSampler;
 
     float lod;
     float intensity;
@@ -29,7 +29,7 @@ Output main(Input input)
 {
     const Constants constants = GetConstants<Constants>();
 
-    float3 result = constants.environmentTexture.SampleLevelCube(constants.linearSampler, input.samplePosition / 100.f, constants.lod) * constants.intensity;
+    float3 result = constants.environmentTexture.SampleLevel(constants.linearSampler, input.samplePosition / 100.f, constants.lod) * constants.intensity;
     
     Output output;
     output.output = result;

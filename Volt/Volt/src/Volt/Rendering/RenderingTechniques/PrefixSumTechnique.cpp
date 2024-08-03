@@ -56,12 +56,12 @@ namespace Volt
 			builder.WriteResource(outputBuffer);
 			builder.SetIsComputePass();
 		},
-		[pipeline, groupCount, inputBuffer, outputBuffer, valueCount](const PrefixSumData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[pipeline, groupCount, inputBuffer, outputBuffer, valueCount](const PrefixSumData& data, RenderContext& context)
 		{
 			context.BindPipeline(pipeline);
-			context.SetConstant("inputValues"_sh, resources.GetBuffer(inputBuffer));
-			context.SetConstant("outputValues"_sh, resources.GetBuffer(outputBuffer));
-			context.SetConstant("stateBuffer"_sh, resources.GetBuffer(data.stateBuffer));
+			context.SetConstant("inputValues"_sh, inputBuffer);
+			context.SetConstant("outputValues"_sh, outputBuffer);
+			context.SetConstant("stateBuffer"_sh, data.stateBuffer);
 			context.SetConstant("valueCount"_sh, valueCount);
 
 			context.Dispatch(groupCount, 1, 1);

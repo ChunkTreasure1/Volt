@@ -91,7 +91,7 @@ namespace Volt
 		void OnRender(Ref<Camera> camera);
 
 		void BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard);
-		void SetupMeshPassConstants(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard& blackboard);
+		void SetupMeshPassConstants(RenderContext& context, const RenderGraphBlackboard& blackboard);
 
 		void SetupFrameData(RenderGraphBlackboard& blackboard, Ref<Camera> camera);
 

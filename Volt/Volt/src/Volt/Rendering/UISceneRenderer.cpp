@@ -102,7 +102,7 @@ namespace Volt
 				builder.WriteResource(targetImageHandle);
 				builder.SetHasSideEffect();
 			}, 
-			[=](RenderContext& context, const RenderGraphPassResources& resources) 
+			[=](RenderContext& context) 
 			{
 				RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { targetImageHandle });
 
@@ -140,7 +140,7 @@ namespace Volt
 
 				builder.SetHasSideEffect();
 			},
-			[=](const UISelectionData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+			[=](const UISelectionData& data, RenderContext& context) 
 			{
 				RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { data.widgetIDImage, data.depthImage });
 				
@@ -177,7 +177,7 @@ namespace Volt
 
 				builder.SetHasSideEffect();
 			},
-			[=](const UIPassData& data, RenderContext& context, const RenderGraphPassResources& resources)
+			[=](const UIPassData& data, RenderContext& context)
 			{
 				RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { targetImageHandle, data.depthImage });
 				renderingInfo.renderingInfo.colorAttachments[0].clearMode = RHI::ClearMode::Load;

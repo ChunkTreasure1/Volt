@@ -6,8 +6,8 @@ struct Constants
 {
     float4x4 viewProjection;
 
-    UniformTypedBuffer<GPUMesh> gpuMeshesBuffer;
-    UniformTypedBuffer<float4x4> transformsBuffer;
+    vt::UniformTypedBuffer<GPUMesh> gpuMeshesBuffer;
+    vt::UniformTypedBuffer<float4x4> transformsBuffer;
 };
 
 struct PerDrawData

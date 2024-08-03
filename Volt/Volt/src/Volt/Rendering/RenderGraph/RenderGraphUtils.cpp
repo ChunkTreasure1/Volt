@@ -12,7 +12,7 @@ namespace Volt::RGUtils
 		{
 			builder.WriteResource(image, RenderGraphResourceState::Clear);
 		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](RenderContext& context) 
 		{
 			context.ClearImage(image, clearColor);
 		});
@@ -25,7 +25,7 @@ namespace Volt::RGUtils
 		{
 			builder.WriteResource(image, RenderGraphResourceState::Clear);
 		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		[=](RenderContext& context)
 		{
 			context.ClearImage(image, clearColor);
 		});
@@ -38,7 +38,7 @@ namespace Volt::RGUtils
 		{
 			builder.WriteResource(buffer, RenderGraphResourceState::Clear);
 		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](RenderContext& context) 
 		{
 			context.ClearBuffer(buffer, clearValue);
 		});

@@ -5,11 +5,11 @@
 
 struct Constants
 {
-    UniformTypedBuffer<VertexPositionData> vertexPositions;
-    UniformBuffer<ViewData> viewData;
+    vt::UniformTypedBuffer<VertexPositionData> vertexPositions;
+    vt::UniformBuffer<ViewData> viewData;
 
-    UniformTexture<float3> environmentTexture;
-    TextureSampler linearSampler;
+    vt::UniformTexCube<float3> environmentTexture;
+    vt::TextureSampler linearSampler;
 
     float lod;
     float intensity;

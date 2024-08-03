@@ -59,13 +59,13 @@ namespace Volt
 			builder.SetHasSideEffect();
 			builder.SetIsComputePass();
 		},
-		[=](const DrawCullingData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](const DrawCullingData& data, RenderContext& context) 
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("DrawCallCull");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("countBuffer"_sh, resources.GetBuffer(data.countCommandBuffer));
-			context.SetConstant("taskCommands"_sh, resources.GetBuffer(data.taskCommandsBuffer));
+			context.SetConstant("countBuffer"_sh, data.countCommandBuffer);
+			context.SetConstant("taskCommands"_sh, data.taskCommandsBuffer);
 
 			context.SetConstant("viewMatrix"_sh, info.viewMatrix);
 			context.SetConstant("cullingFrustum"_sh, info.cullingFrustum);
@@ -74,7 +74,7 @@ namespace Volt
 			context.SetConstant("drawCallCount"_sh, info.drawCommandCount);
 			context.SetConstant("cullingType"_sh, static_cast<uint32_t>(info.type));
 
-			GPUSceneData::SetupConstants(context, resources, gpuSceneData);
+			GPUSceneData::SetupConstants(context, gpuSceneData);
 		
 			constexpr uint32_t workGroupSize = 64;
 
@@ -95,13 +95,13 @@ namespace Volt
 
 			builder.SetHasSideEffect();
 		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		[=](RenderContext& context)
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("TaskSubmitSetup");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("countCommandBuffer"_sh, resources.GetBuffer(data.countCommandBuffer));
-			context.SetConstant("taskCommands"_sh, resources.GetBuffer(data.taskCommandsBuffer));
+			context.SetConstant("countCommandBuffer"_sh, data.countCommandBuffer);
+			context.SetConstant("taskCommands"_sh, data.taskCommandsBuffer);
 			context.Dispatch(1, 1, 1);
 		});
 	}

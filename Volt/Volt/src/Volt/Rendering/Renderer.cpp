@@ -505,7 +505,7 @@ namespace Volt
 			builder.WriteResource(targetImageHandle);
 			builder.SetHasSideEffect();
 		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](RenderContext& context) 
 		{
 			RenderingInfo renderingInfo = context.CreateRenderingInfo(BRDFSize, BRDFSize, { targetImageHandle });
 

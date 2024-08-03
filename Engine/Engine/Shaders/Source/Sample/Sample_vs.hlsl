@@ -16,7 +16,7 @@ struct Vertex
 
 struct Constants
 {
-    UniformBuffer<ViewData> viewData;
+    vt::UniformBuffer<ViewData> viewData;
 };
 
 Output main(in Vertex input)

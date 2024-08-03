@@ -54,11 +54,11 @@ float GetDirectionalShadowBias(in DirectionalLight light, in uint cascadeIndex, 
     return bias;
 }
 
-float CalculateDirectionalShadow_Hard(in DirectionalLight light, in TextureSampler samplerState, in UniformTexture<float> shadowMap, in float3 normal, in uint cascadeIndex, in float3 shadowCoords)
+float CalculateDirectionalShadow_Hard(in DirectionalLight light, in vt::TextureSampler samplerState, in vt::UniformTex2DArray<float> shadowMap, in float3 normal, in uint cascadeIndex, in float3 shadowCoords)
 {
     const float bias = GetDirectionalShadowBias(light, cascadeIndex, normal);
     const float2 sampleCoords = float2(shadowCoords.x * 0.5f + 0.5f, -shadowCoords.y * 0.5f + 0.5f);
 
-    const float shadowMapDepth = shadowMap.SampleLevel2DArray(samplerState, float3(sampleCoords, (float)cascadeIndex), 0.f).r;
+    const float shadowMapDepth = shadowMap.SampleLevel(samplerState, float3(sampleCoords, (float)cascadeIndex), 0.f).r;
     return step(shadowCoords.z, shadowMapDepth + bias);
 }

@@ -30,14 +30,14 @@ namespace VisualizationMode
 
 struct Constants
 {
-    UniformRWTexture<float4> output;
+    vt::UniformRWTex2D<float4> output;
     
-    UniformTexture<float4> albedo;
-    UniformTexture<float4> normals;
-    UniformTexture<float2> material;
-    UniformTexture<float3> emissive;
-    UniformTexture<uint> aoTexture;
-    UniformTexture<float> depthTexture;
+    vt::UniformTex2D<float4> albedo;
+    vt::UniformTex2D<float4> normals;
+    vt::UniformTex2D<float2> material;
+    vt::UniformTex2D<float3> emissive;
+    vt::UniformTex2D<uint> aoTexture;
+    vt::UniformTex2D<float> depthTexture;
 
     uint shadingMode;
     uint visualizationMode;
@@ -45,11 +45,11 @@ struct Constants
     PBRConstants pbrConstants;
 };
 
-float CalculateAO(UniformTexture<uint> aoTex, uint2 pixelCoord)
+float CalculateAO(vt::UniformTex2D<uint> aoTex, uint2 pixelCoord)
 {
 #define XE_GTAO_OCCLUSION_TERM_SCALE (1.5f)      // for packing in UNORM (because raw, pre-denoised occlusion term can overshoot 1 but will later average out to 1)
 
-    const float ao = (aoTex.Load2D(int3(pixelCoord, 0)).x >> 24) / 255.f;
+    const float ao = (aoTex.Load(int3(pixelCoord, 0)).x >> 24) / 255.f;
     float finalAO = min(ao * XE_GTAO_OCCLUSION_TERM_SCALE, 1.f);
 
     return finalAO;
@@ -68,7 +68,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
         return;
     }
     
-    const float4 albedo = constants.albedo.Load2D(int3(threadId.xy, 0));
+    const float4 albedo = constants.albedo.Load(int3(threadId.xy, 0));
     
     if (albedo.a < 0.5f)
     {
@@ -77,15 +77,15 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     
     const float2 texCoords = float2(float(threadId.x) * viewData.invRenderSize.x, 1.f - float(threadId.y) * viewData.invRenderSize.y);
     
-    const float2 material = constants.material.Load2D(int3(threadId.xy, 0));
+    const float2 material = constants.material.Load(int3(threadId.xy, 0));
     
     const float metallic = material.x;
     const float roughness = material.y;
-    const float3 emissive = constants.emissive.Load2D(int3(threadId.xy, 0));
-    const float3 normal = normalize(constants.normals.Load2D(int3(threadId.xy, 0)).xyz * 2.f - 1.f);
+    const float3 emissive = constants.emissive.Load(int3(threadId.xy, 0));
+    const float3 normal = normalize(constants.normals.Load(int3(threadId.xy, 0)).xyz * 2.f - 1.f);
     const float ao = CalculateAO(constants.aoTexture, threadId.xy);    
 
-    const float pixelDepth = constants.depthTexture.Load2D(int3(threadId.xy, 0));
+    const float pixelDepth = constants.depthTexture.Load(int3(threadId.xy, 0));
     const float3 worldPosition = ReconstructWorldPosition(viewData, texCoords, pixelDepth);
     
     PBRInput pbrInput;
@@ -152,7 +152,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     {
         case VisualizationMode::VisualizeCascades:
         {
-            outputColor = outputColor * 0.2f + GetCascadeColorFromIndex(GetCascadeIndexFromWorldPosition(constants.pbrConstants.directionalLight.Load(0), worldPosition, viewData.view)) * 0.5f;
+            outputColor = outputColor * 0.2f + GetCascadeColorFromIndex(GetCascadeIndexFromWorldPosition(constants.pbrConstants.directionalLight.Load(), worldPosition, viewData.view)) * 0.5f;
             break;
         }
 
@@ -166,5 +166,5 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
             break;
     };
 
-    constants.output.Store2D(threadId.xy, float4(outputColor, 1.f));
+    constants.output.Store(threadId.xy, float4(outputColor, 1.f));
 }

@@ -4,7 +4,7 @@
 struct Constants
 {
     float4x4 viewProjection;
-    TextureSampler linearSampler;
+    vt::TextureSampler linearSampler;
 };
 
 struct Output
@@ -25,10 +25,10 @@ Output main(Input input)
 {
     const Constants constants = GetConstants<Constants>();
 
-    TTexture<float4> texture = (TTexture<float4>)input.imageHandle;
+    vt::UniformTex2D<float4> texture = (vt::UniformTex2D<float4>)input.imageHandle;
 
     Output output;
-    output.color = texture.Sample2D(constants.linearSampler, input.texCoords);
+    output.color = texture.Sample(constants.linearSampler, input.texCoords);
     output.color.rgb *= input.color.rgb;
     output.color.a = input.color.a;
 

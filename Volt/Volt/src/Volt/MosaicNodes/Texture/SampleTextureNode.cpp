@@ -107,10 +107,10 @@ namespace Volt::MosaicNodes
 
 	const Mosaic::ResultInfo SampleTextureNode::GetShaderCode(const GraphNode<Ref<class Mosaic::MosaicNode>, Ref<Mosaic::MosaicEdge>>& underlyingNode, uint32_t outputIndex, std::string& appendableShaderString) const
 	{
-		constexpr const char* nodeStr = "TextureSampler {} = material.samplers[{}]; \n"
-										"TTexture<float4> {} = material.textures[{}]; \n"
+		constexpr const char* nodeStr = "vt::TextureSampler {} = material.samplers[{}]; \n"
+										"vt::Tex2D<float4> {} = material.textures[{}]; \n"
 										"const float2 {} = {}; \n"
-										"const float4 {} = {}.SampleGrad2D({}, {} * {}, evalData.texCoordsDX * {}.x, evalData.texCoordsDY * {}.y); \n";
+										"const float4 {} = {}.SampleGrad({}, {} * {}, evalData.texCoordsDX * {}.x, evalData.texCoordsDY * {}.y); \n";
 
 		if (m_evaluated)
 		{

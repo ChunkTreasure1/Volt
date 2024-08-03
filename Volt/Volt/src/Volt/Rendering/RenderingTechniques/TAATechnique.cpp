@@ -48,7 +48,7 @@ namespace Volt
 			builder.ReadResource(shadingData.colorOutput);
 
 		},
-		[=](const TAAData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](const TAAData& data, RenderContext& context) 
 		{
 			RenderingInfo info = context.CreateRenderingInfo(renderData.renderSize.x, renderData.renderSize.y, { data.taaOutput });
 
@@ -61,9 +61,9 @@ namespace Volt
 
 			RCUtils::DrawFullscreenTriangle(context, pipeline, [&](RenderContext& context) 
 			{
-				context.SetConstant("currentColor"_sh, resources.GetImage2D(shadingData.colorOutput));
-				context.SetConstant("previousColor"_sh, resources.GetImage2D(data.previousColor));
-				context.SetConstant("velocityTexture"_sh, resources.GetImage2D(velocityTexture));
+				context.SetConstant("currentColor"_sh, shadingData.colorOutput);
+				context.SetConstant("previousColor"_sh, data.previousColor);
+				context.SetConstant("velocityTexture"_sh, velocityTexture);
 				context.SetConstant("pointSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest>()->GetResourceHandle());
 			});
 

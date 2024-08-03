@@ -206,6 +206,15 @@ namespace Volt
 		template<>
 		void SetConstant(const StringHash& name, const ResourceHandle& data);
 
+		void SetConstant(const StringHash& name, const RenderGraphImage2DHandle& data, const int32_t mip = -1, const int32_t layer = -1);
+		void SetConstant(const StringHash& name, const RenderGraphImage3DHandle& data, const int32_t mip = -1, const int32_t layer = -1);
+
+		template<>
+		void SetConstant(const StringHash& name, const RenderGraphBufferHandle& data);
+
+		template<>
+		void SetConstant(const StringHash& name, const RenderGraphUniformBufferHandle& data);
+
 		template<typename F>
 		void SetConstant(const StringHash& name, const Vector<F>& data);
 

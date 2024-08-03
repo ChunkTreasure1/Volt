@@ -10,11 +10,11 @@ struct BrickInfo
 
 struct Constants
 {
-    UniformRWTypedBuffer<GPUSDFBrick> bricks;
-    UniformRWTexture<float> brickTexture;
+    vt::UniformRWTypedBuffer<GPUSDFBrick> bricks;
+    vt::UniformRWTex3D<float> brickTexture;
 
-    UniformTypedBuffer<float> brickData;
-    UniformTypedBuffer<BrickInfo> brickInfo;
+    vt::UniformTypedBuffer<float> brickData;
+    vt::UniformTypedBuffer<BrickInfo> brickInfo;
 
     uint brickTextureSize;
 };
@@ -35,6 +35,6 @@ void MainCS(uint groupThreadId : SV_GroupThreadID, uint groupId : SV_GroupID)
     outBrick.min = brickInfo.min;
     outBrick.max = brickInfo.max;
     
-    constants.brickTexture.Store3D(targetBrickCoord + brickLocalCoord, constants.brickData.Load(groupId * 512 + groupThreadId));
+    constants.brickTexture.Store(targetBrickCoord + brickLocalCoord, constants.brickData.Load(groupId * 512 + groupThreadId));
     constants.bricks.Store(groupId, outBrick);
 }

@@ -68,12 +68,12 @@ namespace Volt
 	struct RenderGraphPassNode : public RenderGraphPassNodeBase
 	{
 		T data{};
-		std::function<void(const T& data, RenderContext& context, const RenderGraphPassResources& resources)> executeFunction;
+		std::function<void(const T& data, RenderContext& context)> executeFunction;
 
 		void Execute(RenderGraph& renderGraph, RenderContext& context) override
 		{
 			RenderGraphPassResources resources{ renderGraph, *this };
-			executeFunction(data, context, resources);
+			executeFunction(data, context);
 		}
 	};
 }

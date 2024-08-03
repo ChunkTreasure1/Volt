@@ -53,10 +53,20 @@ namespace Volt::RHI
 		Half,
 
 		Buffer,
-		UniformBuffer,
-		Texture,
 		RWBuffer,
-		RWTexture,
+		UniformBuffer,
+
+		Texture2D,
+		RWTexture2D,
+
+		Texture2DArray,
+		RWTexture2DArray,
+
+		TextureCube,
+
+		Texture3D,
+		RWTexture3D,
+
 		Sampler
 	};
 
@@ -93,9 +103,14 @@ namespace Volt::RHI
 
 				case ShaderUniformBaseType::Buffer: size = 4; break;
 				case ShaderUniformBaseType::UniformBuffer: size = 4; break;
-				case ShaderUniformBaseType::Texture: size = 4; break;
+				case ShaderUniformBaseType::Texture2D: size = 4; break;
+				case ShaderUniformBaseType::RWTexture2D: size = 4; break;
+				case ShaderUniformBaseType::Texture2DArray: size = 4; break;
+				case ShaderUniformBaseType::RWTexture2DArray: size = 4; break;
+				case ShaderUniformBaseType::TextureCube: size = 4; break;
+				case ShaderUniformBaseType::Texture3D: size = 4; break;
+				case ShaderUniformBaseType::RWTexture3D: size = 4; break;
 				case ShaderUniformBaseType::RWBuffer: size = 4; break;
-				case ShaderUniformBaseType::RWTexture: size = 4; break;
 				case ShaderUniformBaseType::Sampler: size = 4; break;
 			}
 

@@ -5,7 +5,7 @@
 
 struct Constants
 {
-    UniformTexture<float3> finalColor;
+    vt::UniformTex2D<float3> finalColor;
 };
 
 struct Output
@@ -16,7 +16,7 @@ struct Output
 Output main(FullscreenTriangleVertex input)
 {
     const Constants constants = GetConstants<Constants>();
-    float3 currentColor = constants.finalColor.Load2D(int3(input.position.xy, 0));
+    float3 currentColor = constants.finalColor.Load(int3(input.position.xy, 0));
 
     currentColor = ACESFitted(currentColor);
 

@@ -4,12 +4,12 @@
 
 struct Constants
 {
-    RWTexture<uint> aoTerm;
-    RWTexture<float> edges;
+    vt::UniformRWTex2D<uint> aoTerm;
+    vt::UniformRWTex2D<float> edges;
     
-    TTexture<float> srcDepth;
-    TTexture<float4> viewspaceNormals;
-    TextureSampler pointClampSampler;
+    vt::UniformTex2D<float> srcDepth;
+    vt::UniformTex2D<float4> viewspaceNormals;
+    vt::TextureSampler pointClampSampler;
     uint3 padding;
     
     GTAOConstants constants;
@@ -47,11 +47,11 @@ void main(uint2 dispatchThreadID : SV_DispatchThreadID)
 {
     const Constants constants = GetConstants<Constants>();
     
-    RWTexture2D<uint> aoTerm = constants.aoTerm.Get2D();
-    RWTexture2D<float> edges = constants.edges.Get2D();
+    RWTexture2D<uint> aoTerm = constants.aoTerm.Get();
+    RWTexture2D<float> edges = constants.edges.Get();
     
-    Texture2D<float> srcDepth = constants.srcDepth.Get2D();
-    Texture2D<float4> viewspaceNormals = constants.viewspaceNormals.Get2D();
+    Texture2D<float> srcDepth = constants.srcDepth.Get();
+    Texture2D<float4> viewspaceNormals = constants.viewspaceNormals.Get();
     
     //if (u_quality == 0) // Low
     //{
