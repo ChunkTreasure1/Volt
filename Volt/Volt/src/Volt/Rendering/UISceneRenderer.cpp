@@ -20,8 +20,8 @@ namespace Volt
 {
 	struct UIRenderingData
 	{
-		RenderGraphResourceHandle vertexBuffer = 0;
-		RenderGraphResourceHandle indexBuffer = 0;
+		RenderGraphBufferHandle vertexBuffer;
+		RenderGraphBufferHandle indexBuffer;
 
 		uint32_t indexCount = 0;
 	};
@@ -83,17 +83,17 @@ namespace Volt
 		{
 			const auto& renderingData = blackboard.Get<UIRenderingData>();
 
-			RenderGraphResourceHandle targetImageHandle = renderGraph.AddExternalImage2D(targetImage);
+			RenderGraphImage2DHandle targetImageHandle = renderGraph.AddExternalImage2D(targetImage);
 
 			struct UIPassData
 			{
-				RenderGraphResourceHandle depthImage;
+				RenderGraphImage2DHandle depthImage;
 			};
 
 			struct UISelectionData
 			{
-				RenderGraphResourceHandle widgetIDImage;
-				RenderGraphResourceHandle depthImage;
+				RenderGraphImage2DHandle widgetIDImage;
+				RenderGraphImage2DHandle depthImage;
 			};
 
 			renderGraph.AddPass("Grid Pass", 

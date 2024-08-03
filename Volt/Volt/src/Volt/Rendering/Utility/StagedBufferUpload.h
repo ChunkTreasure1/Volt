@@ -14,7 +14,7 @@ namespace Volt
 		StagedBufferUpload(const uint32_t uploadCount);
 
 		T& AddUploadItem();
-		void UploadTo(RenderGraph& renderGraph, RenderGraphResourceHandle dstBuffer);
+		void UploadTo(RenderGraph& renderGraph, RenderGraphBufferHandle dstBuffer);
 
 	private:
 		Vector<T> m_data;
@@ -35,7 +35,7 @@ namespace Volt
 	}
 
 	template<typename T>
-	inline void StagedBufferUpload<T>::UploadTo(RenderGraph& renderGraph, RenderGraphResourceHandle dstBuffer)
+	inline void StagedBufferUpload<T>::UploadTo(RenderGraph& renderGraph, RenderGraphBufferHandle dstBuffer)
 	{
 		if (m_currentIndex == 0)
 		{

@@ -11,7 +11,7 @@ namespace Volt
 	{
 	public:
 		PrefixSumTechnique(RenderGraph& rg);
-		void Execute(RenderGraphResourceHandle inputBuffer, RenderGraphResourceHandle outputBuffer, const uint32_t valueCount);
+		void Execute(RenderGraphBufferHandle inputBuffer, RenderGraphBufferHandle outputBuffer, const uint32_t valueCount);
 
 		RenderGraph& m_renderGraph;
 	};

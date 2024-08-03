@@ -10,14 +10,15 @@
 
 namespace Volt::RenderingUtils
 {
-	RenderGraphResourceHandle GenerateIndirectArgs(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName)
+	RenderGraphResourceHandle GenerateIndirectArgs(RenderGraph& renderGraph, RenderGraphBufferHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName)
 	{
 		struct Output
 		{
-			RenderGraphResourceHandle argsBufferHandle = 0;
+			RenderGraphBufferHandle argsBufferHandle
+				;
 		};
 
-		RenderGraphResourceHandle outHandle = 0;
+		RenderGraphBufferHandle outHandle;
 
 		renderGraph.AddPass<Output>("Generate Indirect Args",
 		[&](RenderGraph::Builder& builder, Output& data)
@@ -44,11 +45,11 @@ namespace Volt::RenderingUtils
 		return outHandle;
 	}
 
-	RenderGraphResourceHandle GenerateIndirectArgsWrapped(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName)
+	RenderGraphResourceHandle GenerateIndirectArgsWrapped(RenderGraph& renderGraph, RenderGraphBufferHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName)
 	{
 		struct Output
 		{
-			RenderGraphResourceHandle argsBufferHandle = 0;
+			RenderGraphBufferHandle argsBufferHandle;
 		};
 
 		auto& data = renderGraph.AddPass<Output>("Generate Indirect Args",
@@ -75,7 +76,7 @@ namespace Volt::RenderingUtils
 		return data.argsBufferHandle;
 	}
 
-	void CopyImage(RenderGraph& renderGraph, RenderGraphResourceHandle sourceImage, RenderGraphResourceHandle destinationImage, const glm::uvec2& renderSize)
+	void CopyImage(RenderGraph& renderGraph, RenderGraphImage2DHandle sourceImage, RenderGraphImage2DHandle destinationImage, const glm::uvec2& renderSize)
 	{
 		renderGraph.AddPass("Copy Image",
 		[&](RenderGraph::Builder& builder) 

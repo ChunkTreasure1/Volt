@@ -24,15 +24,15 @@ namespace Volt
 		TransientResourceSystem();
 		~TransientResourceSystem();
 
-		WeakPtr<RHI::Image2D> AquireImage2D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
-		WeakPtr<RHI::Image3D> AquireImage3D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
-		WeakPtr<RHI::StorageBuffer> AquireBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
-		WeakPtr<RHI::UniformBuffer> AquireUniformBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
+		WeakPtr<RHI::Image2D> AquireImage2D(RenderGraphImage2DHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
+		WeakPtr<RHI::Image3D> AquireImage3D(RenderGraphImage3DHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
+		WeakPtr<RHI::StorageBuffer> AquireBuffer(RenderGraphBufferHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
+		WeakPtr<RHI::UniformBuffer> AquireUniformBuffer(RenderGraphUniformBufferHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
 
-		RefPtr<RHI::Image2D> AquireImage2DRef(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
-		RefPtr<RHI::Image3D> AquireImage3DRef(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
-		RefPtr<RHI::StorageBuffer> AquireBufferRef(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
-		RefPtr<RHI::UniformBuffer> AquireUniformBufferRef(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
+		RefPtr<RHI::Image2D> AquireImage2DRef(RenderGraphImage2DHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
+		RefPtr<RHI::Image3D> AquireImage3DRef(RenderGraphImage3DHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
+		RefPtr<RHI::StorageBuffer> AquireBufferRef(RenderGraphBufferHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
+		RefPtr<RHI::UniformBuffer> AquireUniformBufferRef(RenderGraphUniformBufferHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
 
 		void SurrenderResource(RenderGraphResourceHandle originalResource, size_t hash);
 		void AddExternalResource(RenderGraphResourceHandle resourceHandle, RefPtr<RHI::RHIResource> resource);

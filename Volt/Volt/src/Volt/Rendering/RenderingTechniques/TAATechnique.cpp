@@ -21,7 +21,7 @@ namespace Volt
 	{
 	}
 
-	TAAData TAATechnique::Execute(RefPtr<RHI::Image2D> previousColor, RenderGraphResourceHandle velocityTexture)
+	TAAData TAATechnique::Execute(RefPtr<RHI::Image2D> previousColor, RenderGraphImage2DHandle velocityTexture)
 	{
 		const auto& shadingData = m_blackboard.Get<ShadingOutputData>();
 		const auto& renderData = m_blackboard.Get<RenderData>();

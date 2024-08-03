@@ -26,27 +26,27 @@ namespace Volt
 		m_allocatedResources.clear(); 
 	}
 
-	WeakPtr<RHI::Image2D> TransientResourceSystem::AquireImage2D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
+	WeakPtr<RHI::Image2D> TransientResourceSystem::AquireImage2D(RenderGraphImage2DHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
 	{
 		return AquireImage2DRef(resourceHandle, imageDesc);
 	}
 
-	WeakPtr<RHI::Image3D> TransientResourceSystem::AquireImage3D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
+	WeakPtr<RHI::Image3D> TransientResourceSystem::AquireImage3D(RenderGraphImage3DHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
 	{
 		return AquireImage3DRef(resourceHandle, imageDesc);
 	}
 
-	WeakPtr<RHI::StorageBuffer> TransientResourceSystem::AquireBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
+	WeakPtr<RHI::StorageBuffer> TransientResourceSystem::AquireBuffer(RenderGraphBufferHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
 	{
 		return AquireBufferRef(resourceHandle, bufferDesc);
 	}
 
-	WeakPtr<RHI::UniformBuffer> TransientResourceSystem::AquireUniformBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
+	WeakPtr<RHI::UniformBuffer> TransientResourceSystem::AquireUniformBuffer(RenderGraphUniformBufferHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
 	{
 		return AquireUniformBufferRef(resourceHandle, bufferDesc);
 	}
 
-	RefPtr<RHI::Image2D> TransientResourceSystem::AquireImage2DRef(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
+	RefPtr<RHI::Image2D> TransientResourceSystem::AquireImage2DRef(RenderGraphImage2DHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -94,7 +94,7 @@ namespace Volt
 		return image;
 	}
 
-	RefPtr<RHI::Image3D> TransientResourceSystem::AquireImage3DRef(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
+	RefPtr<RHI::Image3D> TransientResourceSystem::AquireImage3DRef(RenderGraphImage3DHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -143,7 +143,7 @@ namespace Volt
 		return image;
 	}
 
-	RefPtr<RHI::StorageBuffer> TransientResourceSystem::AquireBufferRef(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
+	RefPtr<RHI::StorageBuffer> TransientResourceSystem::AquireBufferRef(RenderGraphBufferHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -179,7 +179,7 @@ namespace Volt
 		return buffer;
 	}
 
-	RefPtr<RHI::UniformBuffer> TransientResourceSystem::AquireUniformBufferRef(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
+	RefPtr<RHI::UniformBuffer> TransientResourceSystem::AquireUniformBufferRef(RenderGraphUniformBufferHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
 	{
 		VT_PROFILE_FUNCTION();
 

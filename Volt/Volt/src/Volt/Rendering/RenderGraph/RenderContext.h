@@ -166,35 +166,36 @@ namespace Volt
 		void BeginRendering(const RenderingInfo& renderingInfo);
 		void EndRendering();
 
-		const RenderingInfo CreateRenderingInfo(const uint32_t width, const uint32_t height, const StackVector<RenderGraphResourceHandle, RHI::MAX_ATTACHMENT_COUNT>& attachments);
+		const RenderingInfo CreateRenderingInfo(const uint32_t width, const uint32_t height, const StackVector<RenderGraphImage2DHandle, RHI::MAX_ATTACHMENT_COUNT>& attachments);
 
-		void ClearImage2D(RenderGraphResourceHandle handle, const glm::vec4& clearColor);
-		void ClearImage3D(RenderGraphResourceHandle handle, const glm::vec4& clearColor);
+		void ClearImage(RenderGraphImage2DHandle handle, const glm::vec4& clearColor);
+		void ClearImage(RenderGraphImage3DHandle handle, const glm::vec4& clearColor);
+		void ClearBuffer(RenderGraphBufferHandle handle, uint32_t clearValue);
 
-		void CopyBuffer(RenderGraphResourceHandle src, RenderGraphResourceHandle dst, const size_t size);
+		void CopyBuffer(RenderGraphBufferHandle src, RenderGraphBufferHandle dst, const size_t size);
 
-		void MappedBufferUpload(RenderGraphResourceHandle buffer, const void* data, const size_t size);
+		void MappedBufferUpload(RenderGraphBufferHandle buffer, const void* data, const size_t size);
 		void PushConstants(const void* data, const uint32_t size);
 
 		void DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ);
-		void DispatchMeshTasksIndirect(RenderGraphResourceHandle commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride);
-		void DispatchMeshTasksIndirectCount(RenderGraphResourceHandle commandsBuffer, const size_t offset, RenderGraphResourceHandle countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
+		void DispatchMeshTasksIndirect(RenderGraphBufferHandle commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride);
+		void DispatchMeshTasksIndirectCount(RenderGraphBufferHandle commandsBuffer, const size_t offset, RenderGraphBufferHandle countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
 
 		void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ);
-		void DispatchIndirect(RenderGraphResourceHandle commandsBuffer, const size_t offset);
+		void DispatchIndirect(RenderGraphBufferHandle commandsBuffer, const size_t offset);
 		
-		void DrawIndirectCount(RenderGraphResourceHandle commandsBuffer, const size_t offset, RenderGraphResourceHandle countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
-		void DrawIndexedIndirect(RenderGraphResourceHandle commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride);
+		void DrawIndirectCount(RenderGraphBufferHandle commandsBuffer, const size_t offset, RenderGraphBufferHandle countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
+		void DrawIndexedIndirect(RenderGraphBufferHandle commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride);
 		void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance);
 		void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance);
 
 		void BindPipeline(WeakPtr<RHI::RenderPipeline> pipeline);
 		void BindPipeline(WeakPtr<RHI::ComputePipeline> pipeline);
 
-		void BindIndexBuffer(RenderGraphResourceHandle indexBuffer);
+		void BindIndexBuffer(RenderGraphBufferHandle indexBuffer);
 		void BindIndexBuffer(WeakPtr<RHI::IndexBuffer> indexBuffer);
 		void BindVertexBuffers(const StackVector<WeakPtr<RHI::VertexBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding);
-		void BindVertexBuffers(const StackVector<RenderGraphResourceHandle, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding);
+		void BindVertexBuffers(const StackVector<RenderGraphBufferHandle, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding);
 
 		void Flush();
 		RefPtr<RHI::StorageBuffer> GetReadbackBuffer(WeakPtr<RHI::StorageBuffer> buffer);
@@ -218,8 +219,6 @@ namespace Volt
 		{
 			std::unordered_map<StringHash, bool> uniformHasBeenSetMap;
 		};
-
-		void ClearBuffer(RenderGraphResourceHandle handle, uint32_t clearValue);
 
 		void BindDescriptorTableIfRequired();
 

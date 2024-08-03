@@ -14,15 +14,15 @@ namespace Volt
 
 	struct TAAData
 	{
-		RenderGraphResourceHandle taaOutput;
-		RenderGraphResourceHandle previousColor;
+		RenderGraphImage2DHandle taaOutput;
+		RenderGraphImage2DHandle previousColor;
 	};
 
 	class TAATechnique
 	{
 	public:
 		TAATechnique(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		TAAData Execute(RefPtr<RHI::Image2D> previousColor, RenderGraphResourceHandle velocityTexture);
+		TAAData Execute(RefPtr<RHI::Image2D> previousColor, RenderGraphImage2DHandle velocityTexture);
 
 	private:
 		RenderGraph& m_renderGraph;

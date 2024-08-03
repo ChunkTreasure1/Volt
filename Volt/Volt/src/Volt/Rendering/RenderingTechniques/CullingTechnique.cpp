@@ -38,9 +38,9 @@ namespace Volt
 		const auto& gpuSceneData = m_blackboard.Get<GPUSceneData>();
 
 		const auto countCmdBufferDesc = RGUtils::CreateBufferDesc<uint32_t>(4, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, "Count And Command Buffer");
-		RenderGraphResourceHandle countCmdBufferHandle = m_renderGraph.CreateBuffer(countCmdBufferDesc);
+		RenderGraphBufferHandle countCmdBufferHandle = m_renderGraph.CreateBuffer(countCmdBufferDesc);
 
-		m_renderGraph.AddClearBufferPass(countCmdBufferHandle, 0, "Clear Count Buffer");
+		RGUtils::ClearBuffer(m_renderGraph, countCmdBufferHandle, 0, "Clear Count Buffer");
 
 		DrawCullingData& data = m_renderGraph.AddPass<DrawCullingData>("Draw Call Culling Pass",
 		[&](RenderGraph::Builder& builder, DrawCullingData& data) 

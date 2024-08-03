@@ -497,7 +497,7 @@ namespace Volt
 		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 
 		RenderGraph renderGraph{ commandBuffer };
-		RenderGraphResourceHandle targetImageHandle = renderGraph.AddExternalImage2D(s_rendererData->defaultResources.BRDFLuT);
+		RenderGraphImage2DHandle targetImageHandle = renderGraph.AddExternalImage2D(s_rendererData->defaultResources.BRDFLuT);
 
 		renderGraph.AddPass("BRDF Pass", 
 		[&](RenderGraph::Builder& builder) 

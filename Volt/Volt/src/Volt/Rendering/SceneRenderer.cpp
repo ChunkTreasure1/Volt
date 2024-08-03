@@ -193,12 +193,14 @@ namespace Volt
 				AddVisualizeSDFPass(renderGraph, rgBlackboard, rgBlackboard.Get<ShadingOutputData>().colorOutput);
 			}
 
+			//AddVisualizeBricksPass(renderGraph, rgBlackboard, rgBlackboard.Get<ShadingOutputData>().colorOutput);
+
 			AddFinalCopyPass(renderGraph, rgBlackboard, rgBlackboard.Get<ShadingOutputData>().colorOutput);
 			AddFXAAPass(renderGraph, rgBlackboard, rgBlackboard.Get<FinalCopyData>().output);
 		}
 		else
 		{
-			RGUtils::ClearImage2D(renderGraph, renderGraph.AddExternalImage2D(m_outputImage), { 0.1f, 0.1f, 0.1f, 1.f });
+			RGUtils::ClearImage(renderGraph, renderGraph.AddExternalImage2D(m_outputImage), { 0.1f, 0.1f, 0.1f, 1.f });
 		}
 
 		{
@@ -330,7 +332,7 @@ namespace Volt
 		// Directional light
 		{
 			const auto desc = RGUtils::CreateBufferDesc<DirectionalLightData>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Directional Light Data");
-			buffersData.directionalLightBuffer = renderGraph.CreateBuffer(desc);
+			buffersData.directionalLightBuffer = renderGraph.CreateUniformBuffer(desc);
 
 			DirectionalLightInfo& lightInfo = blackboard.Add<DirectionalLightInfo>();
 			DirectionalLightData& data = lightInfo.data;
@@ -559,7 +561,7 @@ namespace Volt
 	{
 		struct Data
 		{
-			RenderGraphResourceHandle objectIdHandle;
+			RenderGraphImage2DHandle objectIdHandle;
 		};
 
 		const auto preDepthHandle = blackboard.Get<PreDepthData>().depth;
@@ -649,10 +651,10 @@ namespace Volt
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			context.ClearImage2D(gbufferData.albedo, { 0.1f, 0.1f, 0.1f, 0.f });
-			context.ClearImage2D(gbufferData.normals, { 0.f, 0.f, 0.f, 0.f });
-			context.ClearImage2D(gbufferData.material, { 0.f, 0.f, 0.f, 0.f });
-			context.ClearImage2D(gbufferData.emissive, { 0.f, 0.f, 0.f, 0.f });
+			context.ClearImage(gbufferData.albedo, { 0.1f, 0.1f, 0.1f, 0.f });
+			context.ClearImage(gbufferData.normals, { 0.f, 0.f, 0.f, 0.f });
+			context.ClearImage(gbufferData.material, { 0.f, 0.f, 0.f, 0.f });
+			context.ClearImage(gbufferData.emissive, { 0.f, 0.f, 0.f, 0.f });
 		});
 	}
 
@@ -663,11 +665,11 @@ namespace Volt
 
 		const auto& renderScene = m_scene->GetRenderScene();
 
-		RenderGraphResourceHandle materialCountBuffer = 0;
+		RenderGraphBufferHandle materialCountBuffer = RenderGraphNullHandle();
 		{
 			const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetIndividualMaterialCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Material Counts");
 			materialCountBuffer = renderGraph.CreateBuffer(desc);
-			renderGraph.AddClearBufferPass(materialCountBuffer, 0, "Clear Material Count");
+			RGUtils::ClearBuffer(renderGraph, materialCountBuffer, 0, "Clear Material Count");
 		}
 
 		blackboard.Add<MaterialCountData>() = renderGraph.AddPass<MaterialCountData>("Generate Material Count",
@@ -708,12 +710,12 @@ namespace Volt
 		const MaterialCountData& matCountData = blackboard.Get<MaterialCountData>();
 		const GPUSceneData& gpuSceneData = blackboard.Get<GPUSceneData>();
 
-		RenderGraphResourceHandle currentMaterialCountBuffer = 0;
+		RenderGraphBufferHandle currentMaterialCountBuffer = RenderGraphNullHandle();
 
 		{
 			const auto desc = RGUtils::CreateBufferDescGPU<uint32_t>(std::max(m_scene->GetRenderScene()->GetIndividualMaterialCount(), 1u), "Current Material Count");
 			currentMaterialCountBuffer = renderGraph.CreateBuffer(desc);
-			renderGraph.AddClearBufferPass(currentMaterialCountBuffer, 0, "Clear Current Material Count");
+			RGUtils::ClearBuffer(renderGraph, currentMaterialCountBuffer, 0, "Clear Current Material Count");
 		}
 
 		blackboard.Add<MaterialPixelsData>() = renderGraph.AddPass<MaterialPixelsData>("Collect Material Pixels",
@@ -757,11 +759,10 @@ namespace Volt
 	{
 		MaterialCountData matCountData = blackboard.Get<MaterialCountData>();
 
-		RenderGraphResourceHandle materialIndirectArgsBuffer = 0;
+		RenderGraphBufferHandle materialIndirectArgsBuffer = RenderGraphNullHandle();
 		{
 			const auto desc = RGUtils::CreateBufferDesc<RHI::IndirectDispatchCommand>(std::max(m_scene->GetRenderScene()->GetIndividualMaterialCount(), 1u), RHI::BufferUsage::IndirectBuffer | RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Material Indirect Args");
 			materialIndirectArgsBuffer = renderGraph.CreateBuffer(desc);
-			renderGraph.AddClearBufferPass(materialIndirectArgsBuffer, 0, "Clear Material Indirect Args Buffer");
 		}
 
 		blackboard.Add<MaterialIndirectArgsData>() = renderGraph.AddPass<MaterialIndirectArgsData>("Generate Material Indirect Args",
@@ -872,8 +873,8 @@ namespace Volt
 		const auto& environmentTexturesData = blackboard.Get<EnvironmentTexturesData>();
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 
-		RenderGraphResourceHandle meshVertexBufferHandle = renderGraph.AddExternalBuffer(m_skyboxMesh->GetVertexPositionsBuffer()->GetResource());
-		RenderGraphResourceHandle indexBufferHandle = renderGraph.AddExternalBuffer(m_skyboxMesh->GetIndexBuffer()->GetResource());
+		RenderGraphBufferHandle meshVertexBufferHandle = renderGraph.AddExternalBuffer(m_skyboxMesh->GetVertexPositionsBuffer()->GetResource());
+		RenderGraphBufferHandle indexBufferHandle = renderGraph.AddExternalBuffer(m_skyboxMesh->GetIndexBuffer()->GetResource());
 
 		blackboard.Add<ShadingOutputData>() = renderGraph.AddPass<ShadingOutputData>("Skybox Pass",
 		[&](RenderGraph::Builder& builder, ShadingOutputData& data)
@@ -971,7 +972,7 @@ namespace Volt
 
 			// PBR Constants
 			context.SetConstant("pbrConstants.viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
-			context.SetConstant("pbrConstants.directionalLight"_sh, resources.GetBuffer(uniformBuffers.directionalLightBuffer));
+			context.SetConstant("pbrConstants.directionalLight"_sh, resources.GetUniformBuffer(uniformBuffers.directionalLightBuffer));
 			context.SetConstant("pbrConstants.linearSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
 			context.SetConstant("pbrConstants.pointLinearClampSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureWrap::Clamp>()->GetResourceHandle());
 			context.SetConstant("pbrConstants.shadowSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureWrap::Repeat, RHI::AnisotropyLevel::None, RHI::CompareOperator::LessEqual>()->GetResourceHandle());
@@ -988,7 +989,7 @@ namespace Volt
 		});
 	}
 
-	void SceneRenderer::AddFXAAPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle srcImage)
+	void SceneRenderer::AddFXAAPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImage2DHandle srcImage)
 	{
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 
@@ -1023,7 +1024,7 @@ namespace Volt
 		});
 	}
 
-	void SceneRenderer::AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle srcImage)
+	void SceneRenderer::AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImage2DHandle srcImage)
 	{
 		blackboard.Add<FinalCopyData>() = renderGraph.AddPass<FinalCopyData>("Final Copy",
 		[&](RenderGraph::Builder& builder, FinalCopyData& data)
@@ -1057,7 +1058,7 @@ namespace Volt
 		});
 	}
 
-	void SceneRenderer::AddVisualizeSDFPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle dstImage)
+	void SceneRenderer::AddVisualizeSDFPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImage2DHandle dstImage)
 	{
 		const auto& gpuSceneData = blackboard.Get<GPUSceneData>();
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
@@ -1079,7 +1080,7 @@ namespace Volt
 			info.renderingInfo.colorAttachments.At(0).clearMode = RHI::ClearMode::Load;
 
 			RHI::RenderPipelineCreateInfo pipelineInfo;
-			pipelineInfo.shader = ShaderMap::Get("TraceMeshSDF");
+			pipelineInfo.shader = ShaderMap::Get("TraceMeshSDFBrick");
 			pipelineInfo.depthMode = RHI::DepthMode::None;
 			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
 
@@ -1088,10 +1089,113 @@ namespace Volt
 			RCUtils::DrawFullscreenTriangle(context, pipeline, [&](RenderContext& context)
 			{
 				GPUSceneData::SetupConstants(context, resources, gpuSceneData);
-				context.SetConstant("pointSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest>()->GetResourceHandle());
-				context.SetConstant("viewData"_sh, resources.GetBuffer(uniformBuffers.viewDataBuffer));
+				context.SetConstant("pointSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
+				context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 				context.SetConstant("primitiveCount"_sh, sdfPrimitiveCount);
 			});
+
+			context.EndRendering();
+		});
+	}
+
+	void SceneRenderer::AddVisualizeBricksPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImage2DHandle dstImage)
+	{
+		auto cubeMesh = ShapeLibrary::GetCube();
+
+		if (m_scene->GetRenderScene()->GetRenderObjectCount() < 1)
+		{
+			return;
+		}
+
+		const auto& mesh = m_scene->GetRenderScene()->GetRenderObjectAt(0).mesh;
+		const auto& brickGrid = mesh->GetBrickGrid(0);
+
+		const auto& viewData = blackboard.Get<ViewData>();
+
+		struct PassData
+		{
+			RenderGraphImage2DHandle depthHandle;
+
+			RenderGraphBufferHandle vertexBuffer;
+			RenderGraphBufferHandle indexBuffer;
+		};
+
+		renderGraph.AddPass<PassData>("Visualize Bricks Pass",
+		[&](RenderGraph::Builder& builder, PassData& data) 
+		{
+			RenderGraphImageDesc desc{};
+			desc.width = m_width;
+			desc.height = m_height;
+			desc.format = RHI::PixelFormat::D32_SFLOAT;
+			desc.usage = RHI::ImageUsage::Attachment;
+			desc.name = "PreDepth";
+			data.depthHandle = builder.CreateImage2D(desc);
+
+			data.vertexBuffer = builder.AddExternalBuffer(cubeMesh->GetVertexPositionsBuffer()->GetResource());
+			data.indexBuffer = builder.AddExternalBuffer(cubeMesh->GetIndexBuffer()->GetResource());
+
+			builder.WriteResource(dstImage);
+
+			builder.ReadResource(data.vertexBuffer, RenderGraphResourceState::VertexBuffer);
+			builder.ReadResource(data.indexBuffer, RenderGraphResourceState::IndexBuffer);
+
+			builder.SetHasSideEffect();
+		},
+		[=](const PassData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		{
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { dstImage, data.depthHandle });
+			info.renderingInfo.colorAttachments.At(0).clearMode = RHI::ClearMode::Load;
+
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("VisualizeBricks");
+
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+			context.BeginRendering(info);
+			context.BindPipeline(pipeline);
+
+			context.BindVertexBuffers({ data.vertexBuffer }, 0);
+			context.BindIndexBuffer(data.indexBuffer);
+
+			context.SetConstant("viewProjection"_sh, viewData.viewProjection);
+
+			for (const auto& brick : brickGrid)
+			{
+				if (!brick.hasData)
+				{
+					continue;
+				}
+
+				for (uint32_t index = 0; const auto& voxel : brick.data)
+				{
+					VT_UNUSED(voxel);
+
+					if (voxel > 0.001f)
+					{
+						index++;
+						continue;
+					}
+
+					struct PushData
+					{
+						glm::vec3 point;
+						glm::vec3 scale;
+						
+						float data;
+					} pushData;
+
+					const auto voxelCoord = Math::Get3DCoordFrom1DIndex(index, 8u, 8u);
+
+					pushData.point = brick.min + glm::vec3{ voxelCoord[0], voxelCoord[1], voxelCoord[2] } * 5.f;
+					pushData.scale = 0.05f;
+					pushData.data = voxel;
+
+					context.PushConstants(&pushData, sizeof(PushData));
+					context.DrawIndexed(36, 1, 0, 0, 0);
+
+					index++;
+				}
+			}
 
 			context.EndRendering();
 		});

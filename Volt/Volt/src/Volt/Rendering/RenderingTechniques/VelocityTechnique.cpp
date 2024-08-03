@@ -29,7 +29,7 @@ namespace Volt
 	{
 		struct Output
 		{
-			RenderGraphResourceHandle velocityTexture;
+			RenderGraphImage2DHandle velocityTexture;
 		};
 
 		const auto& renderData = m_blackboard.Get<RenderData>();

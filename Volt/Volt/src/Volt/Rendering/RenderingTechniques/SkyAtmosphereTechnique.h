@@ -20,6 +20,7 @@ namespace Volt
 
 	private:
 		RenderGraphResourceHandle RenderTransmittanceLUT();
+		RenderGraphResourceHandle SetupAtmosphereUniformBuffer();
 
 		RenderGraph& m_renderGraph;
 		RenderGraphBlackboard& m_blackboard;

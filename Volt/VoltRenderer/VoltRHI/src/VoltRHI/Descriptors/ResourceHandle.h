@@ -125,7 +125,7 @@ namespace std
 	{
 		std::size_t operator()(const Volt::ResourceHandle& handle) const
 		{
-			return (uint32_t)handle.Get();
+			return std::hash<uint32_t>()(handle.Get());
 		}
 	};
 }

@@ -74,10 +74,10 @@ namespace Volt
 	public:
 		RenderGraphPassResources(RenderGraph& renderGraph, RenderGraphPassNodeBase& pass);
 		
-		ResourceHandle GetImage2D(const RenderGraphResourceHandle resourceHandle, const int32_t mip = -1, const int32_t layer = -1) const;
-		ResourceHandle GetImage3D(const RenderGraphResourceHandle resourceHandle, const int32_t mip = -1, const int32_t layer = -1) const;
-		ResourceHandle GetBuffer(const RenderGraphResourceHandle resourceHandle) const;
-		ResourceHandle GetUniformBuffer(const RenderGraphResourceHandle resourceHandle) const;
+		ResourceHandle GetImage2D(const RenderGraphImage2DHandle resourceHandle, const int32_t mip = -1, const int32_t layer = -1) const;
+		ResourceHandle GetImage3D(const RenderGraphImage3DHandle resourceHandle, const int32_t mip = -1, const int32_t layer = -1) const;
+		ResourceHandle GetBuffer(const RenderGraphBufferHandle resourceHandle) const;
+		ResourceHandle GetUniformBuffer(const RenderGraphUniformBufferHandle resourceHandle) const;
 
 	private:
 		friend class RenderContext;

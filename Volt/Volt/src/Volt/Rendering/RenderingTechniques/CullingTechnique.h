@@ -6,8 +6,8 @@ namespace Volt
 {
 	struct DrawCullingData
 	{
-		RenderGraphResourceHandle countCommandBuffer;
-		RenderGraphResourceHandle taskCommandsBuffer;
+		RenderGraphBufferHandle countCommandBuffer;
+		RenderGraphBufferHandle taskCommandsBuffer;
 	};
 
 	class RenderGraph;

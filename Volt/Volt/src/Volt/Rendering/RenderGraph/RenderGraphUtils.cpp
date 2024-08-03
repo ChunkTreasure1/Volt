@@ -5,28 +5,42 @@
 
 namespace Volt::RGUtils
 {
-	void ClearImage2D(RenderGraph& renderGraph, RenderGraphResourceHandle image, const glm::vec4& clearColor, const std::string& passName)
+	void ClearImage(RenderGraph& renderGraph, RenderGraphImage2DHandle image, const glm::vec4& clearColor, std::string_view passName)
 	{
-		renderGraph.AddPass(passName.empty() ? "Clear Image Pass" : passName,
+		renderGraph.AddPass(passName.empty() ? "Clear Image Pass" : std::string(passName),
 		[&](RenderGraph::Builder& builder)
 		{
 			builder.WriteResource(image, RenderGraphResourceState::Clear);
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources) 
 		{
-			context.ClearImage2D(image, clearColor);
+			context.ClearImage(image, clearColor);
 		});
 	}
-	void ClearImage3D(RenderGraph& renderGraph, RenderGraphResourceHandle image, const glm::vec4& clearColor, const std::string& passName)
+
+	void ClearImage(RenderGraph& renderGraph, RenderGraphImage3DHandle image, const glm::vec4& clearColor, std::string_view passName)
 	{
-		renderGraph.AddPass(passName.empty() ? "Clear Image Pass" : passName,
+		renderGraph.AddPass(passName.empty() ? "Clear Image Pass" : std::string(passName),
 		[&](RenderGraph::Builder& builder)
 		{
 			builder.WriteResource(image, RenderGraphResourceState::Clear);
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			context.ClearImage3D(image, clearColor);
+			context.ClearImage(image, clearColor);
+		});
+	}
+
+	void ClearBuffer(RenderGraph& renderGraph, RenderGraphBufferHandle buffer, const uint32_t clearValue, std::string_view passName)
+	{
+		renderGraph.AddPass(passName.empty() ? "Clear Buffer Pass" : std::string(passName),
+		[&](RenderGraph::Builder& builder)
+		{
+			builder.WriteResource(buffer, RenderGraphResourceState::Clear);
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources) 
+		{
+			context.ClearBuffer(buffer, clearValue);
 		});
 	}
 }

@@ -6,8 +6,8 @@ namespace Volt
 {
 	struct LightCullingData
 	{
-		RenderGraphResourceHandle visiblePointLightsBuffer;
-		RenderGraphResourceHandle visibleSpotLightsBuffer;
+		RenderGraphBufferHandle visiblePointLightsBuffer;
+		RenderGraphBufferHandle visibleSpotLightsBuffer;
 	};
 
 	class RenderGraph;

@@ -15,14 +15,14 @@ namespace Volt
 {
 	struct PrefilterDepthData
 	{
-		RenderGraphResourceHandle prefilteredDepth;
+		RenderGraphImage2DHandle prefilteredDepth;
 		GTAOTechnique::GTAOConstants constants{};
 	};
 
 	struct GTAOData
 	{
-		RenderGraphResourceHandle aoOutput;
-		RenderGraphResourceHandle edgesOutput;
+		RenderGraphImage2DHandle aoOutput;
+		RenderGraphImage2DHandle edgesOutput;
 	};
 
 	GTAOTechnique::GTAOTechnique(uint64_t frameIndex, const GTAOSettings& settings)

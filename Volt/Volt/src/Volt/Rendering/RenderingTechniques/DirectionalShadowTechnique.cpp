@@ -99,7 +99,7 @@ namespace Volt
 
 				GPUSceneData::SetupConstants(context, resources, gpuSceneData);
 
-				context.SetConstant("directionalLight"_sh, resources.GetBuffer(uniformBuffers.directionalLightBuffer));
+				context.SetConstant("directionalLight"_sh, resources.GetUniformBuffer(uniformBuffers.directionalLightBuffer));
 				context.SetConstant("taskCommands"_sh, resources.GetBuffer(cullingData.taskCommandsBuffer));
 				context.SetConstant("viewMatrix"_sh, cullingInfo.viewMatrix);
 				context.SetConstant("cullingFrustum"_sh, cullingInfo.cullingFrustum);

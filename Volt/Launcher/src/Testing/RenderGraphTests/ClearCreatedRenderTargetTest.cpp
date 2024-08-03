@@ -21,7 +21,7 @@ bool RG_ClearCreatedRenderTargetTest::RunTest()
 	RenderGraph renderGraph{ m_commandBuffer };
 	
 	auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R16G16B16A16_SFLOAT>(1280, 720, RHI::ImageUsage::AttachmentStorage, "TestImage");
-	RenderGraphResourceHandle testImageHandle = renderGraph.CreateImage2D(desc);
+	RenderGraphImage2DHandle testImageHandle = renderGraph.CreateImage2D(desc);
 
 	renderGraph.AddPass("Clear Test Image",
 	[&](RenderGraph::Builder& builder)
@@ -31,7 +31,7 @@ bool RG_ClearCreatedRenderTargetTest::RunTest()
 	},
 	[=](RenderContext& context, const RenderGraphPassResources& resources)
 	{
-		context.ClearImage2D(testImageHandle, { 0.f, 0.f, 0.f, 0.f });
+		context.ClearImage(testImageHandle, { 0.f, 0.f, 0.f, 0.f });
 	});
 
 	renderGraph.Compile();

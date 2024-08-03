@@ -11,7 +11,7 @@ namespace Volt
 	{
 	}
 
-	ResourceHandle RenderGraphPassResources::GetImage2D(const RenderGraphResourceHandle resourceHandle, const int32_t mip, const int32_t layer) const
+	ResourceHandle RenderGraphPassResources::GetImage2D(const RenderGraphImage2DHandle resourceHandle, const int32_t mip, const int32_t layer) const
 	{
 		ValidateResourceAccess(resourceHandle);
 		auto handle = m_renderGraph.GetImage2D(resourceHandle, mip, layer);
@@ -23,7 +23,7 @@ namespace Volt
 		return handle;
 	}
 
-	ResourceHandle RenderGraphPassResources::GetImage3D(const RenderGraphResourceHandle resourceHandle, const int32_t mip, const int32_t layer) const
+	ResourceHandle RenderGraphPassResources::GetImage3D(const RenderGraphImage3DHandle resourceHandle, const int32_t mip, const int32_t layer) const
 	{
 		ValidateResourceAccess(resourceHandle);
 		auto handle = m_renderGraph.GetImage3D(resourceHandle, mip, layer);
@@ -35,7 +35,7 @@ namespace Volt
 		return handle;
 	}
 
-	ResourceHandle RenderGraphPassResources::GetBuffer(const RenderGraphResourceHandle resourceHandle) const
+	ResourceHandle RenderGraphPassResources::GetBuffer(const RenderGraphBufferHandle resourceHandle) const
 	{
 		ValidateResourceAccess(resourceHandle);
 		auto handle = m_renderGraph.GetBuffer(resourceHandle);
@@ -47,7 +47,7 @@ namespace Volt
 		return handle;
 	}
 
-	ResourceHandle RenderGraphPassResources::GetUniformBuffer(const RenderGraphResourceHandle resourceHandle) const
+	ResourceHandle RenderGraphPassResources::GetUniformBuffer(const RenderGraphUniformBufferHandle resourceHandle) const
 	{
 		ValidateResourceAccess(resourceHandle);
 		auto handle = m_renderGraph.GetUniformBuffer(resourceHandle);

@@ -20,13 +20,13 @@ namespace Volt
 	{
 	}
 
-	void PrefixSumTechnique::Execute(RenderGraphResourceHandle inputBuffer, RenderGraphResourceHandle outputBuffer, const uint32_t valueCount)
+	void PrefixSumTechnique::Execute(RenderGraphBufferHandle inputBuffer, RenderGraphBufferHandle outputBuffer, const uint32_t valueCount)
 	{
 		constexpr uint32_t TG_SIZE = 512;
 
 		struct PrefixSumData
 		{
-			RenderGraphResourceHandle stateBuffer;
+			RenderGraphBufferHandle stateBuffer;
 		};
 
 		struct State
@@ -40,11 +40,11 @@ namespace Volt
 
 		auto pipeline = ShaderMap::GetComputePipeline("PrefixSum");
 
-		RenderGraphResourceHandle stateBuffer = 0;
+		RenderGraphBufferHandle stateBuffer = RenderGraphNullHandle();
 		{
 			const auto desc = RGUtils::CreateBufferDesc<State>(std::max(groupCount, 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "State Buffer");
 			stateBuffer = m_renderGraph.CreateBuffer(desc);
-			m_renderGraph.AddClearBufferPass(stateBuffer, 0, "Clear State Buffer");
+			RGUtils::ClearBuffer(m_renderGraph, stateBuffer, 0, "Clear State Buffer");
 		}
 
 		m_renderGraph.AddPass<PrefixSumData>("Prefix Sum",

@@ -259,16 +259,16 @@ namespace Volt
 			RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 			RenderGraph renderGraph{ commandBuffer };
 
-			RenderGraphResourceHandle dataBufferHandle = renderGraph.CreateBuffer(RGUtils::CreateBufferDesc<float>(brickData.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Brick Data"));
+			RenderGraphBufferHandle dataBufferHandle = renderGraph.CreateBuffer(RGUtils::CreateBufferDesc<float>(brickData.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Brick Data"));
 			renderGraph.AddMappedBufferUpload(dataBufferHandle, brickData.data(), brickData.size() * sizeof(float), "Upload Brick Data");
 
-			RenderGraphResourceHandle brickInfoBufferHandle = renderGraph.CreateBuffer(RGUtils::CreateBufferDesc<BrickInfo>(brickInfoData.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Brick Info"));
+			RenderGraphBufferHandle brickInfoBufferHandle = renderGraph.CreateBuffer(RGUtils::CreateBufferDesc<BrickInfo>(brickInfoData.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Brick Info"));
 			renderGraph.AddMappedBufferUpload(brickInfoBufferHandle, brickInfoData.data(), brickInfoData.size() * sizeof(BrickInfo), "Upload Brick Info");
 
-			RenderGraphResourceHandle sdfBricksBufferHandle = renderGraph.CreateBuffer(RGUtils::CreateBufferDesc<GPUSDFBrick>(brickGrid.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "SDF Bricks"));
-			RenderGraphResourceHandle textureHandle = renderGraph.AddExternalImage3D(brickTexture->GetResource());
+			RenderGraphBufferHandle sdfBricksBufferHandle = renderGraph.CreateBuffer(RGUtils::CreateBufferDesc<GPUSDFBrick>(brickGrid.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "SDF Bricks"));
+			RenderGraphImage3DHandle textureHandle = renderGraph.AddExternalImage3D(brickTexture->GetResource());
 
-			RGUtils::ClearImage3D(renderGraph, textureHandle, { 1000.f }, "Clear SDF Image");
+			RGUtils::ClearImage(renderGraph, textureHandle, { 1000.f }, "Clear SDF Image");
 
 			renderGraph.AddPass("Allocate Bricks",
 			[&](RenderGraph::Builder& builder)

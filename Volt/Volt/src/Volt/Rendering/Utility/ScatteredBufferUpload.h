@@ -81,9 +81,9 @@ namespace Volt
 
 		struct ResourceHandles
 		{
-			RenderGraphResourceHandle srcBuffer;
-			RenderGraphResourceHandle dstBuffer;
-			RenderGraphResourceHandle indicesBuffer;
+			RenderGraphBufferHandle srcBuffer;
+			RenderGraphBufferHandle dstBuffer;
+			RenderGraphBufferHandle indicesBuffer;
 
 			uint32_t dataCount = 0;
 		} data;
