@@ -21,7 +21,7 @@ namespace Volt
 	class MonoScriptUtils
 	{
 	public:
-		static std::string GetClassName(const std::string& fullClassName);
+		static std::string GetClassName2(const std::string& fullClassName);
 		static std::string GetNameSpace(const std::string& fullClassName);
 
 		static const std::string GetStringFromMonoString(MonoString* string);
@@ -61,7 +61,7 @@ namespace Volt
 		// Fill with the data
 		Vector<void*> data;
 
-		return InternalCreateMonoArray(MonoScriptUtils::GetNameSpace(typeinfo), MonoScriptUtils::GetClassName(typeinfo), data);
+		return InternalCreateMonoArray(MonoScriptUtils::GetNameSpace(typeinfo), MonoScriptUtils::GetClassName2(typeinfo), data);
 	}
 
 	// -----

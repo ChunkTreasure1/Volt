@@ -2,8 +2,8 @@
 
 #include <CoreUtilities/Core.h>
 
-#include <VoltRHI/Images/Image2D.h>
-#include <VoltRHI/Buffers/CommandBuffer.h>
+#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
 
 namespace Volt
 {

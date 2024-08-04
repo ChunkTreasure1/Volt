@@ -2,7 +2,6 @@
 
 #include "VisonPanel.h"
 
-#include <Volt/Log/Log.h>
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/Random.h>
 #include <Volt/Core/Application.h>
@@ -382,7 +381,7 @@ const Vector<Volt::Entity> VisionPanel::GetAllCameraTriggers()
 
 	if (triggerIDs.empty())
 	{
-		VT_CORE_ERROR("VTCINEMA: No triggers loacated!");
+		VT_LOG(LogSeverity::Error, "VTCINEMA: No triggers loacated!");
 		return Vector<Volt::Entity>();
 	}
 
@@ -403,7 +402,7 @@ const Vector<Volt::Entity> VisionPanel::GetAllCameras()
 
 	if (cameraIDs.empty())
 	{
-		VT_CORE_ERROR("VTCINEMA: No cameras loacated!");
+		VT_LOG(LogSeverity::Error, "VTCINEMA: No cameras loacated!");
 		return Vector<Volt::Entity>();
 	}
 

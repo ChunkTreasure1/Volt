@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Volt/Core/Base.h"
-#include "Volt/Log/Log.h"
 
 #include "Volt/Utility/MemoryUtility.h"
 #include "Volt/Asset/Asset.h"

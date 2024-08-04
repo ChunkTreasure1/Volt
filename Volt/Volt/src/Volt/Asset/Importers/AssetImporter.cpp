@@ -18,7 +18,7 @@
 
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
-#include <VoltRHI/Shader/Shader.h>
+#include <RHIModule/Shader/Shader.h>
 
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
@@ -35,7 +35,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -69,7 +69,7 @@ namespace Volt
 
 	//	if (!std::filesystem::exists(filePath))
 	//	{
-	//		VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+	//		VT_LOG(LogSeverity::Error, "File {0} not found!", metadata.filePath);
 	//		asset->SetFlag(AssetFlag::Missing, true);
 	//		return false;
 	//	}
@@ -77,7 +77,7 @@ namespace Volt
 	//	std::ifstream file(filePath);
 	//	if (!file.is_open())
 	//	{
-	//		VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+	//		VT_LOG(LogSeverity::Error, "Failed to open file: {0}!", metadata.filePath);
 	//		asset->SetFlag(AssetFlag::Invalid, true);
 	//		return false;
 	//	}
@@ -94,7 +94,7 @@ namespace Volt
 	//	}
 	//	catch (std::exception& e)
 	//	{
-	//		VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
+	//		VT_LOG(LogSeverity::Error, "{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
 	//		asset->SetFlag(AssetFlag::Invalid, true);
 	//		return false;
 	//	}
@@ -146,7 +146,7 @@ namespace Volt
 	//		if (!shader)
 	//		{
 	//			shader = ShaderMap::Get("VisibilityBuffer");
-	//			VT_CORE_ERROR("Shader {0} not found or invalid! Falling back to default!", shaderNameString);
+	//			VT_LOG(LogSeverity::Error, "Shader {0} not found or invalid! Falling back to default!", shaderNameString);
 	//		}
 
 	//		Ref<SubMaterial> material = SubMaterial::Create(materialNameString, materialIndex, shader);
@@ -388,7 +388,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -405,7 +405,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -413,7 +413,7 @@ namespace Volt
 		YAMLFileStreamReader streamReader{};
 		if (!streamReader.OpenFile(filePath))
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -453,7 +453,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -474,7 +474,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -483,7 +483,7 @@ namespace Volt
 
 		if (!streamReader.OpenFile(filePath))
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}

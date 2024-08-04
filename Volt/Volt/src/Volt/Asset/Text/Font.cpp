@@ -4,7 +4,6 @@
 #include "Volt/Asset/Text/MSDFData.h"
 #include "Volt/Asset/AssetManager.h"
 
-#include "Volt/Log/Log.h"
 #include "Volt/Core/Base.h"
 #include <CoreUtilities/Buffer/Buffer.h>
 #include "Volt/Project/ProjectManager.h"
@@ -290,7 +289,7 @@ namespace Volt
 			}
 			else
 			{
-				VT_CORE_ERROR("Could not fit {0} out of {1} glyphs in atlas!", remaining, (int32_t)myMSDFData->glyphs.size());
+				VT_LOG(LogSeverity::Error, "Could not fit {0} out of {1} glyphs in atlas!", remaining, (int32_t)myMSDFData->glyphs.size());
 				VT_ASSERT_MSG(false, "Invalid number");
 			}
 		}

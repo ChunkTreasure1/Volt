@@ -37,7 +37,8 @@ project "GraphKey"
 		"../Volt/src/",
 		"../Amp/src/",
 		"../Nexus/src",
-		"../VoltRenderer/VoltRHI/src",
+		"../RHI/RHIModule/src",
+		"../LogModule/src",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.spdlog}",

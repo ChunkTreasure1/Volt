@@ -1,6 +1,9 @@
 #pragma once
 
 #include <Volt/Asset/Asset.h>
+
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <unordered_map>
 #include <typeindex>
 
@@ -60,7 +63,7 @@ inline Ref<T> EditorLibrary::Get()
 	auto it = std::find_if(s_editors.begin(), s_editors.end(), [&](const auto& lhs) { return lhs.editorType == typeid(T); });
 	if (it == s_editors.end())
 	{
-		VT_CORE_ERROR("Editor with type not registered!");
+		VT_LOG(LogSeverity::Error, "Editor with type not registered!");
 		return nullptr;
 	}
 

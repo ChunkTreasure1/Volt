@@ -1,7 +1,6 @@
 #include "sbpch.h"
 #include "TaigaPanel.h"
 
-#include <Volt/Log/Log.h>
 #include <Volt/Utility/UIUtility.h>
 
 TaigaPanel::TaigaPanel()
@@ -99,7 +98,7 @@ void TaigaPanel::LogInPopup()
 			}
 			else
 			{
-				VT_CORE_WARN("Taiga Auth Failed.");
+				VT_LOG(LogSeverity::Warning, "Taiga Auth Failed.");
 			}
 			password.clear();
 			ImGui::CloseCurrentPopup();

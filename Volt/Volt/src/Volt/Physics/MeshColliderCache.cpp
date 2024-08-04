@@ -44,7 +44,7 @@ namespace Volt
 	{
 		if (myCache.contains(colliderName))
 		{
-			VT_CORE_WARN("Trying to add collider with name {0}, but it already exists in the cache!", colliderName);
+			VT_LOG(LogSeverity::Warning, "Trying to add collider with name {0}, but it already exists in the cache!", colliderName);
 			return;
 		}
 
@@ -57,14 +57,14 @@ namespace Volt
 
 		if (!FileSystem::Exists(cachedPath))
 		{
-			VT_CORE_WARN("Unable to load cached mesh {0}!", cachedPath.string());
+			VT_LOG(LogSeverity::Warning, "Unable to load cached mesh {0}!", cachedPath.string());
 			return;
 		}
 
 		std::ifstream input{ cachedPath, std::ios::binary | std::ios::in };
 		if (!input.is_open())
 		{
-			VT_CORE_WARN("Unable to load cached mesh {0}!", cachedPath.string());
+			VT_LOG(LogSeverity::Warning, "Unable to load cached mesh {0}!", cachedPath.string());
 			return;
 		}
 

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <CoreUtilities/Core.h>
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <efsw/efsw.hpp>
 
 class FileListener;

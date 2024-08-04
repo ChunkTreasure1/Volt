@@ -1,8 +1,8 @@
 #pragma once
 
-#include <VoltRHI/Core/RHIResource.h>
-#include <VoltRHI/Descriptors/BindlessDescriptorTable.h>
-#include <VoltRHI/Descriptors/ResourceHandle.h>
+#include <RHIModule/Core/RHIResource.h>
+#include <RHIModule/Descriptors/BindlessDescriptorTable.h>
+#include <RHIModule/Descriptors/ResourceHandle.h>
 
 #include <CoreUtilities/Weak.h>
 #include <CoreUtilities/Containers/FunctionQueue.h>

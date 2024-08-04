@@ -5,8 +5,8 @@
 
 #include "Volt/Scene/Scene.h"
 
-#include <VoltRHI/Images/SamplerState.h>
-#include <VoltRHI/Core/RHICommon.h>
+#include <RHIModule/Images/SamplerState.h>
+#include <RHIModule/Core/RHICommon.h>
 
 namespace Volt
 {

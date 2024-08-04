@@ -16,7 +16,6 @@
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Project/ProjectManager.h"
-#include "Volt/Project/SessionPreferences.h"
 #include "Volt/Scene/SceneManager.h"
 
 #include "Volt/Physics/Physics.h"
@@ -26,53 +25,36 @@
 #include "Volt/Utility/Noise.h"
 #include "Volt/Utility/UIUtility.h"
 
-#include <VoltRHI/ImGui/ImGuiImplementation.h>
-#include <VoltRHI/Graphics/GraphicsContext.h>
+#include <RHIModule/ImGui/ImGuiImplementation.h>
+#include <RHIModule/Graphics/GraphicsContext.h>
 
-#include <VoltVulkan/VulkanRHIProxy.h>
-#include <VoltD3D12/D3D12RHIProxy.h>
+#include <VulkanRHIModule/VulkanRHIProxy.h>
+#include <D3D12RHIModule/D3D12RHIProxy.h>
 
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 #include <Amp/WWiseEngine/WWiseEngine.h>
 #include <Navigation/Core/NavigationSystem.h>
 
+#include <LogModule/Log.h>
+
 namespace Volt
 {
-	inline static void RHILogCallback(RHI::LogSeverity severity, std::string_view msg)
-	{
-		switch (severity)
-		{
-			case RHI::LogSeverity::Trace:
-				VT_CORE_TRACE(msg);
-				break;
-			case RHI::LogSeverity::Info:
-				VT_CORE_INFO(msg);
-				break;
-			case RHI::LogSeverity::Warning:
-				VT_CORE_WARN(msg);
-				break;
-			case RHI::LogSeverity::Error:
-				VT_CORE_ERROR(msg);
-				break;
-		}
-	}
-
 	Application::Application(const ApplicationInfo& info)
 		: m_frameTimer(100)
 	{
 		VT_ASSERT_MSG(!s_instance, "Application already exists!");
 		s_instance = this;
 
+		m_log = CreateScope<Log>();
+
 		m_info = info;
 		Noise::Initialize();
 
-		Log::Initialize();
+		//Log::Initialize();
 		ProjectManager::SetupProject(m_info.projectPath);
-		Log::InitializeFileSinks();
+		//Log::InitializeFileSinks();
 		
-		SessionPreferences::Initialize();
-
 		WindowProperties windowProperties{};
 		windowProperties.width = info.width;
 		windowProperties.height = info.height;
@@ -82,8 +64,6 @@ namespace Volt
 		windowProperties.iconPath = info.iconPath;
 		windowProperties.cursorPath = info.cursorPath;
 		windowProperties.useTitlebar = info.isRuntime;
-
-		SetupWindowPreferences(windowProperties);
 
 		if (m_info.isRuntime)
 		{
@@ -215,8 +195,8 @@ namespace Volt
 		m_rhiProxy = nullptr;
 		Window::StaticShutdown();
 
+		m_log = nullptr;
 		s_instance = nullptr;
-		Log::Shutdown();
 	}
 
 	void Application::Run()
@@ -385,12 +365,6 @@ namespace Volt
 		}
 
 		{
-			RHI::LogInfo logHook{};
-			logHook.enabled = true;
-			logHook.logCallback = RHILogCallback;
-
-			m_rhiProxy->SetLogInfo(logHook);
-
 			RHI::RHICallbackInfo callbackInfo{};
 			callbackInfo.resourceManagementInfo.resourceDeletionCallback = Renderer::DestroyResource;
 			callbackInfo.requestCloseEventCallback = []() 
@@ -447,23 +421,5 @@ namespace Volt
 	bool Application::OnKeyPressedEvent(KeyPressedEvent&)
 	{
 		return false;
-	}
-
-	void Application::SetupWindowPreferences(WindowProperties& windowProperties)
-	{
-		if (SessionPreferences::HasKey("WINDOW_WIDTH"))
-		{
-			windowProperties.width = static_cast<uint32_t>(SessionPreferences::GetInt("WINDOW_WIDTH"));
-		}
-
-		if (SessionPreferences::HasKey("WINDOW_HEIGHT"))
-		{
-			windowProperties.height = static_cast<uint32_t>(SessionPreferences::GetInt("WINDOW_HEIGHT"));
-		}
-
-		if (SessionPreferences::HasKey("WINDOW_MODE"))
-		{
-			windowProperties.windowMode = (WindowMode)static_cast<uint32_t>(SessionPreferences::GetInt("WINDOW_MODE"));
-		}
 	}
 }

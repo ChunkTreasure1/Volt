@@ -7,7 +7,6 @@
 #include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Asset/AssetManager.h"
-#include "Volt/Log/Log.h"
 
 #include <fstream>
 
@@ -17,7 +16,7 @@ namespace Volt
 	{
 		if (!mesh || !mesh->IsValid())
 		{
-			VT_CORE_ERROR("Mesh is invalid or null!");
+			VT_LOG(LogSeverity::Error, "Mesh is invalid or null!");
 			return false;
 		}
 

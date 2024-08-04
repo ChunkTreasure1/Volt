@@ -17,16 +17,16 @@
 
 #include "Volt/Math/Math.h"
 
-#include <VoltRHI/Shader/ShaderCompiler.h>
-#include <VoltRHI/Shader/ShaderCache.h>
-#include <VoltRHI/Images/SamplerState.h>
-#include <VoltRHI/Graphics/Swapchain.h>
-#include <VoltRHI/Images/Image2D.h>
-#include <VoltRHI/Buffers/CommandBuffer.h>
-#include <VoltRHI/Images/ImageUtility.h>
-#include <VoltRHI/Descriptors/DescriptorTable.h>
-#include <VoltRHI/Pipelines/ComputePipeline.h>
-#include <VoltRHI/Utility/ResourceUtility.h>
+#include <RHIModule/Shader/ShaderCompiler.h>
+#include <RHIModule/Shader/ShaderCache.h>
+#include <RHIModule/Images/SamplerState.h>
+#include <RHIModule/Graphics/Swapchain.h>
+#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
+#include <RHIModule/Images/ImageUtility.h>
+#include <RHIModule/Descriptors/DescriptorTable.h>
+#include <RHIModule/Pipelines/ComputePipeline.h>
+#include <RHIModule/Utility/ResourceUtility.h>
 
 #include <CoreUtilities/Containers/FunctionQueue.h>
 
@@ -429,7 +429,7 @@ namespace Volt
 		//const auto& frameErrors = s_rendererData->shaderValidator->GetValidationErrors();
 		//for (const auto& error : frameErrors)
 		//{
-		//	VT_CORE_ERROR(error);
+		//	VT_LOG(LogSeverity::Error, error);
 		//}
 #endif
 	}

@@ -7,14 +7,14 @@
 #include "Volt/Rendering/Debug/ShaderRuntimeValidator.h"
 #include "Volt/Rendering/Renderer.h"
 
-#include <VoltRHI/Buffers/StorageBuffer.h>
-#include <VoltRHI/Buffers/UniformBuffer.h>
-#include <VoltRHI/Descriptors/DescriptorTable.h>
-#include <VoltRHI/Images/Image3D.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
+#include <RHIModule/Buffers/UniformBuffer.h>
+#include <RHIModule/Descriptors/DescriptorTable.h>
+#include <RHIModule/Images/Image3D.h>
 
-#include <VoltRHI/Graphics/GraphicsContext.h>
+#include <RHIModule/Graphics/GraphicsContext.h>
 
-#include <VoltRHI/Images/ImageView.h>
+#include <RHIModule/Images/ImageView.h>
 
 namespace Volt
 {

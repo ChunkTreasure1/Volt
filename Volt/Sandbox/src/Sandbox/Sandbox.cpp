@@ -85,7 +85,7 @@
 
 #include <NavigationEditor/Tools/NavMeshDebugDrawer.h>
 
-#include <VoltRHI/Images/Image2D.h>
+#include <RHIModule/Images/Image2D.h>
 
 #include <imgui.h>
 
@@ -299,7 +299,7 @@ void Sandbox::OnDetach()
 {
 	m_isInitialized = false;
 
-	Volt::Log::ClearCallbacks();
+	//Volt::Log::ClearCallbacks();
 
 	if (m_sceneState == SceneState::Play)
 	{

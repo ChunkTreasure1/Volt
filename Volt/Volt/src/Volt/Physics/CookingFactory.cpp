@@ -149,7 +149,7 @@ namespace Volt
 
 		if (submesh.vertexCount >= convexDesc.vertexLimit)
 		{
-			VT_CORE_WARN("Attempting to cook mesh with more than {0} vertices! Switching to quantized cooking!", convexDesc.vertexLimit);
+			VT_LOG(LogSeverity::Warning, "Attempting to cook mesh with more than {0} vertices! Switching to quantized cooking!", convexDesc.vertexLimit);
 			convexDesc.flags |= physx::PxConvexFlag::eQUANTIZE_INPUT | physx::PxConvexFlag::eSHIFT_VERTICES;
 			convexDesc.quantizedCount = (uint16_t)submesh.vertexCount;
 		}
@@ -159,7 +159,7 @@ namespace Volt
 
 		if (!PxCookConvexMesh(myCookingData->cookingParams, convexDesc, buf, &result))
 		{
-			VT_CORE_ERROR("Failed to cook mesh!");
+			VT_LOG(LogSeverity::Error, "Failed to cook mesh!");
 
 			cookingResult = PhysXUtilities::FromPhysXCookingResult(result);
 			return cookingResult;
@@ -195,7 +195,7 @@ namespace Volt
 		physx::PxTriangleMeshCookingResult::Enum result;
 		if (!PxCookTriangleMesh(myCookingData->cookingParams, triangleDesc, buf, &result))
 		{
-			VT_CORE_ERROR("Failed to cook mesh!");
+			VT_LOG(LogSeverity::Error, "Failed to cook mesh!");
 
 			cookingResult = PhysXUtilities::FromPhysXCookingResult(result);
 			return cookingResult;

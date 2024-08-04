@@ -5,13 +5,13 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Rendering/RenderScene.h"
 
-#include <VoltRHI/Buffers/StorageBuffer.h>
-#include <VoltRHI/Buffers/BufferView.h>
-#include <VoltRHI/Images/Image2D.h>
-#include <VoltRHI/Images/ImageView.h>
-#include <VoltRHI/Shader/Shader.h>
-#include <VoltRHI/Images/SamplerState.h>
-#include <VoltRHI/RHIProxy.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
+#include <RHIModule/Buffers/BufferView.h>
+#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/ImageView.h>
+#include <RHIModule/Shader/Shader.h>
+#include <RHIModule/Images/SamplerState.h>
+#include <RHIModule/RHIProxy.h>
 
 namespace Volt
 {

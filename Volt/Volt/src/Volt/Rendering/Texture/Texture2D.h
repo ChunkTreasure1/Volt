@@ -2,9 +2,9 @@
 
 #include "Volt/Asset/Asset.h"
 
-#include <VoltRHI/Descriptors/ResourceHandle.h>
-#include <VoltRHI/Core/RHICommon.h>
-#include <VoltRHI/Images/Image2D.h>
+#include <RHIModule/Descriptors/ResourceHandle.h>
+#include <RHIModule/Core/RHICommon.h>
+#include <RHIModule/Images/Image2D.h>
 
 namespace Volt
 {

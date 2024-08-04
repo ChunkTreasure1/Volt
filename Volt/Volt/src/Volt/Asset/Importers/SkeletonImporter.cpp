@@ -7,8 +7,6 @@
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 #include "Volt/Project/ProjectManager.h"
 
-#include "Volt/Log/Log.h"
-
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
@@ -25,7 +23,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -33,7 +31,7 @@ namespace Volt
 		YAMLFileStreamReader streamReader{};
 		if (!streamReader.OpenFile(filePath))
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}

@@ -24,6 +24,8 @@ namespace Amp
 	class AudioManager;
 }
 
+class Log;
+
 namespace Volt
 {
 	namespace AI
@@ -104,8 +106,6 @@ namespace Volt
 		bool OnViewportResizeEvent(ViewportResizeEvent& e);
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 
-		void SetupWindowPreferences(WindowProperties& windowProperties);
-		
 		inline static Application* s_instance = nullptr;
 
 		bool m_isRunning = false;
@@ -123,6 +123,8 @@ namespace Volt
 		LayerStack m_layerStack;
 		MultiTimer m_frameTimer;
 		WindowManager m_windowManager;
+
+		Scope<Log> m_log;
 
 		RefPtr<RHI::ImGuiImplementation> m_imguiImplementation;
 		RefPtr<RHI::GraphicsContext> m_graphicsContext;

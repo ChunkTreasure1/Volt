@@ -4,12 +4,14 @@
 #include "Volt/Core/Application.h"
 #include "Volt/Project/ProjectManager.h"
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
 #include <nfd.hpp>
 
 #include <commdlg.h>
 #include <shellapi.h>
 #include <shlobj.h>
-#include <windows.h>
 #include <Lmcons.h>
 
 std::filesystem::path FileSystem::PickFolderDialogue()

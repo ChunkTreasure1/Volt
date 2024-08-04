@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Event.h"
-
 #include "Volt/Asset/Asset.h"
 
-#include <sstream>
+#include <CoreUtilities/Containers/Vector.h>
 
+#include <sstream>
 #include <filesystem>
 
 namespace Volt

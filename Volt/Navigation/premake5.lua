@@ -47,8 +47,9 @@ project "Navigation"
 		"src/",
 		"../Volt/src",
 		"../Nexus/src",
-		"../VoltRenderer/VoltRHI/src",
+		"../RHI/RHIModule/src",
 		"../Mosaic/src",
+		"../LogModule/src",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.spdlog}",

@@ -6,9 +6,9 @@
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Window.h"
 
-#include <VoltRHI/Buffers/StorageBuffer.h>
-#include <VoltRHI/Buffers/CommandBuffer.h>
-#include <VoltRHI/Graphics/Swapchain.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
+#include <RHIModule/Graphics/Swapchain.h>
 
 namespace Volt
 {

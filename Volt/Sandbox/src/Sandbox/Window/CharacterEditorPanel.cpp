@@ -701,7 +701,7 @@ void CharacterEditorPanel::UpdateAnimationTimelinePanel()
 						ImGui::SameLine();
 					}
 
-					VT_CORE_TRACE("x: {0}, y: {1}", windowPos.x, windowPos.y);
+					VT_LOG(LogSeverity::Trace, "x: {0}, y: {1}", windowPos.x, windowPos.y);
 				}
 
 				ImGui::Text("%.2f", duration);

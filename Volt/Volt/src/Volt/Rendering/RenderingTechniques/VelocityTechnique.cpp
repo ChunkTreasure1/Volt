@@ -11,7 +11,7 @@
 #include "Volt/Rendering/Camera/Camera.h"
 #include "Volt/Rendering/Renderer.h"
 
-#include <VoltRHI/Pipelines/RenderPipeline.h>
+#include <RHIModule/Pipelines/RenderPipeline.h>
 
 namespace Volt
 {

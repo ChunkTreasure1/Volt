@@ -12,7 +12,7 @@
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 
-#include <VoltRHI/Pipelines/RenderPipeline.h>
+#include <RHIModule/Pipelines/RenderPipeline.h>
 
 namespace Volt
 {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RHIModule/Images/Image2D.h>
+
 namespace Volt
 {
 	namespace RHI

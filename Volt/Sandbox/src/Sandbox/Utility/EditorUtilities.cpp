@@ -288,7 +288,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 			//{
 			//	originalMaterial = nullptr;
 			//	shouldCreateNewMaterial = true;
-			//	VT_CORE_WARN("Material for mesh {0} was invalid! Creating a new one!", origialAssetMeta.filePath);
+			//	VT_LOG(LogSeverity::Warning, "Material for mesh {0} was invalid! Creating a new one!", origialAssetMeta.filePath);
 			//}
 			//else
 			//{

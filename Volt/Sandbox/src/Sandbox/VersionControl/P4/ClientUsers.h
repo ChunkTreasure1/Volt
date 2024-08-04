@@ -1,7 +1,8 @@
 #pragma once
 
-#include <p4/clientapi.h>
+#include <CoreUtilities/Containers/Vector.h>
 
+#include <p4/clientapi.h>
 
 #include <string>
 

@@ -3,6 +3,7 @@
 #include "GraphKey/TypeTraits.h"
 
 #include <Volt/Core/Base.h>
+#include <CoreUtilities/Containers/Vector.h>
 
 #include <unordered_map>
 #include <functional>

@@ -135,7 +135,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "File {0} not found!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -144,7 +144,7 @@ namespace Volt
 
 		if (!yamlStreamReader.OpenFile(filePath))
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "Failed to open file: {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -161,7 +161,7 @@ namespace Volt
 
 		if (!yamlStreamReader.HasKey("sources"))
 		{
-			VT_CORE_ERROR("No shaders defined in shader definition {0}!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "No shaders defined in shader definition {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}

@@ -1,8 +1,6 @@
 #include "sbpch.h"
 #include "P4Implementation.h"
 
-#include <Volt/Log/Log.h>
-
 #include <filesystem>
 #include <format>
 
@@ -49,7 +47,7 @@ bool P4Implementation::ConnectImpl(const std::string& server, const std::string&
 		{
 			StrBuf msg;
 			e.Fmt(&msg);
-			VT_CORE_ERROR("VCS: {0}", msg.Text());
+			VT_LOG(LogSeverity::Error, "VCS: {0}", msg.Text());
 			return false;
 		}
 	}
@@ -63,7 +61,7 @@ bool P4Implementation::ConnectImpl(const std::string& server, const std::string&
 	{
 		StrBuf msg;
 		e.Fmt(&msg);
-		VT_CORE_ERROR("VCS: {0}", msg.Text());
+		VT_LOG(LogSeverity::Error, "VCS: {0}", msg.Text());
 		return false;
 	}
 

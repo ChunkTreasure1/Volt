@@ -30,7 +30,6 @@
 #include "DetourNavMesh.h"
 
 #include <Volt/Rendering/Mesh/MeshCommon.h>
-#include <Volt/Log/Log.h>
 
 inline static bool intersectSegmentTriangle(const float* sp, const float* sq,
 									 const float* a, const float* b, const float* c,
@@ -143,12 +142,12 @@ InputGeom::InputGeom(Ref<Volt::Mesh> asset) :
 	m_chunkyMesh = new rcChunkyTriMesh;
 	if (!m_chunkyMesh)
 	{
-		VT_CORE_ERROR("buildTiledNavigation: Out of memory 'm_chunkyMesh'.");
+		VT_LOG(LogSeverity::Error, "buildTiledNavigation: Out of memory 'm_chunkyMesh'.");
 		return;
 	}
 	if (!rcCreateChunkyTriMesh(getVerts(), getTris(), getTriCount(), 256, m_chunkyMesh))
 	{
-		VT_CORE_ERROR("buildTiledNavigation: Failed to build chunky mesh.");
+		VT_LOG(LogSeverity::Error, "buildTiledNavigation: Failed to build chunky mesh.");
 		return;
 	}
 }

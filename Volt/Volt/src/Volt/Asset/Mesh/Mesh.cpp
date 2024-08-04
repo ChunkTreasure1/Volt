@@ -9,11 +9,11 @@
 
 #include "Volt/SDF/SDFGenerator.h"
 
-#include <VoltRHI/Buffers/VertexBuffer.h>
-#include <VoltRHI/Buffers/IndexBuffer.h>
-#include <VoltRHI/Buffers/StorageBuffer.h>
-#include <VoltRHI/Images/Image3D.h>
-#include <VoltRHI/Images/ImageView.h>
+#include <RHIModule/Buffers/VertexBuffer.h>
+#include <RHIModule/Buffers/IndexBuffer.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
+#include <RHIModule/Images/Image3D.h>
+#include <RHIModule/Images/ImageView.h>
 
 #include <meshoptimizer/meshoptimizer.h>
 

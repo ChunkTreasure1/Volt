@@ -71,9 +71,11 @@ project "Sandbox"
 		"../Sandbox/src/",
 		"../Navigation/src/",
 		"../Nexus/src",
-		"../VoltRenderer/VoltRHI/src",
 		"../Mosaic/src",
 
+		"../RHI/RHIModule/src",
+		"../LogModule/src",
+		
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
@@ -111,9 +113,6 @@ project "Sandbox"
 		"%{IncludeDir.detourtilecache}",
 		"%{IncludeDir.recast}",
 		"%{IncludeDir.fastlz}",
-
-		"%{IncludeDir.VulkanSDK}",
-		"%{IncludeDir.vma}",
 
 		"%{IncludeDir.zlib}"
 	}

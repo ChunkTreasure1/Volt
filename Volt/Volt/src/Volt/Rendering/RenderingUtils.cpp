@@ -6,7 +6,7 @@
 #include "Volt/Rendering/RenderGraph/RenderContextUtils.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
 
-#include <VoltRHI/Pipelines/RenderPipeline.h>
+#include <RHIModule/Pipelines/RenderPipeline.h>
 
 namespace Volt::RenderingUtils
 {

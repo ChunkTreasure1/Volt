@@ -2,6 +2,8 @@
 
 #include "Volt/Asset/Asset.h"
 
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <imgui.h>
 #include <functional>
 

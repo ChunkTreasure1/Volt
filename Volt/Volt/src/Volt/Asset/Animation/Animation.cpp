@@ -93,17 +93,17 @@ namespace Volt
 
 		if (!skeleton)
 		{
-			VT_CORE_ERROR("Tried to sample animation with no skeleton");
+			VT_LOG(LogSeverity::Error, "Tried to sample animation with no skeleton");
 			return {};
 		}
 		if (samplePercent < 0.f)
 		{
-			VT_CORE_ERROR("Sample percent has to be a positive value");
+			VT_LOG(LogSeverity::Error, "Sample percent has to be a positive value");
 			return {};
 		}
 		if (samplePercent > 1.f)
 		{
-			VT_CORE_ERROR("Sample percent has to be a value between 0 and 1");
+			VT_LOG(LogSeverity::Error, "Sample percent has to be a value between 0 and 1");
 			return {};
 		}
 
@@ -111,7 +111,7 @@ namespace Volt
 
 		if (frameCount == 0)
 		{
-			VT_CORE_ERROR("Tried to sample animation with no frames");
+			VT_LOG(LogSeverity::Error, "Tried to sample animation with no frames");
 			return {};
 		}
 
@@ -125,7 +125,7 @@ namespace Volt
 
 		if (result.empty())
 		{
-			VT_CORE_ERROR("Tried to sample using a skeleton with no joints. AssetHandle: {0}", skeleton->handle);
+			VT_LOG(LogSeverity::Error, "Tried to sample using a skeleton with no joints. AssetHandle: {0}", skeleton->handle);
 			return {};
 		}
 
@@ -227,7 +227,7 @@ namespace Volt
 
 		if (target.localTRS.size() != poseToBlendWith.localTRS.size())
 		{
-			VT_CORE_ERROR("Cannot blend poses with different joint counts");
+			VT_LOG(LogSeverity::Error, "Cannot blend poses with different joint counts");
 			return;
 		}
 
@@ -248,7 +248,7 @@ namespace Volt
 
 		if (target.localTRS.size() != poseToBlendWith.localTRS.size())
 		{
-			VT_CORE_ERROR("Cannot blend poses with different joint counts");
+			VT_LOG(LogSeverity::Error, "Cannot blend poses with different joint counts");
 			return target;
 		}
 

@@ -6,7 +6,7 @@
 #include <Volt/Events/MouseEvent.h>
 #include <Volt/Rendering/UISceneRenderer.h>
 
-#include <VoltRHI/Images/Image2D.h>
+#include <RHIModule/Images/Image2D.h>
 #include <CoreUtilities/Pointers/RefPtr.h>
 
 namespace Volt

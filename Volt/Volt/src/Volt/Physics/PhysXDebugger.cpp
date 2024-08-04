@@ -4,7 +4,6 @@
 #include "PhysXInternal.h"
 
 #include "Volt/Core/Application.h"
-#include "Volt/Log/Log.h"
 
 namespace Volt
 {

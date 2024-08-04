@@ -1,10 +1,9 @@
 #include "vtpch.h"
 #include "Video.h"
 
-#include "Volt/Log/Log.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 
-#include <VoltRHI/Images/Image2D.h>
+#include <RHIModule/Images/Image2D.h>
 
 namespace Volt
 {
@@ -49,7 +48,7 @@ namespace Volt
 		int32_t result = avformat_open_input(&myReaderState.formatContext, filePath.string().c_str(), nullptr, nullptr);
 		if (result < 0)
 		{
-			VT_CORE_ERROR("Error when opening video!");
+			VT_LOG(LogSeverity::Error, "Error when opening video!");
 			return;
 		}
 
@@ -207,7 +206,7 @@ namespace Volt
 
 		if (safeValue >= maxSafeValue)
 		{
-			VT_CORE_ERROR("Unable to find a valid video frame!");
+			VT_LOG(LogSeverity::Error, "Unable to find a valid video frame!");
 		}
 
 		return readFrame;

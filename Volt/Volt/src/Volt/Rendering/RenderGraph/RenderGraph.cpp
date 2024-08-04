@@ -10,14 +10,14 @@
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/Resources/BindlessResourcesManager.h"
 
-#include <VoltRHI/Buffers/CommandBuffer.h>
-#include <VoltRHI/Buffers/StorageBuffer.h>
-#include <VoltRHI/Buffers/UniformBuffer.h>
-#include <VoltRHI/Images/ImageUtility.h>
-#include <VoltRHI/Images/ImageView.h>
-#include <VoltRHI/Images/Image3D.h>
-#include <VoltRHI/Graphics/GraphicsContext.h>
-#include <VoltRHI/Utility/ResourceUtility.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
+#include <RHIModule/Buffers/UniformBuffer.h>
+#include <RHIModule/Images/ImageUtility.h>
+#include <RHIModule/Images/ImageView.h>
+#include <RHIModule/Images/Image3D.h>
+#include <RHIModule/Graphics/GraphicsContext.h>
+#include <RHIModule/Utility/ResourceUtility.h>
 
 #include <CoreUtilities/Profiling/Profiling.h>
 #include <CoreUtilities/EnumUtils.h>

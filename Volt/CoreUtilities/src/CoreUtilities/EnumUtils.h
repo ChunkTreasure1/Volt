@@ -36,7 +36,7 @@ namespace Utils
 					return static_cast<EnumType>(pair.first);
 				}
 			}
-			//VT_CORE_ERROR("Tried to convert string to enum that does not exist! EnumName: {0}, EnumValue: {1}", typeid(EnumType).name(), aEnumValue);
+			//VT_LOG(LogSeverity::Error, "Tried to convert string to enum that does not exist! EnumName: {0}, EnumValue: {1}", typeid(EnumType).name(), aEnumValue);
 			return static_cast<EnumType>(0);
 		}
 

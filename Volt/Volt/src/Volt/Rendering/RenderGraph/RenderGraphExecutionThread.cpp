@@ -9,11 +9,11 @@
 
 #include "Volt/Rendering/Resources/BindlessResourcesManager.h"
 
-#include <VoltRHI/Graphics/GraphicsContext.h>
-#include <VoltRHI/Graphics/GraphicsDevice.h>
-#include <VoltRHI/Graphics/DeviceQueue.h>
+#include <RHIModule/Graphics/GraphicsContext.h>
+#include <RHIModule/Graphics/GraphicsDevice.h>
+#include <RHIModule/Graphics/DeviceQueue.h>
 
-#include <VoltRHI/Graphics/Swapchain.h>
+#include <RHIModule/Graphics/Swapchain.h>
 
 #include <CoreUtilities/Containers/FunctionQueue.h>
 

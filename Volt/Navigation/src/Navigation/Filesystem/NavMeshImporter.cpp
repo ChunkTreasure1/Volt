@@ -1,7 +1,6 @@
 #include "nvpch.h"
 #include "NavMeshImporter.h"
 
-#include <Volt/Log/Log.h>
 #include <Volt/Core/Profiling.h>
 
 #include <Volt/Asset/AssetManager.h>

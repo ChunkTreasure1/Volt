@@ -2,7 +2,7 @@
 
 #include "Volt/Rendering/Resources/BindlessResource.h"
 
-#include <VoltRHI/Images/Image3D.h>
+#include <RHIModule/Images/Image3D.h>
 
 #include <CoreUtilities/Containers/Vector.h>
 #include <CoreUtilities/Containers/SparseBrickMap.h>

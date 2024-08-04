@@ -4,7 +4,7 @@
 
 #include "Volt/Math/Math.h"
 
-#include <VoltRHI/Images/Image2D.h>
+#include <RHIModule/Images/Image2D.h>
 
 namespace Volt
 {

@@ -13,8 +13,8 @@
 
 #include "Volt/Utility/StringUtility.h"
 
-#include <VoltRHI/Buffers/IndexBuffer.h>
-#include <VoltRHI/Buffers/VertexBuffer.h>
+#include <RHIModule/Buffers/IndexBuffer.h>
+#include <RHIModule/Buffers/VertexBuffer.h>
 
 namespace Volt
 {

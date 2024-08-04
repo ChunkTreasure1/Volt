@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RHIModule/Pipelines/RenderPipeline.h>
+
 #include <functional>
 
 namespace Volt

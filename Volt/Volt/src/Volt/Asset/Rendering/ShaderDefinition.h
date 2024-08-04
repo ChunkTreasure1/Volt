@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Volt/Asset/Asset.h"
-#include <VoltRHI/Shader/Shader.h>
+#include <RHIModule/Shader/Shader.h>
 
 namespace Volt
 {

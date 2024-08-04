@@ -65,11 +65,11 @@
 
 #include "imgui_impl_vulkan.h"
 
-#include <VoltRHI/Graphics/GraphicsContext.h>
-#include <VoltRHI/Graphics/GraphicsDevice.h>
-#include <VoltRHI/Graphics/DeviceQueue.h>
+#include <RHIModule/Graphics/GraphicsContext.h>
+#include <RHIModule/Graphics/GraphicsDevice.h>
+#include <RHIModule/Graphics/DeviceQueue.h>
 
-#include <VoltRHI/../../../VoltVulkan/src/VoltVulkan/Graphics/VulkanDeviceQueue.h>
+#include <VulkanRHIModule/Graphics/VulkanDeviceQueue.h>
 
 #include <stdio.h>
 

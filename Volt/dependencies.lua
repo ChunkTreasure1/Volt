@@ -138,6 +138,6 @@ Library["Aftermath"] = "%{LibraryDir.Aftermath}/x64/GFSDK_Aftermath_Lib.x64.lib"
 
 Library["METIS"] = "%{LibraryDir.METIS}/metis.lib"
 
-Library["VoltVulkan"] = "%{LibraryDir.Volt}/VoltVulkan/VoltVulkan.lib"
-Library["VoltRHI"] = "%{LibraryDir.Volt}/VoltRHI/VoltRHI.lib"
+Library["VulkanRHIModule"] = "%{LibraryDir.Volt}/VulkanRHIModule/VulkanRHIModule.lib"
+Library["RHIModule"] = "%{LibraryDir.Volt}/RHIModule/RHIModule.lib"
 Library["CoreUtilities"] = "%{LibraryDir.Volt}/CoreUtilities/CoreUtilities.lib"

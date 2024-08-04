@@ -2,8 +2,6 @@
 
 #include "GraphKey/Node.h"
 
-#include <Volt/Log/Log.h>
-
 namespace GraphKey
 {
 	class PrintNode : public Node

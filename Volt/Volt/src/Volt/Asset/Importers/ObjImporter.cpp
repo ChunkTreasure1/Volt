@@ -12,7 +12,7 @@ namespace Volt
 		file.open(Volt::AssetManager::GetContextPath(path) / path);
 		if (!file.is_open())
 		{
-			VT_CORE_ERROR("Could not open mesh file!");
+			VT_LOG(LogSeverity::Error, "Could not open mesh file!");
 			return;
 		};
 

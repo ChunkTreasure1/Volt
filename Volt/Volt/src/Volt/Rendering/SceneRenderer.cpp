@@ -49,17 +49,17 @@
 #include "Volt/Utility/Noise.h"
 #include "Volt/Math/Math.h"
 
-#include <VoltRHI/Images/Image2D.h>
-#include <VoltRHI/Images/SamplerState.h>
-#include <VoltRHI/Shader/Shader.h>
-#include <VoltRHI/Pipelines/RenderPipeline.h>
-#include <VoltRHI/Pipelines/ComputePipeline.h>
+#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/SamplerState.h>
+#include <RHIModule/Shader/Shader.h>
+#include <RHIModule/Pipelines/RenderPipeline.h>
+#include <RHIModule/Pipelines/ComputePipeline.h>
 
-#include <VoltRHI/Buffers/CommandBuffer.h>
-#include <VoltRHI/Buffers/UniformBuffer.h>
-#include <VoltRHI/Buffers/StorageBuffer.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
+#include <RHIModule/Buffers/UniformBuffer.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
 
-#include <VoltRHI/Descriptors/DescriptorTable.h>
+#include <RHIModule/Descriptors/DescriptorTable.h>
 
 namespace Volt
 {

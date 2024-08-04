@@ -10,6 +10,9 @@
 #include "font_awesome_5.h"
 #include "fa_solid_900.h"
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
 #define NOTIFY_MAX_MSG_LENGTH			4096		// Max message content length
 #define NOTIFY_PADDING_X				20.f		// Bottom-left X padding
 #define NOTIFY_PADDING_Y				20.f		// Bottom-left Y padding

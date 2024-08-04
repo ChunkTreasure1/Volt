@@ -1,6 +1,6 @@
 #pragma once
 
-#include <VoltRHI/Descriptors/ResourceHandle.h>
+#include <RHIModule/Descriptors/ResourceHandle.h>
 
 namespace Volt
 {

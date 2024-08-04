@@ -9,9 +9,9 @@
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Math/Math.h"
 
-#include <VoltRHI/Shader/Shader.h>
-#include <VoltRHI/Pipelines/RenderPipeline.h>
-#include <VoltRHI/Pipelines/ComputePipeline.h>
+#include <RHIModule/Shader/Shader.h>
+#include <RHIModule/Pipelines/RenderPipeline.h>
+#include <RHIModule/Pipelines/ComputePipeline.h>
 
 #include <CoreUtilities/Time/ScopedTimer.h>
 
@@ -156,7 +156,7 @@ namespace Volt
 
 		ScopedTimer timer{};
 
-		VT_CORE_INFO("[ShaderMap]: Starting shader import!");
+		VT_LOG(LogSeverity::Info, "[ShaderMap]: Starting shader import!");
 
 		for (const auto& searchPath : searchPaths)
 		{
@@ -250,7 +250,7 @@ namespace Volt
 			future.wait();
 		}
 
-		VT_CORE_INFO("[ShaderMap]: Shader import finished in {0} seconds!", timer.GetTime<Time::Seconds>());
+		VT_LOG(LogSeverity::Info, "[ShaderMap]: Shader import finished in {0} seconds!", timer.GetTime<Time::Seconds>());
 	}
 
 	Vector<std::filesystem::path> ShaderMap::FindShaderIncludes(const std::filesystem::path& filePath)

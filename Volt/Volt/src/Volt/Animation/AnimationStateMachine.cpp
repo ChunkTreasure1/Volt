@@ -83,7 +83,7 @@ namespace Volt
 
 		const auto& currState = myStates.at(myCurrentState);
 
-		//VT_WARN("{}", currState->name);
+		//VT_LOG(LogSeverity::Warning, "{}", currState->name);
 
 		for (const auto& id : currState->transitions)
 		{
@@ -576,7 +576,7 @@ namespace Volt
 		}
 		else [[unlikely]]
 		{
-			VT_CORE_ERROR("Tried to get AnimationState from an index that does not contain an Animation state");
+			VT_LOG(LogSeverity::Error, "Tried to get AnimationState from an index that does not contain an Animation state");
 			return Ref<AnimationState>();
 		}
 	}
@@ -585,7 +585,7 @@ namespace Volt
 	{
 		if (aState->stateType != StateMachineStateType::AnimationState) [[unlikely]]
 		{
-			VT_CORE_ERROR("Tried to convert a StateMachineState to AnimationState that doesnt have that type");
+			VT_LOG(LogSeverity::Error, "Tried to convert a StateMachineState to AnimationState that doesnt have that type");
 			return Ref<AnimationState>();
 		}
 		return std::reinterpret_pointer_cast<AnimationState>(aState);

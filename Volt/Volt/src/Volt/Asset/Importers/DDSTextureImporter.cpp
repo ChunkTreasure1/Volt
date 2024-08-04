@@ -3,12 +3,12 @@
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 
-#include <VoltRHI/Images/Image2D.h>
-#include <VoltRHI/Buffers/CommandBuffer.h>
-#include <VoltRHI/Graphics/GraphicsContext.h>
+#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
+#include <RHIModule/Graphics/GraphicsContext.h>
 
-#include <VoltRHI/Memory/Allocation.h>
-#include <VoltRHI/Utility/ResourceUtility.h>
+#include <RHIModule/Memory/Allocation.h>
+#include <RHIModule/Utility/ResourceUtility.h>
 
 #define TINYDDSLOADER_IMPLEMENTATION
 #include <tinyddsloader.h>
@@ -23,13 +23,13 @@ namespace Volt
 		{
 			switch (code)
 			{
-				case tdl::ErrorFileOpen: VT_CORE_ERROR("Unable to open texture {0}!", path.string().c_str()); break;
-				case tdl::ErrorRead: VT_CORE_ERROR("Unable to read texture {0}!", path.string().c_str()); break;
-				case tdl::ErrorMagicWord: VT_CORE_ERROR("Unable to read magic word in texture {0}!", path.string().c_str()); break;
-				case tdl::ErrorSize: VT_CORE_ERROR("Size is wrong in texture {0}!", path.string().c_str()); break;
-				case tdl::ErrorVerify: VT_CORE_ERROR("Unable to verify texture {0}!", path.string().c_str()); break;
-				case tdl::ErrorNotSupported: VT_CORE_ERROR("Texture type of texture {0} not supported!", path.string().c_str()); break;
-				case tdl::ErrorInvalidData: VT_CORE_ERROR("Invalid data in texture {0}!", path.string().c_str()); break;
+				case tdl::ErrorFileOpen: VT_LOG(LogSeverity::Error, "Unable to open texture {0}!", path.string().c_str()); break;
+				case tdl::ErrorRead: VT_LOG(LogSeverity::Error, "Unable to read texture {0}!", path.string().c_str()); break;
+				case tdl::ErrorMagicWord: VT_LOG(LogSeverity::Error, "Unable to read magic word in texture {0}!", path.string().c_str()); break;
+				case tdl::ErrorSize: VT_LOG(LogSeverity::Error, "Size is wrong in texture {0}!", path.string().c_str()); break;
+				case tdl::ErrorVerify: VT_LOG(LogSeverity::Error, "Unable to verify texture {0}!", path.string().c_str()); break;
+				case tdl::ErrorNotSupported: VT_LOG(LogSeverity::Error, "Texture type of texture {0} not supported!", path.string().c_str()); break;
+				case tdl::ErrorInvalidData: VT_LOG(LogSeverity::Error, "Invalid data in texture {0}!", path.string().c_str()); break;
 			}
 		}
 
@@ -82,7 +82,7 @@ namespace Volt
 
 		if (dds.GetTextureDimension() != tdl::DDSFile::TextureDimension::Texture2D)
 		{
-			VT_CORE_ERROR("Texture {0} is not 2D!", path.string().c_str());
+			VT_LOG(LogSeverity::Error, "Texture {0} is not 2D!", path.string().c_str());
 			return false;
 		}
 

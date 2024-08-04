@@ -3,7 +3,7 @@
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 
-#include <VoltRHI/ImGui/ImGuiImplementation.h>
+#include <RHIModule/ImGui/ImGuiImplementation.h>
 
 inline static constexpr float PROPERTY_ROW_HEIGHT = 17.f;
 inline static constexpr float PROPERTY_ROW_PADDING = 4.f;

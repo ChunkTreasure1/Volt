@@ -22,10 +22,9 @@
 #include <Volt/Utility/PremadeCommands.h>
 
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
+#include <Volt/Scripting/Mono/MonoScriptUtils.h>
 
 #include <GraphKey/Graph.h>
-
-
 
 PropertiesPanel::PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, SceneState& sceneState, const std::string& id)
 	: EditorWindow("Properties", false, id), myCurrentScene(currentScene), myCurrentSceneRenderer(currentSceneRenderer), mySceneState(sceneState)
@@ -369,7 +368,7 @@ void PropertiesPanel::AddMonoScriptPopup()
 
 		for (const auto& klass : scriptInfo)
 		{
-			auto classname = Volt::MonoScriptUtils::GetClassName(klass.first);
+			auto classname = Volt::MonoScriptUtils::GetClassName2(klass.first);
 			classname[0] = static_cast<char>(std::toupper(classname[0]));
 			scriptNames.emplace_back(classname);
 			fullScriptNames.emplace_back(klass.first);

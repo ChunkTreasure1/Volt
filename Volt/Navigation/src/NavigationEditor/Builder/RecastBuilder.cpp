@@ -4,7 +4,6 @@
 #include "Navigation/Core/CoreInterfaces.h"
 #include "NavigationEditor/Tools/NavMeshDebugDrawer.h"
 
-#include <Volt/Log/Log.h>
 #include <Volt/Asset/AssetManager.h>
 
 #include <DetourAssert.h>
@@ -196,7 +195,7 @@ int RecastBuilder::rasterizeTileLayers(
 {
 	if (!m_geom || !m_geom->getChunkyMesh())
 	{
-		VT_CORE_ERROR("buildTile: Input mesh is not specified.");
+		VT_LOG(LogSeverity::Error, "buildTile: Input mesh is not specified.");
 		return 0;
 	}
 
@@ -228,12 +227,12 @@ int RecastBuilder::rasterizeTileLayers(
 	rc.solid = rcAllocHeightfield();
 	if (!rc.solid)
 	{
-		VT_CORE_ERROR("buildNavigation: Out of memory 'solid'.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Out of memory 'solid'.");
 		return 0;
 	}
 	if (!rcCreateHeightfield(m_ctx.get(), *rc.solid, tcfg.width, tcfg.height, tcfg.bmin, tcfg.bmax, tcfg.cs, tcfg.ch))
 	{
-		VT_CORE_ERROR("buildNavigation: Could not create solid heightfield.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Could not create solid heightfield.");
 		return 0;
 	}
 
@@ -243,7 +242,7 @@ int RecastBuilder::rasterizeTileLayers(
 	rc.triareas = new unsigned char[chunkyMesh->maxTrisPerChunk];
 	if (!rc.triareas)
 	{
-		VT_CORE_ERROR("buildNavigation: Out of memory 'm_triareas' ({0}).", chunkyMesh->maxTrisPerChunk);
+		VT_LOG(LogSeverity::Error, "buildNavigation: Out of memory 'm_triareas' ({0}).", chunkyMesh->maxTrisPerChunk);
 		return 0;
 	}
 
@@ -287,19 +286,19 @@ int RecastBuilder::rasterizeTileLayers(
 	rc.chf = rcAllocCompactHeightfield();
 	if (!rc.chf)
 	{
-		VT_CORE_ERROR("buildNavigation: Out of memory 'chf'.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Out of memory 'chf'.");
 		return 0;
 	}
 	if (!rcBuildCompactHeightfield(m_ctx.get(), tcfg.walkableHeight, tcfg.walkableClimb, *rc.solid, *rc.chf))
 	{
-		VT_CORE_ERROR("buildNavigation: Could not build compact data.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Could not build compact data.");
 		return 0;
 	}
 
 	// Erode the walkable area by agent radius.
 	if (!rcErodeWalkableArea(m_ctx.get(), tcfg.walkableRadius, *rc.chf))
 	{
-		VT_CORE_ERROR("buildNavigation: Could not erode.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Could not erode.");
 		return 0;
 	}
 
@@ -315,12 +314,12 @@ int RecastBuilder::rasterizeTileLayers(
 	rc.lset = rcAllocHeightfieldLayerSet();
 	if (!rc.lset)
 	{
-		VT_CORE_ERROR("buildNavigation: Out of memory 'lset'.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Out of memory 'lset'.");
 		return 0;
 	}
 	if (!rcBuildHeightfieldLayers(m_ctx.get(), *rc.chf, tcfg.borderSize, tcfg.walkableHeight, *rc.lset))
 	{
-		VT_CORE_ERROR("buildNavigation: Could not build heighfield layers.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Could not build heighfield layers.");
 		return 0;
 	}
 
@@ -395,7 +394,7 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 {
 	if (!m_geom || !m_geom->getVertCount())
 	{
-		VT_CORE_ERROR("buildNavigation: Input mesh is not specified.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Input mesh is not specified.");
 		return nullptr;
 	}
 
@@ -447,9 +446,9 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 	// Start the build process.	
 	m_ctx->startTimer(RC_TIMER_TOTAL);
 
-	VT_CORE_INFO("Building navigation:");
-	VT_CORE_INFO(" - {0} x {1} cells", m_cfg.width, m_cfg.height);
-	VT_CORE_INFO(" - {0}K verts, {1}K tris", nverts / 1000.0f, ntris / 1000.0f);
+	VT_LOG(LogSeverity::Info, "Building navigation:");
+	VT_LOG(LogSeverity::Info, " - {0} x {1} cells", m_cfg.width, m_cfg.height);
+	VT_LOG(LogSeverity::Info, " - {0}K verts, {1}K tris", nverts / 1000.0f, ntris / 1000.0f);
 
 	//
 	// Step 2. Rasterize input polygon soup.
@@ -459,12 +458,12 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 	m_solid = rcAllocHeightfield();
 	if (!m_solid)
 	{
-		VT_CORE_ERROR("buildNavigation: Out of memory 'solid'.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Out of memory 'solid'.");
 		return nullptr;
 	}
 	if (!rcCreateHeightfield(m_ctx.get(), *m_solid, m_cfg.width, m_cfg.height, m_cfg.bmin, m_cfg.bmax, m_cfg.cs, m_cfg.ch))
 	{
-		VT_CORE_ERROR("buildNavigation: Could not create solid heightfield.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Could not create solid heightfield.");
 		return nullptr;
 	}
 
@@ -474,7 +473,7 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 	m_triareas = new unsigned char[ntris];
 	if (!m_triareas)
 	{
-		VT_CORE_ERROR("buildNavigation: Out of memory 'm_triareas' ({0}).", ntris);
+		VT_LOG(LogSeverity::Error, "buildNavigation: Out of memory 'm_triareas' ({0}).", ntris);
 		return nullptr;
 	}
 
@@ -485,7 +484,7 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 	rcMarkWalkableTriangles(m_ctx.get(), m_cfg.walkableSlopeAngle, verts, nverts, tris, ntris, m_triareas);
 	if (!rcRasterizeTriangles(m_ctx.get(), verts, nverts, tris, m_triareas, ntris, *m_solid, m_cfg.walkableClimb))
 	{
-		VT_CORE_ERROR("buildNavigation: Could not rasterize triangles.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Could not rasterize triangles.");
 		return nullptr;
 	}
 
@@ -520,12 +519,12 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 	m_chf = rcAllocCompactHeightfield();
 	if (!m_chf)
 	{
-		VT_CORE_ERROR("buildNavigation: Out of memory 'chf'.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Out of memory 'chf'.");
 		return nullptr;
 	}
 	if (!rcBuildCompactHeightfield(m_ctx.get(), m_cfg.walkableHeight, m_cfg.walkableClimb, *m_solid, *m_chf))
 	{
-		VT_CORE_ERROR("buildNavigation: Could not build compact data.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Could not build compact data.");
 		return nullptr;
 	}
 
@@ -538,7 +537,7 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 	// Erode the walkable area by agent radius.
 	if (!rcErodeWalkableArea(m_ctx.get(), m_cfg.walkableRadius, *m_chf))
 	{
-		VT_CORE_ERROR("buildNavigation: Could not erode.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Could not erode.");
 		return nullptr;
 	}
 
@@ -578,14 +577,14 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 		// Prepare for region partitioning, by calculating distance field along the walkable surface.
 		if (!rcBuildDistanceField(m_ctx.get(), *m_chf))
 		{
-			VT_CORE_ERROR("buildNavigation: Could not build distance field.");
+			VT_LOG(LogSeverity::Error, "buildNavigation: Could not build distance field.");
 			return nullptr;
 		}
 
 		// Partition the walkable surface into simple regions without holes.
 		if (!rcBuildRegions(m_ctx.get(), *m_chf, 0, m_cfg.minRegionArea, m_cfg.mergeRegionArea))
 		{
-			VT_CORE_ERROR("buildNavigation: Could not build watershed regions.");
+			VT_LOG(LogSeverity::Error, "buildNavigation: Could not build watershed regions.");
 			return nullptr;
 		}
 	}
@@ -595,7 +594,7 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 		// Monotone partitioning does not need distancefield.
 		if (!rcBuildRegionsMonotone(m_ctx.get(), *m_chf, 0, m_cfg.minRegionArea, m_cfg.mergeRegionArea))
 		{
-			VT_CORE_ERROR("buildNavigation: Could not build monotone regions.");
+			VT_LOG(LogSeverity::Error, "buildNavigation: Could not build monotone regions.");
 			return nullptr;
 		}
 	}
@@ -604,7 +603,7 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 		// Partition the walkable surface into simple regions without holes.
 		if (!rcBuildLayerRegions(m_ctx.get(), *m_chf, 0, m_cfg.minRegionArea))
 		{
-			VT_CORE_ERROR("buildNavigation: Could not build layer regions.");
+			VT_LOG(LogSeverity::Error, "buildNavigation: Could not build layer regions.");
 			return nullptr;
 		}
 	}
@@ -617,12 +616,12 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 	m_cset = rcAllocContourSet();
 	if (!m_cset)
 	{
-		VT_CORE_ERROR("buildNavigation: Out of memory 'cset'.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Out of memory 'cset'.");
 		return nullptr;
 	}
 	if (!rcBuildContours(m_ctx.get(), *m_chf, m_cfg.maxSimplificationError, m_cfg.maxEdgeLen, *m_cset))
 	{
-		VT_CORE_ERROR("buildNavigation: Could not create contours.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Could not create contours.");
 		return nullptr;
 	}
 
@@ -634,12 +633,12 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 	m_pmesh = rcAllocPolyMesh();
 	if (!m_pmesh)
 	{
-		VT_CORE_ERROR("buildNavigation: Out of memory 'pmesh'.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Out of memory 'pmesh'.");
 		return nullptr;
 	}
 	if (!rcBuildPolyMesh(m_ctx.get(), *m_cset, m_cfg.maxVertsPerPoly, *m_pmesh))
 	{
-		VT_CORE_ERROR("buildNavigation: Could not triangulate contours.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Could not triangulate contours.");
 		return nullptr;
 	}
 
@@ -650,13 +649,13 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 	m_dmesh = rcAllocPolyMeshDetail();
 	if (!m_dmesh)
 	{
-		VT_CORE_ERROR("buildNavigation: Out of memory 'pmdtl'.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Out of memory 'pmdtl'.");
 		return nullptr;
 	}
 
 	if (!rcBuildPolyMeshDetail(m_ctx.get(), *m_pmesh, *m_chf, m_cfg.detailSampleDist, m_cfg.detailSampleMaxError, *m_dmesh))
 	{
-		VT_CORE_ERROR("buildNavigation: Could not build detail mesh.");
+		VT_LOG(LogSeverity::Error, "buildNavigation: Could not build detail mesh.");
 		return nullptr;
 	}
 
@@ -740,7 +739,7 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 
 		if (!dtCreateNavMeshData(&params, &navData, &navDataSize))
 		{
-			VT_CORE_ERROR("Could not build Detour navmesh.");
+			VT_LOG(LogSeverity::Error, "Could not build Detour navmesh.");
 			return nullptr;
 		}
 
@@ -749,7 +748,7 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 		if (!navMesh)
 		{
 			dtFree(navData);
-			VT_CORE_ERROR("Could not create Detour navmesh");
+			VT_LOG(LogSeverity::Error, "Could not create Detour navmesh");
 			return nullptr;
 		}
 
@@ -757,7 +756,7 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 		if (dtStatusFailed(status))
 		{
 			dtFree(navData);
-			VT_CORE_ERROR("Could not init Detour navmesh");
+			VT_LOG(LogSeverity::Error, "Could not init Detour navmesh");
 			return nullptr;
 		}
 
@@ -774,11 +773,11 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 	m_ctx->stopTimer(RC_TIMER_TOTAL);
 
 	// Show performance stats.
-	VT_CORE_INFO(">> Detailed Polymesh: {0} vertices, {1} triangles", m_dmesh->nverts, m_dmesh->ntris);
-	VT_CORE_INFO(">> Polymesh: {0} vertices, {1} polygons", m_pmesh->nverts, m_pmesh->npolys);
+	VT_LOG(LogSeverity::Info, ">> Detailed Polymesh: {0} vertices, {1} triangles", m_dmesh->nverts, m_dmesh->ntris);
+	VT_LOG(LogSeverity::Info, ">> Polymesh: {0} vertices, {1} polygons", m_pmesh->nverts, m_pmesh->npolys);
 
 	m_totalBuildTimeMs = m_ctx->getAccumulatedTime(RC_TIMER_TOTAL) / 1000.0f;
-	VT_CORE_INFO(">> NavMesh finished building in {0}ms", m_totalBuildTimeMs);
+	VT_LOG(LogSeverity::Info, ">> NavMesh finished building in {0}ms", m_totalBuildTimeMs);
 
 	return result;
 }
@@ -787,7 +786,7 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildTiledNavMesh()
 {
 	if (!m_geom || !m_geom->getVertCount())
 	{
-		VT_CORE_ERROR("buildTiledNavigation: Input mesh is not specified.");
+		VT_LOG(LogSeverity::Error, "buildTiledNavigation: Input mesh is not specified.");
 		return nullptr;
 	}
 
@@ -854,21 +853,21 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildTiledNavMesh()
 	auto tileCache = CreateRef<dtTileCache>();
 	if (!tileCache)
 	{
-		VT_CORE_ERROR("buildTiledNavigation: Could not allocate tile cache.");
+		VT_LOG(LogSeverity::Error, "buildTiledNavigation: Could not allocate tile cache.");
 		return nullptr;
 	}
 
 	status = tileCache->init(&tcparams, m_talloc.get(), m_tcomp.get(), m_tmproc.get());
 	if (dtStatusFailed(status))
 	{
-		VT_CORE_ERROR("buildTiledNavigation: Could not init tile cache.");
+		VT_LOG(LogSeverity::Error, "buildTiledNavigation: Could not init tile cache.");
 		return nullptr;
 	}
 
 	auto navMesh = CreateRef<dtNavMesh>();
 	if (!navMesh)
 	{
-		VT_CORE_ERROR("buildTiledNavigation: Could not allocate navmesh.");
+		VT_LOG(LogSeverity::Error, "buildTiledNavigation: Could not allocate navmesh.");
 		return nullptr;
 	}
 
@@ -889,7 +888,7 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildTiledNavMesh()
 	status = navMesh->init(&params);
 	if (dtStatusFailed(status))
 	{
-		VT_CORE_ERROR("buildTiledNavigation: Could not init navmesh.");
+		VT_LOG(LogSeverity::Error, "buildTiledNavigation: Could not init navmesh.");
 		return nullptr;
 	}
 
@@ -955,11 +954,11 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildTiledNavMesh()
 	const float compressionRatio = (float)m_cacheCompressedSize / (float)(m_cacheRawSize + 1);
 
 	// Show performance stats.
-	VT_CORE_INFO(">> Layers: {0}", m_cacheLayerCount);
-	VT_CORE_INFO(">> Layers (per tile) {0}", (float)m_cacheLayerCount / (float)gridSize);
-	VT_CORE_INFO(">> Memory: {0} kB / {1} kB ({2})", m_cacheCompressedSize / 1024.0f, m_cacheRawSize / 1024.0f, compressionRatio * 100.0f);
-	VT_CORE_INFO(">> Build Peak Mem Usage: {0} kB", m_cacheBuildMemUsage / 1024.0f);
-	VT_CORE_INFO(">> NavMesh finished building in {0}ms", m_cacheBuildTimeMs);
+	VT_LOG(LogSeverity::Info, ">> Layers: {0}", m_cacheLayerCount);
+	VT_LOG(LogSeverity::Info, ">> Layers (per tile) {0}", (float)m_cacheLayerCount / (float)gridSize);
+	VT_LOG(LogSeverity::Info, ">> Memory: {0} kB / {1} kB ({2})", m_cacheCompressedSize / 1024.0f, m_cacheRawSize / 1024.0f, compressionRatio * 100.0f);
+	VT_LOG(LogSeverity::Info, ">> Build Peak Mem Usage: {0} kB", m_cacheBuildMemUsage / 1024.0f);
+	VT_LOG(LogSeverity::Info, ">> NavMesh finished building in {0}ms", m_cacheBuildTimeMs);
 
 	return result;
 }

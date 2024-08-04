@@ -518,7 +518,7 @@ bool ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, Volt:
 
 void ComponentPropertyUtility::DrawMonoScript(Weak<Volt::Scene> scene, const Volt::MonoScriptEntry& scriptEntry, Volt::Entity entity)
 {
-	std::string scriptClassName = Volt::MonoScriptUtils::GetClassName(scriptEntry.name);
+	std::string scriptClassName = Volt::MonoScriptUtils::GetClassName2(scriptEntry.name);
 	scriptClassName[0] = static_cast<char>(std::toupper(scriptClassName[0]));
 
 	bool removeScript = false;

@@ -134,7 +134,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -143,7 +143,7 @@ namespace Volt
 
 		if (!streamReader.OpenFile(filePath))
 		{
-			VT_CORE_ERROR("Failed to open file {0}!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "Failed to open file {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -360,8 +360,8 @@ namespace Volt
 			}, static_cast<uint32_t>(removedEntities.size()));
 		}
 
-		VT_CORE_INFO("[SceneImporter]: Saved {0} entities!", entities.size());
-		VT_CORE_INFO("[SceneImporter]: Removed {0} entities!", removedEntities.size());
+		VT_LOG(LogSeverity::Info, "[SceneImporter]: Saved {0} entities!", entities.size());
+		VT_LOG(LogSeverity::Info, "[SceneImporter]: Removed {0} entities!", removedEntities.size());
 
 		scene->ClearEditedEntities();
 	}
@@ -852,7 +852,7 @@ namespace Volt
 				std::ifstream vpFile(vpPath, std::ios::in | std::ios::binary);
 				if (!vpFile.is_open())
 				{
-					VT_CORE_ERROR("Could not open entVp file!");
+					VT_LOG(LogSeverity::Error, "Could not open entVp file!");
 				}
 
 				Vector<uint8_t> totalData;
@@ -1058,13 +1058,13 @@ namespace Volt
 
 		if (worldCell.isLoaded)
 		{
-			VT_CORE_WARN("[SceneImporter]: World Cell is already loaded!");
+			VT_LOG(LogSeverity::Warning, "[SceneImporter]: World Cell is already loaded!");
 			return;
 		}
 
 		if (worldCell.cellEntities.empty())
 		{
-			VT_CORE_WARN("[SceneImporter]: Unable to load World Cell which contains zero entities!");
+			VT_LOG(LogSeverity::Warning, "[SceneImporter]: Unable to load World Cell which contains zero entities!");
 			return;
 		}
 

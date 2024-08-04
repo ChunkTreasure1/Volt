@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include <Volt/Asset/Asset.h>
+
+#include <CoreUtilities/Containers/Vector.h>
 
 #include <unordered_map>
 

@@ -395,7 +395,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_WARN("Trying to remove invalid entity with id {0}!", entityId);
+			VT_LOG(LogSeverity::Warning, "Trying to remove invalid entity with id {0}!", entityId);
 		}
 	}
 
@@ -470,7 +470,7 @@ namespace Volt
 	{
 		if (Volt::AssetManager::GetAssetTypeFromHandle(handle) != AssetType::Scene)
 		{
-			VT_CORE_ERROR("Unable to load scene with handle {0}, because it's not a scene!", handle);
+			VT_LOG(LogSeverity::Error, "Unable to load scene with handle {0}, because it's not a scene!", handle);
 			return;
 		}
 
@@ -489,7 +489,7 @@ namespace Volt
 	{
 		if (Volt::AssetManager::GetAssetTypeFromHandle(handle) != AssetType::Scene)
 		{
-			VT_CORE_ERROR("Unable to load scene with handle {0}, because it's not a scene!", handle);
+			VT_LOG(LogSeverity::Error, "Unable to load scene with handle {0}, because it's not a scene!", handle);
 			return;
 		}
 
@@ -985,29 +985,12 @@ namespace Volt
 #pragma endregion
 
 #pragma region Log
-	inline static void Log_String(MonoString* string, LogLevel logLevel)
+	inline static void Log_String(MonoString* string, LogSeverity logLevel)
 	{
 		if (string == nullptr) { return; }
 		const auto str = MonoScriptUtils::GetStringFromMonoString(string);
 
-		switch (logLevel)
-		{
-			case LogLevel::Trace:
-				VT_CORE_TRACE(str);
-				break;
-			case LogLevel::Info:
-				VT_CORE_INFO(str);
-				break;
-			case LogLevel::Warning:
-				VT_CORE_WARN(str);
-				break;
-			case LogLevel::Error:
-				VT_CORE_ERROR(str);
-				break;
-			case LogLevel::Critical:
-				VT_CORE_CRITICAL(str);
-				break;
-		}
+		VT_LOG(logLevel, str);
 	}
 #pragma endregion
 
@@ -1115,7 +1098,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().bodyType;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return BodyType::Static;
 	}
 
@@ -1153,7 +1136,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().layerId;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return 0;
 	}
 
@@ -1188,7 +1171,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().mass;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1244,7 +1227,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().linearDrag;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1279,7 +1262,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().angularDrag;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1293,7 +1276,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().lockFlags;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return 0;
 	}
 
@@ -1328,7 +1311,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().disableGravity;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return false;
 	}
 
@@ -1363,7 +1346,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().isKinematic;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return false;
 	}
 
@@ -1398,7 +1381,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().collisionType;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return CollisionDetectionType::Discrete;
 	}
 
@@ -1425,7 +1408,7 @@ namespace Volt
 			return entity.GetComponent<CharacterControllerComponent>().slopeLimit;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a CharacterControllerComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1452,7 +1435,7 @@ namespace Volt
 			return entity.GetComponent<CharacterControllerComponent>().invisibleWallHeight;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a CharacterControllerComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1477,7 +1460,7 @@ namespace Volt
 			return entity.GetComponent<CharacterControllerComponent>().maxJumpHeight;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a CharacterControllerComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1502,7 +1485,7 @@ namespace Volt
 			return entity.GetComponent<CharacterControllerComponent>().contactOffset;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a CharacterControllerComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1527,7 +1510,7 @@ namespace Volt
 			return entity.GetComponent<CharacterControllerComponent>().stepOffset;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a CharacterControllerComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1552,7 +1535,7 @@ namespace Volt
 			return entity.GetComponent<CharacterControllerComponent>().density;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a CharacterControllerComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1572,7 +1555,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return 0.f;
 		}
 
@@ -1582,7 +1565,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller actor found for entity {0}!", entityId);
 			return 0.f;
 		}
 
@@ -1594,7 +1577,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -1604,7 +1587,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -1616,7 +1599,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -1626,7 +1609,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -1638,7 +1621,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -1648,7 +1631,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -1660,7 +1643,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -1670,7 +1653,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -1682,7 +1665,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -1692,7 +1675,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -1712,7 +1695,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a BoxColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
 			*outHalfSize = 0.f;
 		}
 	}
@@ -1742,7 +1725,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a BoxColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
 		}
 	}
 
@@ -1756,7 +1739,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a BoxColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
 			*outOffset = 0.f;
 		}
 	}
@@ -1786,7 +1769,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a BoxColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
 		}
 	}
 
@@ -1799,7 +1782,7 @@ namespace Volt
 			return entity.GetComponent<BoxColliderComponent>().isTrigger;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a BoxColliderComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
 		return false;
 	}
 
@@ -1828,7 +1811,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a BoxColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
 		}
 	}
 #pragma endregion
@@ -1844,7 +1827,7 @@ namespace Volt
 			return entity.GetComponent<SphereColliderComponent>().radius;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a SphereColliderComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1873,7 +1856,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a SphereColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
 		}
 	}
 
@@ -1887,7 +1870,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a SphereColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
 			*outOffset = 0.f;
 		}
 	}
@@ -1917,7 +1900,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a SphereColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
 		}
 	}
 
@@ -1930,7 +1913,7 @@ namespace Volt
 			return entity.GetComponent<SphereColliderComponent>().isTrigger;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a SphereColliderComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
 		return false;
 	}
 
@@ -1959,7 +1942,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a SphereColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
 		}
 	}
 #pragma endregion
@@ -1975,7 +1958,7 @@ namespace Volt
 			return entity.GetComponent<CapsuleColliderComponent>().radius;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a CapsuleColliderComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		return 0.f;
 	}
 
@@ -2004,7 +1987,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a CapsuleColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		}
 	}
 
@@ -2018,7 +2001,7 @@ namespace Volt
 			return entity.GetComponent<CapsuleColliderComponent>().height;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a CapsuleColliderComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		return 0.f;
 	}
 
@@ -2047,7 +2030,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a CapsuleColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		}
 	}
 
@@ -2061,7 +2044,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a CapsuleColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 			*outOffset = 0.f;
 		}
 	}
@@ -2091,7 +2074,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a CapsuleColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		}
 	}
 
@@ -2104,7 +2087,7 @@ namespace Volt
 			return entity.GetComponent<CapsuleColliderComponent>().isTrigger;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a CapsuleColliderComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		return false;
 	}
 
@@ -2133,7 +2116,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a CapsuleColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		}
 	}
 #pragma endregion
@@ -2148,7 +2131,7 @@ namespace Volt
 			return entity.GetComponent<MeshColliderComponent>().isConvex;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a MeshColliderComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
 		return false;
 	}
 
@@ -2162,7 +2145,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a MeshColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
 		}
 	}
 
@@ -2175,7 +2158,7 @@ namespace Volt
 			return entity.GetComponent<MeshColliderComponent>().isTrigger;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a MeshColliderComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
 		return false;
 	}
 
@@ -2189,7 +2172,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a MeshColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
 		}
 	}
 
@@ -2202,7 +2185,7 @@ namespace Volt
 			return entity.GetComponent<MeshColliderComponent>().subMeshIndex;
 		}
 
-		VT_CORE_ERROR("Entity {0} does not have a MeshColliderComponent!", entityId);
+		VT_LOG(LogSeverity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
 		return -1;
 	}
 
@@ -2216,7 +2199,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_CORE_ERROR("Entity {0} does not have a MeshColliderComponent!", entityId);
+			VT_LOG(LogSeverity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
 		}
 	}
 
@@ -2404,7 +2387,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2414,7 +2397,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2426,7 +2409,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2436,7 +2419,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2448,7 +2431,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2458,7 +2441,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2470,7 +2453,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2480,7 +2463,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2492,7 +2475,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2502,7 +2485,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2514,7 +2497,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2524,7 +2507,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2536,7 +2519,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2546,7 +2529,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2558,7 +2541,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2568,7 +2551,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2580,7 +2563,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2590,7 +2573,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2602,7 +2585,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2612,7 +2595,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2624,7 +2607,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2634,7 +2617,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2646,7 +2629,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2656,7 +2639,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2668,7 +2651,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2678,7 +2661,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2692,7 +2675,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return 0.f;
 		}
 
@@ -2702,7 +2685,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
 			return 0.f;
 		}
 
@@ -2714,7 +2697,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2724,7 +2707,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2736,7 +2719,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return 0.f;
 		}
 
@@ -2746,7 +2729,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
 			return 0.f;
 		}
 
@@ -2758,7 +2741,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2768,7 +2751,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2780,7 +2763,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2790,7 +2773,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2802,7 +2785,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2812,7 +2795,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2824,7 +2807,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2834,7 +2817,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2846,7 +2829,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2856,7 +2839,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2868,7 +2851,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2878,7 +2861,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2890,7 +2873,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return false;
 		}
 
@@ -2900,7 +2883,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
 			return false;
 		}
 
@@ -2912,7 +2895,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_CORE_ERROR("No valid physics scene found!");
+			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2922,7 +2905,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_CORE_ERROR("No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -3265,11 +3248,15 @@ namespace Volt
 		DebugRenderer::DrawSprite(*position, *rotation, *scale, *color);
 	}
 
+#ifdef DrawText
+#undef DrawText
+#endif
 	inline static void DebugRenderer_DrawText(MonoString* text, glm::vec3* position, glm::vec3* rotation, glm::vec3* scale)
 	{
 		const auto str = MonoScriptUtils::GetStringFromMonoString(text);
 		DebugRenderer::DrawText(str, *position, *rotation, *scale);
 	}
+
 #pragma endregion 
 
 #pragma region Navigation
@@ -4443,7 +4430,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set value on invalid material!");
 	//		return;
 	//	}
 	//	material->GetSubMaterialAt(0)->GetMaterialData().color = *color;
@@ -4455,7 +4442,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set value on invalid material!");
 	//		return;
 	//	}
 	//	*outColor = material->GetSubMaterialAt(0)->GetMaterialData().color;
@@ -4466,7 +4453,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set value on invalid material!");
 	//		return;
 	//	}
 	//	material->GetSubMaterialAt(0)->GetMaterialData().emissiveColor = *color;
@@ -4478,7 +4465,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set value on invalid material!");
 	//		return;
 	//	}
 	//	*outColor = material->GetSubMaterialAt(0)->GetMaterialData().emissiveColor;
@@ -4489,7 +4476,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set value on invalid material!");
 	//		return;
 	//	}
 	//	material->GetSubMaterialAt(0)->GetMaterialData().emissiveStrength = strength;
@@ -4501,7 +4488,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set value on invalid material!");
 	//		return 0.f;
 	//	}
 	//	return material->GetSubMaterialAt(0)->GetMaterialData().emissiveStrength;
@@ -4512,7 +4499,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set value on invalid material!");
 	//		return;
 	//	}
 	//	material->GetSubMaterialAt(0)->GetMaterialData().roughness = roughness;
@@ -4524,7 +4511,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set value on invalid material!");
 	//		return 0.f;
 	//	}
 	//	return material->GetSubMaterialAt(0)->GetMaterialData().roughness;
@@ -4535,7 +4522,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set value on invalid material!");
 	//		return;
 	//	}
 	//	material->GetSubMaterialAt(0)->GetMaterialData().metalness = metalness;
@@ -4547,7 +4534,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set value on invalid material!");
 	//		return 0.f;
 	//	}
 	//	return material->GetSubMaterialAt(0)->GetMaterialData().metalness;
@@ -4558,7 +4545,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set value on invalid material!");
 	//		return;
 	//	}
 	//	material->GetSubMaterialAt(0)->GetMaterialData().normalStrength = strength;
@@ -4570,7 +4557,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set value on invalid material!");
 	//		return 0.f;
 	//	}
 	//	return material->GetSubMaterialAt(0)->GetMaterialData().normalStrength;
@@ -4581,7 +4568,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 	//		return;
 	//	}
 
@@ -4594,7 +4581,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 	//		return;
 	//	}
 
@@ -4607,7 +4594,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 	//		return;
 	//	}
 
@@ -4620,7 +4607,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 	//		return;
 	//	}
 
@@ -4633,7 +4620,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 	//		return;
 	//	}
 
@@ -4646,7 +4633,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 	//		return;
 	//	}
 
@@ -4659,7 +4646,7 @@ namespace Volt
 	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 	//	if (!material || !material->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 	//		return;
 	//	}
 
@@ -4672,7 +4659,7 @@ namespace Volt
 	//	Ref<Material> originalMaterial = AssetManager::GetAsset<Material>(materialToCopy);
 	//	if (!originalMaterial || !originalMaterial->IsValid())
 	//	{
-	//		VT_CORE_ERROR("Unable to copy invalid material!");
+	//		VT_LOG(LogSeverity::Error, "Unable to copy invalid material!");
 	//		return 0;
 	//	}
 
@@ -4687,7 +4674,7 @@ namespace Volt
 		Ref<PostProcessingMaterial> material = AssetManager::GetAsset<PostProcessingMaterial>(handle);
 		if (!material || !material->IsValid())
 		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
+			VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 			return;
 		}
 
@@ -4700,7 +4687,7 @@ namespace Volt
 		Ref<PostProcessingMaterial> material = AssetManager::GetAsset<PostProcessingMaterial>(handle);
 		if (!material || !material->IsValid())
 		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
+			VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 			return;
 		}
 
@@ -4713,7 +4700,7 @@ namespace Volt
 		Ref<PostProcessingMaterial> material = AssetManager::GetAsset<PostProcessingMaterial>(handle);
 		if (!material || !material->IsValid())
 		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
+			VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 			return;
 		}
 
@@ -4726,7 +4713,7 @@ namespace Volt
 		Ref<PostProcessingMaterial> material = AssetManager::GetAsset<PostProcessingMaterial>(handle);
 		if (!material || !material->IsValid())
 		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
+			VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 			return;
 		}
 
@@ -4739,7 +4726,7 @@ namespace Volt
 		Ref<PostProcessingMaterial> material = AssetManager::GetAsset<PostProcessingMaterial>(handle);
 		if (!material || !material->IsValid())
 		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
+			VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 			return;
 		}
 
@@ -4752,7 +4739,7 @@ namespace Volt
 		Ref<PostProcessingMaterial> material = AssetManager::GetAsset<PostProcessingMaterial>(handle);
 		if (!material || !material->IsValid())
 		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
+			VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 			return;
 		}
 
@@ -4765,7 +4752,7 @@ namespace Volt
 		Ref<PostProcessingMaterial> material = AssetManager::GetAsset<PostProcessingMaterial>(handle);
 		if (!material || !material->IsValid())
 		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
+			VT_LOG(LogSeverity::Error, "Trying to set parameter on invalid material!");
 			return;
 		}
 

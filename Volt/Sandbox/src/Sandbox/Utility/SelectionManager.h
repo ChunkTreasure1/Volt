@@ -2,6 +2,9 @@
 
 #include <Volt/Scene/EntityID.h>
 
+#include <CoreUtilities/Core.h>
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <unordered_map>
 
 namespace Volt

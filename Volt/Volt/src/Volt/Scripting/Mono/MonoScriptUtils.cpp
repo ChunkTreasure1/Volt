@@ -13,7 +13,7 @@
 
 namespace Volt
 {
-	std::string MonoScriptUtils::GetClassName(const std::string& fullClassName)
+	std::string MonoScriptUtils::GetClassName2(const std::string& fullClassName)
 	{
 		size_t lastDotPos = fullClassName.find_last_of(".");
 		if (lastDotPos != std::string::npos)
@@ -231,12 +231,12 @@ namespace Volt
 
 			if (!templateFile.is_open())
 			{
-				VT_CORE_WARN(std::format("Could not open file: {0}", templateFilePath.filename().string()));
+				VT_LOG(LogSeverity::Warning, std::format("Could not open file: {0}", templateFilePath.filename().string()));
 			}
 
 			if (!newFile.is_open())
 			{
-				VT_CORE_WARN(std::format("Could not open file: {0}", newFilePath.filename().string()));
+				VT_LOG(LogSeverity::Warning, std::format("Could not open file: {0}", newFilePath.filename().string()));
 			}
 
 			// Read the entire content of the template file into a string

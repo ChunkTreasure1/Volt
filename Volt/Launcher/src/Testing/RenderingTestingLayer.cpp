@@ -55,7 +55,7 @@ bool RenderingTestingLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 	{
 		if (!test->RunTest())
 		{
-			VT_CORE_ERROR("Test {} failed!", test->GetName());
+			VT_LOG(LogSeverity::Error, "Test {} failed!", test->GetName());
 		}
 	}
 

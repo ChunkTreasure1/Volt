@@ -1,5 +1,8 @@
 #pragma once
+
 #include <Volt/Asset/Asset.h>
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <functional>
 
 typedef std::function<Vector<std::pair<std::string, std::string>>(Volt::AssetHandle)> AssetBrowserPopupDataFunction;

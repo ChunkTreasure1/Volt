@@ -4,7 +4,7 @@
 
 #include "Volt/Math/Math.h"
 
-#include <VoltRHI/Core/RHICommon.h>
+#include <RHIModule/Core/RHICommon.h>
 
 namespace Volt
 {

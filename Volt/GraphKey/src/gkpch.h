@@ -17,4 +17,5 @@
 #include <filesystem>
 
 #include <glm/glm.hpp>
-#include <Volt/Log/Log.h>
+
+#include <LogModule/Log.h>

@@ -60,12 +60,13 @@ include "Navigation"
 include "Nexus"
 include "CoreUtilities"
 include "Mosaic"
+include "LogModule"
 include (path.join(VoltRootDirectory, "Volt-ScriptCore"))
 
-group "Core/Renderer"
-include "VoltRenderer/VoltRHI"
-include "VoltRenderer/VoltD3D12"
-include "VoltRenderer/VoltVulkan"
+group "Core/RHI"
+include "RHI/RHIModule"
+include "RHI/D3D12RHIModule"
+include "RHI/VulkanRHIModule"
 
 group "Tools"
 include "Sandbox"

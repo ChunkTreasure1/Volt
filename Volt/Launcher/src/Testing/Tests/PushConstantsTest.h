@@ -2,8 +2,8 @@
 
 #include "Testing/RenderingTestBase.h"
 
-#include <VoltRHI/Pipelines/ComputePipeline.h>
-#include <VoltRHI/Descriptors/DescriptorTable.h>
+#include <RHIModule/Pipelines/ComputePipeline.h>
+#include <RHIModule/Descriptors/DescriptorTable.h>
 
 class PushConstantsTest : public RenderingTestBase
 {

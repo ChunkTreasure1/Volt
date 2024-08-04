@@ -125,7 +125,7 @@ namespace Volt
 			Ref<Material> mat = AssetManager::QueueAsset<Material>(materialTable.GetMaterial(materialIndex));
 			if (!mat)
 			{
-				VT_CORE_WARN("[MeshComponent]: Mesh {} has an invalid material at index {}!", mesh->assetName, materialIndex);
+				VT_LOG(LogSeverity::Warning, "[MeshComponent]: Mesh {} has an invalid material at index {}!", mesh->assetName, materialIndex);
 				mat = Renderer::GetDefaultResources().defaultMaterial;
 			}
 

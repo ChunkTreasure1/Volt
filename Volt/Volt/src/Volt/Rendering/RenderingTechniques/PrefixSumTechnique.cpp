@@ -10,8 +10,8 @@
 
 #include "Volt/Rendering/Shader/ShaderMap.h"
 
-#include <VoltRHI/Buffers/BufferView.h>
-#include <VoltRHI/Buffers/StorageBuffer.h>
+#include <RHIModule/Buffers/BufferView.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
 
 namespace Volt
 {

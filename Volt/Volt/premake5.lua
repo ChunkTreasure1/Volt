@@ -42,10 +42,11 @@ project "Volt"
 		"../GraphKey/src/",
 		"../Navigation/src/",
 		"../Nexus/src/",
-		"../VoltRenderer/VoltRHI/src",
-		"../VoltRenderer/VoltVulkan/src",
-		"../VoltRenderer/VoltD3D12/src",
+		"../RHI/RHIModule/src",
+		"../RHI/VulkanRHIModule/src",
+		"../RHI/D3D12RHIModule/src",
 		"../Mosaic/src",
+		"../LogModule/src",
 		
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -111,11 +112,12 @@ project "Volt"
 		"Mosaic",
 
 		"stb",
-		"VulkanMemoryAllocator",
-		"VoltD3D12",
 
-		"VoltRHI",
-		"VoltVulkan"
+		"LogModule",
+		
+		"D3D12RHIModule",
+		"RHIModule",
+		"VulkanRHIModule"
 	}
 
 	defines

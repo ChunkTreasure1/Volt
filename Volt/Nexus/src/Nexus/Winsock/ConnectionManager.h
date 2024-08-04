@@ -1,6 +1,8 @@
 #pragma once
 #include "Nexus/Core/Core.h"
 
+#include <CoreUtilities/Containers/Vector.h>
+
 namespace Nexus
 {
 	class ConnectionManager

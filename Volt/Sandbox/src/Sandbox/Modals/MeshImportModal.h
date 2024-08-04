@@ -5,6 +5,8 @@
 #include <Volt/Asset/Importers/FbxUtilities.h>
 #include <Volt/Asset/Asset.h>
 
+#include <CoreUtilities/Containers/Vector.h>
+
 class MeshImportModal : public Modal
 {
 public:

@@ -6,12 +6,12 @@
 
 #include "Volt/Console/ConsoleVariableRegistry.h"
 
-#include <VoltRHI/Core/RHIResource.h>
-#include <VoltRHI/Buffers/StorageBuffer.h>
-#include <VoltRHI/Buffers/UniformBuffer.h>
-#include <VoltRHI/Graphics/GraphicsContext.h>
-#include <VoltRHI/Images/Image2D.h>
-#include <VoltRHI/Images/Image3D.h>
+#include <RHIModule/Core/RHIResource.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
+#include <RHIModule/Buffers/UniformBuffer.h>
+#include <RHIModule/Graphics/GraphicsContext.h>
+#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/Image3D.h>
 
 namespace Volt
 {

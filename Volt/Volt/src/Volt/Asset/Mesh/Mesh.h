@@ -14,7 +14,7 @@
 
 #include "Volt/SDF/SDFGenerator.h"
 
-#include <VoltRHI/Buffers/StorageBuffer.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
 
 #include <CoreUtilities/Containers/Map.h>
 #include <CoreUtilities/Containers/SparseBrickMap.h>

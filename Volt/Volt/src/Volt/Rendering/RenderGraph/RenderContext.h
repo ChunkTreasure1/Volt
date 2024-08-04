@@ -4,13 +4,13 @@
 #include "Volt/Rendering/RenderGraph/RenderGraphCommon.h"
 #include "Volt/Rendering/RenderGraph/Resources/RenderGraphResourceHandle.h"
 
-#include <VoltRHI/Descriptors/ResourceHandle.h>
-#include <VoltRHI/Core/RHICommon.h>
-#include <VoltRHI/Shader/Shader.h>
-#include <VoltRHI/Pipelines/RenderPipeline.h>
-#include <VoltRHI/Pipelines/ComputePipeline.h>
-#include <VoltRHI/Buffers/IndexBuffer.h>
-#include <VoltRHI/Buffers/CommandBuffer.h>
+#include <RHIModule/Descriptors/ResourceHandle.h>
+#include <RHIModule/Core/RHICommon.h>
+#include <RHIModule/Shader/Shader.h>
+#include <RHIModule/Pipelines/RenderPipeline.h>
+#include <RHIModule/Pipelines/ComputePipeline.h>
+#include <RHIModule/Buffers/IndexBuffer.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
 
 #include <CoreUtilities/Profiling/Profiling.h>
 #include <CoreUtilities/StringHash.h>	

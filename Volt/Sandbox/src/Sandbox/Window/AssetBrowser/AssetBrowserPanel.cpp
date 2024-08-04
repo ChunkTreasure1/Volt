@@ -50,6 +50,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#undef CreateDirectory
+
 AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string& id)
 	: EditorWindow("Asset Browser" + id), myEditorScene(aScene)
 {

@@ -3,7 +3,7 @@
 
 #include "Volt/Rendering/Resources/BindlessResourcesManager.h"
 
-#include <VoltRHI/Images/ImageView.h>
+#include <RHIModule/Images/ImageView.h>
 
 namespace Volt
 {

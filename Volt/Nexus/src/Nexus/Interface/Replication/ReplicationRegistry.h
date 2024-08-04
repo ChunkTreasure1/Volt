@@ -4,6 +4,9 @@
 #include "Replicated.h"
 #include "Nexus/Utility/Log/Log.h"
 
+#include <CoreUtilities/Core.h>
+#include <CoreUtilities/Containers/Vector.h>
+
 namespace Nexus
 {
 	class ReplicationRegisty

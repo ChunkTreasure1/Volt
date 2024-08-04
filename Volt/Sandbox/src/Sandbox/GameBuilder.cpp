@@ -13,6 +13,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#undef CreateDirectory
+
 namespace Utility
 {
 	inline bool ShouldSkipDLL(const std::filesystem::path& path)
@@ -58,7 +60,7 @@ namespace Utility
 
 		if (skipExtension && !Utility::StringContains(filename, "vtthumb"))
 		{
-			VT_CORE_ERROR("[Build] Asset {0} with extensin {1} was skipped!", path.string(), path.extension().string());
+			VT_LOG(LogSeverity::Error, "[Build] Asset {0} with extensin {1} was skipped!", path.string(), path.extension().string());
 		}
 
 		return (result || skipExtension);
@@ -93,7 +95,7 @@ namespace Utility
 		Ref<Volt::Texture2D> texture = Volt::AssetManager::GetAsset<Volt::Texture2D>(handle);
 		if (!texture || !texture->IsValid())
 		{
-			VT_CORE_ERROR("Texture {0} is not valid!", path.string());
+			VT_LOG(LogSeverity::Error, "Texture {0} is not valid!", path.string());
 			return false;
 		}
 
@@ -282,7 +284,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 				{
 					if (!Utility::IsTexturePow2(file.path()))
 					{
-						VT_CORE_ERROR("[Build] Texture {0} was not power of 2!", file.path().string());
+						VT_LOG(LogSeverity::Error, "[Build] Texture {0} was not power of 2!", file.path().string());
 						continue;
 					}
 				}

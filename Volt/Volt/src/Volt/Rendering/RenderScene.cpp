@@ -18,8 +18,8 @@
 #include "Volt/Math/Math.h"
 #include "Volt/Utility/Algorithms.h"
 
-#include <VoltRHI/Buffers/StorageBuffer.h>
-#include <VoltRHI/Buffers/CommandBuffer.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
 
 namespace Volt
 {

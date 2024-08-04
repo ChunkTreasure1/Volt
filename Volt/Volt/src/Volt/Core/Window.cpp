@@ -11,8 +11,8 @@
 
 #include "Volt/Rendering/Renderer.h"
 
-#include <VoltRHI/Graphics/GraphicsContext.h>
-#include <VoltRHI/Graphics/Swapchain.h>
+#include <RHIModule/Graphics/GraphicsContext.h>
+#include <RHIModule/Graphics/Swapchain.h>
 
 #include <stb/stb_image.h>
 #include <GLFW/glfw3.h>
@@ -25,7 +25,7 @@ namespace Volt
 {
 	inline static void GLFWErrorCallback(int error, const char* description)
 	{
-		VT_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
+		VT_LOG(LogSeverity::Error, "GLFW Error ({0}): {1}", error, description);
 	}
 
 	Window::Window(const WindowProperties& aProperties)
@@ -96,7 +96,6 @@ namespace Volt
 		}
 
 		m_window = glfwCreateWindow(createWidth, createHeight, m_data.title.c_str(), primaryMonitor, nullptr);
-		m_windowHandle = glfwGetWin32Window(m_window);
 
 		if (!m_data.iconPath.empty() && FileSystem::Exists(m_data.iconPath))
 		{
@@ -142,7 +141,7 @@ namespace Volt
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			if (!data.eventCallback)
 			{
-				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				VT_LOG(LogSeverity::Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -161,7 +160,7 @@ namespace Volt
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			if (!data.eventCallback)
 			{
-				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				VT_LOG(LogSeverity::Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -176,7 +175,7 @@ namespace Volt
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 				if (!data.eventCallback)
 				{
-					VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+					VT_LOG(LogSeverity::Warning, "Window does not have a callback assigned! Skipping event!");
 					return;
 				}
 
@@ -193,7 +192,7 @@ namespace Volt
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			if (!data.eventCallback)
 			{
-				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				VT_LOG(LogSeverity::Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -232,7 +231,7 @@ namespace Volt
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			if (!data.eventCallback)
 			{
-				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				VT_LOG(LogSeverity::Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -245,7 +244,7 @@ namespace Volt
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			if (!data.eventCallback)
 			{
-				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				VT_LOG(LogSeverity::Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -271,7 +270,7 @@ namespace Volt
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			if (!data.eventCallback)
 			{
-				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				VT_LOG(LogSeverity::Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -284,7 +283,7 @@ namespace Volt
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			if (!data.eventCallback)
 			{
-				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				VT_LOG(LogSeverity::Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -298,7 +297,7 @@ namespace Volt
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			if (!data.eventCallback)
 			{
-				VT_CORE_WARN("Window does not have a callback assigned! Skipping event!");
+				VT_LOG(LogSeverity::Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -576,7 +575,7 @@ namespace Volt
 			glfwIsInitialized = true;
 			if (!glfwInit())
 			{
-				VT_CORE_ERROR("Failed to initialize GLFW!");
+				VT_LOG(LogSeverity::Error, "Failed to initialize GLFW!");
 			}
 
 			glfwSetErrorCallback(GLFWErrorCallback);

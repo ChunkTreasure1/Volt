@@ -1,6 +1,6 @@
 #include "ClearBufferToValueTest.h"
 
-#include <VoltRHI/Buffers/StorageBuffer.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
 
 using namespace Volt;
 

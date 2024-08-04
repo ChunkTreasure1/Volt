@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <filesystem>
 
 struct FileFilter

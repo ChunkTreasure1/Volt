@@ -2,9 +2,9 @@
 
 #include "Volt/Core/Base.h"
 
-#include <VoltRHI/Pipelines/RenderPipeline.h>
-#include <VoltRHI/Pipelines/ComputePipeline.h>
-#include <VoltRHI/Shader/Shader.h>
+#include <RHIModule/Pipelines/RenderPipeline.h>
+#include <RHIModule/Pipelines/ComputePipeline.h>
+#include <RHIModule/Shader/Shader.h>
 
 #include <CoreUtilities/Containers/Map.h>
 

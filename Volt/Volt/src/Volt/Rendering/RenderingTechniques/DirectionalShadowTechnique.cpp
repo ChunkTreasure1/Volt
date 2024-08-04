@@ -11,7 +11,7 @@
 
 #include "Volt/Rendering/RenderingTechniques/CullingTechnique.h"
 
-#include <VoltRHI/Pipelines/RenderPipeline.h>
+#include <RHIModule/Pipelines/RenderPipeline.h>
 
 namespace Volt
 {

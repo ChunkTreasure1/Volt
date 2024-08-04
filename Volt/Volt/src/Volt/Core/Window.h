@@ -3,10 +3,9 @@
 #include "Volt/Events/Event.h"
 #include "Volt/Core/Base.h"
 
-#include <VoltRHI/Graphics/Swapchain.h>
+#include <RHIModule/Graphics/Swapchain.h>
 
 #include <functional>
-#include <Windows.h>
 
 #include <glm/glm.hpp>
 
@@ -89,7 +88,6 @@ namespace Volt
 		inline const bool IsVSync() const { return m_data.vsync; }
 		inline const WindowMode GetWindowMode() const { return m_data.windowMode; }
 		inline GLFWwindow* GetNativeWindow() const { return m_window; }
-		inline HWND GetHWND() const { return m_windowHandle; }
 
 		inline const RHI::Swapchain& GetSwapchain() const { return *m_swapchain; }
 		inline const WeakPtr<RHI::Swapchain> GetSwapchainPtr() const { return m_swapchain; }
@@ -100,7 +98,6 @@ namespace Volt
 
 	private:
 		GLFWwindow* m_window = nullptr;
-		HWND m_windowHandle = nullptr;
 		bool m_hasBeenInitialized = false;
 		bool m_isFullscreen = false;
 

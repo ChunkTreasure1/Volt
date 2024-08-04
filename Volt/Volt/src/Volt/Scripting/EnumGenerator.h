@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
+#include <CoreUtilities/Containers/Vector.h>
 
+#include <string>
 
 namespace Volt
 {

@@ -153,4 +153,44 @@ namespace std
 			return std::hash<uint32_t>()(handle.Get());
 		}
 	};
+
+	template <>
+	struct formatter<Volt::RenderGraphResourceHandle> : formatter<string>
+	{
+		auto format(Volt::RenderGraphResourceHandle id, format_context& ctx) const
+		{
+			return formatter<string>::format(
+			  std::format("{}", id.Get()), ctx);
+		}
+	};
+
+	template <>
+	struct formatter<Volt::RenderGraphBufferHandle> : formatter<string>
+	{
+		auto format(Volt::RenderGraphBufferHandle id, format_context& ctx) const
+		{
+			return formatter<string>::format(
+			  std::format("{}", id.Get()), ctx);
+		}
+	};
+
+	template <>
+	struct formatter<Volt::RenderGraphUniformBufferHandle> : formatter<string>
+	{
+		auto format(Volt::RenderGraphUniformBufferHandle id, format_context& ctx) const
+		{
+			return formatter<string>::format(
+			  std::format("{}", id.Get()), ctx);
+		}
+	};
+
+	template <>
+	struct formatter<Volt::RenderGraphImage3DHandle> : formatter<string>
+	{
+		auto format(Volt::RenderGraphImage3DHandle id, format_context& ctx) const
+		{
+			return formatter<string>::format(
+			  std::format("{}", id.Get()), ctx);
+		}
+	};
 }

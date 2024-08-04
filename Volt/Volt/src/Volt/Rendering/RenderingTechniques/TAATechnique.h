@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Volt/Rendering/RenderGraph/Resources/RenderGraphResourceHandle.h"
+#include <RHIModule/Images/Image2D.h>
 
 namespace Volt
 {

@@ -2,8 +2,6 @@
 
 #include "Sandbox/Window/EditorWindow.h"
 
-#include <Volt/Log/CallbackSink.h>
-
 class LogPanel : public EditorWindow
 {
 public:
@@ -14,8 +12,8 @@ public:
 
 private:
 	uint32_t myMaxMessages = 1000;
-	Vector<LogCallbackData> myLogMessages;
-	Vector<LogCallbackData> myCurrentLogMessages;
+	//Vector<LogCallbackData> myLogMessages;
+	//Vector<LogCallbackData> myCurrentLogMessages;
 
 	Vector<std::string> myCategories;
 

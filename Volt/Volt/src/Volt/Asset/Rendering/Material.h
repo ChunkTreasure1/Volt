@@ -6,8 +6,8 @@
 
 #include <Mosaic/MosaicGraph.h>
 
-#include <VoltRHI/Pipelines/ComputePipeline.h>
-#include <VoltRHI/Images/SamplerState.h>
+#include <RHIModule/Pipelines/ComputePipeline.h>
+#include <RHIModule/Images/SamplerState.h>
 
 #include <string>
 

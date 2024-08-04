@@ -3,8 +3,6 @@
 
 #include "Sandbox/VersionControl/P4/P4Implementation.h"
 
-#include <Volt/Log/Log.h>
-
 void VersionControl::Initialize(VersionControlSystem system)
 {
 	switch (system)
@@ -14,7 +12,7 @@ void VersionControl::Initialize(VersionControlSystem system)
 			break;
 
 		default:
-			VT_CORE_ERROR("Invalid version control selected!");
+			VT_LOG(LogSeverity::Error, "Invalid version control selected!");
 			return;
 			break;
 	}

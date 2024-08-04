@@ -3,10 +3,10 @@
 #include <Volt/Rendering/Shader/ShaderMap.h>
 #include <Volt/Core/Application.h>
 
-#include <VoltRHI/Descriptors/DescriptorTable.h>
-#include <VoltRHI/Buffers/StorageBuffer.h>
+#include <RHIModule/Descriptors/DescriptorTable.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
 
-#include <VoltRHI/Utility/ResourceUtility.h>
+#include <RHIModule/Utility/ResourceUtility.h>
 
 using namespace Volt;
 

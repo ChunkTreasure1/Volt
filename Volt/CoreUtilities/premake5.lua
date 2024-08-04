@@ -135,7 +135,7 @@ project "CoreUtilities"
 		buildoptions { "/Ot", "/Ob2" }
 		runtime "Release"
 		optimize "on"
-		symbols "on"
+		symbols "off"
 		vectorextensions "AVX2"
 		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
 

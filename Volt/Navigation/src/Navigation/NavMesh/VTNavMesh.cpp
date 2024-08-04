@@ -1,8 +1,6 @@
 #include "nvpch.h"
 #include "VTNavMesh.h"
 
-#include <Volt/Log/Log.h>
-
 namespace Volt
 {
 	namespace AI

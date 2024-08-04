@@ -1,7 +1,6 @@
 #include "vtpch.h"
 #include "GLTFImporter.h"
 
-#include "Volt/Log/Log.h"
 #include "Volt/Asset/Mesh/Mesh.h"
 
 #include "Volt/Asset/Rendering/Material.h"
@@ -23,7 +22,7 @@ namespace Volt
 	{
 		if (!std::filesystem::exists(path))
 		{
-			VT_CORE_ERROR("File does not exist: {0}", path.string().c_str());
+			VT_LOG(LogSeverity::Error, "File does not exist: {0}", path.string().c_str());
 			return false;
 		}
 
@@ -44,7 +43,7 @@ namespace Volt
 
 		if (!loaded)
 		{
-			VT_CORE_ERROR("Unable to load GLTF file {0}! Error: {1}, warning {2}", path.string().c_str(), error.c_str(), warning.c_str());
+			VT_LOG(LogSeverity::Error, "Unable to load GLTF file {0}! Error: {1}, warning {2}", path.string().c_str(), error.c_str(), warning.c_str());
 			return false;
 		}
 
@@ -216,7 +215,7 @@ namespace Volt
 						}
 
 						default:
-							VT_CORE_ERROR("Index component not supported!");
+							VT_LOG(LogSeverity::Error, "Index component not supported!");
 							return;
 					}
 				}

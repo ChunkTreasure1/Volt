@@ -30,6 +30,7 @@ project "Amp"
 	{
 		"src/",
 		"../Volt/src",
+		"../LogModule/src",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.spdlog}",

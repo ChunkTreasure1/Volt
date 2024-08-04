@@ -6,6 +6,8 @@
 #include "Nexus/Core/Defines.h"
 #include "Nexus/Utility/Log/Log.h"
 
+#include <CoreUtilities/Containers/Vector.h>
+
 namespace Nexus
 {
 

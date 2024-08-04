@@ -1,7 +1,6 @@
 #include "sbpch.h"
 #include "LogPanel.h"
 
-#include <Volt/Log/Log.h>
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
 
@@ -9,19 +8,19 @@
 
 namespace Utility
 {
-	ImVec4 GetColorFromLevel(spdlog::level::level_enum aLevel)
-	{
-		switch (aLevel)
-		{
-			case spdlog::level::trace: return ImVec4(0.83f, 0.83f, 0.83f, 1.f);
-			case spdlog::level::info: return ImVec4(1.f, 1.f, 1.f, 1.f);
-			case spdlog::level::warn: return ImVec4(1.f, 0.92f, 0.21f, 1.f);
-			case spdlog::level::err: return ImVec4(1.f, 0.f, 0.f, 1.f);
-			case spdlog::level::critical: return ImVec4(1.f, 0.f, 0.f, 1.f);
-		}
-
-		return ImVec4(1.f, 1.f, 1.f, 1.f);
-	}
+	//ImVec4 GetColorFromLevel(spdlog::level::level_enum aLevel)
+	//{
+	//	switch (aLevel)
+	//	{
+	//		case spdlog::level::trace: return ImVec4(0.83f, 0.83f, 0.83f, 1.f);
+	//		case spdlog::level::info: return ImVec4(1.f, 1.f, 1.f, 1.f);
+	//		case spdlog::level::warn: return ImVec4(1.f, 0.92f, 0.21f, 1.f);
+	//		case spdlog::level::err: return ImVec4(1.f, 0.f, 0.f, 1.f);
+	//		case spdlog::level::critical: return ImVec4(1.f, 0.f, 0.f, 1.f);
+	//	}
+	//
+	//	return ImVec4(1.f, 1.f, 1.f, 1.f);
+	//}
 }
 
 LogPanel::LogPanel()
@@ -29,16 +28,16 @@ LogPanel::LogPanel()
 {
 	m_isOpen = true;
 
-	Volt::Log::AddCallback([&](const LogCallbackData& message)
-	{
-		std::scoped_lock lock{ m_logMutex };
-		myLogMessages.emplace_back(message);
-		if (myLogMessages.size() >= myMaxMessages)
-		{
-			myLogMessages.erase(myLogMessages.begin());
-		}
+	//Volt::Log::AddCallback([&](const LogCallbackData& message)
+	//{
+	//	std::scoped_lock lock{ m_logMutex };
+	//	myLogMessages.emplace_back(message);
+	//	if (myLogMessages.size() >= myMaxMessages)
+	//	{
+	//		myLogMessages.erase(myLogMessages.begin());
+	//	}
 
-	});
+	//});
 
 	myCategories.emplace_back("Default");
 }
@@ -49,7 +48,7 @@ void LogPanel::UpdateMainContent()
 	{
 		std::scoped_lock lock{ m_logMutex };
 
-		myLogMessages.clear();
+		//myLogMessages.clear();
 		myCategories.clear();
 		myCategories.emplace_back("Default");
 	}
@@ -106,11 +105,11 @@ void LogPanel::UpdateMainContent()
 
 				}
 
-				VT_CORE_TRACE(message);
+				VT_LOG(LogSeverity::Trace, message);
 			}
 			else
 			{
-				VT_CORE_TRACE("Command {0} not found!", strings[0]);
+				VT_LOG(LogSeverity::Trace, "Command {0} not found!", strings[0]);
 			}
 		}
 
@@ -124,14 +123,14 @@ void LogPanel::UpdateMainContent()
 
 	if (ImGui::Combo("##level", &logLevel, "Trace\0Info\0Warning\0Error\0Critical"))
 	{
-		switch (logLevel)
-		{
-			case 0: Volt::Log::SetLogLevel(spdlog::level::trace); break;
-			case 1: Volt::Log::SetLogLevel(spdlog::level::info); break;
-			case 2: Volt::Log::SetLogLevel(spdlog::level::warn); break;
-			case 3: Volt::Log::SetLogLevel(spdlog::level::err); break;
-			case 4: Volt::Log::SetLogLevel(spdlog::level::critical); break;
-		}
+		//switch (logLevel)
+		//{
+		//	case 0: Volt::Log::SetLogLevel(spdlog::level::trace); break;
+		//	case 1: Volt::Log::SetLogLevel(spdlog::level::info); break;
+		//	case 2: Volt::Log::SetLogLevel(spdlog::level::warn); break;
+		//	case 3: Volt::Log::SetLogLevel(spdlog::level::err); break;
+		//	case 4: Volt::Log::SetLogLevel(spdlog::level::critical); break;
+		//}
 	}
 	ImGui::PopItemWidth();
 
@@ -147,43 +146,43 @@ void LogPanel::UpdateMainContent()
 	UI::Combo("Category", *(int*)&logCategory, myCategories);
 	ImGui::PopItemWidth();
 
-	myCurrentLogMessages.clear();
-	for (const auto msg : myLogMessages)
-	{
-		bool newCategory = true;
+	//myCurrentLogMessages.clear();
+	//for (const auto msg : myLogMessages)
+	//{
+	//	bool newCategory = true;
 
-		for (const auto& cat : myCategories)
-		{
-			if (cat == msg.category)
-			{
-				newCategory = false;
-				break;
-			}
-		}
+	//	for (const auto& cat : myCategories)
+	//	{
+	//		if (cat == msg.category)
+	//		{
+	//			newCategory = false;
+	//			break;
+	//		}
+	//	}
 
-		if (newCategory)
-		{
-			myCategories.emplace_back(msg.category);
-		}
+	//	if (newCategory)
+	//	{
+	//		myCategories.emplace_back(msg.category);
+	//	}
 
-		if (msg.level >= logLevel && (logCategory == 0 || msg.category == myCategories[logCategory]))
-		{
-			myCurrentLogMessages.emplace_back(msg);
-		}
-	}
+	//	if (msg.level >= logLevel && (logCategory == 0 || msg.category == myCategories[logCategory]))
+	//	{
+	//		myCurrentLogMessages.emplace_back(msg);
+	//	}
+	//}
 
 	UI::ScopedColor childColor(ImGuiCol_ChildBg, { 0.18f, 0.18f, 0.18f, 1.f });
 	ImGui::BeginChild("log", ImGui::GetContentRegionAvail());
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.f, 0.f));
 
-	for (const auto& msg : myCurrentLogMessages)
-	{
-		ImVec4 color = Utility::GetColorFromLevel(msg.level);
+	//for (const auto& msg : myCurrentLogMessages)
+	//{
+	//	ImVec4 color = Utility::GetColorFromLevel(msg.level);
 
-		ImGui::PushStyleColor(ImGuiCol_Text, Utility::GetColorFromLevel(msg.level));
-		ImGui::TextWrapped(msg.message.c_str());
-		ImGui::PopStyleColor();
-	}
+	//	ImGui::PushStyleColor(ImGuiCol_Text, Utility::GetColorFromLevel(msg.level));
+	//	ImGui::TextWrapped(msg.message.c_str());
+	//	ImGui::PopStyleColor();
+	//}
 
 	if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
 	{

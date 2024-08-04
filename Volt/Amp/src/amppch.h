@@ -21,7 +21,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include "Volt/Log/Log.h"
+#include <LogModule/Log.h>
 
 #include <AK/SoundEngine/Common/AkTypes.h>
 #include <AK/Tools/Common/AkPlatformFuncs.h>

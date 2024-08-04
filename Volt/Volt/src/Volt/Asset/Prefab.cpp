@@ -33,7 +33,7 @@ namespace Volt
 		auto rootEntity = m_prefabScene->GetEntityFromUUID(m_rootEntityId);
 		if (!rootEntity)
 		{
-			VT_CORE_ERROR("[Prefab] Root Entity is not a valid entity!");
+			VT_LOG(LogSeverity::Error, "[Prefab] Root Entity is not a valid entity!");
 			return Entity::Null();
 		}
 
@@ -415,7 +415,7 @@ namespace Volt
 		Entity targetEntity = m_prefabScene->GetEntityFromUUID(prefabEntityId);
 		if (!targetEntity)
 		{
-			VT_CORE_WARN("[Prefab]: Trying to update an invalid entity in prefab!");
+			VT_LOG(LogSeverity::Warning, "[Prefab]: Trying to update an invalid entity in prefab!");
 			return false;
 		}
 

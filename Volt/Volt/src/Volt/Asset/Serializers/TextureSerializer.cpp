@@ -7,12 +7,12 @@
 
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 
-#include <VoltRHI/Images/Image2D.h>
-#include <VoltRHI/Images/ImageUtility.h>
-#include <VoltRHI/Buffers/CommandBuffer.h>
-#include <VoltRHI/Graphics/GraphicsContext.h>
-#include <VoltRHI/Memory/Allocation.h>
-#include <VoltRHI/Utility/ResourceUtility.h>
+#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/ImageUtility.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
+#include <RHIModule/Graphics/GraphicsContext.h>
+#include <RHIModule/Memory/Allocation.h>
+#include <RHIModule/Utility/ResourceUtility.h>
 
 namespace Volt
 {
@@ -178,7 +178,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "File {0} not found!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -187,7 +187,7 @@ namespace Volt
 
 		if (!streamReader.IsStreamValid())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			VT_LOG(LogSeverity::Error, "Failed to open file: {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
