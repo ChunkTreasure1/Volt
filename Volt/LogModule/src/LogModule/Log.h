@@ -3,11 +3,13 @@
 #include "Config.h"
 
 #include <CoreUtilities/Assert.h>
+#include <CoreUtilities/Containers/Vector.h>
 
 #include <memory>
 #include <mutex>
 #include <format>
 #include <filesystem>
+#include <functional>
 
 enum class LogSeverity
 {
@@ -31,6 +33,14 @@ namespace spdlog
 	}
 }
 
+struct LogCallbackData
+{
+	std::string category;
+	std::string message;
+
+	LogSeverity severity;
+};
+
 class VTLOG_API Log
 {
 public:
@@ -44,6 +54,9 @@ public:
 		Get().LogMessage(severity, category, message);
 	}
 
+	void SetLogOutputFilepath(const std::filesystem::path& path);
+	void AddCallback(const std::function<void(const LogCallbackData& callbackData)>& callback);
+
 	VT_NODISCARD VT_INLINE static Log& Get() { return *s_instance; }
 
 private:
@@ -53,6 +66,8 @@ private:
 
 	std::shared_ptr<spdlog::logger> m_logger;
 	std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> m_rotatingFileSink;
+
+	Vector<std::function<void(const LogCallbackData& callbackData)>> m_callbacks;
 };
 
 #define VT_LOGC(severity, category, format, ...) ::Log::LogFormatted(severity, category, format, __VA_ARGS__)

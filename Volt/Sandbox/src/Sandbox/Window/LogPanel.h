@@ -11,11 +11,11 @@ public:
 	void UpdateMainContent() override;
 
 private:
-	uint32_t myMaxMessages = 1000;
-	//Vector<LogCallbackData> myLogMessages;
-	//Vector<LogCallbackData> myCurrentLogMessages;
+	uint32_t m_maxMessages = 1000;
+	Vector<LogCallbackData> m_logMessages;
+	Vector<LogCallbackData> m_currentLogMessages;
 
-	Vector<std::string> myCategories;
+	Vector<std::string> m_categories;
 
 	std::mutex m_logMutex;
 };

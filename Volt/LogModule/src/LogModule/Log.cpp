@@ -24,6 +24,25 @@ Log::~Log()
 	s_instance = nullptr;
 }
 
+void Log::SetLogOutputFilepath(const std::filesystem::path& path)
+{
+	auto max_size = 1048576 * 5;
+	auto max_files = 3;
+
+	if (std::filesystem::is_directory(path.parent_path()) && std::filesystem::exists(path.parent_path()))
+	{
+		std::filesystem::create_directories(path.parent_path());
+	}
+
+	m_rotatingFileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(path.string(), max_size, max_files, false);
+	m_logger->sinks().emplace_back(m_rotatingFileSink);
+}
+
+void Log::AddCallback(const std::function<void(const LogCallbackData& callbackData)>& callback)
+{
+	m_callbacks.emplace_back(callback);
+}
+
 void Log::LogMessage(LogSeverity severity, const std::string& category, const std::string& message)
 {
 	std::string finalString = category.empty() ? "" : "[" + category + "] ";
@@ -46,5 +65,15 @@ void Log::LogMessage(LogSeverity severity, const std::string& category, const st
 		case LogSeverity::Critical:
 			m_logger->critical(message);
 			break;
+	}
+
+	LogCallbackData callbackData{};
+	callbackData.category = category;
+	callbackData.message = message;
+	callbackData.severity = severity;
+
+	for (const auto& callback : m_callbacks)
+	{
+		callback(callbackData);
 	}
 }

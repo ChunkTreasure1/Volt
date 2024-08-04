@@ -47,13 +47,12 @@ namespace Volt
 		s_instance = this;
 
 		m_log = CreateScope<Log>();
+		m_log->SetLogOutputFilepath(m_info.projectPath / "Log/Log.txt");
 
 		m_info = info;
 		Noise::Initialize();
 
-		//Log::Initialize();
 		ProjectManager::SetupProject(m_info.projectPath);
-		//Log::InitializeFileSinks();
 		
 		WindowProperties windowProperties{};
 		windowProperties.width = info.width;
