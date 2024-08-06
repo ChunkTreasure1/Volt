@@ -51,7 +51,7 @@ namespace Volt::RHI
 	{
 		if (!m_writeDescriptorsMapping[set].contains(binding))
 		{
-			VT_LOGC(LogSeverity::Warning, "VulkanRHIModule", "Trying to assign image view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
+			VT_LOGC(LogVerbosity::Warning, LogVulkanRHI, "Trying to assign image view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
 			return;
 		}
 
@@ -90,7 +90,7 @@ namespace Volt::RHI
 	{
 		if (!m_writeDescriptorsMapping[set].contains(binding))
 		{
-			VT_LOGC(LogSeverity::Warning, "VulkanDescriptorTable", "Trying to assign buffer view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
+			VT_LOGC(LogVerbosity::Warning, LogVulkanRHI, "Trying to assign buffer view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
 			return;
 		}
 
@@ -132,7 +132,7 @@ namespace Volt::RHI
 	{
 		if (!m_writeDescriptorsMapping[set].contains(binding))
 		{
-			VT_LOGC(LogSeverity::Warning, "VulkanDescriptorTable", "Trying to assign sampler state at set {0} and binding {1}. But that is not a valid binding!", set, binding);
+			VT_LOGC(LogVerbosity::Warning, LogVulkanRHI, "Trying to assign sampler state at set {0} and binding {1}. But that is not a valid binding!", set, binding);
 			return;
 		}
 

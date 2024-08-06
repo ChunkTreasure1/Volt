@@ -15,14 +15,14 @@ namespace Volt
 	{
 		if (!std::filesystem::exists(path))
 		{
-			VT_LOG(LogSeverity::Error, "File does not exist: {0}", path.string().c_str());
+			VT_LOG(LogVerbosity::Error, "File does not exist: {0}", path.string().c_str());
 			return false;
 		}
 
 		std::ifstream file(path, std::ios::in | std::ios::binary);
 		if (!file.is_open())
 		{
-			VT_LOG(LogSeverity::Error, "Could not open mesh file!");
+			VT_LOG(LogVerbosity::Error, "Could not open mesh file!");
 		}
 
 		Vector<uint8_t> totalData;
@@ -62,7 +62,7 @@ namespace Volt
 
 		if (!IsValid(subMeshCount, vertexCount, indexCount, srcSize) && path.extension() != ".vtnavmesh")
 		{
-			VT_LOG(LogSeverity::Error, "Mesh {0} is invalid! It needs to be recompiled!", path.string());
+			VT_LOG(LogVerbosity::Error, "Mesh {0} is invalid! It needs to be recompiled!", path.string());
 			return false;
 		}
 

@@ -289,7 +289,7 @@ namespace Volt
 			}
 			else
 			{
-				VT_LOG(LogSeverity::Error, "Could not fit {0} out of {1} glyphs in atlas!", remaining, (int32_t)myMSDFData->glyphs.size());
+				VT_LOG(LogVerbosity::Error, "Could not fit {0} out of {1} glyphs in atlas!", remaining, (int32_t)myMSDFData->glyphs.size());
 				VT_ASSERT_MSG(false, "Invalid number");
 			}
 		}

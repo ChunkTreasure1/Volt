@@ -88,7 +88,7 @@ namespace Volt
 
 	void Material::OnDependencyChanged(AssetHandle dependencyHandle, AssetChangedState state)
 	{
-		VT_LOG(LogSeverity::Trace, "Triggered dependency changed in material: {0}, with dependency {1}", (uint64_t)handle, (uint64_t)dependencyHandle);
+		VT_LOG(LogVerbosity::Trace, "Triggered dependency changed in material: {0}, with dependency {1}", (uint64_t)handle, (uint64_t)dependencyHandle);
 
 		auto it = std::find_if(m_textures.begin(), m_textures.end(), [dependencyHandle](Ref<Texture2D> tex)
 		{

@@ -72,7 +72,7 @@ namespace Volt::RHI
 		{
 			if (!vulkanShader.GetPipelineStageInfos().contains(ShaderStage::Compute))
 			{
-				VT_LOGC(LogSeverity::Error, "VulkanRHIModule", "Invalid shader supplied to pipeline!");
+				VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Invalid shader supplied to pipeline!");
 				return;
 			}
 

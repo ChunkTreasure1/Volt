@@ -43,26 +43,26 @@ void Log::AddCallback(const std::function<void(const LogCallbackData& callbackDa
 	m_callbacks.emplace_back(callback);
 }
 
-void Log::LogMessage(LogSeverity severity, const std::string& category, const std::string& message)
+void Log::LogMessage(LogVerbosity severity, const std::string& category, const std::string& message)
 {
 	std::string finalString = category.empty() ? "" : "[" + category + "] ";
 	finalString += message;
 
 	switch (severity)
 	{
-		case LogSeverity::Trace:
+		case LogVerbosity::Trace:
 			m_logger->trace(message);
 			break;
-		case LogSeverity::Info:
+		case LogVerbosity::Info:
 			m_logger->info(message);
 			break;
-		case LogSeverity::Warning:
+		case LogVerbosity::Warning:
 			m_logger->warn(message);
 			break;
-		case LogSeverity::Error:
+		case LogVerbosity::Error:
 			m_logger->error(message);
 			break;
-		case LogSeverity::Critical:
+		case LogVerbosity::Critical:
 			m_logger->critical(message);
 			break;
 	}

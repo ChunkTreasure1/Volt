@@ -22,7 +22,7 @@ namespace Volt
 	{
 		if (!std::filesystem::exists(path))
 		{
-			VT_LOG(LogSeverity::Error, "File does not exist: {0}", path.string().c_str());
+			VT_LOG(LogVerbosity::Error, "File does not exist: {0}", path.string().c_str());
 			return false;
 		}
 
@@ -43,7 +43,7 @@ namespace Volt
 
 		if (!loaded)
 		{
-			VT_LOG(LogSeverity::Error, "Unable to load GLTF file {0}! Error: {1}, warning {2}", path.string().c_str(), error.c_str(), warning.c_str());
+			VT_LOG(LogVerbosity::Error, "Unable to load GLTF file {0}! Error: {1}, warning {2}", path.string().c_str(), error.c_str(), warning.c_str());
 			return false;
 		}
 
@@ -215,7 +215,7 @@ namespace Volt
 						}
 
 						default:
-							VT_LOG(LogSeverity::Error, "Index component not supported!");
+							VT_LOG(LogVerbosity::Error, "Index component not supported!");
 							return;
 					}
 				}

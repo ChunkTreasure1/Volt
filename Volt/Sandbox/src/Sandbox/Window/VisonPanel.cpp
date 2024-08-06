@@ -381,7 +381,7 @@ const Vector<Volt::Entity> VisionPanel::GetAllCameraTriggers()
 
 	if (triggerIDs.empty())
 	{
-		VT_LOG(LogSeverity::Error, "VTCINEMA: No triggers loacated!");
+		VT_LOG(LogVerbosity::Error, "VTCINEMA: No triggers loacated!");
 		return Vector<Volt::Entity>();
 	}
 
@@ -402,7 +402,7 @@ const Vector<Volt::Entity> VisionPanel::GetAllCameras()
 
 	if (cameraIDs.empty())
 	{
-		VT_LOG(LogSeverity::Error, "VTCINEMA: No cameras loacated!");
+		VT_LOG(LogVerbosity::Error, "VTCINEMA: No cameras loacated!");
 		return Vector<Volt::Entity>();
 	}
 

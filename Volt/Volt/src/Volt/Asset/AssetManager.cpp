@@ -205,14 +205,14 @@ namespace Volt
 
 		if (!metadata.IsValid())
 		{
-			VT_LOG(LogSeverity::Error, "[AssetManager] Trying to load asset which has invalid metadata!");
+			VT_LOG(LogVerbosity::Error, "[AssetManager] Trying to load asset which has invalid metadata!");
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return;
 		}
 
 		if (!m_assetSerializers.contains(metadata.type))
 		{
-			VT_LOG(LogSeverity::Warning, "[AssetManager] No importer for asset found!");
+			VT_LOG(LogVerbosity::Warning, "[AssetManager] No importer for asset found!");
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return;
 		}
@@ -229,7 +229,7 @@ namespace Volt
 			m_assetSerializers.at(metadata.type)->Deserialize(metadata, asset);
 
 #ifndef VT_DIST
-			VT_LOG(LogSeverity::Trace, "[AssetManager]: Loaded asset {0} with handle {1} in {2} seconds!", metadata.filePath, asset->handle, timer.GetTime<Time::Seconds>());
+			VT_LOG(LogVerbosity::Trace, "[AssetManager]: Loaded asset {0} with handle {1} in {2} seconds!", metadata.filePath, asset->handle, timer.GetTime<Time::Seconds>());
 #endif	
 		}
 
@@ -249,7 +249,7 @@ namespace Volt
 
 	void AssetManager::LoadAllAssetMetadata()
 	{
-		VT_LOG(LogSeverity::Info, "[AssetManager] Fetching asset meta data...");
+		VT_LOG(LogVerbosity::Info, "[AssetManager] Fetching asset meta data...");
 		ScopedTimer timer{};
 
 		const auto projectAssetFiles = GetProjectAssetFiles();
@@ -270,7 +270,7 @@ namespace Volt
 			m_dependencyGraph->AddAssetToGraph(handle);
 		}
 
-		VT_LOG(LogSeverity::Info, "[AssetManager] Finished fetching meta data in {} seconds!", timer.GetTime<Time::Seconds>());
+		VT_LOG(LogVerbosity::Info, "[AssetManager] Finished fetching meta data in {} seconds!", timer.GetTime<Time::Seconds>());
 	}
 
 	void AssetManager::DeserializeAssetMetadata(std::filesystem::path assetPath)
@@ -280,7 +280,7 @@ namespace Volt
 		BinaryStreamReader streamReader{ assetPath, assetHeaderSize };
 		if (!streamReader.IsStreamValid())
 		{
-			VT_LOG(LogSeverity::Error, "Failed to open file: {0}!", assetPath);
+			VT_LOG(LogVerbosity::Error, "Failed to open file: {0}!", assetPath);
 			return;
 		}
 
@@ -310,7 +310,7 @@ namespace Volt
 			ReadLock lock{ m_assetCacheMutex };
 			if (!m_assetCache.contains(assetHandle))
 			{
-				VT_LOG(LogSeverity::Warning, "[AssetManager] Unable to unload asset with handle {0}, it has not been loaded!", assetHandle);
+				VT_LOG(LogVerbosity::Warning, "[AssetManager] Unable to unload asset with handle {0}, it has not been loaded!", assetHandle);
 				return;
 			}
 		}
@@ -319,7 +319,7 @@ namespace Volt
 			WriteLock lock{ m_assetRegistryMutex };
 			if (!m_assetRegistry.contains(assetHandle))
 			{
-				VT_LOG(LogSeverity::Warning, "[AssetManager] Unable to unload asset with handle {0}, it does not exist in the registry!", assetHandle);
+				VT_LOG(LogVerbosity::Warning, "[AssetManager] Unable to unload asset with handle {0}, it does not exist in the registry!", assetHandle);
 				return;
 			}
 
@@ -337,7 +337,7 @@ namespace Volt
 		AssetHandle handle = GetAssetHandleFromFilePath(path);
 		if (handle == Asset::Null())
 		{
-			VT_LOG(LogSeverity::Error, "[AssetManager] Asset with path {0} is not loaded!", path.string());
+			VT_LOG(LogVerbosity::Error, "[AssetManager] Asset with path {0} is not loaded!", path.string());
 			return;
 		}
 
@@ -365,13 +365,13 @@ namespace Volt
 
 		if (instance.m_assetSerializers.find(asset->GetType()) == instance.m_assetSerializers.end())
 		{
-			VT_LOG(LogSeverity::Error, "[AssetManager] No exporter for asset {0} found!", asset->handle);
+			VT_LOG(LogVerbosity::Error, "[AssetManager] No exporter for asset {0} found!", asset->handle);
 			return;
 		}
 
 		if (!asset->IsValid())
 		{
-			VT_LOG(LogSeverity::Error, "[AssetManager] Unable to save invalid asset {0}!", asset->handle);
+			VT_LOG(LogVerbosity::Error, "[AssetManager] Unable to save invalid asset {0}!", asset->handle);
 			return;
 		}
 
@@ -407,7 +407,7 @@ namespace Volt
 			instance.m_assetSerializers[metadata.type]->Serialize(metadata, asset);
 
 #ifndef VT_DIST
-			VT_LOG(LogSeverity::Trace, "[AssetManager]: Saved asset {0} to {1} in {2} seconds!", metadata.handle, metadata.filePath, timer.GetTime<Time::Seconds>());
+			VT_LOG(LogVerbosity::Trace, "[AssetManager]: Saved asset {0} to {1} in {2} seconds!", metadata.handle, metadata.filePath, timer.GetTime<Time::Seconds>());
 #endif
 		}
 
@@ -426,13 +426,13 @@ namespace Volt
 
 		if (instance.m_assetSerializers.find(asset->GetType()) == instance.m_assetSerializers.end())
 		{
-			VT_LOG(LogSeverity::Error, "[AssetManager] No exporter for asset {0} found!", asset->handle);
+			VT_LOG(LogVerbosity::Error, "[AssetManager] No exporter for asset {0} found!", asset->handle);
 			return;
 		}
 
 		if (!asset->IsValid())
 		{
-			VT_LOG(LogSeverity::Error, "[AssetManager] Unable to save invalid asset {0}!", asset->handle);
+			VT_LOG(LogVerbosity::Error, "[AssetManager] Unable to save invalid asset {0}!", asset->handle);
 			return;
 		}
 
@@ -451,7 +451,7 @@ namespace Volt
 			instance.m_assetSerializers[metadata.type]->Serialize(metadata, asset);
 
 #ifndef VT_DIST
-			VT_LOG(LogSeverity::Trace, "[AssetManager]: Saved asset {0} to {1} in {2} seconds!", metadata.handle, metadata.filePath, timer.GetTime<Time::Seconds>());
+			VT_LOG(LogVerbosity::Trace, "[AssetManager]: Saved asset {0} to {1} in {2} seconds!", metadata.handle, metadata.filePath, timer.GetTime<Time::Seconds>());
 #endif
 		}
 
@@ -476,7 +476,7 @@ namespace Volt
 			const auto& assetMetaData = GetMetadataFromHandle(asset->handle);
 			if (!assetMetaData.IsValid())
 			{
-				VT_LOG(LogSeverity::Warning, "[AssetMananger] Unable to move invalid asset {0}!", asset->handle);
+				VT_LOG(LogVerbosity::Warning, "[AssetMananger] Unable to move invalid asset {0}!", asset->handle);
 				return;
 			}
 
@@ -503,7 +503,7 @@ namespace Volt
 			const auto& assetMetaData = GetMetadataFromHandle(assetHandle);
 			if (!assetMetaData.IsValid())
 			{
-				VT_LOG(LogSeverity::Warning, "[AssetMananger] Unable to move invalid asset {0}!", assetHandle);
+				VT_LOG(LogVerbosity::Warning, "[AssetMananger] Unable to move invalid asset {0}!", assetHandle);
 				return;
 			}
 
@@ -540,13 +540,13 @@ namespace Volt
 	{
 		if (sourceDir.empty())
 		{
-			VT_LOG(LogSeverity::Warning, "[AssetManager] Trying to move invalid directory!");
+			VT_LOG(LogVerbosity::Warning, "[AssetManager] Trying to move invalid directory!");
 			return;
 		}
 
 		if (targetDir.empty())
 		{
-			VT_LOG(LogSeverity::Warning, "[AssetManager] Trying to move directory {0} to an invalid directory!");
+			VT_LOG(LogVerbosity::Warning, "[AssetManager] Trying to move directory {0} to an invalid directory!");
 			return;
 		}
 
@@ -597,7 +597,7 @@ namespace Volt
 			WriteLock lock{ m_assetRegistryMutex };
 			if (!m_assetRegistry.contains(assetHandle))
 			{
-				VT_LOG(LogSeverity::Warning, "[AssetManager] Trying to rename invalid asset!");
+				VT_LOG(LogVerbosity::Warning, "[AssetManager] Trying to rename invalid asset!");
 				return;
 			}
 
@@ -614,7 +614,7 @@ namespace Volt
 		auto& metadata = GetMetadataFromHandleMutable(assetHandle);
 		if (!metadata.IsValid())
 		{
-			VT_LOG(LogSeverity::Warning, "[AssetManager] Trying to rename invalid asset {0}!", assetHandle);
+			VT_LOG(LogVerbosity::Warning, "[AssetManager] Trying to rename invalid asset {0}!", assetHandle);
 			return;
 		}
 
@@ -626,7 +626,7 @@ namespace Volt
 		const auto metadata = GetMetadataFromHandle(assetHandle);
 		if (!metadata.IsValid())
 		{
-			VT_LOG(LogSeverity::Warning, "[AssetManager] Trying to remove invalid asset {0}!", assetHandle);
+			VT_LOG(LogVerbosity::Warning, "[AssetManager] Trying to remove invalid asset {0}!", assetHandle);
 			return;
 		}
 
@@ -648,7 +648,7 @@ namespace Volt
 		FileSystem::MoveToRecycleBin(projDir / filePath);
 
 #ifdef VT_DEBUG
-		VT_LOG(LogSeverity::Info, "[AssetManager] Removed asset {0} with handle {1}!", assetHandle, filePath.string());
+		VT_LOG(LogVerbosity::Info, "[AssetManager] Removed asset {0} with handle {1}!", assetHandle, filePath.string());
 #endif
 	}
 
@@ -708,7 +708,7 @@ namespace Volt
 
 		if (!assetExists)
 		{
-			VT_LOG(LogSeverity::Warning, "[AssetManager] Trying to remove invalid asset {0} from registry!", assetHandle);
+			VT_LOG(LogVerbosity::Warning, "[AssetManager] Trying to remove invalid asset {0} from registry!", assetHandle);
 			return;
 		}
 
@@ -721,7 +721,7 @@ namespace Volt
 
 		if (!metadata.IsValid())
 		{
-			VT_LOG(LogSeverity::Warning, "[AssetManager] Trying to remove invalid asset {0} from registry!", assetHandle);
+			VT_LOG(LogVerbosity::Warning, "[AssetManager] Trying to remove invalid asset {0} from registry!", assetHandle);
 			return;
 		}
 
@@ -737,7 +737,7 @@ namespace Volt
 
 #ifdef VT_DEBUG
 		const auto cleanFilePath = GetCleanAssetFilePath(metadata.filePath);
-		VT_LOG(LogSeverity::Info, "[AssetManager] Removed asset {0} with handle {1} from registry!", assetHandle, cleanFilePath);
+		VT_LOG(LogVerbosity::Info, "[AssetManager] Removed asset {0} with handle {1} from registry!", assetHandle, cleanFilePath);
 #endif
 	}
 
@@ -752,7 +752,7 @@ namespace Volt
 
 		if (!metadata.IsValid())
 		{
-			VT_LOG(LogSeverity::Warning, "[AssetManager] Trying to remove invalid asset {0} from registry!", filePath);
+			VT_LOG(LogVerbosity::Warning, "[AssetManager] Trying to remove invalid asset {0} from registry!", filePath);
 			return;
 		}
 
@@ -768,7 +768,7 @@ namespace Volt
 
 #ifdef VT_DEBUG
 		const auto cleanFilePath = GetCleanAssetFilePath(metadata.filePath);
-		VT_LOG(LogSeverity::Info, "[AssetManager] Removed asset {0} with handle {1} from registry!", metadata.handle, cleanFilePath);
+		VT_LOG(LogVerbosity::Info, "[AssetManager] Removed asset {0} with handle {1} from registry!", metadata.handle, cleanFilePath);
 #endif
 	}
 
@@ -776,7 +776,7 @@ namespace Volt
 	{
 		if (folderPath.empty())
 		{
-			VT_LOG(LogSeverity::Warning, "[AssetManager] Trying to remove invalid directory {0}!", folderPath);
+			VT_LOG(LogVerbosity::Warning, "[AssetManager] Trying to remove invalid directory {0}!", folderPath);
 			return;
 		}
 
@@ -820,7 +820,7 @@ namespace Volt
 				}
 
 #ifdef VT_DEBUG
-				VT_LOG(LogSeverity::Info, "[AssetManager] Removed asset with handle {0} from registry!", handle);
+				VT_LOG(LogVerbosity::Info, "[AssetManager] Removed asset with handle {0} from registry!", handle);
 #endif
 			}
 		}
@@ -1212,7 +1212,7 @@ namespace Volt
 
 		if (!m_assetSerializers.contains(metadata.type))
 		{
-			VT_LOG(LogSeverity::Error, "[AssetManager]: No importer for asset found!");
+			VT_LOG(LogVerbosity::Error, "[AssetManager]: No importer for asset found!");
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return;
 		}
@@ -1246,7 +1246,7 @@ namespace Volt
 					m_assetSerializers.at(metadata.type)->Deserialize(metadata, asset);
 
 #ifndef VT_DIST
-					VT_LOG(LogSeverity::Trace, "[AssetManager]: Loaded asset {0} with handle {1} in {2} seconds!", metadata.filePath.string().c_str(), asset->handle, timer.GetTime<Time::Seconds>());
+					VT_LOG(LogVerbosity::Trace, "[AssetManager]: Loaded asset {0} with handle {1} in {2} seconds!", metadata.filePath.string().c_str(), asset->handle, timer.GetTime<Time::Seconds>());
 #endif
 				}
 
@@ -1268,7 +1268,7 @@ namespace Volt
 			}, assetHandle);
 
 #ifndef VT_DIST
-			VT_LOG(LogSeverity::Trace, "[AssetManager]: Queued asset {0} for loading!", metadata.filePath);
+			VT_LOG(LogVerbosity::Trace, "[AssetManager]: Queued asset {0} for loading!", metadata.filePath);
 #endif
 		}
 	}

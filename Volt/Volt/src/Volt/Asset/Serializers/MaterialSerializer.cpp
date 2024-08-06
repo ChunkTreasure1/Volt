@@ -113,7 +113,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_LOG(LogSeverity::Error, "File {0} not found!", metadata.filePath);
+			VT_LOG(LogVerbosity::Error, "File {0} not found!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -122,7 +122,7 @@ namespace Volt
 
 		if (!binaryStreamReader.IsStreamValid())
 		{
-			VT_LOG(LogSeverity::Error, "Failed to open file: {0}!", metadata.filePath);
+			VT_LOG(LogVerbosity::Error, "Failed to open file: {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -136,7 +136,7 @@ namespace Volt
 		YAMLMemoryStreamReader streamReader{};
 		if (!streamReader.ConsumeBuffer(buffer))
 		{
-			VT_LOG(LogSeverity::Error, "Failed to read file {0}!", metadata.filePath);
+			VT_LOG(LogVerbosity::Error, "Failed to read file {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -214,7 +214,7 @@ namespace Volt
 			AssetManager::AddDependencyToAsset(metadata.handle, tex);
 		}
 
-		VT_LOG(LogSeverity::Trace, logStr);
+		VT_LOG(LogVerbosity::Trace, logStr);
 
 		// #TODO_Ivar: Should probably not happen here
 		mosaicAsset->Compile();

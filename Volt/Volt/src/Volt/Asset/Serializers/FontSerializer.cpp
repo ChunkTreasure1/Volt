@@ -17,7 +17,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_LOG(LogSeverity::Error, "File {0} not found!", metadata.filePath);
+			VT_LOG(LogVerbosity::Error, "File {0} not found!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}

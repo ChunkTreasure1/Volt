@@ -26,7 +26,7 @@ namespace Volt::RHI
 		{
 			if (result != VK_SUCCESS)
 			{
-				VT_LOGC(LogSeverity::Error, "VulkanRHIModule", std::format("VkResult is '{0}' in {1}:{2}", VKResultToString(result), __FILE__, __LINE__));
+				VT_LOGC(LogVerbosity::Error, LogVulkanRHI, std::format("VkResult is '{0}' in {1}:{2}", VKResultToString(result), __FILE__, __LINE__));
 				if (result == VK_ERROR_DEVICE_LOST)
 				{
 					using namespace std::chrono_literals;

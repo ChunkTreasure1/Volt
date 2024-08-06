@@ -20,3 +20,5 @@
 #include <LogModule/Log.h>
 
 #include <CoreUtilities/Assert.h>
+
+VT_DECLARE_LOG_CATEGORY(LogRHI, LogVerbosity::Trace);

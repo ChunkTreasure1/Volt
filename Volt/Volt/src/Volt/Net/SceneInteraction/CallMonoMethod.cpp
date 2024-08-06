@@ -37,7 +37,7 @@ bool Volt::CallMonoMethod(const Entity& in_entity, const std::string& in_method,
 	auto monoElements = ::Utility::SplitStringsByCharacter(in_method, '.');
 	if (monoElements.size() != 3)
 	{
-		VT_LOG(LogSeverity::Error, "Incorrect method format in CallMonoMethod");
+		VT_LOG(LogVerbosity::Error, "Incorrect method format in CallMonoMethod");
 		return false;
 	}
 
@@ -50,7 +50,7 @@ bool Volt::CallMonoMethod(const Entity& in_entity, const std::string& in_method,
 	auto monoMethod = monoClass->GetMethod(monoElements[2], static_cast<int32_t>(args.size()));
 	if (!monoMethod)
 	{
-		VT_LOG(LogSeverity::Error, "monoMethod null");
+		VT_LOG(LogVerbosity::Error, "monoMethod null");
 		return false;
 	}
 
@@ -74,6 +74,6 @@ bool Volt::CallMonoMethod(const Entity& in_entity, const std::string& in_method,
 			return true;
 		}
 	}
-	VT_LOG(LogSeverity::Error, "some error occurd");
+	VT_LOG(LogVerbosity::Error, "some error occurd");
 	return false;
 }

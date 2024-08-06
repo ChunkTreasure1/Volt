@@ -47,7 +47,7 @@ namespace Volt::RHI
 	{
 		if (m_specification.sourceEntries.empty())
 		{
-			VT_LOGC(LogSeverity::Error, "VulkanRHIModule", "Trying to create a shader {0} without any sources!", m_specification.name);
+			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Trying to create a shader {0} without any sources!", m_specification.name);
 			return;
 		}
 
@@ -144,7 +144,7 @@ namespace Volt::RHI
 
 			if (m_shaderSources.contains(stage))
 			{
-				VT_LOGC(LogSeverity::Error, "VulkanRHIModule", "Multiple shaders of same stage defined in file {0}!", entry.filePath.string().c_str());
+				VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Multiple shaders of same stage defined in file {0}!", entry.filePath.string().c_str());
 				continue;
 			}
 

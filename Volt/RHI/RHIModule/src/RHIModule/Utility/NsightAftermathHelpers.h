@@ -88,7 +88,7 @@ namespace Volt::RHI
 		GFSDK_Aftermath_Result _result = FC;                                                                \
 		if (!GFSDK_Aftermath_SUCCEED(_result))                                                              \
 		{                                                                                                   \
-			VT_LOGC(LogSeverity::Error, "Aftermath", "Error: {0}", AftermathException::GetErrorMessage(_result).c_str()); \
+			VT_LOGC(LogVerbosity::Error, LogRender, "Error: {0}", AftermathException::GetErrorMessage(_result).c_str()); \
 			throw AftermathException(_result);                                                              \
 		}                                                                                                   \
 	}()

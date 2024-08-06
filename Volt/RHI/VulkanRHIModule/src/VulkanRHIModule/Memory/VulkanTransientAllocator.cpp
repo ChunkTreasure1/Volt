@@ -77,7 +77,7 @@ namespace Volt::RHI
 
 		if (!result)
 		{
-			VT_LOGC(LogSeverity::Error, "VulkanRHIModule", "Unable to create buffer of size {0}!", size);
+			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Unable to create buffer of size {0}!", size);
 		}
 
 		return result;
@@ -123,7 +123,7 @@ namespace Volt::RHI
 
 		if (!result)
 		{
-			VT_LOGC(LogSeverity::Error, "VulkanRHIModule", "Unable to create image of size {0}!", memoryRequirement.size);
+			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Unable to create image of size {0}!", memoryRequirement.size);
 		}
 
 		return result;
@@ -184,7 +184,7 @@ namespace Volt::RHI
 		}
 		else
 		{
-			VT_LOGC(LogSeverity::Error, "VulkanRHIModule", "Unable to destroy buffer with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
+			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Unable to destroy buffer with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
 			DestroyOrphanBuffer(allocation);
 		}
 	}
@@ -210,7 +210,7 @@ namespace Volt::RHI
 		}
 		else
 		{
-			VT_LOGC(LogSeverity::Error, "VulkanRHIModule", "Unable to destroy image with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
+			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Unable to destroy image with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
 			DestroyOrphanImage(allocation);
 		}
 	}

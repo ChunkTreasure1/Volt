@@ -65,7 +65,7 @@ namespace Volt
 
 		if (!isRegisteredForAccess)
 		{
-			VT_LOG(LogSeverity::Error, "[RenderGraph] Pass {0} trying to access resource with handle {1}, but it has not been registered for access!", m_pass.name, resourceHandle);
+			VT_LOG(LogVerbosity::Error, "[RenderGraph] Pass {0} trying to access resource with handle {1}, but it has not been registered for access!", m_pass.name, resourceHandle);
 		}
 
 		VT_ENSURE(isRegisteredForAccess);

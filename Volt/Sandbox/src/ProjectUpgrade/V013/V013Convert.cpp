@@ -137,7 +137,7 @@ namespace V013
 
 				if (arrayTypeDesc->GetElementTypeIndex() != vectorValueType)
 				{
-					VT_LOG(LogSeverity::Warning, "[Upgrade Project]: Component member vector type does not match file specified type!");
+					VT_LOG(LogVerbosity::Warning, "[Upgrade Project]: Component member vector type does not match file specified type!");
 					return;
 				}
 
@@ -173,7 +173,7 @@ namespace V013
 			const std::type_index memberType = s_preV113PropTypeToTypeIndexMap.at(oldType).typeIndex;
 			if (memberType != componentMember->typeIndex)
 			{
-				VT_LOG(LogSeverity::Warning, "[Upgrade Project]: Component member type does not match file specified type!");
+				VT_LOG(LogVerbosity::Warning, "[Upgrade Project]: Component member type does not match file specified type!");
 				return;
 			}
 
@@ -688,7 +688,7 @@ namespace V013
 				YAMLFileStreamReader streamReader{};
 				if (!streamReader.OpenFile(sceneFilePath))
 				{
-					VT_LOG(LogSeverity::Error, "[Project Upgrade]: Unable to open scene file! Skipping!");
+					VT_LOG(LogVerbosity::Error, "[Project Upgrade]: Unable to open scene file! Skipping!");
 					continue;
 				}
 

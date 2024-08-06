@@ -207,7 +207,7 @@ void EditorAssetRegistry::RegisterAssetBrowserPopupData(Volt::AssetType aAssetTy
 {
 	if (myAssetData[aAssetType].assetBrowserPopupDataFunction)
 	{
-		VT_LOG(LogSeverity::Warning, "Asset type {0} already has a popup data function registered, overwriting the function.", Volt::GetAssetTypeName(aAssetType));
+		VT_LOG(LogVerbosity::Warning, "Asset type {0} already has a popup data function registered, overwriting the function.", Volt::GetAssetTypeName(aAssetType));
 	}
 	myAssetData[aAssetType].assetBrowserPopupDataFunction = aAssetBrowserPopupDataFunction;
 }

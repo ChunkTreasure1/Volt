@@ -374,14 +374,14 @@ namespace Volt
 				else
 				{
 					myMaterial->release();
-					VT_LOG(LogSeverity::Error, "Failed to create Convex shape!");
+					VT_LOG(LogVerbosity::Error, "Failed to create Convex shape!");
 				}
 			}
 		}
 		else
 		{
 			myMaterial->release();
-			VT_LOG(LogSeverity::Error, "Failed to cook Convex shape!");
+			VT_LOG(LogVerbosity::Error, "Failed to cook Convex shape!");
 		}
 	}
 
@@ -459,7 +459,7 @@ namespace Volt
 			}
 			else
 			{
-				VT_LOG(LogSeverity::Error, "Unable to cook mesh with handle {0}, it is not valid!", component.colliderMesh);
+				VT_LOG(LogVerbosity::Error, "Unable to cook mesh with handle {0}, it is not valid!", component.colliderMesh);
 			}
 		}
 
@@ -493,14 +493,14 @@ namespace Volt
 				else
 				{
 					myMaterial->release();
-					VT_LOG(LogSeverity::Error, "Failed to create Triangle shape!");
+					VT_LOG(LogVerbosity::Error, "Failed to create Triangle shape!");
 				}
 			}
 		}
 		else
 		{
 			myMaterial->release();
-			VT_LOG(LogSeverity::Error, "Failed to cook Triangle shape!");
+			VT_LOG(LogVerbosity::Error, "Failed to cook Triangle shape!");
 		}
 	}
 

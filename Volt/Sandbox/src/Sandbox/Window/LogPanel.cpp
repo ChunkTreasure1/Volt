@@ -8,15 +8,15 @@
 
 namespace Utility
 {
-	ImVec4 GetColorFromLevel(LogSeverity aLevel)
+	ImVec4 GetColorFromLevel(LogVerbosity aLevel)
 	{
 		switch (aLevel)
 		{
-			case LogSeverity::Trace: return ImVec4(0.83f, 0.83f, 0.83f, 1.f);
-			case LogSeverity::Info: return ImVec4(1.f, 1.f, 1.f, 1.f);
-			case LogSeverity::Warning: return ImVec4(1.f, 0.92f, 0.21f, 1.f);
-			case LogSeverity::Error: return ImVec4(1.f, 0.f, 0.f, 1.f);
-			case LogSeverity::Critical: return ImVec4(1.f, 0.f, 0.f, 1.f);
+			case LogVerbosity::Trace: return ImVec4(0.83f, 0.83f, 0.83f, 1.f);
+			case LogVerbosity::Info: return ImVec4(1.f, 1.f, 1.f, 1.f);
+			case LogVerbosity::Warning: return ImVec4(1.f, 0.92f, 0.21f, 1.f);
+			case LogVerbosity::Error: return ImVec4(1.f, 0.f, 0.f, 1.f);
+			case LogVerbosity::Critical: return ImVec4(1.f, 0.f, 0.f, 1.f);
 		}
 
 		return ImVec4(1.f, 1.f, 1.f, 1.f);
@@ -104,11 +104,11 @@ void LogPanel::UpdateMainContent()
 
 				}
 
-				VT_LOG(LogSeverity::Trace, message);
+				VT_LOG(LogVerbosity::Trace, message);
 			}
 			else
 			{
-				VT_LOG(LogSeverity::Trace, "Command {0} not found!", strings[0]);
+				VT_LOG(LogVerbosity::Trace, "Command {0} not found!", strings[0]);
 			}
 		}
 

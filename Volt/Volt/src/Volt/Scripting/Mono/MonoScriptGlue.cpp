@@ -395,7 +395,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Warning, "Trying to remove invalid entity with id {0}!", entityId);
+			VT_LOG(LogVerbosity::Warning, "Trying to remove invalid entity with id {0}!", entityId);
 		}
 	}
 
@@ -470,7 +470,7 @@ namespace Volt
 	{
 		if (Volt::AssetManager::GetAssetTypeFromHandle(handle) != AssetType::Scene)
 		{
-			VT_LOG(LogSeverity::Error, "Unable to load scene with handle {0}, because it's not a scene!", handle);
+			VT_LOG(LogVerbosity::Error, "Unable to load scene with handle {0}, because it's not a scene!", handle);
 			return;
 		}
 
@@ -489,7 +489,7 @@ namespace Volt
 	{
 		if (Volt::AssetManager::GetAssetTypeFromHandle(handle) != AssetType::Scene)
 		{
-			VT_LOG(LogSeverity::Error, "Unable to load scene with handle {0}, because it's not a scene!", handle);
+			VT_LOG(LogVerbosity::Error, "Unable to load scene with handle {0}, because it's not a scene!", handle);
 			return;
 		}
 
@@ -985,7 +985,7 @@ namespace Volt
 #pragma endregion
 
 #pragma region Log
-	inline static void Log_String(MonoString* string, LogSeverity logLevel)
+	inline static void Log_String(MonoString* string, LogVerbosity logLevel)
 	{
 		if (string == nullptr) { return; }
 		const auto str = MonoScriptUtils::GetStringFromMonoString(string);
@@ -1098,7 +1098,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().bodyType;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return BodyType::Static;
 	}
 
@@ -1136,7 +1136,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().layerId;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return 0;
 	}
 
@@ -1171,7 +1171,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().mass;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1227,7 +1227,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().linearDrag;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1262,7 +1262,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().angularDrag;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1276,7 +1276,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().lockFlags;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return 0;
 	}
 
@@ -1311,7 +1311,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().disableGravity;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return false;
 	}
 
@@ -1346,7 +1346,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().isKinematic;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return false;
 	}
 
@@ -1381,7 +1381,7 @@ namespace Volt
 			return entity.GetComponent<RigidbodyComponent>().collisionType;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a RigidbodyComponent!", entityId);
 		return CollisionDetectionType::Discrete;
 	}
 
@@ -1408,7 +1408,7 @@ namespace Volt
 			return entity.GetComponent<CharacterControllerComponent>().slopeLimit;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1435,7 +1435,7 @@ namespace Volt
 			return entity.GetComponent<CharacterControllerComponent>().invisibleWallHeight;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1460,7 +1460,7 @@ namespace Volt
 			return entity.GetComponent<CharacterControllerComponent>().maxJumpHeight;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1485,7 +1485,7 @@ namespace Volt
 			return entity.GetComponent<CharacterControllerComponent>().contactOffset;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1510,7 +1510,7 @@ namespace Volt
 			return entity.GetComponent<CharacterControllerComponent>().stepOffset;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1535,7 +1535,7 @@ namespace Volt
 			return entity.GetComponent<CharacterControllerComponent>().density;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CharacterControllerComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1555,7 +1555,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return 0.f;
 		}
 
@@ -1565,7 +1565,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller actor found for entity {0}!", entityId);
 			return 0.f;
 		}
 
@@ -1577,7 +1577,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -1587,7 +1587,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -1599,7 +1599,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -1609,7 +1609,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -1621,7 +1621,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -1631,7 +1631,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -1643,7 +1643,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -1653,7 +1653,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -1665,7 +1665,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -1675,7 +1675,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -1695,7 +1695,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
 			*outHalfSize = 0.f;
 		}
 	}
@@ -1725,7 +1725,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
 		}
 	}
 
@@ -1739,7 +1739,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
 			*outOffset = 0.f;
 		}
 	}
@@ -1769,7 +1769,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
 		}
 	}
 
@@ -1782,7 +1782,7 @@ namespace Volt
 			return entity.GetComponent<BoxColliderComponent>().isTrigger;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
 		return false;
 	}
 
@@ -1811,7 +1811,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a BoxColliderComponent!", entityId);
 		}
 	}
 #pragma endregion
@@ -1827,7 +1827,7 @@ namespace Volt
 			return entity.GetComponent<SphereColliderComponent>().radius;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1856,7 +1856,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
 		}
 	}
 
@@ -1870,7 +1870,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
 			*outOffset = 0.f;
 		}
 	}
@@ -1900,7 +1900,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
 		}
 	}
 
@@ -1913,7 +1913,7 @@ namespace Volt
 			return entity.GetComponent<SphereColliderComponent>().isTrigger;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
 		return false;
 	}
 
@@ -1942,7 +1942,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a SphereColliderComponent!", entityId);
 		}
 	}
 #pragma endregion
@@ -1958,7 +1958,7 @@ namespace Volt
 			return entity.GetComponent<CapsuleColliderComponent>().radius;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		return 0.f;
 	}
 
@@ -1987,7 +1987,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		}
 	}
 
@@ -2001,7 +2001,7 @@ namespace Volt
 			return entity.GetComponent<CapsuleColliderComponent>().height;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		return 0.f;
 	}
 
@@ -2030,7 +2030,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		}
 	}
 
@@ -2044,7 +2044,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 			*outOffset = 0.f;
 		}
 	}
@@ -2074,7 +2074,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		}
 	}
 
@@ -2087,7 +2087,7 @@ namespace Volt
 			return entity.GetComponent<CapsuleColliderComponent>().isTrigger;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		return false;
 	}
 
@@ -2116,7 +2116,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a CapsuleColliderComponent!", entityId);
 		}
 	}
 #pragma endregion
@@ -2131,7 +2131,7 @@ namespace Volt
 			return entity.GetComponent<MeshColliderComponent>().isConvex;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
 		return false;
 	}
 
@@ -2145,7 +2145,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
 		}
 	}
 
@@ -2158,7 +2158,7 @@ namespace Volt
 			return entity.GetComponent<MeshColliderComponent>().isTrigger;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
 		return false;
 	}
 
@@ -2172,7 +2172,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
 		}
 	}
 
@@ -2185,7 +2185,7 @@ namespace Volt
 			return entity.GetComponent<MeshColliderComponent>().subMeshIndex;
 		}
 
-		VT_LOG(LogSeverity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
+		VT_LOG(LogVerbosity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
 		return -1;
 	}
 
@@ -2199,7 +2199,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
+			VT_LOG(LogVerbosity::Error, "Entity {0} does not have a MeshColliderComponent!", entityId);
 		}
 	}
 
@@ -2387,7 +2387,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2397,7 +2397,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2409,7 +2409,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2419,7 +2419,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2431,7 +2431,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2441,7 +2441,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2453,7 +2453,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2463,7 +2463,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2475,7 +2475,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2485,7 +2485,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2497,7 +2497,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2507,7 +2507,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2519,7 +2519,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2529,7 +2529,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2541,7 +2541,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2551,7 +2551,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2563,7 +2563,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2573,7 +2573,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2585,7 +2585,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2595,7 +2595,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2607,7 +2607,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2617,7 +2617,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2629,7 +2629,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2639,7 +2639,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2651,7 +2651,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2661,7 +2661,7 @@ namespace Volt
 		auto actor = physicsScene->GetActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid actor found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid actor found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2675,7 +2675,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return 0.f;
 		}
 
@@ -2685,7 +2685,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller found for entity {0}!", entityId);
 			return 0.f;
 		}
 
@@ -2697,7 +2697,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2707,7 +2707,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2719,7 +2719,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return 0.f;
 		}
 
@@ -2729,7 +2729,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller found for entity {0}!", entityId);
 			return 0.f;
 		}
 
@@ -2741,7 +2741,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2751,7 +2751,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2763,7 +2763,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2773,7 +2773,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2785,7 +2785,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2795,7 +2795,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2807,7 +2807,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2817,7 +2817,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2829,7 +2829,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2839,7 +2839,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2851,7 +2851,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2861,7 +2861,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 
@@ -2873,7 +2873,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return false;
 		}
 
@@ -2883,7 +2883,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller found for entity {0}!", entityId);
 			return false;
 		}
 
@@ -2895,7 +2895,7 @@ namespace Volt
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
 		{
-			VT_LOG(LogSeverity::Error, "No valid physics scene found!");
+			VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
 			return;
 		}
 
@@ -2905,7 +2905,7 @@ namespace Volt
 		auto actor = physicsScene->GetControllerActor(entity);
 		if (!actor)
 		{
-			VT_LOG(LogSeverity::Error, "No valid controller found for entity {0}!", entityId);
+			VT_LOG(LogVerbosity::Error, "No valid controller found for entity {0}!", entityId);
 			return;
 		}
 

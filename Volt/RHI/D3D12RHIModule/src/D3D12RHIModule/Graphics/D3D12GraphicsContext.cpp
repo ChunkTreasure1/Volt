@@ -17,19 +17,19 @@ namespace Volt::RHI
 			switch (severity)
 			{
 				case D3D12_MESSAGE_SEVERITY_CORRUPTION:
-					VT_LOG(LogSeverity::Error, std::string("D3D12 Validation:") + std::string(pDescription));
+					VT_LOG(LogVerbosity::Error, std::string("D3D12 Validation:") + std::string(pDescription));
 					break;
 				case D3D12_MESSAGE_SEVERITY_ERROR:
-					VT_LOG(LogSeverity::Error, std::string("D3D12 Validation:") + std::string(pDescription));
+					VT_LOG(LogVerbosity::Error, std::string("D3D12 Validation:") + std::string(pDescription));
 					break;
 				case D3D12_MESSAGE_SEVERITY_WARNING:
-					VT_LOG(LogSeverity::Warning, std::string("D3D12 Validation:") + std::string(pDescription));
+					VT_LOG(LogVerbosity::Warning, std::string("D3D12 Validation:") + std::string(pDescription));
 					break;
 				case D3D12_MESSAGE_SEVERITY_INFO:
-					VT_LOG(LogSeverity::Info, std::string("D3D12 Validation:") + std::string(pDescription));
+					VT_LOG(LogVerbosity::Info, std::string("D3D12 Validation:") + std::string(pDescription));
 					break;
 				case D3D12_MESSAGE_SEVERITY_MESSAGE:
-					VT_LOG(LogSeverity::Trace, std::string("D3D12 Validation:") + std::string(pDescription));
+					VT_LOG(LogVerbosity::Trace, std::string("D3D12 Validation:") + std::string(pDescription));
 					break;
 				default:
 					break;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rhipch.h"
+
 #include "RHIModule/Graphics/GraphicsContext.h"
 
 #include <filesystem>
@@ -129,7 +131,7 @@ namespace Volt::RHI
 			}
 			else
 			{
-				VT_LOGC(LogSeverity::Error, "RHIModule", "Unable to read shader at location: {}!", path.string());
+				VT_LOGC(LogVerbosity::Error, LogRender, "Unable to read shader at location: {}!", path.string());
 			}
 
 			in.close();

@@ -29,7 +29,7 @@ bool TaigaAPI::Auth(const std::string& username, const std::string& password, Ta
 	}
 	else
 	{
-		VT_LOG(LogSeverity::Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
+		VT_LOG(LogVerbosity::Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
 	}
 	return false;
 }
@@ -68,7 +68,7 @@ bool TaigaAPI::GetProjects(const TaigaGeneralInfo& info, Vector<ItemEntry>& outP
 	}
 	else
 	{
-		VT_LOG(LogSeverity::Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
+		VT_LOG(LogVerbosity::Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
 	}
 	return false;
 }
@@ -108,7 +108,7 @@ bool TaigaAPI::GetUserstories(const TaigaGeneralInfo& info, Vector<ItemEntry>& o
 	}
 	else
 	{
-		VT_LOG(LogSeverity::Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
+		VT_LOG(LogVerbosity::Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
 	}
 	return false;
 }
@@ -149,7 +149,7 @@ bool TaigaAPI::GetTasks(const TaigaGeneralInfo& info, Vector<ItemEntry>& outTask
 	}
 	else
 	{
-		VT_LOG(LogSeverity::Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
+		VT_LOG(LogVerbosity::Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
 	}
 	return false;
 }
@@ -189,7 +189,7 @@ bool TaigaAPI::GetIssues(const TaigaGeneralInfo& info, Vector<ItemEntry>& outIss
 	}
 	else
 	{
-		VT_LOG(LogSeverity::Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
+		VT_LOG(LogVerbosity::Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
 	}
 	return false;
 }

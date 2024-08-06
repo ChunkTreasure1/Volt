@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Config.h"
+#include "LogModule/Config.h"
+#include "LogModule/LogCommon.h"
+#include "LogModule/LogCategory.h"
+#include "LogModule/DefaultLoggingCategories.h"
 
 #include <CoreUtilities/Assert.h>
 #include <CoreUtilities/Containers/Vector.h>
@@ -10,15 +13,6 @@
 #include <format>
 #include <filesystem>
 #include <functional>
-
-enum class LogSeverity
-{
-	Trace = 0,
-	Info,
-	Warning,
-	Error,
-	Critical
-};
 
 namespace spdlog
 {
@@ -38,7 +32,7 @@ struct LogCallbackData
 	std::string category;
 	std::string message;
 
-	LogSeverity severity;
+	LogVerbosity severity;
 };
 
 class VTLOG_API Log
@@ -47,11 +41,11 @@ public:
 	Log();
 	~Log();
 
-	template<typename... Args>
-	static void LogFormatted(LogSeverity severity, const std::string& category, const std::string& format, Args&&... args)
+	template<typename LogCategory, typename... Args>
+	static void LogFormatted(LogVerbosity severity, const LogCategory& category, const std::string& format, Args&&... args)
 	{
 		const std::string message = std::vformat(format, std::make_format_args(args...));
-		Get().LogMessage(severity, category, message);
+		Get().LogMessage(severity, std::string(category.GetName()), message);
 	}
 
 	void SetLogOutputFilepath(const std::filesystem::path& path);
@@ -60,7 +54,7 @@ public:
 	VT_NODISCARD VT_INLINE static Log& Get() { return *s_instance; }
 
 private:
-	void LogMessage(LogSeverity severity, const std::string& category, const std::string& message);
+	void LogMessage(LogVerbosity severity, const std::string& category, const std::string& message);
 
 	inline static Log* s_instance = nullptr;
 
@@ -71,7 +65,7 @@ private:
 };
 
 #define VT_LOGC(severity, category, format, ...) ::Log::LogFormatted(severity, category, format, __VA_ARGS__)
-#define VT_LOG(severity, format, ...) ::Log::LogFormatted(severity, "", format, __VA_ARGS__)
+#define VT_LOG(severity, format, ...) ::Log::LogFormatted(severity, LogTemp, format, __VA_ARGS__)
 
 // Special formatters
 namespace std

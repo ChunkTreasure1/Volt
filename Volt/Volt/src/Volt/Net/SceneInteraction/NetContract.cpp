@@ -23,7 +23,7 @@ namespace Volt
 		auto entity = SceneManager::GetActiveScene()->GetEntityFromUUID(in_id);
 		if (!entity.HasComponent<PrefabComponent>())
 		{
-			VT_LOG(LogSeverity::Error, "Entity is not prefab in NetContractContainer::Execute");
+			VT_LOG(LogVerbosity::Error, "Entity is not prefab in NetContractContainer::Execute");
 			return;
 		}
 		auto handle = entity.GetComponent<PrefabComponent>().prefabAsset;

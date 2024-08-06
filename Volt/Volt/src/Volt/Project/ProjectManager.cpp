@@ -37,7 +37,7 @@ namespace Volt
 			}
 		}
 
-		VT_LOG(LogSeverity::Info, "[ProjectManager]: Loading project {0}", projectPath);
+		VT_LOG(LogVerbosity::Info, "[ProjectManager]: Loading project {0}", projectPath);
 		DeserializeProject();
 
 		m_currentEngineDirectory = ::Utility::ReplaceCharacter(FileSystem::GetEnvVariable("VOLT_PATH"), '\\', '/');
@@ -71,13 +71,13 @@ namespace Volt
 
 		if (!streamReader.OpenFile(m_currentProject->projectFilePath))
 		{
-			VT_LOG(LogSeverity::Error, "[ProjectManager]: Failed to open file: {0}!", m_currentProject->projectFilePath.string());
+			VT_LOG(LogVerbosity::Error, "[ProjectManager]: Failed to open file: {0}!", m_currentProject->projectFilePath.string());
 			return;
 		}
 
 		if (!streamReader.HasKey("Project"))
 		{
-			VT_LOG(LogSeverity::Error, "[ProjectManager]: Project file {0} is invalid!", m_currentProject->projectFilePath.string());
+			VT_LOG(LogVerbosity::Error, "[ProjectManager]: Project file {0} is invalid!", m_currentProject->projectFilePath.string());
 			return;
 		}
 
@@ -97,7 +97,7 @@ namespace Volt
 		if (!m_currentProject->engineVersion.IsValid() || m_currentProject->engineVersion != Application::Get().GetInfo().version)
 		{
 			m_currentProject->isDeprecated = true;
-			VT_LOG(LogSeverity::Error, "[ProjectManager]: The loaded project is deprecated!");
+			VT_LOG(LogVerbosity::Error, "[ProjectManager]: The loaded project is deprecated!");
 		}
 	}
 

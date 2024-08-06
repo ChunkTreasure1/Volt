@@ -51,7 +51,7 @@ namespace Volt
 		{
 			char buffer[1024];
 			ufbx_format_error(buffer, sizeof(buffer), &error);
-			VT_LOG(LogSeverity::Error, "{0}: {1}", description, buffer);
+			VT_LOG(LogVerbosity::Error, "{0}: {1}", description, buffer);
 		}
 	}
 
@@ -67,7 +67,7 @@ namespace Volt
 
 		if (dstSkeleton.m_joints.empty())
 		{
-			VT_LOG(LogSeverity::Error, "[FBXImporter]: Unable to import skeleton! There was no skeleton defined in FBX file!");
+			VT_LOG(LogVerbosity::Error, "[FBXImporter]: Unable to import skeleton! There was no skeleton defined in FBX file!");
 
 			ufbx_free_scene(scene);
 			return false;
@@ -356,7 +356,7 @@ namespace Volt
 
 			if (!mesh->vertex_tangent.exists)
 			{
-				VT_LOG(LogSeverity::Error, "[FbxImporter]: No tangents availiable in mesh, shading might be incorrect!");
+				VT_LOG(LogVerbosity::Error, "[FbxImporter]: No tangents availiable in mesh, shading might be incorrect!");
 			}
 
 			auto& subMesh = dstMesh.m_subMeshes.emplace_back();

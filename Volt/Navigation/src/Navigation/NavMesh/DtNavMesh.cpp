@@ -17,7 +17,7 @@ namespace Volt
 			status = myNavMeshQuery->init(myNavMesh.get(), 2048);
 			if (dtStatusFailed(status))
 			{
-				VT_LOG(LogSeverity::Error, "Could not init Detour NavMesh Query");
+				VT_LOG(LogVerbosity::Error, "Could not init Detour NavMesh Query");
 			}
 		}
 
@@ -50,7 +50,7 @@ namespace Volt
 
 			if (dtStatusFailed(status))
 			{
-				VT_LOG(LogSeverity::Warning, "Detour failed to find nearest start poly");
+				VT_LOG(LogVerbosity::Warning, "Detour failed to find nearest start poly");
 				return resultPath;
 			}
 
@@ -61,7 +61,7 @@ namespace Volt
 
 			if (dtStatusFailed(status))
 			{
-				VT_LOG(LogSeverity::Warning, "Detour failed to find nearest end poly");
+				VT_LOG(LogVerbosity::Warning, "Detour failed to find nearest end poly");
 				return resultPath;
 			}
 
@@ -74,7 +74,7 @@ namespace Volt
 
 			if (dtStatusFailed(status) || srcPathSize == 0)
 			{
-				VT_LOG(LogSeverity::Warning, "Detour failed to find path");
+				VT_LOG(LogVerbosity::Warning, "Detour failed to find path");
 				return resultPath;
 			}
 
@@ -87,7 +87,7 @@ namespace Volt
 
 			if (dtStatusFailed(status))
 			{
-				VT_LOG(LogSeverity::Warning, "Detour failed to find straight path");
+				VT_LOG(LogVerbosity::Warning, "Detour failed to find straight path");
 				return resultPath;
 			}
 

@@ -40,7 +40,7 @@ namespace Volt
 		PhysicsLayer& layerInfo = GetLayer(layerId);
 		if (layerInfo.layerId == myNullLayer.layerId)
 		{
-			VT_LOG(LogSeverity::Error, "Trying to remove invalid physics layer!");
+			VT_LOG(LogVerbosity::Error, "Trying to remove invalid physics layer!");
 			return;
 		}
 

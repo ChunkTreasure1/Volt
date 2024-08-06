@@ -293,7 +293,7 @@ namespace Volt
 		}
 		else
 		{
-			VT_LOG(LogSeverity::Error, "Dum dum");
+			VT_LOG(LogVerbosity::Error, "Dum dum");
 		}
 
 		return result;

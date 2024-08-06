@@ -15,7 +15,7 @@ namespace Volt
 
 			if (!myState.core)
 			{
-				VT_LOG(LogSeverity::Error, "Failed to instantiate discord core! (err ", static_cast<int>(result), ")");
+				VT_LOG(LogVerbosity::Error, "Failed to instantiate discord core! (err ", static_cast<int>(result), ")");
 				return;
 			}
 
@@ -38,7 +38,7 @@ namespace Volt
 			myState.core->ActivityManager().UpdateActivity(myState.currentActivity, [](discord::Result result) {
 				if (result != discord::Result::Ok)
 				{
-					VT_LOG(LogSeverity::Warning, "Failed to update discord rich presence");
+					VT_LOG(LogVerbosity::Warning, "Failed to update discord rich presence");
 				}
 			});
 		}

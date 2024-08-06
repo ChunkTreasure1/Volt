@@ -48,7 +48,7 @@ namespace Volt
 		int32_t result = avformat_open_input(&myReaderState.formatContext, filePath.string().c_str(), nullptr, nullptr);
 		if (result < 0)
 		{
-			VT_LOG(LogSeverity::Error, "Error when opening video!");
+			VT_LOG(LogVerbosity::Error, "Error when opening video!");
 			return;
 		}
 
@@ -206,7 +206,7 @@ namespace Volt
 
 		if (safeValue >= maxSafeValue)
 		{
-			VT_LOG(LogSeverity::Error, "Unable to find a valid video frame!");
+			VT_LOG(LogVerbosity::Error, "Unable to find a valid video frame!");
 		}
 
 		return readFrame;

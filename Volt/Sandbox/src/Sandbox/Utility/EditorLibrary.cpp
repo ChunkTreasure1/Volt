@@ -53,7 +53,7 @@ Ref<EditorWindow> EditorLibrary::Get(Volt::AssetType type)
 	auto it = std::find_if(s_editors.begin(), s_editors.end(), [type](const auto& lhs) { return lhs.assetType == type; });
 	if (it == s_editors.end())
 	{
-		VT_LOG(LogSeverity::Error, "Editor for asset not registered!");
+		VT_LOG(LogVerbosity::Error, "Editor for asset not registered!");
 		return nullptr;
 	}
 

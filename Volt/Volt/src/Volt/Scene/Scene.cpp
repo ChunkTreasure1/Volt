@@ -622,7 +622,7 @@ namespace Volt
 		auto mesh = AssetManager::GetAsset<Mesh>(meshHandle);
 		if (!mesh || !mesh->IsValid())
 		{
-			VT_LOG(LogSeverity::Warning, "Trying to instantiate invalid mesh {0}!", meshHandle);
+			VT_LOG(LogVerbosity::Warning, "Trying to instantiate invalid mesh {0}!", meshHandle);
 			return Entity{};
 		}
 
@@ -681,7 +681,7 @@ namespace Volt
 			std::ifstream file(depPath);
 			if (!file.is_open())
 			{
-				VT_LOG(LogSeverity::Error, "[AssetManager] Unable to read dependency file!");
+				VT_LOG(LogVerbosity::Error, "[AssetManager] Unable to read dependency file!");
 				return {};
 			}
 
@@ -696,7 +696,7 @@ namespace Volt
 			}
 			catch (std::exception& e)
 			{
-				VT_LOG(LogSeverity::Error, "[AssetManager] Dependency list contains invalid YAML! Please correct it! Error: {0}", e.what());
+				VT_LOG(LogVerbosity::Error, "[AssetManager] Dependency list contains invalid YAML! Please correct it! Error: {0}", e.what());
 				return {};
 			}
 
@@ -745,7 +745,7 @@ namespace Volt
 			AssetManager::Get().QueueAssetRaw(dep);
 		}
 
-		VT_LOG(LogSeverity::Info, "[Scene] {0} assets has been queued for scene {1}!", dependencies.size(), scenePath.string());
+		VT_LOG(LogVerbosity::Info, "[Scene] {0} assets has been queued for scene {1}!", dependencies.size(), scenePath.string());
 	}
 
 	Ref<Scene> Scene::CreateDefaultScene(const std::string& name, bool createDefaultMesh)
@@ -1448,7 +1448,7 @@ namespace Volt
 				Ref<Material> mat = AssetManager::QueueAsset<Material>(materialTable.GetMaterial(materialIndex));
 				if (!mat)
 				{
-					VT_LOG(LogSeverity::Warning, "[MeshComponent]: Mesh {} has an invalid material at index {}!", mesh->assetName, materialIndex);
+					VT_LOG(LogVerbosity::Warning, "[MeshComponent]: Mesh {} has an invalid material at index {}!", mesh->assetName, materialIndex);
 					mat = Renderer::GetDefaultResources().defaultMaterial;
 				}
 

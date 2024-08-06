@@ -188,7 +188,7 @@ namespace Amp
 
 					std::string eventName = str.substr(index + 1);
 
-					VT_LOG(LogSeverity::Info, eventName);
+					VT_LOG(LogVerbosity::Info, eventName);
 					strings.push_back(eventName);
 
 				}

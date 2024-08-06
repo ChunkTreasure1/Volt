@@ -15,7 +15,7 @@ namespace Volt::RHI
 	{
 		if (m_specification.sourceEntries.empty())
 		{
-			VT_LOGC(LogSeverity::Error, "[D3D12Shader]", "Trying to create a shader {0} without any sources!", m_specification.name);
+			VT_LOGC(LogVerbosity::Error, LogD3D12RHI, "Trying to create a shader {0} without any sources!", m_specification.name);
 			return;
 		}
 
@@ -51,7 +51,7 @@ namespace Volt::RHI
 
 			if (m_shaderSources.contains(stage))
 			{
-				VT_LOGC(LogSeverity::Error, "[D3D12Shader]", "Multiple shaders of same stage defined in file {0}!", entry.filePath.string().c_str());
+				VT_LOGC(LogVerbosity::Error, LogD3D12RHI, "Multiple shaders of same stage defined in file {0}!", entry.filePath.string().c_str());
 				continue;
 			}
 

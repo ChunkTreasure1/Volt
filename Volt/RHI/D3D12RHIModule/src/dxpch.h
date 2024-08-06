@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <map>
 #include <unordered_map>
 #include <set>
@@ -33,6 +32,8 @@
 #include "RHIModule/Core/RHICommon.h"
 
 #include <LogModule/Log.h>
+
+VT_DECLARE_LOG_CATEGORY(LogD3D12RHI, LogVerbosity::Trace);
 
 namespace Volt
 {
@@ -177,5 +178,5 @@ namespace Volt
 { \
 HRESULT hr__ = (x); \
 std::string str = __FILE__; \
-if(FAILED(hr__)) {  DxException ex((long)hr__, #x, str,__LINE__); VT_LOG(LogSeverity::Error, ex.ToString()); } } \
+if(FAILED(hr__)) {  DxException ex((long)hr__, #x, str,__LINE__); VT_LOGC(LogVerbosity::Error, LogD3D12RHI, ex.ToString()); } } \
 

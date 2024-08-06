@@ -21,3 +21,5 @@
 #include <future>
 
 #include <LogModule/Log.h>
+
+VT_DECLARE_LOG_CATEGORY(LogVulkanRHI, LogVerbosity::Trace);

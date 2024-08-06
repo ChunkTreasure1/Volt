@@ -20,7 +20,7 @@ namespace GraphKey
 	void PrintNode::Print()
 	{
 		const std::string value = GetInput<std::string>(1);
-		VT_LOG(LogSeverity::Info, value);
+		VT_LOG(LogVerbosity::Info, value);
 		ActivateOutput(0);
 	}
 }

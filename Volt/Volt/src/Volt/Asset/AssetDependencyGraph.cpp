@@ -45,13 +45,13 @@ namespace Volt
 		WriteLock lock{ m_mutex };
 		if (!DoAssetExistInGraph(handle))
 		{
-			VT_LOG(LogSeverity::Warning, "[AssetDependencyGraph]: Trying to add dependency to asset not in the graph!");
+			VT_LOG(LogVerbosity::Warning, "[AssetDependencyGraph]: Trying to add dependency to asset not in the graph!");
 			return;
 		}
 
 		if (!DoAssetExistInGraph(dependency))
 		{
-			VT_LOG(LogSeverity::Warning, "[AssetDependencyGraph]: Trying to add dependency not in the graph to asset!");
+			VT_LOG(LogVerbosity::Warning, "[AssetDependencyGraph]: Trying to add dependency not in the graph to asset!");
 			return;
 		}
 
@@ -81,7 +81,7 @@ namespace Volt
 	{
 		if (!DoAssetExistInGraph(handle))
 		{
-			VT_LOG(LogSeverity::Warning, "[AssetDependencyGraph]: Trying to get chain of asset not in the graph!");
+			VT_LOG(LogVerbosity::Warning, "[AssetDependencyGraph]: Trying to get chain of asset not in the graph!");
 			return {};
 		}
 
@@ -108,7 +108,7 @@ namespace Volt
 	{
 		if (!DoAssetExistInGraph(handle))
 		{
-			VT_LOG(LogSeverity::Warning, "[AssetDependencyGraph]: Trying to get chain of asset not in the graph!");
+			VT_LOG(LogVerbosity::Warning, "[AssetDependencyGraph]: Trying to get chain of asset not in the graph!");
 			return {};
 		}
 

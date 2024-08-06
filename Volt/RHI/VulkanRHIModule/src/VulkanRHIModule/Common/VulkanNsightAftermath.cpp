@@ -23,7 +23,7 @@ namespace Volt::RHI
 
 		if (vkResult == VK_ERROR_DEVICE_LOST)
 		{
-			RHILog::Log(LogSeverity::Error, "Graphics device lost! Generating Nsight Aftermath report and closing application!");
+			RHILog::Log(LogVerbosity::Error, "Graphics device lost! Generating Nsight Aftermath report and closing application!");
 
 			auto tdrTerminationTimeout = std::chrono::seconds(3);
 			auto tStart = std::chrono::steady_clock::now();
@@ -43,7 +43,7 @@ namespace Volt::RHI
 
 			if (status != GFSDK_Aftermath_CrashDump_Status_Finished)
 			{
-				VT_LOGC(LogSeverity::Error, "[Aftermath]", "Unexpected crash dump status: {0}", static_cast<uint32_t>(status));
+				VT_LOGC(LogVerbosity::Error, "[Aftermath]", "Unexpected crash dump status: {0}", static_cast<uint32_t>(status));
 			}
 
 			RHIProxy::GetInstance().RequestApplicationClose();
@@ -53,7 +53,7 @@ namespace Volt::RHI
 
 		if (resultValue != VK_SUCCESS) 
 		{ 
-			RHILog::Log(LogSeverity::Error, std::format("Vulkan Error: {0}", VKResultToString(resultValue))); 
+			RHILog::Log(LogVerbosity::Error, std::format("Vulkan Error: {0}", VKResultToString(resultValue))); 
 			VT_RHI_DEBUGBREAK(); 
 		}
 	}

@@ -102,7 +102,7 @@ namespace V015
 		std::ifstream file(metaFilePath);
 		if (!file.is_open())
 		{
-			VT_LOG(LogSeverity::Critical, "[AssetManager] Failed to open asset registry file: {0}!", metaFilePath.string().c_str());
+			VT_LOG(LogVerbosity::Critical, "[AssetManager] Failed to open asset registry file: {0}!", metaFilePath.string().c_str());
 			return;
 		}
 
@@ -117,7 +117,7 @@ namespace V015
 		}
 		catch (std::exception& e)
 		{
-			VT_LOG(LogSeverity::Critical, "[AssetManager] Meta file {0} contains invalid YAML! Please correct it! Error: {1}", metaFilePath, e.what());
+			VT_LOG(LogVerbosity::Critical, "[AssetManager] Meta file {0} contains invalid YAML! Please correct it! Error: {1}", metaFilePath, e.what());
 			return;
 		}
 
@@ -125,7 +125,7 @@ namespace V015
 
 		if (!metaRoot["assetHandle"])
 		{
-			VT_LOG(LogSeverity::Critical, "[AssetManager] Meta file {0} is missing an asset handle! Please correct it!", metaFilePath);
+			VT_LOG(LogVerbosity::Critical, "[AssetManager] Meta file {0} is missing an asset handle! Please correct it!", metaFilePath);
 			return;
 		}
 
@@ -133,7 +133,7 @@ namespace V015
 
 		if (!metaRoot["filePath"])
 		{
-			VT_LOG(LogSeverity::Critical, "[AssetManager] Meta file {0} is missing a file path! Please correct it!", metaFilePath);
+			VT_LOG(LogVerbosity::Critical, "[AssetManager] Meta file {0} is missing a file path! Please correct it!", metaFilePath);
 			return;
 		}
 

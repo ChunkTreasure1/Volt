@@ -98,7 +98,7 @@ void TaigaPanel::LogInPopup()
 			}
 			else
 			{
-				VT_LOG(LogSeverity::Warning, "Taiga Auth Failed.");
+				VT_LOG(LogVerbosity::Warning, "Taiga Auth Failed.");
 			}
 			password.clear();
 			ImGui::CloseCurrentPopup();

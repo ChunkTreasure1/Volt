@@ -127,7 +127,7 @@ bool ApplyComponentData(Ref<Volt::RepData> in_data, Nexus::ReplicationRegisty& i
 
 		}break;*/
 		default:
-			VT_LOG(LogSeverity::Error, "not valid RepData");
+			VT_LOG(LogVerbosity::Error, "not valid RepData");
 			return false;
 			break;
 	}

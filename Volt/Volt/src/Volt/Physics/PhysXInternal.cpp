@@ -157,21 +157,21 @@ namespace Volt
 		{
 			case physx::PxErrorCode::eNO_ERROR:
 			case physx::PxErrorCode::eDEBUG_INFO:
-				VT_LOG(LogSeverity::Info, "[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
+				VT_LOG(LogVerbosity::Info, "[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
 				break;
 			case physx::PxErrorCode::eDEBUG_WARNING:
 			case physx::PxErrorCode::ePERF_WARNING:
-				VT_LOG(LogSeverity::Info, "[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
+				VT_LOG(LogVerbosity::Info, "[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
 				break;
 			case physx::PxErrorCode::eINVALID_PARAMETER:
 			case physx::PxErrorCode::eINVALID_OPERATION:
 			case physx::PxErrorCode::eOUT_OF_MEMORY:
 			case physx::PxErrorCode::eINTERNAL_ERROR:
-				VT_LOG(LogSeverity::Error, "[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
+				VT_LOG(LogVerbosity::Error, "[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
 				break;
 			case physx::PxErrorCode::eABORT:
 			case physx::PxErrorCode::eMASK_ALL:
-				VT_LOG(LogSeverity::Error, "[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
+				VT_LOG(LogVerbosity::Error, "[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
 				VT_ASSERT(false);
 				break;
 		}
@@ -179,6 +179,6 @@ namespace Volt
 
 	void PhysicsAssertHandler::operator()(const char* exp, const char* file, int line, bool&)
 	{
-		VT_LOG(LogSeverity::Error, "[PhysX Error]: {0}:{1} - {2}", file, line, exp);
+		VT_LOG(LogVerbosity::Error, "[PhysX Error]: {0}:{1} - {2}", file, line, exp);
 	}
 }

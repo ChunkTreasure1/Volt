@@ -58,16 +58,16 @@ namespace Volt::RHI
 			switch (messageSeverity)
 			{
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-					VT_LOG(LogSeverity::Trace, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					VT_LOG(LogVerbosity::Trace, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-					VT_LOG(LogSeverity::Info, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					VT_LOG(LogVerbosity::Info, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-					VT_LOG(LogSeverity::Warning, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					VT_LOG(LogVerbosity::Warning, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-					VT_LOG(LogSeverity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
+					VT_LOG(LogVerbosity::Error, std::string("Validation layer:") + std::string(pCallbackData->pMessage));
 					break;
 			}
 
@@ -192,7 +192,7 @@ namespace Volt::RHI
 		const bool validationLayerSupported = CheckValidationLayerSupport();
 		if (!validationLayerSupported)
 		{
-			VT_LOGC(LogSeverity::Error, "VulkanRHIModule", "Validation layers requested but not supported!");
+			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Validation layers requested but not supported!");
 		}
 #endif
 

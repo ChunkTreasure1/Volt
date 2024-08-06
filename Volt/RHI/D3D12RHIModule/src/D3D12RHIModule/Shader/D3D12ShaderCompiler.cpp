@@ -66,7 +66,7 @@ namespace Volt::RHI
 	D3D12ShaderCompiler::D3D12ShaderCompiler(const ShaderCompilerCreateInfo& createInfo) 
 		: m_includeDirectories(createInfo.includeDirectories), m_macros(createInfo.initialMacros), m_flags(createInfo.flags)
 	{
-		VT_LOGC(LogSeverity::Trace, "[D3D12ShaderCompiler]", "Initializing D3D12ShaderCompiler");
+		VT_LOGC(LogVerbosity::Trace, LogD3D12RHI, "Initializing D3D12ShaderCompiler");
 		DxcCreateInstance(CLSID_DxcUtils, VT_D3D12_ID(m_hlslUtils));
 		DxcCreateInstance(CLSID_DxcCompiler, VT_D3D12_ID(m_hlslCompiler));
 	}
@@ -76,7 +76,7 @@ namespace Volt::RHI
 		m_hlslUtils->Release();
 		m_hlslCompiler->Release();
 
-		VT_LOGC(LogSeverity::Trace, "[D3D12ShaderCompiler]", "Destroying D3D12ShaderCompiler");
+		VT_LOGC(LogVerbosity::Trace, LogD3D12RHI, "Destroying D3D12ShaderCompiler");
 	}
 
 	void* D3D12ShaderCompiler::GetHandleImpl() const
@@ -97,7 +97,7 @@ namespace Volt::RHI
 
 		if (specification.shaderSourceInfo.empty())
 		{
-			VT_LOGC(LogSeverity::Error, "[D3D12ShaderCompiler]", "Trying to compile a shader without sources!");
+			VT_LOGC(LogVerbosity::Error, LogD3D12RHI, "Trying to compile a shader without sources!");
 			return {};
 		}
 
@@ -217,7 +217,7 @@ namespace Volt::RHI
 		}
 		else
 		{
-			VT_LOGC(LogSeverity::Error, "[VulkanShaderCompiler]", error);
+			VT_LOGC(LogVerbosity::Error, LogD3D12RHI, error);
 		}
 
 		sourcePtr->Release();
@@ -330,7 +330,7 @@ namespace Volt::RHI
 				{
 					if (!result.renderGraphConstants.uniforms.contains(name) || uniform.type != result.renderGraphConstants.uniforms.at(name).type)
 					{
-						VT_LOGC(LogSeverity::Error, "[D3D12ShaderCompiler]", "All shader stages must have equal constant struct definition!");
+						VT_LOGC(LogVerbosity::Error, LogD3D12RHI, "All shader stages must have equal constant struct definition!");
 					}
 				}
 			}
@@ -368,7 +368,7 @@ namespace Volt::RHI
 				error = std::format("Failed to compile. Error: {}\n", result);
 				error.append(std::format("{0}\nWhile compiling shader file: {1}", Utility::GetErrorStringFromResult(compilationResult), sourceEntry.filePath.string()));
 
-				VT_LOG(LogSeverity::Error, "[D3D12ShaderCompiler]: " + error);
+				VT_LOG(LogVerbosity::Error, "[D3D12ShaderCompiler]: " + error);
 
 				sourcePtr->Release();
 				compilationResult->Release();
@@ -400,7 +400,7 @@ namespace Volt::RHI
 				error = std::format("Failed to compile. Error: {}\n", result);
 				error.append(std::format("{0}\nWhile compiling shader file: {1}", Utility::GetErrorStringFromResult(compilationResult), sourceEntry.filePath.string()));
 
-				VT_LOG(LogSeverity::Error, "[D3D12ShaderCompiler]: " + error);
+				VT_LOG(LogVerbosity::Error, "[D3D12ShaderCompiler]: " + error);
 			}
 
 			compilationResult->Release();
@@ -411,7 +411,7 @@ namespace Volt::RHI
 			sourcePtr->Release();
 			compilationResult->Release();
 
-			VT_LOG(LogSeverity::Error, "[D3D12ShaderCompiler]: " + error);
+			VT_LOG(LogVerbosity::Error, "[D3D12ShaderCompiler]: " + error);
 			return CompilationResult::Failure;
 		}
 
@@ -427,11 +427,11 @@ namespace Volt::RHI
 		{
 			if (!reflectionData.at(stage))
 			{
-				VT_LOGC(LogSeverity::Warning, "[D3D12ShaderCompiler]", "No reflection data availiable for shader {}!", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
+				VT_LOGC(LogVerbosity::Warning, LogD3D12RHI, "No reflection data availiable for shader {}!", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
 				continue;
 			}
 
-			VT_LOGC(LogSeverity::Trace, "[D3D12ShaderCompiler]", "Reflecting shader {0}", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
+			VT_LOGC(LogVerbosity::Trace, LogD3D12RHI, "Reflecting shader {0}", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
 			ReflectStage(stage, specification, inOutData, reflectionData.at(stage));
 		}
 	}
@@ -454,7 +454,7 @@ namespace Volt::RHI
 
 			if (name == "$Globals")
 			{
-				VT_LOGC(LogSeverity::Error, "[D3D12ShaderCompiler]", "Shader {0} seems to have incorrectly defined global variables!", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
+				VT_LOGC(LogVerbosity::Error, LogD3D12RHI, "Shader {0} seems to have incorrectly defined global variables!", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
 				continue;
 			}
 

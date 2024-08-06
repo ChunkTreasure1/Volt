@@ -85,7 +85,7 @@ namespace Volt::RHI
 
 		if (handle >= m_resources.size())
 		{
-			VT_LOGC(LogSeverity::Warning, "ResourceRegistry","Resource with handle {0} is not valid!", handle.Get());
+			VT_LOGC(LogVerbosity::Warning, LogRHI, "Resource with handle {0} is not valid!", handle.Get());
 			return;
 		}
 
