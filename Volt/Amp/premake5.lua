@@ -29,12 +29,8 @@ project "Amp"
 	includedirs
 	{
 		"src/",
-		"../Volt/src",
 		"../LogModule/src",
 
-		"%{IncludeDir.yaml}",
-		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.fmod}",
 		"%{IncludeDir.wwise}"
 	}

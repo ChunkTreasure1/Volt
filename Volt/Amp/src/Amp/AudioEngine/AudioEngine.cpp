@@ -4,9 +4,7 @@
 #include "AudioEngine.h"
 #include "fmod_errors.h"
 
-#include <Volt/Core/Profiling.h>
-
-#include <Volt/Utility/StringUtility.h>
+#include <CoreUtilities/StringUtility.h>
 
 const float DISTANCEFACTOR = 100.0f;
 

@@ -19,6 +19,4 @@
 
 #include <glm/glm.hpp>
 
-#include <yaml-cpp/yaml.h>
-
 #include <LogModule/Log.h>

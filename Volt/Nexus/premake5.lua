@@ -31,12 +31,6 @@ project "Nexus"
 		"src/",
 		"../Volt/src",
 		"../LogModule/src",
-
-		"%{IncludeDir.yaml}",
-		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.fmod}",
-		"%{IncludeDir.entt}",
 	}
 
 	defines

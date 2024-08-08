@@ -1,7 +1,8 @@
 #include "amppch.h"
 #include "AudioManager.h"
 
-#include <Volt/Core/Profiling.h>
+#include "Amp/Config.h"
+
 namespace Amp
 {
 	void AudioManager::Init(InitInsturct aSetUpInstruction)
