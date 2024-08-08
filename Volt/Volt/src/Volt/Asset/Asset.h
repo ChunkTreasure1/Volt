@@ -44,7 +44,6 @@ namespace Volt
 		Prefab,
 		Font,
 		PhysicsMaterial,
-		Video,
 		BlendSpace,
 		NavMesh,
 		MonoScript,
@@ -111,8 +110,6 @@ namespace Volt
 		{ ".vtpp", AssetType::ParticlePreset },
 		{ ".ttf", AssetType::Font },
 
-		{ ".mp4", AssetType::Video },
-
 		{ ".cs", AssetType::MonoScript },
 		{ ".vtbt", AssetType::BehaviorGraph},
 		{ ".vtblend", AssetType::BlendSpace },
@@ -145,7 +142,6 @@ namespace Volt
 		{ "Prefab", AssetType::Prefab },
 		{ "Particle Preset", AssetType::ParticlePreset },
 		{ "Font", AssetType::Font },
-		{ "Video", AssetType::Video },
 
 		{ "Mono Script", AssetType::MonoScript },
 		{ "Behavior Graph", AssetType::BehaviorGraph},

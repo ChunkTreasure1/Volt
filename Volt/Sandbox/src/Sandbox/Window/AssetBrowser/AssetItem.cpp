@@ -144,8 +144,6 @@ namespace AssetBrowser
 					break;
 				case Volt::AssetType::PhysicsMaterial:
 					break;
-				case Volt::AssetType::Video:
-					break;
 				case Volt::AssetType::NavMesh:
 					break;
 				case Volt::AssetType::MonoScript:

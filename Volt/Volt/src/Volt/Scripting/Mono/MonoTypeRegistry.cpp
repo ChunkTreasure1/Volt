@@ -57,7 +57,6 @@ namespace Volt
 		RegisterMonoType<AssetHandle, AssetType::Material>("Volt.Material", s_monoToNativeTypeMap);
 		RegisterMonoType<AssetHandle, AssetType::Texture>("Volt.Texture", s_monoToNativeTypeMap);
 		RegisterMonoType<AssetHandle, AssetType::PostProcessingMaterial>("Volt.PostProcessingMaterial", s_monoToNativeTypeMap);
-		RegisterMonoType<AssetHandle, AssetType::Video>("Volt.Video", s_monoToNativeTypeMap);
 	}
 
 	const MonoTypeInfo& MonoTypeRegistry::GetTypeInfo(std::string_view monoTypeName)

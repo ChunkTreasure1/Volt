@@ -39,7 +39,6 @@
 #include "Volt/Asset/Prefab.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
 #include "Volt/Asset/Animation/Animation.h"
-#include "Volt/Asset/Video/Video.h"
 
 #include "Volt/Steam/SteamImplementation.h"
 
@@ -4957,85 +4956,6 @@ namespace Volt
 	}
 #pragma endregion Renderer
 
-#pragma region VideoPlayer
-	inline static void VideoPlayer_Play(uint64_t assetHandle, bool loop)
-	{
-		Ref<Video> video = AssetManager::GetAsset<Video>(assetHandle);
-		if (!video || !video->IsValid())
-		{
-			return;
-		}
-
-		video->Play(loop);
-	}
-
-	inline static void VideoPlayer_Stop(uint64_t assetHandle)
-	{
-		Ref<Video> video = AssetManager::GetAsset<Video>(assetHandle);
-		if (!video || !video->IsValid())
-		{
-			return;
-		}
-
-		video->Stop();
-	}
-
-	inline static void VideoPlayer_Restart(uint64_t assetHandle)
-	{
-		Ref<Video> video = AssetManager::GetAsset<Video>(assetHandle);
-		if (!video || !video->IsValid())
-		{
-			return;
-		}
-
-		video->Restart();
-	}
-
-	inline static void VideoPlayer_Pause(uint64_t assetHandle)
-	{
-		Ref<Video> video = AssetManager::GetAsset<Video>(assetHandle);
-		if (!video || !video->IsValid())
-		{
-			return;
-		}
-
-		video->Pause();
-	}
-
-	inline static void VideoPlayer_Update(uint64_t assetHandle, float deltaTime)
-	{
-		Ref<Video> video = AssetManager::GetAsset<Video>(assetHandle);
-		if (!video || !video->IsValid())
-		{
-			return;
-		}
-
-		video->Update(deltaTime);
-	}
-
-	inline static void VideoPlayer_DrawSpriteTexture(uint64_t videoHandle, glm::vec3* position, glm::vec2* scale, float rotation, glm::vec4* color, glm::vec2* offset)
-	{
-		Ref<Video> video = AssetManager::GetAsset<Video>(videoHandle);
-		if (!video || !video->IsValid())
-		{
-			return;
-		}
-
-		UIRenderer::DrawSprite(video->GetImage(), *position, *scale, rotation, *color, *offset);
-	}
-
-	inline static VideoStatus VideoPlayer_GetStatus(uint64_t videoHandle)
-	{
-		Ref<Video> video = AssetManager::GetAsset<Video>(videoHandle);
-		if (!video || !video->IsValid())
-		{
-			return VideoStatus::Stopped;
-		}
-
-		return video->GetStatus();
-	}
-#pragma endregion
-
 	void MonoScriptGlue::RegisterFunctions()
 	{
 		//VoltApplication
@@ -5596,17 +5516,6 @@ namespace Volt
 		{
 			VT_ADD_INTERNAL_CALL(Renderer_SetRenderScale);
 			VT_ADD_INTERNAL_CALL(Renderer_SetRendererSettings);
-		}
-
-		// Video Player
-		{
-			VT_ADD_INTERNAL_CALL(VideoPlayer_Play);
-			VT_ADD_INTERNAL_CALL(VideoPlayer_Stop);
-			VT_ADD_INTERNAL_CALL(VideoPlayer_Restart);
-			VT_ADD_INTERNAL_CALL(VideoPlayer_Pause);
-			VT_ADD_INTERNAL_CALL(VideoPlayer_Update);
-			VT_ADD_INTERNAL_CALL(VideoPlayer_DrawSpriteTexture);
-			VT_ADD_INTERNAL_CALL(VideoPlayer_GetStatus);
 		}
 	}
 }

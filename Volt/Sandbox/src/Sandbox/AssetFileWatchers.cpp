@@ -57,7 +57,6 @@ void Sandbox::CreateModifiedWatch()
 			switch (assetType)
 			{
 				case Volt::AssetType::Mesh:
-				case Volt::AssetType::Video:
 				case Volt::AssetType::Prefab:
 				case Volt::AssetType::Material:
 				case Volt::AssetType::Texture:

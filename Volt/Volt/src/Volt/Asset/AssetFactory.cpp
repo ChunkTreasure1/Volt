@@ -12,7 +12,6 @@
 #include "Volt/Asset/ParticlePreset.h"
 #include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Prefab.h"
-#include "Volt/Asset/Video/Video.h"
 #include "Volt/Asset/TimelinePreset.h"
 #include "Volt/Asset/TextureSource.h"
 
@@ -51,7 +50,6 @@ namespace Volt
 		RegisterCreateFunction<Prefab>(AssetType::Prefab, m_assetFactoryFunctions);
 		RegisterCreateFunction<Font>(AssetType::Font, m_assetFactoryFunctions);
 		RegisterCreateFunction<PhysicsMaterial>(AssetType::PhysicsMaterial, m_assetFactoryFunctions);
-		RegisterCreateFunction<Video>(AssetType::Video, m_assetFactoryFunctions);
 		RegisterCreateFunction<BlendSpace>(AssetType::BlendSpace, m_assetFactoryFunctions);
 		RegisterCreateFunction<AI::NavMesh>(AssetType::NavMesh, m_assetFactoryFunctions);
 		RegisterCreateFunction<BehaviorTree::Tree>(AssetType::BehaviorGraph, m_assetFactoryFunctions);

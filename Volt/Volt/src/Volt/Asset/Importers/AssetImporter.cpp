@@ -4,7 +4,6 @@
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Importers/TextureImporter.h"
 #include "Volt/Asset/Text/Font.h"
-#include "Volt/Asset/Video/Video.h"
 
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
 
@@ -444,27 +443,6 @@ namespace Volt
 		streamWriter.EndMap();
 
 		streamWriter.WriteToDisk();
-	}
-
-	bool VideoImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
-	{
-		asset = CreateRef<Video>();
-		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
-
-		if (!std::filesystem::exists(filePath))
-		{
-			VT_LOG(LogVerbosity::Error, "File {0} not found!", metadata.filePath);
-			asset->SetFlag(AssetFlag::Missing, true);
-			return false;
-		}
-
-		asset = CreateRef<Video>();
-		std::reinterpret_pointer_cast<Video>(asset)->Initialize(filePath);
-		return true;
-	}
-
-	void VideoImporter::Save(const AssetMetadata&, const Ref<Asset>&) const
-	{
 	}
 
 	bool BlendSpaceImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const

@@ -109,21 +109,6 @@ namespace Volt
 		REGISTER_COMPONENT(TextRendererComponent);
 	};
 
-	struct VideoPlayerComponent
-	{
-		AssetHandle video = Asset::Null();
-		AssetHandle lastVideo = Asset::Null();
-
-		static void ReflectType(TypeDesc<VideoPlayerComponent>& reflect)
-		{
-			reflect.SetGUID("{15F85B2A-F8B2-48E1-8841-3BA946FFD172}"_guid);
-			reflect.SetLabel("Video Player Component");
-			reflect.AddMember(&VideoPlayerComponent::video, "video", "Video", "", Asset::Null(), AssetType::Video);
-		}
-
-		REGISTER_COMPONENT(VideoPlayerComponent);
-	};
-
 	struct SpriteComponent
 	{
 		AssetHandle materialHandle = Asset::Null();
