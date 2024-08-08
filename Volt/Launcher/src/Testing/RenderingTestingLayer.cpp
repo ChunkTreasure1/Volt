@@ -55,7 +55,7 @@ bool RenderingTestingLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 	{
 		if (!test->RunTest())
 		{
-			VT_LOG(LogVerbosity::Error, "Test {} failed!", test->GetName());
+			VT_LOG(Error, "Test {} failed!", test->GetName());
 		}
 	}
 

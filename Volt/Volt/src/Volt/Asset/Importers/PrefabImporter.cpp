@@ -33,7 +33,7 @@ namespace Volt
 		YAMLFileStreamReader streamReader{};
 		if (!streamReader.OpenFile(filePath))
 		{
-			VT_LOG(LogVerbosity::Error, "Failed to open file {0}!", metadata.filePath);
+			VT_LOG(Error, "Failed to open file {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}

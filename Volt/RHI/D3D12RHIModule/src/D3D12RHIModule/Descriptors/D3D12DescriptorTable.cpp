@@ -185,7 +185,7 @@ namespace Volt::RHI
 	{
 		if (!m_allocatedDescriptorPointers[set].contains(binding))
 		{
-			VT_LOGC(LogVerbosity::Warning, LogD3D12RHI, "Trying to assign image view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
+			VT_LOGC(Warning, LogD3D12RHI, "Trying to assign image view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
 			return;
 		}
 
@@ -196,7 +196,7 @@ namespace Volt::RHI
 
 		if (!EnumValueContainsFlag(d3d12View.GetD3D12ViewType(), descriptorInfo.viewType))
 		{
-			VT_LOGC(LogVerbosity::Error, LogD3D12RHI, "Image View does not support the required D3D12 view type!");
+			VT_LOGC(Error, LogD3D12RHI, "Image View does not support the required D3D12 view type!");
 			return;
 		}
 
@@ -220,7 +220,7 @@ namespace Volt::RHI
 	{
 		if (!m_allocatedDescriptorPointers[set].contains(binding))
 		{
-			VT_LOGC(LogVerbosity::Warning, LogD3D12RHI, "Trying to assign buffer view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
+			VT_LOGC(Warning, LogD3D12RHI, "Trying to assign buffer view at set {0} and binding {1}. But that is not a valid binding!", set, binding);
 			return;
 		}
 
@@ -231,7 +231,7 @@ namespace Volt::RHI
 
 		if (!EnumValueContainsFlag(d3d12View.GetD3D12ViewType(), descriptorInfo.viewType))
 		{
-			VT_LOGC(LogVerbosity::Error, LogD3D12RHI, "Buffer View does not support the required D3D12 view type!");
+			VT_LOGC(Error, LogD3D12RHI, "Buffer View does not support the required D3D12 view type!");
 			return;
 		}
 
@@ -255,7 +255,7 @@ namespace Volt::RHI
 	{
 		if (!m_allocatedDescriptorPointers[set].contains(binding))
 		{
-			VT_LOGC(LogVerbosity::Warning, LogD3D12RHI, "Trying to assign sampler state at set {0} and binding {1}. But that is not a valid binding!", set, binding);
+			VT_LOGC(Warning, LogD3D12RHI, "Trying to assign sampler state at set {0} and binding {1}. But that is not a valid binding!", set, binding);
 			return;
 		}
 

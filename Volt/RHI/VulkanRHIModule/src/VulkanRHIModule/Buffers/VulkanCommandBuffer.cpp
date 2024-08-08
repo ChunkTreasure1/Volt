@@ -778,7 +778,7 @@ namespace Volt::RHI
 #ifndef VT_DIST
 		if (!m_currentRenderPipeline && !m_currentComputePipeline)
 		{
-			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Unable to push constants as no pipeline is currently bound!");
+			VT_LOGC(Error, LogVulkanRHI, "Unable to push constants as no pipeline is currently bound!");
 		}
 #endif
 

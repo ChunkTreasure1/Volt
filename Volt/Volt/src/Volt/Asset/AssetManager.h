@@ -205,7 +205,7 @@ namespace Volt
 			const auto& metadata = GetMetadataFromHandle(assetHandle);
 			if (!metadata.IsValid())
 			{
-				VT_LOG(LogVerbosity::Error, "[AssetManager] Trying to load asset which has invalid metadata!");
+				VT_LOG(Error, "[AssetManager] Trying to load asset which has invalid metadata!");
 				return nullptr;
 			}
 		}
@@ -213,7 +213,7 @@ namespace Volt
 		Ref<Asset> asset = CreateRef<T>();
 		if (!ValidateAssetType(assetHandle, asset))
 		{
-			VT_LOG(LogVerbosity::Critical, "[AssetManager] Asset type does not match!");
+			VT_LOG(Critical, "[AssetManager] Asset type does not match!");
 			return nullptr;
 		}
 
@@ -240,7 +240,7 @@ namespace Volt
 			const auto& metadata = GetMetadataFromHandle(assetHandle);
 			if (!metadata.IsValid())
 			{
-				VT_LOG(LogVerbosity::Error, "[AssetManager] Trying to load asset which has invalid metadata!");
+				VT_LOG(Error, "[AssetManager] Trying to load asset which has invalid metadata!");
 				return nullptr;
 			}
 		}
@@ -276,7 +276,7 @@ namespace Volt
 			const auto& metadata = GetMetadataFromHandle(handle);
 			if (!metadata.IsValid())
 			{
-				VT_LOG(LogVerbosity::Error, "[AssetManager] Trying to load asset which has invalid metadata!");
+				VT_LOG(Error, "[AssetManager] Trying to load asset which has invalid metadata!");
 				return nullptr;
 			}
 		}
@@ -298,7 +298,7 @@ namespace Volt
 		Ref<Asset> asset = CreateRef<T>();
 		if (!ValidateAssetType(handle, asset))
 		{
-			VT_LOG(LogVerbosity::Critical, "[AssetManager] Asset type does not match!");
+			VT_LOG(Critical, "[AssetManager] Asset type does not match!");
 			return nullptr;
 		}
 

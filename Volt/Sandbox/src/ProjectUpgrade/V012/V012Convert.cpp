@@ -108,7 +108,7 @@ namespace V012
 				std::ifstream input(animGraphPath);
 				if (!input.is_open())
 				{
-					VT_LOG(LogVerbosity::Error, "Failed to convert: File {0} not found!", animGraphPath);
+					VT_LOG(Error, "Failed to convert: File {0} not found!", animGraphPath);
 					continue;
 				}
 
@@ -191,7 +191,7 @@ namespace V012
 				std::ofstream output(animGraphPath);
 				if (!output.is_open())
 				{
-					VT_LOG(LogVerbosity::Error, "Failed to convert: File {0} not found!", animGraphPath);
+					VT_LOG(Error, "Failed to convert: File {0} not found!", animGraphPath);
 					continue;
 				}
 
@@ -235,7 +235,7 @@ namespace V012
 			std::ifstream input(layer);
 			if (!input.is_open())
 			{
-				VT_LOG(LogVerbosity::Error, "Failed to convert: File {0} not found!", layer);
+				VT_LOG(Error, "Failed to convert: File {0} not found!", layer);
 				continue;
 			}
 
@@ -296,7 +296,7 @@ namespace V012
 				std::ofstream output(layer);
 				if (!output.is_open())
 				{
-					VT_LOG(LogVerbosity::Error, "Failed to convert: File {0} not found!", layer);
+					VT_LOG(Error, "Failed to convert: File {0} not found!", layer);
 					continue;
 				}
 
@@ -311,7 +311,7 @@ namespace V012
 			std::ifstream input(prefab);
 			if (!input.is_open())
 			{
-				VT_LOG(LogVerbosity::Error, "Failed to convert: File {0} not found!", prefab);
+				VT_LOG(Error, "Failed to convert: File {0} not found!", prefab);
 				continue;
 			}
 
@@ -370,7 +370,7 @@ namespace V012
 				std::ofstream output(prefab);
 				if (!output.is_open())
 				{
-					VT_LOG(LogVerbosity::Error, "Failed to convert: File {0} not found!", prefab);
+					VT_LOG(Error, "Failed to convert: File {0} not found!", prefab);
 					continue;
 				}
 

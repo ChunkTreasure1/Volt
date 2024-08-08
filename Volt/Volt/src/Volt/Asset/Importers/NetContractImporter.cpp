@@ -14,7 +14,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_LOG(LogVerbosity::Error, "File {0} not found!", metadata.filePath);
+			VT_LOG(Error, "File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -22,7 +22,7 @@ namespace Volt
 		std::ifstream file(filePath);
 		if (!file.is_open())
 		{
-			VT_LOG(LogVerbosity::Error, "Failed to open file: {0}!", metadata.filePath);
+			VT_LOG(Error, "Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}

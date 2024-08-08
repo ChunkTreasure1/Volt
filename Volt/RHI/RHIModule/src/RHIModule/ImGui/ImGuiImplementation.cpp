@@ -36,12 +36,12 @@ namespace Volt::RHI
 
 		if (!std::filesystem::exists(userIniPath))
 		{
-			VT_LOGC(LogVerbosity::Warning, LogRHI, "User ini file not found! Copying default!");
+			VT_LOGC(Warning, LogRHI, "User ini file not found! Copying default!");
 
 			std::filesystem::create_directories(userIniPath.parent_path());
 			if (!std::filesystem::exists(defaultIniPath))
 			{
-				VT_LOGC(LogVerbosity::Error, LogRHI, "Unable to find default ini file!");
+				VT_LOGC(Error, LogRHI, "Unable to find default ini file!");
 				return "imgui.ini";
 			}
 			std::filesystem::copy(defaultIniPath, userIniPath.parent_path());

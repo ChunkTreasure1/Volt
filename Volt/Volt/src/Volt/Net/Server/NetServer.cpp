@@ -235,7 +235,7 @@ namespace Volt
 		auto repEnt = m_registry.GetAs<RepEntity>(repId);
 		if (!repEnt)
 		{
-			VT_LOG(LogVerbosity::Error, "Failed to destroy net ent, Server");
+			VT_LOG(Error, "Failed to destroy net ent, Server");
 			return;
 		}
 		// find connected variables
@@ -263,7 +263,7 @@ namespace Volt
 		auto gameMode = SceneManager::GetActiveScene()->GetAllEntitiesWith<GameModeComponent>();
 		if (gameMode.size() != 1)
 		{
-			VT_LOG(LogVerbosity::Critical, "Something went wrong with GameModeComponent. Make sure there is only one in the scene");
+			VT_LOG(Critical, "Something went wrong with GameModeComponent. Make sure there is only one in the scene");
 			return;
 		}
 		auto gameModeEnt = gameMode[0];
@@ -387,7 +387,7 @@ namespace Volt
 		auto gameMode = SceneManager::GetActiveScene()->GetAllEntitiesWith<GameModeComponent>();
 		if (gameMode.size() != 1)
 		{
-			VT_LOG(LogVerbosity::Critical, "Something went wrong with GameModeComponent. Make sure there is only one in the scene");
+			VT_LOG(Critical, "Something went wrong with GameModeComponent. Make sure there is only one in the scene");
 			return;
 		}
 		auto handle = gameMode[0].GetComponent<GameModeComponent>().enemy;

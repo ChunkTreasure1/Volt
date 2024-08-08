@@ -186,7 +186,7 @@ namespace Volt
 
 				if (!physicsScene)
 				{
-					VT_LOG(LogVerbosity::Error, "No valid physics scene found!");
+					VT_LOG(Error, "No valid physics scene found!");
 				}
 				else
 				{
@@ -199,7 +199,7 @@ namespace Volt
 					}
 					else
 					{
-						VT_LOG(LogVerbosity::Error, "No valid actor controller found for entity {0}!", entity.GetID());
+						VT_LOG(Error, "No valid actor controller found for entity {0}!", entity.GetID());
 					}
 				}
 			}
@@ -221,7 +221,7 @@ namespace Volt
 				auto& crowd = myNavMesh->GetCrowd();
 				if (!myActiveScene)
 				{
-					VT_LOG(LogVerbosity::Error, "Could not initialize agents because active scene is null");
+					VT_LOG(Error, "Could not initialize agents because active scene is null");
 					return;
 				}
 

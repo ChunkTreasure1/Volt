@@ -70,7 +70,7 @@ namespace Volt::RHI
 	VulkanShaderCompiler::VulkanShaderCompiler(const ShaderCompilerCreateInfo& createInfo)
 		: m_includeDirectories(createInfo.includeDirectories), m_macros(createInfo.initialMacros), m_flags(createInfo.flags)
 	{
-		VT_LOGC(LogVerbosity::Trace, LogVulkanRHI, "Initializing VulkanShaderCompiler");
+		VT_LOGC(Trace, LogVulkanRHI, "Initializing VulkanShaderCompiler");
 		DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&m_hlslCompiler));
 		DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&m_hlslUtils));
 	}
@@ -80,7 +80,7 @@ namespace Volt::RHI
 		m_hlslUtils->Release();
 		m_hlslCompiler->Release();
 
-		VT_LOGC(LogVerbosity::Trace, LogVulkanRHI, "Destroying VulkanShaderCompiler");
+		VT_LOGC(Trace, LogVulkanRHI, "Destroying VulkanShaderCompiler");
 	}
 
 	ShaderCompiler::CompilationResultData VulkanShaderCompiler::TryCompileImpl(const Specification& specification)
@@ -97,7 +97,7 @@ namespace Volt::RHI
 
 		if (specification.shaderSourceInfo.empty())
 		{
-			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Trying to compile a shader without sources!");
+			VT_LOGC(Error, LogVulkanRHI, "Trying to compile a shader without sources!");
 			return {};
 		}
 
@@ -245,7 +245,7 @@ namespace Volt::RHI
 				{
 					if (!result.renderGraphConstants.uniforms.contains(name) || uniform.type != result.renderGraphConstants.uniforms.at(name).type)
 					{
-						VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "All shader stages must have equal constant struct definition!");
+						VT_LOGC(Error, LogVulkanRHI, "All shader stages must have equal constant struct definition!");
 					}
 				}
 			}
@@ -283,7 +283,7 @@ namespace Volt::RHI
 				error = std::format("Failed to compile. Error: {}\n", result);
 				error.append(std::format("{0}\nWhile compiling shader file: {1}", Utility::GetErrorStringFromResult(compilationResult), sourceEntry.filePath.string()));
 
-				VT_LOGC(LogVerbosity::Error, LogVulkanRHI, error);
+				VT_LOGC(Error, LogVulkanRHI, error);
 
 				sourcePtr->Release();
 				compilationResult->Release();
@@ -303,7 +303,7 @@ namespace Volt::RHI
 			sourcePtr->Release();
 			compilationResult->Release();
 
-			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, error);
+			VT_LOGC(Error, LogVulkanRHI, error);
 			return CompilationResult::Failure;
 		}
 
@@ -317,7 +317,7 @@ namespace Volt::RHI
 	{
 		for (const auto& [stage, data] : inOutData.shaderData)
 		{
-			VT_LOGC(LogVerbosity::Trace, LogVulkanRHI, "Reflecting shader {0}", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
+			VT_LOGC(Trace, LogVulkanRHI, "Reflecting shader {0}", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
 			ReflectStage(stage, specification, inOutData);
 		}
 	}
@@ -345,7 +345,7 @@ namespace Volt::RHI
 
 			if (name == "$Globals")
 			{
-				VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Shader {0} seems to have incorrectly defined global variables!", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
+				VT_LOGC(Error, LogVulkanRHI, "Shader {0} seems to have incorrectly defined global variables!", specification.shaderSourceInfo.at(stage).sourceEntry.filePath.string());
 				continue;
 			}
 
@@ -581,7 +581,7 @@ namespace Volt::RHI
 		}
 		else
 		{
-			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, error);
+			VT_LOGC(Error, LogVulkanRHI, error);
 		}
 
 		sourcePtr->Release();

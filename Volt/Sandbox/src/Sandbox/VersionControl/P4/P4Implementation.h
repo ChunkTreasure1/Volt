@@ -11,7 +11,7 @@
 					{ \
 						StrBuf msg; \
 						e.Fmt(&msg); \
-						VT_LOG(LogVerbosity::Error, "VCS: {0}", msg.Text()); \
+						VT_LOG(Error, "VCS: {0}", msg.Text()); \
 						VT_ASSERT(false); \
 					} \
 

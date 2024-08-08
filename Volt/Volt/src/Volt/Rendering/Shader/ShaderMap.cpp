@@ -157,7 +157,7 @@ namespace Volt
 
 		ScopedTimer timer{};
 
-		VT_LOG(LogVerbosity::Info, "[ShaderMap]: Starting shader import!");
+		VT_LOG(Info, "[ShaderMap]: Starting shader import!");
 
 		for (const auto& searchPath : searchPaths)
 		{
@@ -251,7 +251,7 @@ namespace Volt
 			future.wait();
 		}
 
-		VT_LOG(LogVerbosity::Info, "[ShaderMap]: Shader import finished in {0} seconds!", timer.GetTime<Time::Seconds>());
+		VT_LOG(Info, "[ShaderMap]: Shader import finished in {0} seconds!", timer.GetTime<Time::Seconds>());
 	}
 
 	Vector<std::filesystem::path> ShaderMap::FindShaderIncludes(const std::filesystem::path& filePath)

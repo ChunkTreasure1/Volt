@@ -131,7 +131,7 @@ namespace Volt::RHI
 			}
 			else
 			{
-				VT_LOGC(LogVerbosity::Error, LogRender, "Unable to read shader at location: {}!", path.string());
+				VT_LOGC(Error, LogRender, "Unable to read shader at location: {}!", path.string());
 			}
 
 			in.close();

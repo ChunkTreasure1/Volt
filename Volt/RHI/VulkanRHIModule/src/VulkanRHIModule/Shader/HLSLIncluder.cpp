@@ -45,7 +45,7 @@ namespace Volt::RHI
 
 		if (!inStream)
 		{
-			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, std::format("Failed to read file {0}!", filepath.string()));
+			VT_LOGC(Error, LogVulkanRHI, std::format("Failed to read file {0}!", filepath.string()));
 			return S_FALSE;
 		}
 

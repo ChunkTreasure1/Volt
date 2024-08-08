@@ -25,7 +25,7 @@ namespace Volt
 {
 	inline static void GLFWErrorCallback(int error, const char* description)
 	{
-		VT_LOG(LogVerbosity::Error, "GLFW Error ({0}): {1}", error, description);
+		VT_LOG(Error, "GLFW Error ({0}): {1}", error, description);
 	}
 
 	Window::Window(const WindowProperties& aProperties)
@@ -141,7 +141,7 @@ namespace Volt
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			if (!data.eventCallback)
 			{
-				VT_LOG(LogVerbosity::Warning, "Window does not have a callback assigned! Skipping event!");
+				VT_LOG(Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -160,7 +160,7 @@ namespace Volt
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			if (!data.eventCallback)
 			{
-				VT_LOG(LogVerbosity::Warning, "Window does not have a callback assigned! Skipping event!");
+				VT_LOG(Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -175,7 +175,7 @@ namespace Volt
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 				if (!data.eventCallback)
 				{
-					VT_LOG(LogVerbosity::Warning, "Window does not have a callback assigned! Skipping event!");
+					VT_LOG(Warning, "Window does not have a callback assigned! Skipping event!");
 					return;
 				}
 
@@ -192,7 +192,7 @@ namespace Volt
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			if (!data.eventCallback)
 			{
-				VT_LOG(LogVerbosity::Warning, "Window does not have a callback assigned! Skipping event!");
+				VT_LOG(Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -231,7 +231,7 @@ namespace Volt
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			if (!data.eventCallback)
 			{
-				VT_LOG(LogVerbosity::Warning, "Window does not have a callback assigned! Skipping event!");
+				VT_LOG(Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -244,7 +244,7 @@ namespace Volt
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			if (!data.eventCallback)
 			{
-				VT_LOG(LogVerbosity::Warning, "Window does not have a callback assigned! Skipping event!");
+				VT_LOG(Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -270,7 +270,7 @@ namespace Volt
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			if (!data.eventCallback)
 			{
-				VT_LOG(LogVerbosity::Warning, "Window does not have a callback assigned! Skipping event!");
+				VT_LOG(Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -283,7 +283,7 @@ namespace Volt
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			if (!data.eventCallback)
 			{
-				VT_LOG(LogVerbosity::Warning, "Window does not have a callback assigned! Skipping event!");
+				VT_LOG(Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -297,7 +297,7 @@ namespace Volt
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			if (!data.eventCallback)
 			{
-				VT_LOG(LogVerbosity::Warning, "Window does not have a callback assigned! Skipping event!");
+				VT_LOG(Warning, "Window does not have a callback assigned! Skipping event!");
 				return;
 			}
 
@@ -575,7 +575,7 @@ namespace Volt
 			glfwIsInitialized = true;
 			if (!glfwInit())
 			{
-				VT_LOG(LogVerbosity::Error, "Failed to initialize GLFW!");
+				VT_LOG(Error, "Failed to initialize GLFW!");
 			}
 
 			glfwSetErrorCallback(GLFWErrorCallback);

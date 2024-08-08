@@ -178,5 +178,5 @@ namespace Volt
 { \
 HRESULT hr__ = (x); \
 std::string str = __FILE__; \
-if(FAILED(hr__)) {  DxException ex((long)hr__, #x, str,__LINE__); VT_LOGC(LogVerbosity::Error, LogD3D12RHI, ex.ToString()); } } \
+if(FAILED(hr__)) {  DxException ex((long)hr__, #x, str,__LINE__); VT_LOGC(Error, LogD3D12RHI, ex.ToString()); } } \
 

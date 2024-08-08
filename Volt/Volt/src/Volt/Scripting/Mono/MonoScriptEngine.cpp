@@ -80,7 +80,7 @@ namespace Volt
 			if (status != MONO_IMAGE_OK)
 			{
 				const char* errorMessage = mono_image_strerror(status);
-				VT_LOG(LogVerbosity::Error, "[MonoScriptEngine] Failed to load C# assembly {0}", errorMessage);
+				VT_LOG(Error, "[MonoScriptEngine] Failed to load C# assembly {0}", errorMessage);
 				return nullptr;
 			}
 
@@ -93,7 +93,7 @@ namespace Volt
 				{
 					Buffer pdbBuffer = Buffer::ReadFromFile(pdbPath);
 					mono_debug_open_image_from_memory(image, pdbBuffer.As<const mono_byte>(), (int32_t)pdbBuffer.GetSize());
-					VT_LOG(LogVerbosity::Info, "Loaded PDB {}", pdbPath.string());
+					VT_LOG(Info, "Loaded PDB {}", pdbPath.string());
 					pdbBuffer.Release();
 				}
 			}
@@ -119,7 +119,7 @@ namespace Volt
 				const char* namespaceStr = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
 				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
 
-				VT_LOG(LogVerbosity::Info, "[MonoScriptEngine] Type found {0}.{1}!", namespaceStr, name);
+				VT_LOG(Info, "[MonoScriptEngine] Type found {0}.{1}!", namespaceStr, name);
 			}
 		}
 
@@ -175,7 +175,7 @@ namespace Volt
 		bool status = LoadAssembly("Scripts/Volt-ScriptCore.dll");
 		if (!status)
 		{
-			VT_LOG(LogVerbosity::Error, "[MonoScriptEngine] Failed to load Volt-ScriptCore.dll");
+			VT_LOG(Error, "[MonoScriptEngine] Failed to load Volt-ScriptCore.dll");
 			return;
 		}
 
@@ -183,7 +183,7 @@ namespace Volt
 		status = LoadAppAssembly(appPath);
 		if (!status)
 		{
-			VT_LOG(LogVerbosity::Error, "[MonoScriptEngine] Failed to load app assembly");
+			VT_LOG(Error, "[MonoScriptEngine] Failed to load app assembly");
 			return;
 		}
 
@@ -480,7 +480,7 @@ namespace Volt
 		LoadAndCreateCoreMonoClasses(s_monoData->coreData.assembly);
 		LoadAndCreateMonoClasses(s_monoData->appData.assembly);
 
-		VT_LOG(LogVerbosity::Info, "[MonoScriptEngine] C# Assembly has been reloaded!");
+		VT_LOG(Info, "[MonoScriptEngine] C# Assembly has been reloaded!");
 	}
 
 	void MonoScriptEngine::OnAwakeInstance(UUID64 instanceId, EntityID entity, const std::string& fullClassName)
@@ -894,7 +894,7 @@ namespace Volt
 		if (exception)
 		{
 			auto exceptionInfo = Utility::GetExceptionInfo(exception);
-			VT_LOG(LogVerbosity::Error, "{0}: {1}. Source: {2}, Stack Trace: {3}", exceptionInfo.typeName, exceptionInfo.message, exceptionInfo.source, exceptionInfo.stackTrace);
+			VT_LOG(Error, "{0}: {1}. Source: {2}, Stack Trace: {3}", exceptionInfo.typeName, exceptionInfo.message, exceptionInfo.source, exceptionInfo.stackTrace);
 		}
 	}
 
@@ -906,7 +906,7 @@ namespace Volt
 		if (exception)
 		{
 			auto exceptionInfo = Utility::GetExceptionInfo(exception);
-			VT_LOG(LogVerbosity::Error, "{0}: {1}. Source: {2}, Stack Trace: {3}", exceptionInfo.typeName, exceptionInfo.message, exceptionInfo.source, exceptionInfo.stackTrace);
+			VT_LOG(Error, "{0}: {1}. Source: {2}, Stack Trace: {3}", exceptionInfo.typeName, exceptionInfo.message, exceptionInfo.source, exceptionInfo.stackTrace);
 		}
 	}
 
@@ -924,7 +924,7 @@ namespace Volt
 		if (exception)
 		{
 			auto exceptionInfo = Utility::GetExceptionInfo(exception);
-			VT_LOG(LogVerbosity::Error, "{0}: {1}. Source: {2}, Stack Trace: {3}", exceptionInfo.typeName, exceptionInfo.message, exceptionInfo.source, exceptionInfo.stackTrace);
+			VT_LOG(Error, "{0}: {1}. Source: {2}, Stack Trace: {3}", exceptionInfo.typeName, exceptionInfo.message, exceptionInfo.source, exceptionInfo.stackTrace);
 			return nullptr;
 		}
 

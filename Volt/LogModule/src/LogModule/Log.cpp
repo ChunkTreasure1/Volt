@@ -61,31 +61,31 @@ void Log::UnregisterCallback(LogCallbackHandle handle)
 
 void Log::LogMessage(LogVerbosity severity, const std::string& category, const std::string& message)
 {
-	std::string finalString = category.empty() ? "" : "[" + category + "] ";
+	std::string finalString = category.empty() ? "" : "[" + category + "]: ";
 	finalString += message;
 
 	switch (severity)
 	{
 		case LogVerbosity::Trace:
-			m_logger->trace(message);
+			m_logger->trace(finalString);
 			break;
 		case LogVerbosity::Info:
-			m_logger->info(message);
+			m_logger->info(finalString);
 			break;
 		case LogVerbosity::Warning:
-			m_logger->warn(message);
+			m_logger->warn(finalString);
 			break;
 		case LogVerbosity::Error:
-			m_logger->error(message);
+			m_logger->error(finalString);
 			break;
 		case LogVerbosity::Critical:
-			m_logger->critical(message);
+			m_logger->critical(finalString);
 			break;
 	}
 
 	LogCallbackData callbackData{};
 	callbackData.category = category;
-	callbackData.message = message;
+	callbackData.message = finalString;
 	callbackData.severity = severity;
 
 	std::scoped_lock lock{ m_callbackMutex };

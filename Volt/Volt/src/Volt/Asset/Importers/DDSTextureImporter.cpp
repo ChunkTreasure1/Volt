@@ -23,13 +23,13 @@ namespace Volt
 		{
 			switch (code)
 			{
-				case tdl::ErrorFileOpen: VT_LOG(LogVerbosity::Error, "Unable to open texture {0}!", path.string().c_str()); break;
-				case tdl::ErrorRead: VT_LOG(LogVerbosity::Error, "Unable to read texture {0}!", path.string().c_str()); break;
-				case tdl::ErrorMagicWord: VT_LOG(LogVerbosity::Error, "Unable to read magic word in texture {0}!", path.string().c_str()); break;
-				case tdl::ErrorSize: VT_LOG(LogVerbosity::Error, "Size is wrong in texture {0}!", path.string().c_str()); break;
-				case tdl::ErrorVerify: VT_LOG(LogVerbosity::Error, "Unable to verify texture {0}!", path.string().c_str()); break;
-				case tdl::ErrorNotSupported: VT_LOG(LogVerbosity::Error, "Texture type of texture {0} not supported!", path.string().c_str()); break;
-				case tdl::ErrorInvalidData: VT_LOG(LogVerbosity::Error, "Invalid data in texture {0}!", path.string().c_str()); break;
+				case tdl::ErrorFileOpen: VT_LOG(Error, "Unable to open texture {0}!", path.string().c_str()); break;
+				case tdl::ErrorRead: VT_LOG(Error, "Unable to read texture {0}!", path.string().c_str()); break;
+				case tdl::ErrorMagicWord: VT_LOG(Error, "Unable to read magic word in texture {0}!", path.string().c_str()); break;
+				case tdl::ErrorSize: VT_LOG(Error, "Size is wrong in texture {0}!", path.string().c_str()); break;
+				case tdl::ErrorVerify: VT_LOG(Error, "Unable to verify texture {0}!", path.string().c_str()); break;
+				case tdl::ErrorNotSupported: VT_LOG(Error, "Texture type of texture {0} not supported!", path.string().c_str()); break;
+				case tdl::ErrorInvalidData: VT_LOG(Error, "Invalid data in texture {0}!", path.string().c_str()); break;
 			}
 		}
 
@@ -82,7 +82,7 @@ namespace Volt
 
 		if (dds.GetTextureDimension() != tdl::DDSFile::TextureDimension::Texture2D)
 		{
-			VT_LOG(LogVerbosity::Error, "Texture {0} is not 2D!", path.string().c_str());
+			VT_LOG(Error, "Texture {0} is not 2D!", path.string().c_str());
 			return false;
 		}
 

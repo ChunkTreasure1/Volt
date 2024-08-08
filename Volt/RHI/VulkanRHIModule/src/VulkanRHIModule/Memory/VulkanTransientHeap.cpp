@@ -53,7 +53,7 @@ namespace Volt::RHI
 
 		if (blockAlloc.size == 0)
 		{
-			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
+			VT_LOGC(Error, LogVulkanRHI, "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
 			return nullptr;
 		}
 
@@ -101,7 +101,7 @@ namespace Volt::RHI
 
 		if (blockAlloc.size == 0)
 		{
-			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Unable to find available allocation block for image allocation of size {0}!", createInfo.size);
+			VT_LOGC(Error, LogVulkanRHI, "Unable to find available allocation block for image allocation of size {0}!", createInfo.size);
 			return nullptr;
 		}
 
@@ -376,7 +376,7 @@ namespace Volt::RHI
 		int32_t memoryTypeIndex = physicalDevice.GetMemoryTypeIndex(m_memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		if (memoryTypeIndex == -1)
 		{
-			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Unable to find memory type index from bits {0}!", m_memoryRequirements.memoryTypeBits);
+			VT_LOGC(Error, LogVulkanRHI, "Unable to find memory type index from bits {0}!", m_memoryRequirements.memoryTypeBits);
 			return;
 		}
 
@@ -455,7 +455,7 @@ namespace Volt::RHI
 		int32_t memoryTypeIndex = physicalDevice.GetMemoryTypeIndex(m_memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		if (memoryTypeIndex == -1)
 		{
-			VT_LOGC(LogVerbosity::Error, LogVulkanRHI, "Unable to find memory type index from bits {0}!", m_memoryRequirements.memoryTypeBits);
+			VT_LOGC(Error, LogVulkanRHI, "Unable to find memory type index from bits {0}!", m_memoryRequirements.memoryTypeBits);
 			return;
 		}
 

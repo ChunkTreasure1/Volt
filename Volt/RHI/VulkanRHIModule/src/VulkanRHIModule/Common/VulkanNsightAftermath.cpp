@@ -43,7 +43,7 @@ namespace Volt::RHI
 
 			if (status != GFSDK_Aftermath_CrashDump_Status_Finished)
 			{
-				VT_LOGC(LogVerbosity::Error, "[Aftermath]", "Unexpected crash dump status: {0}", static_cast<uint32_t>(status));
+				VT_LOGC(Error, "[Aftermath]", "Unexpected crash dump status: {0}", static_cast<uint32_t>(status));
 			}
 
 			RHIProxy::GetInstance().RequestApplicationClose();

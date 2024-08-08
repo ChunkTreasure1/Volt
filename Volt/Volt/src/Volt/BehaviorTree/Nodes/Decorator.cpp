@@ -61,14 +61,14 @@ namespace Volt::BehaviorTree
 				auto monoElements = ::Utility::SplitStringsByCharacter(m_if, '.');
 				if (monoElements.size() != 3)
 				{
-					VT_LOG(LogVerbosity::Error, "bad decorator function string");
+					VT_LOG(Error, "bad decorator function string");
 					return eNodeStatus::FAILURE;
 				}
 				std::string spaceName = monoElements[0] + "." + monoElements[1];
 
 				if (!MonoScriptEngine::GetRegisteredClasses().contains(spaceName))
 				{
-					VT_LOG(LogVerbosity::Error, "DIN MAMMA");
+					VT_LOG(Error, "DIN MAMMA");
 					return eNodeStatus::FAILURE;
 				}
 
@@ -77,7 +77,7 @@ namespace Volt::BehaviorTree
 				auto monoMethod = monoClass->GetMethod(monoElements[2], 0);
 				if (!monoMethod)
 				{
-					VT_LOG(LogVerbosity::Error, "bad decorator method");
+					VT_LOG(Error, "bad decorator method");
 					return eNodeStatus::FAILURE;
 				}
 				auto scriptsVector = m_tree->GetEntity().GetComponent<MonoScriptComponent>().scriptIds;
@@ -98,11 +98,11 @@ namespace Volt::BehaviorTree
 					}
 				}
 				// Should nvever be reached
-				VT_LOG(LogVerbosity::Error, "Bad Decorator");
+				VT_LOG(Error, "Bad Decorator");
 				return eNodeStatus::FAILURE;
 			} break;
 			default:
-				VT_LOG(LogVerbosity::Error, "Default decorator failure");
+				VT_LOG(Error, "Default decorator failure");
 			}
 
 		}

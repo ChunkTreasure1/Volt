@@ -231,12 +231,12 @@ namespace Volt
 
 			if (!templateFile.is_open())
 			{
-				VT_LOG(LogVerbosity::Warning, std::format("Could not open file: {0}", templateFilePath.filename().string()));
+				VT_LOG(Warning, std::format("Could not open file: {0}", templateFilePath.filename().string()));
 			}
 
 			if (!newFile.is_open())
 			{
-				VT_LOG(LogVerbosity::Warning, std::format("Could not open file: {0}", newFilePath.filename().string()));
+				VT_LOG(Warning, std::format("Could not open file: {0}", newFilePath.filename().string()));
 			}
 
 			// Read the entire content of the template file into a string

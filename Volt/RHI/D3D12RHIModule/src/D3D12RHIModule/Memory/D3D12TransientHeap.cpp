@@ -44,7 +44,7 @@ namespace Volt::RHI
 
 		if (blockAlloc.size == 0)
 		{
-			VT_LOGC(LogVerbosity::Error, LogD3D12RHI, "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
+			VT_LOGC(Error, LogD3D12RHI, "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
 			return nullptr;
 		}
 
@@ -89,7 +89,7 @@ namespace Volt::RHI
 
 		if (blockAlloc.size == 0)
 		{
-			VT_LOGC(LogVerbosity::Error, LogD3D12RHI, "Unable to find available allocation block for image allocation of size {0}!", createInfo.size);
+			VT_LOGC(Error, LogD3D12RHI, "Unable to find available allocation block for image allocation of size {0}!", createInfo.size);
 			return nullptr;
 		}
 

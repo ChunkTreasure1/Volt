@@ -27,7 +27,7 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to set drag of non-dynamic PhysicsActor!");
+			VT_LOG(Warning, "Trying to set drag of non-dynamic PhysicsActor!");
 			return;
 		}
 
@@ -41,7 +41,7 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to set drag of non-dynamic PhysicsActor!");
+			VT_LOG(Warning, "Trying to set drag of non-dynamic PhysicsActor!");
 			return;
 		}
 
@@ -60,7 +60,7 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Static PhysicsActor can't have mass!");
+			VT_LOG(Warning, "Static PhysicsActor can't have mass!");
 			return;
 		}
 		myRigidBodyData.mass = mass;
@@ -75,7 +75,7 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Static PhysicsActor can't be kinematic!");
+			VT_LOG(Warning, "Static PhysicsActor can't be kinematic!");
 			return;
 		}
 		myRigidBodyData.isKinematic = isKinematic;
@@ -103,7 +103,7 @@ namespace Volt
 	{
 		if (!IsKinematic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to set kinematic target for a non-kinematic actor.");
+			VT_LOG(Warning, "Trying to set kinematic target for a non-kinematic actor.");
 			return;
 		}
 
@@ -116,7 +116,7 @@ namespace Volt
 	{
 		if (!IsDynamic() || IsKinematic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to set velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to set velocity of non-dynamic PhysicsActor");
 			return;
 		}
 
@@ -130,7 +130,7 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to set velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to set velocity of non-dynamic PhysicsActor");
 			return;
 		}
 
@@ -144,7 +144,7 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to set velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to set velocity of non-dynamic PhysicsActor");
 			return;
 		}
 
@@ -158,7 +158,7 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to set velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to set velocity of non-dynamic PhysicsActor");
 			return;
 		}
 
@@ -177,7 +177,7 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to get velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to get velocity of non-dynamic PhysicsActor");
 			return glm::vec3(0.f);
 		}
 
@@ -191,7 +191,7 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to get velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to get velocity of non-dynamic PhysicsActor");
 			return glm::vec3(0.f);
 		}
 
@@ -205,7 +205,7 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to get velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to get velocity of non-dynamic PhysicsActor");
 			return 0.f;
 		}
 
@@ -219,7 +219,7 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to get velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to get velocity of non-dynamic PhysicsActor");
 			return 0.f;
 		}
 
@@ -233,7 +233,7 @@ namespace Volt
 	{
 		if (!IsKinematic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to set kinematic target for a non-kinematic actor.");
+			VT_LOG(Warning, "Trying to set kinematic target for a non-kinematic actor.");
 			return glm::vec3(0.0f, 0.0f, 0.0f);
 		}
 
@@ -248,7 +248,7 @@ namespace Volt
 	{
 		if (!IsKinematic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to set kinematic target for a non-kinematic actor.");
+			VT_LOG(Warning, "Trying to set kinematic target for a non-kinematic actor.");
 			return glm::vec3(0.0f, 0.0f, 0.0f);
 		}
 
@@ -311,7 +311,7 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to add force to non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to add force to non-dynamic PhysicsActor");
 			return;
 		}
 
@@ -324,7 +324,7 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_LOG(LogVerbosity::Warning, "Trying to add torque to non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to add torque to non-dynamic PhysicsActor");
 			return;
 		}
 

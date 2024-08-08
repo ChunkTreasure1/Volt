@@ -12,7 +12,7 @@ void VersionControl::Initialize(VersionControlSystem system)
 			break;
 
 		default:
-			VT_LOG(LogVerbosity::Error, "Invalid version control selected!");
+			VT_LOG(Error, "Invalid version control selected!");
 			return;
 			break;
 	}

@@ -80,7 +80,7 @@ namespace Volt
 	{
 		if (index >= (int32_t)m_joints.size())
 		{
-			VT_LOG(LogVerbosity::Error, "Index is greater than joint count!");
+			VT_LOG(Error, "Index is greater than joint count!");
 			return "";
 		}
 

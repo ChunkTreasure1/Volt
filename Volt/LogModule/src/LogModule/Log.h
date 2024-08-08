@@ -75,8 +75,8 @@ private:
 	Vector<CallbackData> m_callbacks;
 };
 
-#define VT_LOGC(severity, category, format, ...) ::Log::LogFormatted(severity, category, format, __VA_ARGS__)
-#define VT_LOG(severity, format, ...) ::Log::LogFormatted(severity, LogTemp, format, __VA_ARGS__)
+#define VT_LOGC(verbosity, category, format, ...) ::Log::LogFormatted(LogVerbosity::verbosity, category, format, __VA_ARGS__)
+#define VT_LOG(verbosity, format, ...) ::Log::LogFormatted(LogVerbosity::verbosity, LogTemp, format, __VA_ARGS__)
 
 // Special formatters
 namespace std

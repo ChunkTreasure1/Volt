@@ -98,7 +98,7 @@ namespace Volt
 	{
 		if (!myAnimations.contains(animationIndex))
 		{
-			VT_LOG(LogVerbosity::Error, "Trying to remove animation event from invalid animation index!");
+			VT_LOG(Error, "Trying to remove animation event from invalid animation index!");
 			return;
 		}
 
@@ -112,7 +112,7 @@ namespace Volt
 	{
 		if (!myAnimations.contains(animationIndex))
 		{
-			VT_LOG(LogVerbosity::Error, "Trying to add animation event to invalid animation index!");
+			VT_LOG(Error, "Trying to add animation event to invalid animation index!");
 			return;
 		}
 

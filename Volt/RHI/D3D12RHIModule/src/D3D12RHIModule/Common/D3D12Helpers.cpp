@@ -56,7 +56,7 @@ namespace Volt::RHI::Utility
 
 		if (resourceShouldBeUnorderedAccess && !Utility::DoFormatSupportUnorderedAccess(result.Format))
 		{
-			VT_LOGC(LogVerbosity::Error, LogD3D12RHI, "Resource description is not valid for unordered access!");
+			VT_LOGC(Error, LogD3D12RHI, "Resource description is not valid for unordered access!");
 		}
 
 		return result;

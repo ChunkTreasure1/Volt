@@ -230,7 +230,7 @@ namespace Volt::RHI
 		const size_t entryPointLocation = processedSource.find(entryPoint);
 		if (entryPointLocation == std::string::npos)
 		{
-			VT_LOGC(LogVerbosity::Error, LogRHI, "Unable to find Entry Point {0} in shader!", entryPoint);
+			VT_LOGC(Error, LogRHI, "Unable to find Entry Point {0} in shader!", entryPoint);
 			return false;
 		}
 
@@ -339,7 +339,7 @@ namespace Volt::RHI
 		const size_t entryPointLocation = processedSource.find(entryPoint);
 		if (entryPointLocation == std::string::npos)
 		{
-			VT_LOGC(LogVerbosity::Error, LogRHI, "Unable to find Entry Point {0} in shader!", entryPoint);
+			VT_LOGC(Error, LogRHI, "Unable to find Entry Point {0} in shader!", entryPoint);
 			return false;
 		}
 
@@ -1026,7 +1026,7 @@ namespace Volt::RHI
 			return PixelFormat::R16G16B16A16_SFLOAT;
 		}
 
-		VT_LOGC(LogVerbosity::Error, LogRHI, "Unable to translate type {0} into any format!", str);
+		VT_LOGC(Error, LogRHI, "Unable to translate type {0} into any format!", str);
 		return PixelFormat::UNDEFINED;
 	}
 
@@ -1271,7 +1271,7 @@ namespace Volt::RHI
 			return PixelFormat::D32_SFLOAT_S8_UINT;
 		}
 
-		VT_LOGC(LogVerbosity::Error, LogRHI, "Unable to translate layout qualifier {0} into any format!", tempStr);
+		VT_LOGC(Error, LogRHI, "Unable to translate layout qualifier {0} into any format!", tempStr);
 		return PixelFormat::UNDEFINED;
 	}
 }

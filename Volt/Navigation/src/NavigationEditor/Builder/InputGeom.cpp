@@ -142,12 +142,12 @@ InputGeom::InputGeom(Ref<Volt::Mesh> asset) :
 	m_chunkyMesh = new rcChunkyTriMesh;
 	if (!m_chunkyMesh)
 	{
-		VT_LOG(LogVerbosity::Error, "buildTiledNavigation: Out of memory 'm_chunkyMesh'.");
+		VT_LOG(Error, "buildTiledNavigation: Out of memory 'm_chunkyMesh'.");
 		return;
 	}
 	if (!rcCreateChunkyTriMesh(getVerts(), getTris(), getTriCount(), 256, m_chunkyMesh))
 	{
-		VT_LOG(LogVerbosity::Error, "buildTiledNavigation: Failed to build chunky mesh.");
+		VT_LOG(Error, "buildTiledNavigation: Failed to build chunky mesh.");
 		return;
 	}
 }

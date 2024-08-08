@@ -45,7 +45,7 @@ namespace Volt::RHI
 
 		if (!inStream)
 		{
-			VT_LOGC(LogVerbosity::Error, LogD3D12RHI, std::format("Failed to read file {0}!", filepath.string()));
+			VT_LOGC(Error, LogD3D12RHI, std::format("Failed to read file {0}!", filepath.string()));
 			return S_FALSE;
 		}
 

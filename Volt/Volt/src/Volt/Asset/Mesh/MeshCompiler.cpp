@@ -16,7 +16,7 @@ namespace Volt
 	{
 		if (!mesh || !mesh->IsValid())
 		{
-			VT_LOG(LogVerbosity::Error, "Mesh is invalid or null!");
+			VT_LOG(Error, "Mesh is invalid or null!");
 			return false;
 		}
 

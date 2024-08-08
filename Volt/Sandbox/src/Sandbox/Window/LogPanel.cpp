@@ -110,11 +110,11 @@ void LogPanel::UpdateMainContent()
 
 				}
 
-				VT_LOG(LogVerbosity::Trace, message);
+				VT_LOG(Trace, message);
 			}
 			else
 			{
-				VT_LOG(LogVerbosity::Trace, "Command {0} not found!", strings[0]);
+				VT_LOG(Trace, "Command {0} not found!", strings[0]);
 			}
 		}
 
