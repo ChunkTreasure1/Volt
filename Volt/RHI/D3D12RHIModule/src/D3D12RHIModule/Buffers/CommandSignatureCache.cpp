@@ -38,7 +38,7 @@ namespace Volt::RHI
 	VT_INLINE size_t GetCommandSignatureHash(const CommandSignatureType type, const uint32_t stride)
 	{
 		size_t result = std::hash<uint8_t>()(static_cast<uint8_t>(type));
-		result = Utility::HashCombine(result, std::hash<uint32_t>()(stride));
+		result = Math::HashCombine(result, std::hash<uint32_t>()(stride));
 		return result;
 	}
 

@@ -75,7 +75,6 @@ project "Launcher"
 		"%{IncludeDir.discord}",
 
 		"%{IncludeDir.entt}",
-		"%{IncludeDir.ffmpeg}",
 
 		"%{IncludeDir.detour}",
 		"%{IncludeDir.detourcrowd}",
@@ -110,14 +109,6 @@ project "Launcher"
 		"%{Library.AkMusicEngine}",
 
 		"%{Library.AkRoomVerbFX}",
-
-		"%{Library.avcodec}",
-		"%{Library.avdevice}",
-		"%{Library.avfilter}",
-		"%{Library.avformat}",
-		"%{Library.avutil}",
-		"%{Library.swresample}",
-		"%{Library.swscale}",
 
 		"%{Library.mono}",
 		"%{Library.steam}",

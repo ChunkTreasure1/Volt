@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Volt/Rendering/RendererStructs.h"
-#include "Volt/Rendering/Resources/BindlessResource.h"
 
 #include "Volt/Scene/Scene.h"
 
+#include "Volt/Rendering/BindlessResource.h"
 #include <RHIModule/Images/SamplerState.h>
 #include <RHIModule/Core/RHICommon.h>
 

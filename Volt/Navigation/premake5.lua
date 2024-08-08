@@ -50,6 +50,7 @@ project "Navigation"
 		"../RHI/RHIModule/src",
 		"../Mosaic/src",
 		"../LogModule/src",
+		"../RenderCoreModule/src",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.spdlog}",

@@ -1,7 +1,8 @@
 #pragma once
 
 #include "RHIModule/Core/RHICommon.h"
-#include "RHIModule/Memory/MemoryUtility.h"
+
+#include <CoreUtilities/Math/Hash.h>
 
 namespace Volt::RHI::Utility
 {
@@ -9,16 +10,16 @@ namespace Volt::RHI::Utility
 	{
 		size_t hash = 0;
 		hash = std::hash<uint32_t>()(spec.width);
-		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(spec.height));
-		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(spec.depth));
-		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(spec.layers));
-		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(spec.mips));
-		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(spec.format)));
-		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(spec.usage)));
-		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(spec.anisoLevel)));
-		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(static_cast<bool>(spec.isCubeMap)));
-		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(memoryUsage)));
-		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(spec.imageType)));
+		hash = Math::HashCombine(hash, std::hash<uint32_t>()(spec.height));
+		hash = Math::HashCombine(hash, std::hash<uint32_t>()(spec.depth));
+		hash = Math::HashCombine(hash, std::hash<uint32_t>()(spec.layers));
+		hash = Math::HashCombine(hash, std::hash<uint32_t>()(spec.mips));
+		hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(spec.format)));
+		hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(spec.usage)));
+		hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(spec.anisoLevel)));
+		hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<bool>(spec.isCubeMap)));
+		hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(memoryUsage)));
+		hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(spec.imageType)));
 
 		return hash;
 	}
@@ -27,8 +28,8 @@ namespace Volt::RHI::Utility
 	{
 		size_t hash = 0;
 		hash = std::hash<size_t>()(size);
-		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(usage)));
-		hash = Utility::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(memoryUsage)));
+		hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(usage)));
+		hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(memoryUsage)));
 
 		return hash;
 	}

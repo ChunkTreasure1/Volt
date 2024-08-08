@@ -27,17 +27,14 @@
 #include "Volt/Asset/Serializers/SourceTextureSerializer.h"
 #include "Volt/Asset/Serializers/TextureSerializer.h"
 #include "Volt/Asset/Serializers/MotionWeaveDatabaseSerializer.h"
-
 #include "Volt/Asset/AssetFactory.h"
-
-#include "Volt/Platform/ThreadUtility.h"
 
 #include "Volt/Net/SceneInteraction/NetContract.h"
 
 #include "Volt/Utility/FileSystem.h"
-
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
+#include <CoreUtilities/ThreadUtilities.h>
 #include <CoreUtilities/Time/ScopedTimer.h>
 
 namespace Volt

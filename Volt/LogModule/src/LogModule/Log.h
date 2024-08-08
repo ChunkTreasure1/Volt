@@ -7,6 +7,7 @@
 
 #include <CoreUtilities/Assert.h>
 #include <CoreUtilities/Containers/Vector.h>
+#include <CoreUtilities/UUID.h>
 
 #include <memory>
 #include <mutex>
@@ -35,6 +36,8 @@ struct LogCallbackData
 	LogVerbosity severity;
 };
 
+typedef UUID32 LogCallbackHandle;
+
 class VTLOG_API Log
 {
 public:
@@ -49,7 +52,8 @@ public:
 	}
 
 	void SetLogOutputFilepath(const std::filesystem::path& path);
-	void AddCallback(const std::function<void(const LogCallbackData& callbackData)>& callback);
+	LogCallbackHandle RegisterCallback(const std::function<void(const LogCallbackData& callbackData)>& callback);
+	void UnregisterCallback(LogCallbackHandle handle);
 
 	VT_NODISCARD VT_INLINE static Log& Get() { return *s_instance; }
 
@@ -61,7 +65,14 @@ private:
 	std::shared_ptr<spdlog::logger> m_logger;
 	std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> m_rotatingFileSink;
 
-	Vector<std::function<void(const LogCallbackData& callbackData)>> m_callbacks;
+	struct CallbackData
+	{
+		std::function<void(const LogCallbackData& callbackData)> callbackFunc;
+		LogCallbackHandle handle;
+	};
+
+	std::mutex m_callbackMutex;
+	Vector<CallbackData> m_callbacks;
 };
 
 #define VT_LOGC(severity, category, format, ...) ::Log::LogFormatted(severity, category, format, __VA_ARGS__)

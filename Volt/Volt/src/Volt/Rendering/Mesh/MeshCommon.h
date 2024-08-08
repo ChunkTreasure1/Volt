@@ -2,6 +2,8 @@
 
 #include "Volt/Math/Math.h"
 
+#include <CoreUtilities/Math/Hash.h>
+
 #include <glm/glm.hpp>
 
 #include <xhash>

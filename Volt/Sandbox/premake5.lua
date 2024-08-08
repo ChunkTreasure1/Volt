@@ -73,6 +73,7 @@ project "Sandbox"
 
 		"../RHI/RHIModule/src",
 		"../LogModule/src",
+		"../RenderCoreModule/src",
 		
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -103,8 +104,6 @@ project "Sandbox"
 		"%{IncludeDir.nlohmann}",
 		"%{IncludeDir.httplib}",
 
-		"%{IncludeDir.ffmpeg}",
-		
 		"%{IncludeDir.detour}",
 		"%{IncludeDir.detourcrowd}",
 		"%{IncludeDir.rcdtdebugutils}",
@@ -149,14 +148,6 @@ project "Sandbox"
 		"%{Library.OpenSSL_SSL}",
 
 		"%{Library.PhysX}",
-
-		"%{Library.avcodec}",
-		"%{Library.avdevice}",
-		"%{Library.avfilter}",
-		"%{Library.avformat}",
-		"%{Library.avutil}",
-		"%{Library.swresample}",
-		"%{Library.swscale}",
 
 		"%{Library.mono}",
 		"%{Library.steam}",

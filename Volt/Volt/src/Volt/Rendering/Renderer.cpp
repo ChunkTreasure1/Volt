@@ -7,15 +7,16 @@
 
 #include "Volt/Project/ProjectManager.h"
 
-#include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/RenderContextUtils.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
-#include "Volt/Rendering/Debug/ShaderRuntimeValidator.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
-#include "Volt/Rendering/Resources/BindlessResourcesManager.h"
 
 #include "Volt/Math/Math.h"
+
+#include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
+#include <RenderCore/Debug/ShaderRuntimeValidator.h>
+#include <RenderCore/Resources/BindlessResourcesManager.h>
 
 #include <RHIModule/Shader/ShaderCompiler.h>
 #include <RHIModule/Shader/ShaderCache.h>
@@ -29,6 +30,7 @@
 #include <RHIModule/Utility/ResourceUtility.h>
 
 #include <CoreUtilities/Containers/FunctionQueue.h>
+#include <CoreUtilities/Math/Hash.h>
 
 namespace Volt
 {

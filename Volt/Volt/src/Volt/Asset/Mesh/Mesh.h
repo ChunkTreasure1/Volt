@@ -9,7 +9,7 @@
 #include "Volt/Rendering/BoundingStructures.h"
 #include "Volt/Rendering/Mesh/MeshCommon.h"
 
-#include "Volt/Rendering/Resources/BindlessResource.h"
+#include "Volt/Rendering/BindlessResource.h"
 #include "Volt/Rendering/GPUScene.h"
 
 #include "Volt/SDF/SDFGenerator.h"

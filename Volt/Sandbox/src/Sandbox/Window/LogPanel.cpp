@@ -28,9 +28,9 @@ LogPanel::LogPanel()
 {
 	m_isOpen = true;
 
-	Log::Get().AddCallback([&](const LogCallbackData& message)
+	m_callbackHandle = Log::Get().RegisterCallback([&](const LogCallbackData& message)
 	{
-		std::scoped_lock lock{ m_logMutex };
+		//std::scoped_lock lock{ m_logMutex };
 		m_logMessages.emplace_back(message);
 		if (m_logMessages.size() >= m_maxMessages)
 		{
@@ -39,6 +39,12 @@ LogPanel::LogPanel()
 	});
 
 	m_categories.emplace_back("Default");
+}
+
+LogPanel::~LogPanel()
+{
+	Log::Get().UnregisterCallback(m_callbackHandle);
+	m_callbackHandle = 0;
 }
 
 void LogPanel::UpdateMainContent()

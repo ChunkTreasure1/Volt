@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Rendering/Resources/BindlessResource.h"
+#include "Volt/Rendering/BindlessResource.h"
 
 #include <RHIModule/Images/Image3D.h>
 

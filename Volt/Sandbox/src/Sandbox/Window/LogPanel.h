@@ -6,7 +6,7 @@ class LogPanel : public EditorWindow
 {
 public:
 	LogPanel();
-	~LogPanel() override = default;
+	~LogPanel() override;
 
 	void UpdateMainContent() override;
 
@@ -17,5 +17,6 @@ private:
 
 	Vector<std::string> m_categories;
 
+	LogCallbackHandle m_callbackHandle = 0;
 	std::mutex m_logMutex;
 };

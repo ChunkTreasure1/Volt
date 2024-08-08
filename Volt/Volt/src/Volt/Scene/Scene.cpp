@@ -30,10 +30,8 @@
 
 #include "Volt/Rendering/RenderScene.h"
 #include "Volt/Rendering/Renderer.h"
-
 #include "Volt/Rendering/RendererStructs.h"
 #include "Volt/Rendering/Camera/Camera.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
 
 #include "Volt/Vision/Vision.h"
 #include "Volt/Utility/Random.h"
@@ -41,6 +39,8 @@
 #include "Volt/Animation/MotionWeaver.h"
 
 #include "Volt/Discord/DiscordSDK.h"
+
+#include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
 
 #include <Navigation/Core/NavigationSystem.h>
 

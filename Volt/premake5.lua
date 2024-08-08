@@ -60,6 +60,7 @@ include "Nexus"
 include "CoreUtilities"
 include "Mosaic"
 include "LogModule"
+include "RenderCoreModule"
 include (path.join(VoltRootDirectory, "Volt-ScriptCore"))
 
 group "Core/RHI"

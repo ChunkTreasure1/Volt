@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Rendering/RenderGraph/Resources/RenderGraphResourceHandle.h"
+#include <RenderCore/RenderGraph/Resources/RenderGraphResourceHandle.h>
 
 #include <string_view>
 

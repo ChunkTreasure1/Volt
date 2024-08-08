@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "ThreadPool.h"
 
-#include "Volt/Platform/ThreadUtility.h"
+#include <CoreUtilities/ThreadUtilities.h>
 
 namespace Volt
 {

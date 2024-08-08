@@ -1,15 +1,13 @@
 #pragma once
 
 #include "Volt/Core/Base.h"
-
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
-
-#include "Volt/Rendering/Resources/BindlessResource.h"
+#include "Volt/Math/Math.h"
 
 #include "Volt/Rendering/Shader/ShaderMap.h"
+#include "Volt/Rendering/BindlessResource.h"
 
-#include "Volt/Math/Math.h"
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
 
 #include <atomic>
 

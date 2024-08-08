@@ -3,7 +3,7 @@
 #include "Volt/Asset/Mesh/Mesh.h"
 
 #include "Volt/Rendering/RenderObject.h"
-#include "Volt/Rendering/Resources/BindlessResource.h"
+#include "Volt/Rendering/BindlessResource.h"
 
 #include "Volt/Rendering/RendererCommon.h"
 

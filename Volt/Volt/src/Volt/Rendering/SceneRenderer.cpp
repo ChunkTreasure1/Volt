@@ -10,13 +10,13 @@
 
 #include "Volt/Rendering/Shader/ShaderMap.h"
 
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphBlackboard.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
-#include "Volt/Rendering/RenderGraph/Resources/RenderGraphBufferResource.h"
-#include "Volt/Rendering/RenderGraph/Resources/RenderGraphTextureResource.h"
-#include "Volt/Rendering/RenderGraph/RenderContextUtils.h"
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
+#include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
+#include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
+#include <RenderCore/RenderGraph/Resources/RenderGraphBufferResource.h>
+#include <RenderCore/RenderGraph/Resources/RenderGraphTextureResource.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
 
 #include "Volt/Rendering/RenderingTechniques/PrefixSumTechnique.h"
 #include "Volt/Rendering/RenderingTechniques/GTAOTechnique.h"

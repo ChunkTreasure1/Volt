@@ -1,11 +1,11 @@
 #include "vtpch.h"
 #include "RenderingUtils.h"
 
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
-#include "Volt/Rendering/RenderGraph/RenderContextUtils.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
 
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
 #include <RHIModule/Pipelines/RenderPipeline.h>
 
 namespace Volt::RenderingUtils

@@ -11,7 +11,6 @@
 #include "Volt/Steam/SteamImplementation.h"
 
 #include "Volt/Rendering/Renderer.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
@@ -24,6 +23,8 @@
 
 #include "Volt/Utility/Noise.h"
 #include "Volt/Utility/UIUtility.h"
+
+#include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
 
 #include <RHIModule/ImGui/ImGuiImplementation.h>
 #include <RHIModule/Graphics/GraphicsContext.h>

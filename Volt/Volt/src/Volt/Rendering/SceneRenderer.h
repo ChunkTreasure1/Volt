@@ -7,7 +7,7 @@
 #include "Volt/Rendering/RendererStructs.h"
 
 // #TODO_Ivar: Maybe remove from here
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
+#include <RenderCore/RenderGraph/RenderGraph.h>
 
 namespace Volt
 {

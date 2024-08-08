@@ -2,11 +2,13 @@
 #include "LightCullingTechnique.h"
 
 #include "Volt/Rendering/SceneRendererStructs.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphBlackboard.h"
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
-
 #include "Volt/Rendering/Shader/ShaderMap.h"
+
+#include "Volt/Math/Math.h"
+
+#include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
 
 namespace Volt
 {

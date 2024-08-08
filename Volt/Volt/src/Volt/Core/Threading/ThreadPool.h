@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ThreadSafeQueue.h"
+#include <CoreUtilities/Containers/ThreadSafeQueue.h>
 
 #include <future>
 #include <functional>

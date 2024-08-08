@@ -9,7 +9,8 @@
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
-#include <Volt/Math/Math.h>
+
+#include <CoreUtilities/Math/Hash.h>
 
 #include <imgui.h>
 

@@ -1,10 +1,9 @@
 #include "vtpch.h"
 #include "SkyAtmosphereTechnique.h"
 
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphBlackboard.h"
-
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
 
 namespace Volt
 {

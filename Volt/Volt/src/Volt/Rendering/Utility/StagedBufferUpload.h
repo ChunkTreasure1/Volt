@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-
+#include <RenderCore/RenderGraph/RenderGraph.h>
 
 #include <atomic>
 

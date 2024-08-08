@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Volt/Rendering/RenderGraph/Resources/RenderGraphResourceHandle.h"
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
+#include <RenderCore/RenderGraph/Resources/RenderGraphResourceHandle.h>
+#include <RenderCore/RenderGraph/RenderGraph.h>
 
 namespace Volt
 {

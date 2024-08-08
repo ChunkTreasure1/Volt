@@ -2,12 +2,12 @@
 #include "SDFGenerator.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
-
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/Resources/RenderGraphTextureResource.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
 #include "Volt/Math/AABB.h"
+
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/Resources/RenderGraphTextureResource.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
 
 #include <CoreUtilities/Containers/Vector.h>
 #include <CoreUtilities/Containers/SparseBrickMap.h>

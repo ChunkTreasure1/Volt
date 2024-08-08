@@ -9,9 +9,4 @@ namespace Volt::RHI::Utility
 	{
 		return (T)(((uint64_t)value + alignment - 1) & ~(alignment - 1));
 	}
-
-	inline size_t HashCombine(size_t lhs, size_t rhs)
-	{
-		return lhs ^ (rhs + 0x9e3779b9 + (lhs << 6) + (lhs >> 2));
-	}
 }

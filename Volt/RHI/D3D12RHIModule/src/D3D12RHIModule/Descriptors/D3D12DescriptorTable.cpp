@@ -274,8 +274,8 @@ namespace Volt::RHI
 	inline size_t GetDescriptorBindingHash(uint32_t space, uint32_t binding, D3D12_DESCRIPTOR_RANGE_TYPE descriptorType)
 	{
 		size_t result = std::hash<uint32_t>()(space);
-		result = Utility::HashCombine(result, std::hash<uint32_t>()(binding));
-		result = Utility::HashCombine(result, std::hash<uint32_t>()(static_cast<uint32_t>(descriptorType)));
+		result = Math::HashCombine(result, std::hash<uint32_t>()(binding));
+		result = Math::HashCombine(result, std::hash<uint32_t>()(static_cast<uint32_t>(descriptorType)));
 
 		return result;
 	}

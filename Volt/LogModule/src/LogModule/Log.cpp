@@ -38,9 +38,25 @@ void Log::SetLogOutputFilepath(const std::filesystem::path& path)
 	m_logger->sinks().emplace_back(m_rotatingFileSink);
 }
 
-void Log::AddCallback(const std::function<void(const LogCallbackData& callbackData)>& callback)
+LogCallbackHandle Log::RegisterCallback(const std::function<void(const LogCallbackData& callbackData)>& callback)
 {
-	m_callbacks.emplace_back(callback);
+	LogCallbackHandle handle = {};
+	m_callbacks.emplace_back(callback, handle);
+	return handle;
+}
+
+void Log::UnregisterCallback(LogCallbackHandle handle)
+{
+	auto it = std::find_if(m_callbacks.begin(), m_callbacks.end(), [handle](const auto& data)
+	{
+		return data.handle == handle;
+	});
+
+	std::scoped_lock lock{ m_callbackMutex };
+	if (it != m_callbacks.end())
+	{
+		m_callbacks.erase(it);
+	}
 }
 
 void Log::LogMessage(LogVerbosity severity, const std::string& category, const std::string& message)
@@ -72,8 +88,9 @@ void Log::LogMessage(LogVerbosity severity, const std::string& category, const s
 	callbackData.message = message;
 	callbackData.severity = severity;
 
-	for (const auto& callback : m_callbacks)
+	std::scoped_lock lock{ m_callbackMutex };
+	for (const auto& data : m_callbacks)
 	{
-		callback(callbackData);
+		data.callbackFunc(callbackData);
 	}
 }

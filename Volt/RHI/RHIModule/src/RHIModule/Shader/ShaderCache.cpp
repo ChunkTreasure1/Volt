@@ -279,7 +279,7 @@ namespace Volt::RHI
 		size_t hash = 0;
 		for (const auto& [stage, sourceInfo] : shaderSpec.shaderSourceInfo)
 		{
-			const size_t stageHash = Utility::HashCombine(std::hash<std::filesystem::path>()(sourceInfo.sourceEntry.filePath), std::hash<std::string>()(sourceInfo.sourceEntry.entryPoint));
+			const size_t stageHash = Math::HashCombine(std::hash<std::filesystem::path>()(sourceInfo.sourceEntry.filePath), std::hash<std::string>()(sourceInfo.sourceEntry.entryPoint));
 
 			if (hash == 0)
 			{
@@ -287,7 +287,7 @@ namespace Volt::RHI
 			}
 			else
 			{
-				hash = Utility::HashCombine(hash, stageHash);
+				hash = Math::HashCombine(hash, stageHash);
 			}
 		}
 

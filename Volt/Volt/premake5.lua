@@ -46,6 +46,7 @@ project "Volt"
 		"../RHI/D3D12RHIModule/src",
 		"../Mosaic/src",
 		"../LogModule/src",
+		"../RenderCoreModule/src",
 		
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -69,7 +70,6 @@ project "Volt"
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.libacc}",
 
-		"%{IncludeDir.ffmpeg}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.DirectXTex}",
 		"%{IncludeDir.efsw}",
@@ -113,6 +113,7 @@ project "Volt"
 		"stb",
 
 		"LogModule",
+		"RenderCoreModule",
 		
 		"D3D12RHIModule",
 		"RHIModule",

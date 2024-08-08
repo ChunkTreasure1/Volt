@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "Texture2D.h"
 
-#include "Volt/Rendering/Resources/BindlessResourcesManager.h"
+#include <RenderCore/Resources/BindlessResourcesManager.h>
 
 #include <RHIModule/Images/ImageView.h>
 
