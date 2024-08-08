@@ -148,8 +148,6 @@ namespace AssetBrowser
 					break;
 				case Volt::AssetType::NavMesh:
 					break;
-				case Volt::AssetType::GraphKey:
-					break;
 				case Volt::AssetType::MonoScript:
 				{
 					if (!Volt::PremadeCommands::RunOpenVSFileCommand(UserSettingsManager::GetSettings().externalToolsSettings.customExternalScriptEditor, Volt::AssetManager::GetFilePathFromAssetHandle(handle)))
@@ -254,7 +252,6 @@ namespace AssetBrowser
 			case Volt::AssetType::ParticlePreset: return { 1.f, 0.62f, 0.f, 1.f };
 			case Volt::AssetType::MonoScript: return { 0.f, 0.6f, 0.f, 1.f };
 			case Volt::AssetType::BehaviorGraph: return { 0.75f, 0.04f, 0.83f, 1.f };
-			case Volt::AssetType::AnimationGraph: return { 0.82f, 0.72f, 0.2f, 1.f };
 			case Volt::AssetType::MotionWeave: return { 0.74f, 0, 0.32f, 1.f };
 		}
 

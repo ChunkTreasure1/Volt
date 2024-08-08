@@ -8,7 +8,6 @@
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
-#include <Volt/Asset/Animation/AnimationGraphAsset.h>
 
 #include <Volt/Asset/Rendering/Material.h>
 #include <Volt/Asset/Mesh/MeshSource.h>
@@ -852,60 +851,6 @@ bool EditorUtils::NewCharacterModal(const std::string& aId, Ref<Volt::AnimatedCh
 			}
 
 			Volt::AssetManager::Get().SaveAsset(outCharacter);
-			ImGui::CloseCurrentPopup();
-		}
-
-		UI::EndModal();
-	}
-
-	return created;
-}
-
-bool EditorUtils::NewAnimationGraphModal(const std::string& aId, Ref<Volt::AnimationGraphAsset>* outGraph, NewAnimationGraphData& graphData)
-{
-	bool created = false;
-
-	UI::ScopedStyleFloat rounding{ ImGuiStyleVar_FrameRounding, 2.f };
-	if (UI::BeginModal(aId, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
-	{
-		UI::ShiftCursor(300.f, 0.f);
-		UI::ShiftCursor(-300.f, 0.f);
-
-		if (UI::BeginProperties("NewGraph"))
-		{
-			UI::Property("Name", graphData.name);
-			EditorUtils::Property("Skeleton", graphData.skeletonHandle, Volt::AssetType::Skeleton);
-			UI::PropertyDirectory("Destination", graphData.destination);
-
-			UI::EndProperties();
-		}
-
-		if (ImGui::Button("Cancel"))
-		{
-			ImGui::CloseCurrentPopup();
-		}
-
-		ImGui::SameLine();
-
-		if (ImGui::Button("Create"))
-		{
-			if (graphData.skeletonHandle == Volt::Asset::Null())
-			{
-				UI::Notify(NotificationType::Error, "Unable to create animation graph!", "Skeleton must not be null!");
-
-				UI::EndModal();
-				return false;
-			}
-
-			created = true;
-			auto newGraph = Volt::AssetManager::CreateAsset<Volt::AnimationGraphAsset>(graphData.destination, graphData.name, graphData.skeletonHandle);
-
-			if (outGraph)
-			{
-				*outGraph = newGraph;
-			}
-
-			Volt::AssetManager::Get().SaveAsset(newGraph);
 			ImGui::CloseCurrentPopup();
 		}
 

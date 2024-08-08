@@ -25,7 +25,6 @@ project "Launcher"
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
 		"/WHOLEARCHIVE:PhysX",
-		"/WHOLEARCHIVE:GraphKey",
 		"/WHOLEARCHIVE:Mosaic"
 	}
 
@@ -52,7 +51,6 @@ project "Launcher"
 		"../Volt/src/",
 		"../Amp/src/",
 		"../Game/src/",
-		"../GraphKey/src/",
 		"../Nexus/src",
 		"../Navigation/src/",
 		"../VoltRenderer/VoltRHI/src",
@@ -94,7 +92,6 @@ project "Launcher"
     links
     {
         "Volt",
-		"GraphKey",
 		"Amp",
 		"meshoptimizer",
 		"DiscordSDK",

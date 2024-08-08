@@ -73,7 +73,6 @@ public:
 	static void ImportTexture(const std::filesystem::path& sourcePath);
 
 	static bool NewCharacterModal(const std::string& aId, Ref<Volt::AnimatedCharacter>& outCharacter, NewCharacterData& aCharacterData);
-	static bool NewAnimationGraphModal(const std::string& aId, Ref<Volt::AnimationGraphAsset>* outGraph, NewAnimationGraphData& graphData);
 
 	static SaveReturnState SaveFilePopup(const std::string& aId);
 

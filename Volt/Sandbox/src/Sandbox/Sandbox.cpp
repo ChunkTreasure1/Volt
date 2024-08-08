@@ -5,6 +5,8 @@
 
 #include "Sandbox/UISystems/ModalSystem.h"
 
+#include "Sandbox/NodeGraph/IONodeGraphEditorHelpers.h"
+
 #include "Sandbox/Window/PropertiesPanel.h"
 #include "Sandbox/Window/ViewportPanel.h"
 #include "Sandbox/Window/GameViewPanel.h"
@@ -24,9 +26,7 @@
 #include "Sandbox/Window/PhysicsPanel.h"
 #include "Sandbox/Window/RendererSettingsPanel.h"
 #include "Sandbox/Window/MeshPreviewPanel.h"
-#include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
 #include "Sandbox/Window/PrefabEditorPanel.h"
-#include "Sandbox/Window/AnimationGraph/AnimationGraphPanel.h"
 #include "Sandbox/Window/Sequencer.h"
 #include "Sandbox/Window/BlendSpaceEditorPanel.h"
 #include "Sandbox/Window/CurveGraphPanel.h"
@@ -141,7 +141,6 @@ void Sandbox::OnAttach()
 	EditorLibrary::Register<EditorSettingsPanel>("Advanced", UserSettingsManager::GetSettings());
 	EditorLibrary::Register<PhysicsPanel>("Physics");
 	EditorLibrary::Register<RendererSettingsPanel>("Advanced", m_sceneRenderer);
-	EditorLibrary::Register<GraphKeyPanel>("", m_runtimeScene);
 	EditorLibrary::Register<VertexPainterPanel>("", m_runtimeScene, m_editorCameraController);
 
 	EditorLibrary::Register<NetPanel>("Advanced");
@@ -161,7 +160,6 @@ void Sandbox::OnAttach()
 	EditorLibrary::RegisterWithType<SkeletonEditorPanel>("Animation", Volt::AssetType::Skeleton);
 	EditorLibrary::RegisterWithType<AnimationEditorPanel>("Animation", Volt::AssetType::Animation);
 	EditorLibrary::RegisterWithType<ParticleEmitterEditor>("", Volt::AssetType::ParticlePreset);
-	EditorLibrary::RegisterWithType<AnimationGraphPanel>("Animation", Volt::AssetType::AnimationGraph, m_runtimeScene);
 	EditorLibrary::RegisterWithType<BehaviorPanel>("", Volt::AssetType::BehaviorGraph);
 	EditorLibrary::RegisterWithType<BlendSpaceEditorPanel>("Animation", Volt::AssetType::BlendSpace);
 	EditorLibrary::RegisterWithType<MeshPreviewPanel>("", Volt::AssetType::Mesh);

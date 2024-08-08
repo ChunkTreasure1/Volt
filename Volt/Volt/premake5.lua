@@ -39,7 +39,6 @@ project "Volt"
 		"src/",
 		"../Amp/src",
 		"../Game/src",
-		"../GraphKey/src/",
 		"../Navigation/src/",
 		"../Nexus/src/",
 		"../RHI/RHIModule/src",

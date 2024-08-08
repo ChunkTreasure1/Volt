@@ -18,8 +18,6 @@
 #include "Volt/Components/RenderingComponents.h"
 
 #include "Volt/Animation/AnimationManager.h"
-#include "Volt/Animation/AnimationController.h"
-#include "Volt/Asset/Animation/AnimationGraphAsset.h"
 
 #include "Volt/Physics/Physics.h"
 #include "Volt/Physics/PhysicsScene.h"
@@ -45,10 +43,6 @@
 
 #include "Volt/Discord/DiscordSDK.h"
 
-#include <GraphKey/TimerManager.h>
-#include <GraphKey/Graph.h>
-#include <GraphKey/Node.h>
-
 #include <Navigation/Core/NavigationSystem.h>
 
 #include <CoreUtilities/Time/TimeUtility.h>
@@ -59,7 +53,7 @@
 namespace Volt
 {
 	Scene::Scene(const std::string& name)
-		: m_name(name), m_animationSystem(this)
+		: m_name(name)
 	{
 		m_visionSystem = CreateRef<Vision>(this);
 		m_renderScene = CreateRef<RenderScene>(this);
@@ -79,7 +73,6 @@ namespace Volt
 	}
 
 	Scene::Scene()
-		: m_animationSystem(this)
 	{
 		m_visionSystem = CreateRef<Vision>(this);
 		m_renderScene = CreateRef<RenderScene>(this);
@@ -101,14 +94,6 @@ namespace Volt
 		{
 			return;
 		}
-
-		ForEachWithComponents<const AnimationControllerComponent>([&](const entt::entity id, const AnimationControllerComponent& controller)
-		{
-			if (controller.controller)
-			{
-				controller.controller->GetGraph()->OnEvent(e);
-			}
-		});
 
 		m_audioSystem.OnEvent(m_registry, e);
 		m_visionSystem->OnEvent(e);
@@ -204,7 +189,6 @@ namespace Volt
 		});
 
 		m_visionSystem->Initialize();
-		m_animationSystem.OnRuntimeStart(m_registry);
 
 		ForEachWithComponents<const MonoScriptComponent, const IDComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp, const IDComponent& idComponent)
 		{
@@ -253,7 +237,6 @@ namespace Volt
 	void Scene::OnRuntimeEnd()
 	{
 		m_isPlaying = false;
-		GraphKey::TimerManager::Clear();
 
 		ForEachWithComponents<const MonoScriptComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp)
 		{
@@ -274,7 +257,6 @@ namespace Volt
 
 		MonoScriptEngine::OnRuntimeEnd();
 
-		m_animationSystem.OnRuntimeEnd(m_registry);
 		Physics::DestroyScene();
 		m_audioSystem.RuntimeStop(m_registry, shared_from_this());
 	}
@@ -301,8 +283,6 @@ namespace Volt
 
 		m_timeSinceStart += aDeltaTime;
 		m_currentDeltaTime = aDeltaTime;
-
-		GraphKey::TimerManager::Update(aDeltaTime);
 
 		{
 			VT_PROFILE_SCOPE("Update entity time");
@@ -354,7 +334,6 @@ namespace Volt
 
 		m_particleSystem.Update(m_registry, shared_from_this(), aDeltaTime);
 		m_audioSystem.Update(m_registry, shared_from_this(), aDeltaTime);
-		m_animationSystem.Update(m_registry, aDeltaTime);
 	}
 
 	void Scene::FixedUpdate(float aDeltaTime)

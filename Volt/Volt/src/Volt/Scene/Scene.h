@@ -1,7 +1,6 @@
 #pragma once
 #include "Volt/Asset/Asset.h"
 
-#include "Volt/Animation/AnimationSystem.h"
 #include "Volt/Particles/ParticleSystem.h"
 #include "Volt/Audio/AudioSystem.h"
 #include "Volt/Vision/TimelinePlayer.h"
@@ -248,7 +247,6 @@ namespace Volt
 			
 		ParticleSystem m_particleSystem;
 		AudioSystem m_audioSystem;
-		AnimationSystem m_animationSystem;
 		MonoScriptFieldCache m_monoFieldCache;
 
 		Ref<Vision> m_visionSystem; // Needs to be of ptr type because of include loop

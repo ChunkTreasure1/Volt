@@ -34,7 +34,6 @@ project "Sandbox"
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
 		"/WHOLEARCHIVE:PhysX",
-		"/WHOLEARCHIVE:GraphKey",
 		"/WHOLEARCHIVE:Mosaic"
 	}
 
@@ -67,7 +66,6 @@ project "Sandbox"
 		"../Volt/src/",
 		"../Amp/src/",
 		"../Game/src/",
-		"../GraphKey/src/",
 		"../Sandbox/src/",
 		"../Navigation/src/",
 		"../Nexus/src",
@@ -120,7 +118,6 @@ project "Sandbox"
     links
     {
         "Volt",
-		"GraphKey",
 		"Amp",
 		"meshoptimizer",
 		"DiscordSDK",

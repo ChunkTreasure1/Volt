@@ -3,9 +3,6 @@
 
 #include "Volt/Asset/Asset.h"
 #include "Volt/Asset/AssetManager.h"
-#include "Volt/Asset/Animation/AnimationGraphAsset.h"
-
-#include "Volt/Animation/AnimationController.h"
 
 #include "Volt/Components/CoreComponents.h"
 #include "Volt/Components/PhysicsComponents.h"
@@ -205,19 +202,6 @@ namespace Volt
 		if (entity.HasComponent<NetActorComponent>())
 		{
 			entity.GetComponent<NetActorComponent>().repId = Nexus::RandRepID();
-		}
-
-		if (entity.HasComponent<AnimationControllerComponent>())
-		{
-			auto& controllerComp = entity.GetComponent<AnimationControllerComponent>();
-			if (controllerComp.animationGraph != Asset::Null())
-			{
-				auto graphAsset = AssetManager::GetAsset<AnimationGraphAsset>(controllerComp.animationGraph);
-				if (graphAsset && graphAsset->IsValid())
-				{
-					controllerComp.controller = CreateRef<AnimationController>(graphAsset, entity);
-				}
-			}
 		}
 
 		// Common data

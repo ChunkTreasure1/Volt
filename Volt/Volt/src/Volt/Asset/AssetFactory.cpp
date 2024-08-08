@@ -8,7 +8,6 @@
 #include "Volt/Asset/Animation/Animation.h"
 #include "Volt/Asset/Animation/Skeleton.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
-#include "Volt/Asset/Animation/AnimationGraphAsset.h"
 #include "Volt/Asset/Animation/MotionWeaveDatabase.h"
 #include "Volt/Asset/ParticlePreset.h"
 #include "Volt/Asset/Text/Font.h"
@@ -55,8 +54,6 @@ namespace Volt
 		RegisterCreateFunction<Video>(AssetType::Video, m_assetFactoryFunctions);
 		RegisterCreateFunction<BlendSpace>(AssetType::BlendSpace, m_assetFactoryFunctions);
 		RegisterCreateFunction<AI::NavMesh>(AssetType::NavMesh, m_assetFactoryFunctions);
-		RegisterCreateFunction<AnimationGraphAsset>(AssetType::AnimationGraph, m_assetFactoryFunctions);
-		RegisterCreateFunction<GraphKey::Graph>(AssetType::GraphKey, m_assetFactoryFunctions);
 		RegisterCreateFunction<BehaviorTree::Tree>(AssetType::BehaviorGraph, m_assetFactoryFunctions);
 		RegisterCreateFunction<TimelinePreset>(AssetType::Timeline, m_assetFactoryFunctions);
 		RegisterCreateFunction<NetContract>(AssetType::NetContract, m_assetFactoryFunctions);

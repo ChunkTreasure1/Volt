@@ -313,11 +313,6 @@ void AssetBrowserPanel::UpdateMainContent()
 		Reload();
 	}
 
-	if (EditorUtils::NewAnimationGraphModal("New Animation Graph##assetBrowser", nullptr, myNewAnimationGraphData))
-	{
-		Reload();
-	}
-
 	CreateNewShaderModal();
 	CreateNewMonoScriptModal();
 	CreateNewMotionWeaveDatabaseModal();
@@ -904,11 +899,6 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 					CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimatedCharacter);
 				}
 
-				if (ImGui::MenuItem("Animation Graph"))
-				{
-					CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimationGraph);
-				}
-
 				if (ImGui::MenuItem("Blend Space"))
 				{
 					CreateNewAssetInCurrentDirectory(Volt::AssetType::BlendSpace);
@@ -1292,7 +1282,6 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		case Volt::AssetType::PhysicsMaterial: originalName = "PM_NewPhysicsMaterial"; break;
 		case Volt::AssetType::Scene: originalName = "SC_NewScene"; break;
 		case Volt::AssetType::ParticlePreset: originalName = "PP_NewParticlePreset"; break;
-		case Volt::AssetType::AnimationGraph: originalName = "AG_NewAnimationGraph"; break;
 		case Volt::AssetType::BlendSpace: originalName = "BS_NewBlendSpace"; break;
 		case Volt::AssetType::MonoScript: originalName = "idk.cs"; break;
 		case Volt::AssetType::PostProcessingStack: originalName = "PPS_NewPostStack"; break;
@@ -1327,15 +1316,6 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 			UI::OpenModal("New Character##assetBrowser");
 
-			break;
-		}
-
-		case Volt::AssetType::AnimationGraph:
-		{
-			myNewAnimationGraphData.destination = Volt::AssetManager::GetRelativePath(myCurrentDirectory->path);
-			myNewAnimationGraphData.name = tempName;
-
-			UI::OpenModal("New Animation Graph##assetBrowser");
 			break;
 		}
 

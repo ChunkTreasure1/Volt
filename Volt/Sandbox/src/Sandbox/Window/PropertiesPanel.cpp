@@ -5,7 +5,6 @@
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/Theme.h"
 #include "Sandbox/Utility/ComponentPropertyUtilities.h"
-#include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
 
 #include "Sandbox/Sandbox.h"
 #include "Sandbox/UserSettingsManager.h"
@@ -23,8 +22,6 @@
 
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 #include <Volt/Scripting/Mono/MonoScriptUtils.h>
-
-#include <GraphKey/Graph.h>
 
 PropertiesPanel::PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, SceneState& sceneState, const std::string& id)
 	: EditorWindow("Properties", false, id), myCurrentScene(currentScene), myCurrentSceneRenderer(currentSceneRenderer), mySceneState(sceneState)

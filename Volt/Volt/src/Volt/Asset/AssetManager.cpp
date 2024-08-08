@@ -9,7 +9,6 @@
 #include "Volt/Asset/Importers/TextureImporter.h"
 
 #include "Volt/Asset/Serializers/AnimatedCharacterSerializer.h"
-#include "Volt/Asset/Serializers/AnimationGraphSerializer.h"
 #include "Volt/Asset/Serializers/AnimationSerializer.h"
 #include "Volt/Asset/Serializers/BehaviourTreeSerializer.h"
 #include "Volt/Asset/Serializers/BlendSpaceSerializer.h"
@@ -149,7 +148,6 @@ namespace Volt
 		m_assetSerializers.emplace(AssetType::NavMesh, CreateScope<NavigationMeshSerializer>());
 		m_assetSerializers.emplace(AssetType::Scene, CreateScope<SceneSerializer>());
 		m_assetSerializers.emplace(AssetType::Skeleton, CreateScope<SkeletonSerializer>());
-		m_assetSerializers.emplace(AssetType::AnimationGraph, CreateScope<AnimationGraphSerializer>());
 		m_assetSerializers.emplace(AssetType::Animation, CreateScope<AnimationSerializer>());
 		m_assetSerializers.emplace(AssetType::AnimatedCharacter, CreateScope<AnimatedCharacterSerializer>());
 		m_assetSerializers.emplace(AssetType::ParticlePreset, CreateScope<ParticlePresetSerializer>());

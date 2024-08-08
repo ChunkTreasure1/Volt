@@ -37,16 +37,13 @@
 #include "Volt/Physics/PhysicsShapes.h"
 
 #include "Volt/Asset/Prefab.h"
-#include "Volt/Asset/Animation/AnimationGraphAsset.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
+#include "Volt/Asset/Animation/Animation.h"
 #include "Volt/Asset/Video/Video.h"
-#include "Volt/Animation/AnimationController.h"
 
 #include "Volt/Steam/SteamImplementation.h"
 
 #include <Navigation/Core/NavigationSystem.h>
-
-#include <GraphKey/Graph.h>
 
 #include "Volt/Project/ProjectManager.h"
 
@@ -3562,131 +3559,6 @@ namespace Volt
 
 #pragma region AnimationControllerComponent
 
-	inline static void AnimationControllerComponent_SetParameterFloat(EntityID id, MonoString* name, float value)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return;
-		}
-
-		if (!entity.GetComponent<AnimationControllerComponent>().controller)
-		{
-			return;
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto controller = entity.GetComponent<AnimationControllerComponent>().controller;
-		controller->GetGraph()->SetParameterValue(paramName, value);
-	}
-
-	inline static void AnimationControllerComponent_SetParameterInt(EntityID id, MonoString* name, int32_t value)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return;
-		}
-
-		if (!entity.GetComponent<AnimationControllerComponent>().controller)
-		{
-			return;
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto controller = entity.GetComponent<AnimationControllerComponent>().controller;
-		controller->GetGraph()->SetParameterValue(paramName, value);
-	}
-
-	inline static void AnimationControllerComponent_SetParameterBool(EntityID id, MonoString* name, bool value)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return;
-		}
-
-		if (!entity.GetComponent<AnimationControllerComponent>().controller)
-		{
-			return;
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto controller = entity.GetComponent<AnimationControllerComponent>().controller;
-		controller->GetGraph()->SetParameterValue(paramName, value);
-	}
-
-	inline static void AnimationControllerComponent_SetParameterVector3(EntityID id, MonoString* name, glm::vec3* value)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return;
-		}
-
-		if (!entity.GetComponent<AnimationControllerComponent>().controller)
-		{
-			return;
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto controller = entity.GetComponent<AnimationControllerComponent>().controller;
-		controller->GetGraph()->SetParameterValue(paramName, value);
-	}
-
-	inline static void AnimationControllerComponent_SetParameterString(EntityID id, MonoString* name, MonoString* value)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return;
-		}
-
-		if (!entity.GetComponent<AnimationControllerComponent>().controller)
-		{
-			return;
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto controller = entity.GetComponent<AnimationControllerComponent>().controller;
-		controller->GetGraph()->SetParameterValue(paramName, value);
-	}
-
 	inline static void AnimationControllerComponent_GetBoundingSphere(EntityID id, glm::vec3* center, float* radius)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
@@ -3710,204 +3582,6 @@ namespace Volt
 		auto mesh = AssetManager::GetAsset<Mesh>(meshComp.handle);
 		*center = mesh->GetBoundingSphere().center;
 		*radius = mesh->GetBoundingSphere().radius;
-	}
-
-	inline static float AnimationControllerComponent_GetParameterFloat(EntityID id, MonoString* name)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return 0.0f;
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return 0.0f;
-		}
-
-		if (!entity.GetComponent<AnimationControllerComponent>().controller)
-		{
-			return 0.0f;
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto controller = entity.GetComponent<AnimationControllerComponent>().controller;
-		return controller->GetGraph()->GetParameterValue<float>(paramName);
-	}
-
-	inline static int AnimationControllerComponent_GetParameterInt(EntityID id, MonoString* name)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return 0;
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return 0;
-		}
-
-		if (!entity.GetComponent<AnimationControllerComponent>().controller)
-		{
-			return 0;
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto controller = entity.GetComponent<AnimationControllerComponent>().controller;
-		return controller->GetGraph()->GetParameterValue<int>(paramName);
-	}
-
-	inline static bool AnimationControllerComponent_GetParameterBool(EntityID id, MonoString* name)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return 0;
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return 0;
-		}
-
-		if (!entity.GetComponent<AnimationControllerComponent>().controller)
-		{
-			return 0;
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto controller = entity.GetComponent<AnimationControllerComponent>().controller;
-		return controller->GetGraph()->GetParameterValue<bool>(paramName);
-	}
-
-	inline static glm::vec3 AnimationControllerComponent_GetParameterVector3(EntityID id, MonoString* name)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return { 0,0,0 };
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return { 0,0,0 };
-		}
-
-		if (!entity.GetComponent<AnimationControllerComponent>().controller)
-		{
-			return { 0,0,0 };
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto controller = entity.GetComponent<AnimationControllerComponent>().controller;
-		return controller->GetGraph()->GetParameterValue<glm::vec3>(paramName);
-	}
-
-	inline static std::string AnimationControllerComponent_GetParameterString(EntityID id, MonoString* name)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return "Null";
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return "Null";
-		}
-
-		if (!entity.GetComponent<AnimationControllerComponent>().controller)
-		{
-			return "Null";
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto controller = entity.GetComponent<AnimationControllerComponent>().controller;
-		return controller->GetGraph()->GetParameterValue<std::string>(paramName);
-	}
-
-	inline static void AnimationControllerComponent_GetRootMotion(EntityID id, glm::vec3* value)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return;
-		}
-
-		if (!entity.GetComponent<AnimationControllerComponent>().controller)
-		{
-			return;
-		}
-
-		*value = entity.GetComponent<AnimationControllerComponent>().controller->GetRootMotion().position;
-	}
-
-	inline static void AnimationControllerComponent_AttachEntity(MonoString* attachmentName, EntityID id, EntityID attachId)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return;
-		}
-
-		if (!entity.GetComponent<AnimationControllerComponent>().controller)
-		{
-			return;
-		}
-
-		const std::string str = MonoScriptUtils::GetStringFromMonoString(attachmentName);
-		Entity attachEntity = scene->GetEntityFromUUID(attachId);
-
-		entity.GetComponent<AnimationControllerComponent>().controller->AttachEntity(str, attachEntity);
-	}
-
-	inline static void AnimationControllerComponent_DetachEntity(EntityID id, EntityID attachId)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return;
-		}
-
-		if (!entity.GetComponent<AnimationControllerComponent>().controller)
-		{
-			return;
-		}
-
-		Entity attachEntity = scene->GetEntityFromUUID(attachId);
-		entity.GetComponent<AnimationControllerComponent>().controller->DetachEntity(attachEntity);
 	}
 
 	inline static bool AnimationControllerComponent_HasOverrideMaterial(EntityID id)
@@ -4000,27 +3674,6 @@ namespace Volt
 		return entity.GetComponent<AnimationControllerComponent>().skin;
 	}
 
-	inline static void AnimationControllerComponent_SetController(EntityID id, uint64_t animGraphHandle)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityFromUUID(id);
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<AnimationControllerComponent>())
-		{
-			return;
-		}
-
-		auto graph = AssetManager::GetAsset<AnimationGraphAsset>(animGraphHandle);
-		if (graph && graph->IsValid())
-		{
-			entity.GetComponent<AnimationControllerComponent>().controller = CreateRef<AnimationController>(graph, entity);
-		}
-	}
 #pragma endregion
 
 #pragma region TextRendererComponent
@@ -5806,26 +5459,12 @@ namespace Volt
 
 		// Animation Controller Component
 		{
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_SetParameterBool);
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_SetParameterInt);
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_SetParameterFloat);
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_SetParameterVector3);
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_SetParameterString);
 			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_GetBoundingSphere);
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_GetParameterBool);
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_GetParameterInt);
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_GetParameterFloat);
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_GetParameterVector3);
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_GetParameterString);
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_GetRootMotion);
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_AttachEntity);
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_DetachEntity);
 			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_HasOverrideMaterial);
 			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_GetOverrideMaterial);
 			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_SetOverrideMaterial);
 			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_GetOverrideSkin);
 			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_SetOverrideSkin);
-			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_SetController);
 		}
 
 		// Text Renderer Component

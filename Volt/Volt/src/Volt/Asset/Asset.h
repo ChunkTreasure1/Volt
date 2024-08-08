@@ -47,8 +47,6 @@ namespace Volt
 		Video,
 		BlendSpace,
 		NavMesh,
-		AnimationGraph,
-		GraphKey,
 		MonoScript,
 		BehaviorGraph,
 		Timeline,
@@ -89,7 +87,6 @@ namespace Volt
 		{ ".vtsk", AssetType::Skeleton },
 		{ ".vtanim", AssetType::Animation },
 		{ ".vtchr", AssetType::AnimatedCharacter },
-		{ ".vtanimgraph", AssetType::AnimationGraph },
 
 		{ ".png", AssetType::TextureSource },
 		{ ".jpg", AssetType::TextureSource },
@@ -115,7 +112,6 @@ namespace Volt
 		{ ".ttf", AssetType::Font },
 
 		{ ".mp4", AssetType::Video },
-		{ ".vtgk", AssetType::GraphKey },
 
 		{ ".cs", AssetType::MonoScript },
 		{ ".vtbt", AssetType::BehaviorGraph},
@@ -133,7 +129,6 @@ namespace Volt
 		{ "Skeleton", AssetType::Skeleton },
 		{ "Animation", AssetType::Animation },
 		{ "Animated Character", AssetType::AnimatedCharacter },
-		{ "Animation Graph", AssetType::AnimationGraph },
 
 		{ "TextureSource", AssetType::TextureSource },
 		{ "Texture", AssetType::Texture },

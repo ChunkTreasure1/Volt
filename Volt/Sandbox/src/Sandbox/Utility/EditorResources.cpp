@@ -27,7 +27,6 @@ void EditorResources::Initialize()
 		m_assetIcons[Volt::AssetType::Prefab] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_prefab.dds");
 		m_assetIcons[Volt::AssetType::MonoScript] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_monoscript.dds");
 		m_assetIcons[Volt::AssetType::BehaviorGraph] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_behaviorTree.dds");
-		m_assetIcons[Volt::AssetType::AnimationGraph] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_animationGraph.dds");
 		m_assetIcons[Volt::AssetType::MotionWeave] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_motionWeaveDatabase.dds");
 	}
 

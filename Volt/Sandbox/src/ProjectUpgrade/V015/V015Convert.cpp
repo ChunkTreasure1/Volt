@@ -16,7 +16,6 @@
 #include <Volt/Asset/Importers/AnimationImporter.h>
 #include <Volt/Asset/Importers/SceneImporter.h>
 #include <Volt/Asset/Importers/AnimatedCharacterImporter.h>
-#include <Volt/Asset/Importers/AnimationGraphImporter.h>
 #include <Volt/Asset/Importers/PrefabImporter.h>
 #include <Volt/Asset/Importers/BehaviorTreeImporter.h>
 #include <Volt/Asset/Importers/NetContractImporter.h>
@@ -217,7 +216,6 @@ namespace V015
 			importers.emplace(Volt::AssetType::NavMesh, CreateScope<Volt::VTNavMeshImporter>());
 			importers.emplace(Volt::AssetType::Scene, CreateScope<Volt::SceneImporter>());
 			importers.emplace(Volt::AssetType::Skeleton, CreateScope<Volt::SkeletonImporter>());
-			importers.emplace(Volt::AssetType::AnimationGraph, CreateScope<Volt::AnimationGraphImporter>());
 			importers.emplace(Volt::AssetType::Animation, CreateScope<Volt::AnimationImporter>());
 			importers.emplace(Volt::AssetType::AnimatedCharacter, CreateScope<Volt::AnimatedCharacterImporter>());
 			importers.emplace(Volt::AssetType::ParticlePreset, CreateScope<Volt::ParticlePresetImporter>());

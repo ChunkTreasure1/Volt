@@ -140,7 +140,6 @@ namespace Volt
 
 	struct AnimationControllerComponent
 	{
-		AssetHandle animationGraph = Asset::Null();
 		AssetHandle material = Asset::Null();
 		AssetHandle skin = Asset::Null();
 		bool applyRootMotion = false;
@@ -151,7 +150,6 @@ namespace Volt
 		{
 			reflect.SetGUID("{36D3CFA2-538E-4036-BB28-2B672F294478}"_guid);
 			reflect.SetLabel("Animation Controller Component");
-			reflect.AddMember(&AnimationControllerComponent::animationGraph, "animationGraph", "Animation Graph", "", Asset::Null(), AssetType::AnimationGraph);
 			reflect.AddMember(&AnimationControllerComponent::material, "material", "Material", "", Asset::Null(), AssetType::Material);
 			reflect.AddMember(&AnimationControllerComponent::skin, "skin", "Skin", "", Asset::Null(), AssetType::Mesh);
 			reflect.AddMember(&AnimationControllerComponent::applyRootMotion, "applyRootMotion", "Apply Root Motion", "", false);
