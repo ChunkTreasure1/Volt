@@ -1,10 +1,11 @@
 #include "DispatchComputeShaderTest.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Rendering/RenderGraph/RenderGraph.h>
-#include <Volt/Rendering/RenderGraph/RenderContextUtils.h>
-#include <Volt/Rendering/RenderGraph/RenderGraphUtils.h>
 #include <Volt/Rendering/Shader/ShaderMap.h>
+
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
 
 using namespace Volt;
 
@@ -22,7 +23,7 @@ bool RG_DispatchComputeShaderTest::RunTest()
 
 	struct Data
 	{
-		RenderGraphResourceHandle bufferHandle;
+		RenderGraphBufferHandle bufferHandle;
 	};
 
 	renderGraph.AddPass<Data>("Compute Shader Pass",
@@ -36,13 +37,13 @@ bool RG_DispatchComputeShaderTest::RunTest()
 		builder.SetHasSideEffect();
 		builder.SetIsComputePass();
 	},
-	[=](const Data& data, RenderContext& context, const RenderGraphPassResources& resources) 
+	[=](const Data& data, RenderContext& context) 
 	{
 		auto pipeline = ShaderMap::GetComputePipeline("RG_DispatchComputeShaderTest");
 
 		context.BindPipeline(pipeline);
 
-		context.SetConstant("outputBuffer"_sh, resources.GetBuffer(data.bufferHandle));
+		context.SetConstant("outputBuffer"_sh, data.bufferHandle);
 		context.SetConstant("initialValue"_sh, 1u);
 
 		context.Dispatch(1, 1, 1);

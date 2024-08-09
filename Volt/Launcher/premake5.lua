@@ -6,8 +6,8 @@ project "Launcher"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++20"
-	debugdir "../../Engine"
 
+	debugdir "../../Engine"
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
 
@@ -48,12 +48,15 @@ project "Launcher"
 	includedirs
 	{
 		"src/",
-		"../Volt/src/",
-		"../Amp/src/",
-		"../Game/src/",
-		"../Nexus/src",
-		"../Navigation/src/",
-		"../VoltRenderer/VoltRHI/src",
+
+		"%{IncludeDir.Volt}",
+		"%{IncludeDir.Amp}",
+		"%{IncludeDir.Navigation}",
+		"%{IncludeDir.Nexus}",
+		"%{IncludeDir.Mosaic}",
+		"%{IncludeDir.LogModule}",
+		"%{IncludeDir.RHIModule}",
+		"%{IncludeDir.RenderCoreModule}",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",

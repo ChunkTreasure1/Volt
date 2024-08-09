@@ -1,20 +1,21 @@
 #include "DrawMeshShaderMultipleMeshesTest.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Rendering/RenderGraph/RenderGraph.h>
-#include <Volt/Rendering/RenderGraph/RenderContextUtils.h>
-#include <Volt/Rendering/RenderGraph/RenderGraphUtils.h>
-#include <Volt/Rendering/Shader/ShaderMap.h>
 #include <Volt/Asset/Mesh/Mesh.h>
-
 #include <Volt/Asset/AssetManager.h>
+
+#include <Volt/Rendering/Shader/ShaderMap.h>
+
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
 
 using namespace Volt;
 
 RG_DrawMeshShaderMultipleMeshesTest::RG_DrawMeshShaderMultipleMeshesTest()
 {
-	m_cubeMesh = AssetManager::GetAsset<Mesh>("Assets/Meshes/Default/SM_Cube.vtasset");
-	m_sphereMesh = AssetManager::GetAsset<Mesh>("Assets/Meshes/Default/SM_Sphere.vtasset");
+	m_cubeMesh = AssetManager::GetAsset<Mesh>("Engine/Meshes/Primitives/SM_Cube.vtasset");
+	m_sphereMesh = AssetManager::GetAsset<Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtasset");
 }
 
 RG_DrawMeshShaderMultipleMeshesTest::~RG_DrawMeshShaderMultipleMeshesTest()
@@ -28,12 +29,12 @@ bool RG_DrawMeshShaderMultipleMeshesTest::RunTest()
 	RenderGraph renderGraph{ m_commandBuffer };
 
 	auto targetImage = swapchain.GetCurrentImage();
-	RenderGraphResourceHandle targetImageHandle = renderGraph.AddExternalImage2D(targetImage);
+	RenderGraphImage2DHandle targetImageHandle = renderGraph.AddExternalImage2D(targetImage);
 
 	struct Data
 	{
-		RenderGraphResourceHandle gpuMeshesBuffer;
-		RenderGraphResourceHandle transformsBuffer;
+		RenderGraphBufferHandle gpuMeshesBuffer;
+		RenderGraphBufferHandle transformsBuffer;
 	} data;
 
 	std::array<GPUMesh, 2> gpuMeshes = { m_cubeMesh->GetGPUMeshes().front(), m_sphereMesh->GetGPUMeshes().front() };
@@ -64,7 +65,7 @@ bool RG_DrawMeshShaderMultipleMeshesTest::RunTest()
 
 		builder.SetHasSideEffect();
 	},
-	[=](RenderContext& context, const RenderGraphPassResources& resources)
+	[=](RenderContext& context)
 	{
 		RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { targetImageHandle });
 
@@ -80,8 +81,8 @@ bool RG_DrawMeshShaderMultipleMeshesTest::RunTest()
 		context.BindPipeline(pipeline);
 
 		context.SetConstant("viewProjection"_sh, viewProj);
-		context.SetConstant("gpuMeshesBuffer"_sh, resources.GetBuffer(data.gpuMeshesBuffer));
-		context.SetConstant("transformsBuffer"_sh, resources.GetBuffer(data.transformsBuffer));
+		context.SetConstant("gpuMeshesBuffer"_sh, data.gpuMeshesBuffer);
+		context.SetConstant("transformsBuffer"_sh, data.transformsBuffer);
 
 		for (uint32_t i = 0; i < 2; i++)
 		{

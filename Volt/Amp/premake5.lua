@@ -29,7 +29,7 @@ project "Amp"
 	includedirs
 	{
 		"src/",
-		"../LogModule/src",
+		"%{IncludeDir.LogModule}",
 
 		"%{IncludeDir.fmod}",
 		"%{IncludeDir.wwise}"

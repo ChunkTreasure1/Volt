@@ -4,7 +4,6 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 project "Sandbox"
 	location "."
 	kind "ConsoleApp"
-	
 	language "C++"
 	cppdialect "C++20"
 
@@ -63,17 +62,15 @@ project "Sandbox"
 	includedirs
 	{
 		"src/",
-		"../Volt/src/",
-		"../Amp/src/",
-		"../Game/src/",
-		"../Sandbox/src/",
-		"../Navigation/src/",
-		"../Nexus/src",
-		"../Mosaic/src",
 
-		"../RHI/RHIModule/src",
-		"../LogModule/src",
-		"../RenderCoreModule/src",
+		"%{IncludeDir.Volt}",
+		"%{IncludeDir.Amp}",
+		"%{IncludeDir.Navigation}",
+		"%{IncludeDir.Nexus}",
+		"%{IncludeDir.Mosaic}",
+		"%{IncludeDir.LogModule}",
+		"%{IncludeDir.RHIModule}",
+		"%{IncludeDir.RenderCoreModule}",
 		
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",

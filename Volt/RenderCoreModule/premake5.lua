@@ -31,8 +31,8 @@ project "RenderCoreModule"
 	{
 		"src/",
 
-		"../LogModule/src",
-		"../RHI/RHIModule/src",
+		"%{IncludeDir.LogModule}",
+		"%{IncludeDir.RHIModule}",
 
 		"%{IncludeDir.half}",
 	}

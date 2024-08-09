@@ -45,12 +45,13 @@ project "Navigation"
 	includedirs
 	{
 		"src/",
-		"../Volt/src",
-		"../Nexus/src",
-		"../RHI/RHIModule/src",
-		"../Mosaic/src",
-		"../LogModule/src",
-		"../RenderCoreModule/src",
+
+		"%{IncludeDir.Volt}",
+		"%{IncludeDir.Nexus}",
+		"%{IncludeDir.RHIModule}",
+		"%{IncludeDir.Mosaic}",
+		"%{IncludeDir.LogModule}",
+		"%{IncludeDir.RenderCoreModule}",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.spdlog}",

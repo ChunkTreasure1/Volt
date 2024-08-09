@@ -8,6 +8,8 @@
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Utility/StringUtility.h"
 
+#include <LogModule/Log.h>
+
 #include <map>
 #include <filesystem>
 #include <unordered_map>

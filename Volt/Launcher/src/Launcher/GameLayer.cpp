@@ -16,6 +16,8 @@
 
 #include <Volt/Input/KeyCodes.h>
 
+#include <LogModule/Log.h>
+
 #include <yaml-cpp/yaml.h>
 
 void GameLayer::OnAttach()

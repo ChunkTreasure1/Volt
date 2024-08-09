@@ -14,7 +14,7 @@
 #include "Testing/RenderGraphTests/DrawMeshShaderMeshTest.h"
 #include "Testing/RenderGraphTests/DrawMeshShaderMultipleMeshesTest.h"
 
-#include <Volt/Log/Log.h>
+#include <LogModule/Log.h>
 
 #include <functional>
 

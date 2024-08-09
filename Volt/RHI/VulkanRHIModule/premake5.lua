@@ -30,8 +30,8 @@ project "VulkanRHIModule"
 	includedirs
 	{
 		"src/",
-		"../RHIModule/src",
-		"../../LogModule/src",
+		"%{IncludeDir.RHIModule}",
+		"%{IncludeDir.LogModule}",
 
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",

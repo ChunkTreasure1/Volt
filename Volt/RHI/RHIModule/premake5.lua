@@ -31,7 +31,7 @@ project "RHIModule"
 	{
 		"src/",
 
-		"../../LogModule/src",
+		"%{IncludeDir.LogModule}",
 
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.imgui_notify}",

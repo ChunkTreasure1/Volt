@@ -29,8 +29,9 @@ project "D3D12RHIModule"
 	includedirs
 	{
 		"src/",
-		"../RHIModule/src",
-		"../../LogModule/src",
+		"%{IncludeDir.RHIModule}",
+		"%{IncludeDir.LogModule}",
+
 		"vendor/d3d12",
 
 		"%{IncludeDir.GLFW}",

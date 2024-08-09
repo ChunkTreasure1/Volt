@@ -37,16 +37,16 @@ project "Volt"
 	includedirs
 	{
 		"src/",
-		"../Amp/src",
-		"../Game/src",
-		"../Navigation/src/",
-		"../Nexus/src/",
-		"../RHI/RHIModule/src",
-		"../RHI/VulkanRHIModule/src",
-		"../RHI/D3D12RHIModule/src",
-		"../Mosaic/src",
-		"../LogModule/src",
-		"../RenderCoreModule/src",
+	
+		"%{IncludeDir.Amp}",
+		"%{IncludeDir.Navigation}",
+		"%{IncludeDir.Nexus}",
+		"%{IncludeDir.Mosaic}",
+		"%{IncludeDir.LogModule}",
+		"%{IncludeDir.RHIModule}",
+		"%{IncludeDir.VulkanRHIModule}",
+		"%{IncludeDir.D3D12RHIModule}",
+		"%{IncludeDir.RenderCoreModule}",
 		
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",

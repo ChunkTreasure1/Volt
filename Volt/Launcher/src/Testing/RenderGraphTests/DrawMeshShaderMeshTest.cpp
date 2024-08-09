@@ -1,10 +1,11 @@
 #include "DrawMeshShaderMeshTest.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Rendering/RenderGraph/RenderGraph.h>
-#include <Volt/Rendering/RenderGraph/RenderContextUtils.h>
 #include <Volt/Rendering/Shader/ShaderMap.h>
 #include <Volt/Asset/Mesh/Mesh.h>
+
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
 
 #include <Volt/Asset/AssetManager.h>
 
@@ -26,13 +27,13 @@ bool RG_DrawMeshShaderMeshTest::RunTest()
 	RenderGraph renderGraph{ m_commandBuffer };
 
 	auto targetImage = swapchain.GetCurrentImage();
-	RenderGraphResourceHandle targetImageHandle = renderGraph.AddExternalImage2D(targetImage);
+	RenderGraphImage2DHandle targetImageHandle = renderGraph.AddExternalImage2D(targetImage);
 
 	struct Data
 	{
-		RenderGraphResourceHandle vertexPositionBuffer;
-		RenderGraphResourceHandle meshletsBuffer;
-		RenderGraphResourceHandle meshletDataBuffer;
+		RenderGraphBufferHandle vertexPositionBuffer;
+		RenderGraphBufferHandle meshletsBuffer;
+		RenderGraphBufferHandle meshletDataBuffer;
 	};
 
 	const auto& gpuMesh = m_mesh->GetGPUMeshes().at(0);
@@ -52,7 +53,7 @@ bool RG_DrawMeshShaderMeshTest::RunTest()
 
 		builder.SetHasSideEffect();
 	},
-	[=](const Data& data, RenderContext& context, const RenderGraphPassResources& resources)
+	[=](const Data& data, RenderContext& context)
 	{
 		RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { targetImageHandle });
 
@@ -69,9 +70,9 @@ bool RG_DrawMeshShaderMeshTest::RunTest()
 
 		context.SetConstant("viewProjection"_sh, viewProj);
 
-		context.SetConstant("vertexPositionsBuffer"_sh, resources.GetBuffer(data.vertexPositionBuffer));
-		context.SetConstant("meshletsBuffer"_sh, resources.GetBuffer(data.meshletsBuffer));
-		context.SetConstant("meshletDataBuffer"_sh, resources.GetBuffer(data.meshletDataBuffer));
+		context.SetConstant("vertexPositionsBuffer"_sh, data.vertexPositionBuffer);
+		context.SetConstant("meshletsBuffer"_sh, data.meshletsBuffer);
+		context.SetConstant("meshletDataBuffer"_sh, data.meshletDataBuffer);
 
 		context.SetConstant("meshletStartOffset"_sh, gpuMesh.meshletStartOffset);
 		context.SetConstant("vertexOffset"_sh, gpuMesh.vertexStartOffset);

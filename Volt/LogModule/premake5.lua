@@ -27,7 +27,7 @@ project "LogModule"
 	includedirs
 	{
 		"src/",
-		"../CoreUtilities/src",
+		"%{IncludeDir.CoreUtilities}",
 
 		"%{IncludeDir.spdlog}",
 	}

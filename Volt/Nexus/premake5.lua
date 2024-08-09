@@ -29,8 +29,9 @@ project "Nexus"
 	includedirs
 	{
 		"src/",
-		"../Volt/src",
-		"../LogModule/src",
+		
+		"%{IncludeDir.Volt}",
+		"%{IncludeDir.LogModule}"
 	}
 
 	defines

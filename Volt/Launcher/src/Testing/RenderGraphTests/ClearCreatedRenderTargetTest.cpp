@@ -1,10 +1,11 @@
 #include "ClearCreatedRenderTargetTest.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Rendering/RenderGraph/RenderGraph.h>
-#include <Volt/Rendering/RenderGraph/RenderContextUtils.h>
-#include <Volt/Rendering/RenderGraph/RenderGraphUtils.h>
 #include <Volt/Rendering/Shader/ShaderMap.h>
+
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
 
 using namespace Volt;
 
@@ -29,7 +30,7 @@ bool RG_ClearCreatedRenderTargetTest::RunTest()
 		builder.WriteResource(testImageHandle, RenderGraphResourceState::Clear);
 		builder.SetHasSideEffect();
 	},
-	[=](RenderContext& context, const RenderGraphPassResources& resources)
+	[=](RenderContext& context)
 	{
 		context.ClearImage(testImageHandle, { 0.f, 0.f, 0.f, 0.f });
 	});

@@ -1,9 +1,10 @@
 #include "DrawTriangleTest.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Rendering/RenderGraph/RenderGraph.h>
-#include <Volt/Rendering/RenderGraph/RenderContextUtils.h>
 #include <Volt/Rendering/Shader/ShaderMap.h>
+
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
 
 using namespace Volt;
 
@@ -22,7 +23,7 @@ bool RG_DrawTriangleTest::RunTest()
 	RenderGraph renderGraph{ m_commandBuffer };
 	
 	auto targetImage = swapchain.GetCurrentImage();
-	RenderGraphResourceHandle targetImageHandle = renderGraph.AddExternalImage2D(targetImage);
+	RenderGraphImage2DHandle targetImageHandle = renderGraph.AddExternalImage2D(targetImage);
 
 	renderGraph.AddPass("Triangle Pass", 
 	[&](RenderGraph::Builder& builder) 
@@ -30,7 +31,7 @@ bool RG_DrawTriangleTest::RunTest()
 		builder.WriteResource(targetImageHandle);
 		builder.SetHasSideEffect();
 	}, 
-	[=](RenderContext& context, const RenderGraphPassResources& resources)
+	[=](RenderContext& context)
 	{
 		RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { targetImageHandle });
 	

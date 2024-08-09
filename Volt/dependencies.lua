@@ -57,6 +57,16 @@ IncludeDir["nlohmann"] = "%{wks.location}/Sandbox/vendor/nlohmann/include/"
 IncludeDir["httplib"] = "%{wks.location}/Sandbox/vendor/cpp-httplib/include/"
 
 IncludeDir["CoreUtilities"] = "%{wks.location}/CoreUtilities/src"
+IncludeDir["Volt"] = "%{wks.location}/Volt/src"
+IncludeDir["Amp"] = "%{wks.location}/Amp/src"
+IncludeDir["Navigation"] = "%{wks.location}/Navigation/src"
+IncludeDir["Nexus"] = "%{wks.location}/Nexus/src"
+IncludeDir["Mosaic"] = "%{wks.location}/Mosaic/src"
+IncludeDir["LogModule"] = "%{wks.location}/LogModule/src"
+IncludeDir["RenderCoreModule"] = "%{wks.location}/RenderCoreModule/src"
+IncludeDir["RHIModule"] = "%{wks.location}/RHI/RHIModule/src"
+IncludeDir["VulkanRHIModule"] = "%{wks.location}/RHI/VulkanRHIModule/src"
+IncludeDir["D3D12RHIModule"] = "%{wks.location}/RHI/D3D12RHIModule/src"
 
 LibraryDir = {}
 LibraryDir["PhysX"] = "%{wks.location}/Volt/vendor/PhysX/lib/%{cfg.buildcfg}"
