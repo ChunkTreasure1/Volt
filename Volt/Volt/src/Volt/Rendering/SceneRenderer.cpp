@@ -64,10 +64,8 @@
 namespace Volt
 {
 	SceneRenderer::SceneRenderer(const SceneRendererSpecification& specification)
-		: m_scene(specification.scene)
+		: m_scene(specification.scene), m_commandBufferSet(Renderer::GetFramesInFlight())
 	{
-		m_commandBuffer = RHI::CommandBuffer::Create(Renderer::GetFramesInFlight(), RHI::QueueType::Graphics);
-
 		CreateMainRenderTarget(specification.initialResolution.x, specification.initialResolution.y);
 
 		m_sceneEnvironment.radianceMap = Renderer::GetDefaultResources().blackCubeTexture;
@@ -79,7 +77,6 @@ namespace Volt
 	SceneRenderer::~SceneRenderer()
 	{
 		RenderGraphExecutionThread::WaitForFinishedExecution();
-		m_commandBuffer = nullptr;
 	}
 
 	void SceneRenderer::OnRenderEditor(Ref<Camera> camera)
@@ -126,7 +123,7 @@ namespace Volt
 		}
 
 		RenderGraphBlackboard rgBlackboard{};
-		RenderGraph renderGraph{ m_commandBuffer };
+		RenderGraph renderGraph{ m_commandBufferSet.IncrementAndGetCommandBuffer() };
 
 		renderGraph.SetTotalAllocatedSizeCallback([&](const uint64_t totalSize)
 		{
@@ -597,7 +594,7 @@ namespace Volt
 			context.EndRendering();
 		});
 
-		renderGraph.QueueImage2DExtraction(data.objectIdHandle, m_objectIDImage);
+		renderGraph.EnqueueImage2DExtraction(data.objectIdHandle, m_objectIDImage);
 	}
 
 	void SceneRenderer::AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)

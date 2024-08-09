@@ -2,9 +2,11 @@
 
 #include "RenderCore/Config.h"
 
-#ifndef VT_DIST
-#include <RHIModule/Descriptors/ResourceHandle.h>
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
 
+#include "RenderCore/RenderGraph/Resources/RenderGraphResourceHandle.h"
+
+#include <RHIModule/Descriptors/ResourceHandle.h>
 #include <RHIModule/Buffers/StorageBuffer.h>
 
 namespace Volt
@@ -15,31 +17,24 @@ namespace Volt
 		class CommandBuffer;
 	}
 
+	class RenderGraph;
+
 	class VTRC_API ShaderRuntimeValidator
 	{
 	public:
 		ShaderRuntimeValidator();
 		~ShaderRuntimeValidator();
 
-		void Update();
-		const ResourceHandle GetCurrentErrorBufferHandle() const;
+		void Allocate(RenderGraph& renderGraph);
+		
+		void ReadbackErrorBuffer(RenderGraph& renderGraph);
+		const RenderGraphBufferHandle GetErrorBufferHandle() const;
 		const Vector<std::string>& GetValidationErrors() const { return m_validationErrors; }
 
-		VT_INLINE static ShaderRuntimeValidator& Get() { return *s_instance; }
-
 	private:
-		inline static ShaderRuntimeValidator* s_instance = nullptr;
-
 		void ProcessValidationBuffer(const Vector<uint8_t>& dataBuffer);
 
-		RefPtr<RHI::StorageBuffer> m_errorBuffer;
-		RefPtr<RHI::StorageBuffer> m_stagingBuffer;
-
-		ResourceHandle m_errorBufferHandle;
-		ResourceHandle m_stagingBufferHandle;
-
-		RefPtr<RHI::CommandBuffer> m_commandBuffer;
-
+		RenderGraphBufferHandle m_errorBufferHandle;
 		Vector<std::string> m_validationErrors;
 	};
 }

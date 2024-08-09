@@ -45,6 +45,7 @@ namespace Volt::RHI
 
 		void CreateSwapchain(const uint32_t width, const uint32_t height);
 		void GetSwapchainImages();
+		void GetNextFrameIndex();
 
 		struct PerImageData
 		{
@@ -55,7 +56,7 @@ namespace Volt::RHI
 		GLFWwindow* m_windowHandle;
 		ComPtr<IDXGISwapChain4> m_swapchain;
 
-		RefPtr<CommandBuffer> m_commandBuffer;
+		Vector<RefPtr<CommandBuffer>> m_commandBuffers;
 
 		std::array<PerImageData, MAX_SWAPCHAIN_IMAGES> m_perImageData = {};
 
@@ -65,5 +66,6 @@ namespace Volt::RHI
 		bool m_supportsTearing = false;
 
 		uint32_t m_currentImageIndex = 0;
+		uint32_t m_currentFrameIndex = 0;
 	};
 }

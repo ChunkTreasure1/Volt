@@ -18,7 +18,7 @@ namespace Volt::RHI
 	class VulkanCommandBuffer final : public CommandBuffer
 	{
 	public:
-		VulkanCommandBuffer(const uint32_t count, QueueType queueType);
+		VulkanCommandBuffer(QueueType queueType);
 		~VulkanCommandBuffer() override;
 
 		void Begin() override;
@@ -26,7 +26,7 @@ namespace Volt::RHI
 		void RestartAfterFlush() override;
 		void Execute() override;
 		void ExecuteAndWait() override;
-		void WaitForFences() override;
+		void WaitForFence() override;
 
 		void SetEvent(WeakPtr<Event> event) override;
 
@@ -84,10 +84,9 @@ namespace Volt::RHI
 
 		void UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData) override;
 
-		const uint32_t GetCurrentIndex() const override;
 		const QueueType GetQueueType() const override;
 
-		VkFence_T* GetCurrentFence() const;
+		VkFence_T* GetFence() const;
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -106,7 +105,6 @@ namespace Volt::RHI
 		void FetchTimestampResults();
 
 		VkPipelineLayout_T* GetCurrentPipelineLayout();
-		const uint32_t GetCurrentCommandBufferIndex() const;
 
 		struct CommandBufferData
 		{
@@ -115,14 +113,10 @@ namespace Volt::RHI
 			VkFence_T* fence = nullptr;
 		};
 
-		Vector<CommandBufferData> m_commandBuffers;
-
-		uint32_t m_currentCommandBufferIndex = 0;
-		uint32_t m_lastCommandBufferIndex = 0;
+		CommandBufferData m_commandBufferData;
 
 		bool m_hasTimestampSupport = false;
 
-		uint32_t m_commandBufferCount = 0;
 		QueueType m_queueType;
 
 		// Queries
@@ -130,10 +124,10 @@ namespace Volt::RHI
 		uint32_t m_nextAvailableTimestampQuery = 0; // The two first are command buffer total
 		uint32_t m_lastAvailableTimestampQuery = 0;
 
-		Vector<VkQueryPool_T*> m_timestampQueryPools;
-		Vector<uint32_t> m_timestampCounts;
-		Vector<Vector<uint64_t>> m_timestampQueryResults;
-		Vector<Vector<float>> m_executionTimes;
+		VkQueryPool_T* m_timestampQueryPool;
+		uint32_t m_timestampCount;
+		Vector<uint64_t> m_timestampQueryResults;
+		Vector<float> m_executionTimes;
 
 		// Internal state
 		WeakPtr<RenderPipeline> m_currentRenderPipeline;

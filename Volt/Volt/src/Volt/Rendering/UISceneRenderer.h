@@ -4,6 +4,7 @@
 
 #include <RHIModule/Images/Image2D.h>
 #include <RHIModule/Buffers/CommandBuffer.h>
+#include <RHIModule/Buffers/CommandBufferSet.h>
 
 namespace Volt
 {
@@ -40,8 +41,8 @@ namespace Volt
 
 		bool m_isEditor = false;
 
-		RefPtr<RHI::Image2D> m_widgetIDImage;
 		Ref<UIScene> m_scene;
-		RefPtr<RHI::CommandBuffer> m_commandBuffer;
+		RefPtr<RHI::Image2D> m_widgetIDImage;
+		RHI::CommandBufferSet m_commandBufferSet;
 	};
 }

@@ -90,9 +90,13 @@ namespace Volt::RHI
 		VkBool32 supportsPresent = VK_FALSE;
 		VT_VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(vulkanPhysicalDevice.GetHandle<VkPhysicalDevice>(), queueFamilies.graphicsFamilyQueueIndex, m_surface, &supportsPresent));
 
-		VT_ASSERT(supportsPresent && "Device does not have present support!");
+		VT_ASSERT_MSG(supportsPresent, "Device does not have present support!");
 
-		m_commandBuffer = CommandBuffer::Create(GetFramesInFlight());
+		m_commandBuffers.resize(GetFramesInFlight());
+		for (uint32_t i = 0; i < GetFramesInFlight(); i++)
+		{
+			m_commandBuffers[i] = CommandBuffer::Create();
+		}
 
 		Invalidate(m_width, m_height, m_vSyncEnabled);
 	}
@@ -115,7 +119,7 @@ namespace Volt::RHI
 		auto device = GraphicsContext::GetDevice();
 		auto& frameData = m_perFrameInFlightData.at(m_currentFrame);
 
-		m_commandBuffer->Begin();
+		m_commandBuffers.at(m_currentFrame)->Begin();
 		VkResult swapchainStatus = vkAcquireNextImageKHR(device->GetHandle<VkDevice>(), m_swapchain, 1000000000, frameData.presentSemaphore, nullptr, &m_currentImage);
 
 		if (swapchainStatus == VK_ERROR_OUT_OF_DATE_KHR)
@@ -142,10 +146,10 @@ namespace Volt::RHI
 			barrier.imageBarrier().dstLayout = ImageLayout::Present;
 			barrier.imageBarrier().resource = m_perImageData.at(m_currentImage).imageReference;
 
-			m_commandBuffer->ResourceBarrier({ barrier });
+			m_commandBuffers.at(m_currentFrame)->ResourceBarrier({ barrier });
 		}
 
-		m_commandBuffer->End();
+		m_commandBuffers.at(m_currentFrame)->End();
 
 		if (m_swapchainNeedsRebuild)
 		{
@@ -159,8 +163,8 @@ namespace Volt::RHI
 
 		// Queue Submit
 		{
-			VkCommandBuffer cmdBuffer = m_commandBuffer->GetHandle<VkCommandBuffer>();
-			VkFence fence = m_commandBuffer->AsRef<VulkanCommandBuffer>().GetCurrentFence();
+			VkCommandBuffer cmdBuffer = m_commandBuffers.at(m_currentFrame)->GetHandle<VkCommandBuffer>();
+			VkFence fence = m_commandBuffers.at(m_currentFrame)->AsRef<VulkanCommandBuffer>().GetFence();
 
 			VkSubmitInfo submitInfo{};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -180,8 +184,6 @@ namespace Volt::RHI
 			VT_VK_CHECK(vkQueueSubmit(deviceQueue->GetHandle<VkQueue>(), 1, &submitInfo, fence));
 			vkQueue.ReleaseLock();
 		}
-
-		VT_PROFILE_GPU_FLIP(m_swapchain);
 
 		// Present to screen
 		{
@@ -265,7 +267,7 @@ namespace Volt::RHI
 
 	RefPtr<CommandBuffer> VulkanSwapchain::GetCommandBuffer() const
 	{
-		return m_commandBuffer;
+		return m_commandBuffers.at(m_currentFrame);
 	}
 
 	void* VulkanSwapchain::GetHandleImpl() const
@@ -294,7 +296,7 @@ namespace Volt::RHI
 
 		auto device = GraphicsContext::GetDevice();
 
-		m_commandBuffer->WaitForFences();
+		m_commandBuffers.at(m_currentFrame)->WaitForFence();
 
 		for (auto& perFrameData : m_perFrameInFlightData)
 		{

@@ -83,7 +83,7 @@ namespace Volt::RHI
 
 		virtual RefPtr<BufferView> CreateBufferView(const BufferViewSpecification& specification) const = 0;
 
-		virtual RefPtr<CommandBuffer> CreateCommandBuffer(const uint32_t count, QueueType queueType) const = 0;
+		virtual RefPtr<CommandBuffer> CreateCommandBuffer(QueueType queueType) const = 0;
 
 		virtual RefPtr<IndexBuffer> CreateIndexBuffer(std::span<const uint32_t> indices) const = 0;
 		virtual RefPtr<VertexBuffer> CreateVertexBuffer(const void* data, const uint32_t size, const uint32_t stride) const = 0;

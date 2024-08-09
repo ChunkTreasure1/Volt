@@ -85,7 +85,7 @@ namespace Volt::RHI
 
 		for (const auto& cmdBuffer : executeInfo.commandBuffers)
 		{
-			auto currentFenceData = cmdBuffer->As<D3D12CommandBuffer>()->GetCurrentSemaphore();
+			auto currentFenceData = cmdBuffer->As<D3D12CommandBuffer>()->GetSemaphore();
 
 			auto val = currentFenceData->IncrementAndGetValue();
 			m_commandQueue->Signal(currentFenceData->GetHandle<ID3D12Fence*>(), val);

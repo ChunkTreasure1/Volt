@@ -426,13 +426,13 @@ namespace Volt
 	void Renderer::EndOfFrameUpdate()
 	{
 #ifndef VT_DIST
-		//s_rendererData->shaderValidator->Update();
+		//s_rendererData->shaderValidator->ReadbackErrorBuffer();
 
-		//const auto& frameErrors = s_rendererData->shaderValidator->GetValidationErrors();
-		//for (const auto& error : frameErrors)
-		//{
-		//	VT_LOG(LogSeverity::Error, error);
-		//}
+		const auto& frameErrors = s_rendererData->shaderValidator->GetValidationErrors();
+		for (const auto& error : frameErrors)
+		{
+			VT_LOGC(Error, LogRender, error);
+		}
 #endif
 	}
 

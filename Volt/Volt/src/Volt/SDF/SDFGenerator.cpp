@@ -297,7 +297,7 @@ namespace Volt
 			});
 
 			RefPtr<RHI::StorageBuffer> targetSDFBrickBuffer;
-			renderGraph.QueueBufferExtraction(sdfBricksBufferHandle, targetSDFBrickBuffer);
+			renderGraph.EnqueueBufferExtraction(sdfBricksBufferHandle, targetSDFBrickBuffer);
 
 			renderGraph.Compile();
 			renderGraph.ExecuteImmediateAndWait();

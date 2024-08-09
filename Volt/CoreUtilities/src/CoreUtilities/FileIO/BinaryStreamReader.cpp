@@ -17,7 +17,7 @@ BinaryStreamReader::BinaryStreamReader(const std::filesystem::path& filePath)
 	if (stream)
 	{
 		stream.seekg(0, std::ios::end);
-		m_data.resize(stream.tellg());
+		m_data.resize_uninitialized(stream.tellg());
 		stream.seekg(0, std::ios::beg);
 		stream.read(reinterpret_cast<char*>(m_data.data()), m_data.size());
 
@@ -73,7 +73,7 @@ BinaryStreamReader::BinaryStreamReader(const std::filesystem::path& filePath, co
 		stream.seekg(0, std::ios::beg);
 
 		bytesToLoadCount = std::min(size, bytesToLoadCount) + COMPRESSION_ENCODING_HEADER_SIZE;
-		m_data.resize(bytesToLoadCount);
+		m_data.resize_uninitialized(bytesToLoadCount);
 		stream.read(reinterpret_cast<char*>(m_data.data()), m_data.size());
 
 		m_streamValid = true;
@@ -158,7 +158,7 @@ bool BinaryStreamReader::Decompress(size_t compressedDataOffset)
 		do
 		{
 			size_t dstOffset = tempResult.size();
-			tempResult.resize(tempResult.size() + COMPRESSED_CHUNK_SIZE);
+			tempResult.resize_uninitialized(tempResult.size() + COMPRESSED_CHUNK_SIZE);
 
 			stream.avail_out = COMPRESSED_CHUNK_SIZE;
 			stream.next_out = &tempResult[dstOffset];
@@ -179,7 +179,7 @@ bool BinaryStreamReader::Decompress(size_t compressedDataOffset)
 			}
 
 			uint32_t actualOutSize = COMPRESSED_CHUNK_SIZE - stream.avail_out;
-			tempResult.resize(dstOffset + actualOutSize);
+			tempResult.resize_uninitialized(dstOffset + actualOutSize);
 
 		}
 		while (stream.avail_out == 0);
@@ -193,7 +193,7 @@ bool BinaryStreamReader::Decompress(size_t compressedDataOffset)
 	{
 		m_data.erase(m_data.begin(), m_data.begin() + COMPRESSION_ENCODING_HEADER_SIZE);
 
-		m_data.resize(compressedDataOffset + tempResult.size() - COMPRESSION_ENCODING_HEADER_SIZE);
+		m_data.resize_uninitialized(compressedDataOffset + tempResult.size() - COMPRESSION_ENCODING_HEADER_SIZE);
 		memcpy_s(&m_data[compressedDataOffset - COMPRESSION_ENCODING_HEADER_SIZE], tempResult.size(), tempResult.data(), tempResult.size());
 	}
 

@@ -5,13 +5,13 @@
 
 namespace Volt::RHI
 {
-	RefPtr<CommandBuffer> CommandBuffer::Create(const uint32_t count, QueueType queueType)
+	RefPtr<CommandBuffer> CommandBuffer::Create(QueueType queueType)
 	{
-		return RHIProxy::GetInstance().CreateCommandBuffer(count, queueType);
+		return RHIProxy::GetInstance().CreateCommandBuffer(queueType);
 	}
 
 	RefPtr<CommandBuffer> CommandBuffer::Create()
 	{
-		return RHIProxy::GetInstance().CreateCommandBuffer(1, QueueType::Graphics);
+		return RHIProxy::GetInstance().CreateCommandBuffer(QueueType::Graphics);
 	}
 }

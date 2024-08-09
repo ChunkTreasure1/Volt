@@ -16,7 +16,7 @@ namespace Volt::RHI
 	class D3D12CommandBuffer final : public CommandBuffer
 	{
 	public:
-		D3D12CommandBuffer(const uint32_t count, QueueType queueType);
+		D3D12CommandBuffer(QueueType queueType);
 		~D3D12CommandBuffer() override;
 
 		void Begin() override;
@@ -24,7 +24,7 @@ namespace Volt::RHI
 		void End() override;
 		void Execute() override;
 		void ExecuteAndWait() override;
-		void WaitForFences() override;
+		void WaitForFence() override;
 		void SetEvent(WeakPtr<Event> event) override;
 
 		void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance) override;
@@ -82,10 +82,9 @@ namespace Volt::RHI
 
 		void UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData) override;
 
-		const uint32_t GetCurrentIndex() const override;
 		const QueueType GetQueueType() const override;
 
-		RefPtr<Semaphore> GetCurrentSemaphore() const { return m_commandLists.at(m_currentCommandListIndex).fence; }
+		RefPtr<Semaphore> GetSemaphore() const { return m_commandListData.fence; }
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -99,7 +98,6 @@ namespace Volt::RHI
 
 		void BindPipelineInternal();
 
-		const uint32_t GetCurrentCommandListIndex() const;
 		D3D12DescriptorPointer CreateTempDescriptorPointer();
 
 		struct CommandListData
@@ -109,11 +107,7 @@ namespace Volt::RHI
 			RefPtr<Semaphore> fence;
 		};
 
-		Vector<CommandListData> m_commandLists;
-
-		uint32_t m_commandListCount = 0;
-		uint32_t m_currentCommandListIndex = 0;
-
+		CommandListData m_commandListData;
 		QueueType m_queueType;
 
 		// Internal state
@@ -122,7 +116,7 @@ namespace Volt::RHI
 
 		bool m_pipelineNeedsToBeBound = false;
 
-		Vector<Vector<D3D12DescriptorPointer>> m_allocatedDescriptors;
+		Vector<D3D12DescriptorPointer> m_allocatedDescriptors;
 		Scope<D3D12DescriptorHeap> m_descriptorHeap;
 	};
 }

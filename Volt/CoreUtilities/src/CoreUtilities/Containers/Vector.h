@@ -70,6 +70,7 @@ public:
 
 	constexpr void resize(size_type count, const value_type& value);
 	constexpr void resize(size_type count);
+	constexpr void resize_uninitialized(size_type count);
 	constexpr void reserve(size_type count);
 	constexpr void set_capacity(size_type count = npos);
 	constexpr void shrink_to_fit();
@@ -428,6 +429,24 @@ inline constexpr void Vector<T>::resize(size_type count)
 	if (count > static_cast<size_type>(m_ptrEnd - m_ptrBegin))
 	{
 		InsertValuesAtEnd(count - (static_cast<size_type>(m_ptrEnd - m_ptrBegin)));
+	}
+	else
+	{
+		Destruct(m_ptrBegin + count, m_ptrEnd);
+		m_ptrEnd = m_ptrBegin + count;
+	}
+}
+
+template<typename T>
+inline constexpr void Vector<T>::resize_uninitialized(size_type count)
+{
+	if (count > static_cast<size_type>(m_ptrEnd - m_ptrBegin))
+	{
+		if (count > static_cast<size_type>(m_ptrCapacity - m_ptrBegin))
+		{
+			Grow(count);
+			m_ptrEnd = m_ptrBegin + count;
+		}
 	}
 	else
 	{

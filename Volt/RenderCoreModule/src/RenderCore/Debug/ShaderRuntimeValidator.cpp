@@ -1,9 +1,13 @@
 #include "rcpch.h"
 
-#ifndef VT_DIST
 #include "ShaderRuntimeValidator.h"
 
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
+
 #include "RenderCore/Resources/BindlessResourcesManager.h"
+
+#include "RenderCore/RenderGraph/RenderGraph.h"
+#include "RenderCore/RenderGraph/Resources/RenderGraphBufferResource.h"
 
 #include <RHIModule/Buffers/StorageBuffer.h>
 #include <RHIModule/Buffers/CommandBuffer.h>
@@ -69,56 +73,59 @@ namespace Volt
 
 	ShaderRuntimeValidator::ShaderRuntimeValidator()
 	{
-		VT_ASSERT(s_instance == nullptr);
-		s_instance = this;
-
-		m_errorBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(MAX_ERROR_COUNT), sizeof(uint32_t), "Error Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::GPU);
-		BindlessResourcesManager::Get().RegisterBuffer(m_errorBuffer);
-
-		m_commandBuffer = RHI::CommandBuffer::Create(2);
 	}
 
 	ShaderRuntimeValidator::~ShaderRuntimeValidator()
 	{
-		BindlessResourcesManager::Get().UnregisterBuffer(BindlessResourcesManager::Get().GetBufferHandle(m_errorBuffer));
-		if (m_stagingBuffer)
-		{
-			BindlessResourcesManager::Get().UnregisterBuffer(BindlessResourcesManager::Get().GetBufferHandle(m_stagingBuffer));
-		}
-
-		m_errorBuffer = nullptr;
-		s_instance = nullptr;
 	}
 
-	void ShaderRuntimeValidator::Update()
+	void ShaderRuntimeValidator::Allocate(RenderGraph& renderGraph)
 	{
 		VT_PROFILE_FUNCTION();
 
-		if (m_stagingBuffer)
+		// Error Buffer
 		{
-			Vector<uint8_t> bufferData{};
-			bufferData.resize(m_stagingBuffer->GetByteSize());
+			RenderGraphBufferDesc desc{};
+			desc.count = MAX_ERROR_COUNT;
+			desc.elementSize = sizeof(uint32_t);
+			desc.usage = RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferSrc;
+			desc.memoryUsage = RHI::MemoryUsage::GPU;
+			desc.name = "Error Buffer";
 
-			uint8_t* stagingPtr = m_stagingBuffer->Map<uint8_t>();
-			memcpy_s(bufferData.data(), bufferData.size(), stagingPtr, m_stagingBuffer->GetByteSize());
-			m_stagingBuffer->Unmap();
-
-			ProcessValidationBuffer(bufferData);
+			m_errorBufferHandle = renderGraph.CreateBuffer(desc);
 		}
-		else
-		{
-			m_stagingBuffer = RHI::StorageBuffer::Create(MAX_ERROR_COUNT, sizeof(uint32_t), "Error Staging Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
-			BindlessResourcesManager::Get().RegisterBuffer(m_stagingBuffer);
-		}
-
-		m_commandBuffer->Begin();
-		m_commandBuffer->CopyBufferRegion(m_errorBuffer->GetAllocation(), 0, m_stagingBuffer->GetAllocation(), 0, m_errorBuffer->GetByteSize());
-		m_commandBuffer->ClearBuffer(m_errorBuffer, 0);
-		m_commandBuffer->End();
-		m_commandBuffer->Execute();
 	}
 
-	const ResourceHandle ShaderRuntimeValidator::GetCurrentErrorBufferHandle() const
+	void ShaderRuntimeValidator::ReadbackErrorBuffer(RenderGraph& renderGraph)
+	{
+		//VT_PROFILE_FUNCTION();
+
+		//renderGraph.read
+
+		//if (m_stagingBuffer)
+		//{
+		//	Vector<uint8_t> bufferData(m_stagingBuffer->GetByteSize(), 0u);
+
+		//	uint8_t* stagingPtr = m_stagingBuffer->Map<uint8_t>();
+		//	memcpy_s(bufferData.data(), bufferData.size(), stagingPtr, m_stagingBuffer->GetByteSize());
+		//	m_stagingBuffer->Unmap();
+
+		//	ProcessValidationBuffer(bufferData);
+		//}
+		//else
+		//{
+		//	m_stagingBuffer = RHI::StorageBuffer::Create(MAX_ERROR_COUNT, sizeof(uint32_t), "Error Staging Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
+		//	BindlessResourcesManager::Get().RegisterBuffer(m_stagingBuffer);
+		//}
+
+		//m_commandBuffer->Begin();
+		//m_commandBuffer->CopyBufferRegion(m_errorBuffer->GetAllocation(), 0, m_stagingBuffer->GetAllocation(), 0, m_errorBuffer->GetByteSize());
+		//m_commandBuffer->ClearBuffer(m_errorBuffer, 0);
+		//m_commandBuffer->End();
+		//m_commandBuffer->Execute();
+	}
+
+	const RenderGraphBufferHandle ShaderRuntimeValidator::GetErrorBufferHandle() const
 	{
 		return m_errorBufferHandle;
 	}

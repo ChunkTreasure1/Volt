@@ -9,6 +9,8 @@
 // #TODO_Ivar: Maybe remove from here
 #include <RenderCore/RenderGraph/RenderGraph.h>
 
+#include <RHIModule/Buffers/CommandBufferSet.h>
+
 namespace Volt
 {
 	namespace RHI
@@ -141,10 +143,11 @@ namespace Volt
 		uint32_t m_resizeWidth = 1280;
 		uint32_t m_resizeHeight = 1280;
 
-		RefPtr<RHI::CommandBuffer> m_commandBuffer;
 		ShadingMode m_shadingMode = ShadingMode::Shaded;
 		VisualizationMode m_visualizationMode = VisualizationMode::None;
 		PreviousFrameData m_previousFrameData;
+
+		RHI::CommandBufferSet m_commandBufferSet;
 
 		std::atomic<uint64_t> m_frameTotalGPUAllocation;
 

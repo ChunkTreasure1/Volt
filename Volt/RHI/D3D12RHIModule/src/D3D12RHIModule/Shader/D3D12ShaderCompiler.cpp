@@ -378,7 +378,7 @@ namespace Volt::RHI
 
 			const size_t size = shaderResult->GetBufferSize();
 
-			data.resize(size / sizeof(uint32_t));
+			data.resize_uninitialized(size / sizeof(uint32_t));
 			memcpy_s(data.data(), size, shaderResult->GetBufferPointer(), shaderResult->GetBufferSize());
 
 			// Get reflection data

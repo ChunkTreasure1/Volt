@@ -61,7 +61,7 @@ namespace Volt
 	};
 
 	UISceneRenderer::UISceneRenderer(const UISceneRendererSpecification& specification)
-		: m_scene(specification.scene), m_isEditor(specification.isEditor)
+		: m_scene(specification.scene), m_isEditor(specification.isEditor), m_commandBufferSet(Renderer::GetFramesInFlight())
 	{
 
 	}
@@ -72,13 +72,8 @@ namespace Volt
 
 	void UISceneRenderer::OnRender(RefPtr<RHI::Image2D> targetImage, const glm::mat4& projectionMatrix)
 	{
-		if (!m_commandBuffer)
-		{
-			m_commandBuffer = RHI::CommandBuffer::Create(Renderer::GetFramesInFlight(), RHI::QueueType::Graphics);
-		}
-
 		RenderGraphBlackboard blackboard;
-		RenderGraph renderGraph{ m_commandBuffer };
+		RenderGraph renderGraph{ m_commandBufferSet.IncrementAndGetCommandBuffer() };
 	
 		if (PrepareForRender(renderGraph, blackboard))
 		{
@@ -162,7 +157,7 @@ namespace Volt
 				context.EndRendering();
 			});
 
-			renderGraph.QueueImage2DExtraction(selectionData.widgetIDImage, m_widgetIDImage);
+			renderGraph.EnqueueImage2DExtraction(selectionData.widgetIDImage, m_widgetIDImage);
 
 			renderGraph.AddPass<UIPassData>("UI Pass",
 			[&](RenderGraph::Builder& builder, UIPassData& data) 

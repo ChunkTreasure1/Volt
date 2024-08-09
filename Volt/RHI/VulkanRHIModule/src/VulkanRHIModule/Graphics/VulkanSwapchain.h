@@ -102,8 +102,7 @@ namespace Volt::RHI
 
 		SwapchainCapabilities m_capabilities{};
 
-		RefPtr<CommandBuffer> m_commandBuffer;
-
+		Vector<RefPtr<CommandBuffer>> m_commandBuffers;
 		Vector<PerFrameInFlightData> m_perFrameInFlightData{};
 		Vector<PerImageData> m_perImageData{};
 

@@ -32,7 +32,7 @@ namespace Volt::RHI
 		ImGuiCreateInfo m_info;
 
 		D3D12DescriptorPointer m_fontTexturePointer;
-		RefPtr<CommandBuffer> m_commandBuffer;
+		Vector<RefPtr<CommandBuffer>> m_commandBuffers;
 
 		uint32_t m_currentFrameIndex = 0;
 		const uint32_t m_framesInFlight = 0;

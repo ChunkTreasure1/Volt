@@ -23,7 +23,7 @@ namespace Volt::RHI
 	D3D12ImGuiImplementation::~D3D12ImGuiImplementation()
 	{
 		m_descriptorCache.clear();
-		m_commandBuffer = nullptr;
+		m_commandBuffers.clear();
 		ShutdownAPI();
 	}
 
@@ -43,8 +43,8 @@ namespace Volt::RHI
 
 	void D3D12ImGuiImplementation::EndAPI()
 	{
-		m_commandBuffer->Begin();
-		auto d3dCommandBuffer = m_commandBuffer->As<D3D12CommandBuffer>();
+		m_commandBuffers.at(m_currentFrameIndex)->Begin();
+		auto d3dCommandBuffer = m_commandBuffers.at(m_currentFrameIndex)->As<D3D12CommandBuffer>();
 		auto cmd = d3dCommandBuffer->GetHandle<ID3D12GraphicsCommandList*>();
 
 		auto swapchain = m_info.swapchain->As<D3D12Swapchain>();
@@ -59,7 +59,7 @@ namespace Volt::RHI
 			barrier.imageBarrier().dstLayout = ImageLayout::RenderTarget;
 			barrier.imageBarrier().resource = swapchain->GetCurrentImage();
 
-			m_commandBuffer->ResourceBarrier({ barrier });
+			m_commandBuffers.at(m_currentFrameIndex)->ResourceBarrier({barrier});
 		}
 
 		auto& d3d12View = swapchain->GetCurrentImage()->GetView()->AsRef<D3D12ImageView>();
@@ -72,8 +72,8 @@ namespace Volt::RHI
 
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmd);
 
-		m_commandBuffer->End();
-		m_commandBuffer->Execute();
+		m_commandBuffers.at(m_currentFrameIndex)->End();
+		m_commandBuffers.at(m_currentFrameIndex)->Execute();
 	}
 
 	void D3D12ImGuiImplementation::InitializeAPI(ImGuiContext* context)
@@ -97,7 +97,11 @@ namespace Volt::RHI
 		D3D12_CPU_DESCRIPTOR_HANDLE(m_fontTexturePointer.GetCPUPointer()),
 		D3D12_GPU_DESCRIPTOR_HANDLE(m_fontTexturePointer.GetGPUPointer()));
 
-		m_commandBuffer = CommandBuffer::Create(m_framesInFlight);
+		m_commandBuffers.resize(m_framesInFlight);
+		for (uint32_t i = 0; i < m_framesInFlight; i++)
+		{
+			m_commandBuffers[i] = CommandBuffer::Create();
+		}
 	}
 
 	void D3D12ImGuiImplementation::ShutdownAPI()

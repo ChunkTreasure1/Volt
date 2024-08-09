@@ -368,13 +368,13 @@ namespace Volt
 
 				Vector<uint8_t> totalData;
 				const size_t srcSize = vpFile.seekg(0, std::ios::end).tellg();
-				totalData.resize(srcSize);
+				totalData.resize_uninitialized(srcSize);
 				vpFile.seekg(0, std::ios::beg);
 				vpFile.read(reinterpret_cast<char*>(totalData.data()), totalData.size());
 				vpFile.close();
 
 				memcpy_s(&vpComp.meshHandle, sizeof(vpComp.meshHandle), totalData.data() + totalData.size() - sizeof(vpComp.meshHandle), sizeof(vpComp.meshHandle));
-				totalData.resize(totalData.size() - sizeof(vpComp.meshHandle));
+				totalData.resize_uninitialized(totalData.size() - sizeof(vpComp.meshHandle));
 
 				vpComp.vertexColors.reserve(totalData.size() / sizeof(uint32_t));
 				for (size_t offset = 0; offset < totalData.size(); offset += sizeof(uint32_t))

@@ -1,9 +1,13 @@
 #pragma once
 
+#include "RenderCore/Config.h"
+
 #include "RenderCore/RenderGraph/RenderGraphPass.h"
 #include "RenderCore/RenderGraph/Resources/RenderGraphResourceHandle.h"
 #include "RenderCore/RenderGraph/RenderContext.h"
 #include "RenderCore/TransientResourceSystem/TransientResourceSystem.h" 
+
+#include "RenderCore/Debug/ShaderRuntimeValidator.h"
 
 #include <CoreUtilities/Containers/Map.h>
 
@@ -93,9 +97,10 @@ namespace Volt
 		void AddStagedBufferUpload(RenderGraphBufferHandle bufferHandle, const void* data, const size_t size, std::string_view name);
 
 		void AddResourceBarrier(RenderGraphResourceHandle resourceHandle, const RenderGraphBarrierInfo& barrierInfo);
-
-		void QueueImage2DExtraction(RenderGraphImage2DHandle resourceHandle, RefPtr<RHI::Image2D>& outImage);
-		void QueueBufferExtraction(RenderGraphBufferHandle resourceHandle, RefPtr<RHI::StorageBuffer>& outBuffer);
+		
+		void EnqueueBufferReadback(RenderGraphBufferHandle sourceBuffer, RefPtr<RHI::StorageBuffer> dstBuffer);
+		void EnqueueImage2DExtraction(RenderGraphImage2DHandle resourceHandle, RefPtr<RHI::Image2D>& outImage);
+		void EnqueueBufferExtraction(RenderGraphBufferHandle resourceHandle, RefPtr<RHI::StorageBuffer>& outBuffer);
 
 		void BeginMarker(const std::string& markerName, const glm::vec4& markerColor = 1.f);
 		void EndMarker();
@@ -118,6 +123,10 @@ namespace Volt
 		ResourceHandle GetBuffer(const RenderGraphBufferHandle resourceHandle);
 		ResourceHandle GetUniformBuffer(const RenderGraphUniformBufferHandle resourceHandle);
 
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
+		ResourceHandle GetRuntimeShaderValidationErrorBuffer();
+#endif
+
 	private:
 		friend class RenderGraphPassResources;
 		friend class Builder;
@@ -131,6 +140,9 @@ namespace Volt
 		void DestroyResources();
 		void AllocateConstantsBuffer();
 		void ExtractResources();
+
+		void InitializeRuntimeShaderValidator();
+		void AddRuntimeShaderValidationBuffers(Builder& builder);
 
 		struct Image2DExtractionInfo
 		{
@@ -192,6 +204,10 @@ namespace Volt
 		WeakPtr<RHI::UniformBuffer> m_renderGraphConstantsBuffer;
 		ResourceHandle m_perPassConstantsBufferResourceHandle = Resource::Invalid;
 
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
+		ShaderRuntimeValidator m_runtimeShaderValidator;
+#endif
+
 		TransientResourceSystem m_transientResourceSystem;
 		RenderContext m_renderContext;
 
@@ -217,6 +233,8 @@ namespace Volt
 		m_currentlyInBuilder = true;
 		Builder builder{ *this, newNode };
 		createFunc(builder, newNode->data);
+
+		AddRuntimeShaderValidationBuffers(builder);
 		m_currentlyInBuilder = false;
 
 		return newNode->data;

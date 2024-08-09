@@ -42,7 +42,7 @@ namespace Volt::RHI
 
 		virtual void Execute() = 0;
 		virtual void ExecuteAndWait() = 0;
-		virtual void WaitForFences() = 0;
+		virtual void WaitForFence() = 0;
 
 		virtual void SetEvent(WeakPtr<Event> event) = 0;
 
@@ -100,10 +100,9 @@ namespace Volt::RHI
 
 		virtual void UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData) = 0;
 
-		virtual const uint32_t GetCurrentIndex() const = 0;
 		virtual const QueueType GetQueueType() const = 0;
 
-		static RefPtr<CommandBuffer> Create(const uint32_t count, QueueType queueType = QueueType::Graphics);
+		static RefPtr<CommandBuffer> Create(QueueType queueType);
 		static RefPtr<CommandBuffer> Create();
 
 	protected:

@@ -25,7 +25,7 @@ namespace Volt
 		{
 			Vector<uint32_t> prefixSums(elements.size());
 
-			prefixSums.resize(elements.size());
+			prefixSums.resize_uninitialized(elements.size());
 			prefixSums[0] = 0;
 
 			for (size_t i = 1; i < elements.size(); i++)

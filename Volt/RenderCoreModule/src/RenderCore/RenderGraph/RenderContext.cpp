@@ -389,13 +389,15 @@ namespace Volt
 
 	void RenderContext::SetPerPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer)
 	{
+		VT_PROFILE_FUNCTION();
 		m_perPassConstantsBuffer = constantsBuffer;
-		m_perPassConstantsBufferData.resize(constantsBuffer->GetByteSize());
+		m_perPassConstantsBufferData.resize_uninitialized(constantsBuffer->GetByteSize());
 		memset(m_perPassConstantsBufferData.data(), 0, m_perPassConstantsBufferData.size());
 	}
 
 	void RenderContext::SetRenderGraphConstantsBuffer(WeakPtr<RHI::UniformBuffer> constantsBuffer)
 	{
+		VT_PROFILE_FUNCTION();
 		m_renderGraphConstantsBuffer = constantsBuffer;
 	}
 
@@ -407,6 +409,7 @@ namespace Volt
 
 	void RenderContext::SetRenderGraphInstance(RenderGraph* renderGraph)
 	{
+		VT_PROFILE_FUNCTION();
 		m_renderGraph = renderGraph;
 	}
 
@@ -471,7 +474,7 @@ namespace Volt
 			renderGraphConstants.constatsBufferIndex = BindlessResourcesManager::Get().GetBufferHandle(m_perPassConstantsBuffer);
 			renderGraphConstants.constantsOffset = m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
 #ifndef VT_DIST
-			renderGraphConstants.shaderValidationBuffer = ShaderRuntimeValidator::Get().GetCurrentErrorBufferHandle();
+			renderGraphConstants.shaderValidationBuffer = m_renderGraph->GetRuntimeShaderValidationErrorBuffer();
 #endif
 			{
 				uint8_t* constantsPtr = m_renderGraphConstantsBuffer->Map<uint8_t>(m_currentPassIndex);

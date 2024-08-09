@@ -13,7 +13,7 @@ namespace Volt::RHI
 
 		RefPtr<BufferView> CreateBufferView(const BufferViewSpecification& specification) const override;
 
-		RefPtr<CommandBuffer> CreateCommandBuffer(const uint32_t count, QueueType queueType) const override;
+		RefPtr<CommandBuffer> CreateCommandBuffer(QueueType queueType) const override;
 
 		RefPtr<IndexBuffer> CreateIndexBuffer(std::span<const uint32_t> indices) const override;
 		RefPtr<VertexBuffer> CreateVertexBuffer(const void* data, const uint32_t size, const uint32_t stride) const override;

@@ -1,25 +1,25 @@
 #include "rcpch.h"
 #include "RenderGraph.h"
 
-#include "RenderCore/RenderGraph/RenderGraphPass.h"
-#include "RenderCore/RenderGraph/RenderGraphExecutionThread.h"
-#include "RenderCore/RenderGraph/Resources/RenderGraphTextureResource.h"
-#include "RenderCore/RenderGraph/Resources/RenderGraphBufferResource.h"
 #include "RenderCore/RenderGraph/RenderGraphCommon.h"
+#include "RenderCore/RenderGraph/RenderGraphExecutionThread.h"
+#include "RenderCore/RenderGraph/RenderGraphPass.h"
+#include "RenderCore/RenderGraph/Resources/RenderGraphBufferResource.h"
+#include "RenderCore/RenderGraph/Resources/RenderGraphTextureResource.h"
 
 #include "RenderCore/Resources/BindlessResourcesManager.h"
 
 #include <RHIModule/Buffers/CommandBuffer.h>
 #include <RHIModule/Buffers/StorageBuffer.h>
 #include <RHIModule/Buffers/UniformBuffer.h>
+#include <RHIModule/Graphics/GraphicsContext.h>
+#include <RHIModule/Images/Image3D.h>
 #include <RHIModule/Images/ImageUtility.h>
 #include <RHIModule/Images/ImageView.h>
-#include <RHIModule/Images/Image3D.h>
-#include <RHIModule/Graphics/GraphicsContext.h>
 #include <RHIModule/Utility/ResourceUtility.h>
 
-#include <CoreUtilities/Profiling/Profiling.h>
 #include <CoreUtilities/EnumUtils.h>
+#include <CoreUtilities/Profiling/Profiling.h>
 
 namespace Volt
 {
@@ -127,6 +127,7 @@ namespace Volt
 	RenderGraph::RenderGraph(RefPtr<RHI::CommandBuffer> commandBuffer)
 		: m_commandBuffer(commandBuffer), m_renderContext(commandBuffer)
 	{
+		InitializeRuntimeShaderValidator();
 	}
 
 	RenderGraph::~RenderGraph()
@@ -976,6 +977,20 @@ namespace Volt
 		}
 	}
 
+	void RenderGraph::InitializeRuntimeShaderValidator()
+	{
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
+		m_runtimeShaderValidator.Allocate(*this);
+#endif
+	}
+
+	void RenderGraph::AddRuntimeShaderValidationBuffers(Builder& builder)
+	{
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
+		builder.WriteResource(m_runtimeShaderValidator.GetErrorBufferHandle());
+#endif
+	}
+
 	RenderGraphImage2DHandle RenderGraph::CreateImage2D(const RenderGraphImageDesc& textureDesc)
 	{
 		VT_ENSURE_MSG(textureDesc.width > 0 && textureDesc.height > 0, "Width and height must not be zero!");
@@ -1216,6 +1231,11 @@ namespace Volt
 		return handle;
 	}
 
+	ResourceHandle RenderGraph::GetRuntimeShaderValidationErrorBuffer()
+	{
+		return GetBuffer(m_runtimeShaderValidator.GetErrorBufferHandle());
+	}
+
 	WeakPtr<RHI::RHIResource> RenderGraph::GetResourceRaw(const RenderGraphResourceHandle resourceHandle)
 	{
 		VT_PROFILE_FUNCTION();
@@ -1356,6 +1376,8 @@ namespace Volt
 
 		Builder builder{ *this, newNode };
 		createFunc(builder);
+
+		AddRuntimeShaderValidationBuffers(builder);
 	}
 
 	void RenderGraph::AddMappedBufferUpload(RenderGraphBufferHandle bufferHandle, const void* data, const size_t size, std::string_view name)
@@ -1373,6 +1395,8 @@ namespace Volt
 
 		Builder tempBuilder{ *this, newNode };
 		tempBuilder.WriteResource(bufferHandle, RenderGraphResourceState::CopyDest);
+
+		AddRuntimeShaderValidationBuffers(tempBuilder);
 
 		newNode->executeFunction = [tempData, size, bufferHandle](const Empty&, RenderContext& context)
 		{
@@ -1418,6 +1442,8 @@ namespace Volt
 		Builder tempBuilder{ *this, newNode };
 		tempBuilder.WriteResource(bufferHandle, RenderGraphResourceState::CopyDest);
 		tempBuilder.ReadResource(stagingBuffer, RenderGraphResourceState::CopySource);
+
+		AddRuntimeShaderValidationBuffers(tempBuilder);
 
 		newNode->executeFunction = [tempData, size, bufferHandle, stagingBuffer](const Empty&, RenderContext& context)
 		{
@@ -1477,12 +1503,17 @@ namespace Volt
 		newBarrier.isPassSpecificUsage = false;
 	}
 
-	void RenderGraph::QueueImage2DExtraction(RenderGraphImage2DHandle resourceHandle, RefPtr<RHI::Image2D>& outImage)
+	void RenderGraph::EnqueueBufferReadback(RenderGraphBufferHandle sourceBuffer, RefPtr<RHI::StorageBuffer> dstBuffer)
+	{
+		
+	}
+
+	void RenderGraph::EnqueueImage2DExtraction(RenderGraphImage2DHandle resourceHandle, RefPtr<RHI::Image2D>& outImage)
 	{
 		m_image2DExtractions.emplace_back(resourceHandle, &outImage);
 	}
 
-	void RenderGraph::QueueBufferExtraction(RenderGraphBufferHandle resourceHandle, RefPtr<RHI::StorageBuffer>& outBuffer)
+	void RenderGraph::EnqueueBufferExtraction(RenderGraphBufferHandle resourceHandle, RefPtr<RHI::StorageBuffer>& outBuffer)
 	{
 		m_bufferExtractions.emplace_back(resourceHandle, &outBuffer);
 	}

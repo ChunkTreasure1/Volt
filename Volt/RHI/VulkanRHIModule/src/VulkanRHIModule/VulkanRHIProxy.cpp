@@ -50,9 +50,9 @@ namespace Volt::RHI
 		return RefPtr<VulkanBufferView>::Create(specification);
 	}
 
-	RefPtr<CommandBuffer> VulkanRHIProxy::CreateCommandBuffer(const uint32_t count, QueueType queueType) const
+	RefPtr<CommandBuffer> VulkanRHIProxy::CreateCommandBuffer(QueueType queueType) const
 	{
-		return RefPtr<VulkanCommandBuffer>::Create(count, queueType);
+		return RefPtr<VulkanCommandBuffer>::Create(queueType);
 	}
 
 	RefPtr<IndexBuffer> VulkanRHIProxy::CreateIndexBuffer(std::span<const uint32_t> indices) const

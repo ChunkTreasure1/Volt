@@ -216,7 +216,7 @@ namespace Volt::RHI
 	{
 		auto device = GraphicsContext::GetDevice()->As<VulkanGraphicsDevice>();
 
-		m_swapchain->GetCommandBuffer()->WaitForFences();
+		m_swapchain->GetCommandBuffer()->WaitForFence();
 
 		vkDestroyDescriptorPool(device->GetHandle<VkDevice>(), m_descriptorPool, nullptr);
 		ImGui_ImplVulkan_Shutdown();

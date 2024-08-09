@@ -77,7 +77,7 @@ namespace Volt::RHI
 			info.value = semaphore->GetValue();
 		}
 
-		waitFence = executeInfo.commandBuffers.front()->AsRef<VulkanCommandBuffer>().GetCurrentFence();
+		waitFence = executeInfo.commandBuffers.front()->AsRef<VulkanCommandBuffer>().GetFence();
 
 		VkSubmitInfo2 info{};
 		info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;

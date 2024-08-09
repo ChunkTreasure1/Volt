@@ -43,7 +43,11 @@ namespace Volt::RHI
 	D3D12Swapchain::D3D12Swapchain(GLFWwindow* window)
 	{
 		m_windowHandle = window;
-		m_commandBuffer = CommandBuffer::Create(GetFramesInFlight());
+
+		for (uint32_t i = 0; i < GetFramesInFlight(); i++)
+		{
+			m_commandBuffers[i] = CommandBuffer::Create();
+		}
 
 		Invalidate(m_width, m_height, m_enableVsync);
 	}
@@ -63,7 +67,7 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		m_currentImageIndex = m_swapchain->GetCurrentBackBufferIndex();
-		m_commandBuffer->Begin();
+		m_commandBuffers.at(m_currentFrameIndex)->Begin();
 	}
 
 	void D3D12Swapchain::Present()
@@ -80,13 +84,15 @@ namespace Volt::RHI
 			barrier.imageBarrier().dstLayout = ImageLayout::Present;
 			barrier.imageBarrier().resource = m_perImageData.at(m_currentImageIndex).imageReference;
 
-			m_commandBuffer->ResourceBarrier({ barrier });
+			m_commandBuffers.at(m_currentFrameIndex)->ResourceBarrier({ barrier });
 		}
 
-		m_commandBuffer->End();
-		m_commandBuffer->Execute();
+		m_commandBuffers.at(m_currentFrameIndex)->End();
+		m_commandBuffers.at(m_currentFrameIndex)->Execute();
 
 		VT_D3D12_CHECK(m_swapchain->Present(m_enableVsync, m_supportsTearing ? DXGI_PRESENT_ALLOW_TEARING : 0));
+
+		GetNextFrameIndex();
 	}
 
 	void D3D12Swapchain::Resize(const uint32_t width, const uint32_t height, bool enableVSync)
@@ -98,7 +104,7 @@ namespace Volt::RHI
 		m_enableVsync = enableVSync;
 
 		{
-			m_commandBuffer->WaitForFences();
+			m_commandBuffers.at(m_currentFrameIndex)->WaitForFence();
 		}
 
 		for (uint32_t i = 0; i < MAX_SWAPCHAIN_IMAGES; i++)
@@ -211,5 +217,10 @@ namespace Volt::RHI
 			spec.imageIndex = i;
 			m_perImageData[i].imageReference = Image2D::Create(spec);
 		}
+	}
+
+	void D3D12Swapchain::GetNextFrameIndex()
+	{
+		m_currentFrameIndex = (m_currentFrameIndex + 1) % GetFramesInFlight();
 	}
 }
