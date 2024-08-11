@@ -54,6 +54,7 @@ namespace Volt
 		template<typename T>
 		T& As()
 		{
+			static_assert(std::is_base_of_v<RenderGraphResourceNodeBase, T>);
 			return *reinterpret_cast<T*>(this);
 		}
 	};

@@ -47,6 +47,7 @@ project "Volt"
 		"%{IncludeDir.VulkanRHIModule}",
 		"%{IncludeDir.D3D12RHIModule}",
 		"%{IncludeDir.RenderCoreModule}",
+		"%{IncludeDir.JobSystemModule}",
 		
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -114,6 +115,7 @@ project "Volt"
 
 		"LogModule",
 		"RenderCoreModule",
+		"JobSystemModule",
 		
 		"D3D12RHIModule",
 		"RHIModule",

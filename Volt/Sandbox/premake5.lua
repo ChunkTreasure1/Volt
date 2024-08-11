@@ -71,6 +71,7 @@ project "Sandbox"
 		"%{IncludeDir.LogModule}",
 		"%{IncludeDir.RHIModule}",
 		"%{IncludeDir.RenderCoreModule}",
+		"%{IncludeDir.JobSystemModule}",
 		
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",

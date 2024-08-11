@@ -6,6 +6,7 @@
 #include "RenderCore/RenderGraph/RenderGraphPass.h"
 #include "RenderCore/RenderGraph/Resources/RenderGraphBufferResource.h"
 #include "RenderCore/RenderGraph/Resources/RenderGraphTextureResource.h"
+#include "RenderCore/RenderGraph/GPUReadbackBuffer.h"
 
 #include "RenderCore/Resources/BindlessResourcesManager.h"
 
@@ -17,6 +18,9 @@
 #include <RHIModule/Images/ImageUtility.h>
 #include <RHIModule/Images/ImageView.h>
 #include <RHIModule/Utility/ResourceUtility.h>
+#include <RHIModule/Synchronization/Fence.h>
+
+#include <JobSystem/JobSystem.h>
 
 #include <CoreUtilities/EnumUtils.h>
 #include <CoreUtilities/Profiling/Profiling.h>
@@ -1231,10 +1235,12 @@ namespace Volt
 		return handle;
 	}
 
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
 	ResourceHandle RenderGraph::GetRuntimeShaderValidationErrorBuffer()
 	{
 		return GetBuffer(m_runtimeShaderValidator.GetErrorBufferHandle());
 	}
+#endif
 
 	WeakPtr<RHI::RHIResource> RenderGraph::GetResourceRaw(const RenderGraphResourceHandle resourceHandle)
 	{
@@ -1503,9 +1509,36 @@ namespace Volt
 		newBarrier.isPassSpecificUsage = false;
 	}
 
-	void RenderGraph::EnqueueBufferReadback(RenderGraphBufferHandle sourceBuffer, RefPtr<RHI::StorageBuffer> dstBuffer)
+	Ref<GPUReadbackBuffer> RenderGraph::EnqueueBufferReadback(RenderGraphBufferHandle sourceBuffer)
 	{
-		
+		const auto resourceNode = m_resourceNodes.at(sourceBuffer)->As<RenderGraphResourceNode<RenderGraphBuffer>>();
+		const size_t size = resourceNode.resourceInfo.description.count * resourceNode.resourceInfo.description.elementSize;
+
+		Ref<GPUReadbackBuffer> readbackBuffer = CreateRef<GPUReadbackBuffer>(size);
+		RenderGraphBufferHandle dstBufferHandle = AddExternalBuffer(readbackBuffer->GetBuffer());
+
+		RefPtr<RHI::Fence> fence = RHI::Fence::Create(RHI::FenceCreateInfo{ false });
+
+		AddPass("Readback Copy Pass", 
+		[&](Builder& builder) 
+		{
+			builder.ReadResource(sourceBuffer, RenderGraphResourceState::CopySource);
+			builder.WriteResource(dstBufferHandle, RenderGraphResourceState::CopyDest);
+			builder.SetHasSideEffect();
+		},
+		[=](RenderContext& context)
+		{
+			context.CopyBuffer(sourceBuffer, dstBufferHandle, size);
+			context.Flush(fence);
+
+			JobSystem::SubmitTask([fence, readbackBuffer]() 
+			{
+				fence->WaitUntilSignaled();
+				readbackBuffer->m_isReady = true;
+			});
+		});
+
+		return readbackBuffer;
 	}
 
 	void RenderGraph::EnqueueImage2DExtraction(RenderGraphImage2DHandle resourceHandle, RefPtr<RHI::Image2D>& outImage)

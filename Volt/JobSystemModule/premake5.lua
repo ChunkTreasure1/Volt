@@ -1,4 +1,4 @@
-project "RenderCoreModule"
+project "JobSystemModule"
 	location "."
 	kind "SharedLib"
 	language "C++"
@@ -8,8 +8,8 @@ project "RenderCoreModule"
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
 
-	pchheader "rcpch.h"
-	pchsource "src/rcpch.cpp"
+	pchheader "jspch.h"
+	pchsource "src/jspch.cpp"
 
 	warnings "Extra"
 
@@ -32,19 +32,13 @@ project "RenderCoreModule"
 		"src/",
 
 		"%{IncludeDir.LogModule}",
-		"%{IncludeDir.RHIModule}",
-		"%{IncludeDir.JobSystemModule}",
-
-		"%{IncludeDir.half}",
+		"%{IncludeDir.CoreUtilities}",
 	}
 
 	links
 	{
 		"tracy",
 		"LogModule",
-
-		"RHIModule",
-		"JobSystemModule",
 
 		"%{Library.CoreUtilities}",
 	}
@@ -86,7 +80,7 @@ project "RenderCoreModule"
 		defines 
 		{
 			"VT_PLATFORM_WINDOWS",
-			"VTRC_BUILD_DLL"
+			"VTJS_BUILD_DLL"
 		}
 
 		filter "configurations:Debug"

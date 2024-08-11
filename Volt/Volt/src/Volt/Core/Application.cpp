@@ -50,6 +50,8 @@ namespace Volt
 		m_log = CreateScope<Log>();
 		m_log->SetLogOutputFilepath(m_info.projectPath / "Log/Log.txt");
 
+		m_jobSystem = CreateScope<JobSystem>();
+
 		m_info = info;
 		Noise::Initialize();
 
@@ -90,9 +92,6 @@ namespace Volt
 		}
 
 		FileSystem::Initialize();
-		
-		m_threadPool.Initialize(std::thread::hardware_concurrency() / 2);
-
 		Renderer::PreInitialize();
 		m_assetmanager = CreateScope<AssetManager>();
 		
@@ -184,7 +183,6 @@ namespace Volt
 		Amp::WWiseEngine::Get().TermWwise();
 
 		m_assetmanager = nullptr;
-		m_threadPool.Shutdown();
 
 		ShaderMap::Shutdown();
 		Renderer::Shutdown();
@@ -195,6 +193,7 @@ namespace Volt
 		m_rhiProxy = nullptr;
 		Window::StaticShutdown();
 
+		m_jobSystem = nullptr;
 		m_log = nullptr;
 		s_instance = nullptr;
 	}

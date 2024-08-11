@@ -35,7 +35,7 @@ namespace Volt::RHI
 	void VulkanFence::Reset() const
 	{
 		auto device = GraphicsContext::GetDevice();
-		vkResetFences(device->GetHandle<VkDevice>(), 1, &m_fence);
+		VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &m_fence));
 	}
 
 	FenceStatus VulkanFence::GetStatus() const

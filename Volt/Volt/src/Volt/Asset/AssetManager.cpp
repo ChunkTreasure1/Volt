@@ -34,6 +34,8 @@
 #include "Volt/Utility/FileSystem.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
+#include <JobSystem/JobSystem.h>
+
 #include <CoreUtilities/ThreadUtilities.h>
 #include <CoreUtilities/Time/ScopedTimer.h>
 
@@ -1214,9 +1216,7 @@ namespace Volt
 
 		// If not, queue
 		{
-			auto& threadPool = Application::GetThreadPool();
-
-			threadPool.SubmitTask([this, metadata](AssetHandle handle)
+			JobSystem::SubmitTask([this, metadata](AssetHandle handle)
 			{
 				Ref<Asset> asset;
 				{

@@ -67,6 +67,7 @@ IncludeDir["RenderCoreModule"] = "%{wks.location}/RenderCoreModule/src"
 IncludeDir["RHIModule"] = "%{wks.location}/RHI/RHIModule/src"
 IncludeDir["VulkanRHIModule"] = "%{wks.location}/RHI/VulkanRHIModule/src"
 IncludeDir["D3D12RHIModule"] = "%{wks.location}/RHI/D3D12RHIModule/src"
+IncludeDir["JobSystemModule"] = "%{wks.location}/JobSystemModule/src"
 
 LibraryDir = {}
 LibraryDir["PhysX"] = "%{wks.location}/Volt/vendor/PhysX/lib/%{cfg.buildcfg}"

@@ -10,6 +10,7 @@
 #include <RHIModule/Pipelines/ComputePipeline.h>
 #include <RHIModule/Buffers/IndexBuffer.h>
 #include <RHIModule/Buffers/CommandBuffer.h>
+#include <RHIModule/Synchronization/Fence.h>
 
 #include <CoreUtilities/Profiling/Profiling.h>
 #include <CoreUtilities/StringHash.h>	
@@ -196,9 +197,6 @@ namespace Volt
 		void BindVertexBuffers(const StackVector<WeakPtr<RHI::VertexBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding);
 		void BindVertexBuffers(const StackVector<RenderGraphBufferHandle, RHI::MAX_VERTEX_BUFFER_COUNT>& vertexBuffers, const uint32_t firstBinding);
 
-		void Flush();
-		RefPtr<RHI::StorageBuffer> GetReadbackBuffer(WeakPtr<RHI::StorageBuffer> buffer);
-
 		template<typename T>
 		void SetConstant(const StringHash& name, const T& data);
 
@@ -236,6 +234,8 @@ namespace Volt
 		void SetCurrentPass(Weak<RenderGraphPassNodeBase> currentPassNode);
 		void SetRenderGraphInstance(RenderGraph* renderGraph);
 		void UploadConstantsData();
+
+		void Flush(RefPtr<RHI::Fence> fence);
 
 		// Validation
 		void InitializeCurrentPipelineConstantsValidation();

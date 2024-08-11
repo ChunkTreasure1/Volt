@@ -35,6 +35,8 @@
 
 #include <RHIModule/Shader/Shader.h>
 #include <RHIModule/Core/Profiling.h>
+#include <RHIModule/RHIProxy.h>
+#include <RHIModule/Synchronization/Fence.h>
 
 #include <CoreUtilities/EnumUtils.h>
 
@@ -258,7 +260,8 @@ namespace Volt::RHI
 
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{
-		Release();
+		Release(m_fence);
+		m_fence = nullptr;
 	}
 
 	void VulkanCommandBuffer::Begin()
@@ -266,8 +269,10 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence, VK_TRUE, UINT64_MAX));
-		VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence));
+
+		m_fence->WaitUntilSignaled();
+		m_fence->Reset();
+
 		VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), m_commandBufferData.commandPool, 0));
 
 		// If the next timestamp query is zero, no frame has run before
@@ -311,48 +316,42 @@ namespace Volt::RHI
 		VT_VK_CHECK(vkEndCommandBuffer(m_commandBufferData.commandBuffer));
 	}
 
-	void VulkanCommandBuffer::RestartAfterFlush()
-	{
-		VT_PROFILE_FUNCTION();
-
-		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence, VK_TRUE, UINT64_MAX));
-		VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence));
-		VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), m_commandBufferData.commandPool, 0));
-
-		// If the next timestamp query is zero, no frame has run before
-		if (m_nextAvailableTimestampQuery > 0)
-		{
-			FetchTimestampResults();
-		}
-
-		// Begin command buffer
-		{
-			VkCommandBufferBeginInfo beginInfo{};
-			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-			VT_VK_CHECK(vkBeginCommandBuffer(m_commandBufferData.commandBuffer, &beginInfo));
-		}
-
-		if (m_hasTimestampSupport)
-		{
-			vkCmdResetQueryPool(m_commandBufferData.commandBuffer, m_timestampQueryPool, 0, m_timestampQueryCount);
-			vkCmdWriteTimestamp2(m_commandBufferData.commandBuffer, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestampQueryPool, 0);
-
-			m_timestampCount = m_nextAvailableTimestampQuery;
-			m_nextAvailableTimestampQuery = 2;
-		}
-
-		BeginMarker("CommandBuffer", { 1.f, 1.f, 1.f, 1.f });
-	}
-
 	void VulkanCommandBuffer::Execute()
 	{
 		VT_PROFILE_FUNCTION();
 
 		auto device = GraphicsContext::GetDevice();
-		device->GetDeviceQueue(m_queueType)->Execute({ { this } });
+		DeviceQueueExecuteInfo execInfo{};
+		execInfo.commandBuffers = { this };
+		execInfo.fence = m_fence;
+
+		device->GetDeviceQueue(m_queueType)->Execute(execInfo);
+	}
+
+	void VulkanCommandBuffer::Flush(RefPtr<Fence> fence)
+	{
+		VT_PROFILE_FUNCTION();
+
+		// End the current command buffer
+		End();
+
+		// Execute current command buffer and use the supplied fence
+		{
+			auto device = GraphicsContext::GetDevice();
+
+			DeviceQueueExecuteInfo execInfo{};
+			execInfo.commandBuffers = { this };
+			execInfo.fence = fence;
+			device->GetDeviceQueue(m_queueType)->Execute(execInfo);
+		}
+
+		// Now we destroy the current command buffer and create a new one.
+		// #TODO_Ivar: Investigate the overhead of creating a new command buffer every frame.
+		Release(fence);
+		Invalidate();
+
+		// And lastly we restart the command buffer
+		Begin();
 	}
 
 	void VulkanCommandBuffer::ExecuteAndWait()
@@ -360,8 +359,13 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		auto device = GraphicsContext::GetDevice();
-		device->GetDeviceQueue(m_queueType)->Execute({ { this } });
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence, VK_TRUE, UINT64_MAX));
+
+		DeviceQueueExecuteInfo execInfo{};
+		execInfo.commandBuffers = { this };
+		execInfo.fence = m_fence;
+
+		device->GetDeviceQueue(m_queueType)->Execute(execInfo);
+		m_fence->WaitUntilSignaled();
 
 		FetchTimestampResults();
 	}
@@ -369,9 +373,7 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::WaitForFence()
 	{
 		VT_PROFILE_FUNCTION();
-
-		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence, VK_TRUE, UINT64_MAX));
+		m_fence->WaitUntilSignaled();
 	}
 
 	void VulkanCommandBuffer::SetEvent(WeakPtr<Event> event)
@@ -1218,9 +1220,9 @@ namespace Volt::RHI
 		return m_queueType;
 	}
 
-	VkFence_T* VulkanCommandBuffer::GetFence() const
+	const WeakPtr<Fence> VulkanCommandBuffer::GetFence() const
 	{
-		return m_commandBufferData.fence;
+		return m_fence;
 	}
 
 	void* VulkanCommandBuffer::GetHandleImpl() const
@@ -1230,6 +1232,8 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::Invalidate()
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto physicalDevice = GraphicsContext::GetPhysicalDevice()->As<VulkanPhysicalGraphicsDevice>();
 		auto device = GraphicsContext::GetDevice();
 
@@ -1269,11 +1273,10 @@ namespace Volt::RHI
 
 		VT_VK_CHECK(vkAllocateCommandBuffers(device->GetHandle<VkDevice>(), &allocInfo, &m_commandBufferData.commandBuffer));
 
-		VkFenceCreateInfo info{};
-		info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		FenceCreateInfo fenceInfo{};
+		fenceInfo.createSignaled = true;
 
-		VT_VK_CHECK(vkCreateFence(device->GetHandle<VkDevice>(), &info, nullptr, &m_commandBufferData.fence));
+		m_fence = Fence::Create(fenceInfo);
 
 		m_hasTimestampSupport = GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().GetProperties().limits.timestampComputeAndGraphics;
 		if (m_hasTimestampSupport)
@@ -1282,18 +1285,32 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanCommandBuffer::Release()
+	void VulkanCommandBuffer::Release(RefPtr<Fence> waitFence)
 	{
-		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence, VK_TRUE, UINT64_MAX));
+		VT_PROFILE_FUNCTION();
 
-		vkDestroyFence(device->GetHandle<VkDevice>(), m_commandBufferData.fence, nullptr);
-		vkDestroyCommandPool(device->GetHandle<VkDevice>(), m_commandBufferData.commandPool, nullptr);
-		vkDestroyQueryPool(device->GetHandle<VkDevice>(), m_timestampQueryPool, nullptr);
+		if (!m_commandBufferData.commandBuffer)
+		{
+			return;
+		}
+
+		VkFence fencePtr = waitFence->GetHandle<VkFence>();
+		RHIProxy::GetInstance().DestroyResource([fence = fencePtr, commandPool = m_commandBufferData.commandPool, timestampPool = m_timestampQueryPool]()
+		{
+			auto device = GraphicsContext::GetDevice();
+			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &fence, VK_TRUE, UINT64_MAX));
+
+			vkDestroyCommandPool(device->GetHandle<VkDevice>(), commandPool, nullptr);
+			vkDestroyQueryPool(device->GetHandle<VkDevice>(), timestampPool, nullptr);
+		});
+
+		m_commandBufferData = {};
 	}
 
 	void VulkanCommandBuffer::CreateQueryPools()
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto device = GraphicsContext::GetDevice();
 
 		m_timestampQueryCount = 2 + 2 * MAX_QUERIES;

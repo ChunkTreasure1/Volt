@@ -23,6 +23,7 @@
 #include <RHIModule/Buffers/IndexBuffer.h>
 #include <RHIModule/Buffers/VertexBuffer.h>
 #include <RHIModule/Synchronization/Semaphore.h>
+#include <RHIModule/Synchronization/Fence.h>
 #include <RHIModule/Memory/MemoryUtility.h>
 #include <RHIModule/Images/ImageUtility.h>
 #include <RHIModule/RHIProxy.h>
@@ -371,16 +372,16 @@ namespace Volt::RHI
 		BeginMarker("CommandBuffer", { 1.f, 1.f, 1.f, 1.f });
 	}
 
-	void D3D12CommandBuffer::RestartAfterFlush()
-	{
-	}
-
 	void D3D12CommandBuffer::End()
 	{
 		VT_PROFILE_FUNCTION();
 
 		EndMarker();
 		m_commandListData.commandList->Close();
+	}
+
+	void D3D12CommandBuffer::Flush(RefPtr<Fence> fence)
+	{
 	}
 
 	void D3D12CommandBuffer::Execute()
@@ -1048,5 +1049,9 @@ namespace Volt::RHI
 	const QueueType D3D12CommandBuffer::GetQueueType() const
 	{
 		return m_queueType;
+	}
+	const WeakPtr<Fence> D3D12CommandBuffer::GetFence() const
+	{
+		return WeakPtr<Fence>();
 	}
 }

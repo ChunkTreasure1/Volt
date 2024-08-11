@@ -29,6 +29,7 @@ namespace Volt::RHI
 	class Swapchain;
 
 	class Event;
+	class Fence;
 
 	class VTRHI_API CommandBuffer : public RHIInterface
 	{
@@ -38,8 +39,8 @@ namespace Volt::RHI
 
 		virtual void Begin() = 0;
 		virtual void End() = 0;
-		virtual void RestartAfterFlush() = 0;
 
+		virtual void Flush(RefPtr<Fence> fence) = 0;
 		virtual void Execute() = 0;
 		virtual void ExecuteAndWait() = 0;
 		virtual void WaitForFence() = 0;
@@ -101,6 +102,7 @@ namespace Volt::RHI
 		virtual void UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData) = 0;
 
 		virtual const QueueType GetQueueType() const = 0;
+		virtual const WeakPtr<Fence> GetFence() const = 0;
 
 		static RefPtr<CommandBuffer> Create(QueueType queueType);
 		static RefPtr<CommandBuffer> Create();

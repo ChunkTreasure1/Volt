@@ -7,11 +7,14 @@ namespace Volt::RHI
 {
 	class CommandBuffer;
 	class Semaphore;
+	class Fence;
 
 	struct DeviceQueueExecuteInfo
 	{
-		Vector<CommandBuffer*> commandBuffers;
-		Vector<Semaphore*> signalSemaphores;
+		Vector<WeakPtr<CommandBuffer>> commandBuffers;
+		Vector<WeakPtr<Semaphore>> signalSemaphores;
+	
+		WeakPtr<Fence> fence;
 	};
 
 	class VTRHI_API DeviceQueue : public RHIInterface

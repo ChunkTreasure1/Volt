@@ -20,8 +20,9 @@ namespace Volt::RHI
 		~D3D12CommandBuffer() override;
 
 		void Begin() override;
-		void RestartAfterFlush() override;
 		void End() override;
+
+		void Flush(RefPtr<Fence> fence) override;
 		void Execute() override;
 		void ExecuteAndWait() override;
 		void WaitForFence() override;
@@ -83,6 +84,7 @@ namespace Volt::RHI
 		void UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData) override;
 
 		const QueueType GetQueueType() const override;
+		const WeakPtr<Fence> GetFence() const override;
 
 		RefPtr<Semaphore> GetSemaphore() const { return m_commandListData.fence; }
 

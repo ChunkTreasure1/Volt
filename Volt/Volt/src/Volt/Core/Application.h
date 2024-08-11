@@ -7,8 +7,6 @@
 #include "Volt/Core/Layer/LayerStack.h"
 #include "Volt/Core/MultiTimer.h"
 
-#include "Volt/Core/Threading/ThreadPool.h"
-
 #include "Volt/Core/Layer/LayerStack.h"
 #include "Volt/Core/WindowManager.h"
 
@@ -16,6 +14,8 @@
 
 #include "Volt/Events/ApplicationEvent.h"
 #include "Volt/Events/KeyEvent.h"
+
+#include <JobSystem/JobSystem.h>
 
 #include <string>
 
@@ -25,6 +25,7 @@ namespace Amp
 }
 
 class Log;
+class JobSystem;
 
 namespace Volt
 {
@@ -80,7 +81,6 @@ namespace Volt
 
 		Window& GetWindow() const;
 		inline static Application& Get() { return *s_instance; }
-		inline static ThreadPool& GetThreadPool() { return Get().m_threadPool; }
 		inline static WindowManager& GetWindowManager() { return Get().m_windowManager; }
 		inline static const uint64_t GetFrameIndex() { return Get().m_frameIndex; }
 
@@ -125,6 +125,7 @@ namespace Volt
 		WindowManager m_windowManager;
 
 		Scope<Log> m_log;
+		Scope<JobSystem> m_jobSystem;
 
 		RefPtr<RHI::ImGuiImplementation> m_imguiImplementation;
 		RefPtr<RHI::GraphicsContext> m_graphicsContext;
@@ -136,7 +137,6 @@ namespace Volt
 		Scope<AI::NavigationSystem> m_navigationSystem;
 
 		Scope<SteamImplementation> m_steamImplementation;
-		ThreadPool m_threadPool;
 	};
 
 	static Application* CreateApplication(const std::filesystem::path& appPath);

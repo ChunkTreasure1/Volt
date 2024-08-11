@@ -3,8 +3,6 @@
 #include "VulkanRHIModule/Core.h"
 #include <RHIModule/Buffers/CommandBuffer.h>
 
-
-
 struct VkCommandBuffer_T;
 struct VkCommandPool_T;
 struct VkFence_T;
@@ -15,6 +13,7 @@ struct VkPipelineLayout_T;
 namespace Volt::RHI
 {
 	class Semaphore;
+
 	class VulkanCommandBuffer final : public CommandBuffer
 	{
 	public:
@@ -23,8 +22,9 @@ namespace Volt::RHI
 
 		void Begin() override;
 		void End() override;
-		void RestartAfterFlush() override;
 		void Execute() override;
+
+		void Flush(RefPtr<Fence> fence) override;
 		void ExecuteAndWait() override;
 		void WaitForFence() override;
 
@@ -85,8 +85,7 @@ namespace Volt::RHI
 		void UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData) override;
 
 		const QueueType GetQueueType() const override;
-
-		VkFence_T* GetFence() const;
+		const WeakPtr<Fence> GetFence() const override;
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -99,7 +98,7 @@ namespace Volt::RHI
 		inline static constexpr uint32_t MAX_QUERIES = 64;
 
 		void Invalidate();
-		void Release();
+		void Release(RefPtr<Fence> waitFence);
 
 		void CreateQueryPools();
 		void FetchTimestampResults();
@@ -110,9 +109,9 @@ namespace Volt::RHI
 		{
 			VkCommandBuffer_T* commandBuffer = nullptr;
 			VkCommandPool_T* commandPool = nullptr;
-			VkFence_T* fence = nullptr;
 		};
 
+		RefPtr<Fence> m_fence;
 		CommandBufferData m_commandBufferData;
 
 		bool m_hasTimestampSupport = false;

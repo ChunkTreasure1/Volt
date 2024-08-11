@@ -13,6 +13,7 @@
 
 #include <RHIModule/Core/Profiling.h>
 #include <RHIModule/Utility/ResourceUtility.h>
+#include <RHIModule/Synchronization/Fence.h>
 
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
@@ -164,7 +165,7 @@ namespace Volt::RHI
 		// Queue Submit
 		{
 			VkCommandBuffer cmdBuffer = m_commandBuffers.at(m_currentFrame)->GetHandle<VkCommandBuffer>();
-			VkFence fence = m_commandBuffers.at(m_currentFrame)->AsRef<VulkanCommandBuffer>().GetFence();
+			VkFence fence = m_commandBuffers.at(m_currentFrame)->GetFence()->GetHandle<VkFence>();
 
 			VkSubmitInfo submitInfo{};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -295,7 +296,7 @@ namespace Volt::RHI
 		}
 
 		auto device = GraphicsContext::GetDevice();
-
+		
 		m_commandBuffers.at(m_currentFrame)->WaitForFence();
 
 		for (auto& perFrameData : m_perFrameInFlightData)

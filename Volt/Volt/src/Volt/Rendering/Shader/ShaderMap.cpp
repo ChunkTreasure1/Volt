@@ -227,9 +227,7 @@ namespace Volt
 					AssetManager::AddDependencyToAsset(shaderDef->handle, AssetManager::GetAssetHandleFromFilePath(sourceEntry.filePath));
 				}
 
-				auto& threadPool = Application::GetThreadPool();
-
-				shaderFutures.emplace_back(threadPool.SubmitTask([&, def = shaderDef]() 
+				shaderFutures.emplace_back(JobSystem::SubmitTask([&, def = shaderDef]() 
 				{
 					RHI::ShaderSpecification specification;
 					specification.name = def->GetName();

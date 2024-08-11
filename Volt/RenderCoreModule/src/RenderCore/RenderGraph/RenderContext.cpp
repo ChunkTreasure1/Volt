@@ -140,6 +140,10 @@ namespace Volt
 		const auto srcBuffer = m_renderGraph->GetBufferRaw(src);
 		const auto dstBuffer = m_renderGraph->GetBufferRaw(dst);
 
+		VT_ENSURE_MSG(dstBuffer->GetByteSize() >= size, "Destination buffer is too small!");
+		VT_ENSURE_MSG(srcBuffer->GetByteSize() >= size, "Source buffer is smaller than the specified copy size!");
+		VT_ENSURE_MSG(size > 0, "Size must be larger than zero!");
+
 		m_commandBuffer->CopyBufferRegion(srcBuffer->GetAllocation(), 0, dstBuffer->GetAllocation(), 0, size);
 	}
 
@@ -364,29 +368,6 @@ namespace Volt
 		m_commandBuffer->BindVertexBuffers(buffers, firstBinding);
 	}
 
-	void RenderContext::Flush()
-	{
-		m_commandBuffer->End();
-
-		m_commandBuffer->ExecuteAndWait();
-		m_commandBuffer->RestartAfterFlush();
-	}
-
-	RefPtr<RHI::StorageBuffer> RenderContext::GetReadbackBuffer(WeakPtr<RHI::StorageBuffer> buffer)
-	{
-		RefPtr<RHI::StorageBuffer> readbackBuffer = RHI::StorageBuffer::Create(buffer->GetCount(), buffer->GetElementSize(), "Readback Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
-
-		RefPtr<RHI::CommandBuffer> tempCommandBuffer = RHI::CommandBuffer::Create();
-		tempCommandBuffer->Begin();
-
-		tempCommandBuffer->CopyBufferRegion(buffer->GetAllocation(), 0, readbackBuffer->GetAllocation(), 0, buffer->GetByteSize());
-
-		tempCommandBuffer->End();
-		tempCommandBuffer->ExecuteAndWait();
-
-		return readbackBuffer;
-	}
-
 	void RenderContext::SetPerPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer)
 	{
 		VT_PROFILE_FUNCTION();
@@ -418,6 +399,15 @@ namespace Volt
 		uint8_t* mappedPtr = m_perPassConstantsBuffer->Map<uint8_t>();
 		memcpy_s(mappedPtr, m_perPassConstantsBuffer->GetByteSize(), m_perPassConstantsBufferData.data(), m_perPassConstantsBufferData.size());
 		m_perPassConstantsBuffer->Unmap();
+	}
+
+	void RenderContext::Flush(RefPtr<RHI::Fence> fence)
+	{
+		// Setup state and execute command buffer
+		UploadConstantsData();
+		BindlessResourcesManager::Get().PrepareForRender();
+
+		m_commandBuffer->Flush(fence);
 	}
 
 	void RenderContext::InitializeCurrentPipelineConstantsValidation()
