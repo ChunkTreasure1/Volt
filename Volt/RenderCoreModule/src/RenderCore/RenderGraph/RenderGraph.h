@@ -37,6 +37,7 @@ namespace Volt
 	struct RenderGraphBufferDesc;
 
 	class GPUReadbackBuffer;
+	class GPUReadbackImage2D;
 
 	struct ResourceUsageInfo
 	{
@@ -101,6 +102,8 @@ namespace Volt
 		void AddResourceBarrier(RenderGraphResourceHandle resourceHandle, const RenderGraphBarrierInfo& barrierInfo);
 		
 		Ref<GPUReadbackBuffer> EnqueueBufferReadback(RenderGraphBufferHandle sourceBuffer);
+		Ref<GPUReadbackImage2D> EnqueueImage2DReadback(RenderGraphImage2DHandle sourceImage);
+
 		void EnqueueImage2DExtraction(RenderGraphImage2DHandle resourceHandle, RefPtr<RHI::Image2D>& outImage);
 		void EnqueueBufferExtraction(RenderGraphBufferHandle resourceHandle, RefPtr<RHI::StorageBuffer>& outBuffer);
 

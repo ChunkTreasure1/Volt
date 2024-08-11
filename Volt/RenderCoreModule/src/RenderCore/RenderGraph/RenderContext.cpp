@@ -410,6 +410,19 @@ namespace Volt
 		m_commandBuffer->Flush(fence);
 	}
 
+	void RenderContext::CopyImage2D(RenderGraphImage2DHandle src, RenderGraphImage2DHandle dst, const uint32_t width, const uint32_t height)
+	{
+		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		resourceAccess.ValidateResourceAccess(src);
+		resourceAccess.ValidateResourceAccess(dst);
+
+		const auto srcImage = m_renderGraph->GetImage2DRaw(src);
+		const auto dstImage = m_renderGraph->GetImage2DRaw(dst);
+
+		VT_ENSURE_MSG(width > 0 && height > 0, "Width and height must be greater than zero!");
+		m_commandBuffer->CopyImage(srcImage, dstImage, width, height);
+	}
+
 	void RenderContext::InitializeCurrentPipelineConstantsValidation()
 	{
 #ifdef VT_DEBUG

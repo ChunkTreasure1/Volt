@@ -237,6 +237,8 @@ namespace Volt
 
 		void Flush(RefPtr<RHI::Fence> fence);
 
+		void CopyImage2D(RenderGraphImage2DHandle src, RenderGraphImage2DHandle dst, const uint32_t width, const uint32_t height);
+
 		// Validation
 		void InitializeCurrentPipelineConstantsValidation();
 		void ValidateCurrentPipelineConstants();

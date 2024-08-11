@@ -7,6 +7,7 @@
 #include "RenderCore/RenderGraph/Resources/RenderGraphBufferResource.h"
 #include "RenderCore/RenderGraph/Resources/RenderGraphTextureResource.h"
 #include "RenderCore/RenderGraph/GPUReadbackBuffer.h"
+#include "RenderCore/RenderGraph/GPUReadbackImage2D.h"
 
 #include "RenderCore/Resources/BindlessResourcesManager.h"
 
@@ -1511,7 +1512,7 @@ namespace Volt
 
 	Ref<GPUReadbackBuffer> RenderGraph::EnqueueBufferReadback(RenderGraphBufferHandle sourceBuffer)
 	{
-		const auto resourceNode = m_resourceNodes.at(sourceBuffer)->As<RenderGraphResourceNode<RenderGraphBuffer>>();
+		const auto& resourceNode = m_resourceNodes.at(sourceBuffer)->As<RenderGraphResourceNode<RenderGraphBuffer>>();
 		const size_t size = resourceNode.resourceInfo.description.count * resourceNode.resourceInfo.description.elementSize;
 
 		Ref<GPUReadbackBuffer> readbackBuffer = CreateRef<GPUReadbackBuffer>(size);
@@ -1539,6 +1540,40 @@ namespace Volt
 		});
 
 		return readbackBuffer;
+	}
+
+	Ref<GPUReadbackImage2D> RenderGraph::EnqueueImage2DReadback(RenderGraphImage2DHandle sourceImage)
+	{
+		const auto& resourceNode = m_resourceNodes.at(sourceImage)->As<RenderGraphResourceNode<RenderGraphImage2D>>();
+
+		Ref<GPUReadbackImage2D> readbackImage = CreateRef<GPUReadbackImage2D>(resourceNode.resourceInfo.description);
+		RenderGraphImage2DHandle dstImageHandle = AddExternalImage2D(readbackImage->GetImage());
+
+		RefPtr<RHI::Fence> fence = RHI::Fence::Create(RHI::FenceCreateInfo{ false });
+
+		const uint32_t width = resourceNode.resourceInfo.description.width;
+		const uint32_t height = resourceNode.resourceInfo.description.height;
+
+		AddPass("Readback Copy Pass",
+		[&](Builder& builder)
+		{
+			builder.ReadResource(sourceImage, RenderGraphResourceState::CopySource);
+			builder.WriteResource(dstImageHandle, RenderGraphResourceState::CopyDest);
+			builder.SetHasSideEffect();
+		},
+		[=](RenderContext& context)
+		{
+			context.CopyImage2D(sourceImage, dstImageHandle, width, height);
+			context.Flush(fence);
+
+			JobSystem::SubmitTask([fence, readbackImage]()
+			{
+				fence->WaitUntilSignaled();
+				readbackImage->m_isReady = true;
+			});
+		});
+
+		return readbackImage;
 	}
 
 	void RenderGraph::EnqueueImage2DExtraction(RenderGraphImage2DHandle resourceHandle, RefPtr<RHI::Image2D>& outImage)
