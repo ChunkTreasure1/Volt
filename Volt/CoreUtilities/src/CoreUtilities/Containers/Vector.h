@@ -125,7 +125,7 @@ public:
 	constexpr void clear() noexcept;
 
 protected:
-	template<bool move> struct ShouldMoveOrCopyTag{};
+	template<bool move> struct ShouldMoveOrCopyTag {};
 	using ShouldCopyTag = ShouldMoveOrCopyTag<false>;
 	using ShouldMoveTag = ShouldMoveOrCopyTag<true>;
 
@@ -440,19 +440,18 @@ inline constexpr void Vector<T>::resize(size_type count)
 template<typename T>
 inline constexpr void Vector<T>::resize_uninitialized(size_type count)
 {
-	if (count > static_cast<size_type>(m_ptrEnd - m_ptrBegin))
+	static_assert(std::is_trivially_destructible_v<T>);
+
+	if (count > static_cast<size_type>(m_ptrCapacity - m_ptrBegin))
 	{
-		if (count > static_cast<size_type>(m_ptrCapacity - m_ptrBegin))
-		{
-			Grow(count);
-			m_ptrEnd = m_ptrBegin + count;
-		}
+		const size_type prevCount = static_cast<size_type>(m_ptrEnd - m_ptrBegin);
+		const size_type growCount = GetNewCapacity(prevCount);
+		const size_type newCount = std::max(growCount, prevCount + count);
+
+		Grow(newCount);
 	}
-	else
-	{
-		Destruct(m_ptrBegin + count, m_ptrEnd);
-		m_ptrEnd = m_ptrBegin + count;
-	}
+
+	m_ptrEnd = m_ptrBegin + count;
 }
 
 template<typename T>
@@ -729,7 +728,7 @@ template<typename T>
 inline constexpr Vector<T>::iterator Vector<T>::erase_first_unsorted(const T& value)
 {
 	static_assert(HasEqualityV<T>, "T must be comparable!");
-	
+
 	iterator it = std::find(begin(), end(), value);
 
 	if (it != end())
@@ -1186,7 +1185,7 @@ inline void Vector<T>::InsertValues(const_iterator position, size_type count, co
 		{
 			const value_type temp = value;
 			const size_type insertPosition = static_cast<size_type>(m_ptrEnd - destPosition);
-		
+
 			if (count < insertPosition)
 			{
 				UninitializedMovePtr(m_ptrEnd - count, m_ptrEnd, m_ptrEnd);
@@ -1249,7 +1248,7 @@ inline void Vector<T>::InsertValue(const_iterator position, Args && ...args)
 		const size_type prevCount = size_type(m_ptrEnd - m_ptrBegin);
 		const size_type newCount = GetNewCapacity(prevCount);
 		value_type* const newData = Allocate(newCount);
-		
+
 		::new(static_cast<void*>(newData + insertPos)) value_type(std::forward<Args>(args)...);
 		value_type* newEnd = UninitializedMovePtr(m_ptrBegin, destPosition, newData);
 		newEnd = UninitializedMovePtr(destPosition, m_ptrEnd, ++newEnd);
