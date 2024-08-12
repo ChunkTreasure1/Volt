@@ -1,28 +1,29 @@
 #pragma once
 
 #include <RHIModule/Memory/Allocation.h>
-#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 
 
 namespace Volt::RHI
 {
-	class D3D12Image2D final : public Image2D
+	class D3D12Image final : public Image
 	{
 	public:
-		D3D12Image2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator);
-		D3D12Image2D(const SwapchainImageSpecification& specification);
+		D3D12Image(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator);
+		D3D12Image(const SwapchainImageSpecification& specification);
 
-		~D3D12Image2D() override;
+		~D3D12Image() override;
 
-		void Invalidate(const uint32_t width, const uint32_t height, const void* data) override;
+		void Invalidate(const uint32_t width, const uint32_t height, const uint32_t depth, const void* data) override;
 		void Release() override;
 		void GenerateMips() override;
 
-		const RefPtr<ImageView> GetView(const int32_t mip, const int32_t layer) override;
-		const RefPtr<ImageView> GetArrayView(const int32_t mip /* = -1 */) override;
+		RefPtr<ImageView> GetView(const int32_t mip, const int32_t layer) override;
+		RefPtr<ImageView> GetArrayView(const int32_t mip /* = -1 */) override;
 		
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
+		const uint32_t GetDepth() const override;
 		const uint32_t GetMipCount() const override;
 		const uint32_t GetLayerCount() const override;
 		const PixelFormat GetFormat() const override;
@@ -30,7 +31,7 @@ namespace Volt::RHI
 		const uint32_t CalculateMipCount() const override;
 		const bool IsSwapchainImage() const override;
 
-		inline constexpr ResourceType GetType() const override { return ResourceType::Image2D; }
+		inline constexpr ResourceType GetType() const override { return m_specification.imageType; }
 		void SetName(std::string_view name) override;
 		const uint64_t GetDeviceAddress() const override;
 		const uint64_t GetByteSize() const override;
@@ -39,7 +40,7 @@ namespace Volt::RHI
 
 	protected:
 		void* GetHandleImpl() const override;
-		Buffer ReadPixelInternal(const uint32_t x, const uint32_t y, const size_t stride) override;
+		Buffer ReadPixelInternal(const uint32_t x, const uint32_t y, const uint32_t z, const size_t stride) override;
 
 	private:
 		struct SwapchainImageData

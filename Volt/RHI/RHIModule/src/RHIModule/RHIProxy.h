@@ -33,8 +33,7 @@ namespace Volt::RHI
 	class TransientAllocator;
 	class TransientHeap;
 
-	class Image2D;
-	class Image3D;
+	class Image;
 	class ImageView;
 	class SamplerState;
 
@@ -100,14 +99,13 @@ namespace Volt::RHI
 		virtual RefPtr<PhysicalGraphicsDevice> CreatePhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& createInfo) const = 0;
 		virtual RefPtr<Swapchain> CreateSwapchain(GLFWwindow* window) const = 0;
 
-		virtual RefPtr<Image2D> CreateImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const = 0;
-		virtual RefPtr<Image2D> CreateImage2D(const SwapchainImageSpecification& specification) const = 0;
-		virtual RefPtr<Image3D> CreateImage3D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const = 0;
+		virtual RefPtr<Image> CreateImage(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const = 0;
+		virtual RefPtr<Image> CreateImage(const SwapchainImageSpecification& specification) const = 0;
 
 		virtual RefPtr<ImageView> CreateImageView(const ImageViewSpecification& specification) const = 0;
 		virtual RefPtr<SamplerState> CreateSamplerState(const SamplerStateCreateInfo& createInfo) const = 0;
 
-		virtual RefPtr<DefaultAllocator> CreateDefaultAllocator() const = 0;
+		virtual RefPtr<DefaultAllocator> CreateDefaultAllocator() const = 0; 
 		virtual RefPtr<TransientAllocator> CreateTransientAllocator() const = 0;
 		virtual RefPtr<TransientHeap> CreateTransientHeap(const TransientHeapCreateInfo& createInfo) const = 0;
 

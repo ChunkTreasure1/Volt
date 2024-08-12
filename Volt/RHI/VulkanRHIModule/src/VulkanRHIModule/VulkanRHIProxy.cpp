@@ -17,8 +17,7 @@
 #include "VulkanRHIModule/Graphics/VulkanPhysicalGraphicsDevice.h"
 #include "VulkanRHIModule/Graphics/VulkanSwapchain.h"
 
-#include "VulkanRHIModule/Images/VulkanImage2D.h"
-#include "VulkanRHIModule/Images/VulkanImage3D.h"
+#include "VulkanRHIModule/Images/VulkanImage.h"
 #include "VulkanRHIModule/Images/VulkanImageView.h"
 #include "VulkanRHIModule/Images/VulkanSamplerState.h"
 
@@ -110,19 +109,14 @@ namespace Volt::RHI
 		return RefPtr<VulkanSwapchain>::Create(window);
 	}
 
-	RefPtr<Image2D> VulkanRHIProxy::CreateImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const
+	RefPtr<Image> VulkanRHIProxy::CreateImage(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const
 	{
-		return RefPtr<VulkanImage2D>::Create(specification, data, allocator);
+		return RefPtr<VulkanImage>::Create(specification, data, allocator);
 	}
 
-	RefPtr<Image2D> VulkanRHIProxy::CreateImage2D(const SwapchainImageSpecification& specification) const
+	RefPtr<Image> VulkanRHIProxy::CreateImage(const SwapchainImageSpecification& specification) const
 	{
-		return RefPtr<VulkanImage2D>::Create(specification);
-	}
-
-	RefPtr<Image3D> VulkanRHIProxy::CreateImage3D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const
-	{
-		return RefPtr<VulkanImage3D>::Create(specification, data, allocator);
+		return RefPtr<VulkanImage>::Create(specification);
 	}
 
 	RefPtr<ImageView> VulkanRHIProxy::CreateImageView(const ImageViewSpecification& specification) const

@@ -49,7 +49,7 @@ namespace Volt
 			imageDesc.isCubeMap = false;
 			imageDesc.name = "Directional Light Shadow";
 
-			dirShadowData.shadowTexture = m_renderGraph.CreateImage2D(imageDesc);
+			dirShadowData.shadowTexture = m_renderGraph.CreateImage(imageDesc);
 		}
 
 		for (uint32_t i = 0; i < DirectionalLightData::CASCADE_COUNT; i++)

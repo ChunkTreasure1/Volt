@@ -42,7 +42,7 @@
 #include <Volt/Math/RayTriangle.h>
 #include <Volt/Math/Math.h>
 
-#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 
 #include <Navigation/Core/NavigationSystem.h>
 
@@ -898,7 +898,7 @@ void ViewportPanel::HandleSingleSelect()
 			return;
 		}
 
-		uint32_t pixelData = m_sceneRenderer->GetObjectIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX * renderScale), static_cast<uint32_t>(mouseY * renderScale));
+		uint32_t pixelData = m_sceneRenderer->GetObjectIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX * renderScale), static_cast<uint32_t>(mouseY * renderScale), 0u);
 		const bool multiSelect = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);
 		const bool deselect = Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL);
 

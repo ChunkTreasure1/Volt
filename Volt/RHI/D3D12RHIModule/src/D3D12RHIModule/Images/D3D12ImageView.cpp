@@ -2,8 +2,7 @@
 #include "D3D12ImageView.h"
 
 #include "RHIModule/Images/ImageUtility.h"
-#include "RHIModule/Images/Image3D.h"
-#include "D3D12RHIModule/Images/D3D12Image2D.h"
+#include "D3D12RHIModule/Images/D3D12Image.h"
 
 #include "D3D12RHIModule/Descriptors/DescriptorUtility.h"
 #include "D3D12RHIModule/Graphics/D3D12GraphicsDevice.h"
@@ -17,23 +16,13 @@ namespace Volt::RHI
 	D3D12ImageView::D3D12ImageView(const ImageViewSpecification specification) 
 		: m_specification(specification)
 	{
-		auto image = specification.image;
-		if (image->GetType() == ResourceType::Image2D)
-		{
-			auto image2D = image->As<Image2D>();
-			m_format = image2D->GetFormat();
-			m_imageUsage = image2D->GetUsage();
-			m_imageAspect = image2D->GetImageAspect();
-			m_isSwapchainImage = image2D->IsSwapchainImage();
-		}
-		else if (image->GetType() == ResourceType::Image3D)
-		{
-			auto image3D = image->As<Image3D>();
-			m_format = image3D->GetFormat();
-			m_imageUsage = image3D->GetUsage();
-			m_imageAspect = ImageAspect::Color;
-			m_isSwapchainImage = false;
-		}
+		auto imageRes = specification.image;
+		auto image = imageRes->As<Image>();
+
+		m_format = image->GetFormat();
+		m_imageUsage = image->GetUsage();
+		m_imageAspect = image->GetImageAspect();
+		m_isSwapchainImage = image->IsSwapchainImage();
 
 		m_viewUsage = D3D12ViewType::None;
 

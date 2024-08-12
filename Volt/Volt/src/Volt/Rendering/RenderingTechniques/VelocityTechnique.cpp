@@ -29,7 +29,7 @@ namespace Volt
 	{
 		struct Output
 		{
-			RenderGraphImage2DHandle velocityTexture;
+			RenderGraphImageHandle velocityTexture;
 		};
 
 		const auto& renderData = m_blackboard.Get<RenderData>();
@@ -40,7 +40,7 @@ namespace Volt
 		[&](RenderGraph::Builder& builder, Output& data)
 		{
 			const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R16G16_SFLOAT>(renderData.renderSize.x, renderData.renderSize.y, RHI::ImageUsage::AttachmentStorage, "Velocity");
-			data.velocityTexture = builder.CreateImage2D(desc);
+			data.velocityTexture = builder.CreateImage(desc);
 		
 			builder.ReadResource(preDepthData.depth);
 

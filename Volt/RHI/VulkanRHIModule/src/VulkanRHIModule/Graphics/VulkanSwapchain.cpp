@@ -9,7 +9,7 @@
 #include "VulkanRHIModule/Graphics/VulkanGraphicsDevice.h"
 #include "VulkanRHIModule/Graphics/VulkanDeviceQueue.h"
 #include "VulkanRHIModule/Buffers/VulkanCommandBuffer.h"
-#include "VulkanRHIModule/Images/VulkanImage2D.h"
+#include "VulkanRHIModule/Images/VulkanImage.h"
 
 #include <RHIModule/Core/Profiling.h>
 #include <RHIModule/Utility/ResourceUtility.h>
@@ -260,7 +260,7 @@ namespace Volt::RHI
 		return m_swapchainFormat;
 	}
 
-	RefPtr<Image2D> VulkanSwapchain::GetCurrentImage() const
+	RefPtr<Image> VulkanSwapchain::GetCurrentImage() const
 	{
 		const auto& data = m_perImageData.at(GetCurrentFrame());
 		return data.imageReference;
@@ -410,7 +410,7 @@ namespace Volt::RHI
 			spec.swapchain = this;
 			spec.imageIndex = static_cast<uint32_t>(i);
 
-			m_perImageData[i].imageReference = Image2D::Create(spec);
+			m_perImageData[i].imageReference = Image::Create(spec);
 		}
 
 		m_swapchainFormat = Utility::VulkanToVoltFormat(surfaceFormat.format);

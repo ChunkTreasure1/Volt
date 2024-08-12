@@ -1,5 +1,5 @@
 #include "dxpch.h"
-#include "D3D12Image2D.h"
+#include "D3D12Image.h"
 
 #include "D3D12RHIModule/Images/D3D12ImageView.h"
 #include "D3D12RHIModule/Graphics/D3D12Swapchain.h"
@@ -12,7 +12,7 @@
 
 namespace Volt::RHI
 {
-	D3D12Image2D::D3D12Image2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator)
+	D3D12Image::D3D12Image(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator)
 		: m_specification(specification), m_allocator(allocator)
 	{
 		if (!allocator)
@@ -20,11 +20,11 @@ namespace Volt::RHI
 			m_allocator = GraphicsContext::GetDefaultAllocator();
 		}
 
-		Invalidate(specification.width, specification.height, data);
+		Invalidate(specification.width, specification.height, m_specification.depth, data);
 		SetName(specification.debugName);
 	}
 
-	D3D12Image2D::D3D12Image2D(const SwapchainImageSpecification& specification)
+	D3D12Image::D3D12Image(const SwapchainImageSpecification& specification)
 		: m_isSwapchainImage(true)
 	{
 		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None, ImageLayout::Undefined);
@@ -33,13 +33,13 @@ namespace Volt::RHI
 		SetName("Swapchain Image");
 	}
 
-	D3D12Image2D::~D3D12Image2D()
+	D3D12Image::~D3D12Image()
 	{
 		GraphicsContext::GetResourceStateTracker()->RemoveResource(this);
 		Release();
 	}
 
-	void* D3D12Image2D::GetHandleImpl() const
+	void* D3D12Image::GetHandleImpl() const
 	{
 		if (m_isSwapchainImage)
 		{
@@ -51,12 +51,12 @@ namespace Volt::RHI
 		}
 	}
 
-	Buffer D3D12Image2D::ReadPixelInternal(const uint32_t x, const uint32_t y, const size_t stride)
+	Buffer D3D12Image::ReadPixelInternal(const uint32_t x, const uint32_t y, const uint32_t z, const size_t stride)
 	{
 		return Buffer();
 	}
 
-	void D3D12Image2D::InvalidateSwapchainImage(const SwapchainImageSpecification& specification)
+	void D3D12Image::InvalidateSwapchainImage(const SwapchainImageSpecification& specification)
 	{
 		const auto& d3d12Swapchain = specification.swapchain->AsRef<D3D12Swapchain>();
 
@@ -70,7 +70,7 @@ namespace Volt::RHI
 		TransitionToLayout(ImageLayout::RenderTarget);
 	}
 
-	void D3D12Image2D::InitializeWithData(const void* data)
+	void D3D12Image::InitializeWithData(const void* data)
 	{
 		RefPtr<CommandBuffer> cmdBuffer = CommandBuffer::Create();
 		cmdBuffer->Begin();
@@ -94,7 +94,7 @@ namespace Volt::RHI
 			cmdBuffer->ResourceBarrier({ barrier });
 		}
 
-		cmdBuffer->UploadTextureData(WeakPtr<Image2D>(this), copyData);
+		cmdBuffer->UploadTextureData(this, copyData);
 
 		{
 			RHI::ResourceBarrierInfo barrier{};
@@ -113,7 +113,7 @@ namespace Volt::RHI
 		cmdBuffer->Execute();
 	}
 
-	void D3D12Image2D::TransitionToLayout(ImageLayout targetLayout)
+	void D3D12Image::TransitionToLayout(ImageLayout targetLayout)
 	{
 		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 		commandBuffer->Begin();
@@ -139,15 +139,21 @@ namespace Volt::RHI
 		commandBuffer->Execute();
 	}
 
-	void D3D12Image2D::Invalidate(const uint32_t width, const uint32_t height, const void* data)
+	void D3D12Image::Invalidate(const uint32_t width, const uint32_t height, const uint32_t depth, const void* data)
 	{
 		Release();
 
 		m_specification.width = width;
 		m_specification.height = height;
+		m_specification.depth = depth;
 		m_allocation = m_allocator->CreateImage(m_specification, m_specification.memoryUsage);
 
 		ImageLayout targetLayout = ImageLayout::Undefined;
+
+		if (m_specification.imageType == ResourceType::Image3D)
+		{
+			VT_ENSURE_MSG(m_specification.usage != ImageUsage::Attachment && m_specification.usage != ImageUsage::AttachmentStorage, "Attachment types are not supported for 3D images!");
+		}
 
 		switch (m_specification.usage)
 		{
@@ -196,7 +202,7 @@ namespace Volt::RHI
 		}
 	}
 
-	void D3D12Image2D::Release()
+	void D3D12Image::Release()
 	{
 		m_imageViews.clear();
 
@@ -213,11 +219,11 @@ namespace Volt::RHI
 		m_allocation = nullptr;
 	}
 
-	void D3D12Image2D::GenerateMips()
+	void D3D12Image::GenerateMips()
 	{
 	}
 
-	const RefPtr<ImageView> D3D12Image2D::GetView(const int32_t mip, const int32_t layer)
+	RefPtr<ImageView> D3D12Image::GetView(const int32_t mip, const int32_t layer)
 	{
 		if (m_imageViews.contains(layer))
 		{
@@ -232,9 +238,21 @@ namespace Volt::RHI
 		spec.baseMipLevel = (mip == -1) ? 0 : mip;
 		spec.layerCount = (layer == -1) ? m_specification.layers : 1;
 		spec.mipCount = (mip == -1) ? m_specification.mips : 1;
-		spec.viewType = ImageViewType::View2D;
 
-		if (m_specification.isCubeMap)
+		if (m_specification.imageType == ResourceType::Image1D)
+		{
+			spec.viewType = ImageViewType::View1D;
+		}
+		else if (m_specification.imageType == ResourceType::Image2D)
+		{
+			spec.viewType = ImageViewType::View2D;
+		}
+		else if (m_specification.imageType == ResourceType::Image3D)
+		{
+			spec.viewType = ImageViewType::View3D;
+		}
+
+		if (m_specification.isCubeMap && m_specification.imageType == ResourceType::Image2D)
 		{
 			spec.layerCount = 6;
 
@@ -246,12 +264,23 @@ namespace Volt::RHI
 
 			spec.viewType = ImageViewType::ViewCube;
 		}
-		else if (m_specification.layers > 1)
+		else if (m_specification.layers > 1 && layer == -1)
 		{
-			spec.viewType = ImageViewType::View2DArray;
+			if (m_specification.imageType == ResourceType::Image1D)
+			{
+				spec.viewType = ImageViewType::View1DArray;
+			}
+			else if (m_specification.imageType == ResourceType::Image2D)
+			{
+				spec.viewType = ImageViewType::View2DArray;
+			}
+			else if (m_specification.imageType == ResourceType::Image3D)
+			{
+				spec.viewType = ImageViewType::View3DArray;
+			}
 		}
 
-		if (m_specification.isCubeMap && m_specification.layers > 6 && layer == -1)
+		if (m_specification.isCubeMap && m_specification.layers > 6 && layer == -1 && m_specification.imageType == ResourceType::Image2D)
 		{
 			spec.viewType = ImageViewType::ViewCubeArray;
 
@@ -260,13 +289,13 @@ namespace Volt::RHI
 
 		spec.image = this;
 
-		RefPtr<ImageView> view = RefPtr<D3D12ImageView>::Create(spec);
+		RefPtr<ImageView> view = ImageView::Create(spec);
 		m_imageViews[layer][mip] = view;
 
 		return view;
 	}
 
-	const RefPtr<ImageView> D3D12Image2D::GetArrayView(const int32_t mip)
+	RefPtr<ImageView> D3D12Image::GetArrayView(const int32_t mip)
 	{
 		if (m_arrayImageViews.contains(mip))
 		{
@@ -278,61 +307,79 @@ namespace Volt::RHI
 		spec.baseMipLevel = (mip == -1) ? 0 : mip;
 		spec.layerCount = m_specification.layers;
 		spec.mipCount = (mip == -1) ? m_specification.mips : 1;
-		spec.viewType = ImageViewType::View2DArray;
-		spec.image = As<Image2D>();
 
-		RefPtr<ImageView> view = RefPtr<D3D12ImageView>::Create(spec);
+		if (m_specification.imageType == ResourceType::Image1D)
+		{
+			spec.viewType = ImageViewType::View1DArray;
+		}
+		else if (m_specification.imageType == ResourceType::Image2D)
+		{
+			spec.viewType = ImageViewType::View2DArray;
+		}
+		else if (m_specification.imageType == ResourceType::Image3D)
+		{
+			spec.viewType = ImageViewType::View3DArray;
+		}
+
+		spec.image = this;
+
+		RefPtr<ImageView> view = ImageView::Create(spec);
 		m_arrayImageViews[mip] = view;
 
 		return view;
 	}
 
-	const uint32_t D3D12Image2D::GetWidth() const
+	const uint32_t D3D12Image::GetWidth() const
 	{
 		return m_specification.width;
 	}
 
-	const uint32_t D3D12Image2D::GetHeight() const
+	const uint32_t D3D12Image::GetHeight() const
 	{
 		return m_specification.height;
 	}
 
-	const uint32_t D3D12Image2D::GetMipCount() const
+	const uint32_t D3D12Image::GetDepth() const
+	{
+		return m_specification.depth;
+	}
+
+	const uint32_t D3D12Image::GetMipCount() const
 	{
 		return m_specification.mips;
 	}
 
-	const uint32_t D3D12Image2D::GetLayerCount() const
+	const uint32_t D3D12Image::GetLayerCount() const
 	{
 		return m_specification.layers;
 	}
 
-	const PixelFormat D3D12Image2D::GetFormat() const
+	const PixelFormat D3D12Image::GetFormat() const
 	{
 		return m_specification.format;
 	}
 
-	const ImageUsage D3D12Image2D::GetUsage() const
+	const ImageUsage D3D12Image::GetUsage() const
 	{
 		return m_specification.usage;
 	}
 
-	const ImageAspect D3D12Image2D::GetImageAspect() const
+	const ImageAspect D3D12Image::GetImageAspect() const
 	{
 		return Utility::IsDepthFormat(m_specification.format) ? ImageAspect::Depth : ImageAspect::Color;
 	}
 
-	const uint32_t D3D12Image2D::CalculateMipCount() const
+	const uint32_t D3D12Image::CalculateMipCount() const
 	{
 		return Utility::CalculateMipCount(GetWidth(), GetHeight());
 	}
 
-	const bool D3D12Image2D::IsSwapchainImage() const
+	const bool D3D12Image::IsSwapchainImage() const
 	{
 		return m_isSwapchainImage;
 	}
 
-	void D3D12Image2D::SetName(std::string_view name)
+	void D3D12Image::SetName(std::string_view name)
 	{
 		std::wstring wname(name.begin(), name.end());
 		if (m_isSwapchainImage)
@@ -345,12 +392,12 @@ namespace Volt::RHI
 		}
 	}
 
-	const uint64_t D3D12Image2D::GetDeviceAddress() const
+	const uint64_t D3D12Image::GetDeviceAddress() const
 	{
 		return 0;
 	}
 
-	const uint64_t D3D12Image2D::GetByteSize() const
+	const uint64_t D3D12Image::GetByteSize() const
 	{
 		return m_allocation->GetSize();
 	}

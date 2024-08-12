@@ -7,7 +7,7 @@
 
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 
-#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 #include <RHIModule/Images/ImageUtility.h>
 #include <RHIModule/Buffers/CommandBuffer.h>
 #include <RHIModule/Graphics/GraphicsContext.h>
@@ -72,7 +72,7 @@ namespace Volt
 	void TextureSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<Texture2D> texture = std::reinterpret_pointer_cast<Texture2D>(asset);
-		RefPtr<RHI::Image2D> image = texture->GetImage();
+		RefPtr<RHI::Image> image = texture->GetImage();
 
 		TextureHeader header{};
 		header.format = image->GetFormat();
@@ -129,7 +129,7 @@ namespace Volt
 				newMip.dataSize = mipSize;
 
 				commandBuffer->Begin();
-				commandBuffer->CopyImageToBuffer(image, stagingBuffer, 0, newMip.width, newMip.height, i);
+				commandBuffer->CopyImageToBuffer(image, stagingBuffer, 0, newMip.width, newMip.height, 1, i);
 				commandBuffer->End();
 				commandBuffer->ExecuteAndWait();
 
@@ -203,7 +203,7 @@ namespace Volt
 
 		Ref<Texture2D> texture = std::reinterpret_pointer_cast<Texture2D>(destinationAsset);
 
-		RefPtr<RHI::Image2D> image;
+		RefPtr<RHI::Image> image;
 		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 
 		// Create image
@@ -220,7 +220,7 @@ namespace Volt
 			specification.generateMips = false;
 			specification.debugName = filePath.stem().string();
 
-			image = RHI::Image2D::Create(specification);
+			image = RHI::Image::Create(specification);
 		}
 
 		TextureData texData{};

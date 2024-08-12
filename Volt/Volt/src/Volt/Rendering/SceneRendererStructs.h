@@ -32,14 +32,14 @@ namespace Volt
 
 	struct ExternalImagesData
 	{
-		RenderGraphImage2DHandle black1x1Cube;
-		RenderGraphImage2DHandle BRDFLuT;
+		RenderGraphImageHandle black1x1Cube;
+		RenderGraphImageHandle BRDFLuT;
 	};
 
 	struct EnvironmentTexturesData
 	{
-		RenderGraphImage2DHandle radiance;
-		RenderGraphImage2DHandle irradiance;
+		RenderGraphImageHandle radiance;
+		RenderGraphImageHandle irradiance;
 	};
 
 	struct UniformBuffersData
@@ -69,19 +69,19 @@ namespace Volt
 
 	struct PreDepthData
 	{
-		RenderGraphImage2DHandle depth;
-		RenderGraphImage2DHandle normals;
+		RenderGraphImageHandle depth;
+		RenderGraphImageHandle normals;
 	};
 
 	struct DirectionalShadowData
 	{
-		RenderGraphImage2DHandle shadowTexture;
+		RenderGraphImageHandle shadowTexture;
 		glm::uvec2 renderSize;
 	};
 
 	struct VisibilityBufferData
 	{
-		RenderGraphImage2DHandle visibility;
+		RenderGraphImageHandle visibility;
 	};
 
 	struct MaterialCountData
@@ -103,31 +103,31 @@ namespace Volt
 
 	struct GBufferData
 	{
-		RenderGraphImage2DHandle albedo;
-		RenderGraphImage2DHandle normals;
-		RenderGraphImage2DHandle material;
-		RenderGraphImage2DHandle emissive;
+		RenderGraphImageHandle albedo;
+		RenderGraphImageHandle normals;
+		RenderGraphImageHandle material;
+		RenderGraphImageHandle emissive;
 	};
 
 	struct ShadingOutputData
 	{
-		RenderGraphImage2DHandle colorOutput;
+		RenderGraphImageHandle colorOutput;
 	};
 
 	struct FXAAOutputData
 	{
-		RenderGraphImage2DHandle output;
+		RenderGraphImageHandle output;
 	};
 
 	struct FinalCopyData
 	{
-		RenderGraphImage2DHandle output;
+		RenderGraphImageHandle output;
 	};
 
 	struct GTAOOutput
 	{
-		RenderGraphImage2DHandle tempImage;
-		RenderGraphImage2DHandle outputImage;
+		RenderGraphImageHandle tempImage;
+		RenderGraphImageHandle outputImage;
 	};
 
 	struct GTAOSettings
@@ -140,7 +140,7 @@ namespace Volt
 
 	struct TestUIData
 	{
-		RenderGraphImage2DHandle outputTextureHandle;
-		RenderGraphImage2DHandle uiCommandsBufferHandle;
+		RenderGraphImageHandle outputTextureHandle;
+		RenderGraphImageHandle uiCommandsBufferHandle;
 	};
 }

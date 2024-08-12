@@ -12,7 +12,7 @@
 #include <RHIModule/Buffers/VertexBuffer.h>
 #include <RHIModule/Buffers/IndexBuffer.h>
 #include <RHIModule/Buffers/StorageBuffer.h>
-#include <RHIModule/Images/Image3D.h>
+#include <RHIModule/Images/Image.h>
 #include <RHIModule/Images/ImageView.h>
 
 #include <meshoptimizer/meshoptimizer.h>

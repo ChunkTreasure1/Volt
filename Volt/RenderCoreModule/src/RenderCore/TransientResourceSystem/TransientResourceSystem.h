@@ -8,8 +8,7 @@ namespace Volt
 {
 	namespace RHI
 	{
-		class Image2D;
-		class Image3D;
+		class Image;
 		class StorageBuffer;
 		class UniformBuffer;
 		class RHIResource;
@@ -24,13 +23,11 @@ namespace Volt
 		TransientResourceSystem();
 		~TransientResourceSystem();
 
-		WeakPtr<RHI::Image2D> AquireImage2D(RenderGraphImage2DHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
-		WeakPtr<RHI::Image3D> AquireImage3D(RenderGraphImage3DHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
+		WeakPtr<RHI::Image> AquireImage(RenderGraphImageHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
 		WeakPtr<RHI::StorageBuffer> AquireBuffer(RenderGraphBufferHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
 		WeakPtr<RHI::UniformBuffer> AquireUniformBuffer(RenderGraphUniformBufferHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
 
-		RefPtr<RHI::Image2D> AquireImage2DRef(RenderGraphImage2DHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
-		RefPtr<RHI::Image3D> AquireImage3DRef(RenderGraphImage3DHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
+		RefPtr<RHI::Image> AquireImageRef(RenderGraphImageHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
 		RefPtr<RHI::StorageBuffer> AquireBufferRef(RenderGraphBufferHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
 		RefPtr<RHI::UniformBuffer> AquireUniformBufferRef(RenderGraphUniformBufferHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
 

@@ -166,10 +166,9 @@ namespace Volt
 		void BeginRendering(const RenderingInfo& renderingInfo);
 		void EndRendering();
 
-		const RenderingInfo CreateRenderingInfo(const uint32_t width, const uint32_t height, const StackVector<RenderGraphImage2DHandle, RHI::MAX_ATTACHMENT_COUNT>& attachments);
+		const RenderingInfo CreateRenderingInfo(const uint32_t width, const uint32_t height, const StackVector<RenderGraphImageHandle, RHI::MAX_ATTACHMENT_COUNT>& attachments);
 
-		void ClearImage(RenderGraphImage2DHandle handle, const glm::vec4& clearColor);
-		void ClearImage(RenderGraphImage3DHandle handle, const glm::vec4& clearColor);
+		void ClearImage(RenderGraphImageHandle handle, const glm::vec4& clearColor);
 		void ClearBuffer(RenderGraphBufferHandle handle, uint32_t clearValue);
 
 		void CopyBuffer(RenderGraphBufferHandle src, RenderGraphBufferHandle dst, const size_t size);
@@ -203,8 +202,7 @@ namespace Volt
 		template<>
 		void SetConstant(const StringHash& name, const ResourceHandle& data);
 
-		void SetConstant(const StringHash& name, const RenderGraphImage2DHandle& data, const int32_t mip = -1, const int32_t layer = -1);
-		void SetConstant(const StringHash& name, const RenderGraphImage3DHandle& data, const int32_t mip = -1, const int32_t layer = -1);
+		void SetConstant(const StringHash& name, const RenderGraphImageHandle& data, const int32_t mip = -1, const int32_t layer = -1);
 
 		template<>
 		void SetConstant(const StringHash& name, const RenderGraphBufferHandle& data);
@@ -237,7 +235,7 @@ namespace Volt
 
 		void Flush(RefPtr<RHI::Fence> fence);
 
-		void CopyImage2D(RenderGraphImage2DHandle src, RenderGraphImage2DHandle dst, const uint32_t width, const uint32_t height);
+		void CopyImage(RenderGraphImageHandle src, RenderGraphImageHandle dst, const uint32_t width, const uint32_t height, const uint32_t depth);
 
 		// Validation
 		void InitializeCurrentPipelineConstantsValidation();

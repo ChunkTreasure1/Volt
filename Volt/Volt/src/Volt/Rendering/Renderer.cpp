@@ -22,7 +22,7 @@
 #include <RHIModule/Shader/ShaderCache.h>
 #include <RHIModule/Images/SamplerState.h>
 #include <RHIModule/Graphics/Swapchain.h>
-#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 #include <RHIModule/Buffers/CommandBuffer.h>
 #include <RHIModule/Images/ImageUtility.h>
 #include <RHIModule/Descriptors/DescriptorTable.h>
@@ -189,9 +189,9 @@ namespace Volt
 		constexpr uint32_t IRRADIANCE_MAP_SIZE = 32;
 		constexpr uint32_t CONVERSION_THREAD_GROUP_SIZE = 32;
 
-		RefPtr<RHI::Image2D> environmentUnfiltered;
-		RefPtr<RHI::Image2D> environmentFiltered;
-		RefPtr<RHI::Image2D> irradianceMap;
+		RefPtr<RHI::Image> environmentUnfiltered;
+		RefPtr<RHI::Image> environmentFiltered;
+		RefPtr<RHI::Image> irradianceMap;
 
 		auto linearSampler = GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>();
 
@@ -208,7 +208,7 @@ namespace Volt
 			imageSpec.layers = 6;
 			imageSpec.isCubeMap = true;
 
-			environmentUnfiltered = RHI::Image2D::Create(imageSpec);
+			environmentUnfiltered = RHI::Image::Create(imageSpec);
 
 			{
 				RHI::ResourceBarrierInfo barrierInfo{};
@@ -272,7 +272,7 @@ namespace Volt
 			imageSpec.mips = RHI::Utility::CalculateMipCount(CUBE_MAP_SIZE, CUBE_MAP_SIZE);
 			imageSpec.debugName = "Environment - Radiance";
 
-			environmentFiltered = RHI::Image2D::Create(imageSpec);
+			environmentFiltered = RHI::Image::Create(imageSpec);
 
 			for (uint32_t i = 0; i < imageSpec.mips; i++)
 			{
@@ -354,7 +354,7 @@ namespace Volt
 			imageSpec.mips = RHI::Utility::CalculateMipCount(IRRADIANCE_MAP_SIZE, IRRADIANCE_MAP_SIZE);
 			imageSpec.debugName = "Environment - Irradiance";
 
-			irradianceMap = RHI::Image2D::Create(imageSpec);
+			irradianceMap = RHI::Image::Create(imageSpec);
 		
 			{
 				RHI::ResourceBarrierInfo barrierInfo{};
@@ -472,7 +472,7 @@ namespace Volt
 			imageSpec.isCubeMap = true;
 			imageSpec.debugName = "BlackCube";
 
-			s_rendererData->defaultResources.blackCubeTexture = RHI::Image2D::Create(imageSpec, PIXEL_DATA);
+			s_rendererData->defaultResources.blackCubeTexture = RHI::Image::Create(imageSpec, PIXEL_DATA);
 		}
 
 		GenerateBRDFLuT();
@@ -494,12 +494,12 @@ namespace Volt
 		spec.height = BRDFSize;
 		spec.debugName = "BRDFLut";
 
-		s_rendererData->defaultResources.BRDFLuT = RHI::Image2D::Create(spec);
+		s_rendererData->defaultResources.BRDFLuT = RHI::Image::Create(spec);
 
 		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 
 		RenderGraph renderGraph{ commandBuffer };
-		RenderGraphImage2DHandle targetImageHandle = renderGraph.AddExternalImage2D(s_rendererData->defaultResources.BRDFLuT);
+		RenderGraphImageHandle targetImageHandle = renderGraph.AddExternalImage(s_rendererData->defaultResources.BRDFLuT);
 
 		renderGraph.AddPass("BRDF Pass", 
 		[&](RenderGraph::Builder& builder) 

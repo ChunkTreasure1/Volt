@@ -85,7 +85,7 @@
 
 #include <NavigationEditor/Tools/NavMeshDebugDrawer.h>
 
-#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 
 #include <imgui.h>
 

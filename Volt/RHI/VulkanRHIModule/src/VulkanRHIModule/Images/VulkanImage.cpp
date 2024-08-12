@@ -1,28 +1,23 @@
 #include "vkpch.h"
-#include "VulkanImage2D.h"
+#include "VulkanImage.h"
 
-#include "VulkanRHIModule/Common/VulkanFunctions.h"
 #include "VulkanRHIModule/Common/VulkanHelpers.h"
+#include "VulkanRHIModule/Common/VulkanFunctions.h"
 #include "VulkanRHIModule/Graphics/VulkanSwapchain.h"
-#include "VulkanRHIModule/Images/VulkanImageView.h"
-
-#include <RHIModule/Buffers/CommandBuffer.h>
-
-#include <RHIModule/Images/ImageUtility.h>
-#include <RHIModule/Images/ImageView.h>
 
 #include <RHIModule/Graphics/GraphicsContext.h>
-#include <RHIModule/Graphics/GraphicsDevice.h>
-#include <RHIModule/Memory/Allocator.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
 #include <RHIModule/Memory/Allocation.h>
 
 #include <RHIModule/Utility/ResourceUtility.h>
 
 #include <RHIModule/RHIProxy.h>
 
+#include <vulkan/vulkan.h>
+
 namespace Volt::RHI
 {
-	VulkanImage2D::VulkanImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator)
+	VulkanImage::VulkanImage(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator)
 		: m_specification(specification), m_allocator(allocator)
 	{
 		if (!allocator)
@@ -30,11 +25,11 @@ namespace Volt::RHI
 			m_allocator = GraphicsContext::GetDefaultAllocator();
 		}
 
-		Invalidate(specification.width, specification.height, data);
+		Invalidate(specification.width, specification.height, specification.depth, data);
 		SetName(specification.debugName);
 	}
 
-	VulkanImage2D::VulkanImage2D(const SwapchainImageSpecification& specification)
+	VulkanImage::VulkanImage(const SwapchainImageSpecification& specification)
 		: m_isSwapchainImage(true)
 	{
 		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None, ImageLayout::Undefined);
@@ -43,29 +38,42 @@ namespace Volt::RHI
 		SetName("Swapchain Image");
 	}
 
-	VulkanImage2D::~VulkanImage2D()
+	VulkanImage::~VulkanImage()
 	{
 		GraphicsContext::GetResourceStateTracker()->RemoveResource(this);
 		Release();
 	}
 
-	void VulkanImage2D::Invalidate(const uint32_t width, const uint32_t height, const void* data)
+	void VulkanImage::Invalidate(const uint32_t width, const uint32_t height, const uint32_t depth, const void* data)
 	{
 		Release();
 
-		m_specification.width = width;
-		m_specification.height = height;
-
-		VkImageAspectFlags aspectMask = Utility::IsDepthFormat(m_specification.format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		if (Utility::IsStencilFormat(m_specification.format))
+		if (Utility::IsDepthFormat(m_specification.format))
 		{
-			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			m_imageAspect = ImageAspect::Depth;
+			
+			if (Utility::IsStencilFormat(m_specification.format))
+			{
+				m_imageAspect |= ImageAspect::Stencil;
+			}
+		}
+		else
+		{
+			m_imageAspect = ImageAspect::Color;
 		}
 
-		m_imageAspect = Utility::GetVoltImageAspect(aspectMask);
-		m_allocation = m_allocator->CreateImage(m_specification, m_specification.memoryUsage);
+		m_specification.width = width;
+		m_specification.height = height;
+		m_specification.depth = depth;
 
+		m_allocation = m_allocator->CreateImage(m_specification, m_specification.memoryUsage);
+		
 		ImageLayout targetLayout = ImageLayout::Undefined;
+
+		if (m_specification.imageType == ResourceType::Image3D)
+		{
+			VT_ENSURE_MSG(m_specification.usage != ImageUsage::Attachment && m_specification.usage != ImageUsage::AttachmentStorage, "Attachment types are not supported for 3D images!");
+		}
 
 		switch (m_specification.usage)
 		{
@@ -114,22 +122,10 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanImage2D::InvalidateSwapchainImage(const SwapchainImageSpecification& specification)
-	{
-		const auto& vulkanSwapchain = specification.swapchain->AsRef<VulkanSwapchain>();
-
-		m_imageAspect = Utility::GetVoltImageAspect(VK_IMAGE_ASPECT_COLOR_BIT);
-		m_specification.width = vulkanSwapchain.GetWidth();
-		m_specification.height = vulkanSwapchain.GetHeight();
-		m_specification.format = vulkanSwapchain.GetFormat();
-		m_specification.usage = ImageUsage::Attachment;
-
-		m_swapchainImageData.image = vulkanSwapchain.GetImageAtIndex(specification.imageIndex);
-	}
-
-	void VulkanImage2D::Release()
+	void VulkanImage::Release()
 	{
 		m_imageViews.clear();
+		m_arrayImageViews.clear();
 
 		if (!m_allocation)
 		{
@@ -144,7 +140,7 @@ namespace Volt::RHI
 		m_allocation = nullptr;
 	}
 
-	void VulkanImage2D::GenerateMips()
+	void VulkanImage::GenerateMips()
 	{
 		if (m_hasGeneratedMips || m_isSwapchainImage)
 		{
@@ -250,7 +246,7 @@ namespace Volt::RHI
 		m_hasGeneratedMips = true;
 	}
 
-	const RefPtr<ImageView> VulkanImage2D::GetView(const int32_t mip, const int32_t layer)
+	RefPtr<ImageView> VulkanImage::GetView(const int32_t mip, const int32_t layer)
 	{
 		if (m_imageViews.contains(layer))
 		{
@@ -265,9 +261,21 @@ namespace Volt::RHI
 		spec.baseMipLevel = (mip == -1) ? 0 : mip;
 		spec.layerCount = (layer == -1) ? m_specification.layers : 1;
 		spec.mipCount = (mip == -1) ? m_specification.mips : 1;
-		spec.viewType = ImageViewType::View2D;
 
-		if (m_specification.isCubeMap)
+		if (m_specification.imageType == ResourceType::Image1D)
+		{
+			spec.viewType = ImageViewType::View1D;
+		}
+		else if (m_specification.imageType == ResourceType::Image2D)
+		{
+			spec.viewType = ImageViewType::View2D;
+		}
+		else if (m_specification.imageType == ResourceType::Image3D)
+		{
+			spec.viewType = ImageViewType::View3D;
+		}
+
+		if (m_specification.isCubeMap && m_specification.imageType == ResourceType::Image2D)
 		{
 			spec.layerCount = 6;
 
@@ -281,10 +289,21 @@ namespace Volt::RHI
 		}
 		else if (m_specification.layers > 1 && layer == -1)
 		{
-			spec.viewType = ImageViewType::View2DArray;
+			if (m_specification.imageType == ResourceType::Image1D)
+			{
+				spec.viewType = ImageViewType::View1DArray;
+			}
+			else if (m_specification.imageType == ResourceType::Image2D)
+			{
+				spec.viewType = ImageViewType::View2DArray;
+			}
+			else if (m_specification.imageType == ResourceType::Image3D)
+			{
+				spec.viewType = ImageViewType::View3DArray;
+			}
 		}
 
-		if (m_specification.isCubeMap && m_specification.layers > 6 && layer == -1)
+		if (m_specification.isCubeMap && m_specification.layers > 6 && layer == -1 && m_specification.imageType == ResourceType::Image2D)
 		{
 			spec.viewType = ImageViewType::ViewCubeArray;
 
@@ -293,13 +312,13 @@ namespace Volt::RHI
 
 		spec.image = this;
 
-		RefPtr<ImageView> view = RefPtr<VulkanImageView>::Create(spec);
+		RefPtr<ImageView> view = ImageView::Create(spec);
 		m_imageViews[layer][mip] = view;
 
 		return view;
 	}
 
-	const RefPtr<ImageView> VulkanImage2D::GetArrayView(const int32_t mip)
+	RefPtr<ImageView> VulkanImage::GetArrayView(const int32_t mip)
 	{
 		if (m_arrayImageViews.contains(mip))
 		{
@@ -311,56 +330,34 @@ namespace Volt::RHI
 		spec.baseMipLevel = (mip == -1) ? 0 : mip;
 		spec.layerCount = m_specification.layers;
 		spec.mipCount = (mip == -1) ? m_specification.mips : 1;
-		spec.viewType = ImageViewType::View2DArray;
-		spec.image = As<Image2D>();
+		
+		if (m_specification.imageType == ResourceType::Image1D)
+		{
+			spec.viewType = ImageViewType::View1DArray;
+		}
+		else if (m_specification.imageType == ResourceType::Image2D)
+		{
+			spec.viewType = ImageViewType::View2DArray;
+		}
+		else if (m_specification.imageType == ResourceType::Image3D)
+		{
+			spec.viewType = ImageViewType::View3DArray;
+		}
 
-		RefPtr<ImageView> view = RefPtr<VulkanImageView>::Create(spec);
+		spec.image = this;
+
+		RefPtr<ImageView> view = ImageView::Create(spec);
 		m_arrayImageViews[mip] = view;
 
 		return view;
 	}
 
-	const uint32_t VulkanImage2D::GetWidth() const
-	{
-		return m_specification.width;
-	}
-
-	const uint32_t VulkanImage2D::GetHeight() const
-	{
-		return m_specification.height;
-	}
-
-	const uint32_t VulkanImage2D::GetMipCount() const
-	{
-		return m_specification.mips;
-	}
-
-	const uint32_t VulkanImage2D::GetLayerCount() const
-	{
-		return m_specification.layers;
-	}
-
-	const PixelFormat VulkanImage2D::GetFormat() const
-	{
-		return m_specification.format;
-	}
-
-	const ImageUsage VulkanImage2D::GetUsage() const
-	{
-		return m_specification.usage;
-	}
-
-	const uint32_t VulkanImage2D::CalculateMipCount() const
+	const uint32_t VulkanImage::CalculateMipCount() const
 	{
 		return Utility::CalculateMipCount(m_specification.width, m_specification.height);
 	}
 
-	const bool VulkanImage2D::IsSwapchainImage() const
-	{
-		return m_isSwapchainImage;
-	}
-
-	void VulkanImage2D::SetName(std::string_view name)
+	void VulkanImage::SetName(std::string_view name)
 	{
 		if (!Volt::RHI::vkSetDebugUtilsObjectNameEXT)
 		{
@@ -386,66 +383,17 @@ namespace Volt::RHI
 		Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
 
-	const uint64_t VulkanImage2D::GetDeviceAddress() const
+	const uint64_t VulkanImage::GetDeviceAddress() const
 	{
 		return m_allocation->GetDeviceAddress();
 	}
 
-	const uint64_t VulkanImage2D::GetByteSize() const
+	const uint64_t VulkanImage::GetByteSize() const
 	{
 		return m_allocation->GetSize();
 	}
 
-	void VulkanImage2D::InitializeWithData(const void* data)
-	{
-		// #TODO_Ivar: Implement correct size for layer + mip
-		const VkDeviceSize bufferSize = m_specification.width * m_specification.height * Utility::GetByteSizePerPixelFromFormat(m_specification.format) * m_specification.layers;
-
-		RefPtr<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator()->CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
-
-		auto* stagingData = stagingAlloc->Map<void>();
-		memcpy_s(stagingData, bufferSize, data, bufferSize);
-		stagingAlloc->Unmap();
-
-		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
-
-		commandBuffer->Begin();
-
-		{
-			RHI::ResourceBarrierInfo barrier{};
-			barrier.type = RHI::BarrierType::Image;
-			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), this);
-
-			barrier.imageBarrier().dstStage = RHI::BarrierStage::Copy;
-			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::CopyDest;
-			barrier.imageBarrier().dstLayout = RHI::ImageLayout::CopyDest;
-			barrier.imageBarrier().resource = this;
-
-			commandBuffer->ResourceBarrier({ barrier });
-		}
-
-		commandBuffer->CopyBufferToImage(stagingAlloc, this, m_specification.width, m_specification.height);
-
-		{
-			RHI::ResourceBarrierInfo barrier{};
-			barrier.type = RHI::BarrierType::Image;
-			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), this);
-
-			barrier.imageBarrier().dstStage = RHI::BarrierStage::PixelShader | RHI::BarrierStage::ComputeShader;
-			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
-			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
-			barrier.imageBarrier().resource = this;
-
-			commandBuffer->ResourceBarrier({ barrier });
-		}
-
-		commandBuffer->End();
-		commandBuffer->ExecuteAndWait();
-
-		GraphicsContext::GetDefaultAllocator()->DestroyBuffer(stagingAlloc);
-	}
-
-	void* VulkanImage2D::GetHandleImpl() const
+	void* VulkanImage::GetHandleImpl() const
 	{
 		if (m_isSwapchainImage)
 		{
@@ -457,7 +405,7 @@ namespace Volt::RHI
 		}
 	}
 
-	Buffer VulkanImage2D::ReadPixelInternal(const uint32_t x, const uint32_t y, const size_t stride)
+	Buffer VulkanImage::ReadPixelInternal(const uint32_t x, const uint32_t y, const uint32_t z, const size_t stride)
 	{
 		// #TODO_Ivar: Implement correct size for layer + mip
 		const VkDeviceSize bufferSize = m_specification.width * m_specification.height * Utility::GetByteSizePerPixelFromFormat(m_specification.format) * m_specification.layers;
@@ -503,7 +451,7 @@ namespace Volt::RHI
 		region.imageSubresource.layerCount = 1;
 
 		region.imageOffset = { 0, 0, 0 };
-		region.imageExtent = { m_specification.width, m_specification.height, 1 };
+		region.imageExtent = { m_specification.width, m_specification.height, m_specification.depth };
 
 		vkCmdCopyImageToBuffer(commandBuffer->GetHandle<VkCommandBuffer>(), m_allocation->GetResourceHandle<VkImage>(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingAlloc->GetResourceHandle<VkBuffer>(), 1, &region);
 
@@ -516,6 +464,7 @@ namespace Volt::RHI
 
 		uint8_t* mappedMemory = stagingAlloc->Map<uint8_t>();
 
+		// #TODO_Ivar: Implement support for 3D images.
 		const uint32_t perPixelSize = Utility::GetByteSizePerPixelFromFormat(m_specification.format);
 		const uint32_t bufferIndex = (x + y * m_specification.width) * perPixelSize;
 
@@ -528,7 +477,20 @@ namespace Volt::RHI
 		return buffer;
 	}
 
-	void VulkanImage2D::TransitionToLayout(ImageLayout targetLayout)
+	void VulkanImage::InvalidateSwapchainImage(const SwapchainImageSpecification& specification)
+	{
+		const auto& vulkanSwapchain = specification.swapchain->AsRef<VulkanSwapchain>();
+
+		m_imageAspect = ImageAspect::Color;
+		m_specification.width = vulkanSwapchain.GetWidth();
+		m_specification.height = vulkanSwapchain.GetHeight();
+		m_specification.format = vulkanSwapchain.GetFormat();
+		m_specification.usage = ImageUsage::Attachment;
+
+		m_swapchainImageData.image = vulkanSwapchain.GetImageAtIndex(specification.imageIndex);
+	}
+
+	void VulkanImage::TransitionToLayout(ImageLayout targetLayout)
 	{
 		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
 		commandBuffer->Begin();
@@ -565,5 +527,54 @@ namespace Volt::RHI
 
 		commandBuffer->End();
 		commandBuffer->Execute();
+	}
+
+	void VulkanImage::InitializeWithData(const void* data)
+	{
+		// #TODO_Ivar: Implement correct size for layer + mip
+		const VkDeviceSize bufferSize = m_specification.width * m_specification.height * Utility::GetByteSizePerPixelFromFormat(m_specification.format) * m_specification.layers;
+
+		RefPtr<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator()->CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
+
+		auto* stagingData = stagingAlloc->Map<void>();
+		memcpy_s(stagingData, bufferSize, data, bufferSize);
+		stagingAlloc->Unmap();
+
+		RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
+
+		commandBuffer->Begin();
+
+		{
+			RHI::ResourceBarrierInfo barrier{};
+			barrier.type = RHI::BarrierType::Image;
+			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), this);
+
+			barrier.imageBarrier().dstStage = RHI::BarrierStage::Copy;
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::CopyDest;
+			barrier.imageBarrier().dstLayout = RHI::ImageLayout::CopyDest;
+			barrier.imageBarrier().resource = this;
+
+			commandBuffer->ResourceBarrier({ barrier });
+		}
+
+		commandBuffer->CopyBufferToImage(stagingAlloc, this, m_specification.width, m_specification.height, m_specification.depth);
+
+		{
+			RHI::ResourceBarrierInfo barrier{};
+			barrier.type = RHI::BarrierType::Image;
+			ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), this);
+
+			barrier.imageBarrier().dstStage = RHI::BarrierStage::PixelShader | RHI::BarrierStage::ComputeShader;
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
+			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
+			barrier.imageBarrier().resource = this;
+
+			commandBuffer->ResourceBarrier({ barrier });
+		}
+
+		commandBuffer->End();
+		commandBuffer->ExecuteAndWait();
+
+		GraphicsContext::GetDefaultAllocator()->DestroyBuffer(stagingAlloc);
 	}
 }

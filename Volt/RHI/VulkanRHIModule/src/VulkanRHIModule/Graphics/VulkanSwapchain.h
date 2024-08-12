@@ -46,7 +46,7 @@ namespace Volt::RHI
 		const uint32_t GetHeight() const override;
 		const uint32_t GetFramesInFlight() const override;
 		const PixelFormat GetFormat() const override;
-		RefPtr<Image2D> GetCurrentImage() const override;
+		RefPtr<Image> GetCurrentImage() const override;
 		RefPtr<CommandBuffer> GetCommandBuffer() const override;
 
 		inline VkImage_T* GetImageAtIndex(const uint32_t index) const { return m_perImageData.at(index).image; }
@@ -85,7 +85,7 @@ namespace Volt::RHI
 		struct PerImageData
 		{
 			VkImage_T* image = nullptr;
-			RefPtr<Image2D> imageReference;
+			RefPtr<Image> imageReference;
 		};
 
 		struct SwapchainCapabilities

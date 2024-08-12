@@ -21,7 +21,7 @@
 
 #include <Volt/Rendering/Texture/Texture2D.h>
 
-#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 
 namespace AssetBrowser
 {

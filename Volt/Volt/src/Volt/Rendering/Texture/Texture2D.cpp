@@ -15,11 +15,11 @@ namespace Volt
 		imageSpec.width = static_cast<uint32_t>(width);
 		imageSpec.height = static_cast<uint32_t>(height);
 
-		m_image = RHI::Image2D::Create(imageSpec, data);
+		m_image = RHI::Image::Create(imageSpec, data);
 		m_resourceHandle = BindlessResourcesManager::Get().RegisterImageView(m_image->GetView());
 	}
 
-	Texture2D::Texture2D(RefPtr<RHI::Image2D> image)
+	Texture2D::Texture2D(RefPtr<RHI::Image> image)
 		: m_image(image)
 	{
 		m_resourceHandle = BindlessResourcesManager::Get().RegisterImageView(m_image->GetView());
@@ -50,7 +50,7 @@ namespace Volt
 		return m_resourceHandle;
 	}
 
-	void Texture2D::SetImage(RefPtr<RHI::Image2D> image)
+	void Texture2D::SetImage(RefPtr<RHI::Image> image)
 	{
 		if (m_image)
 		{
@@ -68,7 +68,7 @@ namespace Volt
 		return CreateRef<Texture2D>(format, width, height, data);
 	}
 
-	Ref<Texture2D> Texture2D::Create(RefPtr<RHI::Image2D> image)
+	Ref<Texture2D> Texture2D::Create(RefPtr<RHI::Image> image)
 	{
 		return CreateRef<Texture2D>(image);
 	}

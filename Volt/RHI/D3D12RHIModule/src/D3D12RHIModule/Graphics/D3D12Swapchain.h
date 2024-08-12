@@ -31,7 +31,7 @@ namespace Volt::RHI
 		VT_NODISCARD const uint32_t GetWidth() const override;
 		VT_NODISCARD const uint32_t GetHeight() const override;
 		VT_NODISCARD const uint32_t GetFramesInFlight() const override;
-		VT_NODISCARD RefPtr<Image2D> GetCurrentImage() const override;
+		VT_NODISCARD RefPtr<Image> GetCurrentImage() const override;
 		VT_NODISCARD RefPtr<CommandBuffer> GetCommandBuffer() const override;
 		VT_NODISCARD const PixelFormat GetFormat() const override;
 
@@ -50,7 +50,7 @@ namespace Volt::RHI
 		struct PerImageData
 		{
 			ComPtr<ID3D12Resource> resource = nullptr;
-			RefPtr<Image2D> imageReference;
+			RefPtr<Image> imageReference;
 		};
 
 		GLFWwindow* m_windowHandle;

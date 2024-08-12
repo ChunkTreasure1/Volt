@@ -23,7 +23,7 @@ bool RG_DrawTriangleTest::RunTest()
 	RenderGraph renderGraph{ m_commandBuffer };
 	
 	auto targetImage = swapchain.GetCurrentImage();
-	RenderGraphImage2DHandle targetImageHandle = renderGraph.AddExternalImage2D(targetImage);
+	RenderGraphImageHandle targetImageHandle = renderGraph.AddExternalImage(targetImage);
 
 	renderGraph.AddPass("Triangle Pass", 
 	[&](RenderGraph::Builder& builder) 

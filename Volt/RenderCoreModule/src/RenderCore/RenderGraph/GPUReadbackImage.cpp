@@ -1,13 +1,13 @@
 #include "rcpch.h"
-#include "GPUReadbackImage2D.h"
+#include "GPUReadbackImage.h"
 
 #include "RenderCore/RenderGraph/Resources/RenderGraphTextureResource.h"
 
-#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 
 namespace Volt
 {
-	GPUReadbackImage2D::GPUReadbackImage2D(const RenderGraphImageDesc& desc)
+	GPUReadbackImage::GPUReadbackImage(const RenderGraphImageDesc& desc)
 	{
 		RHI::ImageSpecification spec{};
 		spec.width = desc.width;
@@ -23,6 +23,6 @@ namespace Volt
 		spec.initializeImage = false;
 		spec.memoryUsage = RHI::MemoryUsage::GPUToCPU;
 
-		m_image = RHI::Image2D::Create(spec, nullptr);
+		m_image = RHI::Image::Create(spec, nullptr);
 	}
 }

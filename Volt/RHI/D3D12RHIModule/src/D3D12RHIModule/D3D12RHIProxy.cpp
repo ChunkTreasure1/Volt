@@ -31,8 +31,7 @@
 
 #include "D3D12RHIModule/Images/D3D12SamplerState.h"
 #include "D3D12RHIModule/Images/D3D12ImageView.h"
-#include "D3D12RHIModule/Images/D3D12Image2D.h"
-#include <RHIModule/Images/Image3D.h>
+#include "D3D12RHIModule/Images/D3D12Image.h"
 
 #include "D3D12RHIModule/Synchronization/D3D12Semaphore.h"
 #include <RHIModule/Synchronization/Fence.h>
@@ -110,21 +109,16 @@ namespace Volt::RHI
 		return RefPtr<D3D12Swapchain>::Create(window);
 	}
 	
-	RefPtr<Image2D> D3D12RHIProxy::CreateImage2D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const
+	RefPtr<Image> D3D12RHIProxy::CreateImage(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const
 	{
-		return RefPtr<D3D12Image2D>::Create(specification, data, allocator);
+		return RefPtr<D3D12Image>::Create(specification, data, allocator);
 	}
 	
-	RefPtr<Image2D> D3D12RHIProxy::CreateImage2D(const SwapchainImageSpecification& specification) const
+	RefPtr<Image> D3D12RHIProxy::CreateImage(const SwapchainImageSpecification& specification) const
 	{
-		return RefPtr<D3D12Image2D>::Create(specification);
+		return RefPtr<D3D12Image>::Create(specification);
 	}
 
-	RefPtr<Image3D> D3D12RHIProxy::CreateImage3D(const ImageSpecification& specification, const void* data, RefPtr<Allocator> allocator) const
-	{
-		return RefPtr<Image3D>();
-	}
-	
 	RefPtr<ImageView> D3D12RHIProxy::CreateImageView(const ImageViewSpecification& specification) const
 	{
 		return RefPtr<D3D12ImageView>::Create(specification);

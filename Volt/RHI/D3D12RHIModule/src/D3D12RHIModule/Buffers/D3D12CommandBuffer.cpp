@@ -4,7 +4,7 @@
 #include "D3D12RHIModule/Graphics/D3D12DeviceQueue.h"
 #include "D3D12RHIModule/Graphics/D3D12GraphicsDevice.h"
 #include "D3D12RHIModule/Graphics/D3D12GraphicsContext.h"
-#include "D3D12RHIModule/Images/D3D12Image2D.h"
+#include "D3D12RHIModule/Images/D3D12Image.h"
 #include "D3D12RHIModule/Images/D3D12ImageView.h"
 #include "D3D12RHIModule/Pipelines/D3D12RenderPipeline.h"
 #include "D3D12RHIModule/Shader/D3D12Shader.h"
@@ -791,7 +791,7 @@ namespace Volt::RHI
 		{
 			if (barrierInfo.resource->GetType() == ResourceType::Image2D)
 			{
-				const auto aspectMask = barrierInfo.resource->As<Image2D>()->GetImageAspect();
+				const auto aspectMask = barrierInfo.resource->As<Image>()->GetImageAspect();
 				if (EnumValueContainsFlag(aspectMask, ImageAspect::Depth) || EnumValueContainsFlag(aspectMask, ImageAspect::Stencil))
 				{
 					barrier.SyncBefore = D3D12_BARRIER_SYNC_DEPTH_STENCIL;
@@ -811,7 +811,7 @@ namespace Volt::RHI
 		{
 			if (barrierInfo.resource->GetType() == ResourceType::Image2D)
 			{
-				const auto aspectMask = barrierInfo.resource->As<Image2D>()->GetImageAspect();
+				const auto aspectMask = barrierInfo.resource->As<Image>()->GetImageAspect();
 				if (EnumValueContainsFlag(aspectMask, ImageAspect::Depth) || EnumValueContainsFlag(aspectMask, ImageAspect::Stencil))
 				{
 					barrier.SyncAfter = D3D12_BARRIER_SYNC_DEPTH_STENCIL;
@@ -836,7 +836,7 @@ namespace Volt::RHI
 		{
 			if (barrierInfo.resource->GetType() == ResourceType::Image2D)
 			{
-				levelCount = barrierInfo.resource->As<Image2D>()->GetMipCount();
+				levelCount = barrierInfo.resource->As<Image>()->GetMipCount();
 			}
 		}
 
@@ -845,7 +845,7 @@ namespace Volt::RHI
 		{
 			if (barrierInfo.resource->GetType() == ResourceType::Image2D)
 			{
-				layerCount = barrierInfo.resource->As<Image2D>()->GetLayerCount();
+				layerCount = barrierInfo.resource->As<Image>()->GetLayerCount();
 			}
 		}
 
@@ -944,7 +944,7 @@ namespace Volt::RHI
 		return 0.0f;
 	}
 
-	void D3D12CommandBuffer::ClearImage(WeakPtr<Image2D> image, std::array<float, 4> clearColor)
+	void D3D12CommandBuffer::ClearImage(WeakPtr<Image> image, std::array<float, 4> clearColor)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -965,10 +965,6 @@ namespace Volt::RHI
 		{
 			m_commandListData.commandList->ClearRenderTargetView(D3D12_CPU_DESCRIPTOR_HANDLE(d3d12View.GetRTVDSVDescriptor().GetCPUPointer()), clearColor.data(), 1, &rect);
 		}
-	}
-
-	void D3D12CommandBuffer::ClearImage(WeakPtr<Image3D> image, std::array<float, 4> clearColor)
-	{
 	}
 
 	void D3D12CommandBuffer::ClearBuffer(WeakPtr<StorageBuffer> buffer, const uint32_t value)
@@ -1004,23 +1000,19 @@ namespace Volt::RHI
 		m_commandListData.commandList->CopyBufferRegion(dstResource->GetResourceHandle<ID3D12Resource*>(), dstOffset, srcResource->GetResourceHandle<ID3D12Resource*>(), srcOffset, size);
 	}
 
-	void D3D12CommandBuffer::CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip)
+	void D3D12CommandBuffer::CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip)
 	{
 	}
 
-	void D3D12CommandBuffer::CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image3D> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip)
+	void D3D12CommandBuffer::CopyImageToBuffer(WeakPtr<Image> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip)
 	{
 	}
 
-	void D3D12CommandBuffer::CopyImageToBuffer(WeakPtr<Image2D> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip)
+	void D3D12CommandBuffer::CopyImage(WeakPtr<Image> srcImage, WeakPtr<Image> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth)
 	{
 	}
 
-	void D3D12CommandBuffer::CopyImage(WeakPtr<Image2D> srcImage, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height)
-	{
-	}
-
-	void D3D12CommandBuffer::UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData)
+	void D3D12CommandBuffer::UploadTextureData(WeakPtr<Image> dstImage, const ImageCopyData& copyData)
 	{
 		Vector<D3D12_SUBRESOURCE_DATA> subResources;
 		subResources.reserve(copyData.copySubData.size());

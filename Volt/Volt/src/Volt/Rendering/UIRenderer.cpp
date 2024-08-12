@@ -20,7 +20,7 @@ namespace Volt
 {
 	struct SpriteCommand
 	{
-		RefPtr<RHI::Image2D> image;
+		RefPtr<RHI::Image> image;
 		glm::vec4 color;
 		glm::vec3 position;
 		glm::vec2 scale;
@@ -69,7 +69,7 @@ namespace Volt
 		QuadData quadData;
 		TextData textData;
 
-		WeakPtr<RHI::Image2D> currentRenderTarget;
+		WeakPtr<RHI::Image> currentRenderTarget;
 		glm::mat4 currentProjection = { 1.f };
 		glm::mat4 currentView = { 1.f };
 
@@ -126,7 +126,7 @@ namespace Volt
 		s_uiRendererData = nullptr;
 	}
 
-	void UIRenderer::Begin(RefPtr<RHI::Image2D> renderTarget)
+	void UIRenderer::Begin(RefPtr<RHI::Image> renderTarget)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -245,7 +245,7 @@ namespace Volt
 		newCmd.offset = offset;
 	}
 
-	void UIRenderer::DrawSprite(RefPtr<RHI::Image2D> image, const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
+	void UIRenderer::DrawSprite(RefPtr<RHI::Image> image, const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -260,7 +260,7 @@ namespace Volt
 
 	void UIRenderer::DrawSprite(const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
 	{
-		DrawSprite(RefPtr<RHI::Image2D>(nullptr), position, scale, rotation, color, offset);
+		DrawSprite(RefPtr<RHI::Image>(nullptr), position, scale, rotation, color, offset);
 	}
 
 	static bool NextLine(int32_t aIndex, const Vector<int32_t>& aLines)

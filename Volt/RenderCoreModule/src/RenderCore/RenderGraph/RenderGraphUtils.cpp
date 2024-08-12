@@ -5,7 +5,7 @@
 
 namespace Volt::RGUtils
 {
-	void ClearImage(RenderGraph& renderGraph, RenderGraphImage2DHandle image, const glm::vec4& clearColor, std::string_view passName)
+	void ClearImage(RenderGraph& renderGraph, RenderGraphImageHandle image, const glm::vec4& clearColor, std::string_view passName)
 	{
 		renderGraph.AddPass(passName.empty() ? "Clear Image Pass" : std::string(passName),
 		[&](RenderGraph::Builder& builder)
@@ -13,19 +13,6 @@ namespace Volt::RGUtils
 			builder.WriteResource(image, RenderGraphResourceState::Clear);
 		},
 		[=](RenderContext& context) 
-		{
-			context.ClearImage(image, clearColor);
-		});
-	}
-
-	void ClearImage(RenderGraph& renderGraph, RenderGraphImage3DHandle image, const glm::vec4& clearColor, std::string_view passName)
-	{
-		renderGraph.AddPass(passName.empty() ? "Clear Image Pass" : std::string(passName),
-		[&](RenderGraph::Builder& builder)
-		{
-			builder.WriteResource(image, RenderGraphResourceState::Clear);
-		},
-		[=](RenderContext& context)
 		{
 			context.ClearImage(image, clearColor);
 		});

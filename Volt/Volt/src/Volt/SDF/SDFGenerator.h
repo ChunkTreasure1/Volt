@@ -2,7 +2,7 @@
 
 #include "Volt/Rendering/BindlessResource.h"
 
-#include <RHIModule/Images/Image3D.h>
+#include <RHIModule/Images/Image.h>
 
 #include <CoreUtilities/Containers/Vector.h>
 #include <CoreUtilities/Containers/SparseBrickMap.h>
@@ -30,7 +30,7 @@ namespace Volt
 		glm::vec3 min;
 		glm::vec3 max;
 
-		BindlessResourceRef<RHI::Image3D> sdfTexture;
+		BindlessResourceRef<RHI::Image> sdfTexture;
 		RefPtr<RHI::StorageBuffer> sdfBricksBuffer;
 		Vector<SDFBrick> brickGrid;
 	};

@@ -27,11 +27,16 @@ namespace Volt::RGUtils
 	inline static RenderGraphImageDesc CreateImage2DDesc(const uint32_t width, const uint32_t height, const RHI::ImageUsage usage, std::string_view name)
 	{
 		VT_ASSERT_MSG(width > 0 && height > 0, "Width and height must not be zero!");
-		return { format, width, height, usage, name };
+		return { ResourceType::Image2D, format, width, height, 1, usage, name };
 	}
 
-	extern VTRC_API void ClearImage(RenderGraph& renderGraph, RenderGraphImage2DHandle image, const glm::vec4& clearColor, std::string_view passName = "");
-	extern VTRC_API void ClearImage(RenderGraph& renderGraph, RenderGraphImage3DHandle image, const glm::vec4& clearColor, std::string_view passName = "");
+	template<RHI::PixelFormat format>
+	inline static RenderGraphImageDesc CreateImage3DDesc(const uint32_t width, const uint32_t height, const uint32_t depth, const RHI::ImageUsage usage, std::string_view name)
+	{
+		VT_ASSERT_MSG(width > 0 && height > 0, "Width and height must not be zero!");
+		return { ResourceType::Image3D, format, width, height, depth, usage, name };
+	}
 
+	extern VTRC_API void ClearImage(RenderGraph& renderGraph, RenderGraphImageHandle image, const glm::vec4& clearColor, std::string_view passName = "");
 	extern VTRC_API void ClearBuffer(RenderGraph& renderGraph, RenderGraphBufferHandle buffer, const uint32_t clearValue, std::string_view passName = "");
 }
