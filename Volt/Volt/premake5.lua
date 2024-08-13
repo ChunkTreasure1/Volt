@@ -48,7 +48,6 @@ project "Volt"
 		"%{IncludeDir.D3D12RHIModule}",
 		"%{IncludeDir.RenderCoreModule}",
 		
-		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
@@ -89,11 +88,14 @@ project "Volt"
 
 		"%{IncludeDir.zlib}",
 		"%{IncludeDir.ufbx}",
+
+		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.WindowModule}",
+		"%{IncludeDir.InputModule}",
 	}
 
 	links
 	{
-		"GLFW",
 		"ImGui",
 		"Optick",
 		"tracy",
@@ -117,13 +119,16 @@ project "Volt"
 		
 		"D3D12RHIModule",
 		"RHIModule",
-		"VulkanRHIModule"
+		"VulkanRHIModule",
+
+		"EventModule",
+		"WindowModule",
+		"InputModule",
 	}
 
 	defines
 	{
 		"PX_PHYSX_STATIC_LIB",
-		"GLFW_DLL",
 		"TRACY_IMPORTS"
 	}
 

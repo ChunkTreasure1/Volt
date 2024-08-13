@@ -43,10 +43,19 @@
 
 #include <Volt/Scripting/Mono/MonoScriptUtils.h>
 
-#include <Volt/Input/Input.h>
-#include <Volt/Input/KeyCodes.h>
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
 
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
+
+#include <EventModule/Event.h>
+
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+#include <WindowModule/Events/WindowEvents.h>
+
+#include <InputModule/Events/KeyboardEvents.h>
+#include <InputModule/Events/MouseEvents.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -324,13 +333,14 @@ void AssetBrowserPanel::OnEvent(Volt::Event& e)
 	Volt::EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<Volt::WindowDragDropEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnDragDropEvent));
 	dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnKeyPressedEvent));
-	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnRenderEvent));
+	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnRenderEvent));
 }
 
 bool AssetBrowserPanel::OnDragDropEvent(Volt::WindowDragDropEvent& e)
 {
-	auto [x, y] = Volt::Input::GetMousePosition();
-	const auto [wX, wY] = Volt::Application::Get().GetWindow().GetPosition();
+	float x = Volt::Input::GetMouseX();
+	float y = Volt::Input::GetMouseY();
+	const auto [wX, wY] = Volt::WindowManager::Get().GetMainWindow().GetPosition();
 
 	x += wX;
 	y += wY;
@@ -411,7 +421,7 @@ bool AssetBrowserPanel::OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent& e)
 	return false;
 }
 
-bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
+bool AssetBrowserPanel::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	if (!myPreviewRenderer)
 	{

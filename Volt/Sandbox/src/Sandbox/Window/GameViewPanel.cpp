@@ -12,9 +12,9 @@
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/Prefab.h>
 
-#include <Volt/Input/Input.h>
-#include <Volt/Input/KeyCodes.h>
-#include <Volt/Input/MouseButtonCodes.h>
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
+#include <InputModule/MouseButtonCodes.h>
 
 #include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Camera/Camera.h>
@@ -23,6 +23,8 @@
 #include <Volt/Utility/UIUtility.h>
 
 #include <Volt/Utility/StringUtility.h>
+
+#include <InputModule/Events/KeyboardEvents.h>
 
 #include "Sandbox/EditorCommandStack.h"
 

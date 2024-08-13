@@ -1,14 +1,20 @@
 #pragma once
 
-#include "Volt/Core/Application.h"
-#include "Volt/Core/Window.h"
+#include "InputModule/Config.h"
+
+#include <CoreUtilities/Containers/Vector.h>
+
+#include <glm/fwd.hpp>
+
 #include <bitset>
 
 #include <utility> 
 
 namespace Volt
 {
-	class InputMapper
+	class Event;
+
+	/*class InputMapper
 	{
 	public:
 		static int GetKey(const std::string& name) { if (mykeyMap.contains(name)) { return mykeyMap.at(name); } else { return -1; } };
@@ -17,9 +23,9 @@ namespace Volt
 
 	private:
 		inline static std::unordered_map<std::string, int> mykeyMap;
-	};
+	};*/
 
-	class Input
+	class INPUTMODULE_API Input
 	{
 	protected:
 		Input() = default;
@@ -29,6 +35,7 @@ namespace Volt
 		Input& operator=(const Input&) = delete;
 
 		static void OnEvent(Event& e);
+		static void Update();
 
 		static bool IsKeyPressed(int keyCode);
 		static Vector<int> GetAllKeyPressed();
@@ -41,19 +48,11 @@ namespace Volt
 		static bool IsMouseButtonDown(int button);
 		static bool IsMouseButtonUp(int button);
 		static void SetMousePosition(float x, float y);
-		static std::pair<float, float> GetMousePosition();
+		static glm::vec2 GetMousePosition();
 
-		inline static float GetMouseX()
-		{
-			auto [x, y] = GetMousePosition();
-			return x;
-		}
+		static float GetMouseX();
+		static float GetMouseY();
 
-		inline static float GetMouseY()
-		{
-			auto [x, y] = GetMousePosition();
-			return y;
-		}
 
 		static float GetScrollOffset();
 
@@ -72,9 +71,10 @@ namespace Volt
 			Pressed
 		};
 
-		inline static glm::vec2 myViewportMousePos;
-		static inline bool myDisableInput = false;
-		inline static float myScrollOffset = 0.f;
-		static inline std::array<KeyState, 349> myKeyStates;
+		static glm::vec2 myMousePos;
+		static glm::vec2 myViewportMousePos;
+		static bool myDisableInput;
+		static float myScrollOffset;
+		static std::array<KeyState, 349> myKeyStates;
 	};
 }

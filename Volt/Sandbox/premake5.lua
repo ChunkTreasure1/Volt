@@ -108,7 +108,11 @@ project "Sandbox"
 		"%{IncludeDir.recast}",
 		"%{IncludeDir.fastlz}",
 
-		"%{IncludeDir.zlib}"
+		"%{IncludeDir.zlib}",
+
+		"%{IncludeDir.InputModule}",
+		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.WindowModule}",
 	}
 
     links
@@ -150,7 +154,11 @@ project "Sandbox"
 		"%{Library.steam}",
 		"%{Library.discord}",
 
-		"%{Library.METIS}"
+		"%{Library.METIS}",
+
+		"InputModule",
+		"EventModule",
+		"WindowModule",
     }
 
 	debugargs 

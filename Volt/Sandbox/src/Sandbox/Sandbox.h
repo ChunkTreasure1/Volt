@@ -7,9 +7,6 @@
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Core/Layer/Layer.h>
-#include <Volt/Events/ApplicationEvent.h>
-#include <Volt/Events/KeyEvent.h>
-#include <Volt/Events/MouseEvent.h>
 
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -22,6 +19,15 @@ namespace Volt
 	class Material;
 	class Camera;
 	class Texture2D;
+
+	class Event;
+	class AppUpdateEvent;
+	class AppImGuiUpdateEvent;
+	class WindowRenderEvent;
+	class KeyPressedEvent;
+	class ViewportResizeEvent;
+	class OnSceneLoadedEvent;
+	class OnSceneTransitionEvent;
 }
 
 enum class SceneState
@@ -90,7 +96,7 @@ private:
 
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
 	bool OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e);
-	bool OnRenderEvent(Volt::AppRenderEvent& e);
+	bool OnRenderEvent(Volt::WindowRenderEvent& e);
 	bool OnKeyPressedEvent(Volt::KeyPressedEvent& e);
 	bool OnViewportResizeEvent(Volt::ViewportResizeEvent& e);
 	bool OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e);

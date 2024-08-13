@@ -5,7 +5,8 @@
 
 #include <Volt/Core/Base.h>
 
-#include <Volt/Events/ApplicationEvent.h>
+#include <Volt/Events/ApplicationEvents.h>
+#include <Volt/Events/SceneEvents.h>
 
 static const int MAX_POLYS = 256;
 

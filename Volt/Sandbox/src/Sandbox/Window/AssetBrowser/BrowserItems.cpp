@@ -7,8 +7,7 @@
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Input/KeyCodes.h>
-
+#include <InputModule/KeyCodes.h>
 
 namespace AssetBrowser
 {

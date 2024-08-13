@@ -6,6 +6,9 @@
 #include <RenderCore/RenderGraph/RenderGraph.h>
 #include <RenderCore/RenderGraph/RenderContextUtils.h>
 
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+
 using namespace Volt;
 
 RG_DrawMeshShaderTriangleTest::RG_DrawMeshShaderTriangleTest()
@@ -18,7 +21,7 @@ RG_DrawMeshShaderTriangleTest::~RG_DrawMeshShaderTriangleTest()
 
 bool RG_DrawMeshShaderTriangleTest::RunTest()
 {
-	auto& swapchain = Application::Get().GetWindow().GetSwapchain();
+	auto& swapchain = Volt::WindowManager::Get().GetMainWindow().GetSwapchain();
 
 	RenderGraph renderGraph{ m_commandBuffer };
 

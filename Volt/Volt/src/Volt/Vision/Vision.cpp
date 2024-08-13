@@ -6,8 +6,6 @@
 
 #include <Volt/Utility/Noise.h>
 
-#include "Volt/Events/MouseEvent.h"
-
 Volt::Vision::Vision(Scene* aScene)
 {
 	myScene = aScene;

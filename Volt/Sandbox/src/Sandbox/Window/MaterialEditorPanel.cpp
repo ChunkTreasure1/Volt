@@ -23,6 +23,8 @@
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
 
+#include <WindowModule/Events/WindowEvents.h>
+
 MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 	: EditorWindow("Material Editor", true), myEditorScene(aScene)
 {
@@ -72,7 +74,7 @@ void MaterialEditorPanel::OnEvent(Volt::Event& e)
 	if (!IsOpen()) { return; }
 
 	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(MaterialEditorPanel::OnRenderEvent));
+	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(MaterialEditorPanel::OnRenderEvent));
 }
 
 void MaterialEditorPanel::OnOpen()
@@ -101,7 +103,7 @@ void MaterialEditorPanel::OnClose()
 	myPreviewRenderer = nullptr;
 }
 
-bool MaterialEditorPanel::OnRenderEvent(Volt::AppRenderEvent& e)
+bool MaterialEditorPanel::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	myPreviewRenderer->OnRenderEditor(myPreviewCamera);
 

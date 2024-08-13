@@ -5,5 +5,4 @@
 namespace Volt
 {
 	typedef UUID32 WindowHandle;
-
 }

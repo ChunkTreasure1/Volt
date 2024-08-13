@@ -3,7 +3,7 @@
 #include "Sandbox/Window/EditorWindow.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
-#include <Volt/Events/ApplicationEvent.h>
+#include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Asset/Asset.h>
 
 #include <glm/glm.hpp>
@@ -16,6 +16,7 @@ namespace Volt
 	class Scene;
 	class SceneRenderer;
 	class Material;
+	class WindowRenderEvent;
 }
 
 class EditorCameraController;
@@ -51,7 +52,7 @@ private:
 		Vector<TempJoint> joints;
 	};
 
-	bool OnRenderEvent(Volt::AppRenderEvent& e);
+	bool OnRenderEvent(Volt::WindowRenderEvent& e);
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
 
 	void UpdateToolbar();

@@ -20,7 +20,8 @@
 
 #include "Volt/Utility/Noise.h"
 
-#include "Volt/Input/Input.h"
+#include "Volt/Core/Application.h"
+
 #include "Volt/Components/CoreComponents.h"
 #include "Volt/Components/RenderingComponents.h"
 #include "Volt/Components/NavigationComponents.h"
@@ -54,6 +55,12 @@
 #include <Nexus/Interface/NetManager/NetManager.h>
 #include <Nexus/Winsock/AddressHelpers.hpp>
 
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+#include <WindowModule/Events/WindowEvents.h>
+
+#include <InputModule/Input.h>
+
 namespace Volt
 {
 #define VT_ADD_INTERNAL_CALL(Name) mono_add_internal_call("Volt.InternalCalls::" #Name, Name)
@@ -73,7 +80,7 @@ namespace Volt
 
 	inline static void VoltApplication_SetWindowMode(uint32_t aWindowMode)
 	{
-		Volt::Application::Get().GetWindow().SetWindowMode((Volt::WindowMode)aWindowMode);
+		WindowManager::Get().GetMainWindow().SetWindowMode((Volt::WindowMode)aWindowMode);
 	}
 
 	inline static void VoltApplication_LoadLevel(MonoString* aLevelAssetPath)
@@ -92,12 +99,12 @@ namespace Volt
 
 	inline static MonoString* VoltApplication_GetClipboard()
 	{
-		return MonoScriptUtils::GetMonoStringFromString(Volt::Application::Get().GetWindow().GetClipboard());
+		return MonoScriptUtils::GetMonoStringFromString(WindowManager::Get().GetMainWindow().GetClipboard());
 	}
 
 	inline static void VoltApplication_SetClipboard(MonoString* string)
 	{
-		Volt::Application::Get().GetWindow().SetClipboard(MonoScriptUtils::GetStringFromMonoString(string));
+		WindowManager::Get().GetMainWindow().SetClipboard(MonoScriptUtils::GetStringFromMonoString(string));
 	}
 
 #pragma endregion
@@ -2228,23 +2235,23 @@ namespace Volt
 
 #pragma region InputMapper
 
-	inline static int InputMapper_GetKey(MonoString* key)
-	{
-		const auto keyStr = MonoScriptUtils::GetStringFromMonoString(key);
-		return InputMapper::GetKey(keyStr);
-	}
+	//inline static int InputMapper_GetKey(MonoString* key)
+	//{
+	//	const auto keyStr = MonoScriptUtils::GetStringFromMonoString(key);
+	//	return InputMapper::GetKey(keyStr);
+	//}
 
-	inline static void InputMapper_SetKey(MonoString* key, int value)
-	{
-		const auto keyStr = MonoScriptUtils::GetStringFromMonoString(key);
-		InputMapper::SetKey(keyStr, value);
-	}
+	//inline static void InputMapper_SetKey(MonoString* key, int value)
+	//{
+	//	const auto keyStr = MonoScriptUtils::GetStringFromMonoString(key);
+	//	InputMapper::SetKey(keyStr, value);
+	//}
 
-	inline static void InputMapper_ResetKey(MonoString* key)
-	{
-		const auto keyStr = MonoScriptUtils::GetStringFromMonoString(key);
-		InputMapper::ResetKey(keyStr);
-	}
+	//inline static void InputMapper_ResetKey(MonoString* key)
+	//{
+	//	const auto keyStr = MonoScriptUtils::GetStringFromMonoString(key);
+	//	InputMapper::ResetKey(keyStr);
+	//}
 
 #pragma endregion
 
@@ -2355,8 +2362,9 @@ namespace Volt
 
 		if (Application::Get().IsRuntime())
 		{
-			auto [wx, wy] = Application::Get().GetWindow().GetPosition();
-			auto [x, y] = Input::GetMousePosition();
+			auto [wx, wy] = WindowManager::Get().GetMainWindow().GetPosition();
+			float x = Volt::Input::GetMouseX();
+			float y = Volt::Input::GetMouseY();
 			*position = { x - wx, y - wy };
 		}
 		else
@@ -4797,27 +4805,27 @@ namespace Volt
 	{
 		if (Application::Get().IsRuntime())
 		{
-			return static_cast<float>(Application::Get().GetWindow().GetWidth());
+			return static_cast<float>(WindowManager::Get().GetMainWindow().GetWidth());
 		}
 
-		return static_cast<float>(Application::Get().GetWindow().GetViewportWidth());
+		return static_cast<float>(WindowManager::Get().GetMainWindow().GetViewportWidth());
 	}
 
 	inline static float Window_GetHeight()
 	{
 		if (Application::Get().IsRuntime())
 		{
-			return static_cast<float>(Application::Get().GetWindow().GetHeight());
+			return static_cast<float>(WindowManager::Get().GetMainWindow().GetHeight());
 		}
 
-		return static_cast<float>(Application::Get().GetWindow().GetViewportHeight());
+		return static_cast<float>(WindowManager::Get().GetMainWindow().GetViewportHeight());
 	}
 
 	inline static void Window_SetCursor(MonoString* path)
 	{
 		const std::string str = MonoScriptUtils::GetStringFromMonoString(path);
 		const std::filesystem::path contextPath = AssetManager::GetContextPath(str);
-		Application::Get().GetWindow().SetCursor(str);
+		WindowManager::Get().GetMainWindow().SetCursor(str);
 	}
 
 #pragma endregion Window
@@ -5264,9 +5272,9 @@ namespace Volt
 
 		// InputMapper
 		{
-			VT_ADD_INTERNAL_CALL(InputMapper_GetKey);
-			VT_ADD_INTERNAL_CALL(InputMapper_SetKey);
-			VT_ADD_INTERNAL_CALL(InputMapper_ResetKey);
+			//VT_ADD_INTERNAL_CALL(InputMapper_GetKey);
+			//VT_ADD_INTERNAL_CALL(InputMapper_SetKey);
+			//VT_ADD_INTERNAL_CALL(InputMapper_ResetKey);
 		}
 
 		// Input

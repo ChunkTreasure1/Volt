@@ -1,7 +1,6 @@
 #include "sbpch.h"
 #include "VertexPainterPanel.h"
 
-#include <Volt/Input/Input.h>
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Rendering/DebugRenderer.h>
@@ -11,14 +10,16 @@
 
 #include <Volt/Rendering/Camera/Camera.h>
 
-#include <Volt/Events/Event.h>
+#include <EventModule/Event.h>
+
 #include <Volt/Core/Base.h>
 #include "Sandbox/Utility/SelectionManager.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include "Sandbox/Utility/EditorResources.h"
 
-#include <Volt/Input/KeyCodes.h>
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
 #include <Volt/Scene/SceneManager.h>
 #include <Volt/Math/RayTriangle.h>
 #include <Volt/Utility/PackUtility.h>

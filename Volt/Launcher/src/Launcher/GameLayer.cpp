@@ -14,9 +14,15 @@
 #include <Volt/Core/Application.h>
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
-#include <Volt/Input/KeyCodes.h>
+#include <InputModule/KeyCodes.h>
 
 #include <LogModule/Log.h>
+
+#include <WindowModule/Events/WindowEvents.h>
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+
+#include <InputModule/Events/KeyboardEvents.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -41,7 +47,7 @@ void GameLayer::OnAttach()
 		spec.debugName = "Main Renderer";
 		spec.scene = m_scene;
 
-		spec.initialResolution = { Volt::Application::Get().GetWindow().GetWidth(), Volt::Application::Get().GetWindow().GetHeight() };
+		spec.initialResolution = { Volt::WindowManager::Get().GetMainWindow().GetWidth(), Volt::WindowManager::Get().GetMainWindow().GetHeight() };
 
 
 		Volt::SceneRendererSettings settings{}; //= LoadGraphicSettings();
@@ -71,11 +77,11 @@ void GameLayer::OnEvent(Volt::Event& e)
 {
 	Volt::EventDispatcher dispatcher{ e };
 	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(GameLayer::OnUpdateEvent));
-	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(GameLayer::OnRenderEvent));
+	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(GameLayer::OnRenderEvent));
 	dispatcher.Dispatch<Volt::WindowResizeEvent>(VT_BIND_EVENT_FN(GameLayer::OnWindowResizeEvent));
 	dispatcher.Dispatch<Volt::OnSceneTransitionEvent>(VT_BIND_EVENT_FN(GameLayer::OnSceneTransition));
 	dispatcher.Dispatch<Volt::OnSceneLoadedEvent>(VT_BIND_EVENT_FN(GameLayer::OnSceneLoaded));
-	dispatcher.Dispatch<Volt::OnGameStateChangedEvent>(VT_BIND_EVENT_FN(GameLayer::OnGameStateChanged));
+	//dispatcher.Dispatch<Volt::OnGameStateChangedEvent>(VT_BIND_EVENT_FN(GameLayer::OnGameStateChanged));
 
 	dispatcher.Dispatch<Volt::OnRenderScaleChangedEvent>([&](Volt::OnRenderScaleChangedEvent& e)
 	{
@@ -137,7 +143,7 @@ bool GameLayer::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	return false;
 }
 
-bool GameLayer::OnRenderEvent(Volt::AppRenderEvent& e)
+bool GameLayer::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	//mySceneRenderer->OnRenderRuntime();
 
@@ -218,11 +224,11 @@ bool GameLayer::OnSceneLoaded(Volt::OnSceneLoadedEvent& e)
 	return false;
 }
 
-bool GameLayer::OnGameStateChanged(Volt::OnGameStateChangedEvent& e)
-{
-	m_isPaused = e.GetState();
-	return false;
-}
+//bool GameLayer::OnGameStateChanged(Volt::OnGameStateChangedEvent& e)
+//{
+//	m_isPaused = e.GetState();
+//	return false;
+//}
 
 Volt::SceneRendererSettings GameLayer::LoadGraphicSettings()
 {

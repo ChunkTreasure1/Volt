@@ -1,14 +1,14 @@
 #pragma once
 
 #include <Volt/Core/Base.h>
-#include <Volt/Events/Event.h>
-#include <Volt/Events/ApplicationEvent.h>
 
 #include <filesystem>
 
 namespace Volt
 {
 	class Texture2D;
+	class Event;
+	class AppUpdateEvent;
 }
 
 class AnimatedIcon

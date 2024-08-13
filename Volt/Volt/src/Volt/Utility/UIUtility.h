@@ -7,14 +7,15 @@
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Core/Application.h"
 
-#include "Volt/Input/Input.h"
-#include "Volt/Input/MouseButtonCodes.h"
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Components/CoreComponents.h"
 
 #include "Volt/Scripting/Mono/MonoTypeRegistry.h"
+
+#include <InputModule/Input.h>
+#include <InputModule/MouseButtonCodes.h>
 
 #include <glm/glm.hpp>
 

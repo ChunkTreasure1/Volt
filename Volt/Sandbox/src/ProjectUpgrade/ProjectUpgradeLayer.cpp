@@ -8,8 +8,12 @@
 #include "ProjectUpgrade/V015/V015Convert.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Events/ApplicationEvent.h>
+#include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Utility/UIUtility.h>
+
+#include <WindowModule/Events/WindowEvents.h>
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
 
 #include <imgui.h>
 
@@ -99,7 +103,7 @@ bool ProjectUpgradeLayer::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-	const bool isMaximized = Volt::Application::Get().GetWindow().IsMaximized();
+	const bool isMaximized = Volt::WindowManager::Get().GetMainWindow().IsMaximized();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, isMaximized ? ImVec2(6.0f, 6.0f) : ImVec2(1.0f, 1.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 3.0f);

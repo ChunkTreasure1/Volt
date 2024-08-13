@@ -24,6 +24,8 @@
 
 #include <Volt/Utility/UIUtility.h>
 
+#include <WindowModule/Events/WindowEvents.h>
+
 CharacterEditorPanel::CharacterEditorPanel()
 	: EditorWindow("Character Editor", true)
 {
@@ -111,7 +113,7 @@ void CharacterEditorPanel::OnEvent(Volt::Event& e)
 	if (!IsOpen()) { return; }
 
 	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(CharacterEditorPanel::OnRenderEvent));
+	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(CharacterEditorPanel::OnRenderEvent));
 	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(CharacterEditorPanel::OnUpdateEvent));
 
 	myCameraController->OnEvent(e);
@@ -181,7 +183,7 @@ void CharacterEditorPanel::OnClose()
 	mySceneRenderer = nullptr;
 }
 
-bool CharacterEditorPanel::OnRenderEvent(Volt::AppRenderEvent& e)
+bool CharacterEditorPanel::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	mySceneRenderer->OnRenderEditor(myCameraController->GetCamera());
 	return false;

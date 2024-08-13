@@ -12,9 +12,9 @@
 
 #include <Volt/Components/LightComponents.h>
 
-#include <Volt/Input/KeyCodes.h>
-#include <Volt/Input/MouseButtonCodes.h>
-#include <Volt/Input/Input.h>
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
+#include <InputModule/MouseButtonCodes.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>

@@ -1,7 +1,9 @@
-#include "vtpch.h"
+#include "windowpch.h"
 #include "DDSUtility.h"
 
 #include <DirectXTex/DirectXTex.h>
+
+#include <filesystem>
 
 namespace Volt
 {

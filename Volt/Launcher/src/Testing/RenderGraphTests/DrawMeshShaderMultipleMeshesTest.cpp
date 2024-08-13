@@ -10,6 +10,9 @@
 #include <RenderCore/RenderGraph/RenderContextUtils.h>
 #include <RenderCore/RenderGraph/RenderGraphUtils.h>
 
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+
 using namespace Volt;
 
 RG_DrawMeshShaderMultipleMeshesTest::RG_DrawMeshShaderMultipleMeshesTest()
@@ -24,7 +27,7 @@ RG_DrawMeshShaderMultipleMeshesTest::~RG_DrawMeshShaderMultipleMeshesTest()
 
 bool RG_DrawMeshShaderMultipleMeshesTest::RunTest()
 {
-	auto& swapchain = Application::Get().GetWindow().GetSwapchain();
+	auto& swapchain = Volt::WindowManager::Get().GetMainWindow().GetSwapchain();
 
 	RenderGraph renderGraph{ m_commandBuffer };
 

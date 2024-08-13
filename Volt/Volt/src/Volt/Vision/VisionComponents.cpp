@@ -10,10 +10,8 @@
 #include "Volt/Physics/Physics.h"
 #include "Volt/Physics/PhysicsScene.h"
 
-#include "Volt/Events/MouseEvent.h"
-#include "Volt/Events/GameEvent.h"
-
-#include "Volt/Input/Input.h"
+#include <InputModule/Input.h>
+#include <InputModule/Events/MouseEvents.h>
 
 void Volt::VisionCameraComponent::OnEvent(Volt::Event& e)
 {
@@ -24,7 +22,7 @@ void Volt::VisionCameraComponent::OnEvent(Volt::Event& e)
 		return false;
 	});
 
-	dispatcher.Dispatch<Volt::OnGameStateChangedEvent>([this](Volt::OnGameStateChangedEvent& e)
+	/*dispatcher.Dispatch<Volt::OnGameStateChangedEvent>([this](Volt::OnGameStateChangedEvent& e)
 	{
 		if (e.GetState() == Volt::OnGameStateChangedEvent::PLAY)
 		{
@@ -38,7 +36,7 @@ void Volt::VisionCameraComponent::OnEvent(Volt::Event& e)
 		}
 
 		return false;
-	});
+	});*/
 }
 
 void Volt::VisionCameraComponent::Init(Entity& camEntity)
@@ -49,7 +47,8 @@ void Volt::VisionCameraComponent::Init(Entity& camEntity)
 		myCurrentFocalDist = myMaxFocalDist;
 		myCurrentLerpTime = myLerpTime;
 
-		auto [x, y] = Volt::Input::GetMousePosition();
+		float x = Volt::Input::GetMouseX();
+		float y = Volt::Input::GetMouseY();
 
 		myMousePos.x = x;
 		myMousePos.y = y;

@@ -32,6 +32,9 @@
 #include <CoreUtilities/Containers/FunctionQueue.h>
 #include <CoreUtilities/Math/Hash.h>
 
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+
 namespace Volt
 {
 	namespace Utility
@@ -91,7 +94,7 @@ namespace Volt
 	void Renderer::PreInitialize()
 	{
 		s_rendererData = CreateScope<RendererData>();
-		s_rendererData->deletionQueue.resize(Application::Get().GetWindow().GetSwapchain().GetFramesInFlight());
+		s_rendererData->deletionQueue.resize(WindowManager::Get().GetMainWindow().GetSwapchain().GetFramesInFlight());
 
 		// Create shader compiler
 		{
@@ -144,7 +147,7 @@ namespace Volt
 
 	void Renderer::Flush()
 	{
-		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+		const uint32_t currentFrame = WindowManager::Get().GetMainWindow().GetSwapchain().GetCurrentFrame();
 
 		//Application::GetThreadPool().SubmitTask([currentFrame, queueCopy = s_rendererData->deletionQueue.at(currentFrame)]() mutable
 		//{
@@ -157,7 +160,7 @@ namespace Volt
 
 	const uint32_t Renderer::GetFramesInFlight()
 	{
-		return Application::Get().GetWindow().GetSwapchain().GetFramesInFlight();
+		return WindowManager::Get().GetMainWindow().GetSwapchain().GetFramesInFlight();
 	}
 
 	void Renderer::DestroyResource(std::function<void()>&& function)
@@ -168,7 +171,7 @@ namespace Volt
 			return;
 		}
 
-		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+		const uint32_t currentFrame = WindowManager::Get().GetMainWindow().GetSwapchain().GetCurrentFrame();
 		s_rendererData->deletionQueue.at(currentFrame).Push(std::move(function));
 	}
 

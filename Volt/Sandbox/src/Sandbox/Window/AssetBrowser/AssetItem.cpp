@@ -17,9 +17,10 @@
 #include "Sandbox/Window/AssetBrowser/EditorAssetRegistry.h"
 
 #include <Volt/Asset/AssetManager.h>
-#include <Volt/Input/KeyCodes.h>
 #include <Volt/Utility/PremadeCommands.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
+
+#include <InputModule/KeyCodes.h>
 
 namespace AssetBrowser
 {

@@ -3,7 +3,7 @@
 
 #include <Volt/Core/Base.h>
 #include <Volt/Scene/Scene.h>
-#include <Volt/Events/ApplicationEvent.h>
+#include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Particles/Particle.h>
 
 
@@ -13,6 +13,7 @@ namespace Volt
 	class ParticlePreset;
 	class Material;
 	class SceneRenderer;
+	class WindowRenderEvent;
 }
 
 class EditorCameraController;
@@ -34,7 +35,7 @@ private:
 		Vector<Volt::Particle> particles;
 	};
 
-	bool OnRenderEvent(Volt::AppRenderEvent& e);
+	bool OnRenderEvent(Volt::WindowRenderEvent& e);
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
 
 	void UpdateEmitter(float aDeltaTime);

@@ -2,7 +2,6 @@
 
 #include "Volt/Net/NetHandler.h"
 
-#include "Volt/Core/Window.h"
 #include "Volt/Core/Base.h"
 #include "Volt/Core/Layer/LayerStack.h"
 #include "Volt/Core/MultiTimer.h"
@@ -10,18 +9,18 @@
 #include "Volt/Core/Threading/ThreadPool.h"
 
 #include "Volt/Core/Layer/LayerStack.h"
-#include "Volt/Core/WindowManager.h"
 
 #include "Volt/Utility/Version.h"
 
-#include "Volt/Events/ApplicationEvent.h"
-#include "Volt/Events/KeyEvent.h"
+#include <WindowModule/WindowMode.h>
 
 #include <string>
 
 namespace Amp
 {
 	class AudioManager;
+
+	enum class WindowMode : uint32_t;
 }
 
 class Log;
@@ -52,6 +51,8 @@ namespace Volt
 		bool enableSteam = false;
 		bool isRuntime = false;
 		bool netEnabled = true;
+		bool UseTitlebar = false;
+		bool UseCustomTitlebar = false;
 
 		Version version = VT_VERSION;
 	};
@@ -78,10 +79,8 @@ namespace Volt
 		void PushLayer(Layer* layer);
 		void PopLayer(Layer* layer);
 
-		Window& GetWindow() const;
 		inline static Application& Get() { return *s_instance; }
 		inline static ThreadPool& GetThreadPool() { return Get().m_threadPool; }
-		inline static WindowManager& GetWindowManager() { return Get().m_windowManager; }
 		inline static const uint64_t GetFrameIndex() { return Get().m_frameIndex; }
 
 		inline const bool IsRuntime() const { return m_info.isRuntime; }
@@ -100,11 +99,11 @@ namespace Volt
 		void MainUpdate();
 		void CreateGraphicsContext();
 
-		bool OnAppUpdateEvent(AppUpdateEvent& e);
-		bool OnWindowCloseEvent(WindowCloseEvent& e);
-		bool OnWindowResizeEvent(WindowResizeEvent& e);
-		bool OnViewportResizeEvent(ViewportResizeEvent& e);
-		bool OnKeyPressedEvent(KeyPressedEvent& e);
+		bool OnAppUpdateEvent(class AppUpdateEvent& e);
+		bool OnWindowCloseEvent(class WindowCloseEvent& e);
+		bool OnWindowResizeEvent(class WindowResizeEvent& e);
+		bool OnViewportResizeEvent(class ViewportResizeEvent& e);
+		bool OnKeyPressedEvent(class KeyPressedEvent& e);
 
 		inline static Application* s_instance = nullptr;
 
@@ -122,7 +121,6 @@ namespace Volt
 
 		LayerStack m_layerStack;
 		MultiTimer m_frameTimer;
-		WindowManager m_windowManager;
 
 		Scope<Log> m_log;
 
@@ -130,7 +128,6 @@ namespace Volt
 		RefPtr<RHI::GraphicsContext> m_graphicsContext;
 		RefPtr<RHI::RHIProxy> m_rhiProxy;
 
-		WindowHandle m_windowHandle = 0;
 		Scope<AssetManager> m_assetmanager;
 		Scope<NetHandler> m_netHandler;
 		Scope<AI::NavigationSystem> m_navigationSystem;
