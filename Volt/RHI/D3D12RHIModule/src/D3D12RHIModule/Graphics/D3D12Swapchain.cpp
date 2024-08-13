@@ -140,7 +140,7 @@ namespace Volt::RHI
 		return MAX_SWAPCHAIN_IMAGES;
 	}
 
-	RefPtr<Image2D> D3D12Swapchain::GetCurrentImage() const
+	RefPtr<Image> D3D12Swapchain::GetCurrentImage() const
 	{
 		return m_perImageData.at(m_currentImageIndex).imageReference;
 	}
@@ -215,7 +215,7 @@ namespace Volt::RHI
 			SwapchainImageSpecification spec{};
 			spec.swapchain = this;
 			spec.imageIndex = i;
-			m_perImageData[i].imageReference = Image2D::Create(spec);
+			m_perImageData[i].imageReference = Image::Create(spec);
 		}
 	}
 

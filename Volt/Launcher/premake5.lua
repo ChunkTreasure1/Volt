@@ -56,6 +56,7 @@ project "Launcher"
 		"%{IncludeDir.LogModule}",
 		"%{IncludeDir.RHIModule}",
 		"%{IncludeDir.RenderCoreModule}",
+		"%{IncludeDir.JobSystemModule}",
 
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",

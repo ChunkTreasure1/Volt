@@ -20,8 +20,9 @@ namespace Volt::RHI
 		~D3D12CommandBuffer() override;
 
 		void Begin() override;
-		void RestartAfterFlush() override;
 		void End() override;
+
+		void Flush(RefPtr<Fence> fence) override;
 		void Execute() override;
 		void ExecuteAndWait() override;
 		void WaitForFence() override;
@@ -69,20 +70,19 @@ namespace Volt::RHI
 		void EndTimestamp(uint32_t timestampIndex) override;
 		const float GetExecutionTime(uint32_t timestampIndex) const override;
 
-		void ClearImage(WeakPtr<Image2D> image, std::array<float, 4> clearColor) override;
-		void ClearImage(WeakPtr<Image3D> image, std::array<float, 4> clearColor) override;
+		void ClearImage(WeakPtr<Image> image, std::array<float, 4> clearColor) override;
 		void ClearBuffer(WeakPtr<StorageBuffer> buffer, const uint32_t value) override;
 
 		void UpdateBuffer(WeakPtr<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data) override;
 		void CopyBufferRegion(WeakPtr<Allocation> srcResource, const size_t srcOffset, WeakPtr<Allocation> dstResource, const size_t dstOffset, const size_t size) override;
-		void CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip /* = 0 */) override;
-		void CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image3D> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip /* = 0 */) override;
-		void CopyImageToBuffer(WeakPtr<Image2D> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip) override;
-		void CopyImage(WeakPtr<Image2D> srcImage, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height) override;
+		void CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip /* = 0 */) override;
+		void CopyImageToBuffer(WeakPtr<Image> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip) override;
+		void CopyImage(WeakPtr<Image> srcImage, WeakPtr<Image> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth) override;
 
-		void UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData) override;
+		void UploadTextureData(WeakPtr<Image> dstImage, const ImageCopyData& copyData) override;
 
 		const QueueType GetQueueType() const override;
+		const WeakPtr<Fence> GetFence() const override;
 
 		RefPtr<Semaphore> GetSemaphore() const { return m_commandListData.fence; }
 

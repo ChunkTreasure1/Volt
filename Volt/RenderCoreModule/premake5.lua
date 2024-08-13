@@ -33,6 +33,7 @@ project "RenderCoreModule"
 
 		"%{IncludeDir.LogModule}",
 		"%{IncludeDir.RHIModule}",
+		"%{IncludeDir.JobSystemModule}",
 
 		"%{IncludeDir.half}",
 	}
@@ -43,6 +44,7 @@ project "RenderCoreModule"
 		"LogModule",
 
 		"RHIModule",
+		"JobSystemModule",
 
 		"%{Library.CoreUtilities}",
 	}

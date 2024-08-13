@@ -2,7 +2,7 @@
 
 #include <Volt/Asset/Asset.h>
 
-#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 
 namespace Volt
 {
@@ -11,7 +11,7 @@ namespace Volt
 	public:
 		~TextureSource() override = default;
 
-		inline RefPtr<RHI::Image2D> GetImage() const { return m_image; }
+		inline RefPtr<RHI::Image> GetImage() const { return m_image; }
 
 		static AssetType GetStaticType() { return AssetType::TextureSource; }
 		AssetType GetType() override { return GetStaticType(); }
@@ -20,6 +20,6 @@ namespace Volt
 	private:
 		friend class SourceTextureSerializer;
 
-		RefPtr<RHI::Image2D> m_image;
+		RefPtr<RHI::Image> m_image;
 	};
 }

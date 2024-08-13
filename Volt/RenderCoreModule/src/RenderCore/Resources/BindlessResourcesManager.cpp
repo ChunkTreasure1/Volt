@@ -3,7 +3,6 @@
 
 #include <RHIModule/Buffers/StorageBuffer.h>
 #include <RHIModule/Buffers/BufferView.h>
-#include <RHIModule/Images/Image2D.h>
 #include <RHIModule/Images/ImageView.h>
 #include <RHIModule/Shader/Shader.h>
 #include <RHIModule/Images/SamplerState.h>

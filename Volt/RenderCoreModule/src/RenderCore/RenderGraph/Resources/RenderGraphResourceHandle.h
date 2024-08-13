@@ -74,32 +74,16 @@ namespace Volt
 		}
 	};
 
-	class VTRC_API RenderGraphImage2DHandle : public RenderGraphResourceHandle
+	class VTRC_API RenderGraphImageHandle : public RenderGraphResourceHandle
 	{
 	public:
-		RenderGraphImage2DHandle() = default;
-		RenderGraphImage2DHandle(const RenderGraphNullHandle& other)
+		RenderGraphImageHandle() = default;
+		RenderGraphImageHandle(const RenderGraphNullHandle& other)
 		{
 			m_value = other.Get();
 		}
 
-		RenderGraphImage2DHandle& operator=(const RenderGraphNullHandle& rhs)
-		{
-			m_value = rhs.Get();
-			return *this;
-		}
-	};
-
-	class VTRC_API RenderGraphImage3DHandle : public RenderGraphResourceHandle
-	{
-	public:
-		RenderGraphImage3DHandle() = default;
-		RenderGraphImage3DHandle(const RenderGraphNullHandle& other)
-		{
-			m_value = other.Get();
-		}
-
-		RenderGraphImage3DHandle& operator=(const RenderGraphNullHandle& rhs)
+		RenderGraphImageHandle& operator=(const RenderGraphNullHandle& rhs)
 		{
 			m_value = rhs.Get();
 			return *this;
@@ -140,18 +124,9 @@ namespace std
 	};
 
 	template<>
-	struct hash<Volt::RenderGraphImage2DHandle>
+	struct hash<Volt::RenderGraphImageHandle>
 	{
-		std::size_t operator()(const Volt::RenderGraphImage2DHandle& handle) const
-		{
-			return std::hash<uint32_t>()(handle.Get());
-		}
-	};
-
-	template<>
-	struct hash<Volt::RenderGraphImage3DHandle>
-	{
-		std::size_t operator()(const Volt::RenderGraphImage3DHandle& handle) const
+		std::size_t operator()(const Volt::RenderGraphImageHandle& handle) const
 		{
 			return std::hash<uint32_t>()(handle.Get());
 		}
@@ -181,16 +156,6 @@ namespace std
 	struct formatter<Volt::RenderGraphUniformBufferHandle> : formatter<string>
 	{
 		auto format(Volt::RenderGraphUniformBufferHandle id, format_context& ctx) const
-		{
-			return formatter<string>::format(
-			  std::format("{}", id.Get()), ctx);
-		}
-	};
-
-	template <>
-	struct formatter<Volt::RenderGraphImage3DHandle> : formatter<string>
-	{
-		auto format(Volt::RenderGraphImage3DHandle id, format_context& ctx) const
 		{
 			return formatter<string>::format(
 			  std::format("{}", id.Get()), ctx);

@@ -15,14 +15,14 @@ namespace Volt
 {
 	struct PrefilterDepthData
 	{
-		RenderGraphImage2DHandle prefilteredDepth;
+		RenderGraphImageHandle prefilteredDepth;
 		GTAOTechnique::GTAOConstants constants{};
 	};
 
 	struct GTAOData
 	{
-		RenderGraphImage2DHandle aoOutput;
-		RenderGraphImage2DHandle edgesOutput;
+		RenderGraphImageHandle aoOutput;
+		RenderGraphImageHandle edgesOutput;
 	};
 
 	GTAOTechnique::GTAOTechnique(uint64_t frameIndex, const GTAOSettings& settings)
@@ -104,7 +104,7 @@ namespace Volt
 			desc.mips = GTAO_PREFILTERED_DEPTH_MIP_COUNT;
 			desc.name = "GTAO Prefiltered Depth";
 
-			data.prefilteredDepth = builder.CreateImage2D(desc);
+			data.prefilteredDepth = builder.CreateImage(desc);
 			data.constants = m_constants;
 
 			builder.ReadResource(preDepthData.depth);
@@ -163,13 +163,13 @@ namespace Volt
 			// AO Texture
 			{
 				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32_UINT>(renderSize.x, renderSize.y, RHI::ImageUsage::Storage, "GTAO AO Output");
-				data.aoOutput = builder.CreateImage2D(desc);
+				data.aoOutput = builder.CreateImage(desc);
 			}
 
 			// Edges Texture
 			{
 				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R8_UNORM>(renderSize.x, renderSize.y, RHI::ImageUsage::Storage, "GTAO Edges Output");
-				data.edgesOutput = builder.CreateImage2D(desc);
+				data.edgesOutput = builder.CreateImage(desc);
 			}
 
 			builder.ReadResource(prefilterDepthData.prefilteredDepth);
@@ -226,12 +226,12 @@ namespace Volt
 		{
 			{
 				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32_UINT>(renderSize.x, renderSize.y, RHI::ImageUsage::Storage, "GTAO Final Output");
-				data.outputImage = builder.CreateImage2D(desc);
+				data.outputImage = builder.CreateImage(desc);
 			}
 
 			{
 				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32_UINT>(renderSize.x, renderSize.y, RHI::ImageUsage::Storage, "GTAO Temp Image");
-				data.tempImage = builder.CreateImage2D(desc);
+				data.tempImage = builder.CreateImage(desc);
 			}
 
 			builder.ReadResource(gtaoData.aoOutput);

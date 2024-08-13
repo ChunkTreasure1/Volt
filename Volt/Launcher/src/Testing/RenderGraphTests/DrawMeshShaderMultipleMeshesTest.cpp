@@ -32,7 +32,7 @@ bool RG_DrawMeshShaderMultipleMeshesTest::RunTest()
 	RenderGraph renderGraph{ m_commandBuffer };
 
 	auto targetImage = swapchain.GetCurrentImage();
-	RenderGraphImage2DHandle targetImageHandle = renderGraph.AddExternalImage2D(targetImage);
+	RenderGraphImageHandle targetImageHandle = renderGraph.AddExternalImage(targetImage);
 
 	struct Data
 	{

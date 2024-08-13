@@ -35,7 +35,7 @@ namespace Volt
 		RenderGraphBufferDesc description{};
 		bool isExternal = false;
 
-		inline static constexpr ResourceType GetResourceType()
+		VT_INLINE ResourceType GetType() const
 		{
 			return ResourceType::Buffer;
 		}
@@ -46,7 +46,7 @@ namespace Volt
 		RenderGraphBufferDesc description{};
 		bool isExternal = false;
 
-		inline static constexpr ResourceType GetResourceType()
+		VT_INLINE ResourceType GetType() const
 		{
 			return ResourceType::UniformBuffer;
 		}

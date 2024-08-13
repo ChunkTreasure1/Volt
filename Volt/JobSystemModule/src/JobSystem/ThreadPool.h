@@ -1,13 +1,16 @@
 #pragma once
 
+#include "JobSystem/Config.h"
+
 #include <CoreUtilities/Containers/ThreadSafeQueue.h>
+#include <CoreUtilities/Containers/Vector.h>
 
 #include <future>
 #include <functional>
 
 namespace Volt
 {
-	class ThreadPool
+	class VTJS_API ThreadPool
 	{
 	public:
 		using WriteLock = std::unique_lock<std::shared_mutex>;

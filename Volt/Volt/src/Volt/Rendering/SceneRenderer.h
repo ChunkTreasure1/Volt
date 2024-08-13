@@ -81,8 +81,8 @@ namespace Volt
 		inline void SetVisualizationMode(VisualizationMode visMode) { m_visualizationMode = visMode; }
 		inline VisualizationMode GetVisualizationMode() const { return m_visualizationMode; }
 
-		RefPtr<RHI::Image2D> GetFinalImage();
-		RefPtr<RHI::Image2D> GetObjectIDImage();
+		RefPtr<RHI::Image> GetFinalImage();
+		RefPtr<RHI::Image> GetObjectIDImage();
 
 		// #TODO_Ivar: TEMP, Should not be public!
 		void Invalidate();
@@ -119,19 +119,19 @@ namespace Volt
 		void AddSkyboxPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		void AddFXAAPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImage2DHandle srcImage);
+		void AddFXAAPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImageHandle srcImage);
 
-		void AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImage2DHandle srcImage);
+		void AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImageHandle srcImage);
 
-		void AddVisualizeSDFPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImage2DHandle dstImage);
-		void AddVisualizeBricksPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImage2DHandle dstImage);
+		void AddVisualizeSDFPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImageHandle dstImage);
+		void AddVisualizeBricksPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImageHandle dstImage);
 
 		void CreateMainRenderTarget(const uint32_t width, const uint32_t height);
 
-		RefPtr<RHI::Image2D> m_outputImage;
-		RefPtr<RHI::Image2D> m_objectIDImage;
-		RefPtr<RHI::Image2D> m_previousDepthImage;
-		RefPtr<RHI::Image2D> m_previousColorImage;
+		RefPtr<RHI::Image> m_outputImage;
+		RefPtr<RHI::Image> m_objectIDImage;
+		RefPtr<RHI::Image> m_previousDepthImage;
+		RefPtr<RHI::Image> m_previousColorImage;
 
 		Ref<Mesh> m_skyboxMesh;
 

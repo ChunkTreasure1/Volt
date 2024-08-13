@@ -3,7 +3,7 @@
 #include "RHIModule/Core/RHIInterface.h"
 #include "RHIModule/Core/RHICommon.h"
 
-#include "RHIModule/Images/Image2D.h"
+#include "RHIModule/Images/Image.h"
 #include "RHIModule/Buffers/CommandBuffer.h"
 
 struct GLFWwindow;
@@ -21,7 +21,7 @@ namespace Volt::RHI
 		virtual void Resize(const uint32_t width, const uint32_t height, bool enableVSync) = 0;
 
 		VT_NODISCARD virtual const uint32_t GetCurrentFrame() const = 0;
-		VT_NODISCARD virtual RefPtr<Image2D> GetCurrentImage() const = 0;
+		VT_NODISCARD virtual RefPtr<Image> GetCurrentImage() const = 0;
 		VT_NODISCARD virtual RefPtr<CommandBuffer> GetCommandBuffer() const = 0;
 		VT_NODISCARD virtual const uint32_t GetWidth() const = 0;
 		VT_NODISCARD virtual const uint32_t GetHeight() const = 0;

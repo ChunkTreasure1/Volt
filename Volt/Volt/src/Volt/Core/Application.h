@@ -6,13 +6,13 @@
 #include "Volt/Core/Layer/LayerStack.h"
 #include "Volt/Core/MultiTimer.h"
 
-#include "Volt/Core/Threading/ThreadPool.h"
-
 #include "Volt/Core/Layer/LayerStack.h"
 
 #include "Volt/Utility/Version.h"
 
 #include <WindowModule/WindowMode.h>
+
+#include <JobSystem/JobSystem.h>
 
 #include <string>
 
@@ -24,6 +24,7 @@ namespace Amp
 }
 
 class Log;
+class JobSystem;
 
 namespace Volt
 {
@@ -80,7 +81,7 @@ namespace Volt
 		void PopLayer(Layer* layer);
 
 		inline static Application& Get() { return *s_instance; }
-		inline static ThreadPool& GetThreadPool() { return Get().m_threadPool; }
+
 		inline static const uint64_t GetFrameIndex() { return Get().m_frameIndex; }
 
 		inline const bool IsRuntime() const { return m_info.isRuntime; }
@@ -123,6 +124,7 @@ namespace Volt
 		MultiTimer m_frameTimer;
 
 		Scope<Log> m_log;
+		Scope<JobSystem> m_jobSystem;
 
 		RefPtr<RHI::ImGuiImplementation> m_imguiImplementation;
 		RefPtr<RHI::GraphicsContext> m_graphicsContext;
@@ -133,7 +135,6 @@ namespace Volt
 		Scope<AI::NavigationSystem> m_navigationSystem;
 
 		Scope<SteamImplementation> m_steamImplementation;
-		ThreadPool m_threadPool;
 	};
 
 	static Application* CreateApplication(const std::filesystem::path& appPath);

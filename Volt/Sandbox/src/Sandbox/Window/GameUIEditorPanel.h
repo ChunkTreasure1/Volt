@@ -8,7 +8,7 @@
 #include <InputModule/Events/MouseEvents.h>
 #include <WindowModule/Events/WindowEvents.h>
 
-#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 #include <CoreUtilities/Pointers/RefPtr.h>
 
 namespace Volt
@@ -62,7 +62,7 @@ private:
 	glm::vec2 m_viewportSize = { 1280.f, 720.f };
 
 	Ref<Volt::UIScene> m_uiScene;
-	RefPtr<Volt::RHI::Image2D> m_viewportImage;
+	RefPtr<Volt::RHI::Image> m_viewportImage;
 
 	Scope<Volt::UISceneRenderer> m_uiSceneRenderer;
 };

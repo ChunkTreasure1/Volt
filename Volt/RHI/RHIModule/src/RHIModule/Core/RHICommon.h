@@ -465,7 +465,8 @@ namespace Volt::RHI
 
 	enum class ResourceType : uint32_t
 	{
-		Image2D = 0,
+		Image1D = 0,
+		Image2D,
 		Image3D,
 
 		IndexBuffer,

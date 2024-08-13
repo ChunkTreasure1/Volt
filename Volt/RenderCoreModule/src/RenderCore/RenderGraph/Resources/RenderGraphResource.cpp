@@ -11,22 +11,10 @@ namespace Volt
 	{
 	}
 
-	ResourceHandle RenderGraphPassResources::GetImage2D(const RenderGraphImage2DHandle resourceHandle, const int32_t mip, const int32_t layer) const
+	ResourceHandle RenderGraphPassResources::GetImage(const RenderGraphImageHandle resourceHandle, const int32_t mip, const int32_t layer) const
 	{
 		ValidateResourceAccess(resourceHandle);
-		auto handle = m_renderGraph.GetImage2D(resourceHandle, mip, layer);
-
-#ifdef VT_DEBUG
-		m_pass.m_resourceHandleMapping[handle] = resourceHandle;
-#endif
-
-		return handle;
-	}
-
-	ResourceHandle RenderGraphPassResources::GetImage3D(const RenderGraphImage3DHandle resourceHandle, const int32_t mip, const int32_t layer) const
-	{
-		ValidateResourceAccess(resourceHandle);
-		auto handle = m_renderGraph.GetImage3D(resourceHandle, mip, layer);
+		auto handle = m_renderGraph.GetImage(resourceHandle, mip, layer);
 
 #ifdef VT_DEBUG
 		m_pass.m_resourceHandleMapping[handle] = resourceHandle;

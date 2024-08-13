@@ -12,7 +12,7 @@ struct ImGuiContext;
 namespace Volt::RHI
 {
 	class Swapchain;
-	class Image2D;
+	class Image;
 
 	struct ImGuiCreateInfo
 	{
@@ -33,7 +33,7 @@ namespace Volt::RHI
 		void SetDefaultFont(ImFont* font);
 		ImGuiContext* GetContext() const;
 
-		virtual ImTextureID GetTextureID(RefPtr<Image2D> image) const = 0;
+		virtual ImTextureID GetTextureID(RefPtr<Image> image) const = 0;
 		virtual ImFont* AddFont(const std::filesystem::path& fontPath, float pixelSize) = 0;
 
 		static RefPtr<ImGuiImplementation> Create(const ImGuiCreateInfo& createInfo);

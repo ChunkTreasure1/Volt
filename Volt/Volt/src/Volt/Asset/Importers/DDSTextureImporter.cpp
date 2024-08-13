@@ -3,7 +3,7 @@
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 
-#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 #include <RHIModule/Buffers/CommandBuffer.h>
 #include <RHIModule/Graphics/GraphicsContext.h>
 
@@ -91,7 +91,7 @@ namespace Volt
 		const uint32_t width = imageData->m_width;
 		const uint32_t height = imageData->m_height;
 
-		RefPtr<RHI::Image2D> image;
+		RefPtr<RHI::Image> image;
 		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 
 		// Create image
@@ -105,7 +105,7 @@ namespace Volt
 			specification.generateMips = false;
 			specification.debugName = path.stem().string();
 
-			image = RHI::Image2D::Create(specification);
+			image = RHI::Image::Create(specification);
 		}
 
 		RHI::ImageCopyData copyData{};

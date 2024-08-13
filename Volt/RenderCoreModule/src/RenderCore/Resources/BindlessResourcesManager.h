@@ -3,7 +3,6 @@
 #include "RenderCore/Config.h"
 
 #include <RHIModule/Core/RHIResource.h>
-#include <RHIModule/Images/Image2D.h>
 #include <RHIModule/Descriptors/BindlessDescriptorTable.h>
 #include <RHIModule/Descriptors/ResourceHandle.h>
 
@@ -17,7 +16,6 @@ namespace Volt
 	namespace RHI
 	{
 		class StorageBuffer;
-		class Image2D;
 		class SamplerState;
 	}
 

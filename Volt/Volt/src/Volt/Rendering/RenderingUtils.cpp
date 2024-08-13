@@ -76,7 +76,7 @@ namespace Volt::RenderingUtils
 		return data.argsBufferHandle;
 	}
 
-	void CopyImage(RenderGraph& renderGraph, RenderGraphImage2DHandle sourceImage, RenderGraphImage2DHandle destinationImage, const glm::uvec2& renderSize)
+	void CopyImage(RenderGraph& renderGraph, RenderGraphImageHandle sourceImage, RenderGraphImageHandle destinationImage, const glm::uvec2& renderSize)
 	{
 		renderGraph.AddPass("Copy Image",
 		[&](RenderGraph::Builder& builder) 

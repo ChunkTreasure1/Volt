@@ -5,8 +5,6 @@
 
 namespace Volt::RHI
 {
-	class Image2D;
-
 	struct ImageViewSpecification
 	{
 		ImageViewType viewType = ImageViewType::View2D;

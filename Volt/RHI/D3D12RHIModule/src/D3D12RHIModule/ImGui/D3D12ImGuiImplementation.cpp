@@ -114,7 +114,7 @@ namespace Volt::RHI
 		return nullptr;
 	}
 
-	ImTextureID D3D12ImGuiImplementation::GetTextureID(RefPtr<Image2D> image) const
+	ImTextureID D3D12ImGuiImplementation::GetTextureID(RefPtr<Image> image) const
 	{
 		const size_t hash = std::hash<void*>()(image->GetHandle<void*>());
 

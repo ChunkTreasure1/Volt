@@ -70,7 +70,7 @@ namespace Volt
 	{
 	}
 
-	void UISceneRenderer::OnRender(RefPtr<RHI::Image2D> targetImage, const glm::mat4& projectionMatrix)
+	void UISceneRenderer::OnRender(RefPtr<RHI::Image> targetImage, const glm::mat4& projectionMatrix)
 	{
 		RenderGraphBlackboard blackboard;
 		RenderGraph renderGraph{ m_commandBufferSet.IncrementAndGetCommandBuffer() };
@@ -79,17 +79,17 @@ namespace Volt
 		{
 			const auto& renderingData = blackboard.Get<UIRenderingData>();
 
-			RenderGraphImage2DHandle targetImageHandle = renderGraph.AddExternalImage2D(targetImage);
+			RenderGraphImageHandle targetImageHandle = renderGraph.AddExternalImage(targetImage);
 
 			struct UIPassData
 			{
-				RenderGraphImage2DHandle depthImage;
+				RenderGraphImageHandle depthImage;
 			};
 
 			struct UISelectionData
 			{
-				RenderGraphImage2DHandle widgetIDImage;
-				RenderGraphImage2DHandle depthImage;
+				RenderGraphImageHandle widgetIDImage;
+				RenderGraphImageHandle depthImage;
 			};
 
 			renderGraph.AddPass("Grid Pass", 
@@ -123,12 +123,12 @@ namespace Volt
 			{
 				{
 					const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32_UINT>(targetImage->GetWidth(), targetImage->GetHeight(), RHI::ImageUsage::AttachmentStorage, "UI Selection");
-					data.widgetIDImage = builder.CreateImage2D(desc);
+					data.widgetIDImage = builder.CreateImage(desc);
 				}
 
 				{
 					const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::D32_SFLOAT>(targetImage->GetWidth(), targetImage->GetHeight(), RHI::ImageUsage::Attachment, "UI Selection Depth");
-					data.depthImage = builder.CreateImage2D(desc);
+					data.depthImage = builder.CreateImage(desc);
 				}
 
 				builder.ReadResource(renderingData.indexBuffer, RenderGraphResourceState::IndexBuffer);
@@ -157,14 +157,14 @@ namespace Volt
 				context.EndRendering();
 			});
 
-			renderGraph.EnqueueImage2DExtraction(selectionData.widgetIDImage, m_widgetIDImage);
+			renderGraph.EnqueueImageExtraction(selectionData.widgetIDImage, m_widgetIDImage);
 
 			renderGraph.AddPass<UIPassData>("UI Pass",
 			[&](RenderGraph::Builder& builder, UIPassData& data) 
 			{
 				{
 					const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::D32_SFLOAT>(targetImage->GetWidth(), targetImage->GetHeight(), RHI::ImageUsage::Attachment, "UI Depth");
-					data.depthImage = builder.CreateImage2D(desc);
+					data.depthImage = builder.CreateImage(desc);
 				}
 
 				builder.WriteResource(targetImageHandle);
@@ -197,7 +197,7 @@ namespace Volt
 			});
 		}
 
-		RenderGraphResourceHandle outputImage = renderGraph.AddExternalImage2D(targetImage);
+		RenderGraphResourceHandle outputImage = renderGraph.AddExternalImage(targetImage);
 		{
 			RenderGraphBarrierInfo barrier{};
 			barrier.dstAccess = RHI::BarrierAccess::ShaderRead;

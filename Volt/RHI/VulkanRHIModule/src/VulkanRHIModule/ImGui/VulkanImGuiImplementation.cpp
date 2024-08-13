@@ -13,7 +13,7 @@
 #include <RHIModule/Graphics/DeviceQueue.h>
 
 #include <RHIModule/Images/ImageView.h>
-#include <RHIModule/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
@@ -47,7 +47,7 @@ namespace Volt::RHI
 		ShutdownAPI();
 	}
 
-	ImTextureID VulkanImGuiImplementation::GetTextureID(RefPtr<Image2D> image) const
+	ImTextureID VulkanImGuiImplementation::GetTextureID(RefPtr<Image> image) const
 	{
 		ImTextureID id = ImGui_ImplVulkan_AddTexture(nullptr, image->GetView()->GetHandle<VkImageView>(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		return id;

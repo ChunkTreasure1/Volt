@@ -253,7 +253,7 @@ namespace Volt
 			imageSpec.imageType = RHI::ResourceType::Image3D;
 			imageSpec.debugName = std::format("SDF Brick Texture{} - {}", meshName, subMeshIndex);
 
-			BindlessResourceRef<RHI::Image3D> brickTexture = BindlessResource<RHI::Image3D>::CreateRef(imageSpec);
+			BindlessResourceRef<RHI::Image> brickTexture = BindlessResource<RHI::Image>::CreateRef(imageSpec);
 			result.sdfTexture = brickTexture;
 
 			RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
@@ -266,7 +266,7 @@ namespace Volt
 			renderGraph.AddMappedBufferUpload(brickInfoBufferHandle, brickInfoData.data(), brickInfoData.size() * sizeof(BrickInfo), "Upload Brick Info");
 
 			RenderGraphBufferHandle sdfBricksBufferHandle = renderGraph.CreateBuffer(RGUtils::CreateBufferDesc<GPUSDFBrick>(brickGrid.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "SDF Bricks"));
-			RenderGraphImage3DHandle textureHandle = renderGraph.AddExternalImage3D(brickTexture->GetResource());
+			RenderGraphImageHandle textureHandle = renderGraph.AddExternalImage(brickTexture->GetResource());
 
 			RGUtils::ClearImage(renderGraph, textureHandle, { 1000.f }, "Clear SDF Image");
 

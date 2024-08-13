@@ -17,7 +17,7 @@ namespace Volt::RHI
 		D3D12ImGuiImplementation(const ImGuiCreateInfo& createInfo);
 		~D3D12ImGuiImplementation() override;
 		
-		ImTextureID GetTextureID(RefPtr<Image2D> image) const override;
+		ImTextureID GetTextureID(RefPtr<Image> image) const override;
 		ImFont* AddFont(const std::filesystem::path& fontPath, float pixelSize) override;
 
 	protected:

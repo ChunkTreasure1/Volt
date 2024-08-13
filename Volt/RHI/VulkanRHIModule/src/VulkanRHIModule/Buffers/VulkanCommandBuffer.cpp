@@ -15,8 +15,8 @@
 #include "VulkanRHIModule/Descriptors/VulkanBindlessDescriptorTable.h"
 #include "VulkanRHIModule/Descriptors/VulkanDescriptorBufferTable.h"
 
-#include "VulkanRHIModule/Images/VulkanImage2D.h"
-#include "VulkanRHIModule/Images/VulkanImage3D.h"
+#include "VulkanRHIModule/Images/VulkanImage.h"
+
 #include "VulkanRHIModule/Buffers/VulkanStorageBuffer.h"
 #include "VulkanRHIModule/Synchronization/VulkanSemaphore.h"
 
@@ -35,6 +35,8 @@
 
 #include <RHIModule/Shader/Shader.h>
 #include <RHIModule/Core/Profiling.h>
+#include <RHIModule/RHIProxy.h>
+#include <RHIModule/Synchronization/Fence.h>
 
 #include <CoreUtilities/EnumUtils.h>
 
@@ -258,7 +260,8 @@ namespace Volt::RHI
 
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{
-		Release();
+		Release(m_fence);
+		m_fence = nullptr;
 	}
 
 	void VulkanCommandBuffer::Begin()
@@ -266,8 +269,10 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence, VK_TRUE, UINT64_MAX));
-		VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence));
+
+		m_fence->WaitUntilSignaled();
+		m_fence->Reset();
+
 		VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), m_commandBufferData.commandPool, 0));
 
 		// If the next timestamp query is zero, no frame has run before
@@ -311,48 +316,42 @@ namespace Volt::RHI
 		VT_VK_CHECK(vkEndCommandBuffer(m_commandBufferData.commandBuffer));
 	}
 
-	void VulkanCommandBuffer::RestartAfterFlush()
-	{
-		VT_PROFILE_FUNCTION();
-
-		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence, VK_TRUE, UINT64_MAX));
-		VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence));
-		VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), m_commandBufferData.commandPool, 0));
-
-		// If the next timestamp query is zero, no frame has run before
-		if (m_nextAvailableTimestampQuery > 0)
-		{
-			FetchTimestampResults();
-		}
-
-		// Begin command buffer
-		{
-			VkCommandBufferBeginInfo beginInfo{};
-			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-			VT_VK_CHECK(vkBeginCommandBuffer(m_commandBufferData.commandBuffer, &beginInfo));
-		}
-
-		if (m_hasTimestampSupport)
-		{
-			vkCmdResetQueryPool(m_commandBufferData.commandBuffer, m_timestampQueryPool, 0, m_timestampQueryCount);
-			vkCmdWriteTimestamp2(m_commandBufferData.commandBuffer, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestampQueryPool, 0);
-
-			m_timestampCount = m_nextAvailableTimestampQuery;
-			m_nextAvailableTimestampQuery = 2;
-		}
-
-		BeginMarker("CommandBuffer", { 1.f, 1.f, 1.f, 1.f });
-	}
-
 	void VulkanCommandBuffer::Execute()
 	{
 		VT_PROFILE_FUNCTION();
 
 		auto device = GraphicsContext::GetDevice();
-		device->GetDeviceQueue(m_queueType)->Execute({ { this } });
+		DeviceQueueExecuteInfo execInfo{};
+		execInfo.commandBuffers = { this };
+		execInfo.fence = m_fence;
+
+		device->GetDeviceQueue(m_queueType)->Execute(execInfo);
+	}
+
+	void VulkanCommandBuffer::Flush(RefPtr<Fence> fence)
+	{
+		VT_PROFILE_FUNCTION();
+
+		// End the current command buffer
+		End();
+
+		// Execute current command buffer and use the supplied fence
+		{
+			auto device = GraphicsContext::GetDevice();
+
+			DeviceQueueExecuteInfo execInfo{};
+			execInfo.commandBuffers = { this };
+			execInfo.fence = fence;
+			device->GetDeviceQueue(m_queueType)->Execute(execInfo);
+		}
+
+		// Now we destroy the current command buffer and create a new one.
+		// #TODO_Ivar: Investigate the overhead of creating a new command buffer every frame.
+		Release(fence);
+		Invalidate();
+
+		// And lastly we restart the command buffer
+		Begin();
 	}
 
 	void VulkanCommandBuffer::ExecuteAndWait()
@@ -360,8 +359,13 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		auto device = GraphicsContext::GetDevice();
-		device->GetDeviceQueue(m_queueType)->Execute({ { this } });
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence, VK_TRUE, UINT64_MAX));
+
+		DeviceQueueExecuteInfo execInfo{};
+		execInfo.commandBuffers = { this };
+		execInfo.fence = m_fence;
+
+		device->GetDeviceQueue(m_queueType)->Execute(execInfo);
+		m_fence->WaitUntilSignaled();
 
 		FetchTimestampResults();
 	}
@@ -369,9 +373,7 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::WaitForFence()
 	{
 		VT_PROFILE_FUNCTION();
-
-		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence, VK_TRUE, UINT64_MAX));
+		m_fence->WaitUntilSignaled();
 	}
 
 	void VulkanCommandBuffer::SetEvent(WeakPtr<Event> event)
@@ -777,19 +779,8 @@ namespace Volt::RHI
 
 		VT_ENSURE(barrierInfo.resource != nullptr);
 
-		VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM;
-
-		if (barrierInfo.resource->GetType() == ResourceType::Image2D)
-		{
-			auto& vkImage = barrierInfo.resource->AsRef<VulkanImage2D>();
-			aspectFlags = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
-		}
-		else if (barrierInfo.resource->GetType() == ResourceType::Image3D)
-		{
-			aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
-		}
-
-		VT_ASSERT(aspectFlags != VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM);
+		VkImageAspectFlags aspectFlags = Utility::GetVkImageAspect(barrierInfo.resource->As<Image>()->GetImageAspect());
+		VT_ASSERT(aspectFlags != VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM && aspectFlags != VK_IMAGE_ASPECT_NONE);
 
 		outBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
 		outBarrier.pNext = nullptr;
@@ -947,11 +938,11 @@ namespace Volt::RHI
 		return m_executionTimes.at(timestampIndex / 2);
 	}
 
-	void VulkanCommandBuffer::ClearImage(WeakPtr<Image2D> image, std::array<float, 4> clearColor)
+	void VulkanCommandBuffer::ClearImage(WeakPtr<Image> image, std::array<float, 4> clearColor)
 	{
 		VT_PROFILE_FUNCTION();
 
-		VulkanImage2D& vkImage = image->AsRef<VulkanImage2D>();
+		VulkanImage& vkImage = image->AsRef<VulkanImage>();
 
 		VkImageAspectFlags imageAspect = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
 
@@ -988,33 +979,6 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanCommandBuffer::ClearImage(WeakPtr<Image3D> image, std::array<float, 4> clearColor)
-	{
-		VT_PROFILE_FUNCTION();
-
-		const VkImageAspectFlags imageAspect = VK_IMAGE_ASPECT_COLOR_BIT;
-
-		VkImageSubresourceRange range{};
-		range.aspectMask = imageAspect;
-		range.baseArrayLayer = 0;
-		range.baseMipLevel = 0;
-		range.layerCount = VK_REMAINING_ARRAY_LAYERS;
-		range.levelCount = VK_REMAINING_MIP_LEVELS;
-
-		const auto& currentState = GraphicsContext::GetResourceStateTracker()->GetCurrentResourceState(image);
-
-		// This is a bit of a hack due to the differences in clearing images between Vulkan and D3D12
-		const VkImageLayout layout = EnumValueContainsFlag(currentState.stage, BarrierStage::Clear) ? VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL : Utility::GetVkImageLayoutFromImageLayout(currentState.layout);
-
-		VkClearColorValue vkClearColor{};
-		vkClearColor.float32[0] = clearColor[0];
-		vkClearColor.float32[1] = clearColor[1];
-		vkClearColor.float32[2] = clearColor[2];
-		vkClearColor.float32[3] = clearColor[3];
-
-		vkCmdClearColorImage(m_commandBufferData.commandBuffer, image->GetHandle<VkImage>(), layout, &vkClearColor, 1, &range);
-	}
-
 	void VulkanCommandBuffer::ClearBuffer(WeakPtr<StorageBuffer> buffer, const uint32_t value)
 	{
 		VT_PROFILE_FUNCTION();
@@ -1045,11 +1009,13 @@ namespace Volt::RHI
 		vkCmdCopyBuffer(m_commandBufferData.commandBuffer, srcResource->GetResourceHandle<VkBuffer>(), dstResource->GetResourceHandle<VkBuffer>(), 1, &copy);
 	}
 
-	void VulkanCommandBuffer::CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip)
+	void VulkanCommandBuffer::CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip)
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto& vkImage = dstImage->AsRef<VulkanImage2D>();
+		VT_ENSURE_MSG(height >= 1 && width >= 1 && depth >= 1, "All dimensions must be equal to or greater than one!");
+
+		auto& vkImage = dstImage->AsRef<VulkanImage>();
 
 		VkBufferImageCopy region{};
 		region.bufferOffset = 0;
@@ -1062,38 +1028,20 @@ namespace Volt::RHI
 		region.imageSubresource.layerCount = 1;
 
 		region.imageOffset = { 0, 0, 0 };
-		region.imageExtent = { width, height, 1 };
-
-		const auto& currentState = GraphicsContext::GetResourceStateTracker()->GetCurrentResourceState(dstImage);
-		vkCmdCopyBufferToImage(m_commandBufferData.commandBuffer, srcBuffer->GetResourceHandle<VkBuffer>(), dstImage->GetHandle<VkImage>(), Utility::GetVkImageLayoutFromImageLayout(currentState.layout), 1, &region);
-	}
-
-	void VulkanCommandBuffer::CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image3D> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip)
-	{
-		VT_PROFILE_FUNCTION();
-
-		VkBufferImageCopy region{};
-		region.bufferOffset = 0;
-		region.bufferRowLength = 0;
-		region.bufferImageHeight = 0;
-
-		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		region.imageSubresource.mipLevel = mip;
-		region.imageSubresource.baseArrayLayer = 0;
-		region.imageSubresource.layerCount = 1;
-
-		region.imageOffset = { 0, 0, 0 };
 		region.imageExtent = { width, height, depth };
 
 		const auto& currentState = GraphicsContext::GetResourceStateTracker()->GetCurrentResourceState(dstImage);
 		vkCmdCopyBufferToImage(m_commandBufferData.commandBuffer, srcBuffer->GetResourceHandle<VkBuffer>(), dstImage->GetHandle<VkImage>(), Utility::GetVkImageLayoutFromImageLayout(currentState.layout), 1, &region);
 	}
 
-	void VulkanCommandBuffer::CopyImageToBuffer(WeakPtr<Image2D> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip)
+	void VulkanCommandBuffer::CopyImageToBuffer(WeakPtr<Image> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip)
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto& vkImage = srcImage->AsRef<VulkanImage2D>();
+		VT_ENSURE_MSG(height >= 1 && width >= 1 && depth >= 1, "All dimensions must be equal to or greater than one!");
+		VT_ENSURE_MSG(mip < srcImage->CalculateMipCount(), "Mip level is not valid!");
+
+		auto& vkImage = srcImage->AsRef<VulkanImage>();
 
 		VkBufferImageCopy region{};
 		region.bufferOffset = dstOffset;
@@ -1112,12 +1060,14 @@ namespace Volt::RHI
 		vkCmdCopyImageToBuffer(m_commandBufferData.commandBuffer, srcImage->GetHandle<VkImage>(), Utility::GetVkImageLayoutFromImageLayout(currentState.layout), dstBuffer->GetResourceHandle<VkBuffer>(), 1, &region);
 	}
 
-	void VulkanCommandBuffer::CopyImage(WeakPtr<Image2D> srcImage, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height)
+	void VulkanCommandBuffer::CopyImage(WeakPtr<Image> srcImage, WeakPtr<Image> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth)
 	{
 		VT_PROFILE_FUNCTION();
 
-		VulkanImage2D& srcVkImage = srcImage->AsRef<VulkanImage2D>();
-		VulkanImage2D& dstVkImage = dstImage->AsRef<VulkanImage2D>();
+		VT_ENSURE_MSG(height >= 1 && width >= 1 && depth >= 1, "All dimensions must be equal to or greater than one!");
+
+		VulkanImage& srcVkImage = srcImage->AsRef<VulkanImage>();
+		VulkanImage& dstVkImage = dstImage->AsRef<VulkanImage>();
 
 		const VkImageAspectFlags srcImageAspect = static_cast<VkImageAspectFlags>(srcVkImage.GetImageAspect());
 		const VkImageAspectFlags dstImageAspect = static_cast<VkImageAspectFlags>(dstVkImage.GetImageAspect());
@@ -1173,11 +1123,11 @@ namespace Volt::RHI
 		vkCmdCopyImage2(m_commandBufferData.commandBuffer, &cpyInfo);
 	}
 
-	void VulkanCommandBuffer::UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData)
+	void VulkanCommandBuffer::UploadTextureData(WeakPtr<Image> dstImage, const ImageCopyData& copyData)
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto& vkImage = dstImage->AsRef<VulkanImage2D>();
+		auto& vkImage = dstImage->AsRef<VulkanImage>();
 
 		Vector<VkBufferImageCopy> copyRegions;
 		copyRegions.reserve(copyData.copySubData.size());
@@ -1218,9 +1168,9 @@ namespace Volt::RHI
 		return m_queueType;
 	}
 
-	VkFence_T* VulkanCommandBuffer::GetFence() const
+	const WeakPtr<Fence> VulkanCommandBuffer::GetFence() const
 	{
-		return m_commandBufferData.fence;
+		return m_fence;
 	}
 
 	void* VulkanCommandBuffer::GetHandleImpl() const
@@ -1230,6 +1180,8 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::Invalidate()
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto physicalDevice = GraphicsContext::GetPhysicalDevice()->As<VulkanPhysicalGraphicsDevice>();
 		auto device = GraphicsContext::GetDevice();
 
@@ -1269,11 +1221,10 @@ namespace Volt::RHI
 
 		VT_VK_CHECK(vkAllocateCommandBuffers(device->GetHandle<VkDevice>(), &allocInfo, &m_commandBufferData.commandBuffer));
 
-		VkFenceCreateInfo info{};
-		info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		FenceCreateInfo fenceInfo{};
+		fenceInfo.createSignaled = true;
 
-		VT_VK_CHECK(vkCreateFence(device->GetHandle<VkDevice>(), &info, nullptr, &m_commandBufferData.fence));
+		m_fence = Fence::Create(fenceInfo);
 
 		m_hasTimestampSupport = GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().GetProperties().limits.timestampComputeAndGraphics;
 		if (m_hasTimestampSupport)
@@ -1282,18 +1233,32 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanCommandBuffer::Release()
+	void VulkanCommandBuffer::Release(RefPtr<Fence> waitFence)
 	{
-		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBufferData.fence, VK_TRUE, UINT64_MAX));
+		VT_PROFILE_FUNCTION();
 
-		vkDestroyFence(device->GetHandle<VkDevice>(), m_commandBufferData.fence, nullptr);
-		vkDestroyCommandPool(device->GetHandle<VkDevice>(), m_commandBufferData.commandPool, nullptr);
-		vkDestroyQueryPool(device->GetHandle<VkDevice>(), m_timestampQueryPool, nullptr);
+		if (!m_commandBufferData.commandBuffer)
+		{
+			return;
+		}
+
+		VkFence fencePtr = waitFence->GetHandle<VkFence>();
+		RHIProxy::GetInstance().DestroyResource([fence = fencePtr, commandPool = m_commandBufferData.commandPool, timestampPool = m_timestampQueryPool]()
+		{
+			auto device = GraphicsContext::GetDevice();
+			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &fence, VK_TRUE, UINT64_MAX));
+
+			vkDestroyCommandPool(device->GetHandle<VkDevice>(), commandPool, nullptr);
+			vkDestroyQueryPool(device->GetHandle<VkDevice>(), timestampPool, nullptr);
+		});
+
+		m_commandBufferData = {};
 	}
 
 	void VulkanCommandBuffer::CreateQueryPools()
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto device = GraphicsContext::GetDevice();
 
 		m_timestampQueryCount = 2 + 2 * MAX_QUERIES;

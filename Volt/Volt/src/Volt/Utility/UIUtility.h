@@ -195,7 +195,7 @@ public:
 	private:
 	};
 
-	static ImTextureID GetTextureID(RefPtr<Volt::RHI::Image2D> texture);
+	static ImTextureID GetTextureID(RefPtr<Volt::RHI::Image> texture);
 	static ImTextureID GetTextureID(Ref<Volt::Texture2D> texture);
 
 	static void Header(const std::string& text);

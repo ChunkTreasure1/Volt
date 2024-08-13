@@ -9,15 +9,6 @@
 #include "Volt/Rendering/Renderer.h"
 
 #include "Volt/Rendering/Shader/ShaderMap.h"
-
-#include <RenderCore/RenderGraph/RenderGraph.h>
-#include <RenderCore/RenderGraph/RenderGraphUtils.h>
-#include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
-#include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
-#include <RenderCore/RenderGraph/Resources/RenderGraphBufferResource.h>
-#include <RenderCore/RenderGraph/Resources/RenderGraphTextureResource.h>
-#include <RenderCore/RenderGraph/RenderContextUtils.h>
-
 #include "Volt/Rendering/RenderingTechniques/PrefixSumTechnique.h"
 #include "Volt/Rendering/RenderingTechniques/GTAOTechnique.h"
 #include "Volt/Rendering/RenderingTechniques/DirectionalShadowTechnique.h"
@@ -49,7 +40,16 @@
 #include "Volt/Utility/Noise.h"
 #include "Volt/Math/Math.h"
 
-#include <RHIModule/Images/Image2D.h>
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
+#include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
+#include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
+#include <RenderCore/RenderGraph/Resources/RenderGraphBufferResource.h>
+#include <RenderCore/RenderGraph/Resources/RenderGraphTextureResource.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
+#include <RenderCore/RenderGraph/GPUReadbackBuffer.h>
+
+#include <RHIModule/Images/Image.h>
 #include <RHIModule/Images/SamplerState.h>
 #include <RHIModule/Shader/Shader.h>
 #include <RHIModule/Pipelines/RenderPipeline.h>
@@ -92,12 +92,12 @@ namespace Volt
 		m_shouldResize = true;
 	}
 
-	RefPtr<RHI::Image2D> SceneRenderer::GetFinalImage()
+	RefPtr<RHI::Image> SceneRenderer::GetFinalImage()
 	{
 		return m_outputImage;
 	}
 
-	RefPtr<RHI::Image2D> SceneRenderer::GetObjectIDImage()
+	RefPtr<RHI::Image> SceneRenderer::GetObjectIDImage()
 	{
 		return m_objectIDImage;
 	}
@@ -174,10 +174,10 @@ namespace Volt
 			////For every material -> run compute shading shader using indirect args
 			auto& gbufferData = rgBlackboard.Add<GBufferData>();
 
-			gbufferData.albedo = renderGraph.CreateImage2D({ RHI::PixelFormat::R8G8B8A8_UNORM, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
-			gbufferData.normals = renderGraph.CreateImage2D({ RHI::PixelFormat::A2B10G10R10_UNORM_PACK32, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Normals" });
-			gbufferData.material = renderGraph.CreateImage2D({ RHI::PixelFormat::R8G8_UNORM, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Material" });
-			gbufferData.emissive = renderGraph.CreateImage2D({ RHI::PixelFormat::B10G11R11_UFLOAT_PACK32, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Emissive" });
+			gbufferData.albedo = renderGraph.CreateImage(RGUtils::CreateImage2DDesc<RHI::PixelFormat::R8G8B8A8_UNORM>(m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo"));
+			gbufferData.normals = renderGraph.CreateImage(RGUtils::CreateImage2DDesc<RHI::PixelFormat::A2B10G10R10_UNORM_PACK32>(m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Normals"));
+			gbufferData.material = renderGraph.CreateImage(RGUtils::CreateImage2DDesc<RHI::PixelFormat::R8G8_UNORM>(m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Material"));
+			gbufferData.emissive = renderGraph.CreateImage(RGUtils::CreateImage2DDesc<RHI::PixelFormat::B10G11R11_UFLOAT_PACK32>(m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Emissive"));
 
 			AddClearGBufferPass(renderGraph, rgBlackboard);
 			RenderMaterials(renderGraph, rgBlackboard);
@@ -197,7 +197,7 @@ namespace Volt
 		}
 		else
 		{
-			RGUtils::ClearImage(renderGraph, renderGraph.AddExternalImage2D(m_outputImage), { 0.1f, 0.1f, 0.1f, 1.f });
+			RGUtils::ClearImage(renderGraph, renderGraph.AddExternalImage(m_outputImage), { 0.1f, 0.1f, 0.1f, 1.f });
 		}
 
 		{
@@ -206,7 +206,7 @@ namespace Volt
 			barrier.dstAccess = RHI::BarrierAccess::ShaderRead;
 			barrier.dstLayout = RHI::ImageLayout::ShaderRead;
 
-			renderGraph.AddResourceBarrier(renderGraph.AddExternalImage2D(m_outputImage), barrier);
+			renderGraph.AddResourceBarrier(renderGraph.AddExternalImage(m_outputImage), barrier);
 		}
 
 		renderGraph.Compile();
@@ -456,8 +456,8 @@ namespace Volt
 		// Core images
 		{
 			auto& imageData = blackboard.Add<ExternalImagesData>();
-			imageData.black1x1Cube = renderGraph.AddExternalImage2D(Renderer::GetDefaultResources().blackCubeTexture);
-			imageData.BRDFLuT = renderGraph.AddExternalImage2D(Renderer::GetDefaultResources().BRDFLuT);
+			imageData.black1x1Cube = renderGraph.AddExternalImage(Renderer::GetDefaultResources().blackCubeTexture);
+			imageData.BRDFLuT = renderGraph.AddExternalImage(Renderer::GetDefaultResources().BRDFLuT);
 		}
 
 		// GPU Scene
@@ -489,8 +489,8 @@ namespace Volt
 			const auto& imageData = blackboard.Get<ExternalImagesData>();
 
 			auto& environmentTexturesData = blackboard.Add<EnvironmentTexturesData>();
-			environmentTexturesData.irradiance = m_sceneEnvironment.irradianceMap ? renderGraph.AddExternalImage2D(m_sceneEnvironment.irradianceMap) : imageData.black1x1Cube;
-			environmentTexturesData.radiance = m_sceneEnvironment.radianceMap ? renderGraph.AddExternalImage2D(m_sceneEnvironment.radianceMap) : imageData.black1x1Cube;
+			environmentTexturesData.irradiance = m_sceneEnvironment.irradianceMap ? renderGraph.AddExternalImage(m_sceneEnvironment.irradianceMap) : imageData.black1x1Cube;
+			environmentTexturesData.radiance = m_sceneEnvironment.radianceMap ? renderGraph.AddExternalImage(m_sceneEnvironment.radianceMap) : imageData.black1x1Cube;
 		}
 	}
 
@@ -525,11 +525,11 @@ namespace Volt
 			desc.format = RHI::PixelFormat::D32_SFLOAT;
 			desc.usage = RHI::ImageUsage::Attachment;
 			desc.name = "PreDepth";
-			data.depth = builder.CreateImage2D(desc);
+			data.depth = builder.CreateImage(desc);
 
 			desc.format = RHI::PixelFormat::R16G16B16A16_SFLOAT;
 			desc.name = "View Normals";
-			data.normals = builder.CreateImage2D(desc);
+			data.normals = builder.CreateImage(desc);
 
 			BuildMeshPass(builder, blackboard);
 
@@ -558,7 +558,7 @@ namespace Volt
 	{
 		struct Data
 		{
-			RenderGraphImage2DHandle objectIdHandle;
+			RenderGraphImageHandle objectIdHandle;
 		};
 
 		const auto preDepthHandle = blackboard.Get<PreDepthData>().depth;
@@ -567,7 +567,7 @@ namespace Volt
 		Data& data = renderGraph.AddPass<Data>("Object ID Pass",
 		[&](RenderGraph::Builder& builder, Data& data)
 		{
-			data.objectIdHandle = builder.CreateImage2D({ RHI::PixelFormat::R32_UINT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "ObjectID" });
+			data.objectIdHandle = builder.CreateImage(RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32_UINT>(m_width, m_height, RHI::ImageUsage::AttachmentStorage, "Entity ID"));
 			builder.WriteResource(preDepthHandle);
 
 			BuildMeshPass(builder, blackboard);
@@ -594,7 +594,7 @@ namespace Volt
 			context.EndRendering();
 		});
 
-		renderGraph.EnqueueImage2DExtraction(data.objectIdHandle, m_objectIDImage);
+		renderGraph.EnqueueImageExtraction(data.objectIdHandle, m_objectIDImage);
 	}
 
 	void SceneRenderer::AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
@@ -605,7 +605,7 @@ namespace Volt
 		blackboard.Add<VisibilityBufferData>() = renderGraph.AddPass<VisibilityBufferData>("Visibility Buffer",
 		[&](RenderGraph::Builder& builder, VisibilityBufferData& data)
 		{
-			data.visibility = builder.CreateImage2D({ RHI::PixelFormat::R32G32_UINT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "VisibilityBuffer" });
+			data.visibility = builder.CreateImage(RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32G32_UINT>(m_width, m_height, RHI::ImageUsage::AttachmentStorage, "Visibility Buffer"));
 			builder.WriteResource(preDepthHandle);
 
 			BuildMeshPass(builder, blackboard);
@@ -878,7 +878,7 @@ namespace Volt
 		{
 			{
 				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::B10G11R11_UFLOAT_PACK32>(m_width, m_height, RHI::ImageUsage::AttachmentStorage, "Shading Output");
-				data.colorOutput = builder.CreateImage2D(desc);
+				data.colorOutput = builder.CreateImage(desc);
 			}
 
 			builder.ReadResource(environmentTexturesData.radiance);
@@ -986,14 +986,14 @@ namespace Volt
 		});
 	}
 
-	void SceneRenderer::AddFXAAPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImage2DHandle srcImage)
+	void SceneRenderer::AddFXAAPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImageHandle srcImage)
 	{
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 
 		blackboard.Add<FXAAOutputData>() = renderGraph.AddPass<FXAAOutputData>("FXAA Pass",
 		[&](RenderGraph::Builder& builder, FXAAOutputData& data)
 		{
-			data.output = builder.AddExternalImage2D(m_outputImage);
+			data.output = builder.AddExternalImage(m_outputImage);
 
 			builder.WriteResource(data.output);
 			builder.ReadResource(srcImage);
@@ -1021,14 +1021,14 @@ namespace Volt
 		});
 	}
 
-	void SceneRenderer::AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImage2DHandle srcImage)
+	void SceneRenderer::AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImageHandle srcImage)
 	{
 		blackboard.Add<FinalCopyData>() = renderGraph.AddPass<FinalCopyData>("Final Copy",
 		[&](RenderGraph::Builder& builder, FinalCopyData& data)
 		{
 			{
 				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::B10G11R11_UFLOAT_PACK32>(m_width, m_height, RHI::ImageUsage::AttachmentStorage, "Final Copy Output");
-				data.output = builder.CreateImage2D(desc);
+				data.output = builder.CreateImage(desc);
 			}
 
 			builder.WriteResource(data.output);
@@ -1055,7 +1055,7 @@ namespace Volt
 		});
 	}
 
-	void SceneRenderer::AddVisualizeSDFPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImage2DHandle dstImage)
+	void SceneRenderer::AddVisualizeSDFPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImageHandle dstImage)
 	{
 		const auto& gpuSceneData = blackboard.Get<GPUSceneData>();
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
@@ -1095,7 +1095,7 @@ namespace Volt
 		});
 	}
 
-	void SceneRenderer::AddVisualizeBricksPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImage2DHandle dstImage)
+	void SceneRenderer::AddVisualizeBricksPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImageHandle dstImage)
 	{
 		auto cubeMesh = ShapeLibrary::GetCube();
 
@@ -1111,7 +1111,7 @@ namespace Volt
 
 		struct PassData
 		{
-			RenderGraphImage2DHandle depthHandle;
+			RenderGraphImageHandle depthHandle;
 
 			RenderGraphBufferHandle vertexBuffer;
 			RenderGraphBufferHandle indexBuffer;
@@ -1126,7 +1126,7 @@ namespace Volt
 			desc.format = RHI::PixelFormat::D32_SFLOAT;
 			desc.usage = RHI::ImageUsage::Attachment;
 			desc.name = "PreDepth";
-			data.depthHandle = builder.CreateImage2D(desc);
+			data.depthHandle = builder.CreateImage(desc);
 
 			data.vertexBuffer = builder.AddExternalBuffer(cubeMesh->GetVertexPositionsBuffer()->GetResource());
 			data.indexBuffer = builder.AddExternalBuffer(cubeMesh->GetIndexBuffer()->GetResource());
@@ -1208,6 +1208,6 @@ namespace Volt
 		spec.format = RHI::PixelFormat::B10G11R11_UFLOAT_PACK32;
 		spec.debugName = "Final Image";
 
-		m_outputImage = RHI::Image2D::Create(spec);
+		m_outputImage = RHI::Image::Create(spec);
 	}
 }

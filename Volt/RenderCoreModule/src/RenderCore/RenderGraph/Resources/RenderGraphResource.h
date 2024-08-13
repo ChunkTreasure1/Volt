@@ -54,6 +54,7 @@ namespace Volt
 		template<typename T>
 		T& As()
 		{
+			static_assert(std::is_base_of_v<RenderGraphResourceNodeBase, T>);
 			return *reinterpret_cast<T*>(this);
 		}
 	};
@@ -66,7 +67,7 @@ namespace Volt
 
 		T resourceInfo;
 
-		constexpr ResourceType GetResourceType() const override { return T::GetResourceType(); }
+		VT_INLINE ResourceType GetResourceType() const override { return resourceInfo.GetType(); }
 	};
 
 	class VTRC_API RenderGraphPassResources
@@ -74,8 +75,7 @@ namespace Volt
 	public:
 		RenderGraphPassResources(RenderGraph& renderGraph, RenderGraphPassNodeBase& pass);
 		
-		ResourceHandle GetImage2D(const RenderGraphImage2DHandle resourceHandle, const int32_t mip = -1, const int32_t layer = -1) const;
-		ResourceHandle GetImage3D(const RenderGraphImage3DHandle resourceHandle, const int32_t mip = -1, const int32_t layer = -1) const;
+		ResourceHandle GetImage(const RenderGraphImageHandle resourceHandle, const int32_t mip = -1, const int32_t layer = -1) const;
 		ResourceHandle GetBuffer(const RenderGraphBufferHandle resourceHandle) const;
 		ResourceHandle GetUniformBuffer(const RenderGraphUniformBufferHandle resourceHandle) const;
 

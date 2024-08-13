@@ -151,7 +151,7 @@ namespace Volt
 		BoundingSphere m_boundingSphere;
 		BoundingBox m_boundingBox;
 
-		vt::map<uint32_t, BindlessResourceRef<RHI::Image3D>> m_sdfTextures;
+		vt::map<uint32_t, BindlessResourceRef<RHI::Image>> m_sdfTextures;
 		vt::map<uint32_t, Vector<SDFBrick>> m_brickGrids;
 		vt::map<uint32_t, BindlessResourceRef<RHI::StorageBuffer>> m_brickBuffers;
 

@@ -4,8 +4,7 @@
 #include "VulkanRHIModule/Common/VulkanHelpers.h"
 #include "VulkanRHIModule/Common/VulkanCommon.h"
 
-#include <RHIModule/Images/Image2D.h>
-#include <RHIModule/Images/Image3D.h>
+#include <RHIModule/Images/Image.h>
 #include <RHIModule/Images/ImageUtility.h>
 #include <RHIModule/Graphics/GraphicsContext.h>
 #include <RHIModule/Graphics/GraphicsDevice.h>
@@ -19,23 +18,13 @@ namespace Volt::RHI
 	VulkanImageView::VulkanImageView(const ImageViewSpecification& specification)
 		: m_specification(specification)
 	{
-		auto image = specification.image;
-		if (image->GetType() == ResourceType::Image2D)
-		{
-			auto image2D = image->As<Image2D>();
-			m_format = image2D->GetFormat();
-			m_imageUsage = image2D->GetUsage();
-			m_imageAspect = image2D->GetImageAspect();
-			m_isSwapchainImage = image2D->IsSwapchainImage();
-		}
-		else if (image->GetType() == ResourceType::Image3D)
-		{
-			auto image3D = image->As<Image3D>();
-			m_format = image3D->GetFormat();
-			m_imageUsage = image3D->GetUsage();
-			m_imageAspect = ImageAspect::Color;
-			m_isSwapchainImage = false;
-		}
+		auto imageRes = specification.image;
+		auto image = imageRes->As<Image>();
+
+		m_format = image->GetFormat();
+		m_imageUsage = image->GetUsage();
+		m_imageAspect = image->GetImageAspect();
+		m_isSwapchainImage = image->IsSwapchainImage();
 
 		VkImageAspectFlags aspectMask = Utility::IsDepthFormat(m_format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 		if (Utility::IsStencilFormat(m_format))

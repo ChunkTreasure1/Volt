@@ -22,13 +22,13 @@ namespace Volt::RHI
 
 	class DescriptorTable;
 
-	class Image2D;
-	class Image3D;
+	class Image;
 	class StorageBuffer;
 	class Allocation;
 	class Swapchain;
 
 	class Event;
+	class Fence;
 
 	class VTRHI_API CommandBuffer : public RHIInterface
 	{
@@ -38,8 +38,8 @@ namespace Volt::RHI
 
 		virtual void Begin() = 0;
 		virtual void End() = 0;
-		virtual void RestartAfterFlush() = 0;
 
+		virtual void Flush(RefPtr<Fence> fence) = 0;
 		virtual void Execute() = 0;
 		virtual void ExecuteAndWait() = 0;
 		virtual void WaitForFence() = 0;
@@ -87,20 +87,19 @@ namespace Volt::RHI
 		virtual void EndTimestamp(uint32_t timestampIndex) = 0;
 		virtual const float GetExecutionTime(uint32_t timestampIndex) const = 0;
 
-		virtual void ClearImage(WeakPtr<Image2D> image, std::array<float, 4> clearColor) = 0;
-		virtual void ClearImage(WeakPtr<Image3D> image, std::array<float, 4> clearColor) = 0;
+		virtual void ClearImage(WeakPtr<Image> image, std::array<float, 4> clearColor) = 0;
 		virtual void ClearBuffer(WeakPtr<StorageBuffer> buffer, const uint32_t value) = 0;
 
 		virtual void UpdateBuffer(WeakPtr<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data) = 0;
 		virtual void CopyBufferRegion(WeakPtr<Allocation> srcResource, const size_t srcOffset, WeakPtr<Allocation> dstResource, const size_t dstOffset, const size_t size) = 0;
-		virtual void CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip = 0) = 0;
-		virtual void CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image3D> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip = 0) = 0;
-		virtual void CopyImageToBuffer(WeakPtr<Image2D> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip) = 0;
-		virtual void CopyImage(WeakPtr<Image2D> srcImage, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height) = 0;
+		virtual void CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip = 0) = 0;
+		virtual void CopyImageToBuffer(WeakPtr<Image> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip) = 0;
+		virtual void CopyImage(WeakPtr<Image> srcImage, WeakPtr<Image> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth) = 0;
 
-		virtual void UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData) = 0;
+		virtual void UploadTextureData(WeakPtr<Image> dstImage, const ImageCopyData& copyData) = 0;
 
 		virtual const QueueType GetQueueType() const = 0;
+		virtual const WeakPtr<Fence> GetFence() const = 0;
 
 		static RefPtr<CommandBuffer> Create(QueueType queueType);
 		static RefPtr<CommandBuffer> Create();

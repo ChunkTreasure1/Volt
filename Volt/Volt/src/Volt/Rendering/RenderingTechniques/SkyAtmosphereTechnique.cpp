@@ -76,7 +76,7 @@ namespace Volt
 		[&](RenderGraph::Builder& builder, TransmittanceLUTData& data)
 		{
 			auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R16G16B16A16_SFLOAT>(TRANSMITTANCE_LUT_WIDTH, TRANSMITTANCE_LUT_HEIGHT, RHI::ImageUsage::Attachment, "Sky Transmittance LUT");
-			data.transmittanceLUT = builder.CreateImage2D(desc);
+			data.transmittanceLUT = builder.CreateImage(desc);
 		},
 		[=](const TransmittanceLUTData& data, RenderContext& context)
 		{

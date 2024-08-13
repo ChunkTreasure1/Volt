@@ -3,8 +3,6 @@
 #include "VulkanRHIModule/Core.h"
 #include <RHIModule/Buffers/CommandBuffer.h>
 
-
-
 struct VkCommandBuffer_T;
 struct VkCommandPool_T;
 struct VkFence_T;
@@ -15,6 +13,7 @@ struct VkPipelineLayout_T;
 namespace Volt::RHI
 {
 	class Semaphore;
+
 	class VulkanCommandBuffer final : public CommandBuffer
 	{
 	public:
@@ -23,8 +22,9 @@ namespace Volt::RHI
 
 		void Begin() override;
 		void End() override;
-		void RestartAfterFlush() override;
 		void Execute() override;
+
+		void Flush(RefPtr<Fence> fence) override;
 		void ExecuteAndWait() override;
 		void WaitForFence() override;
 
@@ -71,22 +71,19 @@ namespace Volt::RHI
 		void EndTimestamp(uint32_t timestampIndex) override;
 		const float GetExecutionTime(uint32_t timestampIndex) const override;
 
-		void ClearImage(WeakPtr<Image2D> image, std::array<float, 4> clearColor) override;
-		void ClearImage(WeakPtr<Image3D> image, std::array<float, 4> clearColor) override;
+		void ClearImage(WeakPtr<Image> image, std::array<float, 4> clearColor) override;
 		void ClearBuffer(WeakPtr<StorageBuffer> buffer, const uint32_t value) override;
 
 		void UpdateBuffer(WeakPtr<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data) override;
 		void CopyBufferRegion(WeakPtr<Allocation> srcAllocation, const size_t srcOffset, WeakPtr<Allocation> dstAllocation, const size_t dstOffset, const size_t size) override;
-		void CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip /* = 0 */) override;
-		void CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image3D> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip /* = 0 */) override;
-		void CopyImageToBuffer(WeakPtr<Image2D> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t mip) override;
-		void CopyImage(WeakPtr<Image2D> srcImage, WeakPtr<Image2D> dstImage, const uint32_t width, const uint32_t height) override;
+		void CopyBufferToImage(WeakPtr<Allocation> srcBuffer, WeakPtr<Image> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip /* = 0 */) override;
+		void CopyImageToBuffer(WeakPtr<Image> srcImage, WeakPtr<Allocation> dstBuffer, const size_t dstOffset, const uint32_t width, const uint32_t height, const uint32_t depth, const uint32_t mip) override;
+		void CopyImage(WeakPtr<Image> srcImage, WeakPtr<Image> dstImage, const uint32_t width, const uint32_t height, const uint32_t depth) override;
 
-		void UploadTextureData(WeakPtr<Image2D> dstImage, const ImageCopyData& copyData) override;
+		void UploadTextureData(WeakPtr<Image> dstImage, const ImageCopyData& copyData) override;
 
 		const QueueType GetQueueType() const override;
-
-		VkFence_T* GetFence() const;
+		const WeakPtr<Fence> GetFence() const override;
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -99,7 +96,7 @@ namespace Volt::RHI
 		inline static constexpr uint32_t MAX_QUERIES = 64;
 
 		void Invalidate();
-		void Release();
+		void Release(RefPtr<Fence> waitFence);
 
 		void CreateQueryPools();
 		void FetchTimestampResults();
@@ -110,9 +107,9 @@ namespace Volt::RHI
 		{
 			VkCommandBuffer_T* commandBuffer = nullptr;
 			VkCommandPool_T* commandPool = nullptr;
-			VkFence_T* fence = nullptr;
 		};
 
+		RefPtr<Fence> m_fence;
 		CommandBufferData m_commandBufferData;
 
 		bool m_hasTimestampSupport = false;

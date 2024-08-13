@@ -18,7 +18,7 @@ ImTextureID UI::GetTextureID(Ref<Volt::Texture2D> texture)
 	return Volt::RHI::ImGuiImplementation::Get().GetTextureID(texture->GetImage());
 }
 
-ImTextureID UI::GetTextureID(RefPtr<Volt::RHI::Image2D> texture)
+ImTextureID UI::GetTextureID(RefPtr<Volt::RHI::Image> texture)
 {
 	return Volt::RHI::ImGuiImplementation::Get().GetTextureID(texture);
 }

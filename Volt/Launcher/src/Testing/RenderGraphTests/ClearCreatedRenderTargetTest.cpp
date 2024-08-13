@@ -22,7 +22,7 @@ bool RG_ClearCreatedRenderTargetTest::RunTest()
 	RenderGraph renderGraph{ m_commandBuffer };
 	
 	auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R16G16B16A16_SFLOAT>(1280, 720, RHI::ImageUsage::AttachmentStorage, "TestImage");
-	RenderGraphImage2DHandle testImageHandle = renderGraph.CreateImage2D(desc);
+	RenderGraphImageHandle testImageHandle = renderGraph.CreateImage(desc);
 
 	renderGraph.AddPass("Clear Test Image",
 	[&](RenderGraph::Builder& builder)

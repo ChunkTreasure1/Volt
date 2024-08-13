@@ -9,10 +9,11 @@
 #include "VulkanRHIModule/Graphics/VulkanGraphicsDevice.h"
 #include "VulkanRHIModule/Graphics/VulkanDeviceQueue.h"
 #include "VulkanRHIModule/Buffers/VulkanCommandBuffer.h"
-#include "VulkanRHIModule/Images/VulkanImage2D.h"
+#include "VulkanRHIModule/Images/VulkanImage.h"
 
 #include <RHIModule/Core/Profiling.h>
 #include <RHIModule/Utility/ResourceUtility.h>
+#include <RHIModule/Synchronization/Fence.h>
 
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
@@ -164,7 +165,7 @@ namespace Volt::RHI
 		// Queue Submit
 		{
 			VkCommandBuffer cmdBuffer = m_commandBuffers.at(m_currentFrame)->GetHandle<VkCommandBuffer>();
-			VkFence fence = m_commandBuffers.at(m_currentFrame)->AsRef<VulkanCommandBuffer>().GetFence();
+			VkFence fence = m_commandBuffers.at(m_currentFrame)->GetFence()->GetHandle<VkFence>();
 
 			VkSubmitInfo submitInfo{};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -259,7 +260,7 @@ namespace Volt::RHI
 		return m_swapchainFormat;
 	}
 
-	RefPtr<Image2D> VulkanSwapchain::GetCurrentImage() const
+	RefPtr<Image> VulkanSwapchain::GetCurrentImage() const
 	{
 		const auto& data = m_perImageData.at(GetCurrentFrame());
 		return data.imageReference;
@@ -295,7 +296,7 @@ namespace Volt::RHI
 		}
 
 		auto device = GraphicsContext::GetDevice();
-
+		
 		m_commandBuffers.at(m_currentFrame)->WaitForFence();
 
 		for (auto& perFrameData : m_perFrameInFlightData)
@@ -409,7 +410,7 @@ namespace Volt::RHI
 			spec.swapchain = this;
 			spec.imageIndex = static_cast<uint32_t>(i);
 
-			m_perImageData[i].imageReference = Image2D::Create(spec);
+			m_perImageData[i].imageReference = Image::Create(spec);
 		}
 
 		m_swapchainFormat = Utility::VulkanToVoltFormat(surfaceFormat.format);

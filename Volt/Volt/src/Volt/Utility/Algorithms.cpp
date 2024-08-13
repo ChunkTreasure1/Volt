@@ -3,16 +3,15 @@
 
 #include "Volt/Math/Math.h"
 #include "Volt/Core/Application.h"
-#include "Volt/Core/Threading/ThreadPool.h"
 #include "Volt/Core/Base.h"
+
+#include <JobSystem/JobSystem.h>
 
 namespace Volt::Algo
 {
 	Vector<std::future<void>> ForEachParallelLockable(std::function<void(uint32_t threadIdx, uint32_t elementIdx)>&& func, uint32_t iterationCount)
 	{
-		auto& threadPool = Application::GetThreadPool();
-
-		const uint32_t threadCount = std::min(iterationCount, threadPool.GetThreadCount());
+		const uint32_t threadCount = std::min(iterationCount, JobSystem::GetThreadCount());
 		const uint32_t perThreadIterationCount = iterationCount / threadCount;
 
 		Vector<std::future<void>> futures;
@@ -27,7 +26,7 @@ namespace Volt::Algo
 				currThreadIterationCount = iterationCount - i * perThreadIterationCount;
 			}
 
-			futures.emplace_back(threadPool.SubmitTask([currThreadIterationCount, func, iterOffset, i]() 
+			futures.emplace_back(JobSystem::SubmitTask([currThreadIterationCount, func, iterOffset, i]() 
 			{
 				for (uint32_t iter = 0; iter < currThreadIterationCount; iter++)
 				{
@@ -45,9 +44,7 @@ namespace Volt::Algo
 	{
 		VT_ASSERT_MSG(iterationCount > 0, "Iteration count must be greater than zero!");
 
-		auto& threadPool = Application::GetThreadPool();
-
-		const uint32_t threadCount = std::min(iterationCount, threadPool.GetThreadCount());
+		const uint32_t threadCount = std::min(iterationCount, JobSystem::GetThreadCount());
 		const uint32_t perThreadIterationCount = iterationCount / threadCount;
 
 		uint32_t iterOffset = 0;
@@ -59,7 +56,7 @@ namespace Volt::Algo
 				currThreadIterationCount = iterationCount - i * perThreadIterationCount;
 			}
 
-			threadPool.SubmitTask([currThreadIterationCount, func, iterOffset, i]()
+			JobSystem::SubmitTask([currThreadIterationCount, func, iterOffset, i]()
 			{
 				for (uint32_t iter = 0; iter < currThreadIterationCount; iter++)
 				{
@@ -75,8 +72,7 @@ namespace Volt::Algo
 	{
 		VT_ASSERT_MSG(iterationCount > 0, "Iteration count must be greater than zero!");
 
-		auto& threadPool = Application::GetThreadPool();
-		const uint32_t threadCount = std::min(iterationCount, threadPool.GetThreadCount());
+		const uint32_t threadCount = std::min(iterationCount, JobSystem::GetThreadCount());
 	
 		return threadCount;
 	}
