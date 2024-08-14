@@ -8,6 +8,9 @@
 
 #include <RHIModule/Utility/ResourceUtility.h>
 
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+
 using namespace Volt;
 
 DrawIndirectTest::DrawIndirectTest()
@@ -26,7 +29,7 @@ DrawIndirectTest::~DrawIndirectTest()
 
 bool DrawIndirectTest::RunTest()
 {
-	auto& swapchain = Application::Get().GetWindow().GetSwapchain();
+	auto& swapchain = Volt::WindowManager::Get().GetMainWindow().GetSwapchain();
 
 	// Setup command
 	{

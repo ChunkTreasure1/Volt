@@ -10,8 +10,8 @@
 #include "Sandbox/VersionControl/VersionControl.h"
 
 #include <Volt/Asset/Prefab.h>
-#include <Volt/Input/Input.h>
-#include <Volt/Input/KeyCodes.h>
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/Mesh/Mesh.h>
 
@@ -31,6 +31,9 @@
 #include <Volt/Project/ProjectManager.h>
 
 #include <AssetSystem/AssetManager.h>
+
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
 
 namespace Utility
 {
@@ -923,7 +926,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 		const std::string copyId = "Copy ID##" + entity.ToString();
 		if (ImGui::MenuItem(copyId.c_str()))
 		{
-			Volt::Application::Get().GetWindow().SetClipboard(entity.ToString());
+			Volt::WindowManager::Get().GetMainWindow().SetClipboard(entity.ToString());
 		}
 
 		ImGui::EndPopup();

@@ -30,7 +30,6 @@ project "Launcher"
 
     defines
     {
-        "GLFW_INCLUDE_NONE",
     }
 
 	files
@@ -59,7 +58,6 @@ project "Launcher"
 		"%{IncludeDir.RenderCoreModule}",
 		"%{IncludeDir.JobSystemModule}",
 
-        "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
@@ -89,7 +87,12 @@ project "Launcher"
 
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.vma}",
-		"%{IncludeDir.zlib}"
+		"%{IncludeDir.zlib}",
+
+		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.WindowModule}",
+		"%{IncludeDir.InputModule}",
+
 	}
 
     links
@@ -118,7 +121,11 @@ project "Launcher"
 		"%{Library.steam}",
 		"%{Library.discord}",
 		
-		"%{Library.METIS}"
+		"%{Library.METIS}",
+
+		"EventModule",
+		"WindowModule",
+		"InputModule",
     }
 	
 	debugargs 

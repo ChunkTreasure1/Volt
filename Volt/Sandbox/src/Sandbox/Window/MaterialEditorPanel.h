@@ -2,7 +2,7 @@
 
 #include "Sandbox/Window/EditorWindow.h"
 
-#include <Volt/Events/ApplicationEvent.h>
+#include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Scene/Entity.h>
 
 namespace Volt
@@ -12,6 +12,7 @@ namespace Volt
 	class Camera;
 	class Scene;
 	class SceneRenderer;
+	class WindowRenderEvent;
 }
 
 class MaterialEditorPanel : public EditorWindow
@@ -29,7 +30,7 @@ public:
 	void OnClose() override;
 
 private:
-	bool OnRenderEvent(Volt::AppRenderEvent& e);
+	bool OnRenderEvent(Volt::WindowRenderEvent& e);
 	void UpdateToolbar();
 	void UpdateProperties();
 	void UpdatePreview();

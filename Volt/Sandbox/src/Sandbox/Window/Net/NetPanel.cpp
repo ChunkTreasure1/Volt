@@ -5,7 +5,7 @@
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Events/ApplicationEvent.h>
+#include <Volt/Events/ApplicationEvents.h>
 
 #include "Volt/Net/Serialization/NetSerialization.h"
 

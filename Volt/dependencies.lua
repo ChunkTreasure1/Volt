@@ -1,5 +1,4 @@
 IncludeDir = {}
-IncludeDir["GLFW"] = "%{wks.location}/Volt/vendor/GLFW/include"
 IncludeDir["ImGui"] = "%{wks.location}/Volt/vendor/ImGui"
 IncludeDir["spdlog"] = "%{wks.location}/Volt/vendor/spdlog/include"
 IncludeDir["yaml"] = "%{wks.location}/Volt/vendor/yaml-cpp/include"
@@ -40,11 +39,23 @@ IncludeDir["ufbx"] = "%{wks.location}/Volt/vendor/ufbx"
 IncludeDir["dxc"] = "%{wks.location}/Volt/vendor/dxc/include"
 IncludeDir["libacc"] = "%{wks.location}/Volt/vendor/libacc"
 
+IncludeDir["VulkanRHIModule"] = "%{wks.location}/RHI/VulkanRHIModule/src"
+IncludeDir["D3D12RHIModule"] = "%{wks.location}/RHI/D3D12RHIModule/src"
+IncludeDir["RHIModule"] = "%{wks.location}/RHI/RHIModule/src"
+
+IncludeDir["EventModule"] = "%{wks.location}/EventModule/src"
+IncludeDir["InputModule"] = "%{wks.location}/InputModule/src"
+IncludeDir["WindowModule"] = "%{wks.location}/WindowModule/src"
+
+IncludeDir["LogModule"] =  "%{wks.location}/LogModule/src"
+
 IncludeDir["vma"] = "%{wks.location}/Volt/vendor/vma"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 IncludeDir["shaderc_utils"] = "%{wks.location}/Volt/vendor/shaderc/libshaderc_util/include"
 IncludeDir["shaderc_glslc"] = "%{wks.location}/Volt/vendor/shaderc/glslc"
 IncludeDir["Aftermath"] = "%{wks.location}/Volt/vendor/Aftermath/include"
+
+IncludeDir["GLFW"] = "%{wks.location}/WindowModule/vendor/GLFW/include"
 
 IncludeDir["meshoptimizer"] = "%{wks.location}/Volt/vendor/meshoptimizer/src"
 IncludeDir["zlib"] = "%{wks.location}/Volt/vendor/zlib/include"

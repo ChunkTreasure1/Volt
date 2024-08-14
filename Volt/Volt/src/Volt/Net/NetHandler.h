@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Volt/Net/Event/NetEventContainer.h"
-#include "Volt/Events/Event.h"
 
 namespace Nexus
 {
@@ -10,6 +9,8 @@ namespace Nexus
 
 namespace Volt
 {
+	class Event;
+
 	enum class eNetErrorCode : uint8_t;
 
 	class NetHandler

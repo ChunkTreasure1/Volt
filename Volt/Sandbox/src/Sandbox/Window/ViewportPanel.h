@@ -7,7 +7,7 @@
 
 #include "Sandbox/Sandbox.h"
 
-#include <Volt/Events/MouseEvent.h>
+#include <InputModule/Events/MouseEvents.h>
 
 #include <glm/glm.hpp>
 

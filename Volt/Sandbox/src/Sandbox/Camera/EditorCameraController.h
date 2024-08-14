@@ -1,14 +1,15 @@
 #pragma once
 
-#include <Volt/Events/Event.h>
-#include <Volt/Events/ApplicationEvent.h>
-#include <Volt/Events/MouseEvent.h>
-
 #include <glm/glm.hpp>
 
 namespace Volt
 {
 	class Camera;
+	class Event;
+	class AppUpdateEvent;
+	class MouseScrolledEvent;
+	class MouseButtonPressedEvent;
+	class MouseButtonReleasedEvent;
 }
 
 class EditorCameraController

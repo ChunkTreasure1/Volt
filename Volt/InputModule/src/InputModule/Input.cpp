@@ -1,25 +1,22 @@
-#include "vtpch.h"
+#include "inputpch.h"
 #include "Input.h"
 
-#include "Volt/Events/KeyEvent.h"
-#include "Volt/Events/MouseEvent.h"
+#include "InputModule/Events/KeyboardEvents.h"
+#include "InputModule/Events/MouseEvents.h"
 
-#include <imgui_internal.h>
-#include <GLFW/glfw3.h>
+#include <glm/vec2.hpp>
 
 namespace Volt
 {
+	glm::vec2 Input::myMousePos;
+	glm::vec2 Input::myViewportMousePos;
+	bool Input::myDisableInput = false;
+	float Input::myScrollOffset = 0;
+	std::array<Input::KeyState, 349> Input::myKeyStates;
+
 	void Input::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<AppUpdateEvent>([&](AppUpdateEvent&)
-		{
-			memset(myKeyStates.data(), 0, sizeof(KeyState) * myKeyStates.size());
-
-			myScrollOffset = 0.f;
-
-			return false;
-		});
 
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& keyEvent)
 		{
@@ -50,11 +47,24 @@ namespace Volt
 			return false;
 		});
 
-		dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& scrollEvent) 
+		dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& scrollEvent)
 		{
 			myScrollOffset = scrollEvent.GetYOffset();
 			return false;
 		});
+
+		dispatcher.Dispatch<MouseMovedEvent>([&](MouseMovedEvent& moveEvent)
+		{
+			myMousePos = { moveEvent.GetX(), moveEvent.GetY() };
+			return false;
+		});
+	}
+
+	void Input::Update()
+	{
+		memset(myKeyStates.data(), 0, sizeof(KeyState) * myKeyStates.size());
+
+		myScrollOffset = 0.f;
 	}
 
 	bool Input::IsKeyPressed(int keyCode)
@@ -65,7 +75,7 @@ namespace Volt
 	Vector<int> Input::GetAllKeyPressed()
 	{
 		Vector<int> keyPressedVec;
-		for(int i = 0; i < myKeyStates.size(); i++)
+		for (int i = 0; i < myKeyStates.size(); i++)
 		{
 			if (myKeyStates[i] == KeyState::Pressed)
 			{
@@ -92,7 +102,9 @@ namespace Volt
 
 	bool Input::IsKeyDown(int keyCode)
 	{
-		const bool imguiEnabled = Application::Get().GetInfo().enableImGui;
+		return myKeyStates[keyCode] == KeyState::Pressed;
+		//TODO: Reeimplement
+		/*const bool imguiEnabled = Application::Get().GetInfo().enableImGui;
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 
 		if (!imguiEnabled)
@@ -125,12 +137,14 @@ namespace Volt
 			}
 		}
 
-		return pressed;
+		return pressed;*/
 	}
 
 	bool Input::IsKeyUp(int keyCode)
 	{
-		const bool imguiEnabled = Application::Get().GetInfo().enableImGui;
+		return myKeyStates[keyCode] == KeyState::Released;
+		//TODO: Reeimplement
+		/*const bool imguiEnabled = Application::Get().GetInfo().enableImGui;
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 
 		if (!imguiEnabled)
@@ -163,12 +177,14 @@ namespace Volt
 			}
 		}
 
-		return pressed;
+		return pressed;*/
 	}
 
 	bool Input::IsMouseButtonDown(int button)
 	{
-		const bool imguiEnabled = Application::Get().GetInfo().enableImGui;
+		return myKeyStates[button] == KeyState::Pressed;
+		//TODO: Reeimplement
+		/*const bool imguiEnabled = Application::Get().GetInfo().enableImGui;
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 
 		if (!imguiEnabled)
@@ -201,12 +217,14 @@ namespace Volt
 			}
 		}
 
-		return pressed;
+		return pressed;*/
 	}
 
 	bool Input::IsMouseButtonUp(int button)
 	{
-		const bool imguiEnabled = Application::Get().GetInfo().enableImGui;
+		return myKeyStates[button] == KeyState::Released;
+		//TODO: Reeimplement
+		/*const bool imguiEnabled = Application::Get().GetInfo().enableImGui;
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 
 		if (!imguiEnabled)
@@ -239,27 +257,42 @@ namespace Volt
 			}
 		}
 
-		return pressed;
+		return pressed;*/
 	}
 
 	void Input::SetMousePosition(float x, float y)
 	{
-		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		glfwSetCursorPos(window, (double)x, (double)y);
+		//TODO: Reeimplement
+
+		/*auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+		glfwSetCursorPos(window, (double)x, (double)y);*/
 	}
 
-	std::pair<float, float> Input::GetMousePosition()
+	glm::vec2 Input::GetMousePosition()
 	{
-		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+		//TODO: Reeimplement
+		/*auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 		auto [wx, wy] = Volt::Application::Get().GetWindow().GetPosition();
 
 
 		double xPos, yPos;
 		glfwGetCursorPos(window, &xPos, &yPos);
 
-		return { (float)xPos + wx, (float)yPos + wy };
+		return { (float)xPos + wx, (float)yPos + wy };*/
+		return myMousePos;
 	}
-	
+
+	float Input::GetMouseX()
+	{
+		return myMousePos.x;
+	}
+
+	float Input::GetMouseY()
+	{
+		return myMousePos.y;
+	}
+
+
 	float Input::GetScrollOffset()
 	{
 		return myScrollOffset;
@@ -267,8 +300,9 @@ namespace Volt
 
 	void Input::ShowCursor(bool state)
 	{
-		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		glfwSetInputMode(window, GLFW_CURSOR, state ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+		//TODO: Reeimplement
+		//auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+		//glfwSetInputMode(window, GLFW_CURSOR, state ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 	}
 
 	void Input::DisableInput(bool state)

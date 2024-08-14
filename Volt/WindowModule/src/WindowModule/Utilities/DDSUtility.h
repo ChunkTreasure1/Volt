@@ -2,8 +2,13 @@
 
 #include <CoreUtilities/Buffer/Buffer.h>
 
-#include <filesystem>
-
+namespace std
+{
+	namespace filesystem
+	{
+		class path;
+	}
+}
 namespace Volt
 {
 	class DDSUtility

@@ -4,16 +4,17 @@
 
 #include "Sandbox/Utility/EditorUtilities.h"
 
-#include <Volt/Events/ApplicationEvent.h>
-#include <Volt/Events/KeyEvent.h>
-#include <Volt/Events/MouseEvent.h>
-
 #include <glm/glm.hpp>
 
 namespace Volt
 {
 	class Texture2D;
 	class Scene;
+
+	class WindowDragDropEvent;
+	class KeyPressedEvent;
+	class MouseButtonReleasedEvent;
+	class WindowRenderEvent;
 }
 
 namespace AssetBrowser
@@ -39,7 +40,7 @@ private:
 	bool OnDragDropEvent(Volt::WindowDragDropEvent& e);
 	bool OnKeyPressedEvent(Volt::KeyPressedEvent& e);
 	bool OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent& e);
-	bool OnRenderEvent(Volt::AppRenderEvent& e);
+	bool OnRenderEvent(Volt::WindowRenderEvent& e);
 
 	Vector<AssetBrowser::DirectoryItem*> FindParentDirectoriesOfDirectory(AssetBrowser::DirectoryItem* directory);
 

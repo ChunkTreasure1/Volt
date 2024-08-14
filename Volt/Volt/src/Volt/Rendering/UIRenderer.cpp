@@ -2,7 +2,6 @@
 #include "UIRenderer.h"
 
 #include "Volt/Core/Application.h"
-#include "Volt/Core/Window.h"
 
 #include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Text/MSDFData.h"
@@ -108,7 +107,7 @@ namespace Volt
 
 		// Depth image
 		//{
-			/*ImageSpecification spec{};
+			/*ImageSpecification spec{};3
 			spec.width = 1280;
 			spec.height = 720;
 			spec.format = ImageFormat::DEPTH32F;

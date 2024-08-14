@@ -23,6 +23,8 @@
 
 #include <Volt/Scripting/Mono/MonoScriptGlue.h>
 
+#include "Volt/Events/SceneEvents.h"
+
 namespace Volt
 {
 	NetServer::NetServer()

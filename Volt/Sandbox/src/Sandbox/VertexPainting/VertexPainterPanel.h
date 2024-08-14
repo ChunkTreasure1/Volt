@@ -1,7 +1,11 @@
 #pragma once
 #include "Sandbox/Camera/EditorCameraController.h"
 #include "Sandbox/Window/EditorWindow.h"
-#include <Volt/Events/KeyEvent.h>
+
+#include <InputModule/Events/KeyboardEvents.h>
+#include <WindowModule/Events/WindowEvents.h>
+#include <Volt/Events/ApplicationEvents.h>
+
 
 #include <Volt/Scene/EntityID.h>
 

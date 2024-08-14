@@ -4,6 +4,10 @@
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Asset/Importers/TextureImporter.h>
 
+#include <Volt/Events/ApplicationEvents.h>
+
+#include <EventModule/Event.h>
+
 AnimatedIcon::AnimatedIcon(const std::filesystem::path& firstFrame, uint32_t frameCount, float animTime)
 	: myAnimationTime(animTime), myFrameCount(frameCount), myPerFrameTime(animTime / (float)frameCount)
 {

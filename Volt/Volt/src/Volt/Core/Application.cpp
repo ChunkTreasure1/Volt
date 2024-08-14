@@ -3,10 +3,9 @@
 
 #include <AssetSystem/AssetManager.h>
 
-#include "Volt/Input/Input.h"
-#include "Volt/Input/KeyCodes.h"
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
 
-#include "Volt/Core/Window.h"
 #include "Volt/Core/Layer/Layer.h"
 #include "Volt/Steam/SteamImplementation.h"
 
@@ -43,6 +42,13 @@
 #include <CoreUtilities/FileSystem.h>
 #include <LogModule/Log.h>
 
+#include <InputModule/Events/KeyboardEvents.h>
+#include <InputModule/Events/MouseEvents.h>
+
+#include <WindowModule/Events/WindowEvents.h>
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+
 namespace Volt
 {
 	Application::Application(const ApplicationInfo& info)
@@ -60,40 +66,36 @@ namespace Volt
 		Noise::Initialize();
 
 		ProjectManager::SetupProject(m_info.projectPath);
-		
+
 		WindowProperties windowProperties{};
-		windowProperties.width = info.width;
-		windowProperties.height = info.height;
-		windowProperties.vsync = info.useVSync;
-		windowProperties.title = info.title;
-		windowProperties.windowMode = info.windowMode;
-		windowProperties.iconPath = info.iconPath;
-		windowProperties.cursorPath = info.cursorPath;
-		windowProperties.useTitlebar = info.isRuntime;
+		windowProperties.Width = info.width;
+		windowProperties.Height = info.height;
+		windowProperties.VSync = info.useVSync;
+		windowProperties.Title = info.title;
+		windowProperties.WindowMode = info.windowMode;
+		windowProperties.IconPath = info.iconPath;
+		windowProperties.CursorPath = info.cursorPath;
+		windowProperties.UseTitlebar = info.UseTitlebar;
+		windowProperties.UseCustomTitlebar = info.UseCustomTitlebar;
 
 		if (m_info.isRuntime)
 		{
-			windowProperties.title = ProjectManager::GetProject().name;
-			windowProperties.cursorPath = ProjectManager::GetProject().cursorPath;
-			windowProperties.iconPath = ProjectManager::GetProject().iconPath;
+			windowProperties.Title = ProjectManager::GetProject().name;
+			windowProperties.CursorPath = ProjectManager::GetProject().cursorPath;
+			windowProperties.IconPath = ProjectManager::GetProject().iconPath;
 		}
-	
-		// This is required because glfwInit must be called before setting up graphics device
-		Window::StaticInitialize();
-		CreateGraphicsContext();
 
 		if (ProjectManager::GetProject().isDeprecated)
 		{
-			windowProperties.useTitlebar = true;
+			windowProperties.UseTitlebar = true;
 		}
 
-		// Setup main window
-		{
-			m_windowHandle = m_windowManager.CreateNewWindow(windowProperties);
+		// This is required because glfwInit must be called before setting up graphics device
+		WindowManager::InitializeGLFW();
+		CreateGraphicsContext();
+		WindowManager::Initialize(windowProperties);
 
-			auto& window = m_windowManager.GetWindow(m_windowHandle);
-			window.SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
-		}
+		WindowManager::Get().GetMainWindow().SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
 
 		FileSystem::Initialize();
 		
@@ -134,7 +136,7 @@ namespace Volt
 
 		if (info.enableImGui)
 		{
-			auto& window = m_windowManager.GetWindow(m_windowHandle);
+			auto& window = WindowManager::Get().GetMainWindow();
 
 			RHI::ImGuiCreateInfo createInfo{};
 			createInfo.swapchain = window.GetSwapchainPtr();
@@ -200,11 +202,11 @@ namespace Volt
 		MeshTypeImporter::Shutdown();
 
 		FileSystem::Shutdown();
-
-		m_windowManager.DestroyWindow(m_windowHandle);
+		WindowManager::Shutdown()
 		m_graphicsContext = nullptr;
+		WindowManager::ShutdownGLFW();
+		
 		m_rhiProxy = nullptr;
-		Window::StaticShutdown();
 
 		m_jobSystem = nullptr;
 		m_log = nullptr;
@@ -230,7 +232,7 @@ namespace Volt
 	{
 		VT_PROFILE_SCOPE((std::string("Application::OnEvent: ") + std::string(event.GetName())).c_str());
 
-		if (event.GetEventType() == MouseMoved)
+		if (event.GetGUID() == MouseMovedEvent::GetStaticGUID())
 		{
 			if (m_hasSentMouseMovedEvent)
 			{
@@ -259,7 +261,7 @@ namespace Volt
 		for (auto layer : m_layerStack)
 		{
 			layer->OnEvent(event);
-			if (event.handled)
+			if (event.IsHandled())
 			{
 				break;
 			}
@@ -277,24 +279,15 @@ namespace Volt
 		m_layerStack.PopLayer(layer);
 	}
 
-	Window& Application::GetWindow() const
-	{
-		return m_windowManager.GetWindow(m_windowHandle);
-	}
-
 	void Application::MainUpdate()
 	{
 		m_hasSentMouseMovedEvent = false;
 
 		RHI::GraphicsContext::Update();
 
-		{
-			m_windowManager.BeginFrame();
-			AppBeginFrameEvent beginFrameEvent{};
-			OnEvent(beginFrameEvent);
-		}
+		WindowManager::Get().BeginFrame();
 
-		float time = GetWindow().GetTime();
+		const float time = WindowManager::Get().GetMainWindow().GetTime();
 		m_currentDeltaTime = time - m_lastTotalTime;
 		m_lastTotalTime = time;
 
@@ -302,8 +295,7 @@ namespace Volt
 			VT_PROFILE_SCOPE("Application::Render");
 
 			Renderer::Flush();
-			AppRenderEvent renderEvent;
-			OnEvent(renderEvent);
+			WindowManager::Get().Render();
 			Renderer::Update();
 		}
 
@@ -347,10 +339,7 @@ namespace Volt
 		Renderer::EndOfFrameUpdate();
 
 		{
-			m_windowManager.Present();
-
-			AppPresentFrameEvent presentEvent{};
-			OnEvent(presentEvent);
+			WindowManager::Get().Present();
 		}
 
 		{
@@ -379,7 +368,7 @@ namespace Volt
 		{
 			RHI::RHICallbackInfo callbackInfo{};
 			callbackInfo.resourceManagementInfo.resourceDeletionCallback = Renderer::DestroyResource;
-			callbackInfo.requestCloseEventCallback = []() 
+			callbackInfo.requestCloseEventCallback = []()
 			{
 				WindowCloseEvent closeEvent{};
 				Application::Get().OnEvent(closeEvent);
@@ -417,7 +406,7 @@ namespace Volt
 			m_isMinimized = false;
 		}
 
-		GetWindow().Resize(e.GetWidth(), e.GetHeight());
+		WindowManager::Get().GetMainWindow().Resize(e.GetWidth(), e.GetHeight());
 
 		MainUpdate();
 
@@ -426,7 +415,7 @@ namespace Volt
 
 	bool Application::OnViewportResizeEvent(ViewportResizeEvent& e)
 	{
-		GetWindow().SetViewportSize(e.GetWidth(), e.GetHeight());
+		WindowManager::Get().GetMainWindow().SetViewportSize(e.GetWidth(), e.GetHeight());
 		return false;
 	}
 

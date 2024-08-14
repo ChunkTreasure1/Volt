@@ -2,7 +2,6 @@
 
 #include "Sandbox/EditorCommandStack.h"
 
-#include <Volt/Events/Event.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -11,6 +10,7 @@
 namespace Volt
 {
 	class Asset;
+	class Event;
 }
 
 class EditorWindow

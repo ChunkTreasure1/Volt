@@ -2,9 +2,11 @@
 
 #include "Sandbox/Window/EditorWindow.h"
 
-#include <Volt/Events/ApplicationEvent.h>
-#include <Volt/Events/MouseEvent.h>
+#include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Rendering/UISceneRenderer.h>
+
+#include <InputModule/Events/MouseEvents.h>
+#include <WindowModule/Events/WindowEvents.h>
 
 #include <RHIModule/Images/Image.h>
 #include <CoreUtilities/Pointers/RefPtr.h>
@@ -12,6 +14,7 @@
 namespace Volt
 {
 	class UIScene;
+
 }
 
 class GameUIEditorPanel : public EditorWindow
@@ -29,7 +32,7 @@ public:
 	void OnClose() override;
 
 private:
-	bool OnRenderEvent(Volt::AppRenderEvent& e);
+	bool OnRenderEvent(Volt::WindowRenderEvent& e);
 	bool OnMouseScrollEvent(Volt::MouseScrolledEvent& e);
 	bool OnMouseButtonPressedEvent(Volt::MouseButtonPressedEvent& e);
 	bool OnMouseButtonReleasedEvent(Volt::MouseButtonReleasedEvent& e);

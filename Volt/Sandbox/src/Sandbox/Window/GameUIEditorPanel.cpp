@@ -8,7 +8,7 @@
 #include <Volt/GameUI/UIScene.h>
 #include <Volt/GameUI/UIComponents.h>
 #include <Volt/GameUI/UIWidget.h>
-#include <Volt/Input/KeyCodes.h>
+#include <InputModule/KeyCodes.h>
 
 #include <Volt/Rendering/UISceneRenderer.h>
 
@@ -43,7 +43,7 @@ void GameUIEditorPanel::UpdateContent()
 void GameUIEditorPanel::OnEvent(Volt::Event& e)
 {
 	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnRenderEvent));
+	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnRenderEvent));
 	dispatcher.Dispatch<Volt::MouseButtonPressedEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseButtonPressedEvent));
 	dispatcher.Dispatch<Volt::MouseButtonReleasedEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseButtonReleasedEvent));
 	dispatcher.Dispatch<Volt::MouseScrolledEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseScrollEvent));
@@ -71,7 +71,7 @@ void GameUIEditorPanel::OnClose()
 	m_viewportImage = nullptr;
 }
 
-bool GameUIEditorPanel::OnRenderEvent(Volt::AppRenderEvent& e)
+bool GameUIEditorPanel::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	if (!m_viewportImage || static_cast<float>(m_viewportImage->GetWidth()) != m_viewportSize.x || static_cast<float>(m_viewportImage->GetHeight()) != m_viewportSize.y)
 	{

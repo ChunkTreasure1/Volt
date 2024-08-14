@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Volt/Events/Event.h"
-
 namespace Volt
 {
+	class Event;
 	class Layer
 	{
 	public:

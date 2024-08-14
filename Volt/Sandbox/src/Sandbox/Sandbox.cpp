@@ -55,7 +55,6 @@
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Core/Window.h>
 
 #include <AssetSystem/AssetManager.h>
 
@@ -66,8 +65,8 @@
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/SceneManager.h>
 
-#include <Volt/Input/KeyCodes.h>
-#include <Volt/Input/Input.h>
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
 
 #include <Volt/Rendering/Camera/Camera.h>
 
@@ -83,9 +82,18 @@
 
 #include <Volt/Discord/DiscordSDK.h>
 
+#include <Volt/Events/ApplicationEvents.h>
+
+#include <WindowModule/Events/WindowEvents.h>
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+
 #include <NavigationEditor/Tools/NavMeshDebugDrawer.h>
 
 #include <RHIModule/Images/Image.h>
+
+#include <EventModule/Event.h>
+
 
 #include <imgui.h>
 
@@ -113,7 +121,7 @@ void Sandbox::OnAttach()
 	NodeEditorHelpers::Initialize();
 	IONodeGraphEditorHelpers::Initialize();
 
-	Volt::Application::Get().GetWindow().Maximize();
+	Volt::WindowManager::Get().GetMainWindow().Maximize();
 
 	m_editorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
@@ -346,7 +354,7 @@ void Sandbox::OnEvent(Volt::Event& e)
 	Volt::EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnUpdateEvent));
 	dispatcher.Dispatch<Volt::AppImGuiUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnImGuiUpdateEvent));
-	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(Sandbox::OnRenderEvent));
+	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(Sandbox::OnRenderEvent));
 	dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(Sandbox::OnKeyPressedEvent));
 	dispatcher.Dispatch<Volt::ViewportResizeEvent>(VT_BIND_EVENT_FN(Sandbox::OnViewportResizeEvent));
 	dispatcher.Dispatch<Volt::OnSceneLoadedEvent>(VT_BIND_EVENT_FN(Sandbox::OnSceneLoadedEvent));
@@ -409,15 +417,16 @@ void Sandbox::OnEvent(Volt::Event& e)
 		}
 	}
 
-	if (!m_playHasMouseControl)
+	//TODO: Reimplement, what does this do?
+	/*if (!m_playHasMouseControl)
 	{
 		if ((e.GetCategoryFlags() & Volt::EventCategoryAnyInput) != 0)
 		{
 			return;
 		}
-	}
+	}*/
 
-	if (e.handled)
+	if (e.IsHandled())
 	{
 		return;
 	}
@@ -738,7 +747,7 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	EditorCommandStack::GetInstance().Update(100);
 
 	auto mousePos = Volt::Input::GetMousePosition();
-	Volt::Input::SetViewportMousePosition(m_gameViewPanel->GetViewportLocalPosition({ mousePos.first, mousePos.second }));
+	Volt::Input::SetViewportMousePosition(m_gameViewPanel->GetViewportLocalPosition(mousePos));
 
 	switch (m_sceneState)
 	{
@@ -894,7 +903,7 @@ void Sandbox::RenderGameView()
 	}
 }
 
-bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)
+bool Sandbox::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	VT_PROFILE_FUNCTION();
 

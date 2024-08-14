@@ -80,7 +80,9 @@ project "Navigation"
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.shaderc_glslc}",
-		"%{IncludeDir.shaderc_utils}"
+		"%{IncludeDir.shaderc_utils}",
+
+		"%{IncludeDir.EventModule}",
 	}
 
 	filter "files:vendor/**.c"

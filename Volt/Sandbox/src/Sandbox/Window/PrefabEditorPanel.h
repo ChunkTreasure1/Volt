@@ -5,7 +5,7 @@
 #include "Sandbox/Window/SceneViewPanel.h"
 #include "Sandbox/Window/PropertiesPanel.h"
 
-#include <Volt/Events/ApplicationEvent.h>
+#include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Scene/Entity.h>
 
 namespace Volt
@@ -32,7 +32,7 @@ public:
 	void OnClose() override;
 
 private:
-	bool OnRenderEvent(Volt::AppRenderEvent& e);
+	bool OnRenderEvent(Volt::WindowRenderEvent& e);
 
 	void UpdateViewport();
 	void UpdateSceneView();

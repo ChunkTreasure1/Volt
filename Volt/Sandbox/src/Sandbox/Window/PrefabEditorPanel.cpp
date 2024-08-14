@@ -21,6 +21,7 @@
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 
 #include <Volt/Project/ProjectManager.h>
+#include <WindowModule/Events/WindowEvents.h>
 
 PrefabEditorPanel::PrefabEditorPanel()
 	: EditorWindow("Prefab Editor", true)
@@ -56,7 +57,7 @@ void PrefabEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 void PrefabEditorPanel::OnEvent(Volt::Event& e)
 {
 	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(PrefabEditorPanel::OnRenderEvent));
+	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(PrefabEditorPanel::OnRenderEvent));
 
 	myCameraController->OnEvent(e);
 }
@@ -81,7 +82,7 @@ void PrefabEditorPanel::OnClose()
 	mySceneRenderer = nullptr;
 }
 
-bool PrefabEditorPanel::OnRenderEvent(Volt::AppRenderEvent& e)
+bool PrefabEditorPanel::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	mySceneRenderer->OnRenderEditor(myCameraController->GetCamera());
 	return false;

@@ -18,6 +18,8 @@
 #include "Volt/Net/Event/NetEvent.h"
 #include "Volt/Core/Application.h"
 
+#include "Volt/Events/SceneEvents.h"
+
 namespace Volt
 {
 	NetClient::NetClient()
