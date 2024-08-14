@@ -202,7 +202,7 @@ namespace Volt
 		MeshTypeImporter::Shutdown();
 
 		FileSystem::Shutdown();
-		WindowManager::Shutdown()
+		WindowManager::Shutdown();
 		m_graphicsContext = nullptr;
 		WindowManager::ShutdownGLFW();
 		
