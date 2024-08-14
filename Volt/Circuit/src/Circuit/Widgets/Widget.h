@@ -1,6 +1,6 @@
 #pragma once
 #include "Circuit/Widgets/BuildingSyntaxUtility.h"
-#include "Circuit/CircuitCoreDefines.h"
+#include "Circuit/Config.h"
 class WidgetBuilder;
 
 namespace Circuit
@@ -12,32 +12,32 @@ namespace Circuit
 		Rectangle,
 		Circle
 	};
-	class Widget
+	class CIRCUIT_API Widget
 	{
 	public:
-		CIRCUIT_API Widget() {};
-		CIRCUIT_API virtual ~Widget() {};
+		 Widget() {};
+		 virtual ~Widget() {};
 
 	public:
-		CIRCUIT_API void SetX(float x) { m_LocalXPosition = x; }
-		CIRCUIT_API float GetX() const { return m_LocalXPosition; }
+		 void SetX(float x) { m_LocalXPosition = x; }
+		 float GetX() const { return m_LocalXPosition; }
 
-		CIRCUIT_API void SetY(float y) { m_LocalYPosition = y; }
-		CIRCUIT_API float GetY() const { return m_LocalYPosition; }
+		 void SetY(float y) { m_LocalYPosition = y; }
+		 float GetY() const { return m_LocalYPosition; }
 
 
-		CIRCUIT_API void BuildBaseArgs(const CircuitBaseArgs& baseArgs);
+		 void BuildBaseArgs(const CircuitBaseArgs& baseArgs);
 
-		CIRCUIT_API virtual void OnInputEvent(InputEvent& inputEvent) {};
+		 virtual void OnInputEvent(InputEvent& inputEvent) {};
 
-		CIRCUIT_API virtual void OnPaint(CircuitPainter& painter);
+		 virtual void OnPaint(CircuitPainter& painter);
 
-		CIRCUIT_API void RequestRebuild();
+		 void RequestRebuild();
 
-		CIRCUIT_API const std::vector<std::shared_ptr<Widget>>& GetChildren() const { return m_Children; }
+		 const std::vector<std::shared_ptr<Widget>>& GetChildren() const { return m_Children; }
 
-		CIRCUIT_API bool IsRenderPrimitive() const;
-		CIRCUIT_API RenderPrimitiveType GetRenderPrimitiveType() const;
+		 bool IsRenderPrimitive() const;
+		 RenderPrimitiveType GetRenderPrimitiveType() const;
 	protected:
 		template<class WidgetType>
 		inline std::shared_ptr<WidgetType>& AddChildWidget(std::shared_ptr<WidgetType> Widget);

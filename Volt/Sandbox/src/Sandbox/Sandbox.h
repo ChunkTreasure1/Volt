@@ -4,7 +4,8 @@
 #include "Sandbox/VersionControl/VersionControl.h"
 #include "Sandbox/FileWatcher/FileWatcher.h"
 #include "Sandbox/GameBuilder.h"
-#include "Sandbox/CircuitRenderer.h"
+
+#include <Circuit/Rendering/CircuitRenderer.h>
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Core/Layer/Layer.h>
@@ -35,6 +36,7 @@ namespace Volt
 namespace Circuit
 {
 	class TellEvent;
+	enum class KeyCode;
 }
 
 enum class SceneState

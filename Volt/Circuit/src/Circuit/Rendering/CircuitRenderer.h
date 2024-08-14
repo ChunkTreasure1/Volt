@@ -1,7 +1,12 @@
 #pragma once
 
-#include <Volt/Core/WindowHandle.h>
+#include "Circuit/Config.h"
+
+#include <WindowModule/WindowHandle.h>
 #include <CoreUtilities/Core.h>
+#include <CoreUtilities/Pointers/RefPtr.h>
+
+#include <RHIModule/Buffers/CommandBuffer.h>
 
 namespace Circuit
 {
@@ -13,7 +18,7 @@ namespace Volt
 {
 	namespace RHI
 	{
-		class Image2D;
+		class Image;
 		class CommandBuffer;
 	}
 
@@ -21,7 +26,7 @@ namespace Volt
 	class RenderGraphBlackboard;
 	class Window;
 }
-class CircuitRenderer
+class CIRCUIT_API CircuitRenderer
 {
 public:
 	CircuitRenderer(Volt::WindowHandle& windowHandle);
@@ -38,7 +43,7 @@ private:
 	uint32_t m_width;
 	uint32_t m_height;
 
-	RefPtr<Volt::RHI::Image2D> m_outputImage;
+	RefPtr<Volt::RHI::Image> m_outputImage;
 	RefPtr<Volt::RHI::CommandBuffer> m_commandBuffer;
 
 	std::atomic<uint64_t> m_frameTotalGPUAllocation;

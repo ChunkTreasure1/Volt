@@ -1,5 +1,5 @@
 #pragma once
-#include "Circuit/CircuitCoreDefines.h"
+#include "Circuit/Config.h"
 #include <cstdint>
 class CircuitColor
 {

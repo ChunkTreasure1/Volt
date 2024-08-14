@@ -1,8 +1,9 @@
 #pragma once
+#include "Circuit/Config.h"
 
 namespace Circuit
 {
-	enum class KeyCode
+	enum class CIRCUIT_API KeyCode
 	{
 		// Alphanumeric keys
 		A,
@@ -136,7 +137,6 @@ namespace Circuit
 		Subtract,
 		Add,
 		Enter,
-		Equal,
 
 		// Mouse buttons
 		Mouse_LB,

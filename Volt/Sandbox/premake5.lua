@@ -113,6 +113,7 @@ project "Sandbox"
 		"%{IncludeDir.InputModule}",
 		"%{IncludeDir.EventModule}",
 		"%{IncludeDir.WindowModule}",
+		"%{IncludeDir.Circuit}",
 	}
 
     links

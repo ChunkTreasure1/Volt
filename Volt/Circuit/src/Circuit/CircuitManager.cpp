@@ -42,6 +42,7 @@ namespace Circuit
 				pair.second->OnInputEvent(inputEvent);
 			}
 
+			return false;
 		});
 	}
 
@@ -91,7 +92,7 @@ namespace Circuit
 		}
 	}
 
-	CIRCUIT_API const std::map<InterfaceWindowHandle, std::unique_ptr<CircuitWindow>>& CircuitManager::GetWindows()
+	CIRCUIT_API const std::map<Volt::WindowHandle, std::unique_ptr<CircuitWindow>>& CircuitManager::GetWindows()
 	{
 		return m_windows;
 	}

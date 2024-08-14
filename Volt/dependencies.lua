@@ -57,6 +57,8 @@ IncludeDir["Aftermath"] = "%{wks.location}/Volt/vendor/Aftermath/include"
 
 IncludeDir["GLFW"] = "%{wks.location}/WindowModule/vendor/GLFW/include"
 
+IncludeDir["Circuit"] = "%{wks.location}/Circuit/src"
+
 IncludeDir["meshoptimizer"] = "%{wks.location}/Volt/vendor/meshoptimizer/src"
 IncludeDir["zlib"] = "%{wks.location}/Volt/vendor/zlib/include"
 

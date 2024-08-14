@@ -7,10 +7,10 @@ template <typename T>
 class Observer;
 namespace Circuit
 {
-	class SliderWidget : public Widget
+	class CIRCUIT_API SliderWidget : public Widget
 	{
 	public:
-		CIRCUIT_API SliderWidget();
+		SliderWidget();
 		virtual ~SliderWidget();
 
 		CIRCUIT_BEGIN_ARGS(SliderWidget)
@@ -21,22 +21,22 @@ namespace Circuit
 		CIRCUIT_ARGUMENT(float, Max);
 		CIRCUIT_END_ARGS();
 
-		CIRCUIT_API void Build(const Arguments& args);
+		void Build(const Arguments& args);
 
 		virtual void OnPaint(CircuitPainter& painter) override;
-		CIRCUIT_API void OnInputEvent(InputEvent& inputEvent) override;
+		void OnInputEvent(InputEvent& inputEvent) override;
 
 
-		CIRCUIT_API float GetValue() const;
-		CIRCUIT_API void SetValue(float value);
+		float GetValue() const;
+		void SetValue(float value);
 
-		CIRCUIT_API float GetMinValue() const;
-		CIRCUIT_API void SetMinValue(float value);
+		float GetMinValue() const;
+		void SetMinValue(float value);
 
-		CIRCUIT_API float GetMaxValue() const;
-		CIRCUIT_API void SetMaxValue(float value);
+		float GetMaxValue() const;
+		void SetMaxValue(float value);
 
-		CIRCUIT_API float GetValueNormalized();
+		float GetValueNormalized();
 	private:
 		float m_Value;
 		//unsigned int m_OnValueChangeHandle;

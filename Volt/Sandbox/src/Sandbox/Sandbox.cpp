@@ -147,8 +147,7 @@ void Sandbox::OnAttach()
 	NodeEditorHelpers::Initialize();
 	IONodeGraphEditorHelpers::Initialize();
 
-	//Volt::Application::Get().GetWindow().Maximize();
-	Volt::Application::Get().GetWindow().Resize(300, 500);
+	Volt::WindowManager::Get().GetMainWindow().Resize(300, 500);
 
 	m_editorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
@@ -654,16 +653,17 @@ void Sandbox::HandleCircuitTellEvents(const Circuit::TellEvent& e)
 			const Circuit::OpenWindowTellEvent& openWindowEvent = reinterpret_cast<const Circuit::OpenWindowTellEvent&>(e);
 
 			Volt::WindowProperties windowProperties;
-			windowProperties.title = openWindowEvent.GetParams().title;
-			windowProperties.vsync = false;
+			windowProperties.Title = openWindowEvent.GetParams().title;
+			windowProperties.VSync = false;
 
-			windowProperties.width = openWindowEvent.GetParams().startWidth;
-			windowProperties.height = openWindowEvent.GetParams().startHeight;
+			windowProperties.Width = openWindowEvent.GetParams().startWidth;
+			windowProperties.Height = openWindowEvent.GetParams().startHeight;
 
-			windowProperties.useTitlebar = false;
+			windowProperties.UseTitlebar = true;
+			windowProperties.UseCustomTitlebar = true;
 
-			Volt::WindowHandle handle = Volt::Application::GetWindowManager().CreateNewWindow(windowProperties);
-			Volt::Window& window = Volt::Application::GetWindowManager().GetWindow(handle);
+			Volt::WindowHandle handle = Volt::WindowManager::Get().CreateNewWindow(windowProperties);
+			Volt::Window& window = Volt::WindowManager::Get().GetWindow(handle);
 			window.SetEventCallback(VT_BIND_EVENT_FN(Sandbox::HandleCircuitWindowEventCallback));
 
 
@@ -675,7 +675,7 @@ void Sandbox::HandleCircuitTellEvents(const Circuit::TellEvent& e)
 			break;
 		}
 		default:
-			VT_CORE_ERROR("Unhandled Circuit Event!");
+			VT_LOG(Error, "Unhandled Circuit Event!");
 			break;
 	}
 }
@@ -714,7 +714,7 @@ void Sandbox::HandleCircuitWindowEventCallback(Volt::Event& e)
 		return false;
 	});
 
-	VT_CORE_INFO("Window Event: {0}", e.ToString());
+	VT_LOG(Info,"Window Event: {0}", e.ToString());
 }
 
 Circuit::KeyCode Sandbox::VoltKeyCodeToCircuitKeyCode(uint32_t keyCode)
@@ -857,6 +857,8 @@ Circuit::KeyCode Sandbox::VoltMouseCodeToCircuitKeyCode(uint32_t keyCode)
 		case VT_MOUSE_BUTTON_7: return Circuit::KeyCode::Mouse_X4;
 		case VT_MOUSE_BUTTON_8: return Circuit::KeyCode::Mouse_X5;
 	}
+
+	return Circuit::KeyCode::A;
 }
 
 bool Sandbox::CheckForUpdateNavMesh(Volt::Entity entity)

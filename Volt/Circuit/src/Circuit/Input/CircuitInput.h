@@ -8,7 +8,7 @@
 namespace Circuit
 {
 	enum class InputEventType;
-	class InputEvent
+	class CIRCUIT_API InputEvent
 	{
 	public:
 		bool WasJustPressed();
@@ -39,7 +39,7 @@ namespace Circuit
 
 		float m_data[4];
 	};
-	class CircuitInput
+	class CIRCUIT_API CircuitInput
 	{
 	public:
 		CircuitInput() = default;

@@ -1,5 +1,5 @@
 #pragma once
-#include "Circuit/CircuitCoreDefines.h"
+#include "Circuit/Config.h"
 #include "Circuit/CircuitColor.h"
 
 #include <glm/vec2.hpp>

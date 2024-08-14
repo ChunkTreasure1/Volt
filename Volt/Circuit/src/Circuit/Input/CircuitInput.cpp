@@ -95,7 +95,7 @@ namespace Circuit
 	void CircuitInput::OnMouseScrolled(float delta)
 	{
 		InputEvent mouseScrolledEvent;
-		mouseScrolledEvent.m_axis1D = delta;
+		mouseScrolledEvent.m_data[0] = delta;
 		mouseScrolledEvent.m_keyCode = KeyCode::Mouse_Scroll;
 
 		BroadcastInputEvent(mouseScrolledEvent);

@@ -4,15 +4,16 @@
 
 namespace Circuit
 {
-	CircuitWindow::CircuitWindow(InterfaceWindowHandle windowHandle, const OpenWindowParams& params)
-		: m_interfaceWindowHandle(windowHandle)
+	CircuitWindow::CircuitWindow(Volt::WindowHandle windowHandle, const OpenWindowParams& params)
+		: m_windowHandle(windowHandle)
 	{
 		m_title = params.title;
 		m_windowSize = { params.startWidth, params.startHeight };
 	}
-	InterfaceWindowHandle CircuitWindow::GetInterfaceWindowHandle() const
+
+	Volt::WindowHandle CircuitWindow::GetWindowHandle() const
 	{
-		return m_interfaceWindowHandle;
+		return m_windowHandle;
 	}
 	const glm::u16vec2& CircuitWindow::GetWindowSize() const
 	{

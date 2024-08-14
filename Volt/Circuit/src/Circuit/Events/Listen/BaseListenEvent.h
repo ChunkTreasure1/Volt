@@ -1,5 +1,5 @@
 #pragma once
-#include "Circuit/CircuitCoreDefines.h"
+#include "Circuit/Config.h"
 #include "Circuit/Events/CircuitEventTypes.h"
 
 #define LISTEN_EVENT_CLASS_TYPE(type) CIRCUIT_API static Circuit::CircuitListenEventType GetStaticType() {return Circuit::##type;}\

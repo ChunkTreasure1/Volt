@@ -8,13 +8,13 @@ namespace Circuit
 	{
 	}
 
-	CloseWindowTellEvent::CloseWindowTellEvent(InterfaceWindowHandle windowHandle)
+	CloseWindowTellEvent::CloseWindowTellEvent(Volt::WindowHandle windowHandle)
 		: TellEvent(CircuitTellEventType::CloseWindow)
 		, m_WindowHandle(windowHandle)
 	{
 	}
 
-	SetWindowPositionTellEvent::SetWindowPositionTellEvent(InterfaceWindowHandle windowHandle, int x, int y)
+	SetWindowPositionTellEvent::SetWindowPositionTellEvent(Volt::WindowHandle windowHandle, int x, int y)
 		: TellEvent(CircuitTellEventType::SetWindowPosition)
 		, m_WindowHandle(windowHandle)
 		, m_X(x)
@@ -22,7 +22,7 @@ namespace Circuit
 	{
 	}
 
-	SetWindowSizeTellEvent::SetWindowSizeTellEvent(InterfaceWindowHandle windowHandle, int width, int height)
+	SetWindowSizeTellEvent::SetWindowSizeTellEvent(Volt::WindowHandle windowHandle, int width, int height)
 		: TellEvent(CircuitTellEventType::SetWindowSize)
 		, m_WindowHandle(windowHandle)
 		, m_Width(width)
@@ -30,7 +30,7 @@ namespace Circuit
 	{
 	}
 
-	SetWindowFocusTellEvent::SetWindowFocusTellEvent(InterfaceWindowHandle windowHandle)
+	SetWindowFocusTellEvent::SetWindowFocusTellEvent(Volt::WindowHandle windowHandle)
 		: TellEvent(CircuitTellEventType::SetWindowFocus)
 		, m_WindowHandle(windowHandle)
 	{

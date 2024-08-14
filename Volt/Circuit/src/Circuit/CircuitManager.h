@@ -1,10 +1,11 @@
 #pragma once
-#include "Circuit/CircuitCoreDefines.h"
-#include "Circuit/Window/WindowInterfaceDefines.h"
+#include "Circuit/Config.h"
 #include "Circuit/Window/CircuitWindow.h"
 
 #include "Circuit/Events/Tell/BaseTellEvent.h"
 #include "Circuit/Events/Listen/BaseListenEvent.h"
+
+#include <WindowModule/WindowHandle.h>
 
 #include <vector>
 #include <memory>
@@ -34,7 +35,7 @@ namespace Circuit
 
 		CIRCUIT_API CircuitWindow& OpenWindow(OpenWindowParams& params);
 
-		CIRCUIT_API const std::map<InterfaceWindowHandle, std::unique_ptr<CircuitWindow>>& GetWindows();
+		CIRCUIT_API const std::map<Volt::WindowHandle, std::unique_ptr<CircuitWindow>>& GetWindows();
 	private:
 		CIRCUIT_API inline static std::unique_ptr<CircuitManager> s_Instance = nullptr;
 
@@ -45,6 +46,6 @@ namespace Circuit
 
 		std::function<void(const TellEvent&)> m_tellEventCallback;
 
-		std::map<InterfaceWindowHandle, std::unique_ptr<CircuitWindow>> m_windows;
+		std::map<Volt::WindowHandle, std::unique_ptr<CircuitWindow>> m_windows;
 	};
 }

@@ -1,5 +1,4 @@
 #pragma once
-#include "Circuit/CircuitCoreDefines.h"
 
 #define CreateWidget(InWidgetType) \
 	CircuitDeclare<InWidgetType>() <<= InWidgetType::Arguments()
@@ -10,7 +9,7 @@
 	{ \
 		using WidgetArgumentsType = Arguments; \
 		using WidgetType = InWidgetType; \
-		CIRCUIT_API Arguments()
+		Arguments()
 
 #define CIRCUIT_END_ARGS() \
 	};
@@ -19,7 +18,7 @@
 	ArgType _##ArgName
 
 #define CIRCUIT_ARGUMENT_FUNCTION(ArgType, ArgName) \
-	CIRCUIT_API WidgetArgumentsType& ArgName(ArgType ArgName) \
+	WidgetArgumentsType& ArgName(ArgType ArgName) \
 	{ \
 		_##ArgName = ArgName; \
 		return static_cast<WidgetArgumentsType*>(this)->Me(); \

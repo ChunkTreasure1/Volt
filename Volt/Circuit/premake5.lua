@@ -29,6 +29,27 @@ project "Circuit"
 	{
 		"src/",
 		"%{IncludeDir.glm}",
+		"%{IncludeDir.WindowModule}",
+		"%{IncludeDir.InputModule}",
+		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.RHIModule}",
+		"%{IncludeDir.RenderCoreModule}",
+		"%{IncludeDir.LogModule}",
+		"%{IncludeDir.half}",
+		"%{IncludeDir.tracy}",
+		"%{IncludeDir.CoreUtilities}",
+	}
+
+	links
+	{
+		"WindowModule",
+		"InputModule",
+		"EventModule",
+		"RHIModule",
+		"RenderCoreModule",
+		"LogModule",
+		"tracy",
+		"CoreUtilities",
 	}
 
 	filter "files:vendor/**.c"
@@ -54,7 +75,8 @@ project "Circuit"
 		defines
 		{
 			"NOMINMAX",
-			"VT_PLATFORM_WINDOWS"
+			"VT_PLATFORM_WINDOWS",
+			"CIRCUIT_BUILD_DLL"
 		}
 
 	filter "configurations:Debug"
