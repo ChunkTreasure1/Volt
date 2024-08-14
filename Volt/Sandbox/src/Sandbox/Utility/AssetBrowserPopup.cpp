@@ -9,7 +9,8 @@
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
-#include <Volt/Math/Math.h>
+
+#include <CoreUtilities/Math/Hash.h>
 
 #include <imgui.h>
 
@@ -38,7 +39,7 @@ AssetBrowserPopup::State AssetBrowserPopup::Update()
 		UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 		if (ImGui::BeginChild("##scrolling", ImGui::GetContentRegionAvail())) //#TODO_Ivar: Optimize!
 		{
-			const std::vector<Volt::AssetHandle> items = Volt::AssetManager::GetAllAssetsOfType(myWantedType);
+			const Vector<Volt::AssetHandle> items = Volt::AssetManager::GetAllAssetsOfType(myWantedType);
 			state = RenderView(items);
 			ImGui::EndChild();
 		}
@@ -57,12 +58,12 @@ inline static size_t GetHashFromMetadata(const Volt::AssetMetadata& metadata)
 	return hash;
 }
 
-AssetBrowserPopup::State AssetBrowserPopup::RenderView(const std::vector<Volt::AssetHandle>& items)
+AssetBrowserPopup::State AssetBrowserPopup::RenderView(const Vector<Volt::AssetHandle>& items)
 {
 	VT_PROFILE_FUNCTION();
 
 	State state = State::Open;
-	std::vector<std::pair<std::string, Volt::AssetHandle>> nameHandle;
+	Vector<std::pair<std::string, Volt::AssetHandle>> nameHandle;
 
 	for (const auto& handle : items)
 	{
@@ -81,7 +82,7 @@ AssetBrowserPopup::State AssetBrowserPopup::RenderView(const std::vector<Volt::A
 		nameHandle.emplace_back(assetName, metadata.handle);
 	}
 
-	std::vector<std::string> searchNames{};
+	Vector<std::string> searchNames{};
 	for (const auto& [name, handle] : nameHandle)
 	{
 		if (std::find(searchNames.begin(), searchNames.end(), name) != searchNames.end())

@@ -268,7 +268,7 @@ public:
 		return m_object == rhs.m_object;
 	}
 
-	VT_NODISCARD VT_INLINE operator bool() const { return m_object != nullptr; }
+	VT_NODISCARD VT_INLINE operator bool() const { return m_object != nullptr && m_weakCounter && m_weakCounter->IsValid(); }
 
 private:
 	template<typename U>

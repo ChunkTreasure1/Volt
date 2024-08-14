@@ -12,26 +12,23 @@
 
 struct Constants
 {
-    UniformTexture<uint> visibilityBuffer;
-    UniformTypedBuffer<uint> materialCountBuffer;
-    UniformTypedBuffer<uint> materialStartBuffer;
-    UniformTypedBuffer<uint2> pixelCollection;
+    vt::UniformTex2D<uint2> visibilityBuffer;
+    vt::UniformTypedBuffer<uint> materialCountBuffer;
+    vt::UniformTypedBuffer<uint> materialStartBuffer;
+    vt::UniformTypedBuffer<uint2> pixelCollection;
     
     GPUScene gpuScene;
-    UniformBuffer<ViewData> viewData;
+    vt::UniformBuffer<ViewData> viewData;
     
-    UniformRWTexture<float4> albedo;
-    UniformRWTexture<float4> normals;
-    UniformRWTexture<float2> material;
-    UniformRWTexture<float3> emissive;
+    vt::UniformRWTex2D<float4> albedo;
+    vt::UniformRWTex2D<float4> normals;
+    vt::UniformRWTex2D<float2> material;
+    vt::UniformRWTex2D<float3> emissive;
     
     uint materialId;
     
     float2 viewSize; // Move to buffer
 };
-
-groupshared uint m_materialCount;
-groupshared uint m_materialStart;
 
 struct MaterialEvaluationData
 {
@@ -70,39 +67,36 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     const GPUScene scene = constants.gpuScene;
     const ViewData viewData = constants.viewData.Load();
     
-    if (groupThreadIndex == 0)
-    {
-        m_materialCount = constants.materialCountBuffer.Load(constants.materialId);
-        m_materialStart = constants.materialStartBuffer.Load(constants.materialId);
-    }
+    uint materialCount = constants.materialCountBuffer.Load(constants.materialId);
+    uint materialStart = constants.materialStartBuffer.Load(constants.materialId);
     
-    GroupMemoryBarrierWithGroupSync();
+    const uint pixelIndex = materialStart + threadId.x;
     
-    const uint pixelIndex = m_materialStart + threadId.x;
-    
-    if (threadId.x >= m_materialCount)
+    if (threadId.x >= materialCount)
     {
         return;
     }
     
     const float2 pixelPosition = constants.pixelCollection.Load(pixelIndex) + 0.5f;
-    const uint visibilityValues = constants.visibilityBuffer.Load2D(int3(pixelPosition, 0));
+    const uint2 visibilityValues = constants.visibilityBuffer.Load(int3(pixelPosition, 0));
     
-    const uint triangleId = UnpackTriangleID(visibilityValues);
-    const uint meshletId = UnpackMeshletID(visibilityValues);
+    const uint objectId = visibilityValues.x;
+    const uint triangleId = UnpackTriangleID(visibilityValues.y);
+    const uint meshletId = UnpackMeshletID(visibilityValues.y);
     
-    const Meshlet meshlet = scene.meshletsBuffer.Load(meshletId);
-    const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(meshlet.objectId);
-    const GPUMesh mesh = scene.meshesBuffer.Load(meshlet.meshId);
+    const PrimitiveDrawData drawData = scene.primitiveDrawDataBuffer.Load(objectId);
+    const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
+    const Meshlet meshlet = mesh.meshletsBuffer.Load(mesh.meshletStartOffset + meshletId);
 
-    const uint3 triIndices = LoadTriangleIndices(mesh.meshletIndexBuffer, mesh.meshletIndexStartOffset + meshlet.triangleOffset + triangleId, meshlet.vertexOffset + mesh.vertexStartOffset);
+    const uint3 meshletTriIndices = UnpackPrimitive(mesh.meshletDataBuffer.Load(meshlet.dataOffset + meshlet.GetVertexCount() + triangleId)); 
+    const uint3 triIndices = LoadTriangleIndices(mesh.meshletDataBuffer, meshlet.dataOffset, mesh.vertexStartOffset, meshletTriIndices);
     const PositionData vertexPositions = LoadVertexPositions(mesh.vertexPositionsBuffer, triIndices);
 
     const float4 worldPositions[] = 
     {
-        mul(drawData.transform, float4(vertexPositions.positions[0], 1.f)),
-        mul(drawData.transform, float4(vertexPositions.positions[1], 1.f)),
-        mul(drawData.transform, float4(vertexPositions.positions[2], 1.f))
+        float4(drawData.transform.GetWorldPosition(vertexPositions.positions[0]), 1.f),
+        float4(drawData.transform.GetWorldPosition(vertexPositions.positions[1]), 1.f),
+        float4(drawData.transform.GetWorldPosition(vertexPositions.positions[2]), 1.f),
     };
 
     const float4 clipPositions[] =
@@ -118,10 +112,8 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     const MaterialData materialData = LoadVertexMaterialData(mesh.vertexMaterialBuffer, triIndices);    
     const UVGradient uvGradient = CalculateUVGradient(derivatives, materialData.texCoords);
     
-    const float3x3 worldRotationMatrix = (float3x3)drawData.transform;
-
-    const float3 normal = normalize(mul(worldRotationMatrix, normalize(InterpolateFloat3(derivatives, materialData.normals))));
-    const float3 tangent = normalize(mul(worldRotationMatrix, normalize(InterpolateFloat3(derivatives, materialData.tangents))));
+    const float3 normal = normalize(drawData.transform.RotateVector(normalize(InterpolateFloat3(derivatives, materialData.normals))));
+    const float3 tangent = normalize(drawData.transform.RotateVector(normalize(InterpolateFloat3(derivatives, materialData.tangents))));
     const float3x3 TBN = CalculateTBN(normal, tangent);
     
     const GPUMaterial material = scene.materialsBuffer.Load(constants.materialId);
@@ -142,8 +134,8 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     // #TODO_Ivar: This depends on the texture format
     albedo.xyz = SRGBToLinear(albedo.xyz);
     
-    constants.albedo.Store2D(pixelPosition, albedo);
-    constants.normals.Store2D(pixelPosition, float4(resultNormal * 0.5f + 0.5f, 0.f));
-    constants.material.Store2D(pixelPosition, float2(evaluatedMaterial.metallic, evaluatedMaterial.roughness));
-    constants.emissive.Store2D(pixelPosition, evaluatedMaterial.emissive);
+    constants.albedo.Store(pixelPosition, albedo);
+    constants.normals.Store(pixelPosition, float4(resultNormal * 0.5f + 0.5f, 0.f));
+    constants.material.Store(pixelPosition, float2(evaluatedMaterial.metallic, evaluatedMaterial.roughness));
+    constants.emissive.Store(pixelPosition, evaluatedMaterial.emissive);
 }

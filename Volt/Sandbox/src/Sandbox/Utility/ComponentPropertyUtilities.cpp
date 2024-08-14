@@ -164,6 +164,7 @@ void ComponentPropertyUtility::DrawComponents(Weak<Volt::Scene> scene, Volt::Ent
 					if (removeComp)
 					{
 						Volt::ComponentRegistry::Helpers::RemoveComponentWithGUID(compTypeDesc->GetGUID(), scene->GetRegistry(), entity);
+						EditorUtils::MarkEntityAsEdited(entity);
 					}
 
 					break;
@@ -409,7 +410,7 @@ bool ComponentPropertyUtility::DrawComponentEnum(Weak<Volt::Scene> scene, Volt::
 	int32_t currentIndex = 0;
 
 	std::unordered_map<int32_t, int32_t> indexToValueMap;
-	std::vector<std::string> constantNames;
+	Vector<std::string> constantNames;
 
 	for (uint32_t index = 0; const auto & constant : constants)
 	{
@@ -517,7 +518,7 @@ bool ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, Volt:
 
 void ComponentPropertyUtility::DrawMonoScript(Weak<Volt::Scene> scene, const Volt::MonoScriptEntry& scriptEntry, Volt::Entity entity)
 {
-	std::string scriptClassName = Volt::MonoScriptUtils::GetClassName(scriptEntry.name);
+	std::string scriptClassName = Volt::MonoScriptUtils::GetClassName2(scriptEntry.name);
 	scriptClassName[0] = static_cast<char>(std::toupper(scriptClassName[0]));
 
 	bool removeScript = false;
@@ -675,7 +676,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 
 					int32_t enumVal = scriptInstance->GetField<int32_t>(name);
 
-					std::vector<std::string> valueNames{};
+					Vector<std::string> valueNames{};
 					for (const auto& [valueName, val] : enumValues)
 					{
 						valueNames.emplace_back(valueName);
@@ -812,7 +813,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 
 					int32_t& enumVal = (int32_t&)*currentField->data.As<uint32_t>();
 
-					std::vector<std::string> valueNames{};
+					Vector<std::string> valueNames{};
 					for (const auto& [valueName, val] : enumValues)
 					{
 						valueNames.emplace_back(valueName);

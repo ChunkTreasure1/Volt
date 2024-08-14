@@ -17,7 +17,7 @@ namespace Volt
 
 	struct MeshColliderCacheData
 	{
-		std::vector<MeshColliderData> colliderData;
+		Vector<MeshColliderData> colliderData;
 	};
 
 	class Mesh;
@@ -27,8 +27,8 @@ namespace Volt
 		static void Initialize();
 		static void Shutdown();
 
-		static CookingResult CookMesh(MeshColliderComponent& colliderComp, bool invalidateOld, std::vector<MeshColliderData>& outData);
-		static void GenerateDebugMesh(const MeshColliderComponent& colliderComp, const std::vector<MeshColliderData>& meshData);
+		static CookingResult CookMesh(MeshColliderComponent& colliderComp, bool invalidateOld, Vector<MeshColliderData>& outData);
+		static void GenerateDebugMesh(const MeshColliderComponent& colliderComp, const Vector<MeshColliderData>& meshData);
 
 	private:
 		struct CookingSettings

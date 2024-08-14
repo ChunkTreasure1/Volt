@@ -39,7 +39,7 @@ namespace Volt
 		const Volt::Entity GetActiveCamera() { return myActiveCamera.IsValid() ? myActiveCamera : Volt::Entity::Null(); }
 		const Volt::Entity GetTriggerCamera() { return myActiveTiggerCamera.IsValid() ? myActiveTiggerCamera : Volt::Entity::Null(); }
 		const Volt::Entity GetLastActiveCamera() { return myLastActiveCamera.IsValid() ? myLastActiveCamera : Volt::Entity::Null(); }
-		const std::vector<Volt::Entity> GetAllCamerasInScene();
+		const Vector<Volt::Entity> GetAllCamerasInScene();
 
 		void SetLastActiveCamera(Volt::Entity aCamEnt) { myLastActiveCamera = aCamEnt; };
 
@@ -73,7 +73,7 @@ namespace Volt
 		void ShakeCamera(const float aDeltaTime);
 		void BlendCameras(float aDeltaTime);
 
-		std::vector<Volt::Entity> myVTCams;
+		Vector<Volt::Entity> myVTCams;
 
 		Volt::Entity myActiveCamera{};
 		Volt::Entity myLastActiveCamera{};

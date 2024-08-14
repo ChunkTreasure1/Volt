@@ -21,7 +21,7 @@ namespace Volt
 	class MonoScriptUtils
 	{
 	public:
-		static std::string GetClassName(const std::string& fullClassName);
+		static std::string GetClassName2(const std::string& fullClassName);
 		static std::string GetNameSpace(const std::string& fullClassName);
 
 		static const std::string GetStringFromMonoString(MonoString* string);
@@ -30,18 +30,18 @@ namespace Volt
 		static FieldAccessibility GetFieldAccessabilityLevel(MonoClassField* field);
 
 		template<typename T>
-		static MonoArray* CreateMonoArray(const std::vector<T>& vector);
-		static MonoArray* CreateMonoArrayUInt32(const std::vector<uint32_t>& vector);
-		static MonoArray* CreateMonoArrayUInt64(const std::vector<uint64_t>& vector);
-		static MonoArray* CreateMonoArrayEntity(const std::vector<EntityID>& vector);
-		static MonoArray* CreateMonoArrayEntity(const std::vector<Entity>& vector);
+		static MonoArray* CreateMonoArray(const Vector<T>& vector);
+		static MonoArray* CreateMonoArrayUInt32(const Vector<uint32_t>& vector);
+		static MonoArray* CreateMonoArrayUInt64(const Vector<uint64_t>& vector);
+		static MonoArray* CreateMonoArrayEntity(const Vector<EntityID>& vector);
+		static MonoArray* CreateMonoArrayEntity(const Vector<Entity>& vector);
 
 		static bool CreateNewCSFile(std::string name, std::filesystem::path directoryFromAssets, bool regenerate);
 
 	private:
 		friend class MonoScriptEngine;
 
-		static MonoArray* InternalCreateMonoArray(const std::string& aNamespace, const std::string& aClass, const std::vector<void*> data);
+		static MonoArray* InternalCreateMonoArray(const std::string& aNamespace, const std::string& aClass, const Vector<void*> data);
 		static void RegisterArrayTypes();
 
 		inline static std::unordered_map<std::type_index, std::string> myRegisteredArrayTypes;
@@ -52,16 +52,16 @@ namespace Volt
 	// -----
 
 	template<typename T>
-	MonoArray* MonoScriptUtils::CreateMonoArray(const std::vector<T>& vector)
+	MonoArray* MonoScriptUtils::CreateMonoArray(const Vector<T>& vector)
 	{
 		// Get the namespace and class name for the specific type T.
 		if (!MonoScriptUtils::myRegisteredArrayTypes.contains(typeid(T))) { return nullptr; }
 		auto typeinfo = MonoScriptUtils::myRegisteredArrayTypes.at(typeid(T));
 
 		// Fill with the data
-		std::vector<void*> data;
+		Vector<void*> data;
 
-		return InternalCreateMonoArray(MonoScriptUtils::GetNameSpace(typeinfo), MonoScriptUtils::GetClassName(typeinfo), data);
+		return InternalCreateMonoArray(MonoScriptUtils::GetNameSpace(typeinfo), MonoScriptUtils::GetClassName2(typeinfo), data);
 	}
 
 	// -----

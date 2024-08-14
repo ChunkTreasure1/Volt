@@ -1,6 +1,9 @@
 #pragma once
 
 #include <Volt/Asset/Asset.h>
+
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <unordered_map>
 #include <typeindex>
 
@@ -34,10 +37,10 @@ public:
 	template<typename T>
 	static Ref<T> Get();
 
-	inline static const std::vector<PanelInfo>& GetPanels() { return s_editors; }
+	inline static const Vector<PanelInfo>& GetPanels() { return s_editors; }
 
 private:
-	inline static std::vector<PanelInfo> s_editors;
+	inline static Vector<PanelInfo> s_editors;
 };
 
 template<typename T, typename ...Args>
@@ -60,7 +63,7 @@ inline Ref<T> EditorLibrary::Get()
 	auto it = std::find_if(s_editors.begin(), s_editors.end(), [&](const auto& lhs) { return lhs.editorType == typeid(T); });
 	if (it == s_editors.end())
 	{
-		VT_CORE_ERROR("Editor with type not registered!");
+		VT_LOG(Error, "Editor with type not registered!");
 		return nullptr;
 	}
 

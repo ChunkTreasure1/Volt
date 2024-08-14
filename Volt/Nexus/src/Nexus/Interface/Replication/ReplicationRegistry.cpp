@@ -45,9 +45,9 @@ namespace Nexus
 		return m_links.at(owner).at(key);
 	}
 
-	std::vector<TYPE::REP_ID> ReplicationRegisty::GetAllType(TYPE::eReplicatedType type)
+	Vector<TYPE::REP_ID> ReplicationRegisty::GetAllType(TYPE::eReplicatedType type)
 	{
-		std::vector<TYPE::REP_ID> ret;
+		Vector<TYPE::REP_ID> ret;
 		for (auto _pair : m_registry)
 		{
 			if (_pair.second->GetType() != type) continue;
@@ -56,9 +56,9 @@ namespace Nexus
 		return ret;
 	}
 
-	std::vector<TYPE::REP_ID> ReplicationRegisty::GetAllOwner(TYPE::CLIENT_ID owner)
+	Vector<TYPE::REP_ID> ReplicationRegisty::GetAllOwner(TYPE::CLIENT_ID owner)
 	{
-		std::vector<TYPE::REP_ID> ret;
+		Vector<TYPE::REP_ID> ret;
 		for (auto _pair : m_registry)
 		{
 			if (_pair.second->GetOwner() != owner) continue;

@@ -6,8 +6,6 @@
 
 #include <Volt/Utility/Noise.h>
 
-#include "Volt/Events/MouseEvent.h"
-
 Volt::Vision::Vision(Scene* aScene)
 {
 	myScene = aScene;
@@ -23,7 +21,7 @@ void Volt::Vision::OnEvent(Volt::Event& e)
 
 void Volt::Vision::Initialize()
 {
-	std::vector<Volt::Entity> camEntIDs = myScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
+	Vector<Volt::Entity> camEntIDs = myScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
 
 	myVTCams.clear();
 
@@ -503,7 +501,7 @@ void Volt::Vision::SetCameraMouseSensentivity(Volt::Entity aCamera, float mouseS
 	}
 }
 
-const std::vector<Volt::Entity> Volt::Vision::GetAllCamerasInScene()
+const Vector<Volt::Entity> Volt::Vision::GetAllCamerasInScene()
 {
 	return myVTCams;
 }

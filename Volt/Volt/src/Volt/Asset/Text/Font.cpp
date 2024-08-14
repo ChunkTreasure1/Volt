@@ -4,7 +4,6 @@
 #include "Volt/Asset/Text/MSDFData.h"
 #include "Volt/Asset/AssetManager.h"
 
-#include "Volt/Log/Log.h"
 #include "Volt/Core/Base.h"
 #include <CoreUtilities/Buffer/Buffer.h>
 #include "Volt/Project/ProjectManager.h"
@@ -71,7 +70,7 @@ namespace Volt
 	};
 
 	template<typename T, typename S, int32_t N, msdf_atlas::GeneratorFunction<S, N> GEN_FN>
-	static Ref<Texture2D> CreateAndCacheAtlas(const std::string& aFontName, float, const std::vector<msdf_atlas::GlyphGeometry>& aGlyphs, const msdf_atlas::FontGeometry&, const Configuration& aConfig)
+	static Ref<Texture2D> CreateAndCacheAtlas(const std::string& aFontName, float, const Vector<msdf_atlas::GlyphGeometry>& aGlyphs, const msdf_atlas::FontGeometry&, const Configuration& aConfig)
 	{
 		msdf_atlas::ImmediateAtlasGenerator<S, N, GEN_FN, msdf_atlas::BitmapAtlasStorage<T, N>> generator(aConfig.width, aConfig.height);
 		generator.setAttributes(aConfig.generatorAttribs);
@@ -196,7 +195,7 @@ namespace Volt
 		bool success = font.Load(fontInput.filename);
 		success;
 
-		VT_CORE_ASSERT(success, "Font did not load correctly!");
+		VT_ASSERT_MSG(success, "Font did not load correctly!");
 
 		if (fontInput.scale <= 0.f)
 		{
@@ -225,7 +224,10 @@ namespace Volt
 		}
 
 		// Load glyphs
-		myMSDFData->fontGeometry = msdf_atlas::FontGeometry(&myMSDFData->glyphs);
+		std::vector<msdf_atlas::GlyphGeometry> tempGlyphs(myMSDFData->glyphs.begin(), myMSDFData->glyphs.end());
+		myMSDFData->fontGeometry = msdf_atlas::FontGeometry(&tempGlyphs);
+		myMSDFData->glyphs = Vector<msdf_atlas::GlyphGeometry>(tempGlyphs.begin(), tempGlyphs.end());
+
 		int32_t glyphsLoaded = -1;
 
 		switch (fontInput.glyphType)
@@ -244,7 +246,7 @@ namespace Volt
 		}
 		}
 
-		VT_CORE_ASSERT(glyphsLoaded >= 0, "Unable to load glyphs!");
+		VT_ASSERT_MSG(glyphsLoaded >= 0, "Unable to load glyphs!");
 
 		if (!fontInput.fontName.empty())
 		{
@@ -283,17 +285,17 @@ namespace Volt
 		{
 			if (remaining < 0)
 			{
-				VT_CORE_ASSERT(false, "Invalid number");
+				VT_ASSERT_MSG(false, "Invalid number");
 			}
 			else
 			{
-				VT_CORE_ERROR("Could not fit {0} out of {1} glyphs in atlas!", remaining, (int32_t)myMSDFData->glyphs.size());
-				VT_CORE_ASSERT(false, "Invalid number");
+				VT_LOG(Error, "Could not fit {0} out of {1} glyphs in atlas!", remaining, (int32_t)myMSDFData->glyphs.size());
+				VT_ASSERT_MSG(false, "Invalid number");
 			}
 		}
 
 		atlasPacker.getDimensions(config.width, config.height);
-		VT_CORE_ASSERT(config.width > 0 && config.height > 0, "Invalid dimensions");
+		VT_ASSERT_MSG(config.width > 0 && config.height > 0, "Invalid dimensions");
 
 		config.emSize = (float)atlasPacker.getScale();
 		config.pxRange = (float)atlasPacker.getPixelRange();
@@ -375,7 +377,7 @@ namespace Volt
 		myAtlas = texture;
 	}
 
-	static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)
+	static bool NextLine(int32_t aIndex, const Vector<int32_t>& aLines)
 	{
 		for (int32_t line : aLines)
 		{
@@ -395,7 +397,7 @@ namespace Volt
 		auto& fontGeom = GetMSDFData()->fontGeometry;
 		const auto& metrics = fontGeom.getMetrics();
 
-		std::vector<int32_t> nextLines;
+		Vector<int32_t> nextLines;
 
 		// Find new lines
 		{
@@ -465,7 +467,7 @@ namespace Volt
 		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
 		double y = 0.0;
 
-		std::vector<double> widths;
+		Vector<double> widths;
 		widths.emplace_back(0.0);
 
 		for (int32_t i = 0; i < utf32string.size(); i++)
@@ -521,7 +523,7 @@ namespace Volt
 		auto& fontGeom = GetMSDFData()->fontGeometry;
 		const auto& metrics = fontGeom.getMetrics();
 
-		std::vector<int32_t> nextLines;
+		Vector<int32_t> nextLines;
 
 		// Find new lines
 		{

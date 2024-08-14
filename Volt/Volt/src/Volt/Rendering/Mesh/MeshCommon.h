@@ -2,27 +2,37 @@
 
 #include "Volt/Math/Math.h"
 
+#include <CoreUtilities/Math/Hash.h>
+
 #include <glm/glm.hpp>
 
 #include <xhash>
 
 namespace Volt
 {
+	struct MeshletCone
+	{
+		int8_t x;
+		int8_t y;
+		int8_t z;
+		int8_t cutoff;
+	};
+
+	struct MeshletVertexTriangleCount
+	{
+		uint32_t vertexCount : 16;
+		uint32_t triangleCount : 16;
+	};
+
 	struct Meshlet
 	{
-		uint32_t vertexOffset;
-		uint32_t triangleOffset;
-		uint32_t vertexCount;
-		uint32_t triangleCount;
-
-		uint32_t objectId;
+		MeshletVertexTriangleCount vertexTriCount;
 		uint32_t meshId;
-		glm::uvec2 padding;
+		uint32_t dataOffset;
+		MeshletCone cone;
 
 		glm::vec3 boundingSphereCenter;
 		float boundingSphereRadius;
-
-		glm::vec4 cone;
 	};
 
 	struct MeshletNew

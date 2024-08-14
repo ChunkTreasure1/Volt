@@ -19,7 +19,7 @@ void RendererSettingsPanel::UpdateMainContent()
 		m_sceneRenderer->Invalidate();
 	}
 
-	static const std::vector<std::string> strings =
+	static const Vector<std::string> shadingStrings =
 	{
 		"Shaded",
 		"Albedo",
@@ -27,15 +27,27 @@ void RendererSettingsPanel::UpdateMainContent()
 		"Metalness",
 		"Roughness",
 		"Emissive",
-
-		"VisualizeCascades",
-		"VisualizeLightComplexity"
+		"AO"
 	};
 
 	int32_t currentValue = static_cast<int32_t>(m_sceneRenderer->GetShadingMode());
-	if (UI::Combo("Shading Mode", currentValue, strings))
+	if (UI::Combo("Shading Mode", currentValue, shadingStrings))
 	{
 		m_sceneRenderer->SetShadingMode(static_cast<Volt::SceneRenderer::ShadingMode>(currentValue));
+	}
+
+	static const Vector<std::string> visualizationStrings =
+	{
+		"None",
+		"VisualizeCascades",
+		"VisualizeLightComplexity",
+		"VisualizeMeshSDF"
+	};
+
+	currentValue = static_cast<int32_t>(m_sceneRenderer->GetVisualizationMode());
+	if (UI::Combo("Visualization Mode", currentValue, visualizationStrings))
+	{
+		m_sceneRenderer->SetVisualizationMode(static_cast<Volt::SceneRenderer::VisualizationMode>(currentValue));
 	}
 
 	//UI::Header("Settings");
@@ -47,7 +59,7 @@ void RendererSettingsPanel::UpdateMainContent()
 
 	//if (UI::BeginProperties("Rendering-AO"))
 	//{
-	//	const std::vector<const char*> aoLevels = { "Low", "Medium", "High", "Ultra" };
+	//	const Vector<const char*> aoLevels = { "Low", "Medium", "High", "Ultra" };
 
 	//	changed |= UI::Property("Enable AO", settings.enableAO);
 	//	changed |= UI::ComboProperty("AO Quality", *(int32_t*)&settings.aoQuality, aoLevels);
@@ -59,7 +71,7 @@ void RendererSettingsPanel::UpdateMainContent()
 
 	//if (UI::BeginProperties("Rendering-Shadows"))
 	//{
-	//	const std::vector<const char*> shadowLevels = { "Low", "Medium", "High" };
+	//	const Vector<const char*> shadowLevels = { "Low", "Medium", "High" };
 
 	//	changed |= UI::Property("Enable Shadows", settings.enableShadows);
 	//	changed |= UI::ComboProperty("Shadow Resolution", *(int32_t*)&settings.shadowResolution, shadowLevels);
@@ -71,7 +83,7 @@ void RendererSettingsPanel::UpdateMainContent()
 
 	//if (UI::BeginProperties("Rendering-AA"))
 	//{
-	//	const std::vector<const char*> aaTypes = { "FXAA", "TAA" };
+	//	const Vector<const char*> aaTypes = { "FXAA", "TAA" };
 
 	//	changed |= UI::Property("Enable AA", settings.enableAntiAliasing);
 	//	changed |= UI::ComboProperty("AA Type", *(int32_t*)&settings.antiAliasing, aaTypes);

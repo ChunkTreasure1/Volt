@@ -7,7 +7,7 @@ namespace Volt
 {
 	Version::Version(const std::string& strValue)
 	{
-		std::vector<std::string> strParts = Utility::SplitStringsByCharacter(strValue, '.');
+		Vector<std::string> strParts = Utility::SplitStringsByCharacter(strValue, '.');
 		if (strParts.size() != 3)
 		{
 			return;

@@ -34,7 +34,7 @@ void SkeletonEditorPanel::UpdateMainContent()
 		m_activateJointSearch = true;
 	}
 
-	auto& jointAttachments = const_cast<std::vector<Volt::Skeleton::JointAttachment>&>(m_skeleton->GetJointAttachments());
+	auto& jointAttachments = const_cast<Vector<Volt::Skeleton::JointAttachment>&>(m_skeleton->GetJointAttachments());
 	const auto totalWidth = ImGui::GetContentRegionAvail().x;
 
 	if (ImGui::BeginTable("AttachmentTable", 3, ImGuiTableFlags_BordersInnerH, ImGui::GetContentRegionAvail()))
@@ -132,7 +132,7 @@ void SkeletonEditorPanel::AddJointAttachmentPopup()
 
 	if (UI::BeginPopup("addJointAttachmentSkeleton", ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 	{
-		std::vector<std::string> jointNames;
+		Vector<std::string> jointNames;
 		for (const auto& joint : m_skeleton->GetJoints())
 		{
 			jointNames.emplace_back(joint.name);
@@ -155,7 +155,7 @@ void SkeletonEditorPanel::AddJointAttachmentPopup()
 
 		// List child
 		{
-			auto& jointAttachments = const_cast<std::vector<Volt::Skeleton::JointAttachment>&>(m_skeleton->GetJointAttachments());
+			auto& jointAttachments = const_cast<Vector<Volt::Skeleton::JointAttachment>&>(m_skeleton->GetJointAttachments());
 
 			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 			ImGui::BeginChild("scrolling", ImGui::GetContentRegionAvail());

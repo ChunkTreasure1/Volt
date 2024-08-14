@@ -9,13 +9,17 @@ namespace Volt
 		serializedMetadata.handle = metadata.handle;
 		serializedMetadata.type = metadata.type;
 		serializedMetadata.version = version;
-		serializedMetadata.magic = SerializedAssetMetadata::AssetMagic;
 
+		streamWriter.Write(SerializedAssetMetadata::AssetMagic);
 		return streamWriter.Write(serializedMetadata);
 	}
 
 	SerializedAssetMetadata AssetSerializer::ReadMetadata(BinaryStreamReader& streamReader)
 	{
+		uint32_t magic;
+		streamReader.Read(magic);
+		VT_ASSERT(magic == SerializedAssetMetadata::AssetMagic);
+
 		SerializedAssetMetadata result{};
 		streamReader.Read(result);
 		return result;

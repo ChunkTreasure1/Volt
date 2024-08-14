@@ -1,6 +1,0 @@
-name: "PreDepthMeshShader"
-internal: true
-paths:
-  - "Engine/Shaders/Source/Utility/PreDepth_as.hlsl"
-  - "Engine/Shaders/Source/Utility/PreDepth_ms.hlsl"
-  - "Engine/Shaders/Source/Utility/PreDepth_ps.hlsl"

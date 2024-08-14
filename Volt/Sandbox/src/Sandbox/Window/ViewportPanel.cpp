@@ -23,9 +23,9 @@
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/Prefab.h>
 
-#include <Volt/Input/Input.h>
-#include <Volt/Input/KeyCodes.h>
-#include <Volt/Input/MouseButtonCodes.h>
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
+#include <InputModule/MouseButtonCodes.h>
 
 #include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Camera/Camera.h>
@@ -42,7 +42,9 @@
 #include <Volt/Math/RayTriangle.h>
 #include <Volt/Math/Math.h>
 
-#include <VoltRHI/Images/Image2D.h>
+#include <WindowModule/Events/WindowEvents.h>
+
+#include <RHIModule/Images/Image.h>
 
 #include <Navigation/Core/NavigationSystem.h>
 
@@ -260,7 +262,7 @@ void ViewportPanel::UpdateContent()
 
 	if (UI::ImageButton("##play", UI::GetTextureID(playIcon), { buttonSize, buttonSize }))
 	{
-		static std::vector<Ref<EditorWindow>> fullscreenDeactivatedWindows;
+		static Vector<Ref<EditorWindow>> fullscreenDeactivatedWindows;
 
 		if (m_sceneState == SceneState::Edit)
 		{
@@ -432,7 +434,7 @@ void ViewportPanel::UpdateContent()
 		ImGui::Selectable("Entities", &settings.sceneSettings.showEntityGizmos);
 		ImGui::Selectable("Bounding Spheres", &settings.sceneSettings.showBoundingSpheres);
 
-		static const std::vector<const char*> colliderModes =
+		static const Vector<const char*> colliderModes =
 		{
 			"None",
 			"Selected",
@@ -444,7 +446,7 @@ void ViewportPanel::UpdateContent()
 
 		ImGui::Selectable("Environment Probes", &settings.sceneSettings.showEnvironmentProbes);
 
-		static const std::vector<const char*> navmeshModes =
+		static const Vector<const char*> navmeshModes =
 		{
 			"None",
 			"All",
@@ -609,7 +611,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 		case VT_KEY_BACKSPACE:
 		case VT_KEY_DELETE:
 		{
-			std::vector<Volt::Entity> entitiesToRemove;
+			Vector<Volt::Entity> entitiesToRemove;
 
 			auto selection = SelectionManager::GetSelectedEntities();
 			for (const auto& selectedEntity : selection)
@@ -863,7 +865,7 @@ void ViewportPanel::DuplicateSelection()
 {
 	m_editorCameraController->ForceLooseControl();
 
-	std::vector<Volt::Entity> duplicated;
+	Vector<Volt::Entity> duplicated;
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
 		if (SelectionManager::IsAnyParentSelected(ent, m_editorScene))
@@ -893,8 +895,12 @@ void ViewportPanel::HandleSingleSelect()
 	{
 		//const auto renderScale = m_sceneRenderer->GetSettings().renderScale;
 		const float renderScale = 1.f;
+		if (!m_sceneRenderer->GetObjectIDImage())
+		{
+			return;
+		}
 
-		uint32_t pixelData = m_sceneRenderer->GetObjectIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX * renderScale), static_cast<uint32_t>(mouseY * renderScale));
+		uint32_t pixelData = m_sceneRenderer->GetObjectIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX * renderScale), static_cast<uint32_t>(mouseY * renderScale), 0u);
 		const bool multiSelect = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);
 		const bool deselect = Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL);
 
@@ -952,7 +958,7 @@ void ViewportPanel::HandleMultiSelect()
 	{
 		auto renderScale = m_sceneRenderer->GetSettings().renderScale;
 
-		const std::vector<uint32_t> data = m_sceneRenderer->GetIDImage()->ReadPixelRange<uint32_t>(
+		const Vector<uint32_t> data = m_sceneRenderer->GetIDImage()->ReadPixelRange<uint32_t>(
 			(uint32_t)(minDragBoxX * renderScale), (uint32_t)(minDragBoxY * renderScale),
 			(uint32_t)(maxDragBoxX * renderScale), (uint32_t)(maxDragBoxY * renderScale));
 
@@ -1018,7 +1024,7 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 
 void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 {
-	std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>> previousTransforms;
+	Vector<std::pair<Volt::EntityID, Volt::TransformComponent>> previousTransforms;
 
 	for (const auto& entId : SelectionManager::GetSelectedEntities())
 	{
@@ -1096,12 +1102,6 @@ void ViewportPanel::UpdateModals()
 		}
 
 		Sandbox::Get().OpenScene(Volt::AssetManager::GetFilePathFromAssetHandle(m_sceneToOpen));
-
-		for (const auto& cell : Volt::SceneManager::GetActiveScene()->GetWorldEngine().GetCells())
-		{
-			Volt::SceneSerializer::Get().LoadWorldCell(Volt::SceneManager::GetActiveScene(), cell);
-		}
-
 		m_sceneToOpen = Volt::Asset::Null();
 	}
 }

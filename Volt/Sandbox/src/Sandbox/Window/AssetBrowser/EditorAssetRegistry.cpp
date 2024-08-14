@@ -17,7 +17,7 @@
 
 #include "Volt/Physics/PhysicsMaterial.h"
 
-#define ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandleVarName) [](Volt::AssetHandle aAssetHandleVarName)->std::vector<std::pair<std::string, std::string>>
+#define ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandleVarName) [](Volt::AssetHandle aAssetHandleVarName)->Vector<std::pair<std::string, std::string>>
 
 
 
@@ -26,7 +26,7 @@
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
 				auto asset = Volt::AssetManager::GetAsset<Volt::Animation>(aAssetHandle);
-				std::vector<std::pair<std::string, std::string>> data =
+				Vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("TEMPLATE", "TEMPLATE")),
 				};
@@ -60,7 +60,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 				//	}
 				//}
 
-				std::vector<std::pair<std::string, std::string>> data =
+				Vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("Submesh Count", std::to_string(asset->GetSubMeshes().size())),
 					
@@ -77,7 +77,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
 				auto asset = Volt::AssetManager::GetAsset<Volt::Animation>(aAssetHandle);
-				std::vector<std::pair<std::string, std::string>> data =
+				Vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("Duration", std::to_string(asset->GetDuration()) + " seconds"),
 					std::make_pair("Frame Count", Utility::ToStringWithThousandSeparator(asset->GetFrameCount())),
@@ -92,7 +92,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
 				auto asset = Volt::AssetManager::GetAsset<Volt::Skeleton>(aAssetHandle);
-				std::vector<std::pair<std::string, std::string>> data =
+				Vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("Joint Count", std::to_string(asset->GetJointCount()))
 				};
@@ -110,7 +110,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 					return {};
 				}
 
-				std::vector<std::pair<std::string, std::string>> data =
+				Vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("Width", std::to_string(asset->GetWidth())),
 					std::make_pair("Height", std::to_string(asset->GetHeight())),
@@ -124,7 +124,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
 				auto asset = Volt::AssetManager::GetAsset<Volt::Material>(aAssetHandle);
-				std::vector<std::pair<std::string, std::string>> data =
+				Vector<std::pair<std::string, std::string>> data =
 				{
 				};
 				return data;
@@ -138,7 +138,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 				auto asset = Volt::AssetManager::GetAsset<Volt::Scene>(aAssetHandle);
 				const auto& stats = asset->GetStatistics();
 				const auto& layers = asset->GetLayers();
-				std::vector<std::pair<std::string, std::string>> data =
+				Vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("Entity Count", Utility::ToStringWithThousandSeparator(stats.entityCount)),
 					std::make_pair("Layer Count", std::to_string(layers.size())),
@@ -160,12 +160,12 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 				auto asset = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(aAssetHandle);
 				if (!asset->IsValid())
 				{
-					return std::vector<std::pair<std::string, std::string>>();
+					return Vector<std::pair<std::string, std::string>>();
 				}
 				const auto skeletonFilePath = Volt::AssetManager::GetFilePathFromAssetHandle(asset->GetSkeleton()->handle).string();
 				const auto meshFilePath = Volt::AssetManager::GetFilePathFromAssetHandle(asset->GetSkin()->handle).string();
 
-				std::vector<std::pair<std::string, std::string>> data =
+				Vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("Skeleton Path", skeletonFilePath),
 					std::make_pair("Mesh Path", meshFilePath),
@@ -180,7 +180,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
 				auto asset = Volt::AssetManager::GetAsset<Volt::PhysicsMaterial>(aAssetHandle);
-				std::vector<std::pair<std::string, std::string>> data =
+				Vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("Static Friction", std::to_string(asset->staticFriction)),
 					std::make_pair("Dynamic Friction", std::to_string(asset->dynamicFriction)),
@@ -191,7 +191,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 	}
 };
 
-std::vector<std::pair<std::string, std::string>> EditorAssetRegistry::GetAssetBrowserPopupData(Volt::AssetType aAssetType, Volt::AssetHandle aAssetHandle)
+Vector<std::pair<std::string, std::string>> EditorAssetRegistry::GetAssetBrowserPopupData(Volt::AssetType aAssetType, Volt::AssetHandle aAssetHandle)
 {
 	if (myAssetData.contains(aAssetType))
 	{
@@ -200,14 +200,14 @@ std::vector<std::pair<std::string, std::string>> EditorAssetRegistry::GetAssetBr
 			return myAssetData[aAssetType].assetBrowserPopupDataFunction(aAssetHandle);
 		}
 	}
-	return std::vector<std::pair<std::string, std::string>>();
+	return Vector<std::pair<std::string, std::string>>();
 }
 
 void EditorAssetRegistry::RegisterAssetBrowserPopupData(Volt::AssetType aAssetType, AssetBrowserPopupDataFunction aAssetBrowserPopupDataFunction)
 {
 	if (myAssetData[aAssetType].assetBrowserPopupDataFunction)
 	{
-		VT_CORE_WARN("Asset type {0} already has a popup data function registered, overwriting the function.", Volt::GetAssetTypeName(aAssetType));
+		VT_LOG(Warning, "Asset type {0} already has a popup data function registered, overwriting the function.", Volt::GetAssetTypeName(aAssetType));
 	}
 	myAssetData[aAssetType].assetBrowserPopupDataFunction = aAssetBrowserPopupDataFunction;
 }

@@ -9,8 +9,15 @@
 #include "Volt/Rendering/BoundingStructures.h"
 #include "Volt/Rendering/Mesh/MeshCommon.h"
 
-#include "Volt/Rendering/Resources/BindlessResource.h"
+#include "Volt/Rendering/BindlessResource.h"
 #include "Volt/Rendering/GPUScene.h"
+
+#include "Volt/SDF/SDFGenerator.h"
+
+#include <RHIModule/Buffers/StorageBuffer.h>
+
+#include <CoreUtilities/Containers/Map.h>
+#include <CoreUtilities/Containers/SparseBrickMap.h>
 
 namespace Volt
 {
@@ -19,21 +26,21 @@ namespace Volt
 		class VertexBuffer;
 		class IndexBuffer;
 
-		class StorageBuffer;
+		class Image3D;
 	}
 
 	class Material;
 
 	struct VertexContainer
 	{
-		std::vector<glm::vec3> positions;
-		std::vector<VertexMaterialData> materialData;
+		Vector<glm::vec3> positions;
+		Vector<VertexMaterialData> materialData;
 		
-		std::vector<VertexAnimationInfo> animationInfo;
-		std::vector<VertexAnimationData> animationData;
+		Vector<VertexAnimationInfo> animationInfo;
+		Vector<VertexAnimationData> animationData;
 
-		std::vector<uint16_t> boneInfluences;
-		std::vector<float> boneWeights;
+		Vector<uint16_t> boneInfluences;
+		Vector<float> boneWeights;
 
 		VT_INLINE size_t Size() const
 		{
@@ -65,14 +72,14 @@ namespace Volt
 	{
 	public:
 		Mesh() = default;
-		Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material> aMaterial);
-		Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, const MaterialTable& materialTable, const std::vector<SubMesh>& subMeshes);
+		Mesh(Vector<Vertex> aVertices, Vector<uint32_t> aIndices, Ref<Material> aMaterial);
+		Mesh(Vector<Vertex> aVertices, Vector<uint32_t> aIndices, const MaterialTable& materialTable, const Vector<SubMesh>& subMeshes);
 		~Mesh() override;
 
 		void Construct();
 
-		inline const std::vector<SubMesh>& GetSubMeshes() const { return m_subMeshes; }
-		inline std::vector<SubMesh>& GetSubMeshesMutable() { return m_subMeshes; }
+		inline const Vector<SubMesh>& GetSubMeshes() const { return m_subMeshes; }
+		inline Vector<SubMesh>& GetSubMeshesMutable() { return m_subMeshes; }
 
 		inline const MaterialTable& GetMaterialTable() const { return m_materialTable; }
 		void SetMaterial(Ref<Material> material, uint32_t index);
@@ -80,19 +87,27 @@ namespace Volt
 		inline const size_t GetVertexCount() const { return m_vertexContainer.Size(); }
 		inline const size_t GetIndexCount() const { return m_indices.size(); }
 
-		inline const std::vector<uint32_t>& GetIndices() const { return m_indices; }
-		inline const std::vector<Meshlet>& GetMeshlets() const { return m_meshlets; }
+		inline const Vector<uint32_t>& GetIndices() const { return m_indices; }
+		inline const Vector<Meshlet>& GetMeshlets() const { return m_meshlets; }
 
 		inline const BoundingSphere& GetBoundingSphere() const { return m_boundingSphere; }
 		inline const BoundingBox& GetBoundingBox() const { return m_boundingBox; }
-		inline const std::vector<GPUMesh>& GetGPUMeshes() const { return m_gpuMeshes; }
+		inline const Vector<GPUMesh>& GetGPUMeshes() const { return m_gpuMeshes; }
+		inline const Vector<GPUMeshSDF>& GetGPUMeshSDFs() const { return m_gpuMeshSDFs; }
+
+		VT_NODISCARD VT_INLINE const Vector<SDFBrick>& GetBrickGrid(const uint32_t index) const { return m_brickGrids.at(index); }
+		VT_NODISCARD VT_INLINE const BindlessResourceRef<RHI::StorageBuffer>& GetBrickBuffer(const uint32_t index) const { return m_brickBuffers.at(index); }
 
 		inline const BoundingSphere& GetSubMeshBoundingSphere(const uint32_t index) const { return m_subMeshBoundingSpheres.at(index);  }
+		inline const BoundingBox& GetSubMeshBoundingBox(const uint32_t index) const { return m_subMeshBoundingBoxes.at(index);  }
 
 		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
 		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexMaterialBuffer() const { return m_vertexMaterialBuffer; }
 		inline BindlessResourceRef<RHI::StorageBuffer> GetVertexAnimationInfoBuffer() const { return m_vertexAnimationDataBuffer; }
-		inline BindlessResourceRef<RHI::StorageBuffer> GetIndexStorageBuffer() const { return m_indexBuffer; }
+		inline BindlessResourceRef<RHI::StorageBuffer> GetIndexBuffer() const { return m_indexBuffer; }
+
+		inline BindlessResourceRef<RHI::StorageBuffer> GetMeshletDataBuffer() const { return m_meshletDataBuffer; }
+		inline BindlessResourceRef<RHI::StorageBuffer> GetMeshletBuffer() const { return m_meshletsBuffer; }
 
 		VT_NODISCARD VT_INLINE const VertexContainer& GetVertexContainer() const { return m_vertexContainer; }
 
@@ -110,39 +125,41 @@ namespace Volt
 
 		VertexMaterialData GetMaterialDataFromVertex(const Vertex& vertex);
 
-		void InitializeWithVertices(const std::vector<Vertex>& vertices);
+		void InitializeWithVertices(const Vector<Vertex>& vertices);
 
-		std::vector<SubMesh> m_subMeshes;
-		VertexContainer m_meshletVertexContainer;
+		Vector<SubMesh> m_subMeshes;
+		Vector<Meshlet> m_meshlets;
 
-		std::vector<uint32_t> m_indices;
-
-		std::vector<Meshlet> m_meshlets;
-		std::vector<uint32_t> m_meshletIndices;
+		VertexContainer m_vertexContainer{};
+		Vector<uint32_t> m_indices;
+		Vector<uint32_t> m_meshletData;
 
 		MaterialTable m_materialTable;
 
+		BindlessResourceRef<RHI::StorageBuffer> m_indexBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexPositionsBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexMaterialBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexAnimationInfoBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexBoneInfluencesBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexBoneWeightsBuffer;
-		BindlessResourceRef<RHI::StorageBuffer> m_indexBuffer;
 
-		BindlessResourceRef<RHI::StorageBuffer> m_meshletIndexBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> m_meshletsBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> m_meshletDataBuffer;
 
 		BindlessResourceRef<RHI::StorageBuffer> m_vertexAnimationDataBuffer;
 
 		BoundingSphere m_boundingSphere;
 		BoundingBox m_boundingBox;
 
-		std::vector<GPUMesh> m_gpuMeshes;
+		vt::map<uint32_t, BindlessResourceRef<RHI::Image>> m_sdfTextures;
+		vt::map<uint32_t, Vector<SDFBrick>> m_brickGrids;
+		vt::map<uint32_t, BindlessResourceRef<RHI::StorageBuffer>> m_brickBuffers;
+
+		Vector<GPUMesh> m_gpuMeshes;
+		Vector<GPUMeshSDF> m_gpuMeshSDFs;
 
 		glm::vec3 m_averageScale{ 1.f };
-		std::map<uint32_t, BoundingSphere> m_subMeshBoundingSpheres;
-
-		// Prototype vertex stuff
-		VertexContainer m_vertexContainer;
+		vt::map<uint32_t, BoundingSphere> m_subMeshBoundingSpheres;
+		vt::map<uint32_t, BoundingBox> m_subMeshBoundingBoxes;
 	};
 }

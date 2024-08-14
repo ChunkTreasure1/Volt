@@ -2,8 +2,9 @@
 
 #include <CoreUtilities/Core.h>
 
-#include <VoltRHI/Images/Image2D.h>
-#include <VoltRHI/Buffers/CommandBuffer.h>
+#include <RHIModule/Images/Image.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
+#include <RHIModule/Buffers/CommandBufferSet.h>
 
 namespace Volt
 {
@@ -24,7 +25,9 @@ namespace Volt
 		UISceneRenderer(const UISceneRendererSpecification& specification);
 		~UISceneRenderer();
 
-		void OnRender(RefPtr<RHI::Image2D> targetImage, const glm::mat4& projectionMatrix);
+		void OnRender(RefPtr<RHI::Image> targetImage, const glm::mat4& projectionMatrix);
+
+		VT_NODISCARD VT_INLINE RefPtr<RHI::Image> GetIDImage() const { return m_widgetIDImage; }
 
 	private:
 		struct VertexIndexCounts
@@ -38,8 +41,8 @@ namespace Volt
 
 		bool m_isEditor = false;
 
-		RefPtr<RHI::Image2D> m_widgetIDImage;
 		Ref<UIScene> m_scene;
-		RefPtr<RHI::CommandBuffer> m_commandBuffer;
+		RefPtr<RHI::Image> m_widgetIDImage;
+		RHI::CommandBufferSet m_commandBufferSet;
 	};
 }

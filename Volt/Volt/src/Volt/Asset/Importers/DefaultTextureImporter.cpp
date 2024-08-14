@@ -3,7 +3,7 @@
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 
-#include <VoltRHI/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 
 #include <stb/stb_image.h>
 
@@ -52,7 +52,7 @@ namespace Volt
 		imageSpec.width = width;
 		imageSpec.height = height;
 
-		RefPtr<RHI::Image2D> image = RHI::Image2D::Create(imageSpec, data);
+		RefPtr<RHI::Image> image = RHI::Image::Create(imageSpec, data);
 		outTexture.SetImage(image);
 
 		stbi_image_free(data);

@@ -181,7 +181,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(Error, "File {0} not found!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -189,13 +189,13 @@ namespace Volt
 		BinaryStreamReader streamReader{ filePath };
 		if (!streamReader.IsStreamValid())
 		{
-			VT_CORE_ERROR("Failed to open file {0}!", metadata.filePath);
+			VT_LOG(Error, "Failed to open file {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!")
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		// Scene File
 		{
@@ -363,18 +363,18 @@ namespace Volt
 				std::ifstream vpFile(vpPath, std::ios::in | std::ios::binary);
 				if (!vpFile.is_open())
 				{
-					VT_CORE_ERROR("Could not open entVp file!");
+					VT_LOG(Error, "Could not open entVp file!");
 				}
 
-				std::vector<uint8_t> totalData;
+				Vector<uint8_t> totalData;
 				const size_t srcSize = vpFile.seekg(0, std::ios::end).tellg();
-				totalData.resize(srcSize);
+				totalData.resize_uninitialized(srcSize);
 				vpFile.seekg(0, std::ios::beg);
 				vpFile.read(reinterpret_cast<char*>(totalData.data()), totalData.size());
 				vpFile.close();
 
 				memcpy_s(&vpComp.meshHandle, sizeof(vpComp.meshHandle), totalData.data() + totalData.size() - sizeof(vpComp.meshHandle), sizeof(vpComp.meshHandle));
-				totalData.resize(totalData.size() - sizeof(vpComp.meshHandle));
+				totalData.resize_uninitialized(totalData.size() - sizeof(vpComp.meshHandle));
 
 				vpComp.vertexColors.reserve(totalData.size() / sizeof(uint32_t));
 				for (size_t offset = 0; offset < totalData.size(); offset += sizeof(uint32_t))
@@ -457,13 +457,13 @@ namespace Volt
 
 		if (worldCell.isLoaded)
 		{
-			VT_CORE_WARN("[SceneImporter]: World Cell is already loaded!");
+			VT_LOG(Warning, "[SceneImporter]: World Cell is already loaded!");
 			return;
 		}
 
 		if (worldCell.cellEntities.empty())
 		{
-			VT_CORE_WARN("[SceneImporter]: Unable to load World Cell which contains zero entities!");
+			VT_LOG(Warning, "[SceneImporter]: Unable to load World Cell which contains zero entities!");
 			return;
 		}
 
@@ -477,7 +477,7 @@ namespace Volt
 			return;
 		}
 
-		std::vector<std::filesystem::path> entityPaths;
+		Vector<std::filesystem::path> entityPaths;
 
 		for (const auto& it : std::filesystem::directory_iterator(layersFolderPath))
 		{
@@ -508,7 +508,7 @@ namespace Volt
 
 		const uint32_t threadCount = Algo::GetThreadCountFromIterationCount(static_cast<uint32_t>(entityPaths.size()));
 
-		std::vector<Ref<Scene>> dummyScenes{};
+		Vector<Ref<Scene>> dummyScenes{};
 		dummyScenes.resize(threadCount);
 
 		auto futures = Algo::ForEachParallelLockable([&dummyScenes, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
@@ -531,7 +531,7 @@ namespace Volt
 
 			if (magicVal != ENTITY_MAGIC_VAL)
 			{
-				VT_CORE_ERROR("[SceneSerializer]: File is not a valid entity!");
+				VT_LOG(Error, "[SceneSerializer]: File is not a valid entity!");
 				return;
 			}
 
@@ -642,8 +642,8 @@ namespace Volt
 			}, static_cast<uint32_t>(removedEntities.size()));
 		}
 
-		VT_CORE_INFO("[SceneImporter]: Saved {0} entities!", entities.size());
-		VT_CORE_INFO("[SceneImporter]: Removed {0} entities!", removedEntities.size());
+		VT_LOG(Info, "[SceneImporter]: Saved {0} entities!", entities.size());
+		VT_LOG(Info, "[SceneImporter]: Removed {0} entities!", removedEntities.size());
 
 		scene->ClearEditedEntities();
 	}
@@ -656,7 +656,7 @@ namespace Volt
 			return;
 		}
 
-		std::vector<std::filesystem::path> entityPaths;
+		Vector<std::filesystem::path> entityPaths;
 
 		for (const auto& it : std::filesystem::directory_iterator(layersFolderPath))
 		{
@@ -673,7 +673,7 @@ namespace Volt
 
 		const uint32_t iterationCount = static_cast<uint32_t>(entityPaths.size());
 
-		std::vector<std::unordered_map<WorldCellID, std::vector<EntityID>>> threadCellEntities{};
+		Vector<std::unordered_map<WorldCellID, Vector<EntityID>>> threadCellEntities{};
 		threadCellEntities.resize(Algo::GetThreadCountFromIterationCount(iterationCount));
 
 		auto futures = Algo::ForEachParallelLockable([&threadCellEntities, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
@@ -691,7 +691,7 @@ namespace Volt
 
 			if (magicVal != ENTITY_MAGIC_VAL)
 			{
-				VT_CORE_ERROR("[SceneSerializer]: File is not a valid entity!");
+				VT_LOG(Error, "[SceneSerializer]: File is not a valid entity!");
 				return;
 			}
 

@@ -1,8 +1,6 @@
 #include "sbpch.h"
 #include "P4Implementation.h"
 
-#include <Volt/Log/Log.h>
-
 #include <filesystem>
 #include <format>
 
@@ -49,7 +47,7 @@ bool P4Implementation::ConnectImpl(const std::string& server, const std::string&
 		{
 			StrBuf msg;
 			e.Fmt(&msg);
-			VT_CORE_ERROR("VCS: {0}", msg.Text());
+			VT_LOG(Error, "VCS: {0}", msg.Text());
 			return false;
 		}
 	}
@@ -63,7 +61,7 @@ bool P4Implementation::ConnectImpl(const std::string& server, const std::string&
 	{
 		StrBuf msg;
 		e.Fmt(&msg);
-		VT_CORE_ERROR("VCS: {0}", msg.Text());
+		VT_LOG(Error, "VCS: {0}", msg.Text());
 		return false;
 	}
 
@@ -127,12 +125,12 @@ void P4Implementation::RefreshWorkspacesImpl()
 	m_client.Run("clients", &m_workspacesCU);
 }
 
-const std::vector<std::string>& P4Implementation::GetWorkspacesImpl()
+const Vector<std::string>& P4Implementation::GetWorkspacesImpl()
 {
 	return m_workspacesCU.GetData();
 }
 
-const std::vector<std::string>& P4Implementation::GetStreamsImpl()
+const Vector<std::string>& P4Implementation::GetStreamsImpl()
 {
 	return m_streamsCU.GetData();
 }

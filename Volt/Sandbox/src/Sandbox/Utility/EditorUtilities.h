@@ -67,13 +67,12 @@ public:
 	static bool ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Skeleton> targetSkeleton = nullptr);
 
 	static ImportState MeshImportModal(const std::string& aId, MeshImportData& aImportData, const std::filesystem::path& aMeshToImport);
-	static ImportState MeshBatchImportModal(const std::string& aId, MeshImportData& aImportData, const std::vector<std::filesystem::path>& meshesToImport);
+	static ImportState MeshBatchImportModal(const std::string& aId, MeshImportData& aImportData, const Vector<std::filesystem::path>& meshesToImport);
 
-	static void MeshExportModal(const std::string& aId, std::filesystem::path aDirectoryPath, MeshImportData& aExportData, std::vector<Ref<Volt::Mesh>> aMeshesToExport);
+	static void MeshExportModal(const std::string& aId, std::filesystem::path aDirectoryPath, MeshImportData& aExportData, Vector<Ref<Volt::Mesh>> aMeshesToExport);
 	static void ImportTexture(const std::filesystem::path& sourcePath);
 
 	static bool NewCharacterModal(const std::string& aId, Ref<Volt::AnimatedCharacter>& outCharacter, NewCharacterData& aCharacterData);
-	static bool NewAnimationGraphModal(const std::string& aId, Ref<Volt::AnimationGraphAsset>* outGraph, NewAnimationGraphData& graphData);
 
 	static SaveReturnState SaveFilePopup(const std::string& aId);
 

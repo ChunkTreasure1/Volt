@@ -10,14 +10,14 @@ namespace Volt
 {
 	struct MeshSerializationData_V1
 	{
-		std::vector<AssetHandle> materials;
-		std::vector<Vertex> vertices;
-		std::vector<uint32_t> indices;
+		Vector<AssetHandle> materials;
+		Vector<Vertex> vertices;
+		Vector<uint32_t> indices;
 
 		glm::vec3 boundingSphereCenter;
 		float boundingSphereRadius;
 
-		std::vector<SubMesh> subMeshes;
+		Vector<SubMesh> subMeshes;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const MeshSerializationData_V1& data)
 		{
@@ -42,20 +42,20 @@ namespace Volt
 
 	struct MeshSerializationData_V2
 	{
-		std::vector<glm::vec3> vertexPositions;
-		std::vector<VertexMaterialData> vertexMaterialData;
-		std::vector<VertexAnimationInfo> vertexAnimationInfo;
-		std::vector<VertexAnimationData> vertexAnimationData;
-		std::vector<uint16_t> vertexBoneInfluences;
-		std::vector<float> vertexBoneWeights;
-		std::vector<uint32_t> indices;
+		Vector<glm::vec3> vertexPositions;
+		Vector<VertexMaterialData> vertexMaterialData;
+		Vector<VertexAnimationInfo> vertexAnimationInfo;
+		Vector<VertexAnimationData> vertexAnimationData;
+		Vector<uint16_t> vertexBoneInfluences;
+		Vector<float> vertexBoneWeights;
+		Vector<uint32_t> indices;
 
-		std::vector<AssetHandle> materials;
+		Vector<AssetHandle> materials;
 
 		glm::vec3 boundingSphereCenter;
 		float boundingSphereRadius;
 
-		std::vector<SubMesh> subMeshes;
+		Vector<SubMesh> subMeshes;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const MeshSerializationData_V2& data)
 		{
@@ -128,7 +128,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(Error, "File {0} not found!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -137,7 +137,7 @@ namespace Volt
 
 		if (!streamReader.IsStreamValid())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			VT_LOG(Error, "Failed to open file: {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}

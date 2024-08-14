@@ -4,13 +4,16 @@
 #include "Volt/Core/Application.h"
 #include "Volt/Rendering/Camera/Camera.h"
 
-#include "Volt/Events/ApplicationEvent.h"
 
-#include "Volt/Input/Input.h"
-#include "Volt/Input/MouseButtonCodes.h"
-#include "Volt/Input/KeyCodes.h"
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
+#include <InputModule/MouseButtonCodes.h>
 
 #include "Volt/Utility/UIUtility.h"
+
+#include <Volt/Events/ApplicationEvents.h>
+#include <InputModule/Events/KeyboardEvents.h>
+#include <InputModule/Events/MouseEvents.h>
 
 #include <GLFW/glfw3.h>
 
@@ -75,8 +78,7 @@ bool EditorCameraController::OnMousePressedEvent(Volt::MouseButtonPressedEvent& 
 	{
 		if (m_isViewportHovered)
 		{
-			const auto [x, y] = Volt::Input::GetMousePosition();
-			m_lastMousePosition = { x, y };
+			m_lastMousePosition = Volt::Input::GetMousePosition();
 		}
 	}
 
@@ -209,7 +211,7 @@ bool EditorCameraController::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		else if (Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT))
 		{
 			//DisableMouse();
-			ArcZoom(deltaPos.x + deltaPos.y);
+			ArcZoom((deltaPos.x + deltaPos.y) * m_sensitivity);
 		}
 		else
 		{

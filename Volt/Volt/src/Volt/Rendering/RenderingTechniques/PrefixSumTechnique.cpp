@@ -1,17 +1,17 @@
 #include "vtpch.h"
 #include "PrefixSumTechnique.h"
 
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/Resources/RenderGraphBufferResource.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphBlackboard.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/Resources/RenderGraphBufferResource.h>
+#include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
 
 #include "Volt/Math/Math.h"
 
 #include "Volt/Rendering/Shader/ShaderMap.h"
 
-#include <VoltRHI/Buffers/BufferView.h>
-#include <VoltRHI/Buffers/StorageBuffer.h>
+#include <RHIModule/Buffers/BufferView.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
 
 namespace Volt
 {
@@ -20,13 +20,13 @@ namespace Volt
 	{
 	}
 
-	void PrefixSumTechnique::Execute(RenderGraphResourceHandle inputBuffer, RenderGraphResourceHandle outputBuffer, const uint32_t valueCount)
+	void PrefixSumTechnique::Execute(RenderGraphBufferHandle inputBuffer, RenderGraphBufferHandle outputBuffer, const uint32_t valueCount)
 	{
 		constexpr uint32_t TG_SIZE = 512;
 
 		struct PrefixSumData
 		{
-			RenderGraphResourceHandle stateBuffer;
+			RenderGraphBufferHandle stateBuffer;
 		};
 
 		struct State
@@ -40,11 +40,11 @@ namespace Volt
 
 		auto pipeline = ShaderMap::GetComputePipeline("PrefixSum");
 
-		RenderGraphResourceHandle stateBuffer = 0;
+		RenderGraphBufferHandle stateBuffer = RenderGraphNullHandle();
 		{
 			const auto desc = RGUtils::CreateBufferDesc<State>(std::max(groupCount, 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "State Buffer");
 			stateBuffer = m_renderGraph.CreateBuffer(desc);
-			m_renderGraph.AddClearBufferPass(stateBuffer, 0, "Clear State Buffer");
+			RGUtils::ClearBuffer(m_renderGraph, stateBuffer, 0, "Clear State Buffer");
 		}
 
 		m_renderGraph.AddPass<PrefixSumData>("Prefix Sum",
@@ -56,12 +56,12 @@ namespace Volt
 			builder.WriteResource(outputBuffer);
 			builder.SetIsComputePass();
 		},
-		[pipeline, groupCount, inputBuffer, outputBuffer, valueCount](const PrefixSumData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[pipeline, groupCount, inputBuffer, outputBuffer, valueCount](const PrefixSumData& data, RenderContext& context)
 		{
 			context.BindPipeline(pipeline);
-			context.SetConstant("inputValues"_sh, resources.GetBuffer(inputBuffer));
-			context.SetConstant("outputValues"_sh, resources.GetBuffer(outputBuffer));
-			context.SetConstant("stateBuffer"_sh, resources.GetBuffer(data.stateBuffer));
+			context.SetConstant("inputValues"_sh, inputBuffer);
+			context.SetConstant("outputValues"_sh, outputBuffer);
+			context.SetConstant("stateBuffer"_sh, data.stateBuffer);
 			context.SetConstant("valueCount"_sh, valueCount);
 
 			context.Dispatch(groupCount, 1, 1);

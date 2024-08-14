@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+
 #include <map>
 #include <unordered_map>
 #include <set>
@@ -19,6 +19,4 @@
 
 #include <glm/glm.hpp>
 
-#include <yaml-cpp/yaml.h>
-
-#include "Volt/Log/Log.h"
+#include <LogModule/Log.h>

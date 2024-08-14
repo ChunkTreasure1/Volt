@@ -119,8 +119,8 @@ namespace Volt
 		static MonoMethod* GetEntityConstructor();
 		static GCHandle InstantiateClass(const UUID64 id, MonoClass* monoClass);
 
-		static const std::vector<std::string> GetReferencedAssembliesName(MonoImage* image);
-		static void LoadReferencedAssemblies(const std::vector<std::string>& assemblyNames);
+		static const Vector<std::string> GetReferencedAssembliesName(MonoImage* image);
+		static void LoadReferencedAssemblies(const Vector<std::string>& assemblyNames);
 
 		inline static Ref<Volt::MonoCoreInstance> mySceneInstance;
 

@@ -5,7 +5,8 @@
 
 #include <Volt/Scene/Scene.h>
 #include <Volt/Core/Base.h>
-#include <Volt/Events/ApplicationEvent.h>
+#include <Volt/Events/ApplicationEvents.h>
+#include <Volt/Events/SceneEvents.h>
 #include <Sandbox/Camera/EditorCameraController.h>
 
 #include "Sandbox/Window/EditorWindow.h"
@@ -31,19 +32,19 @@ public:
 	Volt::Entity GetSelectedCamera() { return myVisionCams[mySelectedCamera]; }
 
 	Volt::Entity CreateNewTrigger();
-	const std::vector<Volt::Entity> GetAllCameraTriggers();
+	const Vector<Volt::Entity> GetAllCameraTriggers();
 
 	Volt::Entity CreateNewCamera();
-	const std::vector<Volt::Entity> GetAllCameras();
+	const Vector<Volt::Entity> GetAllCameras();
 	void UpdateSelectedCamera();
 
 private:
 	int mySelectedCamera = -1;
 
-	std::vector<std::pair<Volt::CameraComponent, Volt::VisionCameraComponent>> myVTCamComponents;
+	Vector<std::pair<Volt::CameraComponent, Volt::VisionCameraComponent>> myVTCamComponents;
 
-	std::vector<Volt::Entity> myVisionCams;
-	std::vector<Volt::Entity> myCameraTriggers;
+	Vector<Volt::Entity> myVisionCams;
+	Vector<Volt::Entity> myCameraTriggers;
 
 	bool myNewSettingsSaved = false;
 	bool myToManyDirectors = false;

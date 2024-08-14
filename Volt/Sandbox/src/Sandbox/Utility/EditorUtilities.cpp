@@ -8,7 +8,6 @@
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
-#include <Volt/Asset/Animation/AnimationGraphAsset.h>
 
 #include <Volt/Asset/Rendering/Material.h>
 #include <Volt/Asset/Mesh/MeshSource.h>
@@ -288,7 +287,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 			//{
 			//	originalMaterial = nullptr;
 			//	shouldCreateNewMaterial = true;
-			//	VT_CORE_WARN("Material for mesh {0} was invalid! Creating a new one!", origialAssetMeta.filePath);
+			//	VT_LOG(LogSeverity::Warning, "Material for mesh {0} was invalid! Creating a new one!", origialAssetMeta.filePath);
 			//}
 			//else
 			//{
@@ -592,7 +591,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 	return imported;
 }
 
-ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImportData& aImportData, const std::vector<std::filesystem::path>& meshesToImport)
+ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImportData& aImportData, const Vector<std::filesystem::path>& meshesToImport)
 {
 	ImportState imported = ImportState::None;
 
@@ -704,7 +703,7 @@ ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImport
 	return imported;
 }
 
-void EditorUtils::MeshExportModal(const std::string& aId, std::filesystem::path aDirectoryPath, MeshImportData& aExportData, std::vector<Ref<Volt::Mesh>> aMeshesToExport)
+void EditorUtils::MeshExportModal(const std::string& aId, std::filesystem::path aDirectoryPath, MeshImportData& aExportData, Vector<Ref<Volt::Mesh>> aMeshesToExport)
 {
 	if (aMeshesToExport.empty()) { return; }
 
@@ -767,7 +766,7 @@ void EditorUtils::ImportTexture(const std::filesystem::path& sourcePath)
 	//DirectX::ScratchImage mippedImage{};
 	//DirectX::GenerateMipMaps(image, DirectX::TEX_FILTER_CUBIC, (size_t)mipCount, mippedImage);
 
-	//std::vector<DirectX::Image> dxImages{};
+	//Vector<DirectX::Image> dxImages{};
 
 	//uint32_t mipWidth = metadata.width;
 	//uint32_t mipHeight = metadata.height;
@@ -852,60 +851,6 @@ bool EditorUtils::NewCharacterModal(const std::string& aId, Ref<Volt::AnimatedCh
 			}
 
 			Volt::AssetManager::Get().SaveAsset(outCharacter);
-			ImGui::CloseCurrentPopup();
-		}
-
-		UI::EndModal();
-	}
-
-	return created;
-}
-
-bool EditorUtils::NewAnimationGraphModal(const std::string& aId, Ref<Volt::AnimationGraphAsset>* outGraph, NewAnimationGraphData& graphData)
-{
-	bool created = false;
-
-	UI::ScopedStyleFloat rounding{ ImGuiStyleVar_FrameRounding, 2.f };
-	if (UI::BeginModal(aId, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
-	{
-		UI::ShiftCursor(300.f, 0.f);
-		UI::ShiftCursor(-300.f, 0.f);
-
-		if (UI::BeginProperties("NewGraph"))
-		{
-			UI::Property("Name", graphData.name);
-			EditorUtils::Property("Skeleton", graphData.skeletonHandle, Volt::AssetType::Skeleton);
-			UI::PropertyDirectory("Destination", graphData.destination);
-
-			UI::EndProperties();
-		}
-
-		if (ImGui::Button("Cancel"))
-		{
-			ImGui::CloseCurrentPopup();
-		}
-
-		ImGui::SameLine();
-
-		if (ImGui::Button("Create"))
-		{
-			if (graphData.skeletonHandle == Volt::Asset::Null())
-			{
-				UI::Notify(NotificationType::Error, "Unable to create animation graph!", "Skeleton must not be null!");
-
-				UI::EndModal();
-				return false;
-			}
-
-			created = true;
-			auto newGraph = Volt::AssetManager::CreateAsset<Volt::AnimationGraphAsset>(graphData.destination, graphData.name, graphData.skeletonHandle);
-
-			if (outGraph)
-			{
-				*outGraph = newGraph;
-			}
-
-			Volt::AssetManager::Get().SaveAsset(newGraph);
 			ImGui::CloseCurrentPopup();
 		}
 

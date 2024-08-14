@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "VTMeshImporter.h"
 
-#include "Volt/Log/Log.h"
-
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Mesh/Mesh.h"
 
@@ -17,17 +15,17 @@ namespace Volt
 	{
 		if (!std::filesystem::exists(path))
 		{
-			VT_CORE_ERROR("File does not exist: {0}", path.string().c_str());
+			VT_LOG(Error, "File does not exist: {0}", path.string().c_str());
 			return false;
 		}
 
 		std::ifstream file(path, std::ios::in | std::ios::binary);
 		if (!file.is_open())
 		{
-			VT_CORE_ERROR("Could not open mesh file!");
+			VT_LOG(Error, "Could not open mesh file!");
 		}
 
-		std::vector<uint8_t> totalData;
+		Vector<uint8_t> totalData;
 		const size_t srcSize = file.seekg(0, std::ios::end).tellg();
 		totalData.resize(srcSize);
 		file.seekg(0, std::ios::beg);
@@ -64,7 +62,7 @@ namespace Volt
 
 		if (!IsValid(subMeshCount, vertexCount, indexCount, srcSize) && path.extension() != ".vtnavmesh")
 		{
-			VT_CORE_ERROR("Mesh {0} is invalid! It needs to be recompiled!", path.string());
+			VT_LOG(Error, "Mesh {0} is invalid! It needs to be recompiled!", path.string());
 			return false;
 		}
 
@@ -77,7 +75,7 @@ namespace Volt
 		const uint32_t nameCount = *(uint32_t*)&totalData[offset];
 		offset += sizeof(uint32_t);
 
-		std::vector<std::string> names;
+		Vector<std::string> names;
 		names.reserve(nameCount);
 
 		for (uint32_t i = 0; i < subMeshCount; i++)

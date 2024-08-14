@@ -28,9 +28,14 @@ float GaSchlickGGX(float cosLi, float NdotV, float roughness)
     return GaSchlickG1(cosLi, k) * GaSchlickG1(NdotV, k);
 }
 
+float3 FresnelSchlick(float3 baseReflectivity, float cosTheta)
+{
+    return baseReflectivity + (1.0 - baseReflectivity) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
 float3 FresnelSchlickRoughness(float3 baseReflectivity, float cosTheta, float roughness)
 {
-    return baseReflectivity + (max(1.f - roughness, baseReflectivity) - baseReflectivity) * pow(1.f - cosTheta, 5.f);
+    return baseReflectivity + (max(1.f - roughness, baseReflectivity) - baseReflectivity) * pow(clamp(1.f - cosTheta, 0.f, 1.f), 5.f);
 }
 
 float4 CalculateLuminanceFromLight(in float3 accumulatedLight)

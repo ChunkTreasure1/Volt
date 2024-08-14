@@ -2,7 +2,6 @@
 
 #include "VisonPanel.h"
 
-#include <Volt/Log/Log.h>
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/Random.h>
 #include <Volt/Core/Application.h>
@@ -376,17 +375,17 @@ Volt::Entity VisionPanel::CreateNewTrigger()
 	return triggerEnt;
 }
 
-const std::vector<Volt::Entity> VisionPanel::GetAllCameraTriggers()
+const Vector<Volt::Entity> VisionPanel::GetAllCameraTriggers()
 {
-	std::vector<Volt::Entity> triggerIDs = myCurrentScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
+	Vector<Volt::Entity> triggerIDs = myCurrentScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
 
 	if (triggerIDs.empty())
 	{
-		VT_CORE_ERROR("VTCINEMA: No triggers loacated!");
-		return std::vector<Volt::Entity>();
+		VT_LOG(Error, "VTCINEMA: No triggers loacated!");
+		return Vector<Volt::Entity>();
 	}
 
-	std::vector<Volt::Entity> triggers;
+	Vector<Volt::Entity> triggers;
 	triggers.reserve(triggerIDs.size());
 
 	for (auto& id : triggerIDs)
@@ -397,17 +396,17 @@ const std::vector<Volt::Entity> VisionPanel::GetAllCameraTriggers()
 	return triggers;
 }
 
-const std::vector<Volt::Entity> VisionPanel::GetAllCameras()
+const Vector<Volt::Entity> VisionPanel::GetAllCameras()
 {
-	std::vector<Volt::Entity> cameraIDs = myCurrentScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
+	Vector<Volt::Entity> cameraIDs = myCurrentScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
 
 	if (cameraIDs.empty())
 	{
-		VT_CORE_ERROR("VTCINEMA: No cameras loacated!");
-		return std::vector<Volt::Entity>();
+		VT_LOG(Error, "VTCINEMA: No cameras loacated!");
+		return Vector<Volt::Entity>();
 	}
 
-	std::vector<Volt::Entity> vtCams;
+	Vector<Volt::Entity> vtCams;
 	vtCams.reserve(cameraIDs.size());
 
 	for (auto& id : cameraIDs)

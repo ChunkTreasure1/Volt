@@ -23,7 +23,7 @@ namespace Volt
 		void RemoveEntity(const Entity& entity);
 		void AddCell(const glm::ivec3& origin, WorldCellID id = std::numeric_limits<uint32_t>::max());
 		void GenerateCells();
-		void AddEntitiesToCell(WorldCellID cellId, const std::vector<EntityID>& entities);
+		void AddEntitiesToCell(WorldCellID cellId, const Vector<EntityID>& entities);
 		void OnEntityMoved(const Entity& entity);
 
 		void BeginStreamingCell(WorldCellID cellId);
@@ -31,7 +31,7 @@ namespace Volt
 		WorldCellID GetCellIDFromEntity(const Entity& entity) const;
 		[[nodiscard]] bool IsCellLoaded(WorldCellID cellId) const;
 
-		[[nodiscard]] inline const std::vector<WorldCell>& GetCells() const { return m_cells; }
+		[[nodiscard]] inline const Vector<WorldCell>& GetCells() const { return m_cells; }
 		[[nodiscard]] inline const WorldGridSettings& GetSettings() const { return m_settings; }
 		[[nodiscard]] inline WorldGridSettings& GetSettingsMutable() { return m_settings; }
 
@@ -40,7 +40,7 @@ namespace Volt
 		const WorldCell& GetCellFromID(WorldCellID cellId) const;
 
 		WorldGridSettings m_settings;
-		std::vector<WorldCell> m_cells;
+		Vector<WorldCell> m_cells;
 
 		Scene* m_scene = nullptr;
 	};

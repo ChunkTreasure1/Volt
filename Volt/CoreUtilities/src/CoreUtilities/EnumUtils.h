@@ -1,11 +1,11 @@
 #pragma once
+
+#include <CoreUtilities/Concepts.h>
+
 #include <unordered_map>
 #include <map>
 #include <string>
 #include <cassert>
-
-template<typename T>
-concept Enum = std::is_enum_v<T>;
 
 namespace Utils
 {
@@ -36,7 +36,7 @@ namespace Utils
 					return static_cast<EnumType>(pair.first);
 				}
 			}
-			//VT_CORE_ERROR("Tried to convert string to enum that does not exist! EnumName: {0}, EnumValue: {1}", typeid(EnumType).name(), aEnumValue);
+			//VT_LOG(LogSeverity::Error, "Tried to convert string to enum that does not exist! EnumName: {0}, EnumValue: {1}", typeid(EnumType).name(), aEnumValue);
 			return static_cast<EnumType>(0);
 		}
 
@@ -45,8 +45,8 @@ namespace Utils
 			const std::string allLetters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 			size_t stringOffset = definitionData.find_first_of(allLetters);
-			std::vector<std::string> enumNames;
-			std::vector<uint64_t> enumValues;
+			Vector<std::string> enumNames;
+			Vector<uint64_t> enumValues;
 			while (stringOffset != std::string::npos)
 			{
 				size_t memberNameEndOffset = definitionData.find_first_not_of(allLetters, stringOffset);

@@ -58,7 +58,7 @@ namespace Volt
 		uint32_t index;
 		AssetHandle animationHandle;
 
-		std::vector<SerializedAnimationEvent> events;
+		Vector<SerializedAnimationEvent> events;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const SerializedAnimation& data)
 		{
@@ -80,8 +80,8 @@ namespace Volt
 		AssetHandle skeletonHandle;
 		AssetHandle skinHandle;
 
-		std::vector<SerializedAnimation> animations;
-		std::vector<SerializedJointAttachment> jointAttachments;
+		Vector<SerializedAnimation> animations;
+		Vector<SerializedJointAttachment> jointAttachments;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const AnimatedCharacterSerializationData& data)
 		{
@@ -152,7 +152,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(Error, "File {0} not found!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -161,14 +161,14 @@ namespace Volt
 
 		if (!streamReader.IsStreamValid())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			VT_LOG(Error, "Failed to open file: {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
 
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		AnimatedCharacterSerializationData serializationData{};
 		streamReader.Read(serializationData);

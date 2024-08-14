@@ -4,9 +4,8 @@
 #include "Volt/Vision/VisionComponents.h"
 #include "Volt/Asset/Importers/AssetImporter.h"
 #include "Volt/Utility/UIUtility.h"
-#include "Volt/Log/Log.h"
-#include "Volt/Input/Input.h"
-#include "Volt/Input/KeyCodes.h"
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
 
 #include "Volt/Rendering/Camera/Camera.h"
 

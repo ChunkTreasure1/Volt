@@ -3,8 +3,6 @@
 
 #include "Navigation/Core/CoreInterfaces.h"
 
-#include <Volt/Log/Log.h>
-
 #include <DetourCommon.h>
 
 namespace Volt
@@ -29,7 +27,7 @@ namespace Volt
 			status = myCrowd->init(myMaxAgents, myMaxAgentRadius, myNavMesh->GetNavMesh().get());
 			if (dtStatusFailed(status))
 			{
-				VT_CORE_ERROR("Could not init DtCrowd");
+				VT_LOG(Error, "Could not init DtCrowd");
 			}
 
 			// Make polygons with 'disabled' flag invalid.
@@ -74,7 +72,7 @@ namespace Volt
 		{
 			if (!myCrowd || !entity.HasComponent<Volt::NavAgentComponent>() || !myEntityToAgentMap.contains(entity.GetID()))
 			{
-				VT_CORE_WARN("Could not get agent from entity: {0}", entity.GetID());
+				VT_LOG(Warning, "Could not get agent from entity: {0}", entity.GetID());
 				return nullptr;
 			}
 
@@ -85,7 +83,7 @@ namespace Volt
 		{
 			if (!myCrowd || !myEntityToAgentMap.contains(entityId))
 			{
-				VT_CORE_WARN("Could not get agent from entity: {0}", entityId);
+				VT_LOG(Warning, "Could not get agent from entity: {0}", entityId);
 				return nullptr;
 			}
 
@@ -98,7 +96,7 @@ namespace Volt
 
 			if (!myCrowd || !myEntityToAgentMap.contains(entityId))
 			{
-				VT_CORE_WARN("Could not set agent position for entity: {0}", entityId);
+				VT_LOG(Warning, "Could not set agent position for entity: {0}", entityId);
 				return;
 			}
 
@@ -121,7 +119,7 @@ namespace Volt
 
 			if (!myCrowd || !myEntityToAgentMap.contains(entity.GetID()))
 			{
-				VT_CORE_WARN("Could not set agent target for entity: {0}", entityId);
+				VT_LOG(Warning, "Could not set agent target for entity: {0}", entityId);
 				return;
 			}
 
@@ -147,7 +145,7 @@ namespace Volt
 
 			if (!myCrowd || !myEntityToAgentMap.contains(entity.GetID()))
 			{
-				VT_CORE_WARN("Could not set agent target for entity: {0}", entityId);
+				VT_LOG(Warning, "Could not set agent target for entity: {0}", entityId);
 				return;
 			}
 
@@ -194,7 +192,7 @@ namespace Volt
 		{
 			if (!myCrowd)
 			{
-				VT_CORE_WARN("Could not update agent parameters for entity: {0}", entity.GetID());
+				VT_LOG(Warning, "Could not update agent parameters for entity: {0}", entity.GetID());
 				return;
 			}
 
@@ -211,7 +209,7 @@ namespace Volt
 		{
 			if (!myCrowd || !entity.HasComponent<Volt::NavAgentComponent>() || myEntityToAgentMap.contains(entity.GetID()))
 			{
-				VT_CORE_WARN("Could not add agent for entity: {0}", entity.GetID());
+				VT_LOG(Warning, "Could not add agent for entity: {0}", entity.GetID());
 				return;
 			}
 

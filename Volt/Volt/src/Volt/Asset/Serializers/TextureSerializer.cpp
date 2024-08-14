@@ -7,12 +7,12 @@
 
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 
-#include <VoltRHI/Images/Image2D.h>
-#include <VoltRHI/Images/ImageUtility.h>
-#include <VoltRHI/Buffers/CommandBuffer.h>
-#include <VoltRHI/Graphics/GraphicsContext.h>
-#include <VoltRHI/Memory/Allocation.h>
-#include <VoltRHI/Utility/ResourceUtility.h>
+#include <RHIModule/Images/Image.h>
+#include <RHIModule/Images/ImageUtility.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
+#include <RHIModule/Graphics/GraphicsContext.h>
+#include <RHIModule/Memory/Allocation.h>
+#include <RHIModule/Utility/ResourceUtility.h>
 
 namespace Volt
 {
@@ -27,7 +27,7 @@ namespace Volt
 	struct TextureHeader
 	{
 		RHI::PixelFormat format; // Should be one of the BC formats
-		std::vector<TextureMip> mips;
+		Vector<TextureMip> mips;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const TextureHeader& data)
 		{
@@ -66,13 +66,13 @@ namespace Volt
 			}
 		}
 
-		std::vector<Mip> mips;
+		Vector<Mip> mips;
 	};
 
 	void TextureSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<Texture2D> texture = std::reinterpret_pointer_cast<Texture2D>(asset);
-		RefPtr<RHI::Image2D> image = texture->GetImage();
+		RefPtr<RHI::Image> image = texture->GetImage();
 
 		TextureHeader header{};
 		header.format = image->GetFormat();
@@ -129,7 +129,7 @@ namespace Volt
 				newMip.dataSize = mipSize;
 
 				commandBuffer->Begin();
-				commandBuffer->CopyImageToBuffer(image, stagingBuffer, 0, newMip.width, newMip.height, i);
+				commandBuffer->CopyImageToBuffer(image, stagingBuffer, 0, newMip.width, newMip.height, 1, i);
 				commandBuffer->End();
 				commandBuffer->ExecuteAndWait();
 
@@ -178,7 +178,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(Error, "File {0} not found!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -187,13 +187,13 @@ namespace Volt
 
 		if (!streamReader.IsStreamValid())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			VT_LOG(Error, "Failed to open file: {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		TextureHeader textureHeader{};
 		streamReader.Read(textureHeader);
@@ -203,7 +203,7 @@ namespace Volt
 
 		Ref<Texture2D> texture = std::reinterpret_pointer_cast<Texture2D>(destinationAsset);
 
-		RefPtr<RHI::Image2D> image;
+		RefPtr<RHI::Image> image;
 		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 
 		// Create image
@@ -220,7 +220,7 @@ namespace Volt
 			specification.generateMips = false;
 			specification.debugName = filePath.stem().string();
 
-			image = RHI::Image2D::Create(specification);
+			image = RHI::Image::Create(specification);
 		}
 
 		TextureData texData{};

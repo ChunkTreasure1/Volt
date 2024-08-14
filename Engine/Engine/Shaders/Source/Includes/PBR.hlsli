@@ -9,23 +9,23 @@
 
 struct PBRConstants
 {
-    UniformBuffer<ViewData> viewData;
+    vt::UniformBuffer<ViewData> viewData;
     
-    UniformTypedBuffer<DirectionalLight> directionalLight;
-    UniformTypedBuffer<PointLight> pointLights;
-    UniformTypedBuffer<SpotLight> spotLights;
+    vt::UniformBuffer<DirectionalLight> directionalLight;
+    vt::UniformTypedBuffer<PointLight> pointLights;
+    vt::UniformTypedBuffer<SpotLight> spotLights;
 
-    UniformTypedBuffer<int> visiblePointLights;
-    UniformTypedBuffer<int> visibleSpotLights;
+    vt::UniformTypedBuffer<int> visiblePointLights;
+    vt::UniformTypedBuffer<int> visibleSpotLights;
     
-    TextureSampler linearSampler;
-    TextureSampler pointLinearClampSampler;
-    TextureSampler shadowSampler;
+    vt::TextureSampler linearSampler;
+    vt::TextureSampler pointLinearClampSampler;
+    vt::TextureSampler shadowSampler;
     
-    UniformTexture<float2> BRDFLuT;
-    UniformTexture<float3> environmentIrradiance;
-    UniformTexture<float3> environmentRadiance;
-    UniformTexture<float> directionalShadowMap;
+    vt::UniformTex2D<float2> BRDFLuT;
+    vt::UniformTexCube<float3> environmentIrradiance;
+    vt::UniformTexCube<float3> environmentRadiance;
+    vt::UniformTex2DArray<float> directionalShadowMap;
 };
 
 struct PBRInput
@@ -35,6 +35,7 @@ struct PBRInput
     float metallic;
     float roughness;
     float3 emissive;
+    float ao;
     
     float3 worldPosition;
     uint2 tileId;
@@ -50,12 +51,12 @@ static PBRInput m_pbrInput;
 static PBRConstants m_pbrConstants;
 static ViewData m_viewData;
 
-static TextureSampler m_shadowSampler;
+static vt::TextureSampler m_shadowSampler;
 
 float3 CalculateDiffuse(in float3 F)
 {
     const float3 kd = (1.f - F) * (1.f - m_pbrInput.metallic);
-    const float3 diffuseBRDF = kd * m_pbrInput.albedo.xyz;
+    const float3 diffuseBRDF = kd * m_pbrInput.albedo.xyz / PI;
     
     return diffuseBRDF;
 }
@@ -68,31 +69,27 @@ float3 CalculateSpecular(float cosLi, float NdotV, in float3 F, float D, float G
     return specularBRDF;
 }
 
-LightOutput CalculateSkyAmbiance(in float3 dirToCamera, in float3 baseReflectivity)
+float3 CalculateSkyAmbiance(in float3 dirToCamera, in float3 baseReflectivity)
 {
-    const float NdotV = max(dot(m_pbrInput.normal, dirToCamera), EPSILON);
-    const float3 irradiance = m_pbrConstants.environmentIrradiance.SampleLevelCube(m_pbrConstants.linearSampler, m_pbrInput.normal, 0.f);
-    
+    const float NdotV = max(dot(m_pbrInput.normal, dirToCamera), 0.f);
+
     const float3 F = FresnelSchlickRoughness(baseReflectivity, NdotV, m_pbrInput.roughness);
-    const float3 kD = lerp(1.f - F, 0.f, m_pbrInput.metallic);
-    
-    const float3 diffuseIBL = kD * m_pbrInput.albedo.rgb * irradiance;
-    
+    const float3 kD = (1.f - F) * (1.f - m_pbrInput.metallic);
+
+    const float3 irradiance = m_pbrConstants.environmentIrradiance.SampleLevel(m_pbrConstants.linearSampler, m_pbrInput.normal, 0.f);
+    const float3 diffuse = irradiance * m_pbrInput.albedo.xyz;
+
+    // #TODO_Ivar: This is quite slow
     uint radianceTextureLevels;
     uint width, height;
-    m_pbrConstants.environmentRadiance.GetDimensionsCube(0, width, height, radianceTextureLevels);
+    m_pbrConstants.environmentRadiance.GetDimensions(0, width, height, radianceTextureLevels);
     
-    const float3 R = 2.f * NdotV * m_pbrInput.normal - dirToCamera;
-    const float3 specularIrradiance = m_pbrConstants.environmentRadiance.SampleLevelCube(m_pbrConstants.linearSampler, R, m_pbrInput.roughness * radianceTextureLevels);
-
-    const float2 BRDF = m_pbrConstants.BRDFLuT.SampleLevel2D(m_pbrConstants.pointLinearClampSampler, float2(NdotV, m_pbrInput.roughness), 0);
-    const float3 specularIBL = (baseReflectivity * BRDF.x + BRDF.y) * specularIrradiance;
+    const float3 R = reflect(-dirToCamera, m_pbrInput.normal);
+    const float3 specularIrradiance = m_pbrConstants.environmentRadiance.SampleLevel(m_pbrConstants.linearSampler, R, m_pbrInput.roughness * radianceTextureLevels); 
+    const float2 BRDF = m_pbrConstants.BRDFLuT.SampleLevel(m_pbrConstants.pointLinearClampSampler, float2(NdotV, m_pbrInput.roughness), 0);
+    const float3 specular = specularIrradiance * (F * BRDF.x + BRDF.y); 
     
-    LightOutput output;
-    output.diffuse = diffuseIBL;
-    output.specular = specularIBL;
-    
-    return output;
+    return kD * diffuse + specular;
 }
 
 float CalculateDirectionalShadow(in DirectionalLight light)
@@ -100,10 +97,10 @@ float CalculateDirectionalShadow(in DirectionalLight light)
     const uint cascadeIndex = GetCascadeIndexFromWorldPosition(light, m_pbrInput.worldPosition, m_viewData.view);
     const float3 shadowMapCoords = GetShadowMapCoords(light.viewProjections[cascadeIndex], m_pbrInput.worldPosition);
     const float result = CalculateDirectionalShadow_Hard(light, m_shadowSampler, m_pbrConstants.directionalShadowMap, m_pbrInput.normal, cascadeIndex, shadowMapCoords);
-    return 0.f;
+    return result;
 }
 
-LightOutput CalculateDirectionalLight(in DirectionalLight light, in float3 dirToCamera, in float3 baseReflectivity)
+float3 CalculateDirectionalLight(in DirectionalLight light, in float3 dirToCamera, in float3 baseReflectivity)
 {
     const float NdotV = max(dot(m_pbrInput.normal, dirToCamera), EPSILON);
     
@@ -114,7 +111,7 @@ LightOutput CalculateDirectionalLight(in DirectionalLight light, in float3 dirTo
     const float cosLi = max(0.f, dot(m_pbrInput.normal, Li));
     const float cosLh = max(0.f, dot(m_pbrInput.normal, Lh));
 
-    const float3 F = FresnelSchlickRoughness(baseReflectivity, max(0.f, dot(Lh, dirToCamera)), m_pbrInput.roughness);
+    const float3 F = FresnelSchlick(baseReflectivity, max(0.f, dot(Lh, dirToCamera)));
     const float D = DistributionGGX(cosLh * cosLh, m_pbrInput.roughness);
     const float G = GaSchlickGGX(cosLi, NdotV, m_pbrInput.roughness);
     
@@ -122,19 +119,15 @@ LightOutput CalculateDirectionalLight(in DirectionalLight light, in float3 dirTo
     const float3 specularBRDF = CalculateSpecular(cosLi, NdotV, F, D, G);
     
     float shadow = 1.f;
-    //if (light.castShadows)
-    //{
-    //    shadow = CalculateDirectionalShadow(light);
-    //}
+    if (light.castShadows)
+    {
+        shadow = CalculateDirectionalShadow(light);
+    }
 
-    LightOutput output;
-    output.diffuse = diffuseBRDF * Lradiance * cosLi * shadow;
-    output.specular = specularBRDF * Lradiance * cosLi * shadow;
-
-    return output;
+    return (diffuseBRDF + specularBRDF) * Lradiance * cosLi * shadow;
 }
 
-LightOutput CalculatePointLight(in PointLight light, float3 dirToCamera, float3 baseReflectivity)
+float3 CalculatePointLight(in PointLight light, float3 dirToCamera, float3 baseReflectivity)
 {
     const float NdotV = max(dot(m_pbrInput.normal, dirToCamera), EPSILON);
     
@@ -153,27 +146,21 @@ LightOutput CalculatePointLight(in PointLight light, float3 dirToCamera, float3 
     const float cosLi = max(0.f, dot(m_pbrInput.normal, Li));
     const float cosLh = max(0.f, dot(m_pbrInput.normal, Lh));
 
-    const float3 F = FresnelSchlickRoughness(baseReflectivity, max(0.f, dot(Lh, dirToCamera)), m_pbrInput.roughness);
+    const float3 F = FresnelSchlick(baseReflectivity, max(0.f, dot(Lh, dirToCamera)));
     const float D = DistributionGGX(cosLh * cosLh, m_pbrInput.roughness);
     const float G = GaSchlickGGX(cosLi, NdotV, m_pbrInput.roughness);
     
-    const float3 diffureBRDF = CalculateDiffuse(F);
+    const float3 diffuseBRDF = CalculateDiffuse(F);
     const float3 specularBRDF = CalculateSpecular(cosLi, NdotV, F, D, G);
     
-    LightOutput output;
-    output.diffuse = diffureBRDF * Lradiance * cosLi;
-    output.specular = diffureBRDF * Lradiance * cosLi;
-
-    return output;
+    return (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
 }
 
-LightOutput CalculatePointLights(float3 dirToCamera, float3 baseReflectivity)
+float3 CalculatePointLights(float3 dirToCamera, float3 baseReflectivity, uint pointLightCount)
 {
-    LightOutput output;
-    output.diffuse = 0.f;
-    output.specular = 0.f;
+    float3 output = 0.f;
 
-    for (int i = 0; i < MAX_LIGHTS_PER_TILE; i++)
+    for (int i = 0; i < pointLightCount; i++)
     {
         int lightIndex = GetLightBufferIndex(m_pbrConstants.visiblePointLights, m_viewData.tileCountX, i, m_pbrInput.tileId);
         if (lightIndex == -1)
@@ -181,15 +168,13 @@ LightOutput CalculatePointLights(float3 dirToCamera, float3 baseReflectivity)
             break;
         }
 
-        LightOutput result = CalculatePointLight(m_pbrConstants.pointLights.Load(i), dirToCamera, baseReflectivity);
-        output.diffuse += result.diffuse;
-        output.specular += result.specular;
+        output += CalculatePointLight(m_pbrConstants.pointLights.Load(i), dirToCamera, baseReflectivity);
     }
     
     return output;
 }
 
-LightOutput CalculateSpotLight(in SpotLight light, float3 dirToCamera, float3 baseReflectivity)
+float3 CalculateSpotLight(in SpotLight light, float3 dirToCamera, float3 baseReflectivity)
 {
     const float3 Li = normalize(light.position - m_pbrInput.worldPosition);
     const float lightDistance = length(light.position - m_pbrInput.worldPosition);
@@ -216,24 +201,15 @@ LightOutput CalculateSpotLight(in SpotLight light, float3 dirToCamera, float3 ba
     const float3 diffuseBRDF = CalculateDiffuse(F);
     const float3 specularBRDF = CalculateSpecular(cosLi, NdotV, F, D, G);
     
-    LightOutput output;
-    output.diffuse = diffuseBRDF * Lradiance * cosLi;
-    output.specular = diffuseBRDF * Lradiance * cosLi;
-
-    return output;
+    return (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
 }
 
-LightOutput CalculateSpotLights(float3 dirToCamera, float3 baseReflectivity, uint spotLightCount)
+float3 CalculateSpotLights(float3 dirToCamera, float3 baseReflectivity, uint spotLightCount)
 {
-    LightOutput output;
-    output.diffuse = 0.f;
-    output.specular = 0.f;
-    
+    float3 output = 0.f;
     for (uint i = 0; i < spotLightCount; i++)
     {
-        LightOutput result = CalculateSpotLight(m_pbrConstants.spotLights.Load(0), dirToCamera, baseReflectivity);
-        output.diffuse += result.diffuse;
-        output.specular += result.specular;
+        output += CalculateSpotLight(m_pbrConstants.spotLights.Load(i), dirToCamera, baseReflectivity);
     }
     
     return output;
@@ -250,38 +226,28 @@ float3 CalculatePBR(in PBRInput input, in PBRConstants constants)
     const float3 dirToCamera = normalize(m_viewData.cameraPosition.xyz - m_pbrInput.worldPosition);
     const float3 baseReflectivity = lerp(m_dielectricBase, m_pbrInput.albedo.xyz, m_pbrInput.metallic);
     
-    LightOutput lightOutput;
-    lightOutput.diffuse = 0.f;
-    lightOutput.specular = 0.f;
-    
+    float3 lightOutput = 0.f;
+     
     // Skylight
     {
-        LightOutput result = CalculateSkyAmbiance(dirToCamera, baseReflectivity);
-        lightOutput.diffuse += result.diffuse;
-        lightOutput.specular += result.specular;
+        lightOutput += CalculateSkyAmbiance(dirToCamera, baseReflectivity) * input.ao; 
     }
     
     // Directional Light
     {
-        LightOutput result = CalculateDirectionalLight(constants.directionalLight.Load(0), dirToCamera, baseReflectivity);
-        lightOutput.diffuse += result.diffuse;
-        lightOutput.specular += result.specular;
+        lightOutput += CalculateDirectionalLight(constants.directionalLight.Load(), dirToCamera, baseReflectivity);
     }
     
     // Point lights
     {
-        LightOutput result = CalculatePointLights(dirToCamera, baseReflectivity);
-        lightOutput.diffuse += result.diffuse;
-        lightOutput.specular += result.specular;
+        lightOutput += CalculatePointLights(dirToCamera, baseReflectivity, m_viewData.pointLightCount);
     }
     
     // Spot lights
     {
-        LightOutput result = CalculateSpotLights(dirToCamera, baseReflectivity, m_viewData.spotLightCount);
-        lightOutput.diffuse += result.diffuse;
-        lightOutput.specular += result.specular;
+        lightOutput += CalculateSpotLights(dirToCamera, baseReflectivity, m_viewData.spotLightCount);
     }
     
-    const float3 compositeLighting = lightOutput.diffuse + lightOutput.specular + m_pbrInput.emissive;
+    const float3 compositeLighting = lightOutput + m_pbrInput.emissive;
     return compositeLighting;
 }

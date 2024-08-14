@@ -36,8 +36,8 @@ namespace Volt
 
 		void OnAssetChanged(AssetHandle handle, AssetChangedState state);
 
-		const std::vector<AssetHandle> GetAssetDependencyChain(AssetHandle handle) const;
-		const std::vector<AssetHandle> GetAssetsDependentOn(AssetHandle handle) const;
+		const Vector<AssetHandle> GetAssetDependencyChain(AssetHandle handle) const;
+		const Vector<AssetHandle> GetAssetsDependentOn(AssetHandle handle) const;
 
 		inline const bool DoAssetExistInGraph(AssetHandle handle) const { return m_assetNodeIds.contains(handle); }
 

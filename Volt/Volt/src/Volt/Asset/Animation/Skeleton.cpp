@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "Skeleton.h"
 
-#include "Volt/Log/Log.h"
-
 namespace Volt
 {
 	const Skeleton::JointAttachment& Skeleton::GetJointAttachmentFromName(std::string_view name) const
@@ -82,7 +80,7 @@ namespace Volt
 	{
 		if (index >= (int32_t)m_joints.size())
 		{
-			VT_CORE_ERROR("Index is greater than joint count!");
+			VT_LOG(Error, "Index is greater than joint count!");
 			return "";
 		}
 

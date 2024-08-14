@@ -1,15 +1,8 @@
 #pragma once
 
 #include "Weak.h"
-
-#define VT_NODISCARD [[nodiscard]]
-#define VT_INLINE __forceinline
-
-#ifdef VTCOREUTIL_BUILD_DLL
-#define VTCOREUTIL_API __declspec(dllexport)
-#else
-#define VTCOREUTIL_API __declspec(dllimport)
-#endif
+#include "Config.h"
+#include "CompilerTraits.h"
 
 ///// Helper Defines /////
 #define VT_SETUP_ENUM_CLASS_OPERATORS(enumType) \
@@ -23,24 +16,10 @@
 	inline constexpr enumType  operator~ (enumType  E)             { return (enumType)~(__underlying_type(enumType))E; }
 
 #define BIT(X) (1 << (X))
+
+#define VT_DELETE_COMMON_OPERATORS(X) X(const X&) = delete; X& operator=(const X&) = delete; X(X&&) = delete; X& operator=(X&&) = delete
+#define VT_BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
 //////////////////////////
-
-#ifdef VT_DEBUG
-
-#define VT_OPTIMIZE_ON
-#define VT_OPTIMIZE_OFF
-
-#elif VT_RELEASE
-
-#define VT_OPTIMIZE_OFF __pragma(optimize("", off));
-#define VT_OPTIMIZE_ON __pragma(optimize("", on));
-
-#elif VT_DIST
-
-#define VT_OPTIMIZE_OFF __pragma(optimize("", off));
-#define VT_OPTIMIZE_ON __pragma(optimize("", on));
-
-#endif
 
 template<typename T>
 using Scope = std::unique_ptr<T>;

@@ -2,6 +2,9 @@
 
 #include <Volt/Core/Application.h>
 
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+
 using namespace Volt;
 
 SwapchainClearColorTest::SwapchainClearColorTest()
@@ -14,7 +17,7 @@ SwapchainClearColorTest::~SwapchainClearColorTest()
 
 bool SwapchainClearColorTest::RunTest()
 {
-	auto& swapchain = Application::Get().GetWindow().GetSwapchain();
+	auto& swapchain = Volt::WindowManager::Get().GetMainWindow().GetSwapchain();
 
 	m_commandBuffer->Begin();
 	m_commandBuffer->BeginMarker("SwapchainClearColorTest", { 1.f });

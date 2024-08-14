@@ -3,7 +3,7 @@
 #include <Volt/Core/UUID.h>
 #include <Volt/Asset/Asset.h>
 
-#include <vector>
+#include <CoreUtilities/Containers/Vector.h>
 
 namespace NodeGraph
 {
@@ -18,7 +18,7 @@ namespace NodeGraph
 	struct Node
 	{
 		UUID64 id{};
-		std::vector<UUID64> pins;
+		Vector<UUID64> pins;
 	};
 
 	struct EditorBackend
@@ -27,7 +27,7 @@ namespace NodeGraph
 		virtual const Volt::AssetType GetSupportedAssetTypes() { return Volt::AssetType::None; }
 		const NodeGraph::Link CreateLink(const UUID64 inputId, const UUID64 outputId);
 
-		std::vector<Node> nodes;
-		std::vector<Link> links;
+		Vector<Node> nodes;
+		Vector<Link> links;
 	};
 }

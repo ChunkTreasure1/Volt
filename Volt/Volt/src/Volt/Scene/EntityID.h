@@ -22,6 +22,8 @@ namespace Volt
 		static void Serialize(BinaryStreamWriter& streamWriter, const EntityID& data);
 		static void Deserialize(BinaryStreamReader& streamReader, EntityID& outData);
 
+		VT_NODISCARD VT_INLINE const uint32_t Get() const { return m_uuid; }
+
 	private:
 		uint32_t m_uuid;
 	};
@@ -37,6 +39,16 @@ namespace std
 		std::size_t operator()(const Volt::EntityID& uuid) const
 		{
 			return (uint32_t)uuid;
+		}
+	};
+
+	template <>
+	struct formatter<Volt::EntityID> : formatter<string>
+	{
+		auto format(Volt::EntityID id, format_context& ctx) const
+		{
+			return formatter<string>::format(
+			  std::format("{}", id.Get()), ctx);
 		}
 	};
 }

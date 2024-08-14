@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
+
 
 extern "C"
 {
@@ -17,12 +17,12 @@ namespace Volt
 		MonoEnum() = default;
 		MonoEnum(MonoImage* assemblyImage, const std::string& classNamespace, const std::string& enumName);
 
-		inline const std::vector<std::pair<std::string, uint32_t>>& GetValues() const { return m_enumValues; }
+		inline const Vector<std::pair<std::string, uint32_t>>& GetValues() const { return m_enumValues; }
 
 	private:
 		void LoadEnumValues();
 
-		std::vector<std::pair<std::string, uint32_t>> m_enumValues;
+		Vector<std::pair<std::string, uint32_t>> m_enumValues;
 
 		std::string m_namespace;
 		std::string m_enumName;

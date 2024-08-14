@@ -58,7 +58,7 @@ namespace Utility
 
 	inline void ClearLinksFromParameter(Mosaic::MosaicGraph& graph, const UUID64 paramId)
 	{
-		std::vector<UUID64> edgesToRemove;
+		Vector<UUID64> edgesToRemove;
 
 		for (const auto& edge : graph.GetUnderlyingGraph().GetEdges())
 		{
@@ -304,7 +304,7 @@ const MosaicEditorPanel::IncompatiblePinReason MosaicEditorPanel::CanLinkPins(co
 		std::swap(startParam, endParam);
 	}
 
-	if (!Utility::IsSameType(startParam->typeInfo, endParam->typeInfo))
+	if (!Utility::IsSameType(startParam->typeInfo, endParam->typeInfo) && startParam->typeInfo.baseType != Mosaic::ValueBaseType::Dynamic && endParam->typeInfo.baseType != Mosaic::ValueBaseType::Dynamic)
 	{
 		return IncompatiblePinReason::IncompatibleType;
 	}
@@ -716,7 +716,7 @@ void MosaicEditorPanel::DrawNodesPanel()
 	{
 		ForceWindowDocked(ImGui::GetCurrentWindow());
 
-		std::unordered_map<std::string, std::vector<VoltGUID>> categorizedNodes;
+		std::unordered_map<std::string, Vector<VoltGUID>> categorizedNodes;
 
 		for (const auto& [guid, info] : Mosaic::NodeRegistry::GetRegistry())
 		{

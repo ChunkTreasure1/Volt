@@ -1,7 +1,6 @@
 #include "sbpch.h"
 #include "VertexPainterPanel.h"
 
-#include <Volt/Input/Input.h>
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Rendering/DebugRenderer.h>
@@ -11,14 +10,16 @@
 
 #include <Volt/Rendering/Camera/Camera.h>
 
-#include <Volt/Events/Event.h>
+#include <EventModule/Event.h>
+
 #include <Volt/Core/Base.h>
 #include "Sandbox/Utility/SelectionManager.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include "Sandbox/Utility/EditorResources.h"
 
-#include <Volt/Input/KeyCodes.h>
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
 #include <Volt/Scene/SceneManager.h>
 #include <Volt/Math/RayTriangle.h>
 #include <Volt/Utility/PackUtility.h>
@@ -74,7 +75,7 @@ bool VertexPainterPanel::BrushUpdate()
 		ray.dir = rayDir;
 		ray.pos = ex_cameraController->GetCamera()->GetPosition();
 
-		std::vector<glm::vec3> intersectionPoints;
+		Vector<glm::vec3> intersectionPoints;
 		glm::vec3 intersectionPoint;
 		for (auto wireId : SelectionManager::GetSelectedEntities())
 		{
@@ -271,7 +272,7 @@ void VertexPainterPanel::PanelDraw()
 		ImGui::SameLine();
 		ImGui::TextUnformatted("General Settings");
 		ImGui::Separator();
-		static std::vector<std::string> views = { "Red", "Green", "Blue", "Alpha", "All" };
+		static Vector<std::string> views = { "Red", "Green", "Blue", "Alpha", "All" };
 		static int selectedView = 4;
 		if (UI::Combo("View Channel", selectedView, views, ImGui::GetContentRegionAvail().x - 99))
 		{
@@ -525,7 +526,7 @@ bool VertexPainterPanel::AddPainted(Volt::Entity entity)
 	auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(entity.GetComponent<Volt::MeshComponent>().GetHandle());
 	auto& vpComp = entity.AddComponent<Volt::VertexPaintedComponent>();
 
-	vpComp.vertexColors = std::vector<uint32_t>(mesh->GetVertexContainer().Size(), Volt::Utility::PackUNormFloat4AsUInt({ 0.f, 0.f, 0.f, 1.f }));
+	vpComp.vertexColors = Vector<uint32_t>(mesh->GetVertexContainer().Size(), Volt::Utility::PackUNormFloat4AsUInt({ 0.f, 0.f, 0.f, 1.f }));
 	vpComp.meshHandle = mesh->handle;
 
 	//for (auto& vertex : entity.GetComponent<Volt::VertexPaintedComponent>().vertecies)

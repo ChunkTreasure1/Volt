@@ -19,7 +19,7 @@ namespace Volt
 
 	static AssetHandle CreateCube()
 	{
-		std::vector<Vertex> vertices =
+		Vector<Vertex> vertices =
 		{
 			// Front face
 			Vertex{ { -50.f,  50.f, -50.f }, { 0.f, 0.f, -1.f }, { 1.f, 0.f, 0.f }, { 0.f, 0.f }  },
@@ -58,31 +58,31 @@ namespace Volt
 			Vertex{ { -50.f, -50.f,  50.f }, { 0.f, -1.f, 0.f }, { 1.f, 0.f, 0.f }, { 0.f, 1.f }  },
 		};
 
-		std::vector<uint32_t> indices =
+		Vector<uint32_t> indices =
 		{
 			// Front face
 			0, 1, 3,
-			3, 2, 0,
+			3, 1, 2,
 
 			// Right face
 			4, 5, 7,
-			4, 6, 5,
+			7, 5, 6,
 
 			// Back face
 			8, 9, 11,
-			11, 10, 8,
+			11, 9, 10,
 
 			// Left face
 			12, 13, 15,
-			12, 14, 13,
+			15, 13, 14,
 
 			// Top face
 			16, 17, 19,
-			19, 18, 16,
+			19, 17, 18,
 
 			// Bottom face
 			20, 21, 23,
-			23, 22, 20
+			23, 21, 22
 		};
 
 		Ref<Material> material = AssetManager::CreateMemoryAsset<Material>("Default");
@@ -104,7 +104,7 @@ namespace Volt
 			}
 		};
 		
-		auto addVertex = [](std::vector<Vertex>& vertices, const glm::vec3& position, const glm::vec2& texCoords) -> uint32_t
+		auto addVertex = [](Vector<Vertex>& vertices, const glm::vec3& position, const glm::vec2& texCoords) -> uint32_t
 		{
 			auto& vertex = vertices.emplace_back();
 			vertex.position = position;
@@ -113,7 +113,7 @@ namespace Volt
 			return static_cast<uint32_t>(vertices.size()) - 1;
 		};
 
-		auto subdivide = [&addVertex](auto subdivide, std::vector<Vertex>& vertices, std::vector<Triangle>& triangles, const uint32_t& v1, const uint32_t& v2, const uint32_t& v3, int32_t depth)
+		auto subdivide = [&addVertex](auto subdivide, Vector<Vertex>& vertices, Vector<Triangle>& triangles, const uint32_t& v1, const uint32_t& v2, const uint32_t& v3, int32_t depth)
 		{
 			if (depth == 0)
 			{
@@ -131,8 +131,8 @@ namespace Volt
 			subdivide(subdivide, vertices, triangles, middle1, middle2, middle3, depth - 1);
 		};
 
-		std::vector<Vertex> vertices;
-		std::vector<Triangle> triangles;
+		Vector<Vertex> vertices;
+		Vector<Triangle> triangles;
 
 		const float t = (1.f + std::sqrt(5.f)) / 2.f;
 
@@ -191,7 +191,7 @@ namespace Volt
 			vertex.uv = glm::vec2(theta / (2.0f * glm::pi<float>()), phi / glm::pi<float>());
 		}
 
-		std::vector<uint32_t> indices;
+		Vector<uint32_t> indices;
 		for (const auto& tri : triangles)
 		{
 			indices.emplace_back(tri.v1);

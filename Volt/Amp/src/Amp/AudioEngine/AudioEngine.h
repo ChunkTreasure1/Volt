@@ -1,13 +1,16 @@
 #pragma once
-#include <string>
-#include <array>
-#include <unordered_map>
 
 #include "fmod_studio.hpp"
 #include "fmod.hpp"
 #include "fmod_errors.h"
 
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <glm/glm.hpp>
+
+#include <string>
+#include <array>
+#include <unordered_map>
 
 namespace Amp
 {
@@ -112,7 +115,7 @@ namespace Amp
 
 		bool LoadEvent(const std::string& aEventPath);
 		FMOD::Studio::EventDescription* FindEvent(const std::string& aEventPath);
-		std::vector<std::string> GetAllEventNames();
+		Vector<std::string> GetAllEventNames();
 
 		EventInstance& CreateEventInstance(const std::string& aEventPath);
 		bool RemoveEvent(EventInstance& aEventHandle);
@@ -139,9 +142,6 @@ namespace Amp
 
 		bool SetMixerVolume(const std::string& aBusName, float aVolume);
 
-
-
-
 	private:
 		std::string rootDirectory;
 		bool isInitialized;
@@ -149,9 +149,7 @@ namespace Amp
 
 		bool ErrorCheck_Critical(FMOD_RESULT result);
 		bool ErrorCheck(FMOD_RESULT result);
-
 	};
-
 
 #pragma region DEPRICATED
 	//bool CreateGeometry(GeometryData aNewGeometry);
@@ -166,7 +164,7 @@ namespace Amp
 		FMOD_VECTOR scale;
 		FMOD_VECTOR forward;
 		FMOD_VECTOR up;
-		std::vector<FMOD_VECTOR> verticies;
+		Vector<FMOD_VECTOR> verticies;
 
 		int maxPolygons;
 		int maxVertices;

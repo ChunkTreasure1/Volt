@@ -4,12 +4,14 @@
 #include "Volt/Core/Application.h"
 #include "Volt/Project/ProjectManager.h"
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
 #include <nfd.hpp>
 
 #include <commdlg.h>
 #include <shellapi.h>
 #include <shlobj.h>
-#include <windows.h>
 #include <Lmcons.h>
 
 std::filesystem::path FileSystem::PickFolderDialogue()
@@ -31,9 +33,9 @@ std::filesystem::path FileSystem::PickFolderDialogue()
 	return "";
 }
 
-std::filesystem::path FileSystem::SaveFileDialogue(const std::vector<FileFilter>& filters)
+std::filesystem::path FileSystem::SaveFileDialogue(const Vector<FileFilter>& filters)
 {
-	std::vector<nfdfilteritem_t> filterItems{};
+	Vector<nfdfilteritem_t> filterItems{};
 	for (const auto& filter : filters)
 	{
 		filterItems.emplace_back(filter.name.c_str(), filter.extensions.c_str());
@@ -137,9 +139,9 @@ bool FileSystem::OpenFileExternally(const std::filesystem::path& aPath)
 	return true;
 }
 
-std::filesystem::path FileSystem::OpenFileDialogue(const std::vector<FileFilter>& filters)
+std::filesystem::path FileSystem::OpenFileDialogue(const Vector<FileFilter>& filters)
 {
-	std::vector<nfdfilteritem_t> filterItems{};
+	Vector<nfdfilteritem_t> filterItems{};
 	for (const auto& filter : filters)
 	{
 		filterItems.emplace_back(filter.name.c_str(), filter.extensions.c_str());

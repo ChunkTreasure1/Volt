@@ -14,10 +14,10 @@ namespace V012
 
 		const std::filesystem::path assetsPath = project.projectDirectory / project.assetsDirectory;
 
-		std::vector<std::filesystem::path> animGraphsToConvert;
-		std::vector<std::filesystem::path> characterAssets;
-		std::vector<std::filesystem::path> layerAssets;
-		std::vector<std::filesystem::path> prefabAssets;
+		Vector<std::filesystem::path> animGraphsToConvert;
+		Vector<std::filesystem::path> characterAssets;
+		Vector<std::filesystem::path> layerAssets;
+		Vector<std::filesystem::path> prefabAssets;
 		for (const auto& entry : std::filesystem::recursive_directory_iterator(assetsPath))
 		{
 			if (entry.path().extension().string() == ".vtanimgraph")
@@ -83,7 +83,7 @@ namespace V012
 			Volt::AssetHandle skinHandle = 0;
 		};
 
-		std::vector<AnimGraphDescriptor> animGraphDescriptors;
+		Vector<AnimGraphDescriptor> animGraphDescriptors;
 		animGraphDescriptors.resize(animGraphsToConvert.size());
 
 		for (const auto& animGraphPath : animGraphsToConvert)
@@ -95,7 +95,7 @@ namespace V012
 
 					if (!metaStreamReader.OpenFile(animGraphPath.string() + ".vtmeta"))
 					{
-						VT_CORE_ASSERT(false);
+						VT_ASSERT(false);
 					}
 
 					Volt::AssetHandle characterAssetHandle = 0;
@@ -108,7 +108,7 @@ namespace V012
 				std::ifstream input(animGraphPath);
 				if (!input.is_open())
 				{
-					VT_CORE_ERROR("Failed to convert: File {0} not found!", animGraphPath);
+					VT_LOG(Error, "Failed to convert: File {0} not found!", animGraphPath);
 					continue;
 				}
 
@@ -191,7 +191,7 @@ namespace V012
 				std::ofstream output(animGraphPath);
 				if (!output.is_open())
 				{
-					VT_CORE_ERROR("Failed to convert: File {0} not found!", animGraphPath);
+					VT_LOG(Error, "Failed to convert: File {0} not found!", animGraphPath);
 					continue;
 				}
 
@@ -235,7 +235,7 @@ namespace V012
 			std::ifstream input(layer);
 			if (!input.is_open())
 			{
-				VT_CORE_ERROR("Failed to convert: File {0} not found!", layer);
+				VT_LOG(Error, "Failed to convert: File {0} not found!", layer);
 				continue;
 			}
 
@@ -296,7 +296,7 @@ namespace V012
 				std::ofstream output(layer);
 				if (!output.is_open())
 				{
-					VT_CORE_ERROR("Failed to convert: File {0} not found!", layer);
+					VT_LOG(Error, "Failed to convert: File {0} not found!", layer);
 					continue;
 				}
 
@@ -311,7 +311,7 @@ namespace V012
 			std::ifstream input(prefab);
 			if (!input.is_open())
 			{
-				VT_CORE_ERROR("Failed to convert: File {0} not found!", prefab);
+				VT_LOG(Error, "Failed to convert: File {0} not found!", prefab);
 				continue;
 			}
 
@@ -370,7 +370,7 @@ namespace V012
 				std::ofstream output(prefab);
 				if (!output.is_open())
 				{
-					VT_CORE_ERROR("Failed to convert: File {0} not found!", prefab);
+					VT_LOG(Error, "Failed to convert: File {0} not found!", prefab);
 					continue;
 				}
 

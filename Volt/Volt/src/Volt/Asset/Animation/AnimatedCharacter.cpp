@@ -6,7 +6,7 @@
 
 namespace Volt
 {
-	const std::vector<glm::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, float aStartTime, bool looping) const
+	const Vector<glm::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, float aStartTime, bool looping) const
 	{
 		if (myAnimations.find(index) == myAnimations.end())
 		{
@@ -16,7 +16,7 @@ namespace Volt
 		return myAnimations.at(index)->SampleStartTime(aStartTime, mySkeleton, looping);
 	}
 
-	const std::vector<glm::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, uint32_t frameIndex) const
+	const Vector<glm::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, uint32_t frameIndex) const
 	{
 		if (myAnimations.find(index) == myAnimations.end())
 		{
@@ -98,7 +98,7 @@ namespace Volt
 	{
 		if (!myAnimations.contains(animationIndex))
 		{
-			VT_CORE_ERROR("Trying to remove animation event from invalid animation index!");
+			VT_LOG(Error, "Trying to remove animation event from invalid animation index!");
 			return;
 		}
 
@@ -112,7 +112,7 @@ namespace Volt
 	{
 		if (!myAnimations.contains(animationIndex))
 		{
-			VT_CORE_ERROR("Trying to add animation event to invalid animation index!");
+			VT_LOG(Error, "Trying to add animation event to invalid animation index!");
 			return;
 		}
 

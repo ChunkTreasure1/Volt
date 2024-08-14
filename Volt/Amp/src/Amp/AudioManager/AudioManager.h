@@ -37,7 +37,7 @@ namespace Amp
 		static bool UnpauseEvent(EventInstance& aEvent);
 
 		static FMOD::Studio::EventDescription* FindEvent(const std::string&);
-		static std::vector<std::string> GetAllEventNames();
+		static Vector<std::string> GetAllEventNames();
 
 		static bool PlayOneShot(const std::string& aPath);
 		static bool PlayOneShot(const std::string& aPath, EventData& aEventData);

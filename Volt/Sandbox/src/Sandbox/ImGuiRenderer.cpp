@@ -26,6 +26,10 @@
 
 #include <Volt/Scripting/EnumGenerator.h>
 
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+#include <WindowModule/Events/WindowEvents.h>
+
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 
@@ -49,7 +53,7 @@ void Sandbox::UpdateDockSpace()
 	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-	const bool isMaximized = Volt::Application::Get().GetWindow().IsMaximized();
+	const bool isMaximized = Volt::WindowManager::Get().GetMainWindow().IsMaximized();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, isMaximized ? ImVec2(6.0f, 6.0f) : ImVec2(1.0f, 1.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 3.0f);
@@ -147,8 +151,7 @@ void Sandbox::RenderWindowOuterBorders(ImGuiWindow* window)
 
 void Sandbox::HandleManualWindowResize()
 {
-	auto* window = static_cast<GLFWwindow*>(Volt::Application::Get().GetWindow().GetNativeWindow());
-	const bool maximized = (bool)glfwGetWindowAttrib(window, GLFW_MAXIMIZED);
+	const bool maximized = Volt::WindowManager::Get().GetMainWindow().IsMaximized();
 
 	ImVec2 newSize, newPosition;
 	if (!maximized && UpdateWindowManualResize(ImGui::GetCurrentWindow(), newSize, newPosition))
@@ -502,23 +505,23 @@ float Sandbox::DrawTitlebar()
 
 		if (UI::ImageButton("##minimize", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Minimize)), { buttonSize, buttonSize }))
 		{
-			Volt::Application::Get().GetWindow().Minimize();
+			Volt::WindowManager::Get().GetMainWindow().Minimize();
 		}
 
 		ImGui::SameLine();
 
-		const bool isMaximized = Volt::Application::Get().GetWindow().IsMaximized();
+		const bool isMaximized = Volt::WindowManager::Get().GetMainWindow().IsMaximized();
 		Ref<Volt::Texture2D> maximizeTexture = isMaximized ? EditorResources::GetEditorIcon(EditorIcon::Windowize) : EditorResources::GetEditorIcon(EditorIcon::Maximize);
 
 		if (UI::ImageButton("##maximize", UI::GetTextureID(maximizeTexture), { buttonSize, buttonSize }))
 		{
 			if (!isMaximized)
 			{
-				Volt::Application::Get().GetWindow().Maximize();
+				Volt::WindowManager::Get().GetMainWindow().Maximize();
 			}
 			else
 			{
-				Volt::Application::Get().GetWindow().Restore();
+				Volt::WindowManager::Get().GetMainWindow().Restore();
 			}
 		}
 
@@ -606,8 +609,8 @@ void Sandbox::DrawMenuBar()
 				ImGui::EndMenu();
 			}
 
-			std::map<std::string, std::vector<Ref<EditorWindow>>> categorizedEditors;
-			std::vector<Ref<EditorWindow>> uncategorizedEditors;
+			std::map<std::string, Vector<Ref<EditorWindow>>> categorizedEditors;
+			Vector<Ref<EditorWindow>> uncategorizedEditors;
 
 			for (const auto& window : EditorLibrary::GetPanels())
 			{
@@ -716,7 +719,7 @@ void Sandbox::DrawMenuBar()
 			{
 				//TODO:ANDREAS Hard coded, change later
 				std::filesystem::path defaultPath = Volt::ProjectManager::GetAudioBanksDirectory();
-				std::vector<std::string> eventNames = Amp::WwiseAudioManager::GetAllEventNames(defaultPath);
+				Vector<std::string> eventNames = Amp::WwiseAudioManager::GetAllEventNames(defaultPath);
 
 				Volt::EnumGenerator generator{ "WWiseEvents"};
 				for (auto& event : eventNames)

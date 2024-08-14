@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+	<Type Name="Vector&lt;*&gt;">
+		<DisplayString Condition="m_ptrEnd == m_ptrBegin">[empty] {{}}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 1">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin} }}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 2">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)} }}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 3">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)}, {*(m_ptrBegin+2)} }}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 4">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)}, {*(m_ptrBegin+2)}, {*(m_ptrBegin+3)} }}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 5">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)}, {*(m_ptrBegin+2)}, {*(m_ptrBegin+3)}, {*(m_ptrBegin+4)} }}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 6">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)}, {*(m_ptrBegin+2)}, {*(m_ptrBegin+3)}, {*(m_ptrBegin+4)}, {*(m_ptrBegin+5)} }}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin &gt; 6">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)}, {*(m_ptrBegin+2)}, {*(m_ptrBegin+3)}, {*(m_ptrBegin+4)}, {*(m_ptrBegin+5)}, ... }}</DisplayString>
+		<Expand>
+			<Item Name="[size]">m_ptrEnd - m_ptrBegin</Item>
+			<Item Name="[capacity]">m_ptrCapacity - m_ptrBegin</Item>
+			<ArrayItems>
+				<Size>m_ptrEnd - m_ptrBegin</Size>
+				<ValuePointer>m_ptrBegin</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="StackVector&lt;*&gt;">
+		<DisplayString Condition="m_ptrEnd == m_ptrBegin">[empty] {{}}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 1">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin} }}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 2">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)} }}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 3">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)}, {*(m_ptrBegin+2)} }}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 4">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)}, {*(m_ptrBegin+2)}, {*(m_ptrBegin+3)} }}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 5">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)}, {*(m_ptrBegin+2)}, {*(m_ptrBegin+3)}, {*(m_ptrBegin+4)} }}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin == 6">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)}, {*(m_ptrBegin+2)}, {*(m_ptrBegin+3)}, {*(m_ptrBegin+4)}, {*(m_ptrBegin+5)} }}</DisplayString>
+		<DisplayString Condition="m_ptrEnd - m_ptrBegin &gt; 6">[{m_ptrEnd - m_ptrBegin}] {{ {*m_ptrBegin}, {*(m_ptrBegin+1)}, {*(m_ptrBegin+2)}, {*(m_ptrBegin+3)}, {*(m_ptrBegin+4)}, {*(m_ptrBegin+5)}, ... }}</DisplayString>
+		<Expand>
+			<Item Name="[size]">m_ptrEnd - m_ptrBegin</Item>
+			<Item Name="[capacity]">m_ptrCapacity - m_ptrBegin</Item>
+			<ArrayItems>
+				<Size>m_ptrEnd - m_ptrBegin</Size>
+				<ValuePointer>m_ptrBegin</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+</AutoVisualizer>

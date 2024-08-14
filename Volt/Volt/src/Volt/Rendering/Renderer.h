@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Volt/Rendering/RendererStructs.h"
-#include "Volt/Rendering/Resources/BindlessResource.h"
 
 #include "Volt/Scene/Scene.h"
 
-#include <VoltRHI/Images/SamplerState.h>
-#include <VoltRHI/Core/RHICommon.h>
+#include "Volt/Rendering/BindlessResource.h"
+#include <RHIModule/Images/SamplerState.h>
+#include <RHIModule/Core/RHICommon.h>
 
 namespace Volt
 {
@@ -24,8 +24,8 @@ namespace Volt
 	{
 		Ref<Texture2D> whiteTexture;
 
-		RefPtr<RHI::Image2D> BRDFLuT;
-		RefPtr<RHI::Image2D> blackCubeTexture;
+		RefPtr<RHI::Image> BRDFLuT;
+		RefPtr<RHI::Image> blackCubeTexture;
 
 		Ref<Material> defaultMaterial;
 
@@ -70,7 +70,8 @@ namespace Volt
 			info.mipFilter = mip;
 			info.wrapMode = wrapMode;
 			info.anisotropyLevel = aniso;
-			
+			info.compareOperator = compareOperator;
+
 			return GetSamplerInternal(info);
 		}
 

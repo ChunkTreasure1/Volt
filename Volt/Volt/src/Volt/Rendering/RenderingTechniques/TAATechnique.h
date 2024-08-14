@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Volt/Rendering/RenderGraph/Resources/RenderGraphResourceHandle.h"
+#include <RenderCore/RenderGraph/Resources/RenderGraphResourceHandle.h>
+#include <RHIModule/Images/Image.h>
 
 namespace Volt
 {
@@ -14,15 +15,15 @@ namespace Volt
 
 	struct TAAData
 	{
-		RenderGraphResourceHandle taaOutput;
-		RenderGraphResourceHandle previousColor;
+		RenderGraphImageHandle taaOutput;
+		RenderGraphImageHandle previousColor;
 	};
 
 	class TAATechnique
 	{
 	public:
 		TAATechnique(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		TAAData Execute(RefPtr<RHI::Image2D> previousColor, RenderGraphResourceHandle velocityTexture);
+		TAAData Execute(RefPtr<RHI::Image> previousColor, RenderGraphImageHandle velocityTexture);
 
 	private:
 		RenderGraph& m_renderGraph;

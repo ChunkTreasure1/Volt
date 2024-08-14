@@ -106,8 +106,8 @@ void NavigationPanel::BuildSettingsTab()
 
 Ref<Volt::Mesh> NavigationPanel::CompileWorldMeshes()
 {
-	std::vector<Ref<Volt::Mesh>> srcMeshes;
-	std::vector<glm::mat4> srcTransforms;
+	Vector<Ref<Volt::Mesh>> srcMeshes;
+	Vector<glm::mat4> srcTransforms;
 
 	const bool navMeshComponentsExist = myScene->GetRegistry().view<Volt::NavMeshComponent>().empty();
 

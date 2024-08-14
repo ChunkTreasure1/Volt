@@ -230,7 +230,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 				// Draw NavLinks
 				{
-					std::vector<Volt::AI::NavLinkConnection> links;
+					Vector<Volt::AI::NavLinkConnection> links;
 					m_runtimeScene->ForEachWithComponents<const Volt::NavLinkComponent>([&](const entt::entity id, const Volt::NavLinkComponent& comp)
 					{
 						Volt::Entity entity{ id, m_runtimeScene.get() };

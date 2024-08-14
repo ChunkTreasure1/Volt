@@ -2,13 +2,15 @@
 
 #include <Volt/Asset/Asset.h>
 
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <filesystem>
 #include <chrono>
 
 struct BuildInfo
 {
 	std::filesystem::path buildDirectory;
-	std::vector<Volt::AssetHandle> sceneHandles = {};
+	Vector<Volt::AssetHandle> sceneHandles = {};
 };
 
 class GameBuilder

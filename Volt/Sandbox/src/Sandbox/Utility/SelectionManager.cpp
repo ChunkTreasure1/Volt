@@ -4,69 +4,64 @@
 #include <Volt/Core/Profiling.h>
 #include <Volt/Scene/Entity.h>
 
-void SelectionManager::Init()
+void SelectionManager::Initialize()
 {
-	myEntities[mySelectionKey] = std::vector<Volt::EntityID>();
+	m_entities[SelectionContext::Scene] = Vector<Volt::EntityID>();
 }
 
-void SelectionManager::SetSelectionKey(const std::string& key)
+bool SelectionManager::Select(Volt::EntityID entity, SelectionContext context)
 {
-	mySelectionKey = key;
-	if (!myEntities.contains(mySelectionKey))
-	{
-		myEntities[mySelectionKey] = std::vector<Volt::EntityID>();
-	}
-}
-
-void SelectionManager::ResetSelectionKey()
-{
-	mySelectionKey = "";
-}
-
-bool SelectionManager::Select(Volt::EntityID entity)
-{
-	if (myLocked) return false;
-
-	if (std::find(myEntities.at(mySelectionKey).begin(), myEntities.at(mySelectionKey).end(), entity) != myEntities.at(mySelectionKey).end())
+	if (m_locked)
 	{
 		return false;
 	}
 
-	myEntities.at(mySelectionKey).emplace_back(entity);
-	return true;
-}
-
-bool SelectionManager::Deselect(Volt::EntityID entity)
-{
-	if (myLocked) return false;
-
-	auto it = std::find(myEntities.at(mySelectionKey).begin(), myEntities.at(mySelectionKey).end(), entity);
-	if (it == myEntities.at(mySelectionKey).end())
+	if (std::find(m_entities.at(context).begin(), m_entities.at(context).end(), entity) != m_entities.at(context).end())
 	{
 		return false;
 	}
 
-	myEntities.at(mySelectionKey).erase(it);
+	m_entities.at(context).emplace_back(entity);
 	return true;
 }
 
-void SelectionManager::DeselectAll()
+bool SelectionManager::Deselect(Volt::EntityID entity, SelectionContext context)
 {
-	if (myLocked) return;
+	if (m_locked)
+	{
+		return false;
+	}
 
-	myFirstSelectedRow = -1;
-	myLastSelectedRow = -1;
-	myEntities.at(mySelectionKey).clear();
+	auto it = std::find(m_entities.at(context).begin(), m_entities.at(context).end(), entity);
+	if (it == m_entities.at(context).end())
+	{
+		return false;
+	}
+
+	m_entities.at(context).erase(it);
+	return true;
 }
 
-bool SelectionManager::IsAnySelected()
+void SelectionManager::DeselectAll(SelectionContext context)
 {
-	return !myEntities.at(mySelectionKey).empty();
+	if (m_locked)
+	{
+		return;
+	}
+
+	m_firstSelectedRow = -1;
+	m_lastSelectedRow = -1;
+	m_entities.at(context).clear();
 }
 
-bool SelectionManager::IsSelected(Volt::EntityID entity)
+bool SelectionManager::IsAnySelected(SelectionContext context)
 {
-	return std::find(myEntities.at(mySelectionKey).begin(), myEntities.at(mySelectionKey).end(), entity) != myEntities.at(mySelectionKey).end();
+	return !m_entities.at(context).empty();
+}
+
+bool SelectionManager::IsSelected(Volt::EntityID entity, SelectionContext context)
+{
+	return std::find(m_entities.at(context).begin(), m_entities.at(context).end(), entity) != m_entities.at(context).end();
 }
 
 void SelectionManager::Update(Ref<Volt::Scene> scene)

@@ -11,9 +11,9 @@ Spline::Spline(Ref<Volt::Scene>& aScene, int aAmoutOfCubes)
 	myPointEntitys.reserve(4);
 }
 
-std::vector<glm::vec3> Spline::GetPointsInSegment(int index)
+Vector<glm::vec3> Spline::GetPointsInSegment(int index)
 {
-	std::vector<glm::vec3> points;
+	Vector<glm::vec3> points;
 	points.push_back(myPointEntitys[index * 3].GetComponent<Volt::TransformComponent>().position);
 	points.push_back(myPointEntitys[index * 3 + 1].GetComponent<Volt::TransformComponent>().position);
 	points.push_back(myPointEntitys[index * 3 + 2].GetComponent<Volt::TransformComponent>().position);
@@ -28,7 +28,7 @@ void Spline::UpdateSpline()
 	{
 		for (int i = 0; i < GetNumSegments(); i++)
 		{
-			std::vector<glm::vec3> points = GetPointsInSegment(i);
+			Vector<glm::vec3> points = GetPointsInSegment(i);
 			float offset = 1.f / myBezierePoints[i].size();
 			for (int n = 0; n < myBezierePoints[i].size(); n++)
 			{
@@ -110,7 +110,7 @@ void Spline::AddSegment()
 
 void Spline::CreateNewBezierPoints()
 {
-	std::vector<Volt::Entity> bezPoints;
+	Vector<Volt::Entity> bezPoints;
 	for (int n = 0; n < myAmountOfCubes; n++)
 	{
 		Volt::Entity point = myCurrentScene->CreateEntity();

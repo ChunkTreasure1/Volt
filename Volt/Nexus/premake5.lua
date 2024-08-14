@@ -22,19 +22,16 @@ project "Nexus"
 	{
 		"src/**.h",
 		"src/**.cpp",
-		"src/**.hpp"
+		"src/**.hpp",
+		"**.natvis",
 	}
 
 	includedirs
 	{
 		"src/",
-		"../Volt/src",
-
-		"%{IncludeDir.yaml}",
-		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.fmod}",
-		"%{IncludeDir.entt}",
+		
+		"%{IncludeDir.Volt}",
+		"%{IncludeDir.LogModule}"
 	}
 
 	defines
@@ -58,6 +55,7 @@ project "Nexus"
 
 		defines
 		{
+			"VT_PLATFORM_WINDOWS",
 			"_WINSOCKAPI_",
 			"_WINSOCK_DEPRECATED_NO_WARNINGS",
 		}

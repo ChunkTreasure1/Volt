@@ -1,0 +1,9 @@
+name: "TraceMeshSDF"
+internal: true
+sources:
+  - entryPoint: "main"
+    shaderStage: "vs"
+    filePath: "Engine/Shaders/Source/Utility/FullscreenTriangle_vs.hlsl"
+  - entryPoint: "MainPS"
+    shaderStage: "ps"
+    filePath: "Engine/Shaders/Source/RayMarching/TraceMeshSDF.hlsl"

@@ -5,14 +5,14 @@
 
 namespace Volt::Algo
 {
-	extern [[nodiscard]] std::vector<std::future<void>> ForEachParallelLockable(std::function<void(uint32_t threadIdx, uint32_t elementIdx)>&& func, uint32_t iterationCount);
+	extern [[nodiscard]] Vector<std::future<void>> ForEachParallelLockable(std::function<void(uint32_t threadIdx, uint32_t elementIdx)>&& func, uint32_t iterationCount);
 	extern void ForEachParallel(std::function<void(uint32_t, uint32_t)>&& func, uint32_t iterationCount);
 	extern [[nodiscard]] uint32_t GetThreadCountFromIterationCount(uint32_t iterationCount);
 
 	template<typename T>
-	extern [[nodiscard]] std::vector<uint32_t> ElementCountPrefixSum(const std::vector<std::vector<T>>& elements)
+	extern [[nodiscard]] Vector<uint32_t> ElementCountPrefixSum(const Vector<Vector<T>>& elements)
 	{
-		std::vector<uint32_t> prefixSums(elements.size());
+		Vector<uint32_t> prefixSums(elements.size());
 
 		prefixSums.resize(elements.size());
 		prefixSums[0] = 0;

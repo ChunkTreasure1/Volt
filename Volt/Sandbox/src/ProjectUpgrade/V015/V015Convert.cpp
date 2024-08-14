@@ -16,7 +16,6 @@
 #include <Volt/Asset/Importers/AnimationImporter.h>
 #include <Volt/Asset/Importers/SceneImporter.h>
 #include <Volt/Asset/Importers/AnimatedCharacterImporter.h>
-#include <Volt/Asset/Importers/AnimationGraphImporter.h>
 #include <Volt/Asset/Importers/PrefabImporter.h>
 #include <Volt/Asset/Importers/BehaviorTreeImporter.h>
 #include <Volt/Asset/Importers/NetContractImporter.h>
@@ -30,9 +29,9 @@ namespace V015
 {
 	inline static std::unordered_map<Volt::AssetHandle, Volt::AssetMetadata> s_oldMetadata;
 
-	inline std::vector<std::filesystem::path> GetEngineMetaFiles()
+	inline Vector<std::filesystem::path> GetEngineMetaFiles()
 	{
-		std::vector<std::filesystem::path> files;
+		Vector<std::filesystem::path> files;
 		const std::string ext(".vtmeta");
 
 		// Engine Directory
@@ -59,9 +58,9 @@ namespace V015
 		return files;
 	}
 
-	inline std::vector<std::filesystem::path> GetProjectMetaFiles()
+	inline Vector<std::filesystem::path> GetProjectMetaFiles()
 	{
-		std::vector<std::filesystem::path> files;
+		Vector<std::filesystem::path> files;
 		std::string ext(".vtmeta");
 
 		// Project Directory
@@ -102,7 +101,7 @@ namespace V015
 		std::ifstream file(metaFilePath);
 		if (!file.is_open())
 		{
-			VT_CORE_CRITICAL("[AssetManager] Failed to open asset registry file: {0}!", metaFilePath.string().c_str());
+			VT_LOG(Critical, "[AssetManager] Failed to open asset registry file: {0}!", metaFilePath.string().c_str());
 			return;
 		}
 
@@ -117,7 +116,7 @@ namespace V015
 		}
 		catch (std::exception& e)
 		{
-			VT_CORE_CRITICAL("[AssetManager] Meta file {0} contains invalid YAML! Please correct it! Error: {1}", metaFilePath, e.what());
+			VT_LOG(Critical, "[AssetManager] Meta file {0} contains invalid YAML! Please correct it! Error: {1}", metaFilePath, e.what());
 			return;
 		}
 
@@ -125,7 +124,7 @@ namespace V015
 
 		if (!metaRoot["assetHandle"])
 		{
-			VT_CORE_CRITICAL("[AssetManager] Meta file {0} is missing an asset handle! Please correct it!", metaFilePath);
+			VT_LOG(Critical, "[AssetManager] Meta file {0} is missing an asset handle! Please correct it!", metaFilePath);
 			return;
 		}
 
@@ -133,13 +132,13 @@ namespace V015
 
 		if (!metaRoot["filePath"])
 		{
-			VT_CORE_CRITICAL("[AssetManager] Meta file {0} is missing a file path! Please correct it!", metaFilePath);
+			VT_LOG(Critical, "[AssetManager] Meta file {0} is missing a file path! Please correct it!", metaFilePath);
 			return;
 		}
 
 		std::filesystem::path filePath = metaRoot["filePath"].as<std::string>();
 
-		std::vector<Volt::AssetHandle> dependencies;
+		Vector<Volt::AssetHandle> dependencies;
 		if (metaRoot["Dependencies"])
 		{
 			for (const auto& d : metaRoot["Dependencies"])
@@ -217,7 +216,6 @@ namespace V015
 			importers.emplace(Volt::AssetType::NavMesh, CreateScope<Volt::VTNavMeshImporter>());
 			importers.emplace(Volt::AssetType::Scene, CreateScope<Volt::SceneImporter>());
 			importers.emplace(Volt::AssetType::Skeleton, CreateScope<Volt::SkeletonImporter>());
-			importers.emplace(Volt::AssetType::AnimationGraph, CreateScope<Volt::AnimationGraphImporter>());
 			importers.emplace(Volt::AssetType::Animation, CreateScope<Volt::AnimationImporter>());
 			importers.emplace(Volt::AssetType::AnimatedCharacter, CreateScope<Volt::AnimatedCharacterImporter>());
 			importers.emplace(Volt::AssetType::ParticlePreset, CreateScope<Volt::ParticlePresetImporter>());

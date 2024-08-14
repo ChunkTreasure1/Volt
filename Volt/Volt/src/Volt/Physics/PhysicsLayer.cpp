@@ -2,7 +2,6 @@
 #include "PhysicsLayer.h"
 
 #include "Volt/Core/Base.h"
-#include "Volt/Log/Log.h"
 
 namespace Volt
 {
@@ -41,7 +40,7 @@ namespace Volt
 		PhysicsLayer& layerInfo = GetLayer(layerId);
 		if (layerInfo.layerId == myNullLayer.layerId)
 		{
-			VT_CORE_ERROR("Trying to remove invalid physics layer!");
+			VT_LOG(Error, "Trying to remove invalid physics layer!");
 			return;
 		}
 

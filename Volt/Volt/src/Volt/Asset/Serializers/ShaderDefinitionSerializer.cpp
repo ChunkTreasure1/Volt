@@ -69,7 +69,7 @@ namespace Volt
 				return RHI::ShaderStage::Mesh;
 			}
 
-			VT_CORE_ASSERT(false, "Stage is not valid!");
+			VT_ASSERT_MSG(false, "Stage is not valid!");
 			return RHI::ShaderStage::Vertex;
 		}
 
@@ -92,7 +92,7 @@ namespace Volt
 				case RHI::ShaderStage::Mesh: return "ms";
 			}
 
-			VT_CORE_ASSERT(false, "Stage is not valid!");
+			VT_ASSERT_MSG(false, "Stage is not valid!");
 			return "";
 		}
 	}
@@ -135,7 +135,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(Error, "File {0} not found!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -144,7 +144,7 @@ namespace Volt
 
 		if (!yamlStreamReader.OpenFile(filePath))
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			VT_LOG(Error, "Failed to open file: {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -154,19 +154,19 @@ namespace Volt
 		serializedMetadata.type = (AssetType)yamlStreamReader.ReadAtKey("type", 0u);
 		serializedMetadata.version = yamlStreamReader.ReadAtKey("version", 1u);
 
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		const std::string name = yamlStreamReader.ReadAtKey("name", std::string("Unnamed"));
 		const bool isInternal = yamlStreamReader.ReadAtKey("internal", false);
 
 		if (!yamlStreamReader.HasKey("sources"))
 		{
-			VT_CORE_ERROR("No shaders defined in shader definition {0}!", metadata.filePath);
+			VT_LOG(Error, "No shaders defined in shader definition {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
-		std::vector<RHI::ShaderSourceEntry> entries;
+		Vector<RHI::ShaderSourceEntry> entries;
 		yamlStreamReader.ForEach("sources", [&]()
 		{
 			auto& entry = entries.emplace_back();
@@ -175,7 +175,7 @@ namespace Volt
 			entry.shaderStage = Utility::GetShaderStageFromString(yamlStreamReader.ReadAtKey("shaderStage", std::string("")));
 		});
 
-		std::vector<std::string> permutationValues;
+		Vector<std::string> permutationValues;
 		if (yamlStreamReader.HasKey("permutations"))
 		{
 			yamlStreamReader.ForEach("permutations", [&]()

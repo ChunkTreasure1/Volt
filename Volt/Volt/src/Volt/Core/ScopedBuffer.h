@@ -79,7 +79,7 @@ namespace Volt
 
 	inline void ScopedBuffer::Copy(const void* aSrcData, size_t aSize, size_t aOffset)
 	{
-		VT_CORE_ASSERT(aOffset + aSize <= mySize, "Cannot copy into buffer of lesser size!");
+		VT_ASSERT_MSG(aOffset + aSize <= mySize, "Cannot copy into buffer of lesser size!");
 		memcpy_s(myData + aOffset, mySize, aSrcData, aSize);
 	}
 
@@ -120,7 +120,7 @@ namespace Volt
 			return {};
 		}
 
-		std::vector<uint8_t> totalData;
+		Vector<uint8_t> totalData;
 		const size_t srcSize = file.seekg(0, std::ios::end).tellg();
 		totalData.resize(srcSize);
 		file.seekg(0, std::ios::beg);

@@ -1,21 +1,23 @@
 #pragma once
 
+#include <CoreUtilities/Concepts.h>
+
 #include <glm/glm.hpp>
 
 namespace Math
 {
-	inline glm::vec4 NormalizePlane(glm::vec4 p)
+	VT_INLINE glm::vec4 NormalizePlane(glm::vec4 p)
 	{
 		return p / glm::length(glm::vec3(p));
 	}
 
 	template<typename T = float>
-	glm::vec3 Scale(glm::vec3 const& v, T desiredLength)
+	VT_INLINE glm::vec3 Scale(glm::vec3 const& v, T desiredLength)
 	{
 		return v * desiredLength / glm::length(v);
 	}
 
-	inline static bool Decompose(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale)
+	VT_INLINE static bool Decompose(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale)
 	{
 		using namespace glm;
 
@@ -70,7 +72,7 @@ namespace Math
 		return true;
 	}
 
-	inline static bool Decompose(const glm::mat4& transform, glm::vec3& translation, glm::quat& rotation, glm::vec3& scale)
+	VT_INLINE bool Decompose(const glm::mat4& transform, glm::vec3& translation, glm::quat& rotation, glm::vec3& scale)
 	{
 		using namespace glm;
 
@@ -142,22 +144,14 @@ namespace Math
 		return true;
 	}
 
-	inline static size_t HashCombine(const size_t lhs, const size_t rhs)
-	{
-		return lhs ^ (rhs + 0x9e3779b9 + (lhs << 6) + (lhs >> 2));
-	}
-
 	template<typename T>
-	inline static T DivideRoundUp(const T& numerator, const T& denominator)
+	VT_INLINE T DivideRoundUp(const T& numerator, const T& denominator)
 	{
 		return (numerator + denominator - T{ 1 }) / denominator;
 	}
 
-	template<typename T>
-	concept Integer = std::is_integral<T>::value;
-
 	template<Integer T>
-	inline static T RoundToClosestMultiple(const T& number, const T& multiple)
+	VT_INLINE T RoundToClosestMultiple(const T& number, const T& multiple)
 	{
 		T result = std::abs(number) + multiple / 2; 
 		result -= result % multiple; 
@@ -165,4 +159,12 @@ namespace Math
 
 		return result;
 	}
+
+	template<Integer T>
+	VT_INLINE T Get1DIndex(T x, T y, T z, T maxX, T maxY)
+	{
+		return (z + maxX * maxY) + (y * maxX) + x;
+	}
+
+
 }

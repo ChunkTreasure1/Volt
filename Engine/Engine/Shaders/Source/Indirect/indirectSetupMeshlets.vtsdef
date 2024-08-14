@@ -1,6 +1,0 @@
-name: "IndirectSetupMeshlets"
-internal: true
-sources:
-  - entryPoint: "main"
-    shaderStage: "cs"
-    filePath: "Engine/Shaders/Source/Indirect/IndirectSetupMeshlets_cs.hlsl"

@@ -9,8 +9,8 @@ struct Constants
     float2 invRenderSize;
     float2 jitterOffset;
 
-    UniformTexture<float> depthTexture;
-    TextureSampler pointSampler;
+    vt::UniformTex2D<float> depthTexture;
+    vt::TextureSampler pointSampler;
 };
 
 struct Output
@@ -22,7 +22,7 @@ Output main(FullscreenTriangleVertex input)
 {
     const Constants constants = GetConstants<Constants>();
 
-    const float pixelDepth = constants.depthTexture.Sample2D(constants.pointSampler, input.uv);
+    const float pixelDepth = constants.depthTexture.Sample(constants.pointSampler, input.uv);
     
     if (pixelDepth < 0.00001f)
     {

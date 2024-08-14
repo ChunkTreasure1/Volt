@@ -8,12 +8,10 @@
 #include "Volt/Asset/Animation/Animation.h"
 #include "Volt/Asset/Animation/Skeleton.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
-#include "Volt/Asset/Animation/AnimationGraphAsset.h"
 #include "Volt/Asset/Animation/MotionWeaveDatabase.h"
 #include "Volt/Asset/ParticlePreset.h"
 #include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Prefab.h"
-#include "Volt/Asset/Video/Video.h"
 #include "Volt/Asset/TimelinePreset.h"
 #include "Volt/Asset/TextureSource.h"
 
@@ -52,11 +50,8 @@ namespace Volt
 		RegisterCreateFunction<Prefab>(AssetType::Prefab, m_assetFactoryFunctions);
 		RegisterCreateFunction<Font>(AssetType::Font, m_assetFactoryFunctions);
 		RegisterCreateFunction<PhysicsMaterial>(AssetType::PhysicsMaterial, m_assetFactoryFunctions);
-		RegisterCreateFunction<Video>(AssetType::Video, m_assetFactoryFunctions);
 		RegisterCreateFunction<BlendSpace>(AssetType::BlendSpace, m_assetFactoryFunctions);
 		RegisterCreateFunction<AI::NavMesh>(AssetType::NavMesh, m_assetFactoryFunctions);
-		RegisterCreateFunction<AnimationGraphAsset>(AssetType::AnimationGraph, m_assetFactoryFunctions);
-		RegisterCreateFunction<GraphKey::Graph>(AssetType::GraphKey, m_assetFactoryFunctions);
 		RegisterCreateFunction<BehaviorTree::Tree>(AssetType::BehaviorGraph, m_assetFactoryFunctions);
 		RegisterCreateFunction<TimelinePreset>(AssetType::Timeline, m_assetFactoryFunctions);
 		RegisterCreateFunction<NetContract>(AssetType::NetContract, m_assetFactoryFunctions);
@@ -68,7 +63,7 @@ namespace Volt
 		m_assetFactoryFunctions[AssetType::PostProcessingMaterial] = []() { return nullptr; };
 		m_assetFactoryFunctions[AssetType::PostProcessingStack] = []() { return nullptr; };
 
-		VT_CORE_ASSERT(m_assetFactoryFunctions.size() == static_cast<size_t>(AssetType::Count) - 1, "All assets must have registered create functions!");
+		VT_ENSURE_MSG(m_assetFactoryFunctions.size() == static_cast<size_t>(AssetType::Count) - 1, "All assets must have registered create functions!");
 	}
 	
 	void AssetFactory::Shutdown()

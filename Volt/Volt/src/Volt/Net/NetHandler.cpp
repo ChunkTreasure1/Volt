@@ -12,6 +12,10 @@
 #include "Volt/Net/SceneInteraction/NetActorComponent.h"
 #include "Volt/Net/Replicated/RepEntity.h"
 
+#include "Volt/Events/SceneEvents.h"
+
+#include <EventModule/Event.h>
+
 namespace Volt
 {
 	NetHandler::NetHandler()
@@ -43,7 +47,7 @@ namespace Volt
 		if (!m_handleTick) return;
 		m_backend->HandleTick(deltaTime);
 
-		NetEvent e = NetEvent(eNetEvent::NIL, 0, std::vector<uint8_t>());
+		NetEvent e = NetEvent(eNetEvent::NIL, 0, Vector<uint8_t>());
 		while (m_eventContainer.GetIncomming(e))
 		{
 			NetContractContainer::Execute(e.GetId(), e.GetEvent(), e.GetData());
@@ -124,7 +128,7 @@ namespace Volt
 	void NetHandler::OnEvent(Volt::Event& in_event)
 	{
 		if (!m_backend)return;
-		if (in_event.GetEventType() == Volt::EventType::OnSceneLoaded)
+		if (in_event.GetGUID() == Volt::OnSceneLoadedEvent::GetStaticGUID())
 		{
 			m_backend->m_registry.Clear();
 			for (auto sceneEnt : SceneManager::GetActiveScene()->GetAllEntitiesWith<NetActorComponent>())
@@ -141,7 +145,7 @@ namespace Volt
 				RecursiveOwnerShipControll(repEnt.GetEntityId(), data);
 			}
 		}
-		if (in_event.GetEventType() == Volt::EventType::OnScenePlay)
+		if (in_event.GetGUID() == Volt::OnScenePlayEvent::GetStaticGUID())
 		{
 			for (auto id : m_backend->GetRegistry().GetAllType(Nexus::TYPE::eReplicatedType::ENTITY))
 			{

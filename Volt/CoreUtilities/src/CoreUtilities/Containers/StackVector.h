@@ -1,7 +1,8 @@
 #pragma once
 
+#include "CoreUtilities/Assert.h"
+
 #include <array>
-#include <cassert>
 
 template<typename T, size_t MAX_SIZE>
 class StackVector
@@ -16,7 +17,7 @@ public:
 	void Erase(const size_t index);
 
 	template<typename... Args>
-	constexpr T& Emplace(Args&&... args);
+	constexpr T& EmplaceBack(Args&&... args);
 
 	VT_NODISCARD constexpr const T& At(const size_t index) const;
 	VT_NODISCARD constexpr T& At(const size_t index);
@@ -25,15 +26,16 @@ public:
 	VT_NODISCARD constexpr const T* Data() const { return m_data.data(); }
 	VT_NODISCARD constexpr T* Data() { return m_data.data(); }
 
-	VT_NODISCARD VT_INLINE const T& operator[](const size_t index) const { assert(index < m_currentSize);  return m_data[index]; }
-	VT_NODISCARD VT_INLINE T& operator[](const size_t index) { assert(index < m_currentSize); return m_data[index]; }
+	VT_NODISCARD VT_INLINE const T& operator[](const size_t index) const { VT_ASSERT(index < m_currentSize);  return m_data[index]; }
+	VT_NODISCARD VT_INLINE T& operator[](const size_t index) { VT_ASSERT(index < m_currentSize); return m_data[index]; }
 
 	class Iterator
 	{
 	public:
 		explicit Iterator(T* ptr)
 			: m_ptr(ptr)
-		{ }
+		{
+		}
 
 		explicit Iterator(const T* ptr)
 			: m_ptr(const_cast<T*>(ptr))
@@ -82,7 +84,7 @@ inline StackVector<T, MAX_SIZE>::StackVector(std::initializer_list<T> initialize
 	for (const auto& item : initializerList)
 	{
 		m_data[m_currentSize++] = std::move(item);
-	
+
 		if (m_currentSize >= MAX_SIZE)
 		{
 			break;
@@ -92,24 +94,24 @@ inline StackVector<T, MAX_SIZE>::StackVector(std::initializer_list<T> initialize
 
 template<typename T, size_t MAX_SIZE>
 template<typename ...Args>
-inline constexpr T& StackVector<T, MAX_SIZE>::Emplace(Args&& ...args)
+inline constexpr T& StackVector<T, MAX_SIZE>::EmplaceBack(Args&& ...args)
 {
-	assert(m_currentSize < MAX_SIZE);
+	VT_ASSERT(m_currentSize < MAX_SIZE);
 	return m_data[m_currentSize++] = T{ std::forward<Args>(args)... };
 }
 
 template<typename T, size_t MAX_SIZE>
 inline void StackVector<T, MAX_SIZE>::Push(const T& value)
 {
-	assert(m_currentSize < MAX_SIZE);
+	VT_ASSERT(m_currentSize < MAX_SIZE);
 	m_data[m_currentSize++] = value;
 }
 
 template<typename T, size_t MAX_SIZE>
 inline void StackVector<T, MAX_SIZE>::Erase(const size_t index)
 {
-	assert(m_currentSize > 0);
-	assert(index < m_currentSize);
+	VT_ASSERT(m_currentSize > 0);
+	VT_ASSERT(index < m_currentSize);
 
 	if (index == m_currentSize - 1)
 	{
@@ -128,8 +130,8 @@ inline void StackVector<T, MAX_SIZE>::Erase(const size_t index)
 template<typename T, size_t MAX_SIZE>
 inline constexpr const T& StackVector<T, MAX_SIZE>::At(const size_t index) const
 {
-	assert(m_currentSize > 0);
-	assert(index < m_currentSize);
+	VT_ASSERT(m_currentSize > 0);
+	VT_ASSERT(index < m_currentSize);
 
 	return m_data.at(index);
 }
@@ -137,8 +139,8 @@ inline constexpr const T& StackVector<T, MAX_SIZE>::At(const size_t index) const
 template<typename T, size_t MAX_SIZE>
 inline constexpr T& StackVector<T, MAX_SIZE>::At(const size_t index)
 {
-	assert(m_currentSize > 0);
-	assert(index < m_currentSize);
+	VT_ASSERT(m_currentSize > 0);
+	VT_ASSERT(index < m_currentSize);
 
 	return m_data.at(index);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreUtilities/Core.h"
+#include "CoreUtilities/Containers/Vector.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -35,7 +36,7 @@ public:
 protected:
 	YAML::Node m_currentNode;
 	YAML::Node m_currentSequenceKeyNode;
-	std::vector<YAML::Node> m_nodeStack;
+	Vector<YAML::Node> m_nodeStack;
 
 	YAML::Node m_rootNode;
 };

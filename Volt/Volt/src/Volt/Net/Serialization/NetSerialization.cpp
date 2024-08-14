@@ -127,7 +127,7 @@ bool ApplyComponentData(Ref<Volt::RepData> in_data, Nexus::ReplicationRegisty& i
 
 		}break;*/
 		default:
-			VT_CORE_ERROR("not valid RepData");
+			VT_LOG(Error, "not valid RepData");
 			return false;
 			break;
 	}
@@ -429,7 +429,7 @@ Nexus::Packet& operator<(Nexus::Packet& packet, const Volt::RepRPCData& rpcData)
 
 Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepRPCData& rpcData)
 {
-	std::vector<std::string> monoElements;
+	Vector<std::string> monoElements;
 	packet >> rpcData.repId >> rpcData.rpcId;
 
 	std::string monoData;

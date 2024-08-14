@@ -2,14 +2,14 @@
 
 #include <glm/glm.hpp>
 
-#include <VoltRHI/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 
 namespace Volt
 {
 	struct SceneEnvironment
 	{
-		RefPtr<RHI::Image2D> irradianceMap;
-		RefPtr<RHI::Image2D> radianceMap;
+		RefPtr<RHI::Image> irradianceMap;
+		RefPtr<RHI::Image> radianceMap;
 
 		float lod = 0.f;
 		float intensity = 1.f;

@@ -67,13 +67,4 @@ namespace Volt
 		bool Load(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 		void Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
 	};
-
-	class VideoImporter : public AssetImporter
-	{
-	public:
-		~VideoImporter() override = default;
-
-		bool Load(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
-		void Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
-	};
 }

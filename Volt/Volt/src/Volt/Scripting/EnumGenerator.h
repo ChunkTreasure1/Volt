@@ -1,7 +1,8 @@
 #pragma once
 
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <string>
-#include <vector>
 
 namespace Volt
 {
@@ -23,6 +24,6 @@ namespace Volt
 		std::string myNamespace;
 
 		uint32_t myEnumValueCounter = 0;
-		std::vector<EnumValue> myEnumValues;
+		Vector<EnumValue> myEnumValues;
 	};
 }

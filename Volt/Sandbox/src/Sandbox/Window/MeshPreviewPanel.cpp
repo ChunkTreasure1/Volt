@@ -19,6 +19,8 @@
 #include <Volt/Components/LightComponents.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 
+#include <WindowModule/Events/WindowEvents.h>
+
 MeshPreviewPanel::MeshPreviewPanel()
 	: EditorWindow("Mesh Preview", true)
 {
@@ -57,7 +59,7 @@ void MeshPreviewPanel::OnEvent(Volt::Event& e)
 	if (!IsOpen()) { return; }
 
 	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(MeshPreviewPanel::OnRenderEvent));
+	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(MeshPreviewPanel::OnRenderEvent));
 
 	myCameraController->OnEvent(e);
 }
@@ -83,7 +85,7 @@ void MeshPreviewPanel::OnClose()
 	mySceneRenderer = nullptr;
 }
 
-bool MeshPreviewPanel::OnRenderEvent(Volt::AppRenderEvent& e)
+bool MeshPreviewPanel::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	//mySceneRenderer->ClearOutlineCommands();
 
@@ -159,7 +161,7 @@ void MeshPreviewPanel::UpdateProperties()
 
 			if (mySelectedSubMesh != -1)
 			{
-				std::vector<std::string> subMaterialNames;
+				Vector<std::string> subMaterialNames;
 				//for (const auto& [index, subMat] : myCurrentMesh->GetMaterial()->GetSubMaterials())
 				//{
 				//	subMaterialNames.emplace_back(subMat->GetName());

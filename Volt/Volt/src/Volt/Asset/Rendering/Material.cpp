@@ -2,7 +2,7 @@
 #include "Material.h"
 
 #include "Volt/Project/ProjectManager.h"
-#include "Volt/MosaicNodes/TextureNodes.h"
+#include "Volt/MosaicNodes/Texture/SampleTextureNode.h"
 #include "Volt/Asset/AssetManager.h"
 
 #include "Volt/Rendering/Renderer.h"
@@ -12,8 +12,8 @@
 
 #include <CoreUtilities/GUIDUtilities.h>
 
-#include <VoltRHI/Pipelines/ComputePipeline.h>
-#include <VoltRHI/Shader/Shader.h>
+#include <RHIModule/Pipelines/ComputePipeline.h>
+#include <RHIModule/Shader/Shader.h>
 
 namespace Volt
 {
@@ -69,9 +69,9 @@ namespace Volt
 		return state;
 	}
 
-	std::vector<AssetHandle> Material::GetTextureHandles() const
+	Vector<AssetHandle> Material::GetTextureHandles() const
 	{
-		std::vector<AssetHandle> result;
+		Vector<AssetHandle> result;
 
 		for (const auto& node : m_graph->GetUnderlyingGraph().GetNodes())
 		{
@@ -88,7 +88,7 @@ namespace Volt
 
 	void Material::OnDependencyChanged(AssetHandle dependencyHandle, AssetChangedState state)
 	{
-		VT_CORE_TRACE("Triggered dependency changed in material: {0}, with dependency {1}", (uint64_t)handle, (uint64_t)dependencyHandle);
+		VT_LOG(Trace, "Triggered dependency changed in material: {0}, with dependency {1}", (uint64_t)handle, (uint64_t)dependencyHandle);
 
 		auto it = std::find_if(m_textures.begin(), m_textures.end(), [dependencyHandle](Ref<Texture2D> tex)
 		{
@@ -136,7 +136,7 @@ namespace Volt
 		}
 
 		std::ifstream input(baseShaderPath, std::ios::in | std::ios::binary);
-		VT_CORE_ASSERT(input.is_open(), "Could not open file!");
+		VT_ASSERT_MSG(input.is_open(), "Could not open file!");
 
 		std::string resultShader;
 
@@ -158,7 +158,7 @@ namespace Volt
 		}
 
 		std::ofstream output(outShaderPath);
-		VT_CORE_ASSERT(output.is_open(), "Could not open file!");
+		VT_ASSERT_MSG(output.is_open(), "Could not open file!");
 
 		output.write(resultShader.c_str(), resultShader.size());
 		output.close();

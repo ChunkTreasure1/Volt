@@ -2,22 +2,21 @@
 
 #include "Sandbox/Window/EditorWindow.h"
 
-#include <Volt/Log/CallbackSink.h>
-
 class LogPanel : public EditorWindow
 {
 public:
 	LogPanel();
-	~LogPanel() override = default;
+	~LogPanel() override;
 
 	void UpdateMainContent() override;
 
 private:
-	uint32_t myMaxMessages = 1000;
-	std::vector<LogCallbackData> myLogMessages;
-	std::vector<LogCallbackData> myCurrentLogMessages;
+	uint32_t m_maxMessages = 1000;
+	Vector<LogCallbackData> m_logMessages;
+	Vector<LogCallbackData> m_currentLogMessages;
 
-	std::vector<std::string> myCategories;
+	Vector<std::string> m_categories;
 
+	LogCallbackHandle m_callbackHandle = 0;
 	std::mutex m_logMutex;
 };

@@ -1,18 +1,18 @@
 #include "vtpch.h"
 #include "TAATechnique.h"
 
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphBlackboard.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
-#include "Volt/Rendering/RenderGraph/RenderContextUtils.h"
-
 #include "Volt/Rendering/SceneRendererStructs.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
 #include "Volt/Rendering/Renderer.h"
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 
-#include <VoltRHI/Pipelines/RenderPipeline.h>
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
+
+#include <RHIModule/Pipelines/RenderPipeline.h>
 
 namespace Volt
 {
@@ -21,7 +21,7 @@ namespace Volt
 	{
 	}
 
-	TAAData TAATechnique::Execute(RefPtr<RHI::Image2D> previousColor, RenderGraphResourceHandle velocityTexture)
+	TAAData TAATechnique::Execute(RefPtr<RHI::Image> previousColor, RenderGraphImageHandle velocityTexture)
 	{
 		const auto& shadingData = m_blackboard.Get<ShadingOutputData>();
 		const auto& renderData = m_blackboard.Get<RenderData>();
@@ -31,16 +31,16 @@ namespace Volt
 		{
 			{
 				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::B10G11R11_UFLOAT_PACK32>(renderData.renderSize.x, renderData.renderSize.y, RHI::ImageUsage::AttachmentStorage, "TAA Output");
-				data.taaOutput = builder.CreateImage2D(desc);
+				data.taaOutput = builder.CreateImage(desc);
 			}
 
 			if (!previousColor)
 			{
-				data.previousColor = builder.AddExternalImage2D(Renderer::GetDefaultResources().whiteTexture->GetImage());
+				data.previousColor = builder.AddExternalImage(Renderer::GetDefaultResources().whiteTexture->GetImage());
 			}
 			else
 			{
-				data.previousColor = builder.AddExternalImage2D(previousColor);
+				data.previousColor = builder.AddExternalImage(previousColor);
 			}
 
 			builder.ReadResource(velocityTexture);
@@ -48,7 +48,7 @@ namespace Volt
 			builder.ReadResource(shadingData.colorOutput);
 
 		},
-		[=](const TAAData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](const TAAData& data, RenderContext& context) 
 		{
 			RenderingInfo info = context.CreateRenderingInfo(renderData.renderSize.x, renderData.renderSize.y, { data.taaOutput });
 
@@ -61,9 +61,9 @@ namespace Volt
 
 			RCUtils::DrawFullscreenTriangle(context, pipeline, [&](RenderContext& context) 
 			{
-				context.SetConstant("currentColor"_sh, resources.GetImage2D(shadingData.colorOutput));
-				context.SetConstant("previousColor"_sh, resources.GetImage2D(data.previousColor));
-				context.SetConstant("velocityTexture"_sh, resources.GetImage2D(velocityTexture));
+				context.SetConstant("currentColor"_sh, shadingData.colorOutput);
+				context.SetConstant("previousColor"_sh, data.previousColor);
+				context.SetConstant("velocityTexture"_sh, velocityTexture);
 				context.SetConstant("pointSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest>()->GetResourceHandle());
 			});
 

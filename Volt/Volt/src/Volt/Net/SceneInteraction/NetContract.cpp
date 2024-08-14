@@ -18,19 +18,19 @@
 
 namespace Volt
 {
-	void NetContractContainer::Execute(Volt::EntityID in_id, eNetEvent in_method, const std::vector<uint8_t>& in_data)
+	void NetContractContainer::Execute(Volt::EntityID in_id, eNetEvent in_method, const Vector<uint8_t>& in_data)
 	{
 		auto entity = SceneManager::GetActiveScene()->GetEntityFromUUID(in_id);
 		if (!entity.HasComponent<PrefabComponent>())
 		{
-			VT_CORE_ERROR("Entity is not prefab in NetContractContainer::Execute");
+			VT_LOG(Error, "Entity is not prefab in NetContractContainer::Execute");
 			return;
 		}
 		auto handle = entity.GetComponent<PrefabComponent>().prefabAsset;
 		CallMonoMethod(entity, GetMethod(handle, in_method), in_data);
 	}
 
-	void NetContractContainer::Execute(Nexus::TYPE::REP_ID in_id, eNetEvent in_method, const std::vector<uint8_t>& in_data)
+	void NetContractContainer::Execute(Nexus::TYPE::REP_ID in_id, eNetEvent in_method, const Vector<uint8_t>& in_data)
 	{
 		auto* backend = Volt::Application::Get().GetNetHandler().GetBackend().get();
 		if (!backend) return;

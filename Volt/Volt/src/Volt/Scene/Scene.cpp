@@ -6,7 +6,6 @@
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Animation/Animation.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
-#include "Volt/Asset/Video/Video.h"
 #include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Scene/Entity.h"
@@ -18,8 +17,6 @@
 #include "Volt/Components/RenderingComponents.h"
 
 #include "Volt/Animation/AnimationManager.h"
-#include "Volt/Animation/AnimationController.h"
-#include "Volt/Asset/Animation/AnimationGraphAsset.h"
 
 #include "Volt/Physics/Physics.h"
 #include "Volt/Physics/PhysicsScene.h"
@@ -33,10 +30,8 @@
 
 #include "Volt/Rendering/RenderScene.h"
 #include "Volt/Rendering/Renderer.h"
-
 #include "Volt/Rendering/RendererStructs.h"
 #include "Volt/Rendering/Camera/Camera.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
 
 #include "Volt/Vision/Vision.h"
 #include "Volt/Utility/Random.h"
@@ -45,13 +40,11 @@
 
 #include "Volt/Discord/DiscordSDK.h"
 
-#include <GraphKey/TimerManager.h>
-#include <GraphKey/Graph.h>
-#include <GraphKey/Node.h>
+#include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
 
 #include <Navigation/Core/NavigationSystem.h>
 
-#include <CoreUtilities/TimeUtility.h>
+#include <CoreUtilities/Time/TimeUtility.h>
 
 #include <stack>
 #include <ranges>
@@ -59,7 +52,7 @@
 namespace Volt
 {
 	Scene::Scene(const std::string& name)
-		: m_name(name), m_animationSystem(this)
+		: m_name(name)
 	{
 		m_visionSystem = CreateRef<Vision>(this);
 		m_renderScene = CreateRef<RenderScene>(this);
@@ -79,7 +72,6 @@ namespace Volt
 	}
 
 	Scene::Scene()
-		: m_animationSystem(this)
 	{
 		m_visionSystem = CreateRef<Vision>(this);
 		m_renderScene = CreateRef<RenderScene>(this);
@@ -101,14 +93,6 @@ namespace Volt
 		{
 			return;
 		}
-
-		ForEachWithComponents<const AnimationControllerComponent>([&](const entt::entity id, const AnimationControllerComponent& controller)
-		{
-			if (controller.controller)
-			{
-				controller.controller->GetGraph()->OnEvent(e);
-			}
-		});
 
 		m_audioSystem.OnEvent(m_registry, e);
 		m_visionSystem->OnEvent(e);
@@ -204,7 +188,6 @@ namespace Volt
 		});
 
 		m_visionSystem->Initialize();
-		m_animationSystem.OnRuntimeStart(m_registry);
 
 		ForEachWithComponents<const MonoScriptComponent, const IDComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp, const IDComponent& idComponent)
 		{
@@ -253,7 +236,6 @@ namespace Volt
 	void Scene::OnRuntimeEnd()
 	{
 		m_isPlaying = false;
-		GraphKey::TimerManager::Clear();
 
 		ForEachWithComponents<const MonoScriptComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp)
 		{
@@ -274,7 +256,6 @@ namespace Volt
 
 		MonoScriptEngine::OnRuntimeEnd();
 
-		m_animationSystem.OnRuntimeEnd(m_registry);
 		Physics::DestroyScene();
 		m_audioSystem.RuntimeStop(m_registry, shared_from_this());
 	}
@@ -301,8 +282,6 @@ namespace Volt
 
 		m_timeSinceStart += aDeltaTime;
 		m_currentDeltaTime = aDeltaTime;
-
-		GraphKey::TimerManager::Update(aDeltaTime);
 
 		{
 			VT_PROFILE_SCOPE("Update entity time");
@@ -354,7 +333,6 @@ namespace Volt
 
 		m_particleSystem.Update(m_registry, shared_from_this(), aDeltaTime);
 		m_audioSystem.Update(m_registry, shared_from_this(), aDeltaTime);
-		m_animationSystem.Update(m_registry, aDeltaTime);
 	}
 
 	void Scene::FixedUpdate(float aDeltaTime)
@@ -443,7 +421,7 @@ namespace Volt
 
 	Entity Scene::CreateEntityWithUUID(const EntityID& uuid, const std::string& tag)
 	{
-		VT_CORE_ASSERT(!m_entityRegistry.Contains(uuid), "Entity must not exist!");
+		VT_ASSERT_MSG(!m_entityRegistry.Contains(uuid), "Entity must not exist!");
 
 		entt::entity id = m_registry.create();
 
@@ -570,7 +548,7 @@ namespace Volt
 
 	void Scene::InvalidateEntityTransform(const EntityID& entityUUID)
 	{
-		std::vector<EntityID> entityStack;
+		Vector<EntityID> entityStack;
 		entityStack.reserve(10);
 		entityStack.push_back(entityUUID);
 
@@ -622,7 +600,7 @@ namespace Volt
 		auto mesh = AssetManager::GetAsset<Mesh>(meshHandle);
 		if (!mesh || !mesh->IsValid())
 		{
-			VT_CORE_WARN("Trying to instantiate invalid mesh {0}!", meshHandle);
+			VT_LOG(Warning, "Trying to instantiate invalid mesh {0}!", meshHandle);
 			return Entity{};
 		}
 
@@ -681,7 +659,7 @@ namespace Volt
 			std::ifstream file(depPath);
 			if (!file.is_open())
 			{
-				VT_CORE_ERROR("[AssetManager] Unable to read dependency file!");
+				VT_LOG(Error, "[AssetManager] Unable to read dependency file!");
 				return {};
 			}
 
@@ -696,7 +674,7 @@ namespace Volt
 			}
 			catch (std::exception& e)
 			{
-				VT_CORE_ERROR("[AssetManager] Dependency list contains invalid YAML! Please correct it! Error: {0}", e.what());
+				VT_LOG(Error, "[AssetManager] Dependency list contains invalid YAML! Please correct it! Error: {0}", e.what());
 				return {};
 			}
 
@@ -745,7 +723,7 @@ namespace Volt
 			AssetManager::Get().QueueAssetRaw(dep);
 		}
 
-		VT_CORE_INFO("[Scene] {0} assets has been queued for scene {1}!", dependencies.size(), scenePath.string());
+		VT_LOG(Info, "[Scene] {0} assets has been queued for scene {1}!", dependencies.size(), scenePath.string());
 	}
 
 	Ref<Scene> Scene::CreateDefaultScene(const std::string& name, bool createDefaultMesh)
@@ -849,9 +827,9 @@ namespace Volt
 		return transform;
 	}
 
-	const std::vector<Entity> Scene::FlattenEntityHeirarchy(Entity entity)
+	const Vector<Entity> Scene::FlattenEntityHeirarchy(Entity entity)
 	{
-		std::vector<Entity> result;
+		Vector<Entity> result;
 		result.emplace_back(entity);
 
 		for (auto child : entity.GetChildren())
@@ -869,7 +847,7 @@ namespace Volt
 
 	const Scene::TQS Scene::GetWorldTQS(Entity entity) const
 	{
-		std::vector<Entity> hierarchy{};
+		Vector<Entity> hierarchy{};
 		hierarchy.emplace_back(entity);
 
 		Entity currentEntity = entity;
@@ -1070,7 +1048,7 @@ namespace Volt
 		return false;
 	}
 
-	void Scene::SetLayers(const std::vector<SceneLayer>& sceneLayers)
+	void Scene::SetLayers(const Vector<SceneLayer>& sceneLayers)
 	{
 		m_sceneLayers = sceneLayers;
 
@@ -1381,9 +1359,9 @@ namespace Volt
 		m_entityRegistry.ClearEditedEntities();
 	}
 
-	const std::vector<Entity> Scene::GetAllEntities() const
+	const Vector<Entity> Scene::GetAllEntities() const
 	{
-		std::vector<Entity> result{};
+		Vector<Entity> result{};
 		result.reserve(m_registry.alive());
 
 		m_registry.each([&](const entt::entity id)
@@ -1394,9 +1372,9 @@ namespace Volt
 		return result;
 	}
 
-	const std::vector<Entity> Scene::GetAllEditedEntities() const
+	const Vector<Entity> Scene::GetAllEditedEntities() const
 	{
-		std::vector<Entity> entities;
+		Vector<Entity> entities;
 
 		for (const auto& entity : m_entityRegistry.GetEditedEntities())
 		{
@@ -1406,9 +1384,9 @@ namespace Volt
 		return entities;
 	}
 
-	const std::vector<EntityID> Scene::GetAllRemovedEntities() const
+	const Vector<EntityID> Scene::GetAllRemovedEntities() const
 	{
-		std::vector<EntityID> entities;
+		Vector<EntityID> entities;
 
 		for (const auto& entity : m_entityRegistry.GetRemovedEntities())
 		{
@@ -1446,6 +1424,11 @@ namespace Volt
 				const auto materialIndex = mesh->GetSubMeshes().at(i).materialIndex;
 
 				Ref<Material> mat = AssetManager::QueueAsset<Material>(materialTable.GetMaterial(materialIndex));
+				if (!mat)
+				{
+					VT_LOG(Warning, "[MeshComponent]: Mesh {} has an invalid material at index {}!", mesh->assetName, materialIndex);
+					mat = Renderer::GetDefaultResources().defaultMaterial;
+				}
 
 				if (static_cast<uint32_t>(meshComp.materials.size()) > materialIndex)
 				{

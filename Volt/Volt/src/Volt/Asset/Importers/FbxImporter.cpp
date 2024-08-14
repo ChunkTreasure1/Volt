@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "FbxImporter.h"
 
-#include "Volt/Log/Log.h"
-
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Mesh/Mesh.h"
 
@@ -53,7 +51,7 @@ namespace Volt
 		{
 			char buffer[1024];
 			ufbx_format_error(buffer, sizeof(buffer), &error);
-			VT_CORE_ERROR("{0}: {1}", description, buffer);
+			VT_LOG(Error, "{0}: {1}", description, buffer);
 		}
 	}
 
@@ -69,7 +67,7 @@ namespace Volt
 
 		if (dstSkeleton.m_joints.empty())
 		{
-			VT_CORE_ERROR("[FBXImporter]: Unable to import skeleton! There was no skeleton defined in FBX file!");
+			VT_LOG(Error, "[FBXImporter]: Unable to import skeleton! There was no skeleton defined in FBX file!");
 
 			ufbx_free_scene(scene);
 			return false;
@@ -150,7 +148,7 @@ namespace Volt
 		return true;
 	}
 
-	void FbxImporter::ExportMeshImpl(std::vector<Ref<Mesh>>, const std::filesystem::path&)
+	void FbxImporter::ExportMeshImpl(Vector<Ref<Mesh>>, const std::filesystem::path&)
 	{
 		
 	}
@@ -220,14 +218,14 @@ namespace Volt
 		}
 
 		size_t maxIndexCount = mesh->max_face_triangles * 3;
-		std::vector<uint32_t> triangleIndices(maxIndexCount);
-		std::vector<uint32_t> indices(maxTriangles * 3);
+		Vector<uint32_t> triangleIndices(maxIndexCount);
+		Vector<uint32_t> indices(maxTriangles * 3);
 		
 		VertexContainer vertexContainer{};
 		vertexContainer.Resize(maxTriangles * 3);
 
-		std::vector<uint16_t> vertexBoneInfluences;
-		std::vector<float> vertexBoneWeights;
+		Vector<uint16_t> vertexBoneInfluences;
+		Vector<float> vertexBoneWeights;
 
 		ufbx_skin_deformer* skin = nullptr;
 
@@ -318,7 +316,7 @@ namespace Volt
 
 			indices.resize(meshPart.num_triangles * 3);
 
-			std::vector<ufbx_vertex_stream> streams{};
+			Vector<ufbx_vertex_stream> streams{};
 
 			{
 				auto& stream = streams.emplace_back();
@@ -358,7 +356,7 @@ namespace Volt
 
 			if (!mesh->vertex_tangent.exists)
 			{
-				VT_CORE_ERROR("[FbxImporter]: No tangents availiable in mesh, shading might be incorrect!");
+				VT_LOG(Error, "[FbxImporter]: No tangents availiable in mesh, shading might be incorrect!");
 			}
 
 			auto& subMesh = dstMesh.m_subMeshes.emplace_back();
@@ -415,7 +413,7 @@ namespace Volt
 	{
 		skeleton.m_inverseBindPose.resize(skeleton.m_joints.size(), glm::identity<glm::mat4>());
 		skeleton.m_restPose.resize(skeleton.m_joints.size());
-		std::vector<glm::mat4> bindPoses(skeleton.m_joints.size(), glm::identity<glm::mat4>());
+		Vector<glm::mat4> bindPoses(skeleton.m_joints.size(), glm::identity<glm::mat4>());
 
 		for (const auto* skin : scene->skin_deformers)
 		{

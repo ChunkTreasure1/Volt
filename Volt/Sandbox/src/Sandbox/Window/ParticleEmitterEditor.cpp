@@ -15,6 +15,8 @@
 
 #include <Volt/Utility/UIUtility.h>
 
+#include <WindowModule/Events/WindowEvents.h>
+
 #include <random>
 
 ParticleEmitterEditor::ParticleEmitterEditor()
@@ -113,12 +115,12 @@ bool ParticleEmitterEditor::SavePreset(const std::filesystem::path& indata)
 void ParticleEmitterEditor::OnEvent(Volt::Event& e)
 {
 	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(ParticleEmitterEditor::OnRenderEvent));
+	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(ParticleEmitterEditor::OnRenderEvent));
 	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(ParticleEmitterEditor::OnUpdateEvent));
 	myCameraController->OnEvent(e);
 }
 
-bool ParticleEmitterEditor::OnRenderEvent(Volt::AppRenderEvent& e)
+bool ParticleEmitterEditor::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	myPreviewRenderer->OnRenderEditor(myCameraController->GetCamera());
 	return false;
@@ -329,7 +331,7 @@ void ParticleEmitterEditor::DrawPropertiesPanel()
 			if (ImGui::CollapsingHeader("Rendering##emitterRenderMode"))
 			{
 				static int selectedRenderMode = (int)myCurrentPreset->type;
-				std::vector<std::string> emitterModes = { "Mesh","Particle" };
+				Vector<std::string> emitterModes = { "Mesh","Particle" };
 
 				if (UI::Combo("Emitter Type", selectedRenderMode, emitterModes))
 				{

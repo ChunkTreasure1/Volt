@@ -566,7 +566,7 @@ void BehaviorEditor::DrawPanels()
 		ImGui::Dummy({ 0, i - 250.5f });// 220.0f});//  172.5f });
 		if (ImGui::Button("RUN"))
 		{
-			VT_CORE_ERROR("Run does not work, test in scene");
+			VT_LOG(Error, "Run does not work, test in scene");
 		}
 		if (ImGui::Button("SAVE"))
 		{

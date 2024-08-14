@@ -14,14 +14,14 @@ namespace Volt::BehaviorTree
 	{
 	public:
 		Ref<Node> GetNodeFromUUID(const UUID64& in_uuid) const;
-		const std::vector<Link>& GetLinksFromUUID(const UUID64& in_uuid);
+		const Vector<Link>& GetLinksFromUUID(const UUID64& in_uuid);
 		const Link& GetLink(const UUID64& in_uuid);
 
 		std::unordered_map<UUID64, Ref<Node>>& GetNodes()  { return m_nodes; };
 
 		const std::unordered_map<UUID64, Link>& GetLinkIDs() const { return m_linkIDs; };
-		std::unordered_map<UUID64, std::vector<Link>>& GetLinksNoConst() { return m_links; };
-		const std::unordered_map<UUID64, std::vector<Link>>& GetLinks() const { return m_links; };
+		std::unordered_map<UUID64, Vector<Link>>& GetLinksNoConst() { return m_links; };
+		const std::unordered_map<UUID64, Vector<Link>>& GetLinks() const { return m_links; };
 
 		bool RegisterNode(const UUID64& in_uuid, Ref<Node> in_node);
 		bool RegisterLink(const UUID64& in_parentID, const UUID64& in_childID, const UUID64& in_linkID = 0);
@@ -42,7 +42,7 @@ namespace Volt::BehaviorTree
 
 		std::unordered_map<UUID64, Link> m_linkIDs;
 		// <ParentUUiD, Link vec>
-		std::unordered_map<UUID64, std::vector<Link>> m_links;
+		std::unordered_map<UUID64, Vector<Link>> m_links;
 	};
 
 }

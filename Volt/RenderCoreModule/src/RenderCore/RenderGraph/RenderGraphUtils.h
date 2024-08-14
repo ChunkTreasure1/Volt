@@ -1,0 +1,42 @@
+#pragma once
+
+#include "RenderCore/RenderGraph/Resources/RenderGraphBufferResource.h"
+#include "RenderCore/RenderGraph/Resources/RenderGraphTextureResource.h"
+
+#include <glm/glm.hpp>
+
+#include <string_view>
+
+namespace Volt::RGUtils
+{
+	template<typename T, typename COUNT_TYPE>
+	inline static RenderGraphBufferDesc CreateBufferDesc(const COUNT_TYPE count, const RHI::BufferUsage usage, const RHI::MemoryUsage memoryUsage, std::string_view name)
+	{
+		VT_ASSERT_MSG(count > 0, "Count must not be zero!");
+		return { static_cast<uint32_t>(count), sizeof(T), usage, memoryUsage, name };
+	}
+
+	template<typename T, typename COUNT_TYPE>
+	inline static RenderGraphBufferDesc CreateBufferDescGPU(const COUNT_TYPE count, std::string_view name)
+	{
+		VT_ASSERT_MSG(count > 0, "Count must not be zero!");
+		return { static_cast<uint32_t>(count), sizeof(T), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, name };
+	}
+
+	template<RHI::PixelFormat format>
+	inline static RenderGraphImageDesc CreateImage2DDesc(const uint32_t width, const uint32_t height, const RHI::ImageUsage usage, std::string_view name)
+	{
+		VT_ASSERT_MSG(width > 0 && height > 0, "Width and height must not be zero!");
+		return { ResourceType::Image2D, format, width, height, 1, usage, name };
+	}
+
+	template<RHI::PixelFormat format>
+	inline static RenderGraphImageDesc CreateImage3DDesc(const uint32_t width, const uint32_t height, const uint32_t depth, const RHI::ImageUsage usage, std::string_view name)
+	{
+		VT_ASSERT_MSG(width > 0 && height > 0, "Width and height must not be zero!");
+		return { ResourceType::Image3D, format, width, height, depth, usage, name };
+	}
+
+	extern VTRC_API void ClearImage(RenderGraph& renderGraph, RenderGraphImageHandle image, const glm::vec4& clearColor, std::string_view passName = "");
+	extern VTRC_API void ClearBuffer(RenderGraph& renderGraph, RenderGraphBufferHandle buffer, const uint32_t clearValue, std::string_view passName = "");
+}

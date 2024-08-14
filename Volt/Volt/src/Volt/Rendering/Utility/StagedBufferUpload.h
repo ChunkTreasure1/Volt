@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
+#include <RenderCore/RenderGraph/RenderGraph.h>
 
-#include <vector>
 #include <atomic>
 
 namespace Volt
@@ -14,10 +13,10 @@ namespace Volt
 		StagedBufferUpload(const uint32_t uploadCount);
 
 		T& AddUploadItem();
-		void UploadTo(RenderGraph& renderGraph, RenderGraphResourceHandle dstBuffer);
+		void UploadTo(RenderGraph& renderGraph, RenderGraphBufferHandle dstBuffer);
 
 	private:
-		std::vector<T> m_data;
+		Vector<T> m_data;
 		std::atomic<uint32_t> m_currentIndex = 0;
 	};
 
@@ -35,7 +34,7 @@ namespace Volt
 	}
 
 	template<typename T>
-	inline void StagedBufferUpload<T>::UploadTo(RenderGraph& renderGraph, RenderGraphResourceHandle dstBuffer)
+	inline void StagedBufferUpload<T>::UploadTo(RenderGraph& renderGraph, RenderGraphBufferHandle dstBuffer)
 	{
 		if (m_currentIndex == 0)
 		{

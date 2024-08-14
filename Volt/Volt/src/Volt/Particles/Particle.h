@@ -1,4 +1,7 @@
 #pragma once
+
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <glm/glm.hpp>
 
 namespace Volt
@@ -7,7 +10,7 @@ namespace Volt
 	{
 		Volt::AssetHandle texture = Volt::Asset::Null();
 
-		std::vector<glm::vec4> colors;
+		Vector<glm::vec4> colors;
 		glm::vec4 color;
 
 		glm::vec3 direction;
@@ -15,7 +18,7 @@ namespace Volt
 
 		glm::vec3 gravity;
 		glm::vec3 rotation;
-		std::vector<glm::vec3> sizes;
+		Vector<glm::vec3> sizes;
 		glm::vec3 size;
 
 		float velocity;

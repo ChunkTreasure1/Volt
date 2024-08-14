@@ -23,7 +23,8 @@
 #include <random>
 
 #include "Volt/Core/Application.h"
-#include "Volt/Core/Threading/ThreadPool.h"
+
+#include <JobSystem/JobSystem.h>
 
 void Volt::ParticleSystem::Update(entt::registry& registry, Weak<Scene> scene, const float deltaTime)
 {
@@ -82,15 +83,13 @@ void Volt::ParticleSystem::Update(entt::registry& registry, Weak<Scene> scene, c
 		}
 	});
 
-	std::vector<entt::entity> emittersToRemove{};
-	std::vector<std::future<void>> futures{};
+	Vector<entt::entity> emittersToRemove{};
+	Vector<std::future<void>> futures{};
 	std::mutex emittersToRemoveMutex;
-
-	auto& threadPool = Application::GetThreadPool();
 
 	for (auto& [id, particleStorage] : m_particleStorage)
 	{
-		futures.emplace_back(threadPool.SubmitTask([&]() 
+		futures.emplace_back(JobSystem::SubmitTask([&]() 
 		{
 			VT_PROFILE_SCOPE("Update particle system");
 
@@ -104,7 +103,7 @@ void Volt::ParticleSystem::Update(entt::registry& registry, Weak<Scene> scene, c
 
 			const auto forward = entity.GetForward();
 
-			std::vector<Particle>& p_vec = particleStorage.particles;
+			Vector<Particle>& p_vec = particleStorage.particles;
 			for (int index = 0; index < particleStorage.numberOfAliveParticles; index++)
 			{
 				Particle& p = p_vec[index];

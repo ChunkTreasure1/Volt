@@ -15,14 +15,14 @@ namespace AssetBrowser
 
 		DirectoryItem* parentDirectory = nullptr;
 
-		std::vector<Ref<AssetItem>> assets;
-		std::vector<Ref<DirectoryItem>> subDirectories;
+		Vector<Ref<AssetItem>> assets;
+		Vector<Ref<DirectoryItem>> subDirectories;
 
 		bool isNext = false;
 
 	protected:
 		void PushID() override;
-		RefPtr<Volt::RHI::Image2D> GetIcon() const override;
+		RefPtr<Volt::RHI::Image> GetIcon() const override;
 		ImVec4 GetBackgroundColor() const override;
 		std::string GetTypeName() const override;
 		void SetDragDropPayload() override;

@@ -2,6 +2,7 @@
 
 #include "CoreUtilities/UUID.h"
 #include "CoreUtilities/VoltGUID.h"
+#include "CoreUtilities/Containers/Vector.h"
 
 #include <glm/glm.hpp>
 #include <yaml-cpp/yaml.h>
@@ -399,6 +400,30 @@ namespace YAML
 			return true;
 		};
 	};
+
+	template<typename T>
+	struct convert<Vector<T>>
+	{
+		static Node encode(const Vector<T>& rhs)
+		{
+			Node node;
+			for (const auto& v : rhs)
+			{
+				node.push_back(v);
+			}
+			return node;
+		};
+
+		static bool decode(const Node& node, Vector<T>& v)
+		{
+			v.reserve(node.size());
+			for (size_t i = 0; i < node.size(); ++i)
+			{
+				v.emplace_back(node[i].as<T>());
+			}
+			return true;
+		};
+	};
 }
 
 inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
@@ -496,7 +521,7 @@ inline YAML::Emitter& operator<<(YAML::Emitter& out, const std::filesystem::path
 	return out;
 }
 
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const std::vector<std::filesystem::path>& paths)
+inline YAML::Emitter& operator<<(YAML::Emitter& out, const Vector<std::filesystem::path>& paths)
 {
 	out << YAML::BeginSeq;
 	for (const auto& p : paths)

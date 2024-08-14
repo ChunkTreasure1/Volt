@@ -4,9 +4,7 @@
 #include "AudioEngine.h"
 #include "fmod_errors.h"
 
-#include <Volt/Core/Profiling.h>
-
-#include <Volt/Utility/StringUtility.h>
+#include <CoreUtilities/StringUtility.h>
 
 const float DISTANCEFACTOR = 100.0f;
 
@@ -54,11 +52,11 @@ namespace Amp
 
 		isOK = ErrorCheck(studioSystem->loadBankFile((rootDirectory + aMasterStringFileName).c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &masterStringBank));
 
-		if (!isOK) { VT_CORE_ERROR("AMP ERROR: A master string file could not be loaded in AudioEngine::LoadMasterBank()"); }
+		if (!isOK) { VT_LOG(Error, "AMP ERROR: A master string file could not be loaded in AudioEngine::LoadMasterBank()"); }
 
 		isOK = ErrorCheck(studioSystem->loadBankFile((rootDirectory + aMasterFileName).c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &masterBank));
 
-		if (!isOK) { VT_CORE_ERROR("AMP ERROR: A master bank file could not be loaded in AudioEngine::LoadMasterBank()"); }
+		if (!isOK) { VT_LOG(Error, "AMP ERROR: A master bank file could not be loaded in AudioEngine::LoadMasterBank()"); }
 
 		if (isOK)
 		{
@@ -173,9 +171,9 @@ namespace Amp
 		return nullptr;
 	}
 
-	std::vector<std::string> AudioEngine::GetAllEventNames()
+	Vector<std::string> AudioEngine::GetAllEventNames()
 	{
-		std::vector<std::string> eventNames;
+		Vector<std::string> eventNames;
 		for (auto& event : events)
 		{
 			eventNames.emplace_back(event.first);
@@ -195,7 +193,7 @@ namespace Amp
 		if (!ErrorCheck(foundEvent->second.FmodEventDesc->createInstance(&eventInstance)))
 		{
 			std::string errorMessage = "Failed to load in audioclip with event path: " + aEventPath;
-			VT_CORE_ERROR(errorMessage);
+			VT_LOG(Error, errorMessage);
 		}
 
 		foundEvent->second.instanceIDpool++;

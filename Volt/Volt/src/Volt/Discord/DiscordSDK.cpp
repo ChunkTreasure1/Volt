@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "DiscordSDK.h"
 
-#include "Volt/Log/Log.h"
-
 namespace Volt
 {
 	void DiscordSDK::Init(int64_t appId, bool isOverrideable)
@@ -17,7 +15,7 @@ namespace Volt
 
 			if (!myState.core)
 			{
-				VT_CORE_ERROR("Failed to instantiate discord core! (err ", static_cast<int>(result), ")");
+				VT_LOG(Error, "Failed to instantiate discord core! (err ", static_cast<int>(result), ")");
 				return;
 			}
 
@@ -40,7 +38,7 @@ namespace Volt
 			myState.core->ActivityManager().UpdateActivity(myState.currentActivity, [](discord::Result result) {
 				if (result != discord::Result::Ok)
 				{
-					VT_CORE_WARN("Failed to update discord rich presence");
+					VT_LOG(Warning, "Failed to update discord rich presence");
 				}
 			});
 		}

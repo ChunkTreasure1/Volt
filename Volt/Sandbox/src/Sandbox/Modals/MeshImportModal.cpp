@@ -19,16 +19,16 @@ namespace Utility
 {
 	std::filesystem::path GetNonExistingFilePath(const std::filesystem::path& directory, const std::string& fileName)
 	{
-		std::filesystem::path filePath = directory / (fileName + ".vtasset");
+		std::filesystem::path filePath = Volt::AssetManager::GetFilesystemPath(directory / (fileName + ".vtasset"));
 		uint32_t counter = 0;
 
 		while (std::filesystem::exists(filePath))
 		{
-			filePath = directory / (fileName + "_" + std::to_string(counter) + ".vtasset");
+			filePath = Volt::AssetManager::GetFilesystemPath(directory / (fileName + "_" + std::to_string(counter) + ".vtasset"));
 			counter++;
 		}
 		
-		return filePath;
+ 		return Volt::AssetManager::GetRelativePath(filePath);
 	}
 }
 
@@ -37,7 +37,7 @@ MeshImportModal::MeshImportModal(const std::string& strId)
 {
 }
 
-void MeshImportModal::SetImportMeshes(const std::vector<std::filesystem::path>& filePaths)
+void MeshImportModal::SetImportMeshes(const Vector<std::filesystem::path>& filePaths)
 {
 	m_importFilePaths = filePaths;
 }

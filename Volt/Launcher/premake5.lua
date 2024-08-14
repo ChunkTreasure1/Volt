@@ -6,8 +6,8 @@ project "Launcher"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++20"
-	debugdir "../../Engine"
 
+	debugdir "../../Engine"
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
 
@@ -25,13 +25,11 @@ project "Launcher"
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
 		"/WHOLEARCHIVE:PhysX",
-		"/WHOLEARCHIVE:GraphKey",
 		"/WHOLEARCHIVE:Mosaic"
 	}
 
     defines
     {
-        "GLFW_INCLUDE_NONE",
     }
 
 	files
@@ -39,6 +37,7 @@ project "Launcher"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
+		"**.natvis",
 
 		"resource.h",
 		"Launcher.rc",
@@ -48,15 +47,17 @@ project "Launcher"
 	includedirs
 	{
 		"src/",
-		"../Volt/src/",
-		"../Amp/src/",
-		"../Game/src/",
-		"../GraphKey/src/",
-		"../Nexus/src",
-		"../Navigation/src/",
-		"../VoltRenderer/VoltRHI/src",
 
-        "%{IncludeDir.GLFW}",
+		"%{IncludeDir.Volt}",
+		"%{IncludeDir.Amp}",
+		"%{IncludeDir.Navigation}",
+		"%{IncludeDir.Nexus}",
+		"%{IncludeDir.Mosaic}",
+		"%{IncludeDir.LogModule}",
+		"%{IncludeDir.RHIModule}",
+		"%{IncludeDir.RenderCoreModule}",
+		"%{IncludeDir.JobSystemModule}",
+
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
@@ -76,7 +77,6 @@ project "Launcher"
 		"%{IncludeDir.discord}",
 
 		"%{IncludeDir.entt}",
-		"%{IncludeDir.ffmpeg}",
 
 		"%{IncludeDir.detour}",
 		"%{IncludeDir.detourcrowd}",
@@ -87,13 +87,17 @@ project "Launcher"
 
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.vma}",
-		"%{IncludeDir.zlib}"
+		"%{IncludeDir.zlib}",
+
+		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.WindowModule}",
+		"%{IncludeDir.InputModule}",
+
 	}
 
     links
     {
         "Volt",
-		"GraphKey",
 		"Amp",
 		"meshoptimizer",
 		"DiscordSDK",
@@ -113,19 +117,15 @@ project "Launcher"
 
 		"%{Library.AkRoomVerbFX}",
 
-		"%{Library.avcodec}",
-		"%{Library.avdevice}",
-		"%{Library.avfilter}",
-		"%{Library.avformat}",
-		"%{Library.avutil}",
-		"%{Library.swresample}",
-		"%{Library.swscale}",
-
 		"%{Library.mono}",
 		"%{Library.steam}",
 		"%{Library.discord}",
 		
-		"%{Library.METIS}"
+		"%{Library.METIS}",
+
+		"EventModule",
+		"WindowModule",
+		"InputModule",
     }
 	
 	debugargs 

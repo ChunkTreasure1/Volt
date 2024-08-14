@@ -2,6 +2,8 @@
 
 #include "Volt/Utility/Version.h"
 
+#include <CoreUtilities/Core.h>
+
 namespace Volt
 {
 	struct Project

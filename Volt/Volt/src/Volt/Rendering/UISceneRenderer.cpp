@@ -1,14 +1,10 @@
 #include "vtpch.h"
 #include "UISceneRenderer.h"
 
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphBlackboard.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
 #include "Volt/Rendering/Renderer.h"
 
 #include "Volt/Rendering/Utility/StagedBufferUpload.h"
-#include "Volt/Rendering/RenderGraph/RenderContextUtils.h"
 
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
@@ -16,12 +12,17 @@
 #include "Volt/GameUI/UIScene.h"
 #include "Volt/GameUI/UIComponents.h"
 
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
+
 namespace Volt
 {
 	struct UIRenderingData
 	{
-		RenderGraphResourceHandle vertexBuffer = 0;
-		RenderGraphResourceHandle indexBuffer = 0;
+		RenderGraphBufferHandle vertexBuffer;
+		RenderGraphBufferHandle indexBuffer;
 
 		uint32_t indexCount = 0;
 	};
@@ -30,6 +31,7 @@ namespace Volt
 	{
 		glm::vec4 position;
 		glm::vec2 texCoords;
+		glm::vec4 color;
 		ResourceHandle imageHandle = Resource::Invalid;
 		uint32_t id;
 	};
@@ -38,10 +40,10 @@ namespace Volt
 	static constexpr uint32_t s_quadIndexCount = 6;
 	static constexpr glm::vec4 s_quadVertexPositions[s_quadVertexCount] =
 	{
-		{ 0.f, 0.f, 0.f, 1.f },
-		{ 1.f, 0.f, 0.f, 1.f },
-		{ 0.f, 1.f, 0.f, 1.f },
-		{ 1.f, 1.f, 0.f, 1.f }
+		{ 0.f,  0.f, 0.f, 1.f },
+		{ 1.f,  0.f, 0.f, 1.f },
+		{ 0.f, -1.f, 0.f, 1.f },
+		{ 1.f, -1.f, 0.f, 1.f }
 	};
 
 	static constexpr glm::vec2 s_quadVertexTexCoords[s_quadVertexCount] =
@@ -54,12 +56,12 @@ namespace Volt
 
 	static constexpr uint32_t s_quadVertexIndices[s_quadIndexCount] =
 	{
-		0, 2, 1,
-		2, 3, 1
+		0, 1, 2,
+		2, 1, 3
 	};
 
 	UISceneRenderer::UISceneRenderer(const UISceneRendererSpecification& specification)
-		: m_scene(specification.scene), m_isEditor(specification.isEditor)
+		: m_scene(specification.scene), m_isEditor(specification.isEditor), m_commandBufferSet(Renderer::GetFramesInFlight())
 	{
 
 	}
@@ -68,31 +70,26 @@ namespace Volt
 	{
 	}
 
-	void UISceneRenderer::OnRender(RefPtr<RHI::Image2D> targetImage, const glm::mat4& projectionMatrix)
+	void UISceneRenderer::OnRender(RefPtr<RHI::Image> targetImage, const glm::mat4& projectionMatrix)
 	{
-		if (!m_commandBuffer)
-		{
-			m_commandBuffer = RHI::CommandBuffer::Create(Renderer::GetFramesInFlight(), RHI::QueueType::Graphics);
-		}
-
 		RenderGraphBlackboard blackboard;
-		RenderGraph renderGraph{ m_commandBuffer };
+		RenderGraph renderGraph{ m_commandBufferSet.IncrementAndGetCommandBuffer() };
 	
 		if (PrepareForRender(renderGraph, blackboard))
 		{
 			const auto& renderingData = blackboard.Get<UIRenderingData>();
 
-			RenderGraphResourceHandle targetImageHandle = renderGraph.AddExternalImage2D(targetImage);
+			RenderGraphImageHandle targetImageHandle = renderGraph.AddExternalImage(targetImage);
 
 			struct UIPassData
 			{
-				RenderGraphResourceHandle depthImage;
+				RenderGraphImageHandle depthImage;
 			};
 
 			struct UISelectionData
 			{
-				RenderGraphResourceHandle widgetIDImage;
-				RenderGraphResourceHandle depthImage;
+				RenderGraphImageHandle widgetIDImage;
+				RenderGraphImageHandle depthImage;
 			};
 
 			renderGraph.AddPass("Grid Pass", 
@@ -101,7 +98,7 @@ namespace Volt
 				builder.WriteResource(targetImageHandle);
 				builder.SetHasSideEffect();
 			}, 
-			[=](RenderContext& context, const RenderGraphPassResources& resources) 
+			[=](RenderContext& context) 
 			{
 				RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { targetImageHandle });
 
@@ -126,12 +123,12 @@ namespace Volt
 			{
 				{
 					const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32_UINT>(targetImage->GetWidth(), targetImage->GetHeight(), RHI::ImageUsage::AttachmentStorage, "UI Selection");
-					data.widgetIDImage = builder.CreateImage2D(desc);
+					data.widgetIDImage = builder.CreateImage(desc);
 				}
 
 				{
 					const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::D32_SFLOAT>(targetImage->GetWidth(), targetImage->GetHeight(), RHI::ImageUsage::Attachment, "UI Selection Depth");
-					data.depthImage = builder.CreateImage2D(desc);
+					data.depthImage = builder.CreateImage(desc);
 				}
 
 				builder.ReadResource(renderingData.indexBuffer, RenderGraphResourceState::IndexBuffer);
@@ -139,7 +136,7 @@ namespace Volt
 
 				builder.SetHasSideEffect();
 			},
-			[=](const UISelectionData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+			[=](const UISelectionData& data, RenderContext& context) 
 			{
 				RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { data.widgetIDImage, data.depthImage });
 				
@@ -160,14 +157,14 @@ namespace Volt
 				context.EndRendering();
 			});
 
-			renderGraph.QueueImage2DExtraction(selectionData.widgetIDImage, m_widgetIDImage);
+			renderGraph.EnqueueImageExtraction(selectionData.widgetIDImage, m_widgetIDImage);
 
 			renderGraph.AddPass<UIPassData>("UI Pass",
 			[&](RenderGraph::Builder& builder, UIPassData& data) 
 			{
 				{
 					const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::D32_SFLOAT>(targetImage->GetWidth(), targetImage->GetHeight(), RHI::ImageUsage::Attachment, "UI Depth");
-					data.depthImage = builder.CreateImage2D(desc);
+					data.depthImage = builder.CreateImage(desc);
 				}
 
 				builder.WriteResource(targetImageHandle);
@@ -176,7 +173,7 @@ namespace Volt
 
 				builder.SetHasSideEffect();
 			},
-			[=](const UIPassData& data, RenderContext& context, const RenderGraphPassResources& resources)
+			[=](const UIPassData& data, RenderContext& context)
 			{
 				RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { targetImageHandle, data.depthImage });
 				renderingInfo.renderingInfo.colorAttachments[0].clearMode = RHI::ClearMode::Load;
@@ -193,13 +190,14 @@ namespace Volt
 				context.BindVertexBuffers({ renderingData.vertexBuffer }, 0);
 
 				context.SetConstant("viewProjection"_sh, projectionMatrix);
+				context.SetConstant("linearSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
 
 				context.DrawIndexed(renderingData.indexCount, 1, 0, 0, 0);
 				context.EndRendering();
 			});
 		}
 
-		RenderGraphResourceHandle outputImage = renderGraph.AddExternalImage2D(targetImage);
+		RenderGraphResourceHandle outputImage = renderGraph.AddExternalImage(targetImage);
 		{
 			RenderGraphBarrierInfo barrier{};
 			barrier.dstAccess = RHI::BarrierAccess::ShaderRead;
@@ -260,8 +258,9 @@ namespace Volt
 				for (uint32_t i = 0; i < s_quadVertexCount; i++)
 				{
 					UIVertex& vertex = stagedVertexBufferUpload.AddUploadItem();
-					vertex.position = (s_quadVertexPositions[i] - glm::vec4{ transComp.alignment, 0.f, 0.f }) * glm::vec4{ transComp.size, 1.f, 1.f } + glm::vec4{ transComp.position, 10.f, 0.f };
+					vertex.position = (s_quadVertexPositions[i] - glm::vec4{ transComp.alignment, 0.f, 0.f }) * glm::vec4{ transComp.size, 1.f, 1.f } + glm::vec4{ transComp.position.x, -transComp.position.y, 10.f, 0.f };
 					vertex.texCoords = s_quadVertexTexCoords[i];
+					vertex.color = glm::vec4{ imageComp.tint, imageComp.alpha };
 					vertex.imageHandle = resourceHandle;
 					vertex.id = idComp.id;
 				}

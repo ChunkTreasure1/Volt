@@ -7,26 +7,33 @@
 
 #include "Volt/Project/ProjectManager.h"
 
-#include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
-#include "Volt/Rendering/Debug/ShaderRuntimeValidator.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
-#include "Volt/Rendering/Resources/BindlessResourcesManager.h"
 
 #include "Volt/Math/Math.h"
 
-#include <VoltRHI/Shader/ShaderCompiler.h>
-#include <VoltRHI/Shader/ShaderCache.h>
-#include <VoltRHI/Images/SamplerState.h>
-#include <VoltRHI/Graphics/Swapchain.h>
-#include <VoltRHI/Images/Image2D.h>
-#include <VoltRHI/Buffers/CommandBuffer.h>
-#include <VoltRHI/Images/ImageUtility.h>
-#include <VoltRHI/Descriptors/DescriptorTable.h>
-#include <VoltRHI/Pipelines/ComputePipeline.h>
-#include <VoltRHI/Utility/ResourceUtility.h>
+#include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
+#include <RenderCore/Debug/ShaderRuntimeValidator.h>
+#include <RenderCore/Resources/BindlessResourcesManager.h>
+
+#include <RHIModule/Shader/ShaderCompiler.h>
+#include <RHIModule/Shader/ShaderCache.h>
+#include <RHIModule/Images/SamplerState.h>
+#include <RHIModule/Graphics/Swapchain.h>
+#include <RHIModule/Images/Image.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
+#include <RHIModule/Images/ImageUtility.h>
+#include <RHIModule/Descriptors/DescriptorTable.h>
+#include <RHIModule/Pipelines/ComputePipeline.h>
+#include <RHIModule/Utility/ResourceUtility.h>
 
 #include <CoreUtilities/Containers/FunctionQueue.h>
+#include <CoreUtilities/Math/Hash.h>
+
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
 
 namespace Volt
 {
@@ -76,7 +83,7 @@ namespace Volt
 		Scope<ShaderRuntimeValidator> shaderValidator;
 #endif
 
-		std::vector<FunctionQueue> deletionQueue;
+		Vector<FunctionQueue> deletionQueue;
 		std::unordered_map<size_t, BindlessResourceRef<RHI::SamplerState>> samplers;
 
 		DefaultResources defaultResources;
@@ -87,7 +94,7 @@ namespace Volt
 	void Renderer::PreInitialize()
 	{
 		s_rendererData = CreateScope<RendererData>();
-		s_rendererData->deletionQueue.resize(Application::Get().GetWindow().GetSwapchain().GetFramesInFlight());
+		s_rendererData->deletionQueue.resize(WindowManager::Get().GetMainWindow().GetSwapchain().GetFramesInFlight());
 
 		// Create shader compiler
 		{
@@ -123,12 +130,13 @@ namespace Volt
 
 	void Renderer::Initialize()
 	{
-		RenderGraphExecutionThread::Initialize();
-		CreateDefaultResources();
+		RenderGraphExecutionThread::Initialize(RenderGraphExecutionThread::ExecutionMode::Multithreaded);
 
 #ifndef VT_DIST
 		s_rendererData->shaderValidator = CreateScope<ShaderRuntimeValidator>();
 #endif
+
+		CreateDefaultResources();
 	}
 
 	void Renderer::Shutdown()
@@ -139,7 +147,7 @@ namespace Volt
 
 	void Renderer::Flush()
 	{
-		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+		const uint32_t currentFrame = WindowManager::Get().GetMainWindow().GetSwapchain().GetCurrentFrame();
 
 		//Application::GetThreadPool().SubmitTask([currentFrame, queueCopy = s_rendererData->deletionQueue.at(currentFrame)]() mutable
 		//{
@@ -147,11 +155,12 @@ namespace Volt
 		//});
 
 		s_rendererData->deletionQueue.at(currentFrame).Flush();
+		s_rendererData->bindlessResourcesManager->Update();
 	}
 
 	const uint32_t Renderer::GetFramesInFlight()
 	{
-		return Application::Get().GetWindow().GetSwapchain().GetFramesInFlight();
+		return WindowManager::Get().GetMainWindow().GetSwapchain().GetFramesInFlight();
 	}
 
 	void Renderer::DestroyResource(std::function<void()>&& function)
@@ -162,7 +171,7 @@ namespace Volt
 			return;
 		}
 
-		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+		const uint32_t currentFrame = WindowManager::Get().GetMainWindow().GetSwapchain().GetCurrentFrame();
 		s_rendererData->deletionQueue.at(currentFrame).Push(std::move(function));
 	}
 
@@ -183,9 +192,9 @@ namespace Volt
 		constexpr uint32_t IRRADIANCE_MAP_SIZE = 32;
 		constexpr uint32_t CONVERSION_THREAD_GROUP_SIZE = 32;
 
-		RefPtr<RHI::Image2D> environmentUnfiltered;
-		RefPtr<RHI::Image2D> environmentFiltered;
-		RefPtr<RHI::Image2D> irradianceMap;
+		RefPtr<RHI::Image> environmentUnfiltered;
+		RefPtr<RHI::Image> environmentFiltered;
+		RefPtr<RHI::Image> irradianceMap;
 
 		auto linearSampler = GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>();
 
@@ -202,7 +211,7 @@ namespace Volt
 			imageSpec.layers = 6;
 			imageSpec.isCubeMap = true;
 
-			environmentUnfiltered = RHI::Image2D::Create(imageSpec);
+			environmentUnfiltered = RHI::Image::Create(imageSpec);
 
 			{
 				RHI::ResourceBarrierInfo barrierInfo{};
@@ -264,8 +273,9 @@ namespace Volt
 			imageSpec.layers = 6;
 			imageSpec.isCubeMap = true;
 			imageSpec.mips = RHI::Utility::CalculateMipCount(CUBE_MAP_SIZE, CUBE_MAP_SIZE);
+			imageSpec.debugName = "Environment - Radiance";
 
-			environmentFiltered = RHI::Image2D::Create(imageSpec);
+			environmentFiltered = RHI::Image::Create(imageSpec);
 
 			for (uint32_t i = 0; i < imageSpec.mips; i++)
 			{
@@ -289,7 +299,7 @@ namespace Volt
 			RHI::DescriptorTableCreateInfo tableInfo{};
 			tableInfo.shader = pipeline->GetShader();
 
-			std::vector<RefPtr<RHI::DescriptorTable>> descriptorTables;
+			Vector<RefPtr<RHI::DescriptorTable>> descriptorTables;
 			for (uint32_t i = 0; i < imageSpec.mips; i++)
 			{
 				descriptorTables.emplace_back(RHI::DescriptorTable::Create(tableInfo));
@@ -345,8 +355,9 @@ namespace Volt
 			imageSpec.layers = 6;
 			imageSpec.isCubeMap = true;
 			imageSpec.mips = RHI::Utility::CalculateMipCount(IRRADIANCE_MAP_SIZE, IRRADIANCE_MAP_SIZE);
+			imageSpec.debugName = "Environment - Irradiance";
 
-			irradianceMap = RHI::Image2D::Create(imageSpec);
+			irradianceMap = RHI::Image::Create(imageSpec);
 		
 			{
 				RHI::ResourceBarrierInfo barrierInfo{};
@@ -417,16 +428,14 @@ namespace Volt
 
 	void Renderer::EndOfFrameUpdate()
 	{
-		s_rendererData->bindlessResourcesManager->Update();
-
 #ifndef VT_DIST
-		//s_rendererData->shaderValidator->Update();
+		//s_rendererData->shaderValidator->ReadbackErrorBuffer();
 
-		//const auto& frameErrors = s_rendererData->shaderValidator->GetValidationErrors();
-		//for (const auto& error : frameErrors)
-		//{
-		//	VT_CORE_ERROR(error);
-		//}
+		const auto& frameErrors = s_rendererData->shaderValidator->GetValidationErrors();
+		for (const auto& error : frameErrors)
+		{
+			VT_LOGC(Error, LogRender, error);
+		}
 #endif
 	}
 
@@ -466,7 +475,7 @@ namespace Volt
 			imageSpec.isCubeMap = true;
 			imageSpec.debugName = "BlackCube";
 
-			s_rendererData->defaultResources.blackCubeTexture = RHI::Image2D::Create(imageSpec, PIXEL_DATA);
+			s_rendererData->defaultResources.blackCubeTexture = RHI::Image::Create(imageSpec, PIXEL_DATA);
 		}
 
 		GenerateBRDFLuT();
@@ -483,56 +492,40 @@ namespace Volt
 
 		RHI::ImageSpecification spec{};
 		spec.format = RHI::PixelFormat::R16G16_SFLOAT;
-		spec.usage = RHI::ImageUsage::Storage;
+		spec.usage = RHI::ImageUsage::AttachmentStorage;
 		spec.width = BRDFSize;
 		spec.height = BRDFSize;
 		spec.debugName = "BRDFLut";
 
-		s_rendererData->defaultResources.BRDFLuT = RHI::Image2D::Create(spec);
+		s_rendererData->defaultResources.BRDFLuT = RHI::Image::Create(spec);
 
-		auto pipeline = ShaderMap::GetComputePipeline("BRDFGeneration", false);
-		RHI::DescriptorTableCreateInfo tableInfo{};
-		tableInfo.shader = pipeline->GetShader();
-
-		RefPtr<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
-		descriptorTable->SetImageView("LUT", s_rendererData->defaultResources.BRDFLuT->GetView(), 0);
-		
 		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
-		commandBuffer->Begin();
 
+		RenderGraph renderGraph{ commandBuffer };
+		RenderGraphImageHandle targetImageHandle = renderGraph.AddExternalImage(s_rendererData->defaultResources.BRDFLuT);
+
+		renderGraph.AddPass("BRDF Pass", 
+		[&](RenderGraph::Builder& builder) 
 		{
-			RHI::ResourceBarrierInfo barrier{};
-			barrier.type = RHI::BarrierType::Image;
-			RHI::ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), s_rendererData->defaultResources.BRDFLuT);
-
-			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderWrite;
-			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderWrite;
-			barrier.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader;
-			barrier.imageBarrier().resource = s_rendererData->defaultResources.BRDFLuT;
-
-			commandBuffer->ResourceBarrier({ barrier });
-		}
-
-		commandBuffer->BindPipeline(pipeline);
-		commandBuffer->BindDescriptorTable(descriptorTable);
-
-		const uint32_t groupCount = Math::DivideRoundUp(BRDFSize, 32u);
-		commandBuffer->Dispatch(groupCount, groupCount, 1);
-
+			builder.WriteResource(targetImageHandle);
+			builder.SetHasSideEffect();
+		},
+		[=](RenderContext& context) 
 		{
-			RHI::ResourceBarrierInfo barrier{};
-			barrier.type = RHI::BarrierType::Image;
-			RHI::ResourceUtility::InitializeBarrierSrcFromCurrentState(barrier.imageBarrier(), s_rendererData->defaultResources.BRDFLuT);
+			RenderingInfo renderingInfo = context.CreateRenderingInfo(BRDFSize, BRDFSize, { targetImageHandle });
 
-			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
-			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
-			barrier.imageBarrier().dstStage = RHI::BarrierStage::PixelShader | RHI::BarrierStage::ComputeShader;
-			barrier.imageBarrier().resource = s_rendererData->defaultResources.BRDFLuT;
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("GenerateBRDF");
+			pipelineInfo.cullMode = RHI::CullMode::None;
 
-			commandBuffer->ResourceBarrier({ barrier });
-		}
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+			
+			context.BeginRendering(renderingInfo);
+			RCUtils::DrawFullscreenTriangle(context, pipeline);
+			context.EndRendering();
+		});
 
-		commandBuffer->End();
-		commandBuffer->Execute();
+		renderGraph.Compile();
+		renderGraph.ExecuteImmediate();
 	}
 }

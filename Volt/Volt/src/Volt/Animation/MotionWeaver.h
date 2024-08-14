@@ -20,13 +20,13 @@ namespace Volt
 
 		void Update(float deltaTime);
 
-		std::vector<glm::mat4x4> Sample();
+		Vector<glm::mat4x4> Sample();
 		
 		VT_NODISCARD VT_INLINE Weak<Skeleton> GetSkeleton() const { return m_Skeleton; }
 
 	private:
 		Ref<MotionWeaveDatabase> m_Database;
-		std::vector<Ref<Animation>> m_Animations;
+		Vector<Ref<Animation>> m_Animations;
 		Ref<Skeleton> m_Skeleton;
 		
 		float m_Time;

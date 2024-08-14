@@ -4,6 +4,7 @@
 #include "Volt/Core/UUID.h"
 #include "Volt/Math/Math.h"
 
+#include <CoreUtilities/Math/Hash.h>
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 #include <CoreUtilities/FileIO/BinaryStreamReader.h>
 

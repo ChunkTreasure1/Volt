@@ -28,7 +28,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(Error, "File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -36,12 +36,12 @@ namespace Volt
 		std::ifstream input(filePath, std::ios::binary | std::ios::in);
 		if (!input.is_open())
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(Error, "File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
-		std::vector<uint8_t> totalData;
+		Vector<uint8_t> totalData;
 		totalData.resize(input.seekg(0, std::ios::end).tellg());
 		input.seekg(0, std::ios::beg);
 		input.read(reinterpret_cast<char*>(totalData.data()), totalData.size());
@@ -49,7 +49,7 @@ namespace Volt
 
 		if (totalData.size() < sizeof(AnimationHeader))
 		{
-			VT_CORE_ERROR("File is smaller than header!", metadata.filePath);
+			VT_LOG(Error, "File is smaller than header!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -57,7 +57,7 @@ namespace Volt
 		AnimationHeader header = *(AnimationHeader*)&totalData[0];
 		size_t offset = sizeof(AnimationHeader);
 
-		std::vector<Animation::Pose> frames;
+		Vector<Animation::Pose> frames;
 		frames.resize(header.frameCount);
 
 		for (uint32_t i = 0; i < header.frameCount; i++)
@@ -100,7 +100,7 @@ namespace Volt
 	{
 		Ref<Animation> animation = std::reinterpret_pointer_cast<Animation>(asset);
 
-		std::vector<uint8_t> outData;
+		Vector<uint8_t> outData;
 
 		AnimationHeader header{};
 		header.perFrameTransformCount = (uint32_t)animation->m_frames.front().localTRS.size();

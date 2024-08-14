@@ -20,5 +20,5 @@ private:
 	void UpdateTimeLine();
 
 	Ref<Volt::Scene>& myCurrentScene;
-	std::vector<KeyFrame> myKeyFrames;
+	Vector<KeyFrame> myKeyFrames;
 };

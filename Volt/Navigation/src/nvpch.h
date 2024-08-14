@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include <map>
 #include <unordered_map>
 #include <set>
@@ -16,3 +15,5 @@
 #include <functional>
 #include <algorithm>
 #include <filesystem>
+
+#include <LogModule/Log.h>

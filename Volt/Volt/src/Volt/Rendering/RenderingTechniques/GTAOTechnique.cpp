@@ -1,29 +1,28 @@
 #include "vtpch.h"
 #include "GTAOTechnique.h"
 
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphBlackboard.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
-#include "Volt/Rendering/SceneRendererStructs.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
 #include "Volt/Rendering/Renderer.h"
-
 #include "Volt/Rendering/Camera/Camera.h"
 
 #include "Volt/Math/Math.h"
+
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
 
 namespace Volt
 {
 	struct PrefilterDepthData
 	{
-		RenderGraphResourceHandle prefilteredDepth;
+		RenderGraphImageHandle prefilteredDepth;
 		GTAOTechnique::GTAOConstants constants{};
 	};
 
 	struct GTAOData
 	{
-		RenderGraphResourceHandle aoOutput;
-		RenderGraphResourceHandle edgesOutput;
+		RenderGraphImageHandle aoOutput;
+		RenderGraphImageHandle edgesOutput;
 	};
 
 	GTAOTechnique::GTAOTechnique(uint64_t frameIndex, const GTAOSettings& settings)
@@ -49,15 +48,17 @@ namespace Volt
 		}
 	}
 
-	void GTAOTechnique::Execute(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	GTAOOutput GTAOTechnique::Execute(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		renderGraph.BeginMarker("GTAO", { 0.f, 1.f, 0.f, 1.f });
 
 		AddPrefilterDepthPass(renderGraph, blackboard);
 		AddMainPass(renderGraph, blackboard);
-		AddDenoisePass(renderGraph, blackboard);
+		GTAOOutput result = AddDenoisePass(renderGraph, blackboard);
 
 		renderGraph.EndMarker();
+
+		return result;
 	}
 
 	void GTAOTechnique::AddPrefilterDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
@@ -103,24 +104,25 @@ namespace Volt
 			desc.mips = GTAO_PREFILTERED_DEPTH_MIP_COUNT;
 			desc.name = "GTAO Prefiltered Depth";
 
-			data.prefilteredDepth = builder.CreateImage2D(desc);
+			data.prefilteredDepth = builder.CreateImage(desc);
 			data.constants = m_constants;
 
 			builder.ReadResource(preDepthData.depth);
 			builder.SetIsComputePass();
 		},
-		[=](const PrefilterDepthData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](const PrefilterDepthData& data, RenderContext& context) 
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("GTAODepthPrefilter");
 			auto pointClampSampler = Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("outDepthMIP0"_sh, resources.GetImage2D(data.prefilteredDepth, 0));
-			context.SetConstant("outDepthMIP1"_sh, resources.GetImage2D(data.prefilteredDepth, 1));
-			context.SetConstant("outDepthMIP2"_sh, resources.GetImage2D(data.prefilteredDepth, 2));
-			context.SetConstant("outDepthMIP3"_sh, resources.GetImage2D(data.prefilteredDepth, 3));
-			context.SetConstant("outDepthMIP4"_sh, resources.GetImage2D(data.prefilteredDepth, 4));
-			context.SetConstant("sourceDepth"_sh, resources.GetImage2D(preDepthData.depth));
+			context.SetConstant("outDepthMIP0"_sh, data.prefilteredDepth, 0);
+			context.SetConstant("outDepthMIP1"_sh, data.prefilteredDepth, 1);
+			context.SetConstant("outDepthMIP2"_sh, data.prefilteredDepth, 2);
+			context.SetConstant("outDepthMIP3"_sh, data.prefilteredDepth, 3);
+			context.SetConstant("outDepthMIP4"_sh, data.prefilteredDepth, 4);
+			context.SetConstant("sourceDepth"_sh, preDepthData.depth);
+			context.SetConstant("padding"_sh, 0u);
 			context.SetConstant("pointClampSampler"_sh, pointClampSampler->GetResourceHandle());
 			context.SetConstant("constants.ViewportSize"_sh, data.constants.ViewportSize);
 			context.SetConstant("constants.ViewportPixelSize"_sh, data.constants.ViewportPixelSize);
@@ -139,7 +141,7 @@ namespace Volt
 			context.SetConstant("constants.ThinOccluderCompensation"_sh, data.constants.ThinOccluderCompensation);
 			context.SetConstant("constants.DepthMIPSamplingOffset"_sh, data.constants.DepthMIPSamplingOffset);
 			context.SetConstant("constants.NoiseIndex"_sh, data.constants.NoiseIndex);
-
+			context.SetConstant("constants.Padding0"_sh, 0.f);
 
 			const uint32_t dispatchX = Math::DivideRoundUp(renderData.renderSize.x, 16u);
 			const uint32_t dispatchY = Math::DivideRoundUp(renderData.renderSize.y, 16u);
@@ -161,30 +163,31 @@ namespace Volt
 			// AO Texture
 			{
 				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32_UINT>(renderSize.x, renderSize.y, RHI::ImageUsage::Storage, "GTAO AO Output");
-				data.aoOutput = builder.CreateImage2D(desc);
+				data.aoOutput = builder.CreateImage(desc);
 			}
 
 			// Edges Texture
 			{
 				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R8_UNORM>(renderSize.x, renderSize.y, RHI::ImageUsage::Storage, "GTAO Edges Output");
-				data.edgesOutput = builder.CreateImage2D(desc);
+				data.edgesOutput = builder.CreateImage(desc);
 			}
 
 			builder.ReadResource(prefilterDepthData.prefilteredDepth);
 			builder.ReadResource(preDepthData.normals);
 			builder.SetIsComputePass();
 		},
-		[=](const GTAOData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](const GTAOData& data, RenderContext& context) 
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("GTAOMainPass");
 			auto pointClampSampler = Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("aoTerm"_sh, resources.GetImage2D(data.aoOutput));
-			context.SetConstant("edges"_sh, resources.GetImage2D(data.edgesOutput));
-			context.SetConstant("srcDepth"_sh, resources.GetImage2D(prefilterDepthData.prefilteredDepth));
-			context.SetConstant("viewspaceNormals"_sh, resources.GetImage2D(preDepthData.normals));
+			context.SetConstant("aoTerm"_sh, data.aoOutput);
+			context.SetConstant("edges"_sh, data.edgesOutput);
+			context.SetConstant("srcDepth"_sh, prefilterDepthData.prefilteredDepth);
+			context.SetConstant("viewspaceNormals"_sh, preDepthData.normals);
 			context.SetConstant("pointClampSampler"_sh, pointClampSampler->GetResourceHandle());
+			context.SetConstant("padding"_sh, glm::uvec3(0));
 			context.SetConstant("constants.ViewportSize"_sh, prefilterDepthData.constants.ViewportSize);
 			context.SetConstant("constants.ViewportPixelSize"_sh, prefilterDepthData.constants.ViewportPixelSize);
 			context.SetConstant("constants.DepthUnpackConsts"_sh, prefilterDepthData.constants.DepthUnpackConsts);
@@ -202,6 +205,7 @@ namespace Volt
 			context.SetConstant("constants.ThinOccluderCompensation"_sh, prefilterDepthData.constants.ThinOccluderCompensation);
 			context.SetConstant("constants.DepthMIPSamplingOffset"_sh, prefilterDepthData.constants.DepthMIPSamplingOffset);
 			context.SetConstant("constants.NoiseIndex"_sh, prefilterDepthData.constants.NoiseIndex);
+			context.SetConstant("constants.Padding0"_sh, 0.f);
 
 			const uint32_t dispatchX = Math::DivideRoundUp(renderSize.x, 16u);
 			const uint32_t dispatchY = Math::DivideRoundUp(renderSize.y, 16u);
@@ -210,24 +214,24 @@ namespace Volt
 		});
 	}
 
-	void GTAOTechnique::AddDenoisePass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	GTAOOutput GTAOTechnique::AddDenoisePass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		const auto& gtaoData = blackboard.Get<GTAOData>();
 		const auto& prefilterDepthData = blackboard.Get<PrefilterDepthData>();
 
 		const glm::uvec2 renderSize = m_constants.ViewportSize;
 
-		blackboard.Add<GTAOOutput>() = renderGraph.AddPass<GTAOOutput>("GTAO Denoise Pass 0",
+		GTAOOutput& output = renderGraph.AddPass<GTAOOutput>("GTAO Denoise Pass 0",
 		[&](RenderGraph::Builder& builder, GTAOOutput& data) 
 		{
 			{
 				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32_UINT>(renderSize.x, renderSize.y, RHI::ImageUsage::Storage, "GTAO Final Output");
-				data.outputImage = builder.CreateImage2D(desc);
+				data.outputImage = builder.CreateImage(desc);
 			}
 
 			{
 				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32_UINT>(renderSize.x, renderSize.y, RHI::ImageUsage::Storage, "GTAO Temp Image");
-				data.tempImage = builder.CreateImage2D(desc);
+				data.tempImage = builder.CreateImage(desc);
 			}
 
 			builder.ReadResource(gtaoData.aoOutput);
@@ -235,15 +239,15 @@ namespace Volt
 
 			builder.SetIsComputePass();
 		},
-		[=](const GTAOOutput& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[=](const GTAOOutput& data, RenderContext& context)
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("GTAODenoise");
 			auto pointClampSampler = Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
 		
 			context.BindPipeline(pipeline);
-			context.SetConstant("finalAOTerm"_sh, resources.GetImage2D(data.outputImage));
-			context.SetConstant("aoTerm"_sh, resources.GetImage2D(gtaoData.aoOutput));
-			context.SetConstant("edges"_sh, resources.GetImage2D(gtaoData.edgesOutput));
+			context.SetConstant("finalAOTerm"_sh, data.outputImage);
+			context.SetConstant("aoTerm"_sh, gtaoData.aoOutput);
+			context.SetConstant("edges"_sh, gtaoData.edgesOutput);
 			context.SetConstant("pointClampSampler"_sh, pointClampSampler->GetResourceHandle());
 			context.SetConstant("constants.ViewportSize"_sh, prefilterDepthData.constants.ViewportSize);
 			context.SetConstant("constants.ViewportPixelSize"_sh, prefilterDepthData.constants.ViewportPixelSize);
@@ -262,12 +266,15 @@ namespace Volt
 			context.SetConstant("constants.ThinOccluderCompensation"_sh, prefilterDepthData.constants.ThinOccluderCompensation);
 			context.SetConstant("constants.DepthMIPSamplingOffset"_sh, prefilterDepthData.constants.DepthMIPSamplingOffset);
 			context.SetConstant("constants.NoiseIndex"_sh, prefilterDepthData.constants.NoiseIndex);
+			context.SetConstant("constants.Padding0"_sh, 0.f);
 		
 			const uint32_t dispatchX = Math::DivideRoundUp(renderSize.x, 8u);
 			const uint32_t dispatchY = Math::DivideRoundUp(renderSize.y, 8u);
 
 			context.Dispatch(dispatchX, dispatchY, 1);
 		});
+
+		return output;
 	}
 }
 

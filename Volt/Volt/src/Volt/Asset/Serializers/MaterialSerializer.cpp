@@ -113,7 +113,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(Error, "File {0} not found!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -122,13 +122,13 @@ namespace Volt
 
 		if (!binaryStreamReader.IsStreamValid())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			VT_LOG(Error, "Failed to open file: {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(binaryStreamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		Buffer buffer{};
 		binaryStreamReader.Read(buffer);
@@ -136,7 +136,7 @@ namespace Volt
 		YAMLMemoryStreamReader streamReader{};
 		if (!streamReader.ConsumeBuffer(buffer))
 		{
-			VT_CORE_ERROR("Failed to read file {0}!", metadata.filePath);
+			VT_LOG(Error, "Failed to read file {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -214,7 +214,7 @@ namespace Volt
 			AssetManager::AddDependencyToAsset(metadata.handle, tex);
 		}
 
-		VT_CORE_TRACE(logStr);
+		VT_LOG(Trace, logStr);
 
 		// #TODO_Ivar: Should probably not happen here
 		mosaicAsset->Compile();

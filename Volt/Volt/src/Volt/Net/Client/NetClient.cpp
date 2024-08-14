@@ -18,6 +18,8 @@
 #include "Volt/Net/Event/NetEvent.h"
 #include "Volt/Core/Application.h"
 
+#include "Volt/Events/SceneEvents.h"
+
 namespace Volt
 {
 	NetClient::NetClient()
@@ -196,7 +198,7 @@ namespace Volt
 		if (!repEnt)
 		{
 			// error
-			VT_CORE_ERROR("Failed to destroy net ent, Client");
+			VT_LOG(Error, "Failed to destroy net ent, Client");
 			return;
 		}
 		// find connected variables
@@ -237,7 +239,7 @@ namespace Volt
 	{
 		if (!MonoScriptEngine::IsRunning())
 		{
-			VT_CORE_ERROR("MonoScriptEngine not running in client RPC call");
+			VT_LOG(Error, "MonoScriptEngine not running in client RPC call");
 			return;
 		}
 
@@ -246,14 +248,14 @@ namespace Volt
 		auto netEnt = reinterpret_pointer_cast<RepEntity>(m_registry.Get(rpcData->repId));
 		if (!netEnt)
 		{
-			VT_CORE_ERROR("net entity is null in client RPC call");
+			VT_LOG(Error, "net entity is null in client RPC call");
 			return;
 		}
 
 		auto sceneEnt = SceneManager::GetActiveScene()->GetEntityFromUUID(netEnt->GetEntityId());
 		if (!sceneEnt.IsValid())
 		{
-			VT_CORE_ERROR("scene entity is null in client RPC call");
+			VT_LOG(Error, "scene entity is null in client RPC call");
 			return;
 		}
 
@@ -261,12 +263,12 @@ namespace Volt
 		auto monoMethod = monoClass->GetMethod(rpcData->monoMethod, 0);
 		if (!monoMethod)
 		{
-			VT_CORE_ERROR("Method error in client RPC call");
+			VT_LOG(Error, "Method error in client RPC call");
 			return;
 		}
 		if (!sceneEnt.HasComponent<MonoScriptComponent>())
 		{
-			VT_CORE_ERROR("missing monoscriptComponent in client RPC call");
+			VT_LOG(Error, "missing monoscriptComponent in client RPC call");
 			return;
 		}
 		auto scriptsVector = sceneEnt.GetComponent<MonoScriptComponent>().scriptIds;
@@ -282,7 +284,7 @@ namespace Volt
 				return;
 			}
 		}
-		VT_CORE_ERROR("script not found in client RPC call");
+		VT_LOG(Error, "script not found in client RPC call");
 	}
 
 	void NetClient::OnEvent()

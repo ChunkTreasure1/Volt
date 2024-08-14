@@ -9,8 +9,6 @@
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Scripting/Mono/MonoScriptInstance.h"
 
-#include <GraphKey/Nodes/PhysicsNodes.h>
-
 namespace Volt
 {
 	void ContactListener::onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count)

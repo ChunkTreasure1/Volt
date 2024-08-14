@@ -44,11 +44,8 @@ namespace Volt
 		Prefab,
 		Font,
 		PhysicsMaterial,
-		Video,
 		BlendSpace,
 		NavMesh,
-		AnimationGraph,
-		GraphKey,
 		MonoScript,
 		BehaviorGraph,
 		Timeline,
@@ -89,7 +86,6 @@ namespace Volt
 		{ ".vtsk", AssetType::Skeleton },
 		{ ".vtanim", AssetType::Animation },
 		{ ".vtchr", AssetType::AnimatedCharacter },
-		{ ".vtanimgraph", AssetType::AnimationGraph },
 
 		{ ".png", AssetType::TextureSource },
 		{ ".jpg", AssetType::TextureSource },
@@ -114,9 +110,6 @@ namespace Volt
 		{ ".vtpp", AssetType::ParticlePreset },
 		{ ".ttf", AssetType::Font },
 
-		{ ".mp4", AssetType::Video },
-		{ ".vtgk", AssetType::GraphKey },
-
 		{ ".cs", AssetType::MonoScript },
 		{ ".vtbt", AssetType::BehaviorGraph},
 		{ ".vtblend", AssetType::BlendSpace },
@@ -133,7 +126,6 @@ namespace Volt
 		{ "Skeleton", AssetType::Skeleton },
 		{ "Animation", AssetType::Animation },
 		{ "Animated Character", AssetType::AnimatedCharacter },
-		{ "Animation Graph", AssetType::AnimationGraph },
 
 		{ "TextureSource", AssetType::TextureSource },
 		{ "Texture", AssetType::Texture },
@@ -150,7 +142,6 @@ namespace Volt
 		{ "Prefab", AssetType::Prefab },
 		{ "Particle Preset", AssetType::ParticlePreset },
 		{ "Font", AssetType::Font },
-		{ "Video", AssetType::Video },
 
 		{ "Mono Script", AssetType::MonoScript },
 		{ "Behavior Graph", AssetType::BehaviorGraph},

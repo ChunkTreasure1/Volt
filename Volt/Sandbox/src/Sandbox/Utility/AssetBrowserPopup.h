@@ -2,6 +2,8 @@
 
 #include <Volt/Asset/Asset.h>
 
+#include <CoreUtilities/Containers/Vector.h>
+
 class AssetBrowserPopup
 {
 public:
@@ -17,7 +19,7 @@ public:
 	State Update();
 
 private:
-	State RenderView(const std::vector<Volt::AssetHandle>& items);
+	State RenderView(const Vector<Volt::AssetHandle>& items);
 
 	std::string myId;
 	Volt::AssetType myWantedType;

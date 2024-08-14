@@ -10,8 +10,6 @@
 
 #include "Volt/Components/CoreComponents.h"
 
-#include "Volt/Log/Log.h"
-
 namespace Volt
 {
 	PhysicsActor::PhysicsActor(Entity entity)
@@ -29,12 +27,12 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_CORE_WARN("Trying to set drag of non-dynamic PhysicsActor!");
+			VT_LOG(Warning, "Trying to set drag of non-dynamic PhysicsActor!");
 			return;
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setLinearDamping(drag);
 	}
@@ -43,12 +41,12 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_CORE_WARN("Trying to set drag of non-dynamic PhysicsActor!");
+			VT_LOG(Warning, "Trying to set drag of non-dynamic PhysicsActor!");
 			return;
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setAngularDamping(drag);
 	}
@@ -62,13 +60,13 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_CORE_WARN("Static PhysicsActor can't have mass!");
+			VT_LOG(Warning, "Static PhysicsActor can't have mass!");
 			return;
 		}
 		myRigidBodyData.mass = mass;
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		physx::PxRigidBodyExt::setMassAndUpdateInertia(*actor, mass);
 	}
@@ -77,13 +75,13 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_CORE_WARN("Static PhysicsActor can't be kinematic!");
+			VT_LOG(Warning, "Static PhysicsActor can't be kinematic!");
 			return;
 		}
 		myRigidBodyData.isKinematic = isKinematic;
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, isKinematic);
 	}
@@ -105,12 +103,12 @@ namespace Volt
 	{
 		if (!IsKinematic())
 		{
-			VT_CORE_WARN("Trying to set kinematic target for a non-kinematic actor.");
+			VT_LOG(Warning, "Trying to set kinematic target for a non-kinematic actor.");
 			return;
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 		actor->setKinematicTarget(PhysXUtilities::ToPhysXTransform(position, rotation));
 	}
 
@@ -118,12 +116,12 @@ namespace Volt
 	{
 		if (!IsDynamic() || IsKinematic())
 		{
-			VT_CORE_WARN("Trying to set velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to set velocity of non-dynamic PhysicsActor");
 			return;
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setLinearVelocity(PhysXUtilities::ToPhysXVector(velocity));
 	}
@@ -132,12 +130,12 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_CORE_WARN("Trying to set velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to set velocity of non-dynamic PhysicsActor");
 			return;
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setAngularVelocity(PhysXUtilities::ToPhysXVector(velocity));
 	}
@@ -146,12 +144,12 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_CORE_WARN("Trying to set velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to set velocity of non-dynamic PhysicsActor");
 			return;
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setMaxLinearVelocity(velocity);
 	}
@@ -160,12 +158,12 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_CORE_WARN("Trying to set velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to set velocity of non-dynamic PhysicsActor");
 			return;
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setMaxAngularVelocity(velocity);
 	}
@@ -179,12 +177,12 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_CORE_WARN("Trying to get velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to get velocity of non-dynamic PhysicsActor");
 			return glm::vec3(0.f);
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return PhysXUtilities::FromPhysXVector(actor->getLinearVelocity());
 	}
@@ -193,12 +191,12 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_CORE_WARN("Trying to get velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to get velocity of non-dynamic PhysicsActor");
 			return glm::vec3(0.f);
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return PhysXUtilities::FromPhysXVector(actor->getAngularVelocity());
 	}
@@ -207,12 +205,12 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_CORE_WARN("Trying to get velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to get velocity of non-dynamic PhysicsActor");
 			return 0.f;
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return actor->getMaxLinearVelocity();
 	}
@@ -221,12 +219,12 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_CORE_WARN("Trying to get velocity of non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to get velocity of non-dynamic PhysicsActor");
 			return 0.f;
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return actor->getMaxAngularVelocity();
 	}
@@ -235,12 +233,12 @@ namespace Volt
 	{
 		if (!IsKinematic())
 		{
-			VT_CORE_WARN("Trying to set kinematic target for a non-kinematic actor.");
+			VT_LOG(Warning, "Trying to set kinematic target for a non-kinematic actor.");
 			return glm::vec3(0.0f, 0.0f, 0.0f);
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 		physx::PxTransform target;
 		actor->getKinematicTarget(target);
 		return PhysXUtilities::FromPhysXVector(target.p);
@@ -250,12 +248,12 @@ namespace Volt
 	{
 		if (!IsKinematic())
 		{
-			VT_CORE_WARN("Trying to set kinematic target for a non-kinematic actor.");
+			VT_LOG(Warning, "Trying to set kinematic target for a non-kinematic actor.");
 			return glm::vec3(0.0f, 0.0f, 0.0f);
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 		physx::PxTransform target;
 		actor->getKinematicTarget(target);
 		return PhysXUtilities::FromPhysXQuat(target.q);
@@ -313,12 +311,12 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_CORE_WARN("Trying to add force to non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to add force to non-dynamic PhysicsActor");
 			return;
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 		actor->addForce(PhysXUtilities::ToPhysXVector(aForce), (physx::PxForceMode::Enum)aForceMode);
 	}
 
@@ -326,12 +324,12 @@ namespace Volt
 	{
 		if (!IsDynamic())
 		{
-			VT_CORE_WARN("Trying to add torque to non-dynamic PhysicsActor");
+			VT_LOG(Warning, "Trying to add torque to non-dynamic PhysicsActor");
 			return;
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 		actor->addTorque(PhysXUtilities::ToPhysXVector(torque), (physx::PxForceMode::Enum)aForceMode);
 	}
 

@@ -15,28 +15,27 @@ struct PositionData
     float3 positions[3];
 };
 
-uint3 LoadTriangleIndices(TypedBuffer<uint> indexBuffer, uint indexOffset, uint vertexOffset)
+uint3 LoadTriangleIndices(vt::TypedBuffer<uint> meshletDataBuffer, uint offset, uint vertexOffset, uint3 meshletTriIndices)
 {
     uint3 result;
-
-    result.x = indexBuffer.Load(indexOffset + 0) + vertexOffset;
-    result.y = indexBuffer.Load(indexOffset + 1) + vertexOffset;
-    result.z = indexBuffer.Load(indexOffset + 2) + vertexOffset;
+    result.x = meshletDataBuffer.Load(offset + meshletTriIndices.x) + vertexOffset;
+    result.y = meshletDataBuffer.Load(offset + meshletTriIndices.y) + vertexOffset;
+    result.z = meshletDataBuffer.Load(offset + meshletTriIndices.z) + vertexOffset;
 
     return result;
 }
 
-PositionData LoadVertexPositions(TypedBuffer<VertexPositionData> positionsBuffer, uint3 triIndices)
+PositionData LoadVertexPositions(vt::TypedBuffer<float3> positionsBuffer, uint3 triIndices)
 {
     PositionData result;
-    result.positions[0] = positionsBuffer.Load(triIndices.x).position;
-    result.positions[1] = positionsBuffer.Load(triIndices.y).position;
-    result.positions[2] = positionsBuffer.Load(triIndices.z).position;
+    result.positions[0] = positionsBuffer.Load(triIndices.x);
+    result.positions[1] = positionsBuffer.Load(triIndices.y);
+    result.positions[2] = positionsBuffer.Load(triIndices.z);
 
     return result;
 }
 
-MaterialData LoadVertexMaterialData(TypedBuffer<VertexMaterialData> buffer, uint3 triIndices)
+MaterialData LoadVertexMaterialData(vt::TypedBuffer<VertexMaterialData> buffer, uint3 triIndices)
 {
     const VertexMaterialData material0 = buffer.Load(triIndices.x);
     const VertexMaterialData material1 = buffer.Load(triIndices.y);

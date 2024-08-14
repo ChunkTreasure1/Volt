@@ -3,7 +3,7 @@
 #include "Sandbox/Window/EditorWindow.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
-#include <Volt/Events/ApplicationEvent.h>
+#include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Asset/Asset.h>
 
 #include <glm/glm.hpp>
@@ -16,6 +16,7 @@ namespace Volt
 	class Scene;
 	class SceneRenderer;
 	class Material;
+	class WindowRenderEvent;
 }
 
 class EditorCameraController;
@@ -43,15 +44,15 @@ private:
 	struct TempJoint
 	{
 		std::string name;
-		std::vector<TempJoint> childJoints;
+		Vector<TempJoint> childJoints;
 	};
 
 	struct TempSkeleton
 	{
-		std::vector<TempJoint> joints;
+		Vector<TempJoint> joints;
 	};
 
-	bool OnRenderEvent(Volt::AppRenderEvent& e);
+	bool OnRenderEvent(Volt::WindowRenderEvent& e);
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
 
 	void UpdateToolbar();
@@ -89,7 +90,7 @@ private:
 	bool myActivateJointSearch = false;
 	std::string myJointSearchQuery;
 
-	std::vector<Volt::Entity> myJointAttachmentEntities;
+	Vector<Volt::Entity> myJointAttachmentEntities;
 
 	Volt::AssetHandle mySkinHandle = Volt::Asset::Null();
 	Volt::AssetHandle mySkeletonHandle = Volt::Asset::Null();;

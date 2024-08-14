@@ -3,7 +3,6 @@
 #include "Volt/Project/ProjectManager.h"
 
 #include <fstream>
-#include <tlhelp32.h>
 
 namespace Volt
 {

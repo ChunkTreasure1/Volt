@@ -3,22 +3,17 @@
 
 #include "Volt/Asset/AssetManager.h"
 
-#include "Volt/Input/Input.h"
-#include "Volt/Input/KeyCodes.h"
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
 
-#include "Volt/Core/Window.h"
 #include "Volt/Core/Layer/Layer.h"
 #include "Volt/Steam/SteamImplementation.h"
 
 #include "Volt/Rendering/Renderer.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphExecutionThread.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
-
-#include "Volt/Core/ScopedTimer.h"
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Project/ProjectManager.h"
-#include "Volt/Project/SessionPreferences.h"
 #include "Volt/Scene/SceneManager.h"
 
 #include "Volt/Physics/Physics.h"
@@ -28,95 +23,80 @@
 #include "Volt/Utility/Noise.h"
 #include "Volt/Utility/UIUtility.h"
 
-#include <VoltRHI/ImGui/ImGuiImplementation.h>
-#include <VoltRHI/Graphics/GraphicsContext.h>
+#include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
 
-#include <VoltVulkan/VulkanRHIProxy.h>
-#include <VoltD3D12/D3D12RHIProxy.h>
+#include <RHIModule/ImGui/ImGuiImplementation.h>
+#include <RHIModule/Graphics/GraphicsContext.h>
+
+#include <VulkanRHIModule/VulkanRHIProxy.h>
+#include <D3D12RHIModule/D3D12RHIProxy.h>
 
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 #include <Amp/WWiseEngine/WWiseEngine.h>
 #include <Navigation/Core/NavigationSystem.h>
 
+#include <LogModule/Log.h>
+
+#include <InputModule/Events/KeyboardEvents.h>
+#include <InputModule/Events/MouseEvents.h>
+
+#include <WindowModule/Events/WindowEvents.h>
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+
 namespace Volt
 {
-	inline static void RHILogCallback(RHI::LogSeverity severity, std::string_view msg)
-	{
-		switch (severity)
-		{
-			case RHI::LogSeverity::Trace:
-				VT_CORE_TRACE(msg);
-				break;
-			case RHI::LogSeverity::Info:
-				VT_CORE_INFO(msg);
-				break;
-			case RHI::LogSeverity::Warning:
-				VT_CORE_WARN(msg);
-				break;
-			case RHI::LogSeverity::Error:
-				VT_CORE_ERROR(msg);
-				break;
-		}
-	}
-
 	Application::Application(const ApplicationInfo& info)
 		: m_frameTimer(100)
 	{
-		VT_CORE_ASSERT(!s_instance, "Application already exists!");
+		VT_ASSERT_MSG(!s_instance, "Application already exists!");
 		s_instance = this;
+
+		m_log = CreateScope<Log>();
+		m_log->SetLogOutputFilepath(m_info.projectPath / "Log/Log.txt");
+
+		m_jobSystem = CreateScope<JobSystem>();
 
 		m_info = info;
 		Noise::Initialize();
 
-		Log::Initialize();
 		ProjectManager::SetupProject(m_info.projectPath);
-		Log::InitializeFileSinks();
-		
-		SessionPreferences::Initialize();
 
 		WindowProperties windowProperties{};
-		windowProperties.width = info.width;
-		windowProperties.height = info.height;
-		windowProperties.vsync = info.useVSync;
-		windowProperties.title = info.title;
-		windowProperties.windowMode = info.windowMode;
-		windowProperties.iconPath = info.iconPath;
-		windowProperties.cursorPath = info.cursorPath;
-
-		SetupWindowPreferences(windowProperties);
+		windowProperties.Width = info.width;
+		windowProperties.Height = info.height;
+		windowProperties.VSync = info.useVSync;
+		windowProperties.Title = info.title;
+		windowProperties.WindowMode = info.windowMode;
+		windowProperties.IconPath = info.iconPath;
+		windowProperties.CursorPath = info.cursorPath;
+		windowProperties.UseTitlebar = info.UseTitlebar;
+		windowProperties.UseCustomTitlebar = info.UseCustomTitlebar;
 
 		if (m_info.isRuntime)
 		{
-			windowProperties.title = ProjectManager::GetProject().name;
-			windowProperties.cursorPath = ProjectManager::GetProject().cursorPath;
-			windowProperties.iconPath = ProjectManager::GetProject().iconPath;
+			windowProperties.Title = ProjectManager::GetProject().name;
+			windowProperties.CursorPath = ProjectManager::GetProject().cursorPath;
+			windowProperties.IconPath = ProjectManager::GetProject().iconPath;
 		}
-	
-		// This is required because glfwInit must be called before setting up graphics device
-		Window::StaticInitialize();
-		CreateGraphicsContext();
 
 		if (ProjectManager::GetProject().isDeprecated)
 		{
-			windowProperties.useTitlebar = true;
+			windowProperties.UseTitlebar = true;
 		}
 
-		// Setup main window
-		{
-			m_windowHandle = m_windowManager.CreateNewWindow(windowProperties);
+		// This is required because glfwInit must be called before setting up graphics device
+		WindowManager::InitializeGLFW();
+		CreateGraphicsContext();
+		WindowManager::Initialize(windowProperties);
 
-			auto& window = m_windowManager.GetWindow(m_windowHandle);
-			window.SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
-		}
+		WindowManager::Get().GetMainWindow().SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
 
 		FileSystem::Initialize();
-		
-		m_threadPool.Initialize(std::thread::hardware_concurrency() / 2);
-
 		Renderer::PreInitialize();
 		m_assetmanager = CreateScope<AssetManager>();
-		
+
 		ShaderMap::Initialize();
 		Renderer::Initialize();
 
@@ -147,7 +127,7 @@ namespace Volt
 
 		if (info.enableImGui)
 		{
-			auto& window = m_windowManager.GetWindow(m_windowHandle);
+			auto& window = WindowManager::Get().GetMainWindow();
 
 			RHI::ImGuiCreateInfo createInfo{};
 			createInfo.swapchain = window.GetSwapchainPtr();
@@ -205,19 +185,18 @@ namespace Volt
 		Amp::WWiseEngine::Get().TermWwise();
 
 		m_assetmanager = nullptr;
-		m_threadPool.Shutdown();
 
 		ShaderMap::Shutdown();
 		Renderer::Shutdown();
 		FileSystem::Shutdown();
-
-		m_windowManager.DestroyWindow(m_windowHandle);
 		m_graphicsContext = nullptr;
 		m_rhiProxy = nullptr;
-		Window::StaticShutdown();
+		WindowManager::Shutdown();
+		WindowManager::ShutdownGLFW();
 
+		m_jobSystem = nullptr;
+		m_log = nullptr;
 		s_instance = nullptr;
-		Log::Shutdown();
 	}
 
 	void Application::Run()
@@ -239,7 +218,7 @@ namespace Volt
 	{
 		VT_PROFILE_SCOPE((std::string("Application::OnEvent: ") + std::string(event.GetName())).c_str());
 
-		if (event.GetEventType() == MouseMoved)
+		if (event.GetGUID() == MouseMovedEvent::GetStaticGUID())
 		{
 			if (m_hasSentMouseMovedEvent)
 			{
@@ -268,7 +247,7 @@ namespace Volt
 		for (auto layer : m_layerStack)
 		{
 			layer->OnEvent(event);
-			if (event.handled)
+			if (event.IsHandled())
 			{
 				break;
 			}
@@ -286,24 +265,15 @@ namespace Volt
 		m_layerStack.PopLayer(layer);
 	}
 
-	Window& Application::GetWindow() const
-	{
-		return m_windowManager.GetWindow(m_windowHandle);
-	}
-
 	void Application::MainUpdate()
 	{
 		m_hasSentMouseMovedEvent = false;
 
 		RHI::GraphicsContext::Update();
 
-		{
-			m_windowManager.BeginFrame();
-			AppBeginFrameEvent beginFrameEvent{};
-			OnEvent(beginFrameEvent);
-		}
+		WindowManager::Get().BeginFrame();
 
-		float time = GetWindow().GetTime();
+		const float time = WindowManager::Get().GetMainWindow().GetTime();
 		m_currentDeltaTime = time - m_lastTotalTime;
 		m_lastTotalTime = time;
 
@@ -311,8 +281,7 @@ namespace Volt
 			VT_PROFILE_SCOPE("Application::Render");
 
 			Renderer::Flush();
-			AppRenderEvent renderEvent;
-			OnEvent(renderEvent);
+			WindowManager::Get().Render();
 			Renderer::Update();
 		}
 
@@ -356,10 +325,7 @@ namespace Volt
 		Renderer::EndOfFrameUpdate();
 
 		{
-			m_windowManager.Present();
-
-			AppPresentFrameEvent presentEvent{};
-			OnEvent(presentEvent);
+			WindowManager::Get().Present();
 		}
 
 		{
@@ -386,15 +352,9 @@ namespace Volt
 		}
 
 		{
-			RHI::LogInfo logHook{};
-			logHook.enabled = true;
-			logHook.logCallback = RHILogCallback;
-
-			m_rhiProxy->SetLogInfo(logHook);
-
 			RHI::RHICallbackInfo callbackInfo{};
 			callbackInfo.resourceManagementInfo.resourceDeletionCallback = Renderer::DestroyResource;
-			callbackInfo.requestCloseEventCallback = []() 
+			callbackInfo.requestCloseEventCallback = []()
 			{
 				WindowCloseEvent closeEvent{};
 				Application::Get().OnEvent(closeEvent);
@@ -432,7 +392,7 @@ namespace Volt
 			m_isMinimized = false;
 		}
 
-		GetWindow().Resize(e.GetWidth(), e.GetHeight());
+		WindowManager::Get().GetMainWindow().Resize(e.GetWidth(), e.GetHeight());
 
 		MainUpdate();
 
@@ -441,30 +401,12 @@ namespace Volt
 
 	bool Application::OnViewportResizeEvent(ViewportResizeEvent& e)
 	{
-		GetWindow().SetViewportSize(e.GetWidth(), e.GetHeight());
+		WindowManager::Get().GetMainWindow().SetViewportSize(e.GetWidth(), e.GetHeight());
 		return false;
 	}
 
 	bool Application::OnKeyPressedEvent(KeyPressedEvent&)
 	{
 		return false;
-	}
-
-	void Application::SetupWindowPreferences(WindowProperties& windowProperties)
-	{
-		if (SessionPreferences::HasKey("WINDOW_WIDTH"))
-		{
-			windowProperties.width = static_cast<uint32_t>(SessionPreferences::GetInt("WINDOW_WIDTH"));
-		}
-
-		if (SessionPreferences::HasKey("WINDOW_HEIGHT"))
-		{
-			windowProperties.height = static_cast<uint32_t>(SessionPreferences::GetInt("WINDOW_HEIGHT"));
-		}
-
-		if (SessionPreferences::HasKey("WINDOW_MODE"))
-		{
-			windowProperties.windowMode = (WindowMode)static_cast<uint32_t>(SessionPreferences::GetInt("WINDOW_MODE"));
-		}
 	}
 }

@@ -18,7 +18,7 @@ namespace Volt
 		glm::vec2 horizontalValues;
 		glm::vec2 verticalValues;
 
-		std::vector<SerializedAnimation> animations;
+		Vector<SerializedAnimation> animations;
 
 		static void Serialize(BinaryStreamWriter& streamWriter, const BlendSpaceSerializationData& data)
 		{
@@ -68,7 +68,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(Error, "File {0} not found!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -77,13 +77,13 @@ namespace Volt
 
 		if (!streamReader.IsStreamValid())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			VT_LOG(Error, "Failed to open file: {0}!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
-		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		BlendSpaceSerializationData serializationData{};
 		streamReader.Read(serializationData);

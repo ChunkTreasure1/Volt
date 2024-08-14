@@ -4,7 +4,7 @@
 
 struct Constants
 {
-    UniformRWTypedBuffer<uint> outputBuffer;
+    vt::UniformRWTypedBuffer<uint> outputBuffer;
     uint initialValue;
 };
 

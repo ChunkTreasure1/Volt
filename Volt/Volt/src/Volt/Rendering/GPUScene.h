@@ -1,6 +1,6 @@
 #pragma once
 
-#include <VoltRHI/Descriptors/ResourceHandle.h>
+#include <RHIModule/Descriptors/ResourceHandle.h>
 
 #include <glm/glm.hpp>
 #include <cstdint>
@@ -17,9 +17,11 @@ namespace Volt
 		ResourceHandle vertexBoneInfluencesBuffer;
 
 		ResourceHandle vertexBoneWeightsBuffer;
-		ResourceHandle indexBuffer;
-		ResourceHandle meshletIndexBuffer;
+		ResourceHandle meshletDataBuffer;
 		ResourceHandle meshletsBuffer;
+
+		glm::vec3 center;
+		float radius;
 
 		uint32_t vertexStartOffset;
 		uint32_t meshletCount;
@@ -27,21 +29,48 @@ namespace Volt
 		uint32_t meshletIndexStartOffset;
 	};
 
-	struct ObjectDrawData
+	struct GPUMeshSDF
 	{
-		glm::mat4 transform;
-		
+		ResourceHandle sdfTexture;
+		glm::vec3 size;
+
+		glm::vec3 min;
+		glm::vec3 max;
+		ResourceHandle bricksBuffer;
+		uint32_t brickCount;
+	};
+
+	struct PrimitiveDrawData
+	{
+		glm::quat rotation;
+		glm::vec3 position;
+		glm::vec3 scale;
+
 		uint32_t meshId;
 		uint32_t materialId;
 		uint32_t meshletStartOffset;
 		uint32_t entityId;
 
-		glm::vec3 boundingSphereCenter;
-		float boundingSphereRadius;
-
 		uint32_t isAnimated;
 		uint32_t boneOffset;
-		glm::uvec2 padding;
+	};
+
+	struct SDFPrimitiveDrawData
+	{
+		glm::quat rotation;
+		glm::vec3 position;
+		glm::vec3 scale;
+
+		uint32_t meshSDFId;
+		uint32_t primtiveId;
+	};
+
+	struct GPUSDFBrick
+	{
+		glm::vec3 min;
+		glm::vec3 max;
+
+		glm::vec3 localCoord;
 	};
 
 	struct GPUMaterial
@@ -52,14 +81,5 @@ namespace Volt
 		uint32_t textureCount = 0;
 		uint32_t materialFlags = 0;
 		glm::uvec2 padding;
-	};
-
-	struct GPUScene
-	{
-		ResourceHandle meshesBuffer;
-		ResourceHandle materialsBuffer;
-		ResourceHandle objectDrawDataBuffer;
-		ResourceHandle meshletsBuffer;
-		ResourceHandle bonesBuffer;
 	};
 }

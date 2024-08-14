@@ -6,29 +6,29 @@
 #include "Volt/Rendering/Vertex.h"
 #include "Volt/Rendering/Mesh/MeshCommon.h"
 
-#include <vector>
+
 
 namespace Volt
 {
 	struct ProcessedMeshResult
 	{
-		std::vector<MeshletNew> meshlets;
-		std::vector<uint32_t> meshletIndices; // Index and vertex remapping
+		Vector<MeshletNew> meshlets;
+		Vector<uint32_t> meshletIndices; // Index and vertex remapping
 	};
 
 	struct MeshletGenerationResult
 	{
-		std::vector<MeshletNew> meshlets;
-		std::vector<uint32_t> meshletIndices; // Index and vertex remapping
-		std::vector<uint32_t> meshletVertices;
+		Vector<MeshletNew> meshlets;
+		Vector<uint32_t> meshletIndices; // Index and vertex remapping
+		Vector<uint32_t> meshletVertices;
 
-		std::vector<uint32_t> nonOffsetedIndices;
+		Vector<uint32_t> nonOffsetedIndices;
 	};
 
 	class MeshProcessor
 	{
 	public:
-		static ProcessedMeshResult ProcessMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const MaterialTable& materialTable, const std::vector<SubMesh>& subMeshes);
+		static ProcessedMeshResult ProcessMesh(const Vector<Vertex>& vertices, const Vector<uint32_t>& indices, const MaterialTable& materialTable, const Vector<SubMesh>& subMeshes);
 
 	private:
 		static MeshletGenerationResult GenerateMeshlets(const Vertex* vertices, const uint32_t* indices, uint32_t indexCount, uint32_t vertexCount);

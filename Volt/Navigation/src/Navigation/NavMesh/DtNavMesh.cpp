@@ -3,8 +3,6 @@
 
 #include "Navigation/Core/CoreInterfaces.h"
 
-#include <Volt/Log/Log.h>
-
 namespace Volt
 {
 	namespace AI
@@ -19,13 +17,13 @@ namespace Volt
 			status = myNavMeshQuery->init(myNavMesh.get(), 2048);
 			if (dtStatusFailed(status))
 			{
-				VT_CORE_ERROR("Could not init Detour NavMesh Query");
+				VT_LOG(Error, "Could not init Detour NavMesh Query");
 			}
 		}
 
-		std::vector<glm::vec3> DtNavMesh::FindPath(glm::vec3 start, glm::vec3 end, glm::vec3 polySearchDistance)
+		Vector<glm::vec3> DtNavMesh::FindPath(glm::vec3 start, glm::vec3 end, glm::vec3 polySearchDistance)
 		{
-			std::vector<glm::vec3> resultPath;
+			Vector<glm::vec3> resultPath;
 
 			if (!myNavMesh || !myNavMeshQuery) { return resultPath; }
 
@@ -52,7 +50,7 @@ namespace Volt
 
 			if (dtStatusFailed(status))
 			{
-				VT_CORE_WARN("Detour failed to find nearest start poly");
+				VT_LOG(Warning, "Detour failed to find nearest start poly");
 				return resultPath;
 			}
 
@@ -63,7 +61,7 @@ namespace Volt
 
 			if (dtStatusFailed(status))
 			{
-				VT_CORE_WARN("Detour failed to find nearest end poly");
+				VT_LOG(Warning, "Detour failed to find nearest end poly");
 				return resultPath;
 			}
 
@@ -76,11 +74,11 @@ namespace Volt
 
 			if (dtStatusFailed(status) || srcPathSize == 0)
 			{
-				VT_CORE_WARN("Detour failed to find path");
+				VT_LOG(Warning, "Detour failed to find path");
 				return resultPath;
 			}
 
-			std::vector<glm::vec3> straightPathPositions;
+			Vector<glm::vec3> straightPathPositions;
 			uint32_t straightPathSize = 0;
 
 			straightPathPositions.resize(MAX_PATH_SIZE);
@@ -89,7 +87,7 @@ namespace Volt
 
 			if (dtStatusFailed(status))
 			{
-				VT_CORE_WARN("Detour failed to find straight path");
+				VT_LOG(Warning, "Detour failed to find straight path");
 				return resultPath;
 			}
 

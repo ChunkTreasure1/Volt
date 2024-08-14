@@ -1,17 +1,17 @@
 #include "vtpch.h"
 #include "VelocityTechnique.h"
 
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphBlackboard.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
-#include "Volt/Rendering/RenderGraph/RenderContextUtils.h"
-
 #include "Volt/Rendering/SceneRendererStructs.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
 #include "Volt/Rendering/Camera/Camera.h"
 #include "Volt/Rendering/Renderer.h"
 
-#include <VoltRHI/Pipelines/RenderPipeline.h>
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
+
+#include <RHIModule/Pipelines/RenderPipeline.h>
 
 namespace Volt
 {
@@ -29,7 +29,7 @@ namespace Volt
 	{
 		struct Output
 		{
-			RenderGraphResourceHandle velocityTexture;
+			RenderGraphImageHandle velocityTexture;
 		};
 
 		const auto& renderData = m_blackboard.Get<RenderData>();
@@ -40,13 +40,13 @@ namespace Volt
 		[&](RenderGraph::Builder& builder, Output& data)
 		{
 			const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R16G16_SFLOAT>(renderData.renderSize.x, renderData.renderSize.y, RHI::ImageUsage::AttachmentStorage, "Velocity");
-			data.velocityTexture = builder.CreateImage2D(desc);
+			data.velocityTexture = builder.CreateImage(desc);
 		
 			builder.ReadResource(preDepthData.depth);
 
 			builder.SetHasSideEffect();
 		},
-		[=](const Output& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[=](const Output& data, RenderContext& context)
 		{
 			RenderingInfo info = context.CreateRenderingInfo(renderData.renderSize.x, renderData.renderSize.y, { data.velocityTexture });
 
@@ -64,7 +64,7 @@ namespace Volt
 				context.SetConstant("renderSize"_sh, glm::vec2(renderData.renderSize));
 				context.SetConstant("invRenderSize"_sh, 1.f / glm::vec2(renderData.renderSize));
 				context.SetConstant("jitterOffset"_sh, (renderData.camera->GetSubpixelOffset() - previousData.jitter) * 0.5f);
-				context.SetConstant("depthTexture"_sh, resources.GetImage2D(preDepthData.depth));
+				context.SetConstant("depthTexture"_sh, preDepthData.depth);
 				context.SetConstant("pointSampler"_sh, Renderer::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest>()->GetResourceHandle());
 			});
 

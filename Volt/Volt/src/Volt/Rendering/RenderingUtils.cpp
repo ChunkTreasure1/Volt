@@ -1,23 +1,24 @@
 #include "vtpch.h"
 #include "RenderingUtils.h"
 
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
-#include "Volt/Rendering/RenderGraph/RenderContextUtils.h"
 #include "Volt/Rendering/Shader/ShaderMap.h"
 
-#include <VoltRHI/Pipelines/RenderPipeline.h>
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
+#include <RenderCore/RenderGraph/RenderContextUtils.h>
+#include <RHIModule/Pipelines/RenderPipeline.h>
 
 namespace Volt::RenderingUtils
 {
-	RenderGraphResourceHandle GenerateIndirectArgs(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName)
+	RenderGraphResourceHandle GenerateIndirectArgs(RenderGraph& renderGraph, RenderGraphBufferHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName)
 	{
 		struct Output
 		{
-			RenderGraphResourceHandle argsBufferHandle = 0;
+			RenderGraphBufferHandle argsBufferHandle
+				;
 		};
 
-		RenderGraphResourceHandle outHandle = 0;
+		RenderGraphBufferHandle outHandle;
 
 		renderGraph.AddPass<Output>("Generate Indirect Args",
 		[&](RenderGraph::Builder& builder, Output& data)
@@ -29,13 +30,13 @@ namespace Volt::RenderingUtils
 			builder.ReadResource(countBuffer);
 			builder.SetIsComputePass();
 		},
-		[=](const Output& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[=](const Output& data, RenderContext& context)
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("GenerateIndirectArgs");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("indirectArgs"_sh, resources.GetBuffer(data.argsBufferHandle));
-			context.SetConstant("countBuffer"_sh, resources.GetBuffer(countBuffer));
+			context.SetConstant("indirectArgs"_sh, data.argsBufferHandle);
+			context.SetConstant("countBuffer"_sh, countBuffer);
 			context.SetConstant("threadGroupSize"_sh, groupSize);
 
 			context.Dispatch(1, 1, 1);
@@ -44,11 +45,11 @@ namespace Volt::RenderingUtils
 		return outHandle;
 	}
 
-	RenderGraphResourceHandle GenerateIndirectArgsWrapped(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName)
+	RenderGraphResourceHandle GenerateIndirectArgsWrapped(RenderGraph& renderGraph, RenderGraphBufferHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName)
 	{
 		struct Output
 		{
-			RenderGraphResourceHandle argsBufferHandle = 0;
+			RenderGraphBufferHandle argsBufferHandle;
 		};
 
 		auto& data = renderGraph.AddPass<Output>("Generate Indirect Args",
@@ -60,13 +61,13 @@ namespace Volt::RenderingUtils
 			builder.ReadResource(countBuffer);
 			builder.SetIsComputePass();
 		},
-		[=](const Output& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[=](const Output& data, RenderContext& context)
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("GenerateIndirectArgsWrapped");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("indirectArgs"_sh, resources.GetBuffer(data.argsBufferHandle));
-			context.SetConstant("countBuffer"_sh, resources.GetBuffer(countBuffer));
+			context.SetConstant("indirectArgs"_sh, data.argsBufferHandle);
+			context.SetConstant("countBuffer"_sh, countBuffer);
 			context.SetConstant("groupSize"_sh, groupSize);
 
 			context.Dispatch(1, 1, 1);
@@ -75,7 +76,7 @@ namespace Volt::RenderingUtils
 		return data.argsBufferHandle;
 	}
 
-	void CopyImage(RenderGraph& renderGraph, RenderGraphResourceHandle sourceImage, RenderGraphResourceHandle destinationImage, const glm::uvec2& renderSize)
+	void CopyImage(RenderGraph& renderGraph, RenderGraphImageHandle sourceImage, RenderGraphImageHandle destinationImage, const glm::uvec2& renderSize)
 	{
 		renderGraph.AddPass("Copy Image",
 		[&](RenderGraph::Builder& builder) 
@@ -83,7 +84,7 @@ namespace Volt::RenderingUtils
 			builder.ReadResource(sourceImage);
 			builder.WriteResource(destinationImage);
 		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		[=](RenderContext& context)
 		{
 			RenderingInfo info = context.CreateRenderingInfo(renderSize.x, renderSize.y, { destinationImage });
 
@@ -96,7 +97,7 @@ namespace Volt::RenderingUtils
 
 			RCUtils::DrawFullscreenTriangle(context, pipeline, [&](RenderContext& context)
 			{
-				context.SetConstant("color"_sh, resources.GetImage2D(sourceImage));
+				context.SetConstant("color"_sh, sourceImage);
 			});
 
 			context.EndRendering();

@@ -24,8 +24,8 @@ namespace Volt
 		MonoNetwork() = delete;
 
 		// Might make a better solution later
-		static std::vector<MonoNetSyncInfo> GetSyncData();
-		static bool SetSyncData(const std::vector<MonoNetSyncInfo>& syncData);
+		static Vector<MonoNetSyncInfo> GetSyncData();
+		static bool SetSyncData(const Vector<MonoNetSyncInfo>& syncData);
 
 		static Ref<Volt::MonoScriptFieldInstance> GetRepField(MonoNetHandle handle, const std::string& fieldName);
 		static MonoScriptFieldMap* GetRepFields(MonoNetHandle handle);

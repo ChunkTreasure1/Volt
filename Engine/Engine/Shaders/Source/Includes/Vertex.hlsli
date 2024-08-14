@@ -9,8 +9,14 @@ struct VertexMaterialData
 
 struct VertexAnimationInfo
 {
-    uint32_t boneOffset;  
+    uint16_t boneOffset;  
     uint16_t influenceCount;
+};
+
+struct VertexAnimationData
+{
+    uint4 influences;
+    float4 weights;
 };
 
 struct VertexPositionData

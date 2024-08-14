@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Event.h"
+#include <EventModule/Event.h>
 
 #include "Volt/Rendering/SceneRendererSettings.h"
 
@@ -15,9 +15,7 @@ namespace Volt
 
 		inline const float GetRenderScale() const { return myRenderScale; }
 
-		EVENT_CLASS_TYPE(OnRenderScaleChanged);
-		EVENT_CLASS_CATEGORY(EventCategorySettings);
-
+		EVENT_CLASS(OnRenderScaleChangedEvent, "{B6C2F606-CE8D-41A9-B3BC-42DDBF2D40FE}"_guid);
 	private:
 		float myRenderScale = 0.f;
 	};
@@ -32,9 +30,7 @@ namespace Volt
 
 		inline const SceneRendererSettings& GetSettings() const { return mySettings; }
 
-		EVENT_CLASS_TYPE(OnRendererSettingsChanged);
-		EVENT_CLASS_CATEGORY(EventCategorySettings);
-
+		EVENT_CLASS(OnRenderScaleChangedEvent, "{921BC1D9-A876-4355-91BD-93B1CB24E140}"_guid);
 	private:
 		SceneRendererSettings mySettings{};
 	};

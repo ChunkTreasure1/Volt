@@ -1,6 +1,7 @@
 #pragma once
 
-#include <vector>
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <functional>
 
 class FunctionQueue
@@ -30,5 +31,5 @@ public:
 	}
 
 private:
-	std::vector<std::function<void()>> m_queue;
+	Vector<std::function<void()>> m_queue;
 };

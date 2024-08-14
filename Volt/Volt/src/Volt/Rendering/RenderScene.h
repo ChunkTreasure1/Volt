@@ -3,9 +3,11 @@
 #include "Volt/Asset/Mesh/Mesh.h"
 
 #include "Volt/Rendering/RenderObject.h"
-#include "Volt/Rendering/Resources/BindlessResource.h"
+#include "Volt/Rendering/BindlessResource.h"
 
 #include "Volt/Rendering/RendererCommon.h"
+
+#include <CoreUtilities/Containers/Map.h>
 
 #include <span>
 
@@ -24,11 +26,12 @@ namespace Volt
 
 	struct GPUSceneBuffers
 	{
-		RefPtr<RHI::StorageBuffer> meshesBuffer;
-		RefPtr<RHI::StorageBuffer> materialsBuffer;
-		RefPtr<RHI::StorageBuffer> objectDrawDataBuffer;
-		RefPtr<RHI::StorageBuffer> meshletsBuffer;
-		RefPtr<RHI::StorageBuffer> bonesBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> meshesBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> sdfMeshesBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> materialsBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> primitiveDrawDataBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> sdfPrimitiveDrawDataBuffer;
+		BindlessResourceRef<RHI::StorageBuffer> bonesBuffer;
 	};
 
 	class RenderScene
@@ -49,63 +52,54 @@ namespace Volt
 
 		void Unregister(UUID64 id);
 
-		inline const bool IsInvalid() const { return m_isInvalid; }
-		inline const uint32_t GetRenderObjectCount() const { return static_cast<uint32_t>(m_renderObjects.size()); }
-		inline const uint32_t GetMeshCommandCount() const { return static_cast<uint32_t>(m_meshCommands.size()); }
-		inline const uint32_t GetMeshShaderCommandCount() const { return static_cast<uint32_t>(m_meshShaderCommands.size()); }
-		inline const uint32_t GetIndividualMeshCount() const { return m_currentIndividualMeshCount; }
-		inline const uint32_t GetIndividualMaterialCount() const { return static_cast<uint32_t>(m_individualMaterials.size()); }
-		inline const uint32_t GetMeshletCount() const { return static_cast<uint32_t>(m_sceneMeshlets.size()); }
-		inline const uint32_t GetIndexCount() const { return m_currentIndexCount; }
+		VT_INLINE VT_NODISCARD const bool IsInvalid() const { return m_isInvalid; }
+		VT_INLINE VT_NODISCARD const uint32_t GetRenderObjectCount() const { return static_cast<uint32_t>(m_renderObjects.size()); }
+		VT_INLINE VT_NODISCARD const uint32_t GetIndividualMeshCount() const { return m_currentIndividualMeshCount; }
+		VT_INLINE VT_NODISCARD const uint32_t GetIndividualMaterialCount() const { return static_cast<uint32_t>(m_individualMaterials.size()); }
+		VT_INLINE VT_NODISCARD const uint32_t GetMeshletCount() const { return m_currentMeshletCount; }
+		VT_INLINE VT_NODISCARD const uint32_t GetDrawCount() const { return m_renderObjects.empty() ? 0u : static_cast<uint32_t>(m_primitiveDrawData.size()); }
+		VT_INLINE VT_NODISCARD const uint32_t GetSDFPrimitiveCount() const { return static_cast<uint32_t>(m_sdfPrimitiveDrawData.size()); }
 
-		Weak<Material> GetMaterialFromID(const uint32_t materialId) const;
+		VT_NODISCARD Weak<Material> GetMaterialFromID(const uint32_t materialId) const;
 
-		const uint32_t GetMeshID(Weak<Mesh> mesh, uint32_t subMeshIndex) const;
-		const uint32_t GetMaterialIndex(Weak<Material> material) const;
-		const uint32_t GetMeshIndex(Weak<Mesh> mesh) const;
+		VT_NODISCARD const uint32_t GetMeshID(Weak<Mesh> mesh, uint32_t subMeshIndex) const;
+		VT_NODISCARD const uint32_t GetMaterialIndex(Weak<Material> material) const;
+		VT_NODISCARD const uint32_t GetMeshIndex(Weak<Mesh> mesh) const;
 
-		const GPUSceneBuffers GetGPUSceneBuffers() const;
+		VT_INLINE VT_NODISCARD const GPUSceneBuffers GetGPUSceneBuffers() const { return m_buffers; }
 
-		inline const BindlessResource<RHI::StorageBuffer>& GetGPUMeshesBuffer() const { return *m_gpuMeshesBuffer; }
-		inline const BindlessResource<RHI::StorageBuffer>& GetGPUMaterialsBuffer() const { return *m_gpuMaterialsBuffer; }
-		inline const BindlessResource<RHI::StorageBuffer>& GetGPUMeshletsBuffer() const { return *m_gpuMeshletsBuffer; }
-		inline const BindlessResource<RHI::StorageBuffer>& GetObjectDrawDataBuffer() const { return *m_objectDrawDataBuffer; }
+		VT_INLINE VT_NODISCARD const BindlessResource<RHI::StorageBuffer>& GetGPUMeshesBuffer() const { return *m_buffers.meshesBuffer; }
+		VT_INLINE VT_NODISCARD const BindlessResource<RHI::StorageBuffer>& GetGPUMaterialsBuffer() const { return *m_buffers.materialsBuffer; }
+		VT_INLINE VT_NODISCARD const BindlessResource<RHI::StorageBuffer>& GetPrimitiveDrawDataBuffer() const { return *m_buffers.primitiveDrawDataBuffer; }
 
-		std::vector<RenderObject>::iterator begin() { return m_renderObjects.begin(); }
-		std::vector<RenderObject>::iterator end() { return m_renderObjects.end(); }
+		VT_NODISCARD Vector<RenderObject>::iterator begin() { return m_renderObjects.begin(); }
+		VT_NODISCARD Vector<RenderObject>::iterator end() { return m_renderObjects.end(); }
 
-		const std::vector<RenderObject>::const_iterator cbegin() const { return m_renderObjects.cbegin(); }
-		const std::vector<RenderObject>::const_iterator cend() const { return m_renderObjects.cend(); }
+		VT_NODISCARD const Vector<RenderObject>::const_iterator cbegin() const { return m_renderObjects.cbegin(); }
+		VT_NODISCARD const Vector<RenderObject>::const_iterator cend() const { return m_renderObjects.cend(); }
 
-		inline const RenderObject& GetRenderObjectAt(const size_t index) const { return m_renderObjects.at(index); }
-		const RenderObject& GetRenderObjectFromID(UUID64 id) const;
+		VT_INLINE VT_NODISCARD const RenderObject& GetRenderObjectAt(const size_t index) const { return m_renderObjects.at(index); }
+		VT_NODISCARD const RenderObject& GetRenderObjectFromID(UUID64 id) const;
 
-		inline std::span<const IndirectGPUCommand> GetMeshCommands() const { return m_meshCommands; }
-		inline std::span<const IndirectMeshTaskCommand> GetMeshShaderCommands() const { return m_meshShaderCommands; }
-
+		VT_INLINE VT_NODISCARD std::span<const GPUMesh> GetGPUMeshes() const { return m_gpuMeshes; }
+		VT_INLINE VT_NODISCARD std::span<const PrimitiveDrawData> GetPrimitiveDrawData() const { return m_primitiveDrawData; }
 	private:
-		void UploadGPUMeshes(std::vector<GPUMesh>& gpuMeshes);
-		void UploadObjectDrawData(std::vector<ObjectDrawData>& objectDrawData);
-		void UploadGPUMeshlets();
+		void UploadGPUMeshes(const Vector<GPUMesh>& gpuMeshes);
+		void UploadGPUMeshSDFs(const Vector<GPUMeshSDF>& sdfMeshes);
+		void UploadPrimitiveDrawData(const Vector<PrimitiveDrawData>& primitiveDrawData);
+		void UploadSDFPrimitiveDrawData(const Vector<SDFPrimitiveDrawData>& primitiveDrawData);
 
 		void UploadGPUMaterials();
 		void BuildGPUMaterial(Weak<Material> material, GPUMaterial& gpuMaterial);
 
-		void BuildGPUMeshes(std::vector<GPUMesh>& gpuMeshes);
+		Vector<GPUMesh> BuildGPUMeshes();
+		Vector<GPUMeshSDF> BuildGPUMeshSDFs();
 
-		void BuildObjectDrawData(std::vector<ObjectDrawData>& objectDrawData);
-		void BuildSinlgeObjectDrawData(ObjectDrawData& objectDrawData, const RenderObject& renderObject);
+		Vector<PrimitiveDrawData> BuildPrimitiveDrawData();
+		void BuildSinglePrimitiveDrawData(PrimitiveDrawData& primitiveDrawData, const RenderObject& renderObject);
 
-		void BuildMeshCommands();
-		void BuildMeshletBuffer(std::vector<ObjectDrawData>& gpuMeshes);
-
-		std::vector<Meshlet> m_sceneMeshlets;
-
-		std::vector<UUID64> m_animatedRenderObjects;
-		std::vector<RenderObject> m_renderObjects;
-		std::vector<ObjectDrawData> m_objectDrawData;
-
-		std::vector<size_t> m_invalidRenderObjectIndices;
+		Vector<SDFPrimitiveDrawData> BuildSDFPrimitiveDrawData();
+		void BuildSingleSDFPrimitiveDrawData(SDFPrimitiveDrawData& primtiveDrawData, const RenderObject& renderObject);
 
 		struct InvalidMaterial
 		{
@@ -120,33 +114,44 @@ namespace Volt
 			size_t index;
 		};
 
-		std::vector<InvalidMaterial> m_invalidMaterials;
-		std::vector<InvalidMesh> m_invalidMeshes;
+		struct InvalidPrimitiveData
+		{
+			UUID64 renderObjectId;
+			size_t index;
+		};
 
-		std::unordered_map<UUID64, uint32_t> m_objectIndexFromRenderObjectID;
-		std::unordered_map<AssetHandle, size_t> m_materialIndexFromAssetHandle;
-		std::unordered_map<size_t, size_t> m_meshIndexFromMeshAssetHash;
+		Vector<UUID64> m_animatedRenderObjects;
+		Vector<RenderObject> m_renderObjects;
 
-		std::vector<IndirectGPUCommand> m_meshCommands;
-		std::vector<Weak<Mesh>> m_individualMeshes;
-		std::vector<Weak<Material>> m_individualMaterials;
-		std::unordered_map<size_t, uint32_t> m_meshSubMeshToGPUMeshIndex;
+		Vector<GPUMesh> m_gpuMeshes;
+		Vector<GPUMeshSDF> m_gpuSDFMeshes;
+		Vector<PrimitiveDrawData> m_primitiveDrawData;
+		Vector<SDFPrimitiveDrawData> m_sdfPrimitiveDrawData;
 
-		std::vector<glm::mat4> m_animationBufferStorage;
+		Vector<InvalidPrimitiveData> m_invalidPrimitiveDataIndices;
+		Vector<InvalidPrimitiveData> m_invalidSDFPrimitiveDataIndices;
 
-		// Mesh Shader rendering
-		std::vector<IndirectMeshTaskCommand> m_meshShaderCommands;
+		Vector<InvalidMaterial> m_invalidMaterials;
+		Vector<InvalidMesh> m_invalidMeshes;
 
-		BindlessResourceScope<RHI::StorageBuffer> m_gpuMeshesBuffer;
-		BindlessResourceScope<RHI::StorageBuffer> m_gpuMaterialsBuffer;
-		BindlessResourceScope<RHI::StorageBuffer> m_objectDrawDataBuffer;
-		BindlessResourceScope<RHI::StorageBuffer> m_gpuMeshletsBuffer;
-		BindlessResourceScope<RHI::StorageBuffer> m_gpuBonesBuffer;
+		vt::map<UUID64, uint32_t> m_primitiveIndexFromRenderObjectID;
+		vt::map<UUID64, uint32_t> m_sdfPrimitiveIndexFromRenderObjectID;
+
+		vt::map<AssetHandle, size_t> m_materialIndexFromAssetHandle;
+		vt::map<size_t, size_t> m_meshIndexFromMeshAssetHash;
+		vt::map<size_t, uint32_t> m_meshSubMeshToGPUMeshIndex;
+		vt::map<size_t, uint32_t> m_meshSubMeshToGPUMeshSDFIndex;
+		
+		Vector<Weak<Mesh>> m_individualMeshes;
+		Vector<Weak<Material>> m_individualMaterials;
+		Vector<glm::mat4> m_animationBufferStorage;
+
+		GPUSceneBuffers m_buffers;
 
 		Scene* m_scene = nullptr;
 		uint32_t m_currentIndividualMeshCount = 0;
-		uint32_t m_currentIndexCount = 0;
 		uint32_t m_currentBoneCount = 0;
+		uint32_t m_currentMeshletCount = 0;
 
 		UUID64 m_materialChangedCallbackID;
 		UUID64 m_meshChangedCallbackID;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Volt/Core/Base.h>
+#include <CoreUtilities/Containers/Vector.h>
 
 struct VersionControlSettings
 {
@@ -39,8 +40,8 @@ public:
 	static void SwitchWorkspace(const std::string& workspace);
 	static void RefreshWorkspaces();
 
-	static const std::vector<std::string>& GetWorkspaces();
-	static const std::vector<std::string>& GetStreams();
+	static const Vector<std::string>& GetWorkspaces();
+	static const Vector<std::string>& GetStreams();
 	static bool IsConnected();
 
 protected:
@@ -62,8 +63,8 @@ protected:
 	virtual void SwitchStreamImpl(const std::string& newStream) = 0;
 	virtual void RefreshStreamsImpl() = 0;
 
-	virtual const std::vector<std::string>& GetWorkspacesImpl() = 0;
-	virtual const std::vector<std::string>& GetStreamsImpl() = 0;
+	virtual const Vector<std::string>& GetWorkspacesImpl() = 0;
+	virtual const Vector<std::string>& GetStreamsImpl() = 0;
 	virtual bool IsConnectedImpl() = 0;
 
 private:

@@ -29,12 +29,12 @@ bool TaigaAPI::Auth(const std::string& username, const std::string& password, Ta
 	}
 	else
 	{
-		VT_CORE_WARN(std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
+		VT_LOG(Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
 	}
 	return false;
 }
 
-bool TaigaAPI::GetProjects(const TaigaGeneralInfo& info, std::vector<ItemEntry>& outProjects)
+bool TaigaAPI::GetProjects(const TaigaGeneralInfo& info, Vector<ItemEntry>& outProjects)
 {
 	if (info.authToken.empty() || !info.userId.has_value()) { return false; }
 	s_cli.enable_server_certificate_verification(false);
@@ -68,12 +68,12 @@ bool TaigaAPI::GetProjects(const TaigaGeneralInfo& info, std::vector<ItemEntry>&
 	}
 	else
 	{
-		VT_CORE_WARN(std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
+		VT_LOG(Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
 	}
 	return false;
 }
 
-bool TaigaAPI::GetUserstories(const TaigaGeneralInfo& info, std::vector<ItemEntry>& outUserstories)
+bool TaigaAPI::GetUserstories(const TaigaGeneralInfo& info, Vector<ItemEntry>& outUserstories)
 {
 	if (info.authToken.empty() || !info.userId.has_value() || !info.selectedProjectId.has_value()) { return false; }
 	s_cli.enable_server_certificate_verification(false);
@@ -108,12 +108,12 @@ bool TaigaAPI::GetUserstories(const TaigaGeneralInfo& info, std::vector<ItemEntr
 	}
 	else
 	{
-		VT_CORE_WARN(std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
+		VT_LOG(Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
 	}
 	return false;
 }
 
-bool TaigaAPI::GetTasks(const TaigaGeneralInfo& info, std::vector<ItemEntry>& outTasks)
+bool TaigaAPI::GetTasks(const TaigaGeneralInfo& info, Vector<ItemEntry>& outTasks)
 {
 	if (info.authToken.empty() || !info.userId.has_value() || !info.selectedProjectId.has_value() || !info.selectedUserstoryId.has_value()) { return false; }
 	s_cli.enable_server_certificate_verification(false);
@@ -149,12 +149,12 @@ bool TaigaAPI::GetTasks(const TaigaGeneralInfo& info, std::vector<ItemEntry>& ou
 	}
 	else
 	{
-		VT_CORE_WARN(std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
+		VT_LOG(Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
 	}
 	return false;
 }
 
-bool TaigaAPI::GetIssues(const TaigaGeneralInfo& info, std::vector<ItemEntry>& outIssues)
+bool TaigaAPI::GetIssues(const TaigaGeneralInfo& info, Vector<ItemEntry>& outIssues)
 {
 	if (info.authToken.empty() || !info.userId.has_value() || !info.selectedProjectId.has_value()) { return false; }
 	s_cli.enable_server_certificate_verification(false);
@@ -189,7 +189,7 @@ bool TaigaAPI::GetIssues(const TaigaGeneralInfo& info, std::vector<ItemEntry>& o
 	}
 	else
 	{
-		VT_CORE_WARN(std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
+		VT_LOG(Warning, std::format("HTTPS Error: {0}", httplib::to_string(res.error())));
 	}
 	return false;
 }

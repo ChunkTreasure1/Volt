@@ -14,7 +14,9 @@
 #include "Testing/RenderGraphTests/DrawMeshShaderMeshTest.h"
 #include "Testing/RenderGraphTests/DrawMeshShaderMultipleMeshesTest.h"
 
-#include <Volt/Log/Log.h>
+#include <WindowModule/Events/WindowEvents.h>
+
+#include <LogModule/Log.h>
 
 #include <functional>
 
@@ -46,16 +48,16 @@ void RenderingTestingLayer::OnDetach()
 void RenderingTestingLayer::OnEvent(Volt::Event& e)
 {
 	EventDispatcher dispatcher{ e };
-	dispatcher.Dispatch<AppRenderEvent>(VT_BIND_EVENT_FN(RenderingTestingLayer::OnRenderEvent));
+	dispatcher.Dispatch<WindowRenderEvent>(VT_BIND_EVENT_FN(RenderingTestingLayer::OnRenderEvent));
 }
 
-bool RenderingTestingLayer::OnRenderEvent(Volt::AppRenderEvent& e)
+bool RenderingTestingLayer::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	for (const auto& test : m_renderingTests)
 	{
 		if (!test->RunTest())
 		{
-			VT_CORE_ERROR("Test {} failed!", test->GetName());
+			VT_LOG(Error, "Test {} failed!", test->GetName());
 		}
 	}
 

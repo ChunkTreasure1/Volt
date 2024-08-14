@@ -6,7 +6,6 @@
 #include "Volt/Physics/PhysicsShapes.h"
 #include "Volt/Physics/PhysicsLayer.h"
 
-#include "Volt/Log/Log.h"
 #include "Volt/Core/Application.h"
 
 #include "Volt/Components/CoreComponents.h"
@@ -33,10 +32,10 @@ namespace Volt
 		sceneDesc.simulationEventCallback = &myContactListener;
 		sceneDesc.frictionType = PhysXInternal::VoltToPhysXFrictionType(physicsSettings.frictionModel);
 
-		VT_CORE_ASSERT(sceneDesc.isValid(), "Physics scene not valid!");
+		VT_ASSERT_MSG(sceneDesc.isValid(), "Physics scene not valid!");
 
 		myPhysXScene = PhysXInternal::GetPhysXSDK().createScene(sceneDesc);
-		VT_CORE_ASSERT(myPhysXScene, "PhysX scene not valid!");
+		VT_ASSERT_MSG(myPhysXScene, "PhysX scene not valid!");
 
 		myControllerManager = PxCreateControllerManager(*myPhysXScene);
 		myControllerManager->setTessellation(true, 100.f);
@@ -375,7 +374,7 @@ namespace Volt
 		return result;
 	}
 
-	bool PhysicsScene::OverlapBox(const glm::vec3& origin, const glm::vec3& halfSize, std::vector<Entity>& hitList, uint32_t layerMask)
+	bool PhysicsScene::OverlapBox(const glm::vec3& origin, const glm::vec3& halfSize, Vector<Entity>& hitList, uint32_t layerMask)
 	{
 		const auto& layer = PhysicsLayerManager::GetLayer(layerMask);
 
@@ -387,7 +386,7 @@ namespace Volt
 		qFilterData.data = data;
 
 		std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS> buffer;
-		std::vector<Entity> tempEnts;
+		Vector<Entity> tempEnts;
 		uint32_t count;
 
 		bool hit = OverlapGeometry(origin, physx::PxBoxGeometry(halfSize.x, halfSize.y, halfSize.z), buffer, count, qFilterData);
@@ -411,7 +410,7 @@ namespace Volt
 		return hit;
 	}
 
-	bool PhysicsScene::OverlapCapsule(const glm::vec3& origin, float radius, float halfHeight, std::vector<Entity>& hitList, uint32_t layerMask)
+	bool PhysicsScene::OverlapCapsule(const glm::vec3& origin, float radius, float halfHeight, Vector<Entity>& hitList, uint32_t layerMask)
 	{
 		const auto& layer = PhysicsLayerManager::GetLayer(layerMask);
 
@@ -423,7 +422,7 @@ namespace Volt
 		qFilterData.data = data;
 
 		std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS> buffer;
-		std::vector<Entity> tempEnts;
+		Vector<Entity> tempEnts;
 		uint32_t count;
 
 		bool hasHit = OverlapGeometry(origin, physx::PxCapsuleGeometry(radius, halfHeight), buffer, count, qFilterData);
@@ -446,7 +445,7 @@ namespace Volt
 		return hasHit;
 	}
 
-	bool PhysicsScene::OverlapSphere(const glm::vec3& origin, float radius, std::vector<Entity>& hitList, uint32_t layerMask)
+	bool PhysicsScene::OverlapSphere(const glm::vec3& origin, float radius, Vector<Entity>& hitList, uint32_t layerMask)
 	{
 		physx::PxFilterData data{};
 		data.word0 = layerMask;
@@ -456,7 +455,7 @@ namespace Volt
 		qFilterData.data = data;
 
 		std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS> buffer;
-		std::vector<Entity> tempEnts;
+		Vector<Entity> tempEnts;
 		uint32_t count;
 
 		bool hasHit = OverlapGeometry(origin, physx::PxSphereGeometry(radius), buffer, count, qFilterData);
@@ -538,7 +537,7 @@ namespace Volt
 
 	void PhysicsScene::Destroy()
 	{
-		VT_CORE_ASSERT(myPhysXScene, "Trying to destroy invalid physics scene!");
+		VT_ASSERT_MSG(myPhysXScene, "Trying to destroy invalid physics scene!");
 
 		myInSimulation = true;
 		for (int32_t i = (int32_t)myPhysicsActors.size() - 1; i >= 0; --i)

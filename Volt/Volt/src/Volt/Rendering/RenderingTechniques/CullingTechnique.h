@@ -1,34 +1,45 @@
 #pragma once
 
-#include "Volt/Rendering/SceneRendererStructs.h"
-#include "Volt/Core/Base.h"
+#include <RenderCore/RenderGraph/Resources/RenderGraphResourceHandle.h>
 
 namespace Volt
 {
+	struct DrawCullingData
+	{
+		RenderGraphBufferHandle countCommandBuffer;
+		RenderGraphBufferHandle taskCommandsBuffer;
+	};
+
 	class RenderGraph;
 	class RenderGraphBlackboard;
-
-	class Camera;
-	class RenderScene;
-
-	enum class CullingMode : uint32_t
-	{
-		Perspective = 0,
-		Orthographic = 1,
-		None = 2
-	};
 
 	class CullingTechnique
 	{
 	public:
-		CullingTechnique(RenderGraph& rg, RenderGraphBlackboard& blackboard);
+		enum class Type : uint32_t
+		{
+			Perspective = 0,
+			Orthographic
+		};
 
-		CullPrimitivesData Execute(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode, const glm::vec2& renderSize, const uint32_t instanceCount = 1);
-	
+		struct Info
+		{
+			Type type = Type::Perspective;
+			glm::mat4 viewMatrix;
+			glm::vec4 cullingFrustum;
+			float nearPlane;
+			float farPlane;
+
+			uint32_t drawCommandCount;
+			uint32_t meshletCount;
+		};
+
+		CullingTechnique(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		DrawCullingData Execute(const Info& info);
+
 	private:
-		CullObjectsData AddCullObjectsPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode);
-		CullMeshletsData AddCullMeshletsPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullingMode cullingMode, const CullObjectsData& cullObjectsData);
-		CullPrimitivesData AddCullPrimitivesPass(Ref<Camera> camera, Ref<RenderScene> renderScene, const CullMeshletsData& cullMeshletsData, const glm::vec2& renderSize, const uint32_t instanceCount);
+		DrawCullingData AddDrawCallCullingPass(const Info& info);
+		void AddTaskSubmitSetupPass(const DrawCullingData& data);
 
 		RenderGraph& m_renderGraph;
 		RenderGraphBlackboard& m_blackboard;

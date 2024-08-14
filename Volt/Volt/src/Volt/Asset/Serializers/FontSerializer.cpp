@@ -8,7 +8,7 @@ namespace Volt
 {
 	void FontSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
-		VT_CORE_ASSERT(false, "[FontSerializer]: Asset it not serializable");
+		VT_ASSERT_MSG(false, "[FontSerializer]: Asset it not serializable");
 	}
 
 	bool FontSerializer::Deserialize(const AssetMetadata& metadata, Ref<Asset> destinationAsset) const
@@ -17,7 +17,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(Error, "File {0} not found!", metadata.filePath);
 			destinationAsset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}

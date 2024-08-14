@@ -22,7 +22,8 @@ project "ImGui"
 		"imgui_tables.cpp",
 		"imgui_stdlib.cpp",
 		"imgui_stdlib.h",
-		"imgui_bezier.h"
+		"imgui_bezier.h",
+		"**.natvis"
 	}
 
 	warnings "off"

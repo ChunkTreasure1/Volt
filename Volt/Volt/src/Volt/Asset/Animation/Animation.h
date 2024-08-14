@@ -36,7 +36,7 @@ namespace Volt
 
 		struct Pose
 		{
-			std::vector<TRS> localTRS;
+			Vector<TRS> localTRS;
 
 			static void Serialize(BinaryStreamWriter& streamWriter, const Pose& data)
 			{
@@ -67,15 +67,15 @@ namespace Volt
 			}
 		};
 
-		const std::vector<glm::mat4> SampleStartTime(float aStartTime, Ref<Skeleton> aSkeleton, bool looping);
-		const std::vector<glm::mat4> Sample(float samplePercent, Ref<Skeleton> skeleton, bool looping);
-		const std::vector<glm::mat4> Sample(uint32_t frameIndex, Ref<Skeleton> aSkeleton);
+		const Vector<glm::mat4> SampleStartTime(float aStartTime, Ref<Skeleton> aSkeleton, bool looping);
+		const Vector<glm::mat4> Sample(float samplePercent, Ref<Skeleton> skeleton, bool looping);
+		const Vector<glm::mat4> Sample(uint32_t frameIndex, Ref<Skeleton> aSkeleton);
 
-		static std::vector<glm::mat4> LocalPoseToGlobalMatrices(const Pose& localPose, Ref<Skeleton> aSkeleton);
+		static Vector<glm::mat4> LocalPoseToGlobalMatrices(const Pose& localPose, Ref<Skeleton> aSkeleton);
 		static void BlendPoseWith(Pose& target, const Pose& poseToBlendWith, float blendFactor);
 		static Pose GetBlendedPose(const Pose& target, const Pose& poseToBlendWith, float blendFactor);
 
-		const std::vector<TRS> SampleTRS(float aStartTime, Ref<Skeleton> aSkeleton, bool looping, float speed = 1.f) const;
+		const Vector<TRS> SampleTRS(float aStartTime, Ref<Skeleton> aSkeleton, bool looping, float speed = 1.f) const;
 		const bool IsAtEnd(float startTime, float speed);
 		const bool HasPassedTime(float startTime, float speed, float time);
 
@@ -89,7 +89,7 @@ namespace Volt
 		void AddEvent(const std::string& eventName, uint32_t frame);
 		void RemoveEvent(const std::string& eventName, uint32_t frame);
 		inline const bool HasEvents() const { return !m_events.empty(); }
-		inline const std::vector<Event>& GetEvents() const { return m_events; }
+		inline const Vector<Event>& GetEvents() const { return m_events; }
 
 		static AssetType GetStaticType() { return AssetType::Animation; }
 		AssetType GetType() override { return GetStaticType(); };
@@ -109,8 +109,8 @@ namespace Volt
 		friend class AnimationImporter;
 		friend class AnimationSerializer;
 
-		std::vector<Pose> m_frames;
-		std::vector<Event> m_events;
+		Vector<Pose> m_frames;
+		Vector<Event> m_events;
 
 		uint32_t m_framesPerSecond = 0;
 		float m_duration = 0.f;

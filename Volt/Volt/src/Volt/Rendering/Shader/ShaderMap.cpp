@@ -5,14 +5,16 @@
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
 
 #include "Volt/Core/Application.h"
-#include "Volt/Core/ScopedTimer.h"
 
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Math/Math.h"
 
-#include <VoltRHI/Shader/Shader.h>
-#include <VoltRHI/Pipelines/RenderPipeline.h>
-#include <VoltRHI/Pipelines/ComputePipeline.h>
+#include <RHIModule/Shader/Shader.h>
+#include <RHIModule/Pipelines/RenderPipeline.h>
+#include <RHIModule/Pipelines/ComputePipeline.h>
+
+#include <CoreUtilities/Math/Hash.h>
+#include <CoreUtilities/Time/ScopedTimer.h>
 
 namespace Volt
 {
@@ -147,7 +149,7 @@ namespace Volt
 
 	void ShaderMap::LoadShaders()
 	{
-		const std::vector<std::filesystem::path> searchPaths =
+		const Vector<std::filesystem::path> searchPaths =
 		{
 			ProjectManager::GetEngineDirectory() / "Engine" / "Shaders",
 			ProjectManager::GetAssetsDirectory()
@@ -155,7 +157,7 @@ namespace Volt
 
 		ScopedTimer timer{};
 
-		VT_CORE_INFO("[ShaderMap]: Starting shader import!");
+		VT_LOG(Info, "[ShaderMap]: Starting shader import!");
 
 		for (const auto& searchPath : searchPaths)
 		{
@@ -199,7 +201,7 @@ namespace Volt
 			}
 		}
 
-		std::vector<std::future<void>> shaderFutures;
+		Vector<std::future<void>> shaderFutures;
 		std::mutex shaderMapMutex;
 
 		for (const auto& searchPath : searchPaths)
@@ -225,9 +227,7 @@ namespace Volt
 					AssetManager::AddDependencyToAsset(shaderDef->handle, AssetManager::GetAssetHandleFromFilePath(sourceEntry.filePath));
 				}
 
-				auto& threadPool = Application::GetThreadPool();
-
-				shaderFutures.emplace_back(threadPool.SubmitTask([&, def = shaderDef]() 
+				shaderFutures.emplace_back(JobSystem::SubmitTask([&, def = shaderDef]() 
 				{
 					RHI::ShaderSpecification specification;
 					specification.name = def->GetName();
@@ -249,10 +249,10 @@ namespace Volt
 			future.wait();
 		}
 
-		VT_CORE_INFO("[ShaderMap]: Shader import finished in {0} seconds!", timer.GetTime<Time::Seconds>());
+		VT_LOG(Info, "[ShaderMap]: Shader import finished in {0} seconds!", timer.GetTime<Time::Seconds>());
 	}
 
-	std::vector<std::filesystem::path> ShaderMap::FindShaderIncludes(const std::filesystem::path& filePath)
+	Vector<std::filesystem::path> ShaderMap::FindShaderIncludes(const std::filesystem::path& filePath)
 	{
 		constexpr const char* INCLUDE_KEYWORD = "#include";
 
@@ -270,7 +270,7 @@ namespace Volt
 
 		input.close();
 		
-		std::vector<std::filesystem::path> resultIncludes{};
+		Vector<std::filesystem::path> resultIncludes{};
 
 		size_t offset = shaderString.find(INCLUDE_KEYWORD, 0);
 		while (offset != std::string::npos)

@@ -1,15 +1,13 @@
 #pragma once
 
 #include "Volt/Core/Base.h"
-
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
-
-#include "Volt/Rendering/Resources/BindlessResource.h"
+#include "Volt/Math/Math.h"
 
 #include "Volt/Rendering/Shader/ShaderMap.h"
+#include "Volt/Rendering/BindlessResource.h"
 
-#include "Volt/Math/Math.h"
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
 
 #include <atomic>
 
@@ -38,8 +36,8 @@ namespace Volt
 	private:
 		void UploadToInternal(RenderGraph& renderGraph, RefPtr<RHI::StorageBuffer> dstBuffer);
 
-		std::vector<T> m_data;
-		std::vector<uint32_t> m_dataIndices;
+		Vector<T> m_data;
+		Vector<uint32_t> m_dataIndices;
 		std::atomic<uint32_t> m_currentIndex = 0;
 	};
 
@@ -81,9 +79,9 @@ namespace Volt
 
 		struct ResourceHandles
 		{
-			RenderGraphResourceHandle srcBuffer;
-			RenderGraphResourceHandle dstBuffer;
-			RenderGraphResourceHandle indicesBuffer;
+			RenderGraphBufferHandle srcBuffer;
+			RenderGraphBufferHandle dstBuffer;
+			RenderGraphBufferHandle indicesBuffer;
 
 			uint32_t dataCount = 0;
 		} data;
@@ -115,7 +113,7 @@ namespace Volt
 
 			builder.SetIsComputePass();
 		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		[=](RenderContext& context)
 		{
 			constexpr uint32_t sizeInUINT = static_cast<uint32_t>(sizeof(T) / sizeof(uint32_t));
 
@@ -124,9 +122,9 @@ namespace Volt
 			auto pipeline = ShaderMap::GetComputePipeline("ScatterUpload");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("dstBuffer"_sh, resources.GetBuffer(data.dstBuffer));
-			context.SetConstant("srcBuffer"_sh, resources.GetBuffer(data.srcBuffer));
-			context.SetConstant("scatterIndices"_sh, resources.GetBuffer(data.indicesBuffer));
+			context.SetConstant("dstBuffer"_sh, data.dstBuffer);
+			context.SetConstant("srcBuffer"_sh, data.srcBuffer);
+			context.SetConstant("scatterIndices"_sh, data.indicesBuffer);
 			context.SetConstant("typeSizeInUINT"_sh, static_cast<uint32_t>(sizeInUINT));
 			context.SetConstant("copyCount"_sh, data.dataCount);
 			context.Dispatch(groupSize, 1, 1);

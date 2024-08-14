@@ -23,6 +23,7 @@ project "Navigation"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
+		"**.natvis",
 		
 		"vendor/Recast/**.h",
 		"vendor/Recast/**.cpp",
@@ -44,10 +45,13 @@ project "Navigation"
 	includedirs
 	{
 		"src/",
-		"../Volt/src",
-		"../Nexus/src",
-		"../VoltRenderer/VoltRHI/src",
-		"../Mosaic/src",
+
+		"%{IncludeDir.Volt}",
+		"%{IncludeDir.Nexus}",
+		"%{IncludeDir.RHIModule}",
+		"%{IncludeDir.Mosaic}",
+		"%{IncludeDir.LogModule}",
+		"%{IncludeDir.RenderCoreModule}",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.spdlog}",
@@ -75,7 +79,9 @@ project "Navigation"
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.shaderc_glslc}",
-		"%{IncludeDir.shaderc_utils}"
+		"%{IncludeDir.shaderc_utils}",
+
+		"%{IncludeDir.EventModule}",
 	}
 
 	filter "files:vendor/**.c"

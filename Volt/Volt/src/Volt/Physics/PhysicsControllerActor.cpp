@@ -128,7 +128,7 @@ namespace Volt
 	void PhysicsControllerActor::SetAngularVelocity(const glm::vec3& velocity)
 	{
 		physx::PxRigidDynamic* actor = myController->getActor()->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setAngularVelocity(PhysXUtilities::ToPhysXVector(velocity));
 	}
@@ -136,7 +136,7 @@ namespace Volt
 	const glm::vec3 PhysicsControllerActor::GetAngularVelocity() const
 	{
 		physx::PxRigidDynamic* actor = myController->getActor()->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return PhysXUtilities::FromPhysXVector(actor->getAngularVelocity());
 	}
@@ -144,7 +144,7 @@ namespace Volt
 	void PhysicsControllerActor::SetLinearVelocity(const glm::vec3& velocity)
 	{
 		physx::PxRigidDynamic* actor = myController->getActor()->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setLinearVelocity(PhysXUtilities::ToPhysXVector(velocity));
 
@@ -156,7 +156,7 @@ namespace Volt
 	const glm::vec3 PhysicsControllerActor::GetLinearVelocity() const
 	{
 		physx::PxRigidDynamic* actor = myController->getActor()->is<physx::PxRigidDynamic>();
-		VT_CORE_ASSERT(actor, "Actor is null!");
+		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return PhysXUtilities::FromPhysXVector(actor->getLinearVelocity());
 	}
@@ -197,7 +197,7 @@ namespace Volt
 		myFilterData = data;
 
 		const uint32_t shapeCount = myController->getActor()->getNbShapes();
-		std::vector<physx::PxShape*> shapes{ shapeCount };
+		Vector<physx::PxShape*> shapes{ shapeCount };
 
 		myController->getActor()->getShapes(shapes.data(), shapeCount);
 		for (const auto& s : shapes)

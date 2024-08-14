@@ -2,11 +2,13 @@
 #include "LightCullingTechnique.h"
 
 #include "Volt/Rendering/SceneRendererStructs.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphBlackboard.h"
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
-#include "Volt/Rendering/RenderGraph/RenderGraphUtils.h"
-
 #include "Volt/Rendering/Shader/ShaderMap.h"
+
+#include "Volt/Math/Math.h"
+
+#include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
+#include <RenderCore/RenderGraph/RenderGraph.h>
+#include <RenderCore/RenderGraph/RenderGraphUtils.h>
 
 namespace Volt
 {
@@ -46,19 +48,18 @@ namespace Volt
 			builder.ReadResource(lightBuffers.spotLightsBuffer);
 
 			builder.SetIsComputePass();
-			builder.SetHasSideEffect();
 		},
-		[=](const LightCullingData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](const LightCullingData& data, RenderContext& context) 
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("LightTileBinning");
 
 			context.BindPipeline(pipeline);
-			context.SetConstant("depthTexture"_sh, resources.GetImage2D(preDepthData.depth));
-			context.SetConstant("viewData"_sh, resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
-			context.SetConstant("pointLights"_sh, resources.GetBuffer(lightBuffers.pointLightsBuffer));
-			context.SetConstant("spotLights"_sh, resources.GetBuffer(lightBuffers.spotLightsBuffer));
-			context.SetConstant("visiblePointLightIndices"_sh, resources.GetBuffer(data.visiblePointLightsBuffer));
-			context.SetConstant("visibleSpotLightIndices"_sh, resources.GetBuffer(data.visibleSpotLightsBuffer));
+			context.SetConstant("depthTexture"_sh, preDepthData.depth);
+			context.SetConstant("viewData"_sh, uniformBuffers.viewDataBuffer);
+			context.SetConstant("pointLights"_sh, lightBuffers.pointLightsBuffer);
+			context.SetConstant("spotLights"_sh, lightBuffers.spotLightsBuffer);
+			context.SetConstant("visiblePointLightIndices"_sh, data.visiblePointLightsBuffer);
+			context.SetConstant("visibleSpotLightIndices"_sh, data.visibleSpotLightsBuffer);
 			context.SetConstant("tileCount"_sh, glm::uvec2{ tileCountX, tileCountY });
 		
 			context.Dispatch(tileCountX, tileCountY, 1u);

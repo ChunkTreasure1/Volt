@@ -21,7 +21,7 @@ namespace Volt
 		std::ifstream file(realPath, std::ios::in | std::ios::binary);
 		if (!file.is_open())
 		{
-			VT_CORE_ERROR("Could not open navmesh file!");
+			VT_LOG(Error, "Could not open navmesh file!");
 			return false;
 		}
 
@@ -50,7 +50,7 @@ namespace Volt
 		std::ofstream output(realPath, std::ios::binary | std::ios::app);
 		if (!output.is_open())
 		{
-			VT_CORE_ERROR("Could not save navmesh file!");
+			VT_LOG(Error, "Could not save navmesh file!");
 			return;
 		}
 

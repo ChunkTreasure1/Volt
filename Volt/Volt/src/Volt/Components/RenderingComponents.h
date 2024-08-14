@@ -16,9 +16,9 @@ namespace Volt
 	struct MeshComponent
 	{
 		AssetHandle handle = Asset::Null();
-		std::vector<AssetHandle> materials;
+		Vector<AssetHandle> materials;
 
-		std::vector<UUID64> renderObjectIds;
+		Vector<UUID64> renderObjectIds;
 
 		[[nodiscard]] inline const AssetHandle& GetHandle() const { return handle; }
 
@@ -31,7 +31,7 @@ namespace Volt
 			reflect.SetGUID("{45D008BE-65C9-4D6F-A0C6-377F7B384E47}"_guid);
 			reflect.SetLabel("Mesh Component");
 			reflect.AddMember(&MeshComponent::handle, "handle", "Mesh", "", Asset::Null(), AssetType::Mesh);
-			reflect.AddMember(&MeshComponent::materials, "materials", "Materials", "", std::vector<AssetHandle>{}, AssetType::Material);
+			reflect.AddMember(&MeshComponent::materials, "materials", "Materials", "", Vector<AssetHandle>{}, AssetType::Material);
 			reflect.SetOnMemberChangedCallback(&MeshComponent::OnMemberChanged);
 			reflect.SetOnComponentCopiedCallback(&MeshComponent::OnComponentCopied);
 			reflect.SetOnComponentDeserializedCallback(&MeshComponent::OnComponentDeserialized);
@@ -41,7 +41,7 @@ namespace Volt
 
 	private:
 		AssetHandle m_oldHandle = Asset::Null();
-		std::vector<AssetHandle> m_oldMaterials;
+		Vector<AssetHandle> m_oldMaterials;
 	};
 
 	struct CameraComponent
@@ -74,7 +74,7 @@ namespace Volt
 		uint32_t currentAnimation = 0;
 		float currentStartTime = 0.f;
 
-		std::unordered_map<UUID64, std::vector<Entity>> attachedEntities;
+		std::unordered_map<UUID64, Vector<Entity>> attachedEntities;
 
 		bool isLooping = true;
 		bool isPlaying = false;
@@ -109,21 +109,6 @@ namespace Volt
 		REGISTER_COMPONENT(TextRendererComponent);
 	};
 
-	struct VideoPlayerComponent
-	{
-		AssetHandle video = Asset::Null();
-		AssetHandle lastVideo = Asset::Null();
-
-		static void ReflectType(TypeDesc<VideoPlayerComponent>& reflect)
-		{
-			reflect.SetGUID("{15F85B2A-F8B2-48E1-8841-3BA946FFD172}"_guid);
-			reflect.SetLabel("Video Player Component");
-			reflect.AddMember(&VideoPlayerComponent::video, "video", "Video", "", Asset::Null(), AssetType::Video);
-		}
-
-		REGISTER_COMPONENT(VideoPlayerComponent);
-	};
-
 	struct SpriteComponent
 	{
 		AssetHandle materialHandle = Asset::Null();
@@ -140,7 +125,6 @@ namespace Volt
 
 	struct AnimationControllerComponent
 	{
-		AssetHandle animationGraph = Asset::Null();
 		AssetHandle material = Asset::Null();
 		AssetHandle skin = Asset::Null();
 		bool applyRootMotion = false;
@@ -151,7 +135,6 @@ namespace Volt
 		{
 			reflect.SetGUID("{36D3CFA2-538E-4036-BB28-2B672F294478}"_guid);
 			reflect.SetLabel("Animation Controller Component");
-			reflect.AddMember(&AnimationControllerComponent::animationGraph, "animationGraph", "Animation Graph", "", Asset::Null(), AssetType::AnimationGraph);
 			reflect.AddMember(&AnimationControllerComponent::material, "material", "Material", "", Asset::Null(), AssetType::Material);
 			reflect.AddMember(&AnimationControllerComponent::skin, "skin", "Skin", "", Asset::Null(), AssetType::Mesh);
 			reflect.AddMember(&AnimationControllerComponent::applyRootMotion, "applyRootMotion", "Apply Root Motion", "", false);
@@ -165,7 +148,7 @@ namespace Volt
 		AssetHandle motionWeaveDatabase = Asset::Null();
 
 		Ref<MotionWeaver> MotionWeaver;
-		std::vector<UUID64> renderObjectIds;
+		Vector<UUID64> renderObjectIds;
 
 		static void ReflectType(TypeDesc<MotionWeaveComponent>& reflect)
 		{
@@ -180,7 +163,7 @@ namespace Volt
 	struct VertexPaintedComponent
 	{
 		AssetHandle meshHandle = Asset::Null();
-		std::vector<uint32_t> vertexColors;
+		Vector<uint32_t> vertexColors;
 
 		static void ReflectType(TypeDesc<VertexPaintedComponent>& reflect)
 		{

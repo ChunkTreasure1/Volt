@@ -1,9 +1,0 @@
-name: "ObjectID"
-internal: true
-sources:
-  - entryPoint: "main"
-    shaderStage: "vs"
-    filePath: "Engine/Shaders/Source/Editor/ObjectID_vs.hlsl"
-  - entryPoint: "main"
-    shaderStage: "ps"
-    filePath: "Engine/Shaders/Source/Editor/ObjectID_ps.hlsl"

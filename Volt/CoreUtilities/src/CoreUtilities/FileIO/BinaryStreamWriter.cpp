@@ -13,10 +13,10 @@ void BinaryStreamWriter::WriteToDisk(const std::filesystem::path& targetFilepath
 	const uint8_t* writePtr = m_data.data();
 	size_t size = m_data.size();
 
-	std::vector<uint8_t> compressedData;
+	Vector<uint8_t> compressedData;
 	if (compress)
 	{
-		compressedData.resize(compressionEncodingHeaderSize);
+		compressedData.resize_uninitialized(compressionEncodingHeaderSize);
 
 		*(uint32_t*)(compressedData.data()) = MAGIC; // First we set a magic value
 		compressedData[sizeof(uint32_t)] = 1; // First byte tells if file is compressed
@@ -26,7 +26,7 @@ void BinaryStreamWriter::WriteToDisk(const std::filesystem::path& targetFilepath
 
 		compressedDataOffset += compressionEncodingHeaderSize;
 
-		compressedData.resize(compressedDataOffset);
+		compressedData.resize_uninitialized(compressedDataOffset);
 		if (GetCompressed(compressedData, compressedDataOffset))
 		{
 			memcpy_s(&compressedData[compressionEncodingHeaderSize], compressedDataOffset - compressionEncodingHeaderSize, m_data.data(), compressedDataOffset - compressionEncodingHeaderSize);
@@ -54,7 +54,7 @@ void BinaryStreamWriter::WriteToDisk(const std::filesystem::path& targetFilepath
 	stream.close();
 }
 
-bool BinaryStreamWriter::GetCompressed(std::vector<uint8_t>& result, size_t compressedDataOffset)
+bool BinaryStreamWriter::GetCompressed(Vector<uint8_t>& result, size_t compressedDataOffset)
 {
 	constexpr uint32_t CHUNK_SIZE = 16384;
 	constexpr size_t compressionEncodingHeaderSize = sizeof(uint32_t) + sizeof(uint8_t) + sizeof(size_t);
@@ -85,7 +85,7 @@ bool BinaryStreamWriter::GetCompressed(std::vector<uint8_t>& result, size_t comp
 		do
 		{
 			size_t dstOffset = result.size();
-			result.resize(result.size() + CHUNK_SIZE);
+			result.resize_uninitialized(result.size() + CHUNK_SIZE);
 
 			stream.avail_out = CHUNK_SIZE;
 			stream.next_out = &result[dstOffset];
@@ -94,7 +94,7 @@ bool BinaryStreamWriter::GetCompressed(std::vector<uint8_t>& result, size_t comp
 			assert(zLibResult != Z_STREAM_ERROR);
 
 			uint32_t actualOutSize = CHUNK_SIZE - stream.avail_out;
-			result.resize(dstOffset + actualOutSize);
+			result.resize_uninitialized(dstOffset + actualOutSize);
 
 		}
 		while (stream.avail_out == 0);
@@ -113,7 +113,7 @@ void BinaryStreamWriter::WriteTypeHeader(const TypeHeader& typeHeader)
 	constexpr size_t typeHeaderSize = sizeof(TypeHeader);
 
 	const size_t offset = m_data.size();
-	m_data.resize(m_data.size() + typeHeaderSize);
+	m_data.resize_uninitialized(m_data.size() + typeHeaderSize);
 	memcpy_s(&m_data[offset], typeHeaderSize, &typeHeader, typeHeaderSize);
 }
 
@@ -123,7 +123,7 @@ void BinaryStreamWriter::WriteData(const void* data, const size_t size)
 
 	const size_t writeSize = size;
 	const size_t currentOffset = m_data.size();
-	m_data.resize(currentOffset + writeSize);
+	m_data.resize_uninitialized(currentOffset + writeSize);
 
 	memcpy_s(&m_data[currentOffset], writeSize, data, size);
 }
@@ -131,7 +131,6 @@ void BinaryStreamWriter::WriteData(const void* data, const size_t size)
 size_t BinaryStreamWriter::Write(const void* data, const size_t size)
 {
 	TypeHeader header{};
-	header.baseTypeSize = sizeof(void*);
 	header.totalTypeSize = static_cast<uint32_t>(size);
 
 	WriteTypeHeader(header);

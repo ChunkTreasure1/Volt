@@ -2,8 +2,8 @@
 
 #include <Volt/Rendering/Shader/ShaderMap.h>
 
-#include <VoltRHI/Descriptors/DescriptorTable.h>
-#include <VoltRHI/Buffers/StorageBuffer.h>
+#include <RHIModule/Descriptors/DescriptorTable.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
 
 using namespace Volt;
 

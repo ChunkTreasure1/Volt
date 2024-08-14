@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <stdint.h>
+#include <format>
 
 class BinaryStreamReader;
 class BinaryStreamWriter;
@@ -21,6 +22,9 @@ public:
 	static void Deserialize(BinaryStreamReader& streamReader, UUID64& outData);
 
 	operator uint64_t() const;
+
+	VT_NODISCARD VT_INLINE const uint64_t Get() const { return m_uuid; }
+	
 private:
 	uint64_t m_uuid;
 };
@@ -38,6 +42,8 @@ public:
 	static void Deserialize(BinaryStreamReader& streamReader, UUID32& outData);
 
 	operator uint32_t() const;
+
+	VT_NODISCARD VT_INLINE const uint32_t Get() const { return m_uuid; }
 private:
 	uint32_t m_uuid;
 };
@@ -61,6 +67,26 @@ namespace std
 		std::size_t operator()(const UUID32& uuid) const
 		{
 			return static_cast<size_t>(uuid);
+		}
+	};
+
+	template <>
+	struct formatter<UUID32> : formatter<string>
+	{
+		auto format(UUID32 id, format_context& ctx) const
+		{
+			return formatter<string>::format(
+			  std::format("{}", id.Get()), ctx);
+		}
+	};
+
+	template <>
+	struct formatter<UUID64> : formatter<string>
+	{
+		auto format(UUID64 id, format_context& ctx) const
+		{
+			return formatter<string>::format(
+			  std::format("{}", id.Get()), ctx);
 		}
 	};
 }

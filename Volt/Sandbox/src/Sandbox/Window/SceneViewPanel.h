@@ -6,9 +6,9 @@
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/Scene.h>
 
-#include <Volt/Events/KeyEvent.h>
+#include <InputModule/Events/KeyboardEvents.h>
 
-#include <vector>
+
 
 namespace Volt
 {
@@ -49,7 +49,7 @@ private:
 	bool m_isRenamingLayer = false;
 	uint32_t m_renamingLayer = 0;
 
-	std::vector<Volt::EntityID> m_entityDrawList;
+	Vector<Volt::EntityID> m_entityDrawList;
 	std::unordered_map<Volt::EntityID, ImGuiID> m_entityToImGuiID;
 	bool m_rebuildDrawList = false;
 

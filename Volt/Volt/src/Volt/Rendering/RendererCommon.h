@@ -1,43 +1,15 @@
 #pragma once
 
-#include <VoltRHI/Descriptors/ResourceHandle.h>
-#include <VoltRHI/Core/RHICommon.h>
+#include <RHIModule/Descriptors/ResourceHandle.h>
+#include <RHIModule/Core/RHICommon.h>
 
 namespace Volt
 {
-	struct IndirectGPUCommand
+	struct MeshTaskCommand
 	{
-		RHI::IndirectDrawCommand command{};
-		uint32_t objectId{};
-		uint32_t meshId{};
-		uint32_t meshletId{};
-		uint32_t padding{};
-	};
-
-	struct IndirectDrawData
-	{
-		glm::mat4 transform;
-		uint32_t meshId{};
-		uint32_t vertexStartOffset{};
-		uint32_t materialId{};
-
-		uint32_t padding;
-	};
-
-	struct GPUMeshNew
-	{
-		ResourceHandle vertexPositions;
-		ResourceHandle vertexMaterial;
-		ResourceHandle vertexAnimation;
-		ResourceHandle indexBuffer;
-	};
-
-	struct IndirectMeshTaskCommand
-	{
-		RHI::IndirectMeshTasksCommand command{};
-		uint32_t objectId{};
-		uint32_t meshId{};
-		uint32_t padding[3];
+		uint32_t drawId;
+		uint32_t taskCount;
+		uint32_t meshletOffset;
 	};
 
 	///// Rendering Structures /////
@@ -51,6 +23,7 @@ namespace Volt
 		glm::mat4 viewProjection;
 		glm::mat4 inverseViewProjection;
 		glm::vec4 cameraPosition;
+		glm::vec4 cullingFrustum;
 		glm::vec2 depthUnpackConsts;
 		float nearPlane;
 		float farPlane;
@@ -79,6 +52,13 @@ namespace Volt
 
 		float cascadeDistances[CASCADE_COUNT];
 		glm::mat4 viewProjections[CASCADE_COUNT];
+	};
+
+	struct DirectionalLightInfo
+	{
+		DirectionalLightData data;
+		glm::vec4 projectionBounds[DirectionalLightData::CASCADE_COUNT];
+		glm::mat4 views[DirectionalLightData::CASCADE_COUNT];
 	};
 
 	struct PointLightData

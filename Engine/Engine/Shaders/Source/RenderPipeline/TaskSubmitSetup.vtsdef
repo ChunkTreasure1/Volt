@@ -1,0 +1,6 @@
+name: "TaskSubmitSetup"
+internal: true
+sources:
+  - entryPoint: "MainCS"
+    shaderStage: "cs"
+    filePath: "Engine/Shaders/Source/RenderPipeline/TaskSubmitSetup.hlsl"

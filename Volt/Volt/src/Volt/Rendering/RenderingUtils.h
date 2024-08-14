@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Rendering/RenderGraph/Resources/RenderGraphResourceHandle.h"
+#include <RenderCore/RenderGraph/Resources/RenderGraphResourceHandle.h>
 
 #include <string_view>
 
@@ -10,9 +10,9 @@ namespace Volt
 
 	namespace RenderingUtils
 	{
-		extern RenderGraphResourceHandle GenerateIndirectArgs(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName);
-		extern RenderGraphResourceHandle GenerateIndirectArgsWrapped(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName);
+		extern RenderGraphResourceHandle GenerateIndirectArgs(RenderGraph& renderGraph, RenderGraphBufferHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName);
+		extern RenderGraphResourceHandle GenerateIndirectArgsWrapped(RenderGraph& renderGraph, RenderGraphBufferHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName);
 
-		extern void CopyImage(RenderGraph& renderGraph, RenderGraphResourceHandle imageToCopy, RenderGraphResourceHandle destinationImage, const glm::uvec2& renderSize);
+		extern void CopyImage(RenderGraph& renderGraph, RenderGraphImageHandle imageToCopy, RenderGraphImageHandle destinationImage, const glm::uvec2& renderSize);
 	}
 }

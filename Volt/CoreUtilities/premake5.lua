@@ -18,6 +18,11 @@ project "CoreUtilities"
 	AddCommonLinkOptions()
 	AddCommonDefines()
 
+	linkoptions 
+	{
+		"/ignore:4075",
+	}
+
 	buildoptions 
 	{
 		"/bigobj"
@@ -28,6 +33,7 @@ project "CoreUtilities"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
+		"**.natvis",
 	}
 
 	includedirs
@@ -129,7 +135,7 @@ project "CoreUtilities"
 		buildoptions { "/Ot", "/Ob2" }
 		runtime "Release"
 		optimize "on"
-		symbols "on"
+		symbols "off"
 		vectorextensions "AVX2"
 		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <VoltRHI/Buffers/CommandBuffer.h>
+#include <RHIModule/Buffers/CommandBuffer.h>
 
 class RenderingTestBase
 {

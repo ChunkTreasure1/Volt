@@ -20,7 +20,7 @@ namespace Volt
 		myCookingData->cookingParams.meshPreprocessParams = physx::PxMeshPreprocessingFlag::eWELD_VERTICES;
 		myCookingData->cookingParams.midphaseDesc = physx::PxMeshMidPhase::eBVH34;
 
-		VT_CORE_ASSERT(myCookingData, "Could not initialize cooking SDK!");
+		VT_ASSERT_MSG(myCookingData, "Could not initialize cooking SDK!");
 	}
 
 	void CookingFactory::Shutdown()
@@ -28,7 +28,7 @@ namespace Volt
 		myCookingData = nullptr;
 	}
 
-	CookingResult CookingFactory::CookMesh(MeshColliderComponent& colliderComp, bool, std::vector<MeshColliderData>& outData)
+	CookingResult CookingFactory::CookMesh(MeshColliderComponent& colliderComp, bool, Vector<MeshColliderData>& outData)
 	{
 		if (colliderComp.isConvex)
 		{
@@ -38,7 +38,7 @@ namespace Volt
 				return CookingResult::Failure;
 			}
 
-			std::vector<MeshColliderData> colliderData;
+			Vector<MeshColliderData> colliderData;
 
 			// Cook the mesh
 			for (uint32_t i = 0; const auto & subMesh : srcMesh->GetSubMeshes())
@@ -85,7 +85,7 @@ namespace Volt
 				return CookingResult::Failure;
 			}
 
-			std::vector<MeshColliderData> colliderData;
+			Vector<MeshColliderData> colliderData;
 
 			// Cook the mesh
 			for (uint32_t i = 0; const auto & subMesh : srcMesh->GetSubMeshes())
@@ -149,7 +149,7 @@ namespace Volt
 
 		if (submesh.vertexCount >= convexDesc.vertexLimit)
 		{
-			VT_CORE_WARN("Attempting to cook mesh with more than {0} vertices! Switching to quantized cooking!", convexDesc.vertexLimit);
+			VT_LOG(Warning, "Attempting to cook mesh with more than {0} vertices! Switching to quantized cooking!", convexDesc.vertexLimit);
 			convexDesc.flags |= physx::PxConvexFlag::eQUANTIZE_INPUT | physx::PxConvexFlag::eSHIFT_VERTICES;
 			convexDesc.quantizedCount = (uint16_t)submesh.vertexCount;
 		}
@@ -159,7 +159,7 @@ namespace Volt
 
 		if (!PxCookConvexMesh(myCookingData->cookingParams, convexDesc, buf, &result))
 		{
-			VT_CORE_ERROR("Failed to cook mesh!");
+			VT_LOG(Error, "Failed to cook mesh!");
 
 			cookingResult = PhysXUtilities::FromPhysXCookingResult(result);
 			return cookingResult;
@@ -195,7 +195,7 @@ namespace Volt
 		physx::PxTriangleMeshCookingResult::Enum result;
 		if (!PxCookTriangleMesh(myCookingData->cookingParams, triangleDesc, buf, &result))
 		{
-			VT_CORE_ERROR("Failed to cook mesh!");
+			VT_LOG(Error, "Failed to cook mesh!");
 
 			cookingResult = PhysXUtilities::FromPhysXCookingResult(result);
 			return cookingResult;
@@ -209,13 +209,13 @@ namespace Volt
 		return cookingResult;
 	}
 
-	void CookingFactory::GenerateDebugMesh(const MeshColliderComponent& colliderComp, const std::vector<MeshColliderData>& meshData)
+	void CookingFactory::GenerateDebugMesh(const MeshColliderComponent& colliderComp, const Vector<MeshColliderData>& meshData)
 	{
 		if (!colliderComp.isConvex)
 		{
-			std::vector<Vertex> vertices;
-			std::vector<uint32_t> indices;
-			std::vector<SubMesh> subMeshes;
+			Vector<Vertex> vertices;
+			Vector<uint32_t> indices;
+			Vector<SubMesh> subMeshes;
 
 			for (const Volt::MeshColliderData & data : meshData)
 			{
@@ -272,9 +272,9 @@ namespace Volt
 		}
 		else
 		{
-			std::vector<Vertex> vertices;
-			std::vector<uint32_t> indices;
-			std::vector<SubMesh> subMeshes;
+			Vector<Vertex> vertices;
+			Vector<uint32_t> indices;
+			Vector<SubMesh> subMeshes;
 
 			for (const Volt::MeshColliderData& data : meshData)
 			{

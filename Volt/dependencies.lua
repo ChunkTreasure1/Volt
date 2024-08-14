@@ -1,5 +1,4 @@
 IncludeDir = {}
-IncludeDir["GLFW"] = "%{wks.location}/Volt/vendor/GLFW/include"
 IncludeDir["ImGui"] = "%{wks.location}/Volt/vendor/ImGui"
 IncludeDir["spdlog"] = "%{wks.location}/Volt/vendor/spdlog/include"
 IncludeDir["yaml"] = "%{wks.location}/Volt/vendor/yaml-cpp/include"
@@ -15,7 +14,6 @@ IncludeDir["msdf_atlas_gen"] = "%{wks.location}/Volt/vendor/msdf-atlas-gen/msdf-
 IncludeDir["msdfgen"] = "%{wks.location}/Volt/vendor/msdf-atlas-gen/msdfgen"
 IncludeDir["PhysX"] = "%{wks.location}/Volt/vendor/PhysX/include"
 IncludeDir["stb_image"] = "%{wks.location}/Volt/vendor/stb_image/"
-IncludeDir["ffmpeg"] = "%{wks.location}/Volt/vendor/ffmpeg/include/"
 IncludeDir["mono"] = "%{wks.location}/Volt/vendor/mono/include/"
 IncludeDir["DirectXTex"] = "%{wks.location}/Volt/vendor/DirectXTex/src"
 IncludeDir["fmod"] = "%{wks.location}/Amp/vendor/fmod/include"
@@ -39,12 +37,25 @@ IncludeDir["cityhash"] = "%{wks.location}/Volt/vendor/cityhash/src"
 IncludeDir["METIS"] = "%{wks.location}/Volt/vendor/METIS/include"
 IncludeDir["ufbx"] = "%{wks.location}/Volt/vendor/ufbx"
 IncludeDir["dxc"] = "%{wks.location}/Volt/vendor/dxc/include"
+IncludeDir["libacc"] = "%{wks.location}/Volt/vendor/libacc"
+
+IncludeDir["VulkanRHIModule"] = "%{wks.location}/RHI/VulkanRHIModule/src"
+IncludeDir["D3D12RHIModule"] = "%{wks.location}/RHI/D3D12RHIModule/src"
+IncludeDir["RHIModule"] = "%{wks.location}/RHI/RHIModule/src"
+
+IncludeDir["EventModule"] = "%{wks.location}/EventModule/src"
+IncludeDir["InputModule"] = "%{wks.location}/InputModule/src"
+IncludeDir["WindowModule"] = "%{wks.location}/WindowModule/src"
+
+IncludeDir["LogModule"] =  "%{wks.location}/LogModule/src"
 
 IncludeDir["vma"] = "%{wks.location}/Volt/vendor/vma"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 IncludeDir["shaderc_utils"] = "%{wks.location}/Volt/vendor/shaderc/libshaderc_util/include"
 IncludeDir["shaderc_glslc"] = "%{wks.location}/Volt/vendor/shaderc/glslc"
 IncludeDir["Aftermath"] = "%{wks.location}/Volt/vendor/Aftermath/include"
+
+IncludeDir["GLFW"] = "%{wks.location}/WindowModule/vendor/GLFW/include"
 
 IncludeDir["meshoptimizer"] = "%{wks.location}/Volt/vendor/meshoptimizer/src"
 IncludeDir["zlib"] = "%{wks.location}/Volt/vendor/zlib/include"
@@ -57,12 +68,22 @@ IncludeDir["nlohmann"] = "%{wks.location}/Sandbox/vendor/nlohmann/include/"
 IncludeDir["httplib"] = "%{wks.location}/Sandbox/vendor/cpp-httplib/include/"
 
 IncludeDir["CoreUtilities"] = "%{wks.location}/CoreUtilities/src"
+IncludeDir["Volt"] = "%{wks.location}/Volt/src"
+IncludeDir["Amp"] = "%{wks.location}/Amp/src"
+IncludeDir["Navigation"] = "%{wks.location}/Navigation/src"
+IncludeDir["Nexus"] = "%{wks.location}/Nexus/src"
+IncludeDir["Mosaic"] = "%{wks.location}/Mosaic/src"
+IncludeDir["LogModule"] = "%{wks.location}/LogModule/src"
+IncludeDir["RenderCoreModule"] = "%{wks.location}/RenderCoreModule/src"
+IncludeDir["RHIModule"] = "%{wks.location}/RHI/RHIModule/src"
+IncludeDir["VulkanRHIModule"] = "%{wks.location}/RHI/VulkanRHIModule/src"
+IncludeDir["D3D12RHIModule"] = "%{wks.location}/RHI/D3D12RHIModule/src"
+IncludeDir["JobSystemModule"] = "%{wks.location}/JobSystemModule/src"
 
 LibraryDir = {}
 LibraryDir["PhysX"] = "%{wks.location}/Volt/vendor/PhysX/lib/%{cfg.buildcfg}"
 LibraryDir["fmod"] = "%{wks.location}/Volt/vendor/fmod/lib/%{cfg.buildcfg}"
 LibraryDir["wwise"] = "%{wks.location}/Amp/vendor/wwise/lib/%{cfg.buildcfg}"
-LibraryDir["ffmpeg"] = "%{wks.location}/Volt/vendor/ffmpeg/lib/"
 LibraryDir["mono"] = "%{wks.location}/Volt/vendor/mono/lib/%{cfg.buildcfg}"
 LibraryDir["steam"] = "%{wks.location}/Volt/vendor/steam/lib/win64"
 LibraryDir["discord"] = "%{wks.location}/Volt/vendor/DiscordSDK/lib"
@@ -111,14 +132,6 @@ Library["OpenSSL_SSL"] = "%{LibraryDir.OpenSSL}/libssl.lib"
 
 Library["PhysX"] = "%{LibraryDir.PhysX}/PhysX.lib"
 
-Library["avcodec"] = "%{LibraryDir.ffmpeg}/libavcodec.lib"  
-Library["avdevice"] = "%{LibraryDir.ffmpeg}/libavdevice.lib"
-Library["avfilter"] = "%{LibraryDir.ffmpeg}/libavfilter.lib"
-Library["avformat"] = "%{LibraryDir.ffmpeg}/libavformat.lib"
-Library["avutil"] = "%{LibraryDir.ffmpeg}/libavutil.lib"
-Library["swresample"] = "%{LibraryDir.ffmpeg}/libswresample.lib"
-Library["swscale"] = "%{LibraryDir.ffmpeg}/libswscale.lib"
-
 Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
 Library["dxc"] = "%{wks.location}/Volt/vendor/dxc/lib/dxcompiler.lib"
 
@@ -137,6 +150,6 @@ Library["Aftermath"] = "%{LibraryDir.Aftermath}/x64/GFSDK_Aftermath_Lib.x64.lib"
 
 Library["METIS"] = "%{LibraryDir.METIS}/metis.lib"
 
-Library["VoltVulkan"] = "%{LibraryDir.Volt}/VoltVulkan/VoltVulkan.lib"
-Library["VoltRHI"] = "%{LibraryDir.Volt}/VoltRHI/VoltRHI.lib"
+Library["VulkanRHIModule"] = "%{LibraryDir.Volt}/VulkanRHIModule/VulkanRHIModule.lib"
+Library["RHIModule"] = "%{LibraryDir.Volt}/RHIModule/RHIModule.lib"
 Library["CoreUtilities"] = "%{LibraryDir.Volt}/CoreUtilities/CoreUtilities.lib"

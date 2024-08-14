@@ -1,0 +1,101 @@
+#pragma once
+
+#include "RenderGraphResourceHandle.h"
+
+#include <RHIModule/Descriptors/ResourceHandle.h>
+#include <RHIModule/Core/RHICommon.h>
+
+namespace Volt
+{
+	namespace RHI
+	{
+		class Image2D;
+		class StorageBuffer;
+		class UniformBuffer;
+	}
+
+	class RenderGraph;
+	struct RenderGraphPassNodeBase;
+
+	enum class ResourceType
+	{
+		Image2D,
+		Image3D,
+		Buffer,
+		UniformBuffer
+	};
+
+	struct RenderGraphBarrierInfo
+	{
+		RHI::BarrierStage dstStage;
+		RHI::BarrierAccess dstAccess;
+
+		// Only images
+		RHI::ImageLayout dstLayout;
+	};
+
+	struct RenderGraphResourceNodeBase
+	{
+		virtual ~RenderGraphResourceNodeBase() = default;
+
+		uint32_t refCount = 0;
+		size_t hash = 0;
+
+		Weak<RenderGraphPassNodeBase> producer;
+		Weak<RenderGraphPassNodeBase> lastUsage;
+
+		RenderGraphResourceHandle handle;
+
+		bool isExternal = false;
+		bool isGlobal = false;
+
+		virtual ResourceType GetResourceType() const = 0;
+
+		template<typename T>
+		T& As()
+		{
+			static_assert(std::is_base_of_v<RenderGraphResourceNodeBase, T>);
+			return *reinterpret_cast<T*>(this);
+		}
+	};
+
+	template<typename T>
+	struct RenderGraphResourceNode : public RenderGraphResourceNodeBase
+	{
+		RenderGraphResourceNode() = default;
+		~RenderGraphResourceNode() override = default;
+
+		T resourceInfo;
+
+		VT_INLINE ResourceType GetResourceType() const override { return resourceInfo.GetType(); }
+	};
+
+	class VTRC_API RenderGraphPassResources
+	{
+	public:
+		RenderGraphPassResources(RenderGraph& renderGraph, RenderGraphPassNodeBase& pass);
+		
+		ResourceHandle GetImage(const RenderGraphImageHandle resourceHandle, const int32_t mip = -1, const int32_t layer = -1) const;
+		ResourceHandle GetBuffer(const RenderGraphBufferHandle resourceHandle) const;
+		ResourceHandle GetUniformBuffer(const RenderGraphUniformBufferHandle resourceHandle) const;
+
+	private:
+		friend class RenderContext;
+
+		void ValidateResourceAccess(const RenderGraphResourceHandle resourceHandle) const;
+
+		RenderGraph& m_renderGraph;
+		RenderGraphPassNodeBase& m_pass;
+	};
+
+	struct RenderGraphResourceAccess
+	{
+		RHI::BarrierStage dstStage = RHI::BarrierStage::None;
+		RHI::BarrierAccess dstAccess = RHI::BarrierAccess::None;
+		
+		// Image only
+		RHI::ImageLayout dstLayout = RHI::ImageLayout::Undefined;
+
+		RenderGraphResourceHandle resourceHandle = std::numeric_limits<RenderGraphResourceHandle>::max();
+ 	};
+}

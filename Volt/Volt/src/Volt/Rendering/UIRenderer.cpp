@@ -2,7 +2,6 @@
 #include "UIRenderer.h"
 
 #include "Volt/Core/Application.h"
-#include "Volt/Core/Window.h"
 
 #include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Text/MSDFData.h"
@@ -13,14 +12,14 @@
 
 #include "Volt/Utility/StringUtility.h"
 
-#include <VoltRHI/Buffers/IndexBuffer.h>
-#include <VoltRHI/Buffers/VertexBuffer.h>
+#include <RHIModule/Buffers/IndexBuffer.h>
+#include <RHIModule/Buffers/VertexBuffer.h>
 
 namespace Volt
 {
 	struct SpriteCommand
 	{
-		RefPtr<RHI::Image2D> image;
+		RefPtr<RHI::Image> image;
 		glm::vec4 color;
 		glm::vec3 position;
 		glm::vec2 scale;
@@ -69,14 +68,14 @@ namespace Volt
 		QuadData quadData;
 		TextData textData;
 
-		WeakPtr<RHI::Image2D> currentRenderTarget;
+		WeakPtr<RHI::Image> currentRenderTarget;
 		glm::mat4 currentProjection = { 1.f };
 		glm::mat4 currentView = { 1.f };
 
 		//Ref<CommandBuffer> commandBuffer;
 		//Ref<Image2D> depthImage;
 
-		std::vector<SpriteCommand> spriteCommands;
+		Vector<SpriteCommand> spriteCommands;
 	};
 
 	Scope<UIRendererData> s_uiRendererData;
@@ -108,7 +107,7 @@ namespace Volt
 
 		// Depth image
 		//{
-			/*ImageSpecification spec{};
+			/*ImageSpecification spec{};3
 			spec.width = 1280;
 			spec.height = 720;
 			spec.format = ImageFormat::DEPTH32F;
@@ -126,7 +125,7 @@ namespace Volt
 		s_uiRendererData = nullptr;
 	}
 
-	void UIRenderer::Begin(RefPtr<RHI::Image2D> renderTarget)
+	void UIRenderer::Begin(RefPtr<RHI::Image> renderTarget)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -245,7 +244,7 @@ namespace Volt
 		newCmd.offset = offset;
 	}
 
-	void UIRenderer::DrawSprite(RefPtr<RHI::Image2D> image, const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
+	void UIRenderer::DrawSprite(RefPtr<RHI::Image> image, const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -260,10 +259,10 @@ namespace Volt
 
 	void UIRenderer::DrawSprite(const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
 	{
-		DrawSprite(RefPtr<RHI::Image2D>(nullptr), position, scale, rotation, color, offset);
+		DrawSprite(RefPtr<RHI::Image>(nullptr), position, scale, rotation, color, offset);
 	}
 
-	static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)
+	static bool NextLine(int32_t aIndex, const Vector<int32_t>& aLines)
 	{
 		for (int32_t line : aLines)
 		{
@@ -299,7 +298,7 @@ namespace Volt
 		auto& fontGeom = font->GetMSDFData()->fontGeometry;
 		const auto& metrics = fontGeom.getMetrics();
 
-		std::vector<int32_t> nextLines;
+		Vector<int32_t> nextLines;
 
 		// Find new lines
 		{

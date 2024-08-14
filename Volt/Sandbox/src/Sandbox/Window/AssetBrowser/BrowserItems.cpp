@@ -7,8 +7,7 @@
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Input/KeyCodes.h>
-
+#include <InputModule/KeyCodes.h>
 
 namespace AssetBrowser
 {
@@ -29,7 +28,7 @@ namespace AssetBrowser
 
 		PushID();
 		const float thumbnailSize = GetThumbnailSize();
-		const RefPtr<Volt::RHI::Image2D> icon = GetIcon();
+		const RefPtr<Volt::RHI::Image> icon = GetIcon();
 		const bool isSelected = mySelectionManager->IsSelected(this);
 
 		const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(thumbnailSize);

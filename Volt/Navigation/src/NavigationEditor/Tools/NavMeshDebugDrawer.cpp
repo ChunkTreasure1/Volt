@@ -54,7 +54,7 @@ void NavMeshDebugDrawer::DrawNavMesh()
 	//}
 }
 
-void NavMeshDebugDrawer::DrawLinks(const std::vector<Volt::AI::NavLinkConnection>& links)
+void NavMeshDebugDrawer::DrawLinks(const Vector<Volt::AI::NavLinkConnection>& links)
 {
 	for (const auto& link : links)
 	{
@@ -64,7 +64,7 @@ void NavMeshDebugDrawer::DrawLinks(const std::vector<Volt::AI::NavLinkConnection
 	}
 }
 
-void NavMeshDebugDrawer::DrawPath(const std::vector<glm::vec3>& path)
+void NavMeshDebugDrawer::DrawPath(const Vector<glm::vec3>& path)
 {
 	for (uint32_t i = 0; i < path.size(); i++)
 	{
@@ -184,7 +184,7 @@ void NavMeshDrawCompiler::end()
 {
 	if (myPrimitive == DU_DRAW_TRIS)
 	{
-		VT_CORE_ASSERT(!mySubmeshes.empty(), "Missing NavMeshDrawCompiler::begin call");
+		VT_ASSERT_MSG(!mySubmeshes.empty(), "Missing NavMeshDrawCompiler::begin call");
 
 		mySubmeshes.back().vertexCount = static_cast<uint32_t>(myIndices.size()) - mySubmeshes.back().vertexStartOffset;
 		mySubmeshes.back().indexCount = static_cast<uint32_t>(myVertices.size()) - mySubmeshes.back().indexStartOffset;
@@ -204,9 +204,9 @@ Ref<Volt::Mesh> NavMeshDrawCompiler::GetDebugMesh() const
 	return CreateRef<Volt::Mesh>(myVertices, myIndices, materialTable, mySubmeshes);
 }
 
-std::vector<NavMeshLine> NavMeshDrawCompiler::GetDebugLines() const
+Vector<NavMeshLine> NavMeshDrawCompiler::GetDebugLines() const
 {
-	std::vector<NavMeshLine> lines;
+	Vector<NavMeshLine> lines;
 
 	for (uint32_t i = 0; i < myLineVertices.size(); i += 2)
 	{

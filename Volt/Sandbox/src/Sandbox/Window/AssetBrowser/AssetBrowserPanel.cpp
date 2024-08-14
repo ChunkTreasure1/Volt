@@ -43,12 +43,23 @@
 
 #include <Volt/Scripting/Mono/MonoScriptUtils.h>
 
-#include <Volt/Input/Input.h>
-#include <Volt/Input/KeyCodes.h>
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
 
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
+#include <EventModule/Event.h>
+
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+#include <WindowModule/Events/WindowEvents.h>
+
+#include <InputModule/Events/KeyboardEvents.h>
+#include <InputModule/Events/MouseEvents.h>
+
 #include <yaml-cpp/yaml.h>
+
+#undef CreateDirectory
 
 AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string& id)
 	: EditorWindow("Asset Browser" + id), myEditorScene(aScene)
@@ -311,11 +322,6 @@ void AssetBrowserPanel::UpdateMainContent()
 		Reload();
 	}
 
-	if (EditorUtils::NewAnimationGraphModal("New Animation Graph##assetBrowser", nullptr, myNewAnimationGraphData))
-	{
-		Reload();
-	}
-
 	CreateNewShaderModal();
 	CreateNewMonoScriptModal();
 	CreateNewMotionWeaveDatabaseModal();
@@ -327,13 +333,14 @@ void AssetBrowserPanel::OnEvent(Volt::Event& e)
 	Volt::EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<Volt::WindowDragDropEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnDragDropEvent));
 	dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnKeyPressedEvent));
-	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnRenderEvent));
+	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnRenderEvent));
 }
 
 bool AssetBrowserPanel::OnDragDropEvent(Volt::WindowDragDropEvent& e)
 {
-	auto [x, y] = Volt::Input::GetMousePosition();
-	const auto [wX, wY] = Volt::Application::Get().GetWindow().GetPosition();
+	float x = Volt::Input::GetMouseX();
+	float y = Volt::Input::GetMouseY();
+	const auto [wX, wY] = Volt::WindowManager::Get().GetMainWindow().GetPosition();
 
 	x += wX;
 	y += wY;
@@ -414,7 +421,7 @@ bool AssetBrowserPanel::OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent& e)
 	return false;
 }
 
-bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
+bool AssetBrowserPanel::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	if (!myPreviewRenderer)
 	{
@@ -443,9 +450,9 @@ bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 	return false;
 }
 
-std::vector<AssetBrowser::DirectoryItem*> AssetBrowserPanel::FindParentDirectoriesOfDirectory(AssetBrowser::DirectoryItem* directory)
+Vector<AssetBrowser::DirectoryItem*> AssetBrowserPanel::FindParentDirectoriesOfDirectory(AssetBrowser::DirectoryItem* directory)
 {
-	std::vector<AssetBrowser::DirectoryItem*> directories;
+	Vector<AssetBrowser::DirectoryItem*> directories;
 	directories.emplace_back(directory);
 
 	for (auto dir = directory->parentDirectory; dir != nullptr; dir = dir->parentDirectory)
@@ -764,7 +771,7 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 	return reload;
 }
 
-void AssetBrowserPanel::RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>& directories, std::vector<Ref<AssetBrowser::AssetItem>>& assets)
+void AssetBrowserPanel::RenderView(Vector<Ref<AssetBrowser::DirectoryItem>>& directories, Vector<Ref<AssetBrowser::AssetItem>>& assets)
 {
 	bool reload = false;
 
@@ -900,11 +907,6 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 				if (ImGui::MenuItem("Animated Character"))
 				{
 					CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimatedCharacter);
-				}
-
-				if (ImGui::MenuItem("Animation Graph"))
-				{
-					CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimationGraph);
 				}
 
 				if (ImGui::MenuItem("Blend Space"))
@@ -1072,8 +1074,8 @@ void AssetBrowserPanel::Reload()
 
 void AssetBrowserPanel::Search(const std::string& inQuery)
 {
-	std::vector<std::string> queries;
-	std::vector<std::string> types;
+	Vector<std::string> queries;
+	Vector<std::string> types;
 
 	std::string searchQuery = inQuery;
 	searchQuery.push_back(' ');
@@ -1107,7 +1109,7 @@ void AssetBrowserPanel::Search(const std::string& inQuery)
 	}
 }
 
-void AssetBrowserPanel::FindFoldersAndFilesWithQuery(const std::vector<Ref<AssetBrowser::DirectoryItem>>& dirList, std::vector<Ref<AssetBrowser::DirectoryItem>>& directories, std::vector<Ref<AssetBrowser::AssetItem>>& assets, const std::string& query)
+void AssetBrowserPanel::FindFoldersAndFilesWithQuery(const Vector<Ref<AssetBrowser::DirectoryItem>>& dirList, Vector<Ref<AssetBrowser::DirectoryItem>>& directories, Vector<Ref<AssetBrowser::AssetItem>>& assets, const std::string& query)
 {
 	for (const auto& dir : dirList)
 	{
@@ -1142,7 +1144,7 @@ void AssetBrowserPanel::FindFoldersAndFilesWithQuery(const std::vector<Ref<Asset
 
 AssetBrowser::DirectoryItem* AssetBrowserPanel::FindDirectoryWithPath(const std::filesystem::path& path)
 {
-	std::vector<Ref<AssetBrowser::DirectoryItem>> dirList;
+	Vector<Ref<AssetBrowser::DirectoryItem>> dirList;
 	for (const auto& dir : myDirectories)
 	{
 		dirList.emplace_back(dir.second);
@@ -1151,7 +1153,7 @@ AssetBrowser::DirectoryItem* AssetBrowserPanel::FindDirectoryWithPath(const std:
 	return FindDirectoryWithPathRecursivly(dirList, path);
 }
 
-AssetBrowser::DirectoryItem* AssetBrowserPanel::FindDirectoryWithPathRecursivly(const std::vector<Ref<AssetBrowser::DirectoryItem>> dirList, const std::filesystem::path& path)
+AssetBrowser::DirectoryItem* AssetBrowserPanel::FindDirectoryWithPathRecursivly(const Vector<Ref<AssetBrowser::DirectoryItem>> dirList, const std::filesystem::path& path)
 {
 	for (const auto& dir : dirList)
 	{
@@ -1290,7 +1292,6 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		case Volt::AssetType::PhysicsMaterial: originalName = "PM_NewPhysicsMaterial"; break;
 		case Volt::AssetType::Scene: originalName = "SC_NewScene"; break;
 		case Volt::AssetType::ParticlePreset: originalName = "PP_NewParticlePreset"; break;
-		case Volt::AssetType::AnimationGraph: originalName = "AG_NewAnimationGraph"; break;
 		case Volt::AssetType::BlendSpace: originalName = "BS_NewBlendSpace"; break;
 		case Volt::AssetType::MonoScript: originalName = "idk.cs"; break;
 		case Volt::AssetType::PostProcessingStack: originalName = "PPS_NewPostStack"; break;
@@ -1325,15 +1326,6 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 			UI::OpenModal("New Character##assetBrowser");
 
-			break;
-		}
-
-		case Volt::AssetType::AnimationGraph:
-		{
-			myNewAnimationGraphData.destination = Volt::AssetManager::GetRelativePath(myCurrentDirectory->path);
-			myNewAnimationGraphData.name = tempName;
-
-			UI::OpenModal("New Animation Graph##assetBrowser");
 			break;
 		}
 
@@ -1411,7 +1403,7 @@ void AssetBrowserPanel::CreateNewShaderModal()
 {
 	if (UI::BeginModal("New Shader##assetBrowser"))
 	{
-		const std::vector<std::string> shaderTypeOptions = { "PBR", "PBR Transparent", "Particle", "Post Processing", "Decal" };
+		const Vector<std::string> shaderTypeOptions = { "PBR", "PBR Transparent", "Particle", "Post Processing", "Decal" };
 
 		constexpr int32_t PBR_SHADER = 0;
 		constexpr int32_t PBR_TRANSPARENT_SHADER = 1;
@@ -1464,7 +1456,7 @@ void AssetBrowserPanel::CreateNewShaderModal()
 			}
 
 			const std::filesystem::path definitionDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + ".vtsdef");
-			std::vector<std::filesystem::path> shaderPaths;
+			Vector<std::filesystem::path> shaderPaths;
 
 			switch (myNewShaderData.shaderType)
 			{

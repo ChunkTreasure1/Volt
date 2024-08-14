@@ -5,13 +5,15 @@
 #include <Volt/Asset/Importers/FbxUtilities.h>
 #include <Volt/Asset/Asset.h>
 
+#include <CoreUtilities/Containers/Vector.h>
+
 class MeshImportModal : public Modal
 {
 public:
 	MeshImportModal(const std::string& strId);
 	~MeshImportModal() override = default;
 
-	void SetImportMeshes(const std::vector<std::filesystem::path>& filePaths);
+	void SetImportMeshes(const Vector<std::filesystem::path>& filePaths);
 	void Clear();
 
 protected:
@@ -54,5 +56,5 @@ private:
 	ImportOptions m_importOptions{};
 	Volt::FbxInformation m_fbxFileInformation;
 
-	std::vector<std::filesystem::path> m_importFilePaths;
+	Vector<std::filesystem::path> m_importFilePaths;
 };

@@ -11,7 +11,7 @@
 
 #include <glm/glm.hpp>
 
-#include <vector>
+
 
 namespace Mosaic
 {
@@ -51,11 +51,11 @@ namespace Mosaic
 
 		virtual const ResultInfo GetShaderCode(const GraphNode<Ref<class MosaicNode>, Ref<MosaicEdge>>& underlyingNode, uint32_t outputIndex, std::string& appendableShaderString) const = 0;
 
-		inline const std::vector<Parameter>& GetInputParameters() const { return m_inputParameters; }
-		inline const std::vector<Parameter>& GetOutputParameters() const { return m_outputParameters; }
+		inline const Vector<Parameter>& GetInputParameters() const { return m_inputParameters; }
+		inline const Vector<Parameter>& GetOutputParameters() const { return m_outputParameters; }
 
-		inline std::vector<Parameter>& GetInputParameters() { return m_inputParameters; }
-		inline std::vector<Parameter>& GetOutputParameters() { return m_outputParameters; }
+		inline Vector<Parameter>& GetInputParameters() { return m_inputParameters; }
+		inline Vector<Parameter>& GetOutputParameters() { return m_outputParameters; }
 
 		Parameter& GetInputParameter(uint32_t parameterIndex);
 		Parameter& GetOutputParameter(uint32_t parameterIndex);
@@ -78,8 +78,8 @@ namespace Mosaic
 		MosaicGraph* m_graph = nullptr;
 
 	private:
-		std::vector<Parameter> m_inputParameters;
-		std::vector<Parameter> m_outputParameters;
+		Vector<Parameter> m_inputParameters;
+		Vector<Parameter> m_outputParameters;
 
 		std::string m_editorState;
 	};

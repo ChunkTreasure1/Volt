@@ -45,13 +45,13 @@ namespace Volt
 		WriteLock lock{ m_mutex };
 		if (!DoAssetExistInGraph(handle))
 		{
-			VT_CORE_WARN("[AssetDependencyGraph]: Trying to add dependency to asset not in the graph!");
+			VT_LOG(Warning, "[AssetDependencyGraph]: Trying to add dependency to asset not in the graph!");
 			return;
 		}
 
 		if (!DoAssetExistInGraph(dependency))
 		{
-			VT_CORE_WARN("[AssetDependencyGraph]: Trying to add dependency not in the graph to asset!");
+			VT_LOG(Warning, "[AssetDependencyGraph]: Trying to add dependency not in the graph to asset!");
 			return;
 		}
 
@@ -77,15 +77,15 @@ namespace Volt
 		}
 	}
 
-	const std::vector<AssetHandle> AssetDependencyGraph::GetAssetDependencyChain(AssetHandle handle) const
+	const Vector<AssetHandle> AssetDependencyGraph::GetAssetDependencyChain(AssetHandle handle) const
 	{
 		if (!DoAssetExistInGraph(handle))
 		{
-			VT_CORE_WARN("[AssetDependencyGraph]: Trying to get chain of asset not in the graph!");
+			VT_LOG(Warning, "[AssetDependencyGraph]: Trying to get chain of asset not in the graph!");
 			return {};
 		}
 
-		std::vector<AssetHandle> result;
+		Vector<AssetHandle> result;
 		result.emplace_back(handle);
 
 		const auto& node = m_graph.GetNodeFromID(m_assetNodeIds.at(handle));
@@ -104,15 +104,15 @@ namespace Volt
 		return result;
 	}
 
-	const std::vector<AssetHandle> AssetDependencyGraph::GetAssetsDependentOn(AssetHandle handle) const
+	const Vector<AssetHandle> AssetDependencyGraph::GetAssetsDependentOn(AssetHandle handle) const
 	{
 		if (!DoAssetExistInGraph(handle))
 		{
-			VT_CORE_WARN("[AssetDependencyGraph]: Trying to get chain of asset not in the graph!");
+			VT_LOG(Warning, "[AssetDependencyGraph]: Trying to get chain of asset not in the graph!");
 			return {};
 		}
 
-		std::vector<AssetHandle> result;
+		Vector<AssetHandle> result;
 		result.emplace_back(handle);
 
 		const auto& node = m_graph.GetNodeFromID(m_assetNodeIds.at(handle));

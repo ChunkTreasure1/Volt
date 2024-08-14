@@ -6,8 +6,8 @@
 
 #include <Mosaic/MosaicGraph.h>
 
-#include <VoltRHI/Pipelines/ComputePipeline.h>
-#include <VoltRHI/Images/SamplerState.h>
+#include <RHIModule/Pipelines/ComputePipeline.h>
+#include <RHIModule/Images/SamplerState.h>
 
 #include <string>
 
@@ -40,10 +40,10 @@ namespace Volt
 
 		bool ClearAndGetIsDirty();
 
-		std::vector<AssetHandle> GetTextureHandles() const;
+		Vector<AssetHandle> GetTextureHandles() const;
 
-		inline const std::vector<Ref<Texture2D>>& GetTextures() const { return m_textures; }
-		inline const std::vector<RefPtr<RHI::SamplerState>>& GetSamplers() const { return m_samplers; }
+		inline const Vector<Ref<Texture2D>>& GetTextures() const { return m_textures; }
+		inline const Vector<RefPtr<RHI::SamplerState>>& GetSamplers() const { return m_samplers; }
 
 		inline RefPtr<RHI::ComputePipeline> GetComputePipeline() const { return m_computePipeline; } // #TODO_Ivar: Used for binding, should probably be done in a different way
 	
@@ -60,8 +60,8 @@ namespace Volt
 
 		Scope<Mosaic::MosaicGraph> m_graph;
 
-		std::vector<Ref<Texture2D>> m_textures;
-		std::vector<RefPtr<RHI::SamplerState>> m_samplers;
+		Vector<Ref<Texture2D>> m_textures;
+		Vector<RefPtr<RHI::SamplerState>> m_samplers;
 
 		RefPtr<RHI::ComputePipeline> m_computePipeline;
 

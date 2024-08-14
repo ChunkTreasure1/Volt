@@ -13,7 +13,7 @@ namespace Volt::BehaviorTree
 		auto monoElements = ::Utility::SplitStringsByCharacter(m_monoScriptFunctonName, '.');
 		if (monoElements.size() != 3)
 		{
-			VT_CORE_ERROR("Bad leaf");
+			VT_LOG(Error, "Bad leaf");
 			return eNodeStatus::FAILURE;
 		}
 
@@ -24,7 +24,7 @@ namespace Volt::BehaviorTree
 		auto monoMethod = monoClass->GetMethod(monoElements[2], 0);
 		if (!monoMethod)
 		{
-			VT_CORE_ERROR("Bad Leaf node");
+			VT_LOG(Error, "Bad Leaf node");
 			return eNodeStatus::FAILURE;
 		}
 
@@ -42,7 +42,7 @@ namespace Volt::BehaviorTree
 			}
 		}
 		// Should nvever be reached
-		VT_CORE_ERROR("Bad Leaf");
+		VT_LOG(Error, "Bad Leaf");
 		return eNodeStatus::FAILURE;
 	}
 }

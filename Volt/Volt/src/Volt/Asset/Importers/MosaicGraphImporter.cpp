@@ -23,7 +23,7 @@ namespace Volt
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			VT_LOG(Error, "File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -32,7 +32,7 @@ namespace Volt
 
 		if (!streamReader.OpenFile(filePath))
 		{
-			VT_CORE_ERROR("Failed to open file {0}!", metadata.filePath);
+			VT_LOG(Error, "Failed to open file {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}

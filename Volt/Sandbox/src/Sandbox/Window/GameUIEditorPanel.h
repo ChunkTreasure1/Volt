@@ -2,16 +2,19 @@
 
 #include "Sandbox/Window/EditorWindow.h"
 
-#include <Volt/Events/ApplicationEvent.h>
-#include <Volt/Events/MouseEvent.h>
+#include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Rendering/UISceneRenderer.h>
 
-#include <VoltRHI/Images/Image2D.h>
+#include <InputModule/Events/MouseEvents.h>
+#include <WindowModule/Events/WindowEvents.h>
+
+#include <RHIModule/Images/Image.h>
 #include <CoreUtilities/Pointers/RefPtr.h>
 
 namespace Volt
 {
 	class UIScene;
+
 }
 
 class GameUIEditorPanel : public EditorWindow
@@ -29,18 +32,28 @@ public:
 	void OnClose() override;
 
 private:
-	bool OnRenderEvent(Volt::AppRenderEvent& e);
+	bool OnRenderEvent(Volt::WindowRenderEvent& e);
 	bool OnMouseScrollEvent(Volt::MouseScrolledEvent& e);
 	bool OnMouseButtonPressedEvent(Volt::MouseButtonPressedEvent& e);
 	bool OnMouseButtonReleasedEvent(Volt::MouseButtonReleasedEvent& e);
 	bool OnMouseMovedEvent(Volt::MouseMovedEvent& e);
 
+	glm::vec2 GetViewportLocalPosition(const ImVec2& mousePos);
+
 	void UpdateViewport();
+	void UpdateHierarchy();
+	void UpdateDetails();
+
+	void HandleSelection();
+
 	void CreateViewportImage(const uint32_t width, const uint32_t height);
 
 	float m_currentZoom = 1.f;
 	glm::vec2 m_currentPosition = 0.f;
+	
 	glm::vec2 m_previousMousePosition = 0.f;
+	glm::vec2 m_currentMousePosition = 0.f;
+	glm::vec2 m_viewportMouseCoords = 0.f;
 
 	bool m_viewportHovered = false;
 	bool m_middleMouseDown = false;
@@ -49,7 +62,7 @@ private:
 	glm::vec2 m_viewportSize = { 1280.f, 720.f };
 
 	Ref<Volt::UIScene> m_uiScene;
-	RefPtr<Volt::RHI::Image2D> m_viewportImage;
+	RefPtr<Volt::RHI::Image> m_viewportImage;
 
 	Scope<Volt::UISceneRenderer> m_uiSceneRenderer;
 };

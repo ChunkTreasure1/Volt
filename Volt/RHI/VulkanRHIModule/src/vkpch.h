@@ -1,0 +1,25 @@
+#pragma once
+
+#include <map>
+#include <unordered_map>
+#include <set>
+#include <array>
+#include <span>
+
+#include <string>
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <istream>
+
+#include <functional>
+#include <algorithm>
+#include <filesystem>
+#include <numeric>
+
+#include <future>
+
+#include <LogModule/Log.h>
+
+VT_DECLARE_LOG_CATEGORY(LogVulkanRHI, LogVerbosity::Trace);

@@ -10,7 +10,7 @@ namespace Volt::BehaviorTree
 		return m_nodes.at(in_uuid);
 	}
 
-	const std::vector<Link>& NodeManager::GetLinksFromUUID(const UUID64& in_uuid)
+	const Vector<Link>& NodeManager::GetLinksFromUUID(const UUID64& in_uuid)
 	{
 		if (m_links.find(in_uuid) == m_links.end())
 			return Nil::linkVec;
@@ -80,7 +80,7 @@ namespace Volt::BehaviorTree
 		assert(m_nodes.find(in_uuid) != m_nodes.end() && "Node does not exist");
 
 		// find all links related to node
-		std::vector<UUID64> linksToRemove;
+		Vector<UUID64> linksToRemove;
 		linksToRemove.reserve(10);
 		for (const auto& id : m_linkIDs)
 		{
@@ -104,7 +104,7 @@ namespace Volt::BehaviorTree
 	void NodeManager::UnregisterLink(const Link& in_link)
 	{
 		// Unregister from parent linkMap
-		std::vector<Link>& links = m_links[in_link.m_parentID];
+		Vector<Link>& links = m_links[in_link.m_parentID];
 		for (int i = 0; i < links.size(); i++)
 		{
 			if (links[i] == in_link)

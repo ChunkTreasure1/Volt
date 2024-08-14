@@ -29,8 +29,8 @@ namespace Volt
 		float coneOuterRadius;
 		bool coneSpawnOnEdge = false;
 
-		std::vector<glm::vec3> sizes;
-		std::vector<glm::vec4> colors;
+		Vector<glm::vec3> sizes;
+		Vector<glm::vec4> colors;
 
 		float startVelocity = 0.f;
 		float endVelocity = 0.f;

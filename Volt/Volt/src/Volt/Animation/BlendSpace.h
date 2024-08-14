@@ -23,7 +23,7 @@ namespace Volt
 		inline const BlendSpaceDimension GetDimension() const { return myDimension; }
 		inline const glm::vec2& GetHorizontalValues() const { return myHorizontalValues; }
 		inline const glm::vec2& GetVerticalValues() const { return myVerticalValues; }
-		inline const std::vector<std::pair<glm::vec2, AssetHandle>>& GetAnimations() const { return myAnimations; }
+		inline const Vector<std::pair<glm::vec2, AssetHandle>>& GetAnimations() const { return myAnimations; }
 
 		inline void SetDimension(BlendSpaceDimension dim) { myDimension = dim; }
 
@@ -40,6 +40,6 @@ namespace Volt
 		glm::vec2 myHorizontalValues = { -1.f, 1.f };
 		glm::vec2 myVerticalValues = { -1.f, 1.f };
 
-		std::vector<std::pair<glm::vec2, AssetHandle>> myAnimations;
+		Vector<std::pair<glm::vec2, AssetHandle>> myAnimations;
 	};
 }

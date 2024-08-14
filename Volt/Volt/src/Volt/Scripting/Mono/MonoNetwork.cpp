@@ -5,16 +5,16 @@
 
 namespace Volt
 {
-	std::vector<MonoNetSyncInfo> MonoNetwork::GetSyncData()
+	Vector<MonoNetSyncInfo> MonoNetwork::GetSyncData()
 	{
-		std::vector<MonoNetSyncInfo> data;
+		Vector<MonoNetSyncInfo> data;
 
 		// Set information.
 
 		return data;
 	}
 
-	bool MonoNetwork::SetSyncData(const std::vector<MonoNetSyncInfo>& syncData)
+	bool MonoNetwork::SetSyncData(const Vector<MonoNetSyncInfo>& syncData)
 	{
 		// Init myReplicatedInstances so they match to servers handles.
 

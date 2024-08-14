@@ -137,7 +137,7 @@ namespace V013
 
 				if (arrayTypeDesc->GetElementTypeIndex() != vectorValueType)
 				{
-					VT_CORE_WARN("[Upgrade Project]: Component member vector type does not match file specified type!");
+					VT_LOG(Warning, "[Upgrade Project]: Component member vector type does not match file specified type!");
 					return;
 				}
 
@@ -173,7 +173,7 @@ namespace V013
 			const std::type_index memberType = s_preV113PropTypeToTypeIndexMap.at(oldType).typeIndex;
 			if (memberType != componentMember->typeIndex)
 			{
-				VT_CORE_WARN("[Upgrade Project]: Component member type does not match file specified type!");
+				VT_LOG(Warning, "[Upgrade Project]: Component member type does not match file specified type!");
 				return;
 			}
 
@@ -399,7 +399,7 @@ namespace V013
 		const Volt::IArrayTypeDesc* memberArrayTypeDesc = reinterpret_cast<const Volt::IArrayTypeDesc*>(componentMember.typeDesc);
 		void* arrayPtr = reinterpret_cast<void*>(&componentData[componentMember.offset]);
 
-		std::vector<size_t> indicesToRemove{};
+		Vector<size_t> indicesToRemove{};
 
 		for (size_t i = 0; i < memberArrayTypeDesc->Size(arrayPtr); i++)
 		{
@@ -615,7 +615,7 @@ namespace V013
 		auto& project = Volt::ProjectManager::GetProject();
 		const std::filesystem::path assetsPath = project.projectDirectory / project.assetsDirectory;
 
-		std::vector<std::filesystem::path> prefabFilePaths;
+		Vector<std::filesystem::path> prefabFilePaths;
 		for (const auto& entry : std::filesystem::recursive_directory_iterator(assetsPath))
 		{
 			if (entry.path().extension().string() == ".vtprefab")
@@ -662,7 +662,7 @@ namespace V013
 		auto& project = Volt::ProjectManager::GetProject();
 		const std::filesystem::path assetsPath = project.projectDirectory / project.assetsDirectory;
 
-		std::vector<std::filesystem::path> sceneFilePaths;
+		Vector<std::filesystem::path> sceneFilePaths;
 		for (const auto& entry : std::filesystem::recursive_directory_iterator(assetsPath))
 		{
 			if (entry.path().extension().string() == ".vtscene")
@@ -688,7 +688,7 @@ namespace V013
 				YAMLFileStreamReader streamReader{};
 				if (!streamReader.OpenFile(sceneFilePath))
 				{
-					VT_CORE_ERROR("[Project Upgrade]: Unable to open scene file! Skipping!");
+					VT_LOG(Error, "[Project Upgrade]: Unable to open scene file! Skipping!");
 					continue;
 				}
 
@@ -698,7 +698,7 @@ namespace V013
 			}
 
 			Ref<Volt::Scene> scene = CreateRef<Volt::Scene>(sceneName);
-			std::vector<Volt::SceneLayer> sceneLayers;
+			Vector<Volt::SceneLayer> sceneLayers;
 
 			std::map<Volt::EntityID, Volt::EntityID> entityRemapping;
 

@@ -2,7 +2,7 @@
 
 #include "Volt/Core/Base.h"
 
-#include <vector>
+
 
 namespace Volt
 {
@@ -23,13 +23,13 @@ namespace Volt
 
 		void Clear();
 
-		std::vector<Layer*> GetLayerStack() { return m_layers; }
+		Vector<Layer*> GetLayerStack() { return m_layers; }
 
-		std::vector<Layer*>::iterator begin() { return m_layers.begin(); }
-		std::vector<Layer*>::iterator end() { return m_layers.end(); }
+		Vector<Layer*>::iterator begin() { return m_layers.begin(); }
+		Vector<Layer*>::iterator end() { return m_layers.end(); }
 
 	private:
-		std::vector<Layer*> m_layers;
+		Vector<Layer*> m_layers;
 		uint32_t m_lastInsertIndex = 0;
 	};
 }

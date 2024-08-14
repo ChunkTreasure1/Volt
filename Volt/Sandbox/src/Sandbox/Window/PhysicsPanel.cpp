@@ -89,14 +89,14 @@ void PhysicsPanel::DrawGeneralMenu()
 		UI::Property("Solver Velocity Iterations", const_cast<uint32_t&>(Volt::Physics::GetSettings().solverVelocityIterations));
 
 		{
-			std::vector<const char*> boradphaseNames = { "Sweep And Prune", "Multi Box Prune", "Automatic Box Prune" };
+			Vector<const char*> boradphaseNames = { "Sweep And Prune", "Multi Box Prune", "Automatic Box Prune" };
 			int32_t& broadphaseType = (int32_t&)const_cast<Volt::BroadphaseType&>(Volt::Physics::GetSettings().broadphaseAlgorithm);
 
 			UI::ComboProperty("Broadphase Type", broadphaseType, boradphaseNames);
 		}
 
 		{
-			std::vector<const char*> frictonNames = { "Patch", "One Directional", "Two Directional" };
+			Vector<const char*> frictonNames = { "Patch", "One Directional", "Two Directional" };
 			int32_t& frictionType = (int32_t&)const_cast<Volt::FrictionType&>(Volt::Physics::GetSettings().frictionModel);
 
 			UI::ComboProperty("Friction Type", frictionType, frictonNames);

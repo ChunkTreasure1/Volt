@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Volt/Rendering/RenderGraph/Resources/RenderGraphResourceHandle.h"
+#include <RenderCore/RenderGraph/Resources/RenderGraphResourceHandle.h>
 
 namespace Volt
 {
 	struct LightCullingData
 	{
-		RenderGraphResourceHandle visiblePointLightsBuffer;
-		RenderGraphResourceHandle visibleSpotLightsBuffer;
+		RenderGraphBufferHandle visiblePointLightsBuffer;
+		RenderGraphBufferHandle visibleSpotLightsBuffer;
 	};
 
 	class RenderGraph;

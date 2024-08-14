@@ -4,7 +4,6 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 project "Sandbox"
 	location "."
 	kind "ConsoleApp"
-	
 	language "C++"
 	cppdialect "C++20"
 
@@ -34,7 +33,6 @@ project "Sandbox"
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
 		"/WHOLEARCHIVE:PhysX",
-		"/WHOLEARCHIVE:GraphKey",
 		"/WHOLEARCHIVE:Mosaic"
 	}
 
@@ -54,6 +52,7 @@ project "Sandbox"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
+		"**.natvis",
 
 		"resource.h",
 		"Sandbox.rc",
@@ -63,17 +62,16 @@ project "Sandbox"
 	includedirs
 	{
 		"src/",
-		"../Volt/src/",
-		"../Amp/src/",
-		"../Game/src/",
-		"../GraphKey/src/",
-		"../Sandbox/src/",
-		"../Navigation/src/",
-		"../Nexus/src",
-		"../VoltRenderer/VoltRHI/src",
-		"../Mosaic/src",
-		"../Circuit/src",
 
+		"%{IncludeDir.Volt}",
+		"%{IncludeDir.Amp}",
+		"%{IncludeDir.Navigation}",
+		"%{IncludeDir.Nexus}",
+		"%{IncludeDir.Mosaic}",
+		"%{IncludeDir.LogModule}",
+		"%{IncludeDir.RHIModule}",
+		"%{IncludeDir.RenderCoreModule}",
+		"%{IncludeDir.JobSystemModule}",
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
@@ -103,8 +101,6 @@ project "Sandbox"
 		"%{IncludeDir.nlohmann}",
 		"%{IncludeDir.httplib}",
 
-		"%{IncludeDir.ffmpeg}",
-		
 		"%{IncludeDir.detour}",
 		"%{IncludeDir.detourcrowd}",
 		"%{IncludeDir.rcdtdebugutils}",
@@ -112,16 +108,16 @@ project "Sandbox"
 		"%{IncludeDir.recast}",
 		"%{IncludeDir.fastlz}",
 
-		"%{IncludeDir.VulkanSDK}",
-		"%{IncludeDir.vma}",
+		"%{IncludeDir.zlib}",
 
-		"%{IncludeDir.zlib}"
+		"%{IncludeDir.InputModule}",
+		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.WindowModule}",
 	}
 
     links
     {
         "Volt",
-		"GraphKey",
 		"Amp",
 		"meshoptimizer",
 		"DiscordSDK",
@@ -156,19 +152,15 @@ project "Sandbox"
 
 		"%{Library.PhysX}",
 
-		"%{Library.avcodec}",
-		"%{Library.avdevice}",
-		"%{Library.avfilter}",
-		"%{Library.avformat}",
-		"%{Library.avutil}",
-		"%{Library.swresample}",
-		"%{Library.swscale}",
-
 		"%{Library.mono}",
 		"%{Library.steam}",
 		"%{Library.discord}",
 
-		"%{Library.METIS}"
+		"%{Library.METIS}",
+
+		"InputModule",
+		"EventModule",
+		"WindowModule",
     }
 
 	debugargs 

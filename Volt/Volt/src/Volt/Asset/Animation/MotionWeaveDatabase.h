@@ -14,14 +14,14 @@ namespace Volt
 		AssetType GetType() override { return GetStaticType(); };
 		uint32_t GetVersion() const override { return 1; }
 
-		const std::vector<AssetHandle>& GetAnimationHandles();
+		const Vector<AssetHandle>& GetAnimationHandles();
 
 		void AddAnimation(AssetHandle animationHandle);
 		void RemoveAnimation(AssetHandle animationHandle);
 		AssetHandle GetSkeletonHandle();
 	private:
 		friend class MotionWeaveDatabaseSerializer;
-		std::vector<AssetHandle> m_AnimationHandles;
+		Vector<AssetHandle> m_AnimationHandles;
 		AssetHandle m_skeleton;
 
 		

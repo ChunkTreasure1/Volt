@@ -28,6 +28,7 @@ project "Volt"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
+		"**.natvis",
 
 		"%{IncludeDir.tinyddsloader}/**.h",
 		"%{IncludeDir.TinyGLTF}/**.h",
@@ -36,17 +37,18 @@ project "Volt"
 	includedirs
 	{
 		"src/",
-		"../Amp/src",
-		"../Game/src",
-		"../GraphKey/src/",
-		"../Navigation/src/",
-		"../Nexus/src/",
-		"../VoltRenderer/VoltRHI/src",
-		"../VoltRenderer/VoltVulkan/src",
-		"../VoltRenderer/VoltD3D12/src",
-		"../Mosaic/src",
+	
+		"%{IncludeDir.Amp}",
+		"%{IncludeDir.Navigation}",
+		"%{IncludeDir.Nexus}",
+		"%{IncludeDir.Mosaic}",
+		"%{IncludeDir.LogModule}",
+		"%{IncludeDir.RHIModule}",
+		"%{IncludeDir.VulkanRHIModule}",
+		"%{IncludeDir.D3D12RHIModule}",
+		"%{IncludeDir.RenderCoreModule}",
+		"%{IncludeDir.JobSystemModule}",
 		
-		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
@@ -66,8 +68,8 @@ project "Volt"
 		"%{IncludeDir.discord}",
 		"%{IncludeDir.NFDExtended}",
 		"%{IncludeDir.entt}",
+		"%{IncludeDir.libacc}",
 
-		"%{IncludeDir.ffmpeg}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.DirectXTex}",
 		"%{IncludeDir.efsw}",
@@ -87,11 +89,14 @@ project "Volt"
 
 		"%{IncludeDir.zlib}",
 		"%{IncludeDir.ufbx}",
+
+		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.WindowModule}",
+		"%{IncludeDir.InputModule}",
 	}
 
 	links
 	{
-		"GLFW",
 		"ImGui",
 		"Optick",
 		"tracy",
@@ -109,17 +114,23 @@ project "Volt"
 		"Mosaic",
 
 		"stb",
-		"VulkanMemoryAllocator",
-		"VoltD3D12",
 
-		"VoltRHI",
-		"VoltVulkan"
+		"LogModule",
+		"RenderCoreModule",
+		"JobSystemModule",
+		
+		"D3D12RHIModule",
+		"RHIModule",
+		"VulkanRHIModule",
+
+		"EventModule",
+		"WindowModule",
+		"InputModule",
 	}
 
 	defines
 	{
 		"PX_PHYSX_STATIC_LIB",
-		"GLFW_DLL",
 		"TRACY_IMPORTS"
 	}
 
@@ -165,6 +176,7 @@ project "Volt"
 			"VT_ENABLE_VALIDATION",
 			"VT_ENABLE_PROFILING"
 		}
+
 		runtime "Debug"
 		optimize "off"
 		symbols "on"

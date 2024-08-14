@@ -1,9 +1,0 @@
-name: "PreDepth"
-internal: true
-sources:
-  - entryPoint: "main"
-    shaderStage: "vs"
-    filePath: "Engine/Shaders/Source/Utility/PreDepth_vs.hlsl"
-  - entryPoint: "main"
-    shaderStage: "ps"
-    filePath: "Engine/Shaders/Source/Utility/PreDepth_ps.hlsl"

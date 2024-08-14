@@ -3,9 +3,6 @@
 
 #include "Volt/Asset/Asset.h"
 #include "Volt/Asset/AssetManager.h"
-#include "Volt/Asset/Animation/AnimationGraphAsset.h"
-
-#include "Volt/Animation/AnimationController.h"
 
 #include "Volt/Components/CoreComponents.h"
 #include "Volt/Components/PhysicsComponents.h"
@@ -33,7 +30,7 @@ namespace Volt
 		auto rootEntity = m_prefabScene->GetEntityFromUUID(m_rootEntityId);
 		if (!rootEntity)
 		{
-			VT_CORE_ERROR("[Prefab] Root Entity is not a valid entity!");
+			VT_LOG(Error, "[Prefab] Root Entity is not a valid entity!");
 			return Entity::Null();
 		}
 
@@ -45,7 +42,7 @@ namespace Volt
 
 		// Set scene root entity & update prefab references
 		{
-			std::vector<Entity> flatInstantiatedHeirarchy = FlattenEntityHeirarchy(newEntity);
+			Vector<Entity> flatInstantiatedHeirarchy = FlattenEntityHeirarchy(newEntity);
 			for (auto& entity : flatInstantiatedHeirarchy)
 			{
 				if (m_prefabReferencesMap.contains(entity.GetID()))
@@ -85,7 +82,7 @@ namespace Volt
 
 		// Update all entities prefab versions
 		{
-			std::vector<Entity> flatHeirarchy = FlattenEntityHeirarchy(srcEntity);
+			Vector<Entity> flatHeirarchy = FlattenEntityHeirarchy(srcEntity);
 			for (auto& entity : flatHeirarchy)
 			{
 				entity.GetComponent<PrefabComponent>().version = m_version;
@@ -207,19 +204,6 @@ namespace Volt
 			entity.GetComponent<NetActorComponent>().repId = Nexus::RandRepID();
 		}
 
-		if (entity.HasComponent<AnimationControllerComponent>())
-		{
-			auto& controllerComp = entity.GetComponent<AnimationControllerComponent>();
-			if (controllerComp.animationGraph != Asset::Null())
-			{
-				auto graphAsset = AssetManager::GetAsset<AnimationGraphAsset>(controllerComp.animationGraph);
-				if (graphAsset && graphAsset->IsValid())
-				{
-					controllerComp.controller = CreateRef<AnimationController>(graphAsset, entity);
-				}
-			}
-		}
-
 		// Common data
 		{
 			if (!entity.HasComponent<CommonComponent>())
@@ -302,8 +286,8 @@ namespace Volt
 
 	void Prefab::ValidatePrefabUpdate(Entity srcEntity)
 	{
-		std::vector<EntityID> entitiesToRemove;
-		std::vector<Entity> srcHeirarchy = FlattenEntityHeirarchy(srcEntity);
+		Vector<EntityID> entitiesToRemove;
+		Vector<Entity> srcHeirarchy = FlattenEntityHeirarchy(srcEntity);
 
 		Entity srcPrefabEntity = m_prefabScene->GetEntityFromUUID(srcEntity.GetComponent<PrefabComponent>().prefabEntity);
 
@@ -415,7 +399,7 @@ namespace Volt
 		Entity targetEntity = m_prefabScene->GetEntityFromUUID(prefabEntityId);
 		if (!targetEntity)
 		{
-			VT_CORE_WARN("[Prefab]: Trying to update an invalid entity in prefab!");
+			VT_LOG(Warning, "[Prefab]: Trying to update an invalid entity in prefab!");
 			return false;
 		}
 
@@ -530,9 +514,9 @@ namespace Volt
 		return newEntity;
 	}
 
-	const std::vector<Entity> Prefab::FlattenEntityHeirarchy(Entity entity)
+	const Vector<Entity> Prefab::FlattenEntityHeirarchy(Entity entity)
 	{
-		std::vector<Entity> result;
+		Vector<Entity> result;
 
 		result.emplace_back(entity);
 

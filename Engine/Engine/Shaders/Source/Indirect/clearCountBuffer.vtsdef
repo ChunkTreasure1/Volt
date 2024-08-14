@@ -1,6 +1,0 @@
-name: "ClearCountBuffer"
-internal: true
-sources:
-  - entryPoint: "main"
-    shaderStage: "cs"
-    filePath: "Engine/Shaders/Source/Indirect/ClearCountBuffer_cs.hlsl"

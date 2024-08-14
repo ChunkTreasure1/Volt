@@ -35,11 +35,11 @@ private:
 	uint32_t selectedTask = 0;
 	uint32_t selectedIssue = 0;
 
-	std::vector<ItemEntry> myProjects;
-	std::vector<ItemEntry> myMilestones;
-	std::vector<ItemEntry> myUserstories;
-	std::vector<ItemEntry> myTasks;
-	std::vector<ItemEntry> myIssues;
+	Vector<ItemEntry> myProjects;
+	Vector<ItemEntry> myMilestones;
+	Vector<ItemEntry> myUserstories;
+	Vector<ItemEntry> myTasks;
+	Vector<ItemEntry> myIssues;
 
 	ItemType selectedTab = ItemType::Unknown;
 };

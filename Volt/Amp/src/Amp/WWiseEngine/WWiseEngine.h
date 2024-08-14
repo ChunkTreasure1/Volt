@@ -1,7 +1,10 @@
 #pragma once
 #include <map>
 
+#include "Amp/WWiseEngine/SoundEngine/Win32/AkFilePackageLowLevelIOBlocking.h"
 #include "SoundEngine/Common/AkJobWorkerMgr.h"
+
+#include <CoreUtilities/Containers/Vector.h>
 
 #include "AK/SoundEngine/Common/AkMemoryMgr.h"		// Memory Manager
 #include <AK/SoundEngine/Common/AkModule.h>			// Default memory and stream managers
@@ -10,7 +13,6 @@
 #include <AK/MusicEngine/Common/AkMusicEngine.h>	// Music Engine
 #include <AK/SoundEngine/Common/AkStreamMgrModule.h>	// AkStreamMgrModule
 
-#include "Amp/WWiseEngine/SoundEngine/Win32/AkFilePackageLowLevelIOBlocking.h"
 
 namespace Amp
 {
@@ -31,7 +33,7 @@ namespace Amp
 		bool LoadBank(const char* aBankFile);
 		bool UnloadBank(const char* aBankFile);
 		bool UnloadAllBanks();
-		std::vector<std::string> GetBankNames();
+		Vector<std::string> GetBankNames();
 
 
 		//LISTENER CONTROL

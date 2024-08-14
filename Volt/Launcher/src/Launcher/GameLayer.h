@@ -1,14 +1,19 @@
 #pragma once
 
 #include <Volt/Core/Layer/Layer.h>
-#include <Volt/Events/ApplicationEvent.h>
-#include <Volt/Events/GameEvent.h>
+#include <Volt/Events/ApplicationEvents.h>
 
 namespace Volt
 {
 	class Scene;
 	class SceneRenderer;
 	struct SceneRendererSettings;
+
+	class WindowRenderEvent;
+	class WindowResizeEvent;
+
+	class OnSceneTransitionEvent;
+	class OnSceneLoadedEvent;
 }
 
 class GameLayer : public Volt::Layer
@@ -28,11 +33,11 @@ public:
 
 private:
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
-	bool OnRenderEvent(Volt::AppRenderEvent& e);
+	bool OnRenderEvent(Volt::WindowRenderEvent& e);
 	bool OnWindowResizeEvent(Volt::WindowResizeEvent& e);
 	bool OnSceneTransition(Volt::OnSceneTransitionEvent& e);
 	bool OnSceneLoaded(Volt::OnSceneLoadedEvent& e);
-	bool OnGameStateChanged(Volt::OnGameStateChangedEvent& e);
+	//bool OnGameStateChanged(Volt::OnGameStateChangedEvent& e);
 
 	Volt::SceneRendererSettings LoadGraphicSettings();
 

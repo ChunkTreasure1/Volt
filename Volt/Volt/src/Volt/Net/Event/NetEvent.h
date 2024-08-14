@@ -38,7 +38,7 @@ namespace Volt
 	class NetEvent
 	{
 	public:
-		NetEvent(eNetEvent in_event, Nexus::TYPE::REP_ID in_id, std::vector<uint8_t> in_data) : m_event(in_event), m_id(in_id), m_data(in_data) {}
+		NetEvent(eNetEvent in_event, Nexus::TYPE::REP_ID in_id, Vector<uint8_t> in_data) : m_event(in_event), m_id(in_id), m_data(in_data) {}
 		NetEvent() {}
 		~NetEvent() {}
 
@@ -48,10 +48,10 @@ namespace Volt
 		Nexus::TYPE::REP_ID GetId() { return m_id; }
 		void SetId(Nexus::TYPE::REP_ID in_id) { m_id = in_id; }
 
-		std::vector<uint8_t> GetData() { return m_data; }
-		void SetData(std::vector<uint8_t> in_data) { m_data = in_data; }
+		Vector<uint8_t> GetData() { return m_data; }
+		void SetData(Vector<uint8_t> in_data) { m_data = in_data; }
 
-		std::vector<uint8_t> m_data;
+		Vector<uint8_t> m_data;
 		eNetEvent m_event = eNetEvent::NIL;
 		Nexus::TYPE::REP_ID m_id = 0;
 	};

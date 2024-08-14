@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "PhysXInternal.h"
 
-#include "Volt/Log/Log.h"
-
 #include "Volt/Physics/PhysXDebugger.h"
 #include "Volt/Physics/CookingFactory.h"
 
@@ -10,11 +8,11 @@ namespace Volt
 {
 	void PhysXInternal::Initialize()
 	{
-		VT_CORE_ASSERT(!myPhysXData, "PhysX should only be initiaize once!");
+		VT_ASSERT_MSG(!myPhysXData, "PhysX should only be initialized once!");
 
 		myPhysXData = CreateScope<PhysXData>();
 		myPhysXData->physxFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, myPhysXData->allocator, myPhysXData->errorCallback);
-		VT_CORE_ASSERT(myPhysXData->physxFoundation, "PxCreateFoundation failed!");
+		VT_ASSERT_MSG(myPhysXData->physxFoundation, "PxCreateFoundation failed!");
 
 		physx::PxTolerancesScale scale = {};
 		scale.length = 100;
@@ -29,11 +27,11 @@ namespace Volt
 #endif
 
 		myPhysXData->physxSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *myPhysXData->physxFoundation, scale, trackMemoryAllocations, PhysXDebugger::GetDebugger());
-		VT_CORE_ASSERT(myPhysXData->physxSDK, "PxCreatePhysics failed!");
+		VT_ASSERT_MSG(myPhysXData->physxSDK, "PxCreatePhysics failed!");
 
 		bool extensionsLoaded = PxInitExtensions(*myPhysXData->physxSDK, PhysXDebugger::GetDebugger());
 		extensionsLoaded;
-		VT_CORE_ASSERT(extensionsLoaded, "Failed to initialize PhysX extensions");
+		VT_ASSERT_MSG(extensionsLoaded, "Failed to initialize PhysX extensions");
 
 		myPhysXData->physxCPUDispatcher = physx::PxDefaultCpuDispatcherCreate(4);
 
@@ -159,28 +157,28 @@ namespace Volt
 		{
 			case physx::PxErrorCode::eNO_ERROR:
 			case physx::PxErrorCode::eDEBUG_INFO:
-				VT_CORE_INFO("[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
+				VT_LOG(Info, "[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
 				break;
 			case physx::PxErrorCode::eDEBUG_WARNING:
 			case physx::PxErrorCode::ePERF_WARNING:
-				VT_CORE_INFO("[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
+				VT_LOG(Info, "[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
 				break;
 			case physx::PxErrorCode::eINVALID_PARAMETER:
 			case physx::PxErrorCode::eINVALID_OPERATION:
 			case physx::PxErrorCode::eOUT_OF_MEMORY:
 			case physx::PxErrorCode::eINTERNAL_ERROR:
-				VT_CORE_ERROR("[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
+				VT_LOG(Error, "[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
 				break;
 			case physx::PxErrorCode::eABORT:
 			case physx::PxErrorCode::eMASK_ALL:
-				VT_CORE_ERROR("[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
-				VT_ASSERT(false, "");
+				VT_LOG(Error, "[PhysX]: {0}: {1} at {2} ({3})", errorMessage, message, file, line);
+				VT_ASSERT(false);
 				break;
 		}
 	}
 
 	void PhysicsAssertHandler::operator()(const char* exp, const char* file, int line, bool&)
 	{
-		VT_CORE_ERROR("[PhysX Error]: {0}:{1} - {2}", file, line, exp);
+		VT_LOG(Error, "[PhysX Error]: {0}:{1} - {2}", file, line, exp);
 	}
 }

@@ -9,6 +9,9 @@
 #include <Volt/Utility/UIUtility.h>
 #include <imgui_stdlib.h>
 
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+
 EditorSettingsPanel::EditorSettingsPanel(EditorSettings& settings)
 	: EditorWindow("Editor Settings"), m_editorSettings(settings)
 {
@@ -126,13 +129,13 @@ void EditorSettingsPanel::DrawVersionControl()
 
 	if (VersionControl::IsConnected())
 	{
-		std::vector<std::string> streams = VersionControl::GetStreams();
+		Vector<std::string> streams = VersionControl::GetStreams();
 		if (streams.empty())
 		{
 			streams.emplace_back("Empty");
 		}
 
-		std::vector<std::string> workspaces = VersionControl::GetWorkspaces();
+		Vector<std::string> workspaces = VersionControl::GetWorkspaces();
 		if (workspaces.empty())
 		{
 			workspaces.emplace_back("Empty");
@@ -188,14 +191,14 @@ void EditorSettingsPanel::DrawExternalTools()
 
 void EditorSettingsPanel::DrawStyleSettings()
 {
-	float currentWindowOpacity = Volt::Application::Get().GetWindow().GetOpacity();
+	float currentWindowOpacity = Volt::WindowManager::Get().GetMainWindow().GetOpacity();
 
 	UI::PushID();
 	if (UI::BeginProperties())
 	{
 		if (UI::Property("Window Opacity", currentWindowOpacity, 0.f, 1.f))
 		{
-			Volt::Application::Get().GetWindow().SetOpacity(currentWindowOpacity);
+			Volt::WindowManager::Get().GetMainWindow().SetOpacity(currentWindowOpacity);
 		}
 		UI::EndProperties();
 	}

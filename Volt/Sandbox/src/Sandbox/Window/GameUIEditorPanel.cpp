@@ -1,9 +1,14 @@
 #include "sbpch.h"
 #include "GameUIEditorPanel.h"
 
+#include "Sandbox/Utility/EditorUtilities.h"
+#include "Sandbox/Utility/Theme.h"
+#include "Sandbox/Utility/SelectionManager.h"
+
 #include <Volt/GameUI/UIScene.h>
 #include <Volt/GameUI/UIComponents.h>
 #include <Volt/GameUI/UIWidget.h>
+#include <InputModule/KeyCodes.h>
 
 #include <Volt/Rendering/UISceneRenderer.h>
 
@@ -29,12 +34,16 @@ GameUIEditorPanel::GameUIEditorPanel()
 void GameUIEditorPanel::UpdateContent()
 {
 	UpdateViewport();
+	HandleSelection();
+
+	UpdateHierarchy();
+	UpdateDetails();
 }
 
 void GameUIEditorPanel::OnEvent(Volt::Event& e)
 {
 	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnRenderEvent));
+	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnRenderEvent));
 	dispatcher.Dispatch<Volt::MouseButtonPressedEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseButtonPressedEvent));
 	dispatcher.Dispatch<Volt::MouseButtonReleasedEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseButtonReleasedEvent));
 	dispatcher.Dispatch<Volt::MouseScrolledEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseScrollEvent));
@@ -62,7 +71,7 @@ void GameUIEditorPanel::OnClose()
 	m_viewportImage = nullptr;
 }
 
-bool GameUIEditorPanel::OnRenderEvent(Volt::AppRenderEvent& e)
+bool GameUIEditorPanel::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	if (!m_viewportImage || static_cast<float>(m_viewportImage->GetWidth()) != m_viewportSize.x || static_cast<float>(m_viewportImage->GetHeight()) != m_viewportSize.y)
 	{
@@ -117,6 +126,8 @@ bool GameUIEditorPanel::OnMouseButtonReleasedEvent(Volt::MouseButtonReleasedEven
 
 bool GameUIEditorPanel::OnMouseMovedEvent(Volt::MouseMovedEvent& e)
 {
+	m_currentMousePosition = glm::vec2(e.GetX(), e.GetY());
+
 	if (!m_middleMouseDown)
 	{
 		return false;
@@ -127,10 +138,22 @@ bool GameUIEditorPanel::OnMouseMovedEvent(Volt::MouseMovedEvent& e)
 		m_previousMousePosition = { e.GetX(), e.GetY() };
 	}
 
-	m_currentPosition += (m_previousMousePosition - glm::vec2(e.GetX(), e.GetY())) * glm::vec2{ -1.f, 1.f } * m_currentZoom;
+	m_currentPosition += (m_previousMousePosition - m_currentMousePosition) * glm::vec2{ -1.f, 1.f } * m_currentZoom;
 	m_previousMousePosition = { e.GetX(), e.GetY() };
 
 	return false;
+}
+
+glm::vec2 GameUIEditorPanel::GetViewportLocalPosition(const ImVec2& mousePos)
+{
+	auto [mx, my] = mousePos;
+	mx -= m_viewportBounds[0].x;
+	my -= m_viewportBounds[0].y;
+
+	glm::vec2 perspectiveSize = m_viewportBounds[1] - m_viewportBounds[0];
+	glm::vec2 result = { mx, my };
+
+	return result;
 }
 
 void GameUIEditorPanel::UpdateViewport()
@@ -147,6 +170,8 @@ void GameUIEditorPanel::UpdateViewport()
 
 	m_viewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 	m_viewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+
+	m_viewportMouseCoords = GetViewportLocalPosition(ImGui::GetMousePos());
 
 	ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 	if (m_viewportSize != (*(glm::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y > 0)
@@ -165,6 +190,142 @@ void GameUIEditorPanel::UpdateViewport()
 	ImGui::PopStyleVar(3);
 }
 
+void GameUIEditorPanel::UpdateHierarchy()
+{
+	//ImGui::SetNextWindowClass(GetWindowClass());
+	if (ImGui::Begin("Hierarchy", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse))
+	{
+		ForceWindowDocked(ImGui::GetCurrentWindow());
+	
+		UI::PushID();
+		ImGui::BeginChild("Main", ImGui::GetContentRegionAvail(), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		{
+			static std::string searchQuery;
+			bool hasQuery;
+
+			EditorUtils::SearchBar(searchQuery, hasQuery, false);
+
+			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
+			ImGui::BeginChild("Scrollable", ImGui::GetContentRegionAvail());
+			{
+
+			}
+			ImGui::EndChild();
+		}
+		ImGui::EndChild();
+		UI::PopID();
+
+	}
+	ImGui::End();
+}
+
+void GameUIEditorPanel::UpdateDetails()
+{
+	const auto& selectedWidgets = SelectionManager::GetSelectedEntities(SelectionContext::GameUIEditor);
+
+	//ImGui::SetNextWindowClass(GetWindowClass());
+	if (ImGui::Begin("Details", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse))
+	{
+		ForceWindowDocked(ImGui::GetCurrentWindow());
+
+		// #TODO_Ivar: Handle multiple widgets
+		if (selectedWidgets.empty() || selectedWidgets.size() > 1)
+		{
+			ImGui::End();
+			return;
+		}
+
+		auto selectedWidget = m_uiScene->GetWidgetFromUUID(selectedWidgets.front());
+
+		UI::PushID();
+		UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
+		ImGui::BeginChild("Main", ImGui::GetContentRegionAvail(), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		{
+			if (selectedWidget.HasComponent<Volt::UITagComponent>())
+			{
+				auto& comp = selectedWidget.GetComponent<Volt::UITagComponent>();
+				if (UI::BeginProperties("Tag"))
+				{
+					UI::Property("Tag", comp.tag);
+					UI::EndProperties();
+				}
+			}
+
+			if (selectedWidget.HasComponent<Volt::UITransformComponent>() && UI::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				auto& comp = selectedWidget.GetComponent<Volt::UITransformComponent>();
+				if (UI::BeginProperties("Transform"))
+				{
+					UI::PropertyAxisColor("Position", comp.position);
+					UI::PropertyAxisColor("Size", comp.size, 100.f);
+					UI::PropertyAxisColor("Alignment", comp.alignment);
+					UI::Property("Rotation", comp.rotation);
+					UI::Property("Z Order", comp.zOrder);
+					UI::EndProperties();
+				}
+			}
+
+			if (selectedWidget.HasComponent<Volt::UIImageComponent>() && UI::CollapsingHeader("Image", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				auto& comp = selectedWidget.GetComponent<Volt::UIImageComponent>();
+				if (UI::BeginProperties("Image"))
+				{
+					EditorUtils::Property("Image", comp.imageHandle, Volt::AssetType::Texture);
+					UI::PropertyColor("Tint", comp.tint);
+					UI::Property("Alpha", comp.alpha);
+
+					UI::EndProperties();
+				}
+			}
+		}
+		ImGui::EndChild();
+		UI::PopID();
+	}
+	ImGui::End();
+}
+
+void GameUIEditorPanel::HandleSelection()
+{
+	if (!m_viewportHovered)
+	{
+		return;
+	}
+
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+	{
+		glm::vec2 viewportSize = m_viewportBounds[1] - m_viewportBounds[0];
+		
+		int32_t mouseX = (int32_t)m_viewportMouseCoords.x;
+		int32_t mouseY = (int32_t)m_viewportMouseCoords.y;
+	
+		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int32_t)viewportSize.x && mouseY < (int32_t)viewportSize.y)
+		{
+			uint32_t pixelData = m_uiSceneRenderer->GetIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX), static_cast<uint32_t>(mouseY), 0u);
+			const bool multiSelect = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);
+			const bool deselect = Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL);
+
+			if (!multiSelect && !deselect)
+			{
+				SelectionManager::DeselectAll(SelectionContext::GameUIEditor);
+			}
+
+			Volt::UIWidget widget = m_uiScene->GetWidgetFromUUID(pixelData);
+
+			if (widget.IsValid())
+			{
+				if (deselect)
+				{
+					SelectionManager::Deselect(widget.GetID(), SelectionContext::GameUIEditor);
+				}
+				else
+				{
+					SelectionManager::Select(widget.GetID(), SelectionContext::GameUIEditor);
+				}
+			}
+		}
+	}
+}
+
 void GameUIEditorPanel::CreateViewportImage(const uint32_t width, const uint32_t height)
 {
 	Volt::RHI::ImageSpecification spec{};
@@ -175,5 +336,5 @@ void GameUIEditorPanel::CreateViewportImage(const uint32_t width, const uint32_t
 	spec.format = Volt::RHI::PixelFormat::R8G8B8A8_UNORM;
 	spec.debugName = "Viewport Image";
 
-	m_viewportImage = Volt::RHI::Image2D::Create(spec);
+	m_viewportImage = Volt::RHI::Image::Create(spec);
 }

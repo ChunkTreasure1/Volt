@@ -1,6 +1,0 @@
-name: "CullObjects"
-internal: true
-sources:
-  - entryPoint: "main"
-    shaderStage: "cs"
-    filePath: "Engine/Shaders/Source/Indirect/CullObjects_cs.hlsl"

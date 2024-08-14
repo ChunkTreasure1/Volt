@@ -7,14 +7,15 @@
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Core/Application.h"
 
-#include "Volt/Input/Input.h"
-#include "Volt/Input/MouseButtonCodes.h"
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Components/CoreComponents.h"
 
 #include "Volt/Scripting/Mono/MonoTypeRegistry.h"
+
+#include <InputModule/Input.h>
+#include <InputModule/MouseButtonCodes.h>
 
 #include <glm/glm.hpp>
 
@@ -194,7 +195,7 @@ public:
 	private:
 	};
 
-	static ImTextureID GetTextureID(RefPtr<Volt::RHI::Image2D> texture);
+	static ImTextureID GetTextureID(RefPtr<Volt::RHI::Image> texture);
 	static ImTextureID GetTextureID(Ref<Volt::Texture2D> texture);
 
 	static void Header(const std::string& text);
@@ -247,12 +248,12 @@ public:
 	static bool BeginProperties(const std::string& name = "", const ImVec2 size = { 0, 0 });
 	static void EndProperties();
 
-	static bool ComboProperty(const std::string& text, int& currentItem, const std::vector<std::string>& strItems, float width = 0.f);
-	static bool ComboProperty(const std::string& text, int& currentItem, const std::vector<const char*>& items, float width = 0.f);
+	static bool ComboProperty(const std::string& text, int& currentItem, const Vector<std::string>& strItems, float width = 0.f);
+	static bool ComboProperty(const std::string& text, int& currentItem, const Vector<const char*>& items, float width = 0.f);
 
-	static bool Combo(const std::string& text, int& currentItem, const std::vector<const char*>& items, float width = 100.f);
+	static bool Combo(const std::string& text, int& currentItem, const Vector<const char*>& items, float width = 100.f);
 	static bool Combo(const std::string& text, int& currentItem, const char** items, uint32_t count);
-	static bool Combo(const std::string& text, int& currentItem, const std::vector<std::string>& strItems, float width = 100.f);
+	static bool Combo(const std::string& text, int& currentItem, const Vector<std::string>& strItems, float width = 100.f);
 
 	static void* DragDropTarget(const std::string& type);
 	static void* DragDropTarget(std::initializer_list<std::string> types, ImGuiDragDropFlags flags = 0);
@@ -375,7 +376,7 @@ public:
 	static void PopFont();
 
 	static int32_t LevenshteinDistance(const std::string& str1, const std::string& str2);
-	static const std::vector<std::string> GetEntriesMatchingQuery(const std::string& query, const std::vector<std::string>& entries);
+	static const Vector<std::string> GetEntriesMatchingQuery(const std::string& query, const Vector<std::string>& entries);
 
 	static void RenderMatchingTextBackground(const std::string& query, const std::string& text, const glm::vec4& color, const glm::uvec2& offset = 0u);
 	static void RenderHighlightedBackground(const glm::vec4& color, float height);

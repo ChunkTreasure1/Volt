@@ -3,16 +3,17 @@
 
 #include <Volt/Core/Base.h>
 #include <Volt/Scene/Scene.h>
-#include <Volt/Events/ApplicationEvent.h>
+#include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Particles/Particle.h>
 
-#include <vector>
+
 
 namespace Volt
 {
 	class ParticlePreset;
 	class Material;
 	class SceneRenderer;
+	class WindowRenderEvent;
 }
 
 class EditorCameraController;
@@ -31,10 +32,10 @@ private:
 	{
 		float emittionTimer = 0;
 		int numberOfAliveParticles = 0;
-		std::vector<Volt::Particle> particles;
+		Vector<Volt::Particle> particles;
 	};
 
-	bool OnRenderEvent(Volt::AppRenderEvent& e);
+	bool OnRenderEvent(Volt::WindowRenderEvent& e);
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
 
 	void UpdateEmitter(float aDeltaTime);
@@ -55,8 +56,8 @@ private:
 
 	Volt::Entity myEmitterEntity;
 
-	std::vector<std::string> myPresets;
-	std::vector<std::string> myShapes{ "Sphere", "Cone" };
+	Vector<std::string> myPresets;
+	Vector<std::string> myShapes{ "Sphere", "Cone" };
 
 	glm::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
 	glm::vec2 myViewportSize = { 1280.f, 720.f };

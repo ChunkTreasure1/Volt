@@ -4,7 +4,6 @@
 #include "PhysXInternal.h"
 
 #include "Volt/Core/Application.h"
-#include "Volt/Log/Log.h"
 
 namespace Volt
 {
@@ -14,7 +13,7 @@ namespace Volt
 		{
 			myDebuggerData = CreateScope<PhysXData>();
 			myDebuggerData->debugger = PxCreatePvd(PhysXInternal::GetFoundation());
-			VT_CORE_ASSERT(myDebuggerData->debugger, "PxCreatePvd failed!");
+			VT_ASSERT_MSG(myDebuggerData->debugger, "PxCreatePvd failed!");
 		}
 	}
 

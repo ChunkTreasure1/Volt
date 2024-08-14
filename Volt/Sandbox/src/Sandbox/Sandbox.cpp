@@ -5,6 +5,8 @@
 
 #include "Sandbox/UISystems/ModalSystem.h"
 
+#include "Sandbox/NodeGraph/IONodeGraphEditorHelpers.h"
+
 #include "Sandbox/Window/PropertiesPanel.h"
 #include "Sandbox/Window/ViewportPanel.h"
 #include "Sandbox/Window/GameViewPanel.h"
@@ -24,9 +26,7 @@
 #include "Sandbox/Window/PhysicsPanel.h"
 #include "Sandbox/Window/RendererSettingsPanel.h"
 #include "Sandbox/Window/MeshPreviewPanel.h"
-#include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
 #include "Sandbox/Window/PrefabEditorPanel.h"
-#include "Sandbox/Window/AnimationGraph/AnimationGraphPanel.h"
 #include "Sandbox/Window/Sequencer.h"
 #include "Sandbox/Window/BlendSpaceEditorPanel.h"
 #include "Sandbox/Window/CurveGraphPanel.h"
@@ -55,7 +55,6 @@
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Core/Window.h>
 
 #include <Volt/Asset/AssetManager.h>
 
@@ -66,8 +65,8 @@
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/SceneManager.h>
 
-#include <Volt/Input/KeyCodes.h>
-#include <Volt/Input/Input.h>
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
 
 #include <Volt/Rendering/Camera/Camera.h>
 
@@ -83,9 +82,18 @@
 
 #include <Volt/Discord/DiscordSDK.h>
 
+#include <Volt/Events/ApplicationEvents.h>
+
+#include <WindowModule/Events/WindowEvents.h>
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+
 #include <NavigationEditor/Tools/NavMeshDebugDrawer.h>
 
-#include <VoltRHI/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
+
+#include <EventModule/Event.h>
+
 
 #include <imgui.h>
 
@@ -102,7 +110,7 @@
 
 Sandbox::Sandbox()
 {
-	VT_ASSERT(!s_instance, "Sandbox already exists!");
+	VT_ASSERT_MSG(!s_instance, "Sandbox already exists!");
 	s_instance = this;
 }
 
@@ -113,7 +121,7 @@ Sandbox::~Sandbox()
 
 void Sandbox::OnAttach()
 {
-	SelectionManager::Init();
+	SelectionManager::Initialize();
 
 	if (!Volt::ProjectManager::GetProject().isDeprecated)
 	{
@@ -168,7 +176,6 @@ void Sandbox::OnAttach()
 	EditorLibrary::Register<EditorSettingsPanel>("Advanced", UserSettingsManager::GetSettings());
 	EditorLibrary::Register<PhysicsPanel>("Physics");
 	EditorLibrary::Register<RendererSettingsPanel>("Advanced", m_sceneRenderer);
-	EditorLibrary::Register<GraphKeyPanel>("", m_runtimeScene);
 	EditorLibrary::Register<VertexPainterPanel>("", m_runtimeScene, m_editorCameraController);
 
 	EditorLibrary::Register<NetPanel>("Advanced");
@@ -188,7 +195,6 @@ void Sandbox::OnAttach()
 	EditorLibrary::RegisterWithType<SkeletonEditorPanel>("Animation", Volt::AssetType::Skeleton);
 	EditorLibrary::RegisterWithType<AnimationEditorPanel>("Animation", Volt::AssetType::Animation);
 	EditorLibrary::RegisterWithType<ParticleEmitterEditor>("", Volt::AssetType::ParticlePreset);
-	EditorLibrary::RegisterWithType<AnimationGraphPanel>("Animation", Volt::AssetType::AnimationGraph, m_runtimeScene);
 	EditorLibrary::RegisterWithType<BehaviorPanel>("", Volt::AssetType::BehaviorGraph);
 	EditorLibrary::RegisterWithType<BlendSpaceEditorPanel>("Animation", Volt::AssetType::BlendSpace);
 	EditorLibrary::RegisterWithType<MeshPreviewPanel>("", Volt::AssetType::Mesh);
@@ -307,28 +313,6 @@ void Sandbox::SetupNewSceneData()
 			gameSpec.initialResolution = { m_gameSceneRenderer->GetFinalImage()->GetWidth(), m_gameSceneRenderer->GetFinalImage()->GetHeight() };
 		}
 
-		//{
-		//	settings.enableIDRendering = true;
-		//	settings.enableOutline = true;
-		//	settings.enableDebugRenderer = true;
-		//	settings.enableGrid = true;
-		//	settings.enableUI = lowMemory;
-		//	settings.enableVolumetricFog = true;
-
-		//	//if (Volt::GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
-		//	//{
-		//	//	settings.enableRayTracing = true;
-		//	//}
-
-		//	gameSettings.enableIDRendering = false;
-		//	gameSettings.enableOutline = false;
-		//	gameSettings.enableDebugRenderer = false;
-		//	gameSettings.enableGrid = false;
-		//	gameSettings.enableUI = true;
-		//	gameSettings.enablePostProcessing = true;
-		//	gameSettings.enableVolumetricFog = true;
-		//}
-
 		m_sceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
 		m_gameSceneRenderer = CreateRef<Volt::SceneRenderer>(gameSpec);
 	}
@@ -348,7 +332,7 @@ void Sandbox::OnDetach()
 {
 	m_isInitialized = false;
 
-	Volt::Log::ClearCallbacks();
+	//Volt::Log::ClearCallbacks();
 
 	if (m_sceneState == SceneState::Play)
 	{
@@ -397,7 +381,7 @@ void Sandbox::OnEvent(Volt::Event& e)
 	Volt::EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnUpdateEvent));
 	dispatcher.Dispatch<Volt::AppImGuiUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnImGuiUpdateEvent));
-	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(Sandbox::OnRenderEvent));
+	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(Sandbox::OnRenderEvent));
 	dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(Sandbox::OnKeyPressedEvent));
 	dispatcher.Dispatch<Volt::ViewportResizeEvent>(VT_BIND_EVENT_FN(Sandbox::OnViewportResizeEvent));
 	dispatcher.Dispatch<Volt::OnSceneLoadedEvent>(VT_BIND_EVENT_FN(Sandbox::OnSceneLoadedEvent));
@@ -460,15 +444,16 @@ void Sandbox::OnEvent(Volt::Event& e)
 		}
 	}
 
-	if (!m_playHasMouseControl)
+	//TODO: Reimplement, what does this do?
+	/*if (!m_playHasMouseControl)
 	{
 		if ((e.GetCategoryFlags() & Volt::EventCategoryAnyInput) != 0)
 		{
 			return;
 		}
-	}
+	}*/
 
-	if (e.handled)
+	if (e.IsHandled())
 	{
 		return;
 	}
@@ -1003,7 +988,7 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	EditorCommandStack::GetInstance().Update(100);
 
 	auto mousePos = Volt::Input::GetMousePosition();
-	Volt::Input::SetViewportMousePosition(m_gameViewPanel->GetViewportLocalPosition({ mousePos.first, mousePos.second }));
+	Volt::Input::SetViewportMousePosition(m_gameViewPanel->GetViewportLocalPosition(mousePos));
 
 	switch (m_sceneState)
 	{
@@ -1161,7 +1146,7 @@ void Sandbox::RenderGameView()
 	}
 }
 
-bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)
+bool Sandbox::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	VT_PROFILE_FUNCTION();
 

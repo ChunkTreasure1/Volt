@@ -5,7 +5,6 @@
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/Theme.h"
 #include "Sandbox/Utility/ComponentPropertyUtilities.h"
-#include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
 
 #include "Sandbox/Sandbox.h"
 #include "Sandbox/UserSettingsManager.h"
@@ -13,19 +12,16 @@
 
 #include <Volt/Components/LightComponents.h>
 
-#include <Volt/Input/KeyCodes.h>
-#include <Volt/Input/MouseButtonCodes.h>
-#include <Volt/Input/Input.h>
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
+#include <InputModule/MouseButtonCodes.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
 #include <Volt/Utility/PremadeCommands.h>
 
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
-
-#include <GraphKey/Graph.h>
-
-#include <vector>
+#include <Volt/Scripting/Mono/MonoScriptUtils.h>
 
 PropertiesPanel::PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, SceneState& sceneState, const std::string& id)
 	: EditorWindow("Properties", false, id), myCurrentScene(currentScene), myCurrentSceneRenderer(currentSceneRenderer), mySceneState(sceneState)
@@ -266,7 +262,7 @@ void PropertiesPanel::AddComponentPopup()
 	ImGui::SetNextWindowSize({ 250.f, 500.f });
 	if (UI::BeginPopup("AddComponent" + m_id, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 	{
-		std::vector<std::string> componentNames;
+		Vector<std::string> componentNames;
 		std::unordered_map<std::string, VoltGUID> nameToGUIDMap;
 
 		const auto& componentRegistry = Volt::ComponentRegistry::GetRegistry();
@@ -364,12 +360,12 @@ void PropertiesPanel::AddMonoScriptPopup()
 	{
 		const auto& scriptInfo = Volt::MonoScriptEngine::GetRegisteredClasses();
 
-		std::vector<std::string> scriptNames;
-		std::vector<std::string> fullScriptNames;
+		Vector<std::string> scriptNames;
+		Vector<std::string> fullScriptNames;
 
 		for (const auto& klass : scriptInfo)
 		{
-			auto classname = Volt::MonoScriptUtils::GetClassName(klass.first);
+			auto classname = Volt::MonoScriptUtils::GetClassName2(klass.first);
 			classname[0] = static_cast<char>(std::toupper(classname[0]));
 			scriptNames.emplace_back(classname);
 			fullScriptNames.emplace_back(klass.first);

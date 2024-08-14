@@ -347,7 +347,7 @@ namespace Volt
 		return scenePtr->GetEntityFromUUID(relComp.parent);
 	}
 
-	const std::vector<Entity> Entity::GetChildren() const
+	const Vector<Entity> Entity::GetChildren() const
 	{
 		auto scenePtr = GetScene();
 		auto& registry = scenePtr->GetRegistry();
@@ -361,7 +361,7 @@ namespace Volt
 
 		const auto& children = registry.get<RelationshipComponent>(m_handle).children;
 
-		std::vector<Entity> result{};
+		Vector<Entity> result{};
 		for (const auto& id : children)
 		{
 			auto entity = m_scene->GetEntityFromUUID(id);
@@ -503,7 +503,7 @@ namespace Volt
 
 	const EntityID Entity::GetID() const
 	{
-		VT_CORE_ASSERT(HasComponent<IDComponent>(), "Entity must have IDComponent!");
+		VT_ASSERT_MSG(HasComponent<IDComponent>(), "Entity must have IDComponent!");
 		return GetComponent<IDComponent>().id;
 	}
 
@@ -596,7 +596,7 @@ namespace Volt
 			newEntity.GetComponent<NetActorComponent>().repId = Nexus::RandRepID();
 		}
 
-		std::vector<EntityID> newChildren;
+		Vector<EntityID> newChildren;
 
 		for (const auto& child : srcEntity.GetChildren())
 		{

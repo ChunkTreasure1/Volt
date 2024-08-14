@@ -2,7 +2,7 @@
 
 #include <Volt/Rendering/Shader/ShaderMap.h>
 
-#include <VoltRHI/Buffers/StorageBuffer.h>
+#include <RHIModule/Buffers/StorageBuffer.h>
 
 using namespace Volt;
 

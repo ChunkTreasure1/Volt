@@ -7,7 +7,9 @@
 #include "Volt/Rendering/RendererStructs.h"
 
 // #TODO_Ivar: Maybe remove from here
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
+#include <RenderCore/RenderGraph/RenderGraph.h>
+
+#include <RHIModule/Buffers/CommandBufferSet.h>
 
 namespace Volt
 {
@@ -56,9 +58,15 @@ namespace Volt
 			Metalness = 3,
 			Roughness = 4,
 			Emissive = 5,
+			AO = 6,
+		};
 
-			VisualizeCascades = 6,
-			VisualizeLightComplexity = 7
+		enum class VisualizationMode : uint32_t
+		{
+			None = 0,
+			VisualizeCascades = 1,
+			VisualizeLightComplexity = 2,
+			VisualizeMeshSDF = 3
 		};
 
 		SceneRenderer(const SceneRendererSpecification& specification);
@@ -70,8 +78,11 @@ namespace Volt
 		inline void SetShadingMode(ShadingMode shadingMode) { m_shadingMode = shadingMode; }
 		inline ShadingMode GetShadingMode() const { return m_shadingMode; }
 
-		RefPtr<RHI::Image2D> GetFinalImage();
-		RefPtr<RHI::Image2D> GetObjectIDImage();
+		inline void SetVisualizationMode(VisualizationMode visMode) { m_visualizationMode = visMode; }
+		inline VisualizationMode GetVisualizationMode() const { return m_visualizationMode; }
+
+		RefPtr<RHI::Image> GetFinalImage();
+		RefPtr<RHI::Image> GetObjectIDImage();
 
 		// #TODO_Ivar: TEMP, Should not be public!
 		void Invalidate();
@@ -81,8 +92,8 @@ namespace Volt
 	private:
 		void OnRender(Ref<Camera> camera);
 
-		void BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard, const CullPrimitivesData& cullPrimitivesData);
-		void RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard& blackboard, const CullPrimitivesData& cullPrimitivesData);
+		void BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard);
+		void SetupMeshPassConstants(RenderContext& context, const RenderGraphBlackboard& blackboard);
 
 		void SetupFrameData(RenderGraphBlackboard& blackboard, Ref<Camera> camera);
 
@@ -92,6 +103,7 @@ namespace Volt
 
 		void AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
+		void AddMainCullingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddObjectIDPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
@@ -102,18 +114,24 @@ namespace Volt
 		void AddCollectMaterialPixelsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddGenerateMaterialIndirectArgsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
+		void RenderMaterials(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, const uint32_t materialId);
 		void AddSkyboxPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		void AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle srcImage);
+		void AddFXAAPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImageHandle srcImage);
+
+		void AddFinalCopyPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImageHandle srcImage);
+
+		void AddVisualizeSDFPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImageHandle dstImage);
+		void AddVisualizeBricksPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImageHandle dstImage);
 
 		void CreateMainRenderTarget(const uint32_t width, const uint32_t height);
 
-		RefPtr<RHI::Image2D> m_outputImage;
-		RefPtr<RHI::Image2D> m_objectIDImage;
-		RefPtr<RHI::Image2D> m_previousDepthImage;
-		RefPtr<RHI::Image2D> m_previousColorImage;
+		RefPtr<RHI::Image> m_outputImage;
+		RefPtr<RHI::Image> m_objectIDImage;
+		RefPtr<RHI::Image> m_previousDepthImage;
+		RefPtr<RHI::Image> m_previousColorImage;
 
 		Ref<Mesh> m_skyboxMesh;
 
@@ -125,9 +143,11 @@ namespace Volt
 		uint32_t m_resizeWidth = 1280;
 		uint32_t m_resizeHeight = 1280;
 
-		RefPtr<RHI::CommandBuffer> m_commandBuffer;
 		ShadingMode m_shadingMode = ShadingMode::Shaded;
+		VisualizationMode m_visualizationMode = VisualizationMode::None;
 		PreviousFrameData m_previousFrameData;
+
+		RHI::CommandBufferSet m_commandBufferSet;
 
 		std::atomic<uint64_t> m_frameTotalGPUAllocation;
 
@@ -137,6 +157,5 @@ namespace Volt
 
 		Ref<Scene> m_scene;
 		SceneEnvironment m_sceneEnvironment;
-		DirectionalLightData m_directionalLightData;
 	};
 }

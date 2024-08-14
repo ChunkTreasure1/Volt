@@ -1,6 +1,0 @@
-name: "CullPrimitives"
-internal: true
-sources:
-  - entryPoint: "main"
-    shaderStage: "cs"
-    filePath: "Engine/Shaders/Source/Indirect/CullPrimitives_cs.hlsl"

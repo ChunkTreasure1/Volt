@@ -21,7 +21,7 @@
 
 #include <Volt/Rendering/Texture/Texture2D.h>
 
-#include <VoltRHI/Images/Image2D.h>
+#include <RHIModule/Images/Image.h>
 
 namespace AssetBrowser
 {
@@ -113,7 +113,7 @@ namespace AssetBrowser
 				auto scene = CreateRef<Volt::Scene>("ExportMeshScene");
 
 				Volt::AssetManager::GetAsset<Volt::Prefab>(item->handle)->Instantiate(scene);
-				std::vector<Volt::Entity> meshEntities;
+				Vector<Volt::Entity> meshEntities;
 
 				for (const auto& ent : scene->GetAllEntitiesWith<Volt::MeshComponent>())
 				{

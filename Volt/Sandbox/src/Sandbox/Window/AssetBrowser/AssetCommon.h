@@ -20,6 +20,6 @@ struct DirectoryData
 	DirectoryData* parentDir;
 	bool selected = false;
 
-	std::vector<AssetData> assets;
-	std::vector<Ref<DirectoryData>> subDirectories;
+	Vector<AssetData> assets;
+	Vector<Ref<DirectoryData>> subDirectories;
 };

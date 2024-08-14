@@ -2,6 +2,8 @@
 
 #include "Volt/Asset/Asset.h"
 
+#include <CoreUtilities/Containers/Vector.h>
+
 #include <imgui.h>
 #include <functional>
 
@@ -29,7 +31,7 @@ namespace AssetBrowser
 
 		static const ImVec4 GetBackgroundColor(bool isHovered, bool isSeleted);
 
-		static std::vector<Ref<Volt::Mesh>> GetMeshesExport() { return meshesToExport; };
+		static Vector<Ref<Volt::Mesh>> GetMeshesExport() { return meshesToExport; };
 		static void ResetMeshExport() { meshesToExport.clear(); };
 		static bool RenderAssetTypePopup(AssetItem* item);
 		
@@ -40,7 +42,7 @@ namespace AssetBrowser
 
 		static constexpr float myItemHeightModifier = 90.f;
 
-		inline static std::vector<Ref<Volt::Mesh>> meshesToExport;
+		inline static Vector<Ref<Volt::Mesh>> meshesToExport;
 
 		static const std::unordered_map<Volt::AssetType, std::function<void(AssetItem*)>>& GetPopupRenderFunctions();
 	};

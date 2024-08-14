@@ -38,7 +38,7 @@ namespace Volt::MosaicNodes
 
 		for (const auto& edgeId : underlyingNode.GetInputEdges())
 		{
-			const auto edge = underlyingNode.GetEdgeFromID(edgeId);
+			const auto& edge = underlyingNode.GetEdgeFromID(edgeId);
 			const uint32_t paramIndex = edge.metaDataType->GetParameterInputIndex();
 
 			const auto& node = underlyingNode.GetNodeFromID(edge.startNode);

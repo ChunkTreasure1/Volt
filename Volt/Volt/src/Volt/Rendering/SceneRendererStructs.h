@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Volt/Rendering/RenderGraph/Resources/RenderGraphResourceHandle.h"
-#include "Volt/Rendering/RenderGraph/RenderGraph.h"
+#include <RenderCore/RenderGraph/Resources/RenderGraphResourceHandle.h>
+#include <RenderCore/RenderGraph/RenderGraph.h>
 
 namespace Volt
 {
@@ -32,115 +32,102 @@ namespace Volt
 
 	struct ExternalImagesData
 	{
-		RenderGraphResourceHandle black1x1Cube;
-		RenderGraphResourceHandle BRDFLuT;
+		RenderGraphImageHandle black1x1Cube;
+		RenderGraphImageHandle BRDFLuT;
 	};
 
 	struct EnvironmentTexturesData
 	{
-		RenderGraphResourceHandle radiance;
-		RenderGraphResourceHandle irradiance;
-	};
-
-	struct CullObjectsData
-	{
-		RenderGraphResourceHandle meshletToObjectIdAndOffset;
-		RenderGraphResourceHandle meshletCount;
-	};
-
-	struct CullMeshletsData
-	{
-		RenderGraphResourceHandle survivingMeshlets;
-		RenderGraphResourceHandle survivingMeshletCount;
-	};
-
-
-	struct CullPrimitivesData
-	{
-		RenderGraphResourceHandle indexBuffer;
-		RenderGraphResourceHandle drawCommand;
+		RenderGraphImageHandle radiance;
+		RenderGraphImageHandle irradiance;
 	};
 
 	struct UniformBuffersData
 	{
-		RenderGraphResourceHandle viewDataBuffer;
-		RenderGraphResourceHandle directionalLightBuffer;
+		RenderGraphUniformBufferHandle viewDataBuffer;
+		RenderGraphUniformBufferHandle directionalLightBuffer;
 	};
 
 	struct GPUSceneData
 	{
-		RenderGraphResourceHandle meshesBuffer;
-		RenderGraphResourceHandle materialsBuffer;
-		RenderGraphResourceHandle objectDrawDataBuffer;
-		RenderGraphResourceHandle meshletsBuffer;
-		RenderGraphResourceHandle bonesBuffer;
+		RenderGraphBufferHandle meshesBuffer;
+		RenderGraphBufferHandle sdfMeshesBuffer;
+		RenderGraphBufferHandle materialsBuffer;
+		RenderGraphBufferHandle primitiveDrawDataBuffer;
+		RenderGraphBufferHandle sdfPrimitiveDrawDataBuffer;
+		RenderGraphBufferHandle bonesBuffer;
 
 		static void SetupInputs(RenderGraph::Builder& builder, const GPUSceneData& data);
-		static void SetupConstants(RenderContext& context, const RenderGraphPassResources& resources, const GPUSceneData& data);
+		static void SetupConstants(RenderContext& context, const GPUSceneData& data);
 	};
 
 	struct LightBuffersData
 	{
-		RenderGraphResourceHandle pointLightsBuffer;
-		RenderGraphResourceHandle spotLightsBuffer;
+		RenderGraphBufferHandle pointLightsBuffer;
+		RenderGraphBufferHandle spotLightsBuffer;
 	};
 
 	struct PreDepthData
 	{
-		RenderGraphResourceHandle depth;
-		RenderGraphResourceHandle normals;
+		RenderGraphImageHandle depth;
+		RenderGraphImageHandle normals;
 	};
 
 	struct DirectionalShadowData
 	{
-		RenderGraphResourceHandle shadowTexture;
+		RenderGraphImageHandle shadowTexture;
 		glm::uvec2 renderSize;
 	};
 
 	struct VisibilityBufferData
 	{
-		RenderGraphResourceHandle visibility;
+		RenderGraphImageHandle visibility;
 	};
 
 	struct MaterialCountData
 	{
-		RenderGraphResourceHandle materialCountBuffer;
-		RenderGraphResourceHandle materialStartBuffer;
+		RenderGraphBufferHandle materialCountBuffer;
+		RenderGraphBufferHandle materialStartBuffer;
 	};
 
 	struct MaterialPixelsData
 	{
-		RenderGraphResourceHandle pixelCollectionBuffer;
-		RenderGraphResourceHandle currentMaterialCountBuffer;
+		RenderGraphBufferHandle pixelCollectionBuffer;
+		RenderGraphBufferHandle currentMaterialCountBuffer;
 	};
 
 	struct MaterialIndirectArgsData
 	{
-		RenderGraphResourceHandle materialIndirectArgsBuffer;
+		RenderGraphBufferHandle materialIndirectArgsBuffer;
 	};
 
 	struct GBufferData
 	{
-		RenderGraphResourceHandle albedo;
-		RenderGraphResourceHandle normals;
-		RenderGraphResourceHandle material;
-		RenderGraphResourceHandle emissive;
+		RenderGraphImageHandle albedo;
+		RenderGraphImageHandle normals;
+		RenderGraphImageHandle material;
+		RenderGraphImageHandle emissive;
 	};
 
 	struct ShadingOutputData
 	{
-		RenderGraphResourceHandle colorOutput;
+		RenderGraphImageHandle colorOutput;
+	};
+
+	struct FXAAOutputData
+	{
+		RenderGraphImageHandle output;
 	};
 
 	struct FinalCopyData
 	{
-		RenderGraphResourceHandle output;
+		RenderGraphImageHandle output;
 	};
 
 	struct GTAOOutput
 	{
-		RenderGraphResourceHandle tempImage;
-		RenderGraphResourceHandle outputImage;
+		RenderGraphImageHandle tempImage;
+		RenderGraphImageHandle outputImage;
 	};
 
 	struct GTAOSettings
@@ -153,7 +140,7 @@ namespace Volt
 
 	struct TestUIData
 	{
-		RenderGraphResourceHandle outputTextureHandle;
-		RenderGraphResourceHandle uiCommandsBufferHandle;
+		RenderGraphImageHandle outputTextureHandle;
+		RenderGraphImageHandle uiCommandsBufferHandle;
 	};
 }

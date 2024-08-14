@@ -1,7 +1,7 @@
 #pragma once
 #include <Volt/Core/Base.h>
 #include <glm/glm.hpp>
-#include <vector>
+
 #include <Volt/Scene/Scene.h>
 #include "Volt/Scene/Entity.h"
 #include "Volt/Asset/AssetManager.h"
@@ -14,7 +14,7 @@ public:
 	~Spline() = default;
 	
 	int GetNumSegments() { return ((int32_t)myPointEntitys.size() - 4) / 3 + 1; }
-	std::vector<glm::vec3> GetPointsInSegment(int index);
+	Vector<glm::vec3> GetPointsInSegment(int index);
 
 	void CreateNewBezierPoints();
 	void UpdateSpline();
@@ -22,8 +22,8 @@ public:
 	void AddSegment();
 
 private:
-	std::vector<Volt::Entity> myPointEntitys;
-	std::vector<std::vector<Volt::Entity>> myBezierePoints;
+	Vector<Volt::Entity> myPointEntitys;
+	Vector<Vector<Volt::Entity>> myBezierePoints;
 
 	Volt::Entity myMainParentSpline;
 	Volt::Entity myBezierPointParent;

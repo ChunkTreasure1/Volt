@@ -11,7 +11,6 @@ namespace Volt
 	{
 		inline static constexpr uint32_t AssetMagic = 9999;
 
-		uint32_t magic;
 		AssetType type;
 		uint32_t version;
 		AssetHandle handle;
