@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Volt/Asset/Asset.h>
+#include <AssetSystem/Asset.h>
 
 #include <CoreUtilities/Containers/Vector.h>
 
@@ -14,7 +14,7 @@ public:
 		Open
 	};
 
-	AssetBrowserPopup(const std::string& id, Volt::AssetType wantedType, Volt::AssetHandle& handler);
+	AssetBrowserPopup(const std::string& id, AssetType wantedType, Volt::AssetHandle& handler);
 
 	State Update();
 
@@ -22,7 +22,7 @@ private:
 	State RenderView(const Vector<Volt::AssetHandle>& items);
 
 	std::string myId;
-	Volt::AssetType myWantedType;
+	AssetType myWantedType;
 	Volt::AssetHandle& myHandle;
 
 	std::string mySearchQuery;

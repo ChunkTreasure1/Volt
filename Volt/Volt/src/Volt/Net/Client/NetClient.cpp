@@ -7,7 +7,7 @@
 #include "Volt/Net/Replicated/RepEntity.h"
 
 #include "Volt/Scene/SceneManager.h"
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Prefab.h"
 
 #include "Volt/Scripting/Mono/MonoScriptClass.h"

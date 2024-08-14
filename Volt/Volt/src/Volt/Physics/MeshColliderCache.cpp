@@ -1,9 +1,10 @@
 #include "vtpch.h"
 #include "MeshColliderCache.h"
 
-#include "Volt/Utility/FileSystem.h"
 #include "Volt/Core/BinarySerializer.h"
 #include "Volt/Project/ProjectManager.h"
+
+#include <CoreUtilities/FileSystem.h>
 
 namespace Volt
 {
@@ -14,7 +15,7 @@ namespace Volt
 			auto path = ProjectManager::GetCachePath() / "Colliders";
 			if (!FileSystem::Exists(path))
 			{
-				FileSystem::CreateDirectory(path);
+				FileSystem::CreateDirectories(path);
 			}
 			return path;
 		}

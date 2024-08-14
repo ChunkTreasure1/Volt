@@ -49,7 +49,7 @@ namespace Volt
 
 		if (!FileSystem::Exists(ProjectManager::GetEngineScriptsDirectory()))
 		{
-			FileSystem::CreateDirectory(ProjectManager::GetEngineScriptsDirectory());
+			FileSystem::CreateDirectories(ProjectManager::GetEngineScriptsDirectory());
 		}
 
 		std::ofstream output{ ProjectManager::GetEngineScriptsDirectory() / destination };

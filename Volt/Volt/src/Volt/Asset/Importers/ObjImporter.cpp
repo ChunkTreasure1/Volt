@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "ObjImporter.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Mesh/Mesh.h"
 
 namespace Volt

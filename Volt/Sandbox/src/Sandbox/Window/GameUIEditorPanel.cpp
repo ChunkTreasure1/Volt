@@ -270,7 +270,7 @@ void GameUIEditorPanel::UpdateDetails()
 				auto& comp = selectedWidget.GetComponent<Volt::UIImageComponent>();
 				if (UI::BeginProperties("Image"))
 				{
-					EditorUtils::Property("Image", comp.imageHandle, Volt::AssetType::Texture);
+					EditorUtils::Property("Image", comp.imageHandle, AssetTypes::Texture);
 					UI::PropertyColor("Tint", comp.tint);
 					UI::Property("Alpha", comp.alpha);
 

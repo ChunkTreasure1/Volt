@@ -2,7 +2,7 @@
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Components/CoreComponents.h>
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 #include <Volt/Utility/UIUtility.h>
 
 #include <glm/glm.hpp>
@@ -14,6 +14,7 @@
 #include <string_view>
 #include <typeindex>
 #include <iomanip>
+#include <any>
 
 template<typename T>
 inline static constexpr std::type_index GetTypeIndex()
@@ -440,7 +441,7 @@ public:
 		ImGui::PopItemWidth();
 	}
 
-	inline static void Attribute(Volt::AssetHandle& assetHandle, Volt::AssetType supportedTypes)
+	inline static void Attribute(Volt::AssetHandle& assetHandle, AssetType supportedTypes)
 	{
 		std::string assetFileName = "Null";
 
@@ -449,9 +450,9 @@ public:
 		{
 			assetFileName = rawAsset->assetName;
 
-			if (supportedTypes != Volt::AssetType::None)
+			if (supportedTypes != AssetTypes::None)
 			{
-				if ((rawAsset->GetType() & supportedTypes) == Volt::AssetType::None)
+				if (rawAsset->GetType() == supportedTypes)
 				{
 					assetHandle = Volt::Asset::Null();
 				}

@@ -3,7 +3,7 @@
 
 #include <Volt/Core/Application.h>
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Animation/Animation.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
 #include "Volt/Asset/Rendering/Material.h"
@@ -40,11 +40,14 @@
 
 #include "Volt/Discord/DiscordSDK.h"
 
+#include "Volt/Project/ProjectManager.h"
+
 #include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
 
 #include <Navigation/Core/NavigationSystem.h>
 
 #include <CoreUtilities/Time/TimeUtility.h>
+#include <CoreUtilities/FileSystem.h>
 
 #include <stack>
 #include <ranges>

@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Volt/Asset/Serializers/AssetSerializer.h"
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/Serialization/AssetSerializer.h>
+#include <AssetSystem/AssetSerializerRegistry.h>
 
 namespace Volt
 {
@@ -16,4 +19,6 @@ namespace Volt
 	private:
 		inline static PrefabSerializer* s_instance = nullptr;
 	};
+
+	VT_REGISTER_ASSET_SERIALIZER(AssetTypes::Prefab, PrefabSerializer);
 }

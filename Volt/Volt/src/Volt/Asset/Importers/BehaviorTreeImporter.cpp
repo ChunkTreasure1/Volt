@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "BehaviorTreeImporter.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/BehaviorTree/BehaviorTree.hpp"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 

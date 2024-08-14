@@ -3,7 +3,7 @@
 
 #include <Volt/Asset/Importers/TextureImporter.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 
 #include <Volt/Asset/Mesh/Mesh.h>
 
@@ -15,19 +15,19 @@ void EditorResources::Initialize()
 {
 	// Asset icons
 	{
-		m_assetIcons[Volt::AssetType::Material] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_material.dds");
-		m_assetIcons[Volt::AssetType::Mesh] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_mesh.dds");
-		m_assetIcons[Volt::AssetType::MeshSource] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_meshSource.dds");
-		m_assetIcons[Volt::AssetType::NavMesh] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_navmesh.dds");
-		m_assetIcons[Volt::AssetType::Skeleton] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_skeleton.dds");
-		m_assetIcons[Volt::AssetType::Animation] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_animation.dds");
-		m_assetIcons[Volt::AssetType::AnimatedCharacter] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_animatedCharacter.dds");
-		m_assetIcons[Volt::AssetType::Scene] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_scene.dds");
-		m_assetIcons[Volt::AssetType::ParticlePreset] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_particlePreset.dds");
-		m_assetIcons[Volt::AssetType::Prefab] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_prefab.dds");
-		m_assetIcons[Volt::AssetType::MonoScript] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_monoscript.dds");
-		m_assetIcons[Volt::AssetType::BehaviorGraph] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_behaviorTree.dds");
-		m_assetIcons[Volt::AssetType::MotionWeave] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_motionWeaveDatabase.dds");
+		m_assetIcons[AssetTypes::Material] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_material.dds");
+		m_assetIcons[AssetTypes::Mesh] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_mesh.dds");
+		m_assetIcons[AssetTypes::MeshSource] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_meshSource.dds");
+		m_assetIcons[AssetTypes::NavMesh] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_navmesh.dds");
+		m_assetIcons[AssetTypes::Skeleton] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_skeleton.dds");
+		m_assetIcons[AssetTypes::Animation] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_animation.dds");
+		m_assetIcons[AssetTypes::AnimatedCharacter] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_animatedCharacter.dds");
+		m_assetIcons[AssetTypes::Scene] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_scene.dds");
+		m_assetIcons[AssetTypes::ParticlePreset] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_particlePreset.dds");
+		m_assetIcons[AssetTypes::Prefab] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_prefab.dds");
+		m_assetIcons[AssetTypes::MonoScript] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_monoscript.dds");
+		m_assetIcons[AssetTypes::BehaviorGraph] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_behaviorTree.dds");
+		m_assetIcons[AssetTypes::MotionWeave] = TryLoadIcon("Editor/Textures/Icons/AssetIcons/icon_motionWeaveDatabase.dds");
 	}
 
 	// Editor Icons
@@ -109,7 +109,7 @@ void EditorResources::Shutdown()
 	m_editorMeshes.clear();
 }
 
-Ref<Volt::Texture2D> EditorResources::GetAssetIcon(Volt::AssetType type)
+Ref<Volt::Texture2D> EditorResources::GetAssetIcon(AssetType type)
 {
 	if (!m_assetIcons.contains(type))
 	{

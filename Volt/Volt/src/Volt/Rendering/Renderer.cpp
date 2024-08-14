@@ -2,7 +2,7 @@
 #include "Renderer.h"
 
 #include "Volt/Core/Application.h"
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Project/ProjectManager.h"

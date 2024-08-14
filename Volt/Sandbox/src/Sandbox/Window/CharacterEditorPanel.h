@@ -4,7 +4,7 @@
 #include "Sandbox/Utility/EditorUtilities.h"
 
 #include <Volt/Events/ApplicationEvent.h>
-#include <Volt/Asset/Asset.h>
+#include <AssetSystem/Asset.h>
 
 #include <glm/glm.hpp>
 

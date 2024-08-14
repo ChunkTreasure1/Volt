@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include <AssetSystem/Asset.h>
 #include "Volt/Asset/Rendering/MaterialTable.h"
 
 namespace Volt

@@ -4,7 +4,7 @@
 
 #include <Volt/Scene/Scene.h>
 #include "Volt/Scene/Entity.h"
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Mesh/Mesh.h"
 
 class Spline

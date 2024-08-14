@@ -1,13 +1,15 @@
 #include "vtpch.h"
 #include "ShaderMap.h"
 
-#include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
+#include "Volt/Asset/Rendering/ShaderSource.h"
 
 #include "Volt/Core/Application.h"
 
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Math/Math.h"
+
+#include <AssetSystem/AssetManager.h>
 
 #include <RHIModule/Shader/Shader.h>
 #include <RHIModule/Pipelines/RenderPipeline.h>
@@ -164,16 +166,16 @@ namespace Volt
 			for (const auto& path : std::filesystem::recursive_directory_iterator(searchPath))
 			{
 				const auto relPath = AssetManager::GetRelativePath(path.path());
-				const auto type = AssetManager::GetAssetTypeFromExtension(relPath.extension().string());
+				const auto extStr = relPath.extension().string();
 
-				if (type != AssetType::ShaderSource)
+				if (extStr != ShaderSource::Extension && extStr != ShaderSource::ExtensionInclude)
 				{
 					continue;
 				}
 
 				if (!AssetManager::ExistsInRegistry(relPath))
 				{
-					AssetManager::Get().AddAssetToRegistry(relPath);
+					AssetManager::Get().AddAssetToRegistry(relPath, AssetTypes::ShaderSource);
 				}
 
 				AssetHandle shaderHandle = AssetManager::GetAssetHandleFromFilePath(relPath);
@@ -189,7 +191,7 @@ namespace Volt
 
 					if (!AssetManager::ExistsInRegistry(relIncludePath))
 					{
-						AssetManager::Get().AddAssetToRegistry(relIncludePath);
+						AssetManager::Get().AddAssetToRegistry(relIncludePath, AssetTypes::ShaderSource);
 					}
 
 					AssetHandle includeHandle = AssetManager::GetAssetHandleFromFilePath(relIncludePath);
@@ -209,16 +211,15 @@ namespace Volt
 			for (const auto& path : std::filesystem::recursive_directory_iterator(searchPath))
 			{
 				const auto relPath = AssetManager::GetRelativePath(path.path());
-				const auto type = AssetManager::GetAssetTypeFromExtension(relPath.extension().string());
 			
-				if (type != AssetType::ShaderDefinition)
+				if (relPath.extension().string() != ShaderDefinition::Extension)
 				{
 					continue;
 				}
 
 				if (!AssetManager::ExistsInRegistry(relPath))
 				{
-					AssetManager::Get().AddAssetToRegistry(relPath);
+					AssetManager::Get().AddAssetToRegistry(relPath, AssetTypes::ShaderDefinition);
 				}
 
 				Ref<ShaderDefinition> shaderDef = AssetManager::GetAsset<ShaderDefinition>(relPath);

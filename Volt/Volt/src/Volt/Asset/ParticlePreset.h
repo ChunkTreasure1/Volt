@@ -1,5 +1,10 @@
 #pragma once
-#include "Volt/Asset/Asset.h"
+
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetFactory.h>
+
 #include <glm/glm.hpp>
 
 namespace Volt
@@ -50,7 +55,7 @@ namespace Volt
 
 		int poolSize = 0;
 
-		static AssetType GetStaticType() { return AssetType::ParticlePreset; }
+		static AssetType GetStaticType() { return AssetTypes::ParticlePreset; }
 		AssetType GetType() override { return GetStaticType(); }
 		uint32_t GetVersion() const override { return 1; }
 	};

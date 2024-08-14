@@ -582,7 +582,7 @@ void BehaviorEditor::DrawPanels()
 				UI::Notify(NotificationType::Error, "BehaviorTree save failed", "");
 			}
 		}
-		if (EditorUtils::Property("LOAD", m_currentHandle, Volt::AssetType::BehaviorGraph))
+		if (EditorUtils::Property("LOAD", m_currentHandle, AssetTypes::BehaviorGraph))
 		{
 			auto importedTree = Volt::AssetManager::GetAsset<Volt::BehaviorTree::Tree>(m_currentHandle);
 			if (!importedTree || !importedTree->IsValid())

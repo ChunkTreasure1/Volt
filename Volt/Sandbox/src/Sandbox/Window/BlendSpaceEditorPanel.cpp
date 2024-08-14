@@ -76,7 +76,7 @@ void BlendSpaceEditorPanel::UpdateProperties()
 	{
 		if (UI::BeginProperties("addAnimProperties"))
 		{
-			EditorUtils::Property("Animation", myAddHandle, Volt::AssetType::Animation);
+			EditorUtils::Property("Animation", myAddHandle, AssetTypes::Animation);
 
 			UI::EndProperties();
 		}

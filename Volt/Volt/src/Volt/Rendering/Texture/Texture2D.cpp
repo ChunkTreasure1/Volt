@@ -1,12 +1,16 @@
 #include "vtpch.h"
 #include "Texture2D.h"
 
+#include <AssetSystem/AssetFactory.h>
+
 #include <RenderCore/Resources/BindlessResourcesManager.h>
 
 #include <RHIModule/Images/ImageView.h>
 
 namespace Volt
 {
+	VT_REGISTER_ASSET_FACTORY(AssetTypes::Texture, Texture2D);
+
 	Texture2D::Texture2D(RHI::PixelFormat format, uint32_t width, uint32_t height, const void* data)
 	{
 		RHI::ImageSpecification imageSpec{};

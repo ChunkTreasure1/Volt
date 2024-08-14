@@ -72,6 +72,7 @@ project "Sandbox"
 		"%{IncludeDir.RHIModule}",
 		"%{IncludeDir.RenderCoreModule}",
 		"%{IncludeDir.JobSystemModule}",
+		"%{IncludeDir.AssetSystemModule}",
 		
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -121,6 +122,7 @@ project "Sandbox"
 
 		"ImGuizmo",
 		"ImGuiNodeEditor",
+		"CoreUtilities",
 
 		"%{Library.fmod}",
 		"%{Library.fmodstudio}",

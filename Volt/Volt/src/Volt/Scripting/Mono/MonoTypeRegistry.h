@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include <AssetSystem/Asset.h>
 #include "Volt/Scene/EntityID.h"
 
 #include <unordered_map>
@@ -32,13 +32,13 @@ namespace Volt
 		std::type_index typeIndex = typeid(void);
 		size_t typeSize = 0;
 
-		AssetType assetType = AssetType::None;
+		AssetType assetType = AssetTypes::None;
 		MonoTypeFlags typeFlags = MonoTypeFlags::None;
 		
 		std::function<bool(const void* lhs, const void* rhs)> equalFunc;
 
 		[[nodiscard]] inline const bool IsEntity() const { return typeIndex == typeid(Volt::EntityID); }
-		[[nodiscard]] inline const bool IsAsset() const { return typeIndex == typeid(AssetHandle) && assetType != AssetType::None; }
+		[[nodiscard]] inline const bool IsAsset() const { return typeIndex == typeid(AssetHandle) && assetType != AssetTypes::None; }
 		[[nodiscard]] inline const bool IsString() const { return typeIndex == typeid(std::string); }
 		[[nodiscard]] inline const bool IsEnum() const { return (typeFlags & MonoTypeFlags::Enum) != MonoTypeFlags::None; }
 		[[nodiscard]] inline const bool IsCustomMonoType() const { return typeIndex == typeid(CustomMonoType); }

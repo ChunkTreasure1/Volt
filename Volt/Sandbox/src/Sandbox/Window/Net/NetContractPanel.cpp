@@ -8,6 +8,8 @@
 #include <Volt/Asset/Prefab.h>
 #include <Volt/Net/SceneInteraction/NetActorComponent.h>
 
+#include <Volt/Project/ProjectManager.h>
+
 #include <random>
 
 NetContractPanel::NetContractPanel()
@@ -105,7 +107,7 @@ void NetContractPanel::DrawActions()
 
 	if (UI::BeginProperties("actions"))
 	{
-		if (EditorUtils::Property("Prefab:", m_handle, Volt::AssetType::Prefab))
+		if (EditorUtils::Property("Prefab:", m_handle, AssetTypes::Prefab))
 		{
 			if (m_entityId != Volt::Entity::NullID())
 			{

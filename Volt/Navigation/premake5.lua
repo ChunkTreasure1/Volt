@@ -52,6 +52,7 @@ project "Navigation"
 		"%{IncludeDir.Mosaic}",
 		"%{IncludeDir.LogModule}",
 		"%{IncludeDir.RenderCoreModule}",
+		"%{IncludeDir.AssetSystemModule}",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.spdlog}",

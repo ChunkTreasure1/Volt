@@ -1,7 +1,9 @@
 #pragma once
+
+#include <AssetSystem/AssetHandle.h>
+
 #include "Volt/Core/Base.h"
 #include "glm/mat4x4.hpp"
-#include "Volt/Asset/Asset.h"
 
 namespace Volt
 {

@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "ShapeLibrary.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 #include "Volt/Asset/Rendering/Material.h"
 #include "Volt/Asset/Mesh/Mesh.h"

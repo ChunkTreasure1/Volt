@@ -3,7 +3,6 @@
 
 #include "NavigationEditor/Tools/NavMeshDebugDrawer.h"
 
-#include <Volt/Asset/AssetManager.h>
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/Scene.h>
 
@@ -12,6 +11,8 @@
 #include <Volt/Physics/PhysicsActor.h>
 #include <Volt/Physics/PhysicsControllerActor.h>
 #include <Volt/Components/PhysicsComponents.h>
+
+#include <AssetSystem/AssetManager.h>
 
 namespace Volt
 {

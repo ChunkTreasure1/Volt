@@ -6,7 +6,6 @@
 
 #include "Volt/Particles/ParticleSystem.h"
 #include <Volt/Asset/ParticlePreset.h>
-#include <Volt/Asset/AssetManager.h>
 
 #include <Volt/Rendering/SceneRenderer.h>
 
@@ -14,6 +13,9 @@
 #include <Volt/Components/RenderingComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
+#include <Volt/Project/ProjectManager.h>
+
+#include <AssetSystem/AssetManager.h>
 
 #include <random>
 
@@ -75,7 +77,7 @@ void ParticleEmitterEditor::OpenAsset(Ref<Volt::Asset> asset)
 	int i = 0;
 	for (const auto& [handle, metadata] : Volt::AssetManager::Get().GetAssetRegistry())
 	{
-		if (Volt::AssetManager::Get().GetAssetTypeFromHandle(handle) == Volt::AssetType::ParticlePreset)
+		if (Volt::AssetManager::Get().GetAssetTypeFromHandle(handle) == AssetTypes::ParticlePreset)
 		{
 			i++;
 			if (asset->handle == handle)
@@ -218,7 +220,7 @@ bool ParticleEmitterEditor::DrawEditorPanel()
 		//#TODO_Ivar: Fix this mess
 		//myPresets.clear();
 		//myPresets.emplace_back("None");
-		//for (const auto& handle : Volt::AssetManager::GetAllAssetsOfType(Volt::AssetType::ParticlePreset))
+		//for (const auto& handle : Volt::AssetManager::GetAllAssetsOfType(AssetType::ParticlePreset))
 		//{
 		//	const auto& meta = Volt::AssetManager::GetMetadataFromHandle(handle);
 		//	myPresets.emplace_back(meta.filePath.string());
@@ -271,8 +273,8 @@ bool ParticleEmitterEditor::DrawEditorPanel()
 					UI::PropertyAxisColor("Position", modelPos);
 					UI::PropertyAxisColor("Rotation", modelRot);
 					UI::PropertyAxisColor("Scale", modelScale);
-					EditorUtils::Property("Mesh", myReferenceModel.GetComponent<Volt::MeshComponent>().handle, Volt::AssetType::Mesh);
-					//EditorUtils::Property("Material", myReferenceModel.GetComponent<Volt::MeshComponent>().material, Volt::AssetType::Material);
+					EditorUtils::Property("Mesh", myReferenceModel.GetComponent<Volt::MeshComponent>().handle, AssetTypes::Mesh);
+					//EditorUtils::Property("Material", myReferenceModel.GetComponent<Volt::MeshComponent>().material, AssetType::Material);
 
 					myReferenceModel.SetPosition(modelPos);
 					myReferenceModel.SetRotation(modelRot);
@@ -295,7 +297,7 @@ bool ParticleEmitterEditor::DrawEditorPanel()
 				UI::Property("Camera speed", cameraSpeed);
 				myCameraController->SetTranslationSpeed(cameraSpeed);
 
-				EditorUtils::Property("Skybox", myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>()[0].GetComponent<Volt::SkylightComponent>().environmentHandle, Volt::AssetType::Texture);
+				EditorUtils::Property("Skybox", myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>()[0].GetComponent<Volt::SkylightComponent>().environmentHandle, AssetTypes::Texture);
 				UI::EndProperties();
 			}
 		}
@@ -341,12 +343,12 @@ void ParticleEmitterEditor::DrawPropertiesPanel()
 					switch (myCurrentPreset->type)
 					{
 						case Volt::ParticlePreset::eType::PARTICLE:
-							EditorUtils::Property("Texture", myCurrentPreset->texture, Volt::AssetType::Texture);
-							EditorUtils::Property("Material", myCurrentPreset->material, Volt::AssetType::Material);
+							EditorUtils::Property("Texture", myCurrentPreset->texture, AssetTypes::Texture);
+							EditorUtils::Property("Material", myCurrentPreset->material, AssetTypes::Material);
 							break;
 						case Volt::ParticlePreset::eType::MESH:
-							EditorUtils::Property("Mesh", myCurrentPreset->mesh, Volt::AssetType::Mesh);
-							EditorUtils::Property("Material", myCurrentPreset->material, Volt::AssetType::Material);
+							EditorUtils::Property("Mesh", myCurrentPreset->mesh, AssetTypes::Mesh);
+							EditorUtils::Property("Material", myCurrentPreset->material, AssetTypes::Material);
 							break;
 						default:
 							break;

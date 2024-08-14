@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetFactory.h>
 
 namespace Volt
 {
@@ -27,7 +30,7 @@ namespace Volt
 		inline Ref<Texture2D> GetAtlas() const { return myAtlas; }
 		inline MSDFData* GetMSDFData() const { return myMSDFData; }
 
-		static AssetType GetStaticType() { return AssetType::Font; }
+		static AssetType GetStaticType() { return AssetTypes::Font; }
 		AssetType GetType() override { return GetStaticType(); };
 		uint32_t GetVersion() const override { return 1; }
 

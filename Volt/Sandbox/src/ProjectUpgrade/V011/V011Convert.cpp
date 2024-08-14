@@ -2,8 +2,8 @@
 #include "V011Convert.h"
 
 #include <Volt/Project/ProjectManager.h>
-#include <Volt/Asset/Asset.h>
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetManager.h>
 
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
 
@@ -77,10 +77,10 @@ namespace V011
 			}
 		}
 
-		for (const auto& descriptor : assetDescriptors)
-		{
-			Volt::AssetManager::Get().AddAssetToRegistry(descriptor.assetFilePath, descriptor.handle);
-		}
+		//for (const auto& descriptor : assetDescriptors)
+		//{
+		//	//Volt::AssetManager::Get().AddAssetToRegistry(descriptor.assetFilePath, descriptor.handle);
+		//}
 	}
 
 	void Convert()

@@ -3,7 +3,7 @@
 
 #include "Volt/Asset/Rendering/Material.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
 #include <Mosaic/MosaicGraph.h>

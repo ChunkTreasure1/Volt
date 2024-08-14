@@ -7,6 +7,8 @@
 #include "ProjectUpgrade/V013/V013Convert.h"
 #include "ProjectUpgrade/V015/V015Convert.h"
 
+#include <Volt/Project/ProjectManager.h>
+
 #include <Volt/Core/Application.h>
 #include <Volt/Events/ApplicationEvent.h>
 #include <Volt/Utility/UIUtility.h>

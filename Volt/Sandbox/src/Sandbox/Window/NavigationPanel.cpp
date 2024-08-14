@@ -2,7 +2,7 @@
 #include "NavigationPanel.h"
 #include "NavigationEditor/Tools/NavMeshDebugDrawer.h"
 
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 #include <Volt/Utility/MeshExporterUtilities.h>
 
 #include <Volt/Components/PhysicsComponents.h>

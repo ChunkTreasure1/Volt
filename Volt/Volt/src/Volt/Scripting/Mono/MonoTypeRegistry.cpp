@@ -2,15 +2,18 @@
 #include "MonoTypeRegistry.h"
 
 #include "Volt/Scene/EntityID.h"
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/AssetType.h>
 
 namespace Volt
 {
-	template<typename T, AssetType assetType = AssetType::None, MonoTypeFlags typeFlags = MonoTypeFlags::None>
-	void RegisterMonoType(const std::string& monoTypeName, std::unordered_map<std::string, MonoTypeInfo>& outTypeMap)
+	template<typename T, MonoTypeFlags typeFlags = MonoTypeFlags::None>
+	void RegisterMonoType(const std::string& monoTypeName, std::unordered_map<std::string, MonoTypeInfo>& outTypeMap, AssetType assetType = AssetTypes::None)
 	{
 		auto& newType = outTypeMap[monoTypeName];
 		newType.typeIndex = std::type_index{ typeid(T) };
-		newType.assetType = assetType;
+		newType.assetType = AssetType();
 		newType.typeFlags = typeFlags;
 		newType.typeSize = sizeof(T);
 		newType.typeName = std::string(monoTypeName);
@@ -48,15 +51,15 @@ namespace Volt
 		RegisterMonoType<glm::vec4>("Volt.Vector4", s_monoToNativeTypeMap);
 		RegisterMonoType<glm::quat>("Volt.Quaternion", s_monoToNativeTypeMap);
 		RegisterMonoType<Volt::EntityID>("Volt.Entity", s_monoToNativeTypeMap);
-		RegisterMonoType<glm::vec4, AssetType::None, MonoTypeFlags::Color>("Volt.Color", s_monoToNativeTypeMap);
-		RegisterMonoType<AssetHandle, AssetType::Animation>("Volt.Animation", s_monoToNativeTypeMap);
-		RegisterMonoType<AssetHandle, AssetType::Prefab>("Volt.Prefab", s_monoToNativeTypeMap);
-		RegisterMonoType<AssetHandle, AssetType::Scene>("Volt.Scene", s_monoToNativeTypeMap);
-		RegisterMonoType<AssetHandle, AssetType::Mesh>("Volt.Mesh", s_monoToNativeTypeMap);
-		RegisterMonoType<AssetHandle, AssetType::Font>("Volt.Font", s_monoToNativeTypeMap);
-		RegisterMonoType<AssetHandle, AssetType::Material>("Volt.Material", s_monoToNativeTypeMap);
-		RegisterMonoType<AssetHandle, AssetType::Texture>("Volt.Texture", s_monoToNativeTypeMap);
-		RegisterMonoType<AssetHandle, AssetType::PostProcessingMaterial>("Volt.PostProcessingMaterial", s_monoToNativeTypeMap);
+		RegisterMonoType<glm::vec4, MonoTypeFlags::Color>("Volt.Color", s_monoToNativeTypeMap);
+		RegisterMonoType<AssetHandle>("Volt.Animation", s_monoToNativeTypeMap, AssetTypes::Animation);
+		RegisterMonoType<AssetHandle>("Volt.Prefab", s_monoToNativeTypeMap, AssetTypes::Prefab);
+		RegisterMonoType<AssetHandle>("Volt.Scene", s_monoToNativeTypeMap, AssetTypes::Scene);
+		RegisterMonoType<AssetHandle>("Volt.Mesh", s_monoToNativeTypeMap, AssetTypes::Mesh);
+		RegisterMonoType<AssetHandle>("Volt.Font", s_monoToNativeTypeMap, AssetTypes::Font);
+		RegisterMonoType<AssetHandle>("Volt.Material", s_monoToNativeTypeMap, AssetTypes::Material);
+		RegisterMonoType<AssetHandle>("Volt.Texture", s_monoToNativeTypeMap, AssetTypes::Texture);
+		RegisterMonoType<AssetHandle>("Volt.PostProcessingMaterial", s_monoToNativeTypeMap, AssetTypes::PostProcessingMaterial);
 	}
 
 	const MonoTypeInfo& MonoTypeRegistry::GetTypeInfo(std::string_view monoTypeName)
@@ -89,7 +92,7 @@ namespace Volt
 
 	void MonoTypeRegistry::RegisterEnum(const std::string& typeName)
 	{
-		RegisterMonoType<int32_t, AssetType::None, MonoTypeFlags::Enum>(typeName, s_monoToNativeTypeMap);
+		RegisterMonoType<int32_t, MonoTypeFlags::Enum>(typeName, s_monoToNativeTypeMap);
 	}
 
 	void MonoTypeRegistry::RegisterCustomType(const std::string& typeName)

@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "SceneSerializer.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 #include "Volt/Components/CoreComponents.h"
 #include "Volt/Components/RenderingComponents.h"
@@ -19,6 +19,8 @@
 #include "Volt/Utility/Algorithms.h"
 #include "Volt/Utility/FileSystem.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
+
+#include "Volt/Project/ProjectManager.h"
 
 #include <CoreUtilities/FileIO/YAMLMemoryStreamWriter.h>
 #include <CoreUtilities/FileIO/YAMLMemoryStreamReader.h>

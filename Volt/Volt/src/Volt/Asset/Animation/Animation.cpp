@@ -6,6 +6,8 @@
 
 namespace Volt
 {
+	VT_REGISTER_ASSET_FACTORY(AssetTypes::Animation, Animation);
+
 	const Vector<glm::mat4> Animation::SampleStartTime(float aStartTime, Ref<Skeleton> aSkeleton, bool looping)
 	{
 		VT_PROFILE_FUNCTION();

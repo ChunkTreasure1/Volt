@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Volt/Core/UUID.h>
-#include <Volt/Asset/Asset.h>
+#include <AssetSystem/Asset.h>
 
 #include <CoreUtilities/Containers/Vector.h>
 
@@ -24,7 +24,7 @@ namespace NodeGraph
 	struct EditorBackend
 	{
 		virtual ~EditorBackend() = default;
-		virtual const Volt::AssetType GetSupportedAssetTypes() { return Volt::AssetType::None; }
+		virtual const AssetType GetSupportedAssetTypes() { return AssetTypes::None; }
 		const NodeGraph::Link CreateLink(const UUID64 inputId, const UUID64 outputId);
 
 		Vector<Node> nodes;

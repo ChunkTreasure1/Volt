@@ -6,12 +6,12 @@
 
 #include <Volt/Components/LightComponents.h>
 #include <Volt/Components/RenderingComponents.h>
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Rendering/Camera/Camera.h>
 
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 
 AssetPreview::AssetPreview(const std::filesystem::path& path)
 {

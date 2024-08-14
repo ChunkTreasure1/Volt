@@ -5,7 +5,7 @@
 
 #include <Volt/Events/SettingsEvent.h>
 
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 
 #include <Volt/Rendering/SceneRenderer.h>
 

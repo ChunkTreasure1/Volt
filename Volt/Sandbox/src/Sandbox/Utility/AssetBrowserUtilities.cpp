@@ -7,7 +7,7 @@
 #include "Sandbox/Sandbox.h"
 
 #include <Volt/Asset/Prefab.h>
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>
@@ -100,39 +100,33 @@ namespace AssetBrowser
 
 	void AssetBrowserUtilities::SetMeshExport(AssetItem* item)
 	{
-		switch (item->type)
+		if (item->type == AssetTypes::Mesh)
 		{
-			case Volt::AssetType::Mesh:
+			meshesToExport.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>(item->handle));
+		}
+		else if (item->type == AssetTypes::Prefab)
+		{
+			auto scene = CreateRef<Volt::Scene>("ExportMeshScene");
+
+			Volt::AssetManager::GetAsset<Volt::Prefab>(item->handle)->Instantiate(scene);
+			Vector<Volt::Entity> meshEntities;
+
+			for (const auto& ent : scene->GetAllEntitiesWith<Volt::MeshComponent>())
 			{
-				meshesToExport.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>(item->handle));
-				break;
+				meshEntities.emplace_back(ent);
 			}
 
-			case Volt::AssetType::Prefab:
-			{
-				auto scene = CreateRef<Volt::Scene>("ExportMeshScene");
-
-				Volt::AssetManager::GetAsset<Volt::Prefab>(item->handle)->Instantiate(scene);
-				Vector<Volt::Entity> meshEntities;
-
-				for (const auto& ent : scene->GetAllEntitiesWith<Volt::MeshComponent>())
-				{
-					meshEntities.emplace_back(ent);
-				}
-
-				meshesToExport = Volt::MeshExporterUtilities::GetMeshes(meshEntities);
-				break;
-			}
+			meshesToExport = Volt::MeshExporterUtilities::GetMeshes(meshEntities);
 		}
 	}
 
-	const std::unordered_map<Volt::AssetType, std::function<void(AssetItem*)>>& AssetBrowserUtilities::GetPopupRenderFunctions()
+	const std::unordered_map<AssetType, std::function<void(AssetItem*)>>& AssetBrowserUtilities::GetPopupRenderFunctions()
 	{
-		static std::unordered_map<Volt::AssetType, std::function<void(AssetItem*)>> renderFunctions;
+		static std::unordered_map<AssetType, std::function<void(AssetItem*)>> renderFunctions;
 
 		if (renderFunctions.empty())
 		{
-			renderFunctions[Volt::AssetType::ShaderDefinition] = [](AssetItem* item)
+			renderFunctions[AssetTypes::ShaderDefinition] = [](AssetItem* item)
 			{
 				if (ImGui::MenuItem("Recompile Shader"))
 				{
@@ -149,7 +143,7 @@ namespace AssetBrowser
 				}
 			};
 
-			renderFunctions[Volt::AssetType::MeshSource] = [](AssetItem* item)
+			renderFunctions[AssetTypes::MeshSource] = [](AssetItem* item)
 			{
 				if (ImGui::MenuItem("Import"))
 				{
@@ -161,13 +155,13 @@ namespace AssetBrowser
 					//item->meshImportData.destination = item->path.parent_path().string() + "\\" + item->path.stem().string() + ".vtasset";
 					//item->meshToImportData.handle = item->handle;
 					//item->meshToImportData.path = item->path;
-					//item->meshToImportData.type = Volt::AssetType::MeshSource;
+					//item->meshToImportData.type = AssetType::MeshSource;
 
 					//UI::OpenModal("Import Mesh##assetBrowser");
 				}
 			};
 
-			renderFunctions[Volt::AssetType::Mesh] = [](AssetItem* item)
+			renderFunctions[AssetTypes::Mesh] = [](AssetItem* item)
 			{
 				if (ImGui::MenuItem("Export Mesh"))
 				{
@@ -181,7 +175,7 @@ namespace AssetBrowser
 				}
 			};
 
-			renderFunctions[Volt::AssetType::Animation] = [](AssetItem* item)
+			renderFunctions[AssetTypes::Animation] = [](AssetItem* item)
 			{
 				if (ImGui::MenuItem("Reimport"))
 				{
@@ -190,7 +184,7 @@ namespace AssetBrowser
 				}
 			};
 
-			renderFunctions[Volt::AssetType::Skeleton] = [](AssetItem* item)
+			renderFunctions[AssetTypes::Skeleton] = [](AssetItem* item)
 			{
 				if (ImGui::MenuItem("Reimport"))
 				{
@@ -198,7 +192,7 @@ namespace AssetBrowser
 				}
 			};
 
-			renderFunctions[Volt::AssetType::Prefab] = [](AssetItem* item)
+			renderFunctions[AssetTypes::Prefab] = [](AssetItem* item)
 			{
 				if (ImGui::MenuItem("Export Meshes"))
 				{
@@ -207,7 +201,7 @@ namespace AssetBrowser
 				}
 			};
 
-			renderFunctions[Volt::AssetType::TextureSource] = [](AssetItem* item)
+			renderFunctions[AssetTypes::TextureSource] = [](AssetItem* item)
 			{
 				if (ImGui::MenuItem("Import"))
 				{
@@ -223,7 +217,7 @@ namespace AssetBrowser
 				}
 			};
 
-			renderFunctions[Volt::AssetType::Texture] = [](AssetItem* item)
+			renderFunctions[AssetTypes::Texture] = [](AssetItem* item)
 			{
 				if (ImGui::MenuItem("Generate Mips"))
 				{

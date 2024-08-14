@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "TextureSerializer.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 
@@ -16,6 +16,8 @@
 
 namespace Volt
 {
+	VT_REGISTER_ASSET_SERIALIZER(AssetTypes::Texture, TextureSerializer);
+
 	struct TextureMip
 	{
 		uint32_t width;

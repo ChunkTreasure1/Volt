@@ -5,7 +5,7 @@
 #include "Volt/Net/NetHandler.h"
 #include "Volt/Core/Application.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Prefab.h"
 
 #include "Volt/Net/SceneInteraction/NetActorComponent.h"

@@ -14,7 +14,6 @@
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Mesh/Mesh.h>
-#include <Volt/Asset/AssetManager.h>
 
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/Entity.h>
@@ -23,6 +22,9 @@
 #include <Volt/Components/LightComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
+#include <Volt/Project/ProjectManager.h>
+
+#include <AssetSystem/AssetManager.h>
 
 CharacterEditorPanel::CharacterEditorPanel()
 	: EditorWindow("Character Editor", true)
@@ -50,7 +52,7 @@ void CharacterEditorPanel::UpdateMainContent()
 
 			if (ImGui::MenuItem("Open"))
 			{
-				const std::filesystem::path path = FileSystem::OpenFileDialogue({ { "Animated Character (*.vtchr)", "vtchr" }});
+				const std::filesystem::path path = FileSystem::OpenFileDialogue({ { "Animated Character (*.vtchr)", "vtchr" }}, Volt::ProjectManager::GetAssetsDirectory());
 				if (!path.empty() && FileSystem::Exists(path))
 				{
 					myCurrentCharacter = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(Volt::AssetManager::GetRelativePath(path));
@@ -246,7 +248,7 @@ void CharacterEditorPanel::UpdateToolbar()
 
 	if (UI::ImageButton("##Load", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
 	{
-		const std::filesystem::path characterPath = FileSystem::OpenFileDialogue({ { "Animated Character (*.vtchr)", "vtchr" } });
+		const std::filesystem::path characterPath = FileSystem::OpenFileDialogue({ { "Animated Character (*.vtchr)", "vtchr" } }, Volt::ProjectManager::GetAssetsDirectory());
 		if (!characterPath.empty() && FileSystem::Exists(characterPath))
 		{
 			myCurrentCharacter = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(characterPath);
@@ -323,7 +325,7 @@ void CharacterEditorPanel::UpdateProperties()
 
 		UI::Property("Is Looping", charComp.isLooping);
 
-		if (EditorUtils::Property("Skin", mySkinHandle, Volt::AssetType::Mesh))
+		if (EditorUtils::Property("Skin", mySkinHandle, AssetTypes::Mesh))
 		{
 			Ref<Volt::Mesh> skin = Volt::AssetManager::GetAsset<Volt::Mesh>(mySkinHandle);
 			if (skin && skin->IsValid())
@@ -332,7 +334,7 @@ void CharacterEditorPanel::UpdateProperties()
 			}
 		}
 
-		if (EditorUtils::Property("Skeleton", mySkeletonHandle, Volt::AssetType::Skeleton))
+		if (EditorUtils::Property("Skeleton", mySkeletonHandle, AssetTypes::Skeleton))
 		{
 			Ref<Volt::Skeleton> skeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(mySkeletonHandle);
 			if (skeleton && skeleton->IsValid())
@@ -377,7 +379,7 @@ void CharacterEditorPanel::UpdateAnimations()
 				ImGui::OpenPopup("animAddPopup");
 			}
 
-			if (EditorUtils::AssetBrowserPopupField("animAddPopup", addHandle, Volt::AssetType::Animation))
+			if (EditorUtils::AssetBrowserPopupField("animAddPopup", addHandle, AssetTypes::Animation))
 			{
 				if (addHandle != Volt::Asset::Null())
 				{
@@ -449,7 +451,7 @@ void CharacterEditorPanel::UpdateAnimations()
 				ImGui::PopItemWidth();
 
 				Volt::AssetHandle animHandle = Volt::Asset::Null();
-				if (EditorUtils::AssetBrowserPopupField(popupName, animHandle, Volt::AssetType::Animation))
+				if (EditorUtils::AssetBrowserPopupField(popupName, animHandle, AssetTypes::Animation))
 				{
 					if (animHandle != Volt::Asset::Null())
 					{

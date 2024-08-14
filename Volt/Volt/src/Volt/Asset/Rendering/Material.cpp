@@ -3,7 +3,7 @@
 
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/MosaicNodes/Texture/SampleTextureNode.h"
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/Texture/Texture2D.h"

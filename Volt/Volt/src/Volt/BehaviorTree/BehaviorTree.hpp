@@ -1,12 +1,12 @@
 #pragma once
 #include "NodeManager.h"
 #include "Nodes/BehaviorTreeNode.h"
-#include "Volt/Asset/Asset.h"
 
 #include "Volt/Scene/Entity.h"
+#include "Volt/Asset/AssetTypes.h"
 
+#include <AssetSystem/Asset.h>
 #include <filesystem>
-
 
 namespace Volt::BehaviorTree
 {
@@ -35,8 +35,8 @@ namespace Volt::BehaviorTree
 		template<typename _T>
 		UUID64 CreateNode(const UUID64& in_id);
 
-		static AssetType GetStaticType() { return AssetType::BehaviorGraph; }
-		AssetType GetType() override { return AssetType::BehaviorGraph; }
+		static AssetType GetStaticType() { return AssetTypes::BehaviorGraph; }
+		AssetType GetType() override { return AssetTypes::BehaviorGraph; }
 		uint32_t GetVersion() const override { return 1; }
 
 	private:

@@ -2,7 +2,7 @@
 #include "VertexPainterPanel.h"
 
 #include <Volt/Input/Input.h>
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 #include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Rendering/DebugRenderer.h>
 
@@ -332,7 +332,7 @@ void VertexPainterPanel::PanelDraw()
 		//{		
 		if (UI::BeginProperties("SingleMat"))
 		{
-			EditorUtils::Property("Material", m_materialSettings.singleMat, Volt::AssetType::Material);
+			EditorUtils::Property("Material", m_materialSettings.singleMat, AssetTypes::Material);
 			UI::EndProperties();
 		}
 		if (ImGui::Button("Apply To Selection##vpApplySingleMaterial", { ImGui::GetContentRegionAvail().x, 0 }))
@@ -361,7 +361,7 @@ void VertexPainterPanel::PanelDraw()
 			}
 			if (UI::BeginProperties("SingleMat"))
 			{
-				EditorUtils::Property("Material", m_materialSettings.singleMat, Volt::AssetType::Material);
+				EditorUtils::Property("Material", m_materialSettings.singleMat, AssetType::Material);
 				UI::EndProperties();
 			}
 			ImGui::TreePop();

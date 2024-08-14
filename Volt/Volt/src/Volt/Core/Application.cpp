@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "Application.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 #include "Volt/Input/Input.h"
 #include "Volt/Input/KeyCodes.h"
@@ -24,6 +24,9 @@
 #include "Volt/Utility/Noise.h"
 #include "Volt/Utility/UIUtility.h"
 
+#include "Volt/Asset/Importers/MeshTypeImporter.h"
+#include "Volt/Asset/Importers/TextureImporter.h"
+
 #include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
 
 #include <RHIModule/ImGui/ImGuiImplementation.h>
@@ -37,6 +40,7 @@
 #include <Amp/WWiseEngine/WWiseEngine.h>
 #include <Navigation/Core/NavigationSystem.h>
 
+#include <CoreUtilities/FileSystem.h>
 #include <LogModule/Log.h>
 
 namespace Volt
@@ -92,8 +96,13 @@ namespace Volt
 		}
 
 		FileSystem::Initialize();
+		
+		
+		MeshTypeImporter::Initialize();
+		TextureImporter::Initialize();
+		
 		Renderer::PreInitialize();
-		m_assetmanager = CreateScope<AssetManager>();
+		m_assetmanager = CreateScope<AssetManager>(ProjectManager::GetDirectory(), ProjectManager::GetAssetsDirectory(), ProjectManager::GetEngineDirectory());
 		
 		ShaderMap::Initialize();
 		Renderer::Initialize();
@@ -186,6 +195,10 @@ namespace Volt
 
 		ShaderMap::Shutdown();
 		Renderer::Shutdown();
+
+		TextureImporter::Shutdown();
+		MeshTypeImporter::Shutdown();
+
 		FileSystem::Shutdown();
 
 		m_windowManager.DestroyWindow(m_windowHandle);

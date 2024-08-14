@@ -6,7 +6,7 @@
 class SelectiveAssetBrowserPanel : public EditorWindow
 {
 public:
-	SelectiveAssetBrowserPanel(Volt::AssetType assetType, const std::string& id);
+	SelectiveAssetBrowserPanel(AssetType assetType, const std::string& id);
 
 	void UpdateMainContent() override;
 	inline void SetOpenFileCallback(std::function<void(Volt::AssetHandle asset)>&& function) { myOpenFileCallback = function; }
@@ -15,7 +15,7 @@ private:
 	void UpdateAssetList();
 	void RenderControlsBar();
 
-	Volt::AssetType mySelectiveAssetType;
+	AssetType mySelectiveAssetType;
 
 	Vector<AssetData> myAllAssetsOfType;
 	std::function<void(Volt::AssetHandle asset)> myOpenFileCallback;

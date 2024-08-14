@@ -1,8 +1,10 @@
 #pragma once
 
-#include "Volt/Asset/Serializers/AssetSerializer.h"
-
+#include "Volt/Asset/AssetTypes.h"
 #include "Volt/Scene/Entity.h"
+
+#include <AssetSystem/Serialization/AssetSerializer.h>
+#include <AssetSystem/AssetSerializerRegistry.h>
 
 #include <typeindex>
 
@@ -56,4 +58,6 @@ namespace Volt
 		inline static std::unordered_map<std::type_index, std::function<void(YAMLMemoryStreamWriter&, const uint8_t*, const size_t)>> s_typeSerializers;
 		inline static std::unordered_map<std::type_index, std::function<void(YAMLMemoryStreamReader&, uint8_t*, const size_t)>> s_typeDeserializers;
 	};
+
+	VT_REGISTER_ASSET_SERIALIZER(AssetTypes::Scene, SceneSerializer);
 }

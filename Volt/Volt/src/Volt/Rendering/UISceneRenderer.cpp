@@ -6,7 +6,7 @@
 
 #include "Volt/Rendering/Utility/StagedBufferUpload.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Rendering/Texture/Texture2D.h"
 
 #include "Volt/GameUI/UIScene.h"

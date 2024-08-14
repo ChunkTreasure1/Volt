@@ -45,13 +45,15 @@ project "CoreUtilities"
 		"%{IncludeDir.tracy}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.zlib}",
-		"%{IncludeDir.unordered_dense}"
+		"%{IncludeDir.unordered_dense}",
+		"%{IncludeDir.NFDExtended}",
 	}
 
 	links
 	{
 		"YamlCPP",
 		"tracy",
+		"NFD-Extended",
 
 		"%{Library.zlib}",
 	}

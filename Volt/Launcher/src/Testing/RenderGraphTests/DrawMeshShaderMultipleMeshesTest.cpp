@@ -2,7 +2,7 @@
 
 #include <Volt/Core/Application.h>
 #include <Volt/Asset/Mesh/Mesh.h>
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 
 #include <Volt/Rendering/Shader/ShaderMap.h>
 

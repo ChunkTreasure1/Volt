@@ -715,113 +715,85 @@ void ViewportPanel::CheckDragDrop()
 	m_isInViewport = true;
 
 	const Volt::AssetHandle handle = GlobalEditorStates::dragAsset;
-	const Volt::AssetType type = Volt::AssetManager::GetAssetTypeFromHandle(handle);
+	const AssetType type = Volt::AssetManager::GetAssetTypeFromHandle(handle);
 
-	switch (type)
+	if (type == AssetTypes::Mesh)
 	{
-		case Volt::AssetType::Mesh:
-		{
-			Volt::Entity newEntity = m_editorScene->CreateEntity();
+		Volt::Entity newEntity = m_editorScene->CreateEntity();
 
-			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(newEntity, ObjectStateAction::Create);
-			EditorCommandStack::GetInstance().PushUndo(command);
+		Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(newEntity, ObjectStateAction::Create);
+		EditorCommandStack::GetInstance().PushUndo(command);
+
+		auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>();
+		auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(handle);
+		if (mesh)
+		{
+			meshComp.handle = mesh->handle;
+		}
+
+		newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::GetFilePathFromAssetHandle(handle).stem().string();
+
+		SelectionManager::DeselectAll();
+		SelectionManager::Select(newEntity.GetID());
+
+		m_createdEntity = newEntity;
+
+		Volt::MeshComponent::OnMemberChanged(meshComp, newEntity);
+
+		m_editorScene->InvalidateRenderScene();
+	}
+	else if (type == AssetTypes::MeshSource)
+	{
+		const std::filesystem::path meshSourcePath = Volt::AssetManager::GetFilePathFromAssetHandle(handle);
+		const std::filesystem::path vtMeshPath = meshSourcePath.parent_path() / (meshSourcePath.stem().string() + ".vtasset");
+
+		Volt::AssetHandle resultHandle = handle;
+		Volt::Entity newEntity = m_editorScene->CreateEntity();
+
+		Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(newEntity, ObjectStateAction::Create);
+		EditorCommandStack::GetInstance().PushUndo(command);
+
+		if (FileSystem::Exists(vtMeshPath))
+		{
+			Ref<Volt::Mesh> meshAsset = Volt::AssetManager::GetAsset<Volt::Mesh>(vtMeshPath);
+			if (meshAsset && meshAsset->IsValid())
+			{
+				resultHandle = meshAsset->handle;
+			}
 
 			auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>();
-			auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(handle);
+			auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(resultHandle);
 			if (mesh)
 			{
 				meshComp.handle = mesh->handle;
 			}
-
-			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::GetFilePathFromAssetHandle(handle).stem().string();
-			
-			SelectionManager::DeselectAll();
-			SelectionManager::Select(newEntity.GetID());
-
-			m_createdEntity = newEntity;
-
-			Volt::MeshComponent::OnMemberChanged(meshComp, newEntity);
-
-			m_editorScene->InvalidateRenderScene();
-
-			break;
 		}
-
-		case Volt::AssetType::MeshSource:
+		else
 		{
-			const std::filesystem::path meshSourcePath = Volt::AssetManager::GetFilePathFromAssetHandle(handle);
-			const std::filesystem::path vtMeshPath = meshSourcePath.parent_path() / (meshSourcePath.stem().string() + ".vtasset");
+			m_entityToAddMesh = newEntity.GetID();
 
-			Volt::AssetHandle resultHandle = handle;
-			Volt::Entity newEntity = m_editorScene->CreateEntity();
-
-			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(newEntity, ObjectStateAction::Create);
-			EditorCommandStack::GetInstance().PushUndo(command);
-
-			if (FileSystem::Exists(vtMeshPath))
-			{
-				Ref<Volt::Mesh> meshAsset = Volt::AssetManager::GetAsset<Volt::Mesh>(vtMeshPath);
-				if (meshAsset && meshAsset->IsValid())
-				{
-					resultHandle = meshAsset->handle;
-				}
-
-				auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>();
-				auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(resultHandle);
-				if (mesh)
-				{
-					meshComp.handle = mesh->handle;
-				}
-			}
-			else
-			{
-				m_entityToAddMesh = newEntity.GetID();
-
-				ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).SetImportMeshes({ meshSourcePath });
-				ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).Open();
-			}
-
-			m_editorScene->InvalidateRenderScene();
-
-			newEntity.GetComponent<Volt::TagComponent>().tag = meshSourcePath.stem().string();
-			m_createdEntity = newEntity;
-
-			break;
+			ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).SetImportMeshes({ meshSourcePath });
+			ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).Open();
 		}
 
-		case Volt::AssetType::ParticlePreset:
+		m_editorScene->InvalidateRenderScene();
+
+		newEntity.GetComponent<Volt::TagComponent>().tag = meshSourcePath.stem().string();
+		m_createdEntity = newEntity;
+	}
+	else if (type == AssetTypes::ParticlePreset)
+	{
+		Volt::Entity newEntity = m_editorScene->CreateEntity();
+
+		auto& particleEmitter = newEntity.AddComponent<Volt::ParticleEmitterComponent>();
+		auto preset = Volt::AssetManager::GetAsset<Volt::ParticlePreset>(handle);
+		if (preset)
 		{
-			Volt::Entity newEntity = m_editorScene->CreateEntity();
-
-			auto& particleEmitter = newEntity.AddComponent<Volt::ParticleEmitterComponent>();
-			auto preset = Volt::AssetManager::GetAsset<Volt::ParticlePreset>(handle);
-			if (preset)
-			{
-				particleEmitter.preset = preset->handle;
-			}
-
-			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::GetFilePathFromAssetHandle(handle).stem().string();
-			m_createdEntity = newEntity;
-
-			break;
+			particleEmitter.preset = preset->handle;
 		}
 
-		case Volt::AssetType::Prefab:
-		{
-			auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(handle);
-			if (!prefab || !prefab->IsValid())
-			{
-				break;
-			}
-
-			Volt::Entity prefabEntity = prefab->Instantiate(m_editorScene);
-
-			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(prefabEntity, ObjectStateAction::Create);
-			EditorCommandStack::GetInstance().PushUndo(command);
-			m_createdEntity = prefabEntity;
-
-			break;
-		}
+		newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::GetFilePathFromAssetHandle(handle).stem().string();
+		m_createdEntity = newEntity;
 	}
 
 	ImGui::SetWindowFocus();
@@ -1109,13 +1081,11 @@ void ViewportPanel::HandleNonMeshDragDrop()
 	if (void* ptr = UI::DragDropTarget({ "ASSET_BROWSER_ITEM" }))
 	{
 		const Volt::AssetHandle handle = *(const Volt::AssetHandle*)ptr;
-		const Volt::AssetType type = Volt::AssetManager::GetAssetTypeFromHandle(handle);
+		const AssetType type = Volt::AssetManager::GetAssetTypeFromHandle(handle);
 
-		switch (type)
+		if (type == AssetTypes::Material)
 		{
-			case Volt::AssetType::Material:
-			{
-				//auto material = Volt::AssetManager::GetAsset<Volt::Material>(handle);
+			//auto material = Volt::AssetManager::GetAsset<Volt::Material>(handle);
 				//if (!material || !material->IsValid())
 				//{
 				//	break;
@@ -1137,17 +1107,11 @@ void ViewportPanel::HandleNonMeshDragDrop()
 						meshComponent.material = material->handle;
 					}
 				}*/
-
-				break;
-			}
-
-			case Volt::AssetType::Scene:
-			{
-				UI::OpenModal("Do you want to save scene?##OpenSceneViewport");
-				m_sceneToOpen = handle;
-
-				break;
-			}
+		}
+		else if (type == AssetTypes::Scene)
+		{
+			UI::OpenModal("Do you want to save scene?##OpenSceneViewport");
+			m_sceneToOpen = handle;
 		}
 	}
 }

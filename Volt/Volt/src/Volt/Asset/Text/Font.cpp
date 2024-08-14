@@ -2,7 +2,7 @@
 #include "Font.h"
 
 #include "Volt/Asset/Text/MSDFData.h"
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 #include "Volt/Core/Base.h"
 #include <CoreUtilities/Buffer/Buffer.h>
@@ -17,6 +17,8 @@
 
 namespace Volt
 {
+	VT_REGISTER_ASSET_FACTORY(AssetTypes::Font, Font);
+
 	namespace Utility
 	{
 		const std::filesystem::path GetAndCreateCacheFolder()

@@ -9,7 +9,7 @@
 
 #include <Volt/Asset/Rendering/Material.h>
 #include <Volt/Asset/Mesh/Mesh.h>
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Rendering/Camera/Camera.h>
@@ -443,7 +443,7 @@ void MaterialEditorPanel::UpdateProperties()
 		//					textureHandle = textures.at("albedo")->handle;
 		//				}
 
-		//				if (EditorUtils::Property("Albedo", textureHandle, Volt::AssetType::Texture))
+		//				if (EditorUtils::Property("Albedo", textureHandle, AssetType::Texture))
 		//				{
 		//					auto newTex = Volt::AssetManager::GetAsset<Volt::Texture2D>(textureHandle);
 
@@ -466,7 +466,7 @@ void MaterialEditorPanel::UpdateProperties()
 		//					textureHandle = textures.at("normal")->handle;
 		//				}
 
-		//				if (EditorUtils::Property("Normal", textureHandle, Volt::AssetType::Texture))
+		//				if (EditorUtils::Property("Normal", textureHandle, AssetType::Texture))
 		//				{
 		//					auto newTex = Volt::AssetManager::GetAsset<Volt::Texture2D>(textureHandle);
 
@@ -489,7 +489,7 @@ void MaterialEditorPanel::UpdateProperties()
 		//					textureHandle = textures.at("material")->handle;
 		//				}
 
-		//				if (EditorUtils::Property("Material", textureHandle, Volt::AssetType::Texture))
+		//				if (EditorUtils::Property("Material", textureHandle, AssetType::Texture))
 		//				{
 		//					auto newTex = Volt::AssetManager::GetAsset<Volt::Texture2D>(textureHandle);
 
@@ -518,7 +518,7 @@ void MaterialEditorPanel::UpdateProperties()
 		//				textureHandle = textures.at(textureShaderName)->handle;
 		//			}
 
-		//			if (EditorUtils::Property(editorName, textureHandle, Volt::AssetType::Texture))
+		//			if (EditorUtils::Property(editorName, textureHandle, AssetType::Texture))
 		//			{
 		//				auto newTex = Volt::AssetManager::GetAsset<Volt::Texture2D>(textureHandle);
 
@@ -722,7 +722,7 @@ void MaterialEditorPanel::UpdateSubMaterials()
 
 			//			ImGui::BeginChild("image", { thumbnailSize, thumbnailSize }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 			//			{
-			//				ImGui::Image(UI::GetTextureID(EditorResources::GetAssetIcon(Volt::AssetType::Material)), { thumbnailSize, thumbnailSize });
+			//				ImGui::Image(UI::GetTextureID(EditorResources::GetAssetIcon(AssetType::Material)), { thumbnailSize, thumbnailSize });
 			//			}
 			//			ImGui::EndChild();
 			//			ImGui::PopStyleVar();

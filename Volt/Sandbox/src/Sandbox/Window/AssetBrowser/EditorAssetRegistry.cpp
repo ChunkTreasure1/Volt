@@ -2,8 +2,6 @@
 
 #include "EditorAssetRegistry.h"
 
-#include "Volt/Asset/AssetManager.h"
-
 #include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Asset/Animation/Animation.h"
@@ -16,6 +14,8 @@
 #include "Volt/Scene/Scene.h"
 
 #include "Volt/Physics/PhysicsMaterial.h"
+
+#include <AssetSystem/AssetManager.h>
 
 #define ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandleVarName) [](Volt::AssetHandle aAssetHandleVarName)->Vector<std::pair<std::string, std::string>>
 
@@ -34,10 +34,10 @@
 			})
 
 */
-std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAssetData =
+std::unordered_map<AssetType, EditorAssetData> EditorAssetRegistry::myAssetData =
 {
 	{
-		Volt::AssetType::Mesh,
+		AssetTypes::Mesh,
 		EditorAssetData(
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
@@ -72,7 +72,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			})
 	},
 	{
-		Volt::AssetType::Animation,
+		AssetTypes::Animation,
 		EditorAssetData(
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
@@ -87,7 +87,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			})
 	},
 	{
-		Volt::AssetType::Skeleton,
+		AssetTypes::Skeleton,
 		EditorAssetData(
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
@@ -100,7 +100,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			})
 	},
 	{
-		Volt::AssetType::Texture,
+		AssetTypes::Texture,
 		EditorAssetData(
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
@@ -119,7 +119,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			})
 	},
 	{
-		Volt::AssetType::Material,
+		AssetTypes::Material,
 		EditorAssetData(
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
@@ -131,7 +131,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			})
 	},
 	{
-		Volt::AssetType::Scene,
+		AssetTypes::Scene,
 		EditorAssetData(
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
@@ -153,7 +153,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			})
 	},
 	{
-		Volt::AssetType::AnimatedCharacter,
+		AssetTypes::AnimatedCharacter,
 		EditorAssetData(
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
@@ -175,7 +175,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			})
 	},
 	{
-		Volt::AssetType::PhysicsMaterial,
+		AssetTypes::PhysicsMaterial,
 		EditorAssetData(
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
@@ -191,7 +191,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 	}
 };
 
-Vector<std::pair<std::string, std::string>> EditorAssetRegistry::GetAssetBrowserPopupData(Volt::AssetType aAssetType, Volt::AssetHandle aAssetHandle)
+Vector<std::pair<std::string, std::string>> EditorAssetRegistry::GetAssetBrowserPopupData(AssetType aAssetType, Volt::AssetHandle aAssetHandle)
 {
 	if (myAssetData.contains(aAssetType))
 	{
@@ -203,11 +203,11 @@ Vector<std::pair<std::string, std::string>> EditorAssetRegistry::GetAssetBrowser
 	return Vector<std::pair<std::string, std::string>>();
 }
 
-void EditorAssetRegistry::RegisterAssetBrowserPopupData(Volt::AssetType aAssetType, AssetBrowserPopupDataFunction aAssetBrowserPopupDataFunction)
+void EditorAssetRegistry::RegisterAssetBrowserPopupData(AssetType aAssetType, AssetBrowserPopupDataFunction aAssetBrowserPopupDataFunction)
 {
 	if (myAssetData[aAssetType].assetBrowserPopupDataFunction)
 	{
-		VT_LOG(Warning, "Asset type {0} already has a popup data function registered, overwriting the function.", Volt::GetAssetTypeName(aAssetType));
+		VT_LOG(Warning, "Asset type {0} already has a popup data function registered, overwriting the function.", aAssetType->GetName());
 	}
 	myAssetData[aAssetType].assetBrowserPopupDataFunction = aAssetBrowserPopupDataFunction;
 }

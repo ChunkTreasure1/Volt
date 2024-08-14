@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "ShaderDefinitionSerializer.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
 #include "Volt/Utility/StringUtility.h"
 
@@ -107,7 +107,6 @@ namespace Volt
 
 		// Serialize AssetMetadata
 		yamlStreamWriter.SetKey("assetHandle", metadata.handle);
-		yamlStreamWriter.SetKey("type", (uint32_t)metadata.type);
 		yamlStreamWriter.SetKey("version", shaderDef->GetVersion());
 		//
 
@@ -151,7 +150,6 @@ namespace Volt
 
 		SerializedAssetMetadata serializedMetadata{};
 		serializedMetadata.handle = yamlStreamReader.ReadAtKey("assetHandle", AssetHandle(0));
-		serializedMetadata.type = (AssetType)yamlStreamReader.ReadAtKey("type", 0u);
 		serializedMetadata.version = yamlStreamReader.ReadAtKey("version", 1u);
 
 		VT_ASSERT_MSG(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Volt/Asset/Asset.h>
+#include <AssetSystem/Asset.h>
 
 #include <CoreUtilities/Containers/Vector.h>
 
@@ -14,7 +14,7 @@ class EditorLibrary
 public:
 	struct PanelInfo
 	{
-		Volt::AssetType assetType;
+		AssetType assetType;
 		std::type_index editorType;
 		std::string category;
 
@@ -26,13 +26,13 @@ public:
 	static Ref<EditorWindow> GetPanel(const std::string& panelName);
 
 	template<typename T, typename ...Args>
-	static Ref<T> RegisterWithType(const std::string& category, Volt::AssetType assetType, Args&& ...args);
+	static Ref<T> RegisterWithType(const std::string& category, AssetType assetType, Args&& ...args);
 
 	template<typename T, typename ...Args>
 	static Ref<T> Register(const std::string& category, Args&& ...args);
 	
 	static bool OpenAsset(Ref<Volt::Asset> asset);
-	static Ref<EditorWindow> Get(Volt::AssetType type);
+	static Ref<EditorWindow> Get(AssetType type);
 
 	template<typename T>
 	static Ref<T> Get();
@@ -44,7 +44,7 @@ private:
 };
 
 template<typename T, typename ...Args>
-inline Ref<T> EditorLibrary::RegisterWithType(const std::string& category, Volt::AssetType assetType, Args && ...args)
+inline Ref<T> EditorLibrary::RegisterWithType(const std::string& category, AssetType assetType, Args && ...args)
 {
 	s_editors.emplace_back(assetType, typeid(T), category, CreateRef<T>(std::forward<Args>(args)...));
 	return std::reinterpret_pointer_cast<T>(s_editors.back().editorWindow);
@@ -53,7 +53,7 @@ inline Ref<T> EditorLibrary::RegisterWithType(const std::string& category, Volt:
 template<typename T, typename ...Args>
 inline Ref<T> EditorLibrary::Register(const std::string& category, Args && ...args)
 {
-	s_editors.emplace_back(Volt::AssetType::None, typeid(T), category, CreateRef<T>(std::forward<Args>(args)...));
+	s_editors.emplace_back(AssetTypes::None, typeid(T), category, CreateRef<T>(std::forward<Args>(args)...));
 	return std::reinterpret_pointer_cast<T>(s_editors.back().editorWindow);
 }
 

@@ -1,14 +1,11 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
-
-#include "Volt/Core/Base.h"
-#include "Volt/Core/Profiling.h"
-
-#include "Volt/Project/ProjectManager.h"
-#include "Volt/Utility/StringUtility.h"
+#include "AssetSystem/Asset.h"
 
 #include <LogModule/Log.h>
+
+#include <CoreUtilities/Containers/Map.h>
+#include <CoreUtilities/StringUtility.h>
 
 #include <map>
 #include <filesystem>
@@ -18,10 +15,12 @@
 
 namespace Volt
 {
+	VT_DECLARE_LOG_CATEGORY(LogAssetSystem, LogVerbosity::Trace);
+
 	class AssetFactory;
 	class AssetSerializer;
 	class AssetDependencyGraph;
-	class AssetManager
+	class VTAS_API AssetManager
 	{
 	public:
 		using WriteLock = std::unique_lock<std::shared_mutex>;
@@ -29,7 +28,10 @@ namespace Volt
 		using AssetCreateFunction = std::function<Ref<Asset>()>;
 		using AssetChangedCallback = std::function<void(AssetHandle assetHandle, AssetChangedState state)>;
 
-		AssetManager();
+		using AssetRegistry = vt::map<AssetHandle, AssetMetadata>;
+		using AssetCache = vt::map<AssetHandle, Ref<Asset>>;
+
+		AssetManager(const std::filesystem::path& projectDirectory, const std::filesystem::path& assetsDirectory, const std::filesystem::path& engineDirectory);
 		~AssetManager();
 
 		void Initialize();
@@ -52,16 +54,12 @@ namespace Volt
 		void RemoveAssetFromRegistry(const std::filesystem::path& path);
 		void RemoveFullFolderFromRegistry(const std::filesystem::path& path);
 
-		const AssetHandle AddAssetToRegistry(const std::filesystem::path& path, AssetHandle handle = 0);
 		void AddAssetToRegistry(const std::filesystem::path& path, AssetHandle handle, AssetType type);
+		AssetHandle AddAssetToRegistry(const std::filesystem::path& path, AssetType type);
 
 		void ReloadAsset(AssetHandle handle);
 		void ReloadAsset(const std::filesystem::path& path);
 
-		inline const AssetFactory& GetFactory() const { return *m_assetFactory; }
-
-		static bool IsSourceAsset(AssetType type);
-		static bool IsSourceAsset(AssetHandle handle);
 		Ref<Asset> GetAssetRaw(AssetHandle assetHandle);
 		Ref<Asset> QueueAssetRaw(AssetHandle assetHandle);
 
@@ -90,16 +88,13 @@ namespace Volt
 
 		static AssetType GetAssetTypeFromHandle(const AssetHandle& handle);
 		static AssetType GetAssetTypeFromPath(const std::filesystem::path& path);
-		static AssetType GetAssetTypeFromExtension(const std::string& extension);
 		static AssetHandle GetAssetHandleFromFilePath(const std::filesystem::path& path);
 		
 		static const AssetMetadata& GetMetadataFromHandle(AssetHandle handle);
 		static const AssetMetadata& GetMetadataFromFilePath(const std::filesystem::path filePath);
 
-		static const std::unordered_map<AssetHandle, AssetMetadata>& GetAssetRegistry();
-		static std::unordered_map<AssetHandle, AssetMetadata>& GetAssetRegistryMutable();
-
-		static std::string GetExtensionFromAssetType(AssetType type);
+		static const AssetRegistry& GetAssetRegistry();
+		static AssetRegistry& GetAssetRegistryMutable();
 
 		// Is not guaranteed to return the "correct" asset if there are multiple assets with the same name and type
 		static const std::filesystem::path GetFilePathFromFilename(const std::string& filename);
@@ -139,11 +134,22 @@ namespace Volt
 		static const Vector<AssetHandle> GetAllAssetsOfType(AssetType assetType);
 
 	private:
+		struct AssetChangedCallbackInfo
+		{
+			UUID64 id;
+			AssetChangedCallback callback;
+		};
+
+		struct AssetChangedQueueInfo
+		{
+			AssetHandle handle;
+			AssetChangedState state;
+		};
+
 		inline static AssetManager* s_instance = nullptr;
 		inline static AssetMetadata s_nullMetadata = {};
 
 		void UpdateInternal();
-		void RegisterAssetSerializers();
 
 		void LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset);
 
@@ -164,34 +170,22 @@ namespace Volt
 		Vector<std::filesystem::path> GetEngineAssetFiles();
 		Vector<std::filesystem::path> GetProjectAssetFiles();
 
-		std::unordered_map<AssetType, Scope<AssetSerializer>> m_assetSerializers;
-		std::unordered_map<AssetType, AssetCreateFunction> m_assetCreateFunctions;
+		AssetCache m_assetCache;
+		AssetCache m_memoryAssets;
+		AssetRegistry m_assetRegistry;
 
-		std::unordered_map<AssetHandle, Ref<Asset>> m_assetCache;
-		std::unordered_map<AssetHandle, Ref<Asset>> m_memoryAssets;
-		std::unordered_map<AssetHandle, AssetMetadata> m_assetRegistry;
-
-		struct AssetChangedCallbackInfo
-		{
-			UUID64 id;
-			AssetChangedCallback callback;
-		};
-
-		struct AssetChangedQueueInfo
-		{
-			AssetHandle handle;
-			AssetChangedState state;
-		};
+		std::filesystem::path m_projectDirectory;
+		std::filesystem::path m_assetsDirectory;
+		std::filesystem::path m_engineDirectory;
 
 		std::unordered_map<AssetType, Vector<AssetChangedCallbackInfo>> m_assetChangedCallbacks;
 		Vector<AssetChangedQueueInfo> m_assetChangedQueue;
 		std::mutex m_assetChangedQueueMutex;
-		Scope<AssetFactory> m_assetFactory;
 		Scope<AssetDependencyGraph> m_dependencyGraph;
 
+		std::mutex m_assetCallbackMutex;
 		mutable std::shared_mutex m_assetRegistryMutex;
 		mutable std::shared_mutex m_assetCacheMutex;
-		std::mutex m_assetCallbackMutex;
 	};
 
 	template<typename T>

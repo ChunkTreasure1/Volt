@@ -4,9 +4,6 @@
 #include <Volt/Project/ProjectManager.h>
 #include <Volt/Utility/FileSystem.h>
 
-#include <Volt/Asset/Asset.h>
-#include <Volt/Asset/AssetManager.h>
-#include <Volt/Asset/AssetFactory.h>
 #include <Volt/Asset/Importers/AssetImporter.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
 #include <Volt/Asset/Importers/TextureImporter.h>
@@ -22,6 +19,10 @@
 #include <Volt/Asset/Importers/ParticlePresetImporter.h>
 
 #include <Volt/Utility/StringUtility.h>
+
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetManager.h>
+#include <AssetSystem/AssetFactory.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -78,17 +79,6 @@ namespace V015
 		}
 
 		return files;
-	}
-
-	inline Volt::AssetType GetAssetTypeFromExtension(const std::string& extension)
-	{
-		std::string ext = ::Utility::ToLower(extension);
-		if (!Volt::s_assetExtensionsMap.contains(ext))
-		{
-			return Volt::AssetType::None;
-		}
-
-		return Volt::s_assetExtensionsMap.at(ext);
 	}
 
 	inline void DeserializeAssetMetafile(std::filesystem::path metaFilePath)
@@ -160,32 +150,32 @@ namespace V015
 			}
 		}
 
-		const auto type = GetAssetTypeFromExtension(filePath.extension().string());
+		//const auto type = GetAssetTypeFromExtension(filePath.extension().string());
 
-		std::filesystem::path oldFilePath = filePath;
+		//std::filesystem::path oldFilePath = filePath;
 
-		if (!Volt::AssetManager::IsSourceAsset(type))
-		{
-			filePath.replace_extension(".vtasset");
-		}
+		//if (!Volt::AssetManager::IsSourceAsset(type))
+		//{
+		//	filePath.replace_extension(".vtasset");
+		//}
 
-		// If an asset with that filePath already exists, we append the asset type to the name
-		auto metadata = Volt::AssetManager::GetMetadataFromFilePath(filePath);
-		if (metadata.IsValid())
-		{
-			std::string newFileName = filePath.stem().string();
-			newFileName += "_" + Utility::ReplaceCharacter(Volt::GetAssetTypeName(type), ' ', '_');
-			newFileName += filePath.extension().string();
+		//// If an asset with that filePath already exists, we append the asset type to the name
+		//auto metadata = Volt::AssetManager::GetMetadataFromFilePath(filePath);
+		//if (metadata.IsValid())
+		//{
+		//	std::string newFileName = filePath.stem().string();
+		//	newFileName += "_" + Utility::ReplaceCharacter(Volt::GetAssetTypeName(type), ' ', '_');
+		//	newFileName += filePath.extension().string();
 
-			filePath = filePath.parent_path() / newFileName;
-		}
+		//	filePath = filePath.parent_path() / newFileName;
+		//}
 
-		Volt::AssetMetadata& oldMetadata = s_oldMetadata[assetHandle];
-		oldMetadata.handle = assetHandle;
-		oldMetadata.filePath = oldFilePath;
-		oldMetadata.type = type;
+		//Volt::AssetMetadata& oldMetadata = s_oldMetadata[assetHandle];
+		//oldMetadata.handle = assetHandle;
+		//oldMetadata.filePath = oldFilePath;
+		//oldMetadata.type = type;
 
-		Volt::AssetManager::Get().AddAssetToRegistry(filePath, assetHandle, type);
+		//Volt::AssetManager::Get().AddAssetToRegistry(filePath, assetHandle, type);
 	}
 
 	void LoadAssetMetadata()
@@ -208,51 +198,51 @@ namespace V015
 	{
 		LoadAssetMetadata();
 
-		std::unordered_map<Volt::AssetType, Scope<Volt::AssetImporter>> importers;
+		std::unordered_map<AssetType, Scope<Volt::AssetImporter>> importers;
 		{
-			importers.emplace(Volt::AssetType::ShaderDefinition, CreateScope<Volt::ShaderDefinitionImporter>()); 
-			importers.emplace(Volt::AssetType::TextureSource, CreateScope<Volt::TextureSourceImporter>()); 
-			importers.emplace(Volt::AssetType::Mesh, CreateScope<Volt::MeshSourceImporter>());
-			importers.emplace(Volt::AssetType::NavMesh, CreateScope<Volt::VTNavMeshImporter>());
-			importers.emplace(Volt::AssetType::Scene, CreateScope<Volt::SceneImporter>());
-			importers.emplace(Volt::AssetType::Skeleton, CreateScope<Volt::SkeletonImporter>());
-			importers.emplace(Volt::AssetType::Animation, CreateScope<Volt::AnimationImporter>());
-			importers.emplace(Volt::AssetType::AnimatedCharacter, CreateScope<Volt::AnimatedCharacterImporter>());
-			importers.emplace(Volt::AssetType::ParticlePreset, CreateScope<Volt::ParticlePresetImporter>());
-			importers.emplace(Volt::AssetType::Prefab, CreateScope<Volt::PrefabImporter>());
-			importers.emplace(Volt::AssetType::PhysicsMaterial, CreateScope<Volt::PhysicsMaterialImporter>());
-			importers.emplace(Volt::AssetType::BehaviorGraph, CreateScope<Volt::BehaviorTreeImporter>());
-			importers.emplace(Volt::AssetType::BlendSpace, CreateScope<Volt::BlendSpaceImporter>());
-			importers.emplace(Volt::AssetType::NetContract, CreateScope<Volt::NetContractImporter>());
+			importers.emplace(AssetTypes::ShaderDefinition, CreateScope<Volt::ShaderDefinitionImporter>()); 
+			importers.emplace(AssetTypes::TextureSource, CreateScope<Volt::TextureSourceImporter>()); 
+			importers.emplace(AssetTypes::Mesh, CreateScope<Volt::MeshSourceImporter>());
+			importers.emplace(AssetTypes::NavMesh, CreateScope<Volt::VTNavMeshImporter>());
+			importers.emplace(AssetTypes::Scene, CreateScope<Volt::SceneImporter>());
+			importers.emplace(AssetTypes::Skeleton, CreateScope<Volt::SkeletonImporter>());
+			importers.emplace(AssetTypes::Animation, CreateScope<Volt::AnimationImporter>());
+			importers.emplace(AssetTypes::AnimatedCharacter, CreateScope<Volt::AnimatedCharacterImporter>());
+			importers.emplace(AssetTypes::ParticlePreset, CreateScope<Volt::ParticlePresetImporter>());
+			importers.emplace(AssetTypes::Prefab, CreateScope<Volt::PrefabImporter>());
+			importers.emplace(AssetTypes::PhysicsMaterial, CreateScope<Volt::PhysicsMaterialImporter>());
+			importers.emplace(AssetTypes::BehaviorGraph, CreateScope<Volt::BehaviorTreeImporter>());
+			importers.emplace(AssetTypes::BlendSpace, CreateScope<Volt::BlendSpaceImporter>());
+			importers.emplace(AssetTypes::NetContract, CreateScope<Volt::NetContractImporter>());
 		}
 
 		// We start by converting all texture source files to texture files
 		for (auto& [handle, metadata] : Volt::AssetManager::GetAssetRegistryMutable())
 		{
-			if (metadata.type != Volt::AssetType::TextureSource)
+			if (metadata.type != AssetTypes::TextureSource)
 			{
 				continue;
 			}
 
-			Ref<Volt::Asset> asset = Volt::AssetManager::Get().GetFactory().CreateAssetOfType(Volt::AssetType::Texture);
+			Ref<Volt::Asset> asset = GetAssetFactory().CreateAssetOfType(AssetTypes::Texture);
 			asset->handle = metadata.handle;
 			importers[metadata.type]->Load(s_oldMetadata[metadata.handle], asset);
 			asset->handle = metadata.handle;
 
 			metadata.filePath.replace_extension(".vtasset");
-			metadata.type = Volt::AssetType::Texture;
+			metadata.type = AssetTypes::Texture;
 			Volt::AssetManager::SaveAsset(asset);
 		}
 
 		// Then we resave all other assets into it's new format
 		for (const auto& [handle, metadata] : Volt::AssetManager::GetAssetRegistry())
 		{
-			if (!importers.contains(metadata.type) || metadata.type == Volt::AssetType::ShaderDefinition || metadata.type == Volt::AssetType::TextureSource)
+			if (!importers.contains(metadata.type) || metadata.type == AssetTypes::ShaderDefinition || metadata.type == AssetTypes::TextureSource)
 			{
 				continue;
 			}
 
-			Ref<Volt::Asset> asset = Volt::AssetManager::Get().GetFactory().CreateAssetOfType(metadata.type);
+			Ref<Volt::Asset> asset = GetAssetFactory().CreateAssetOfType(metadata.type);
 			asset->handle = metadata.handle;
 			importers[metadata.type]->Load(s_oldMetadata[metadata.handle], asset);
 			asset->handle = metadata.handle;

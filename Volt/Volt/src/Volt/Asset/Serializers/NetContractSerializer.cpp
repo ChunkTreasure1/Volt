@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "NetContractSerializer.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Net/SceneInteraction/NetContract.h"
 
 namespace Volt

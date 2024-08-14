@@ -2,7 +2,7 @@
 #include "SkeletonImporter.h"
 
 #include "Volt/Asset/Animation/Skeleton.h"
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 #include "Volt/Project/ProjectManager.h"

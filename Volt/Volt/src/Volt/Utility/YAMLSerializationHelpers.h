@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include <AssetSystem/Asset.h>
 #include "Volt/Asset/TimelinePreset.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
 

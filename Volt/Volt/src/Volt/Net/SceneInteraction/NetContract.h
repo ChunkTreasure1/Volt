@@ -1,5 +1,5 @@
 #pragma once
-#include "Volt/Asset/Asset.h"
+#include <AssetSystem/Asset.h>
 
 #include <Nexus/Core/Packet/PacketID.h>
 #include <Nexus/Utility/Types.h>
@@ -48,7 +48,7 @@ namespace Volt
 		std::unordered_map<eNetEvent, std::string> calls;
 		std::unordered_map<Volt::EntityID, std::unordered_map<std::string, NetRule>> rules;
 
-		static AssetType GetStaticType() { return AssetType::NetContract; }
+		static AssetType GetStaticType() { return AssetTypes::NetContract; }
 		AssetType GetType() override { return GetStaticType(); }
 		uint32_t GetVersion() const override { return 1; }
 	};

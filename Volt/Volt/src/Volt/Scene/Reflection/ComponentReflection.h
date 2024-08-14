@@ -3,7 +3,7 @@
 #include "Volt/Core/Base.h"
 
 #include "Volt/Utility/MemoryUtility.h"
-#include "Volt/Asset/Asset.h"
+#include <AssetSystem/Asset.h>
 
 #include "Volt/Scene/Entity.h"
 
@@ -113,7 +113,7 @@ namespace Volt
 		std::string_view label;
 		std::string_view description;
 
-		AssetType assetType = AssetType::None;
+		AssetType assetType = AssetTypes::None;
 		ComponentMemberFlag flags = ComponentMemberFlag::None;
 
 		const ICommonTypeDesc* typeDesc = nullptr;
@@ -322,13 +322,13 @@ namespace Volt
 		template<typename Type, typename DefaultValueT, typename TypeParent = T>
 		const ComponentMember& AddMember(Type TypeParent::* memberPtr, std::string_view name, std::string_view label, std::string_view description, const DefaultValueT& defaultValue)
 		{
-			return AddMember(memberPtr, name, label, description, defaultValue, AssetType::None);
+			return AddMember(memberPtr, name, label, description, defaultValue, AssetTypes::None);
 		}
 
 		template<typename Type, typename DefaultValueT, typename TypeParent = T>
 		const ComponentMember& AddMember(Type TypeParent::* memberPtr, std::string_view name, std::string_view label, std::string_view description, const DefaultValueT& defaultValue, ComponentMemberFlag flags)
 		{
-			return AddMember(memberPtr, name, label, description, defaultValue, AssetType::None, flags);
+			return AddMember(memberPtr, name, label, description, defaultValue, AssetTypes::None, flags);
 		}
 
 		template<typename Type, typename DefaultValueT, typename TypeParent = T>

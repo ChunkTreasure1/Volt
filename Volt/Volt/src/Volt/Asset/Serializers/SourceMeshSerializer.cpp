@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "SourceMeshSerializer.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Mesh/MeshSource.h"
 #include "Volt/Asset/Importers/MeshTypeImporter.h"
 

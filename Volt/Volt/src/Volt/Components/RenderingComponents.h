@@ -5,7 +5,7 @@
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Asset/Rendering/MaterialTable.h"
-#include "Volt/Asset/Asset.h"
+#include <AssetSystem/Asset.h>
 
 namespace Volt
 {
@@ -30,8 +30,8 @@ namespace Volt
 		{
 			reflect.SetGUID("{45D008BE-65C9-4D6F-A0C6-377F7B384E47}"_guid);
 			reflect.SetLabel("Mesh Component");
-			reflect.AddMember(&MeshComponent::handle, "handle", "Mesh", "", Asset::Null(), AssetType::Mesh);
-			reflect.AddMember(&MeshComponent::materials, "materials", "Materials", "", Vector<AssetHandle>{}, AssetType::Material);
+			reflect.AddMember(&MeshComponent::handle, "handle", "Mesh", "", Asset::Null(), AssetTypes::Mesh);
+			reflect.AddMember(&MeshComponent::materials, "materials", "Materials", "", Vector<AssetHandle>{}, AssetTypes::Material);
 			reflect.SetOnMemberChangedCallback(&MeshComponent::OnMemberChanged);
 			reflect.SetOnComponentCopiedCallback(&MeshComponent::OnComponentCopied);
 			reflect.SetOnComponentDeserializedCallback(&MeshComponent::OnComponentDeserialized);
@@ -83,7 +83,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{37333031-9816-4DDE-BFEA-5E83E32754D1}"_guid);
 			reflect.SetLabel("Animated Character Component");
-			reflect.AddMember(&AnimatedCharacterComponent::animatedCharacter, "animatedCharacter", "Character", "", Asset::Null(), AssetType::AnimatedCharacter);
+			reflect.AddMember(&AnimatedCharacterComponent::animatedCharacter, "animatedCharacter", "Character", "", Asset::Null(), AssetTypes::AnimatedCharacter);
 		}
 
 		REGISTER_COMPONENT(AnimatedCharacterComponent);
@@ -101,7 +101,7 @@ namespace Volt
 			reflect.SetGUID("{8AAA0646-40D2-47E6-B83F-72EA26BD8C01}"_guid);
 			reflect.SetLabel("Text Renderer Component");
 			reflect.AddMember(&TextRendererComponent::text, "text", "Text", "", std::string("Text"));
-			reflect.AddMember(&TextRendererComponent::font, "font", "Font", "", Asset::Null(), AssetType::Font);
+			reflect.AddMember(&TextRendererComponent::font, "font", "Font", "", Asset::Null(), AssetTypes::Font);
 			reflect.AddMember(&TextRendererComponent::maxWidth, "maxWidth", "Max Width", "", 100.f);
 			reflect.AddMember(&TextRendererComponent::color, "color", "Color", "", glm::vec4{ 1.f }, ComponentMemberFlag::Color4);
 		}
@@ -117,7 +117,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{FDB47734-1B69-4558-B460-0975365DB400}"_guid);
 			reflect.SetLabel("Sprite Component");
-			reflect.AddMember(&SpriteComponent::materialHandle, "materialHandle", "Material", "", Asset::Null(), AssetType::Material);
+			reflect.AddMember(&SpriteComponent::materialHandle, "materialHandle", "Material", "", Asset::Null(), AssetTypes::Material);
 		}
 
 		REGISTER_COMPONENT(SpriteComponent);
@@ -135,8 +135,8 @@ namespace Volt
 		{
 			reflect.SetGUID("{36D3CFA2-538E-4036-BB28-2B672F294478}"_guid);
 			reflect.SetLabel("Animation Controller Component");
-			reflect.AddMember(&AnimationControllerComponent::material, "material", "Material", "", Asset::Null(), AssetType::Material);
-			reflect.AddMember(&AnimationControllerComponent::skin, "skin", "Skin", "", Asset::Null(), AssetType::Mesh);
+			reflect.AddMember(&AnimationControllerComponent::material, "material", "Material", "", Asset::Null(), AssetTypes::Material);
+			reflect.AddMember(&AnimationControllerComponent::skin, "skin", "Skin", "", Asset::Null(), AssetTypes::Mesh);
 			reflect.AddMember(&AnimationControllerComponent::applyRootMotion, "applyRootMotion", "Apply Root Motion", "", false);
 		}
 
@@ -154,7 +154,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{5D3B2C0D-5457-43D8-9623-98730E1556F4}"_guid);
 			reflect.SetLabel("Motion Weave Component");
-			reflect.AddMember(&MotionWeaveComponent::motionWeaveDatabase, "motionGraph", "Motion Graph", "", Asset::Null(), AssetType::MotionWeave);
+			reflect.AddMember(&MotionWeaveComponent::motionWeaveDatabase, "motionGraph", "Motion Graph", "", Asset::Null(), AssetTypes::MotionWeave);
 		}
 
 		REGISTER_COMPONENT(MotionWeaveComponent);
@@ -182,7 +182,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{09340235-CDA0-496E-BEB5-A2F38BCE0033}"_guid);
 			reflect.SetLabel("Post Processing Stack Component");
-			reflect.AddMember(&PostProcessingStackComponent::postProcessingStack, "postProcessingStack", "Post Processing Stack", "", Asset::Null(), AssetType::PostProcessingStack);
+			reflect.AddMember(&PostProcessingStackComponent::postProcessingStack, "postProcessingStack", "Post Processing Stack", "", Asset::Null(), AssetTypes::PostProcessingStack);
 		}
 
 		REGISTER_COMPONENT(PostProcessingStackComponent);
@@ -196,7 +196,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{09FA1C73-D508-4ADA-A101-A63703E91345}"_guid);
 			reflect.SetLabel("Decal Component");
-			reflect.AddMember(&DecalComponent::decalMaterial, "decalMaterial", "Material", "", Asset::Null(), AssetType::Material);
+			reflect.AddMember(&DecalComponent::decalMaterial, "decalMaterial", "Material", "", Asset::Null(), AssetTypes::Material);
 		}
 
 		REGISTER_COMPONENT(DecalComponent);
@@ -218,7 +218,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{E31271AB-47C7-4D6A-91E8-4B1A62B20D66}"_guid);
 			reflect.SetLabel("Particle Emitter Component");
-			reflect.AddMember(&ParticleEmitterComponent::preset, "preset", "Preset", "", Asset::Null(), AssetType::ParticlePreset);
+			reflect.AddMember(&ParticleEmitterComponent::preset, "preset", "Preset", "", Asset::Null(), AssetTypes::ParticlePreset);
 		}
 
 		REGISTER_COMPONENT(ParticleEmitterComponent);

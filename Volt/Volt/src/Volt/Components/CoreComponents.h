@@ -191,7 +191,7 @@ namespace Volt
 			reflect.SetGUID("{B8A83ACF-F1CA-4C9F-8D1E-408B5BB388D2}"_guid);
 			reflect.SetLabel("Prefab Component");
 			reflect.SetHidden();
-			reflect.AddMember(&PrefabComponent::prefabAsset, "prefabAsset", "Prefab Asset", "", Asset::Null(), AssetType::Prefab);
+			reflect.AddMember(&PrefabComponent::prefabAsset, "prefabAsset", "Prefab Asset", "", Asset::Null(), AssetTypes::Prefab);
 			reflect.AddMember(&PrefabComponent::prefabEntity, "prefabEntity", "Prefab Entity", "", EntityID(0));
 			reflect.AddMember(&PrefabComponent::sceneRootEntity, "sceneRootEntity", "Scene Root Entity", "", EntityID(0));
 			reflect.AddMember(&PrefabComponent::version, "version", "Version", "", 0);

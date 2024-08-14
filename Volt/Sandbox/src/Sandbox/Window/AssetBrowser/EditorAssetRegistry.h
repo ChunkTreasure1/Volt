@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Volt/Asset/Asset.h>
+#include <AssetSystem/Asset.h>
 #include <CoreUtilities/Containers/Vector.h>
 
 #include <functional>
@@ -23,8 +23,8 @@ public:
 	~EditorAssetRegistry();
 	
 	
-	static Vector<std::pair<std::string, std::string>> GetAssetBrowserPopupData(Volt::AssetType aAssetType, Volt::AssetHandle aAssetHandle);
+	static Vector<std::pair<std::string, std::string>> GetAssetBrowserPopupData(AssetType aAssetType, Volt::AssetHandle aAssetHandle);
 private:
-	void RegisterAssetBrowserPopupData(Volt::AssetType aAssetType, AssetBrowserPopupDataFunction aAssetBrowserPopupDataFunction);
-    static std::unordered_map<Volt::AssetType, EditorAssetData> myAssetData;
+	void RegisterAssetBrowserPopupData(AssetType aAssetType, AssetBrowserPopupDataFunction aAssetBrowserPopupDataFunction);
+    static std::unordered_map<AssetType, EditorAssetData> myAssetData;
 };

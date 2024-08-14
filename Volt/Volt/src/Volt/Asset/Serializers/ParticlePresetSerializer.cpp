@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "ParticlePresetSerializer.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/ParticlePreset.h"
 
 namespace Volt

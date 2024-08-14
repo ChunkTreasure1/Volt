@@ -1,6 +1,6 @@
 #include "vtpch.h"
 #include "NetContractImporter.h"
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Net/SceneInteraction/NetContract.h"
 
 #include <yaml-cpp/yaml.h>

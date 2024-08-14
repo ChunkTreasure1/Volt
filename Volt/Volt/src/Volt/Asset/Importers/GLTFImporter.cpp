@@ -6,7 +6,7 @@
 #include "Volt/Asset/Rendering/Material.h"
 #include "Volt/Asset/Rendering/MaterialTable.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 #include "Volt/Rendering/Shader/ShaderMap.h"
 

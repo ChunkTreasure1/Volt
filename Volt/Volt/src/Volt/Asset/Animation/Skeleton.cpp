@@ -3,6 +3,8 @@
 
 namespace Volt
 {
+	VT_REGISTER_ASSET_FACTORY(AssetTypes::Skeleton, Skeleton);
+
 	const Skeleton::JointAttachment& Skeleton::GetJointAttachmentFromName(std::string_view name) const
 	{
 		for (const auto& attachment : m_jointAttachments)

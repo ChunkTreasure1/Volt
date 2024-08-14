@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include <AssetSystem/Asset.h>
 
 #include "Volt/Scene/Reflection/ComponentReflection.h"
 #include "Volt/Scene/Reflection/ComponentRegistry.h"

@@ -1,9 +1,6 @@
 #include "vtpch.h"
 #include "Prefab.h"
 
-#include "Volt/Asset/Asset.h"
-#include "Volt/Asset/AssetManager.h"
-
 #include "Volt/Components/CoreComponents.h"
 #include "Volt/Components/PhysicsComponents.h"
 #include "Volt/Components/RenderingComponents.h"
@@ -13,8 +10,12 @@
 
 #include "Volt/Utility/Random.h"
 
+#include <AssetSystem/AssetManager.h>
+
 namespace Volt
 {
+	VT_REGISTER_ASSET_FACTORY(AssetTypes::Prefab, Prefab);
+
 	Prefab::Prefab(Entity srcRootEntity)
 	{
 		CreatePrefab(srcRootEntity);

@@ -67,7 +67,7 @@ private:
 	float GetThumbnailSize();
 
 	///// Asset Creation /////	
-	void CreateNewAssetInCurrentDirectory(Volt::AssetType type);
+	void CreateNewAssetInCurrentDirectory(AssetType type);
 	void CreateNewShaderModal();
 	void CreateNewMonoScriptModal();
 	void CreateNewMotionWeaveDatabaseModal();
@@ -110,7 +110,7 @@ private:
 	///// Mesh import data //////
 	AssetData myMeshToImport;
 	MeshImportData myMeshImportData;
-	Volt::AssetType myAssetMask = Volt::AssetType::None;
+	std::set<AssetType> m_assetMask;
 	
 	Vector<std::filesystem::path> myDragDroppedMeshes;
 	Vector<std::filesystem::path> myDragDroppedTextures;

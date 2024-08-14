@@ -5,11 +5,11 @@
 #include "Navigation/NavMesh/DtNavMesh.h"
 #include "Navigation/Crowd/DtCrowd.h"
 
-#include <Volt/Asset/Asset.h>
 #include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Scene/Entity.h>
 #include <Volt/Components/NavigationComponents.h>
 
+#include <AssetSystem/Asset.h>
 
 namespace Volt
 {
@@ -26,7 +26,7 @@ namespace Volt
 			Ref<DtNavMesh>& GetNavMesh() { return myNavMesh; }
 			Ref<DtCrowd>& GetCrowd() { return myCrowd; }
 
-			static AssetType GetStaticType() { return AssetType::NavMesh; }
+			static AssetType GetStaticType() { return AssetTypes::NavMesh; }
 			AssetType GetType() override { return GetStaticType(); }
 			uint32_t GetVersion() const override { return 1; }
 

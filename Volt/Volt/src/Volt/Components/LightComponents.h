@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include <AssetSystem/Asset.h>
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Reflection/ComponentReflection.h"
 #include "Volt/Scene/Reflection/ComponentRegistry.h"
@@ -136,7 +136,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{29F75381-2873-4734-A074-3F3640E54C84}"_guid);
 			reflect.SetLabel("Skylight Component");
-			reflect.AddMember(&SkylightComponent::environmentHandle, "environmentHandle", "Environment", "", Asset::Null(), AssetType::Texture);
+			reflect.AddMember(&SkylightComponent::environmentHandle, "environmentHandle", "Environment", "", Asset::Null(), AssetTypes::Texture);
 			reflect.AddMember(&SkylightComponent::intensity, "intensity", "Intensity", "", 1.f);
 			reflect.AddMember(&SkylightComponent::lod, "lod", "LOD", "", 0.f);
 			reflect.AddMember(&SkylightComponent::turbidity, "turbidity", "Turbidity", "", 2.f);

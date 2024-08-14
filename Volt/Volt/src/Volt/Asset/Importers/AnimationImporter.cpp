@@ -4,7 +4,7 @@
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Asset/Animation/Animation.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 namespace Volt
 {

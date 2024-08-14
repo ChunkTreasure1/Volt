@@ -13,8 +13,8 @@
 #include "Volt/Components/CoreComponents.h"
 
 #include <Volt/Core/Base.h>
-#include "Volt/Asset/AssetManager.h"
-#include "Volt/Asset/Asset.h"
+#include <AssetSystem/AssetManager.h>
+#include <AssetSystem/Asset.h>
 #include "Volt/Asset/ParticlePreset.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 #include <yaml-cpp/yaml.h>

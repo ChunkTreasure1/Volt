@@ -36,11 +36,11 @@ namespace Utility
 
 	inline bool ShouldSkipAsset(const std::filesystem::path& path)
 	{
-		const Vector<Volt::AssetType> skipItems =
+		const Vector<AssetType> skipItems =
 		{
-			Volt::AssetType::None,
-			Volt::AssetType::MeshSource,
-			Volt::AssetType::MonoScript
+			AssetTypes::None,
+			AssetTypes::MeshSource,
+			AssetTypes::MonoScript
 		};
 
 		const Vector<std::string> skipExtensions =
@@ -164,7 +164,7 @@ std::string GameBuilder::GetCurrentFile()
 
 void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 {
-	FileSystem::CopyFileTo("Launcher.exe", buildInfo.buildDirectory);
+	FileSystem::CopyFileToDirectory("Launcher.exe", buildInfo.buildDirectory);
 
 	// Copy DLL files
 	for (const auto& file : std::filesystem::directory_iterator("."))
@@ -178,14 +178,14 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 				myCurrentFile = file.path().stem().string();
 			}
 
-			FileSystem::CopyFileTo(file.path(), buildInfo.buildDirectory);
+			FileSystem::CopyFileToDirectory(file.path(), buildInfo.buildDirectory);
 		}
 	}
 
 	// Copy Engine folder
 	{
 		const auto enginePath = buildInfo.buildDirectory / "Engine";
-		FileSystem::CreateDirectory(enginePath);
+		FileSystem::CreateDirectories(enginePath);
 
 		for (const auto& file : std::filesystem::recursive_directory_iterator(FileSystem::GetEnginePath()))
 		{
@@ -196,7 +196,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 
 				if (!FileSystem::Exists(enginePath / relPath))
 				{
-					FileSystem::CreateDirectory(enginePath / relPath);
+					FileSystem::CreateDirectories(enginePath / relPath);
 				}
 
 				{
@@ -205,7 +205,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 				}
 
 				myCurrentFileNumber++;
-				FileSystem::CopyFileTo(file.path(), enginePath / relPath);
+				FileSystem::CopyFileToDirectory(file.path(), enginePath / relPath);
 			}
 		}
 
@@ -216,7 +216,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 	// Copy Scripts folder
 	{
 		const auto scriptsPath = buildInfo.buildDirectory / "Scripts";
-		FileSystem::CreateDirectory(scriptsPath);
+		FileSystem::CreateDirectories(scriptsPath);
 
 		for (const auto& file : std::filesystem::recursive_directory_iterator(FileSystem::GetScriptsPath()))
 		{
@@ -233,7 +233,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 
 				if (!FileSystem::Exists(scriptsPath / relPath))
 				{
-					FileSystem::CreateDirectory(scriptsPath / relPath);
+					FileSystem::CreateDirectories(scriptsPath / relPath);
 				}
 
 				{
@@ -242,7 +242,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 				}
 
 				myCurrentFileNumber++;
-				FileSystem::CopyFileTo(file.path(), scriptsPath / relPath);
+				FileSystem::CopyFileToDirectory(file.path(), scriptsPath / relPath);
 			}
 		}
 
@@ -267,7 +267,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 	// Copy Assets folder
 	{
 		const auto assetsDir = buildInfo.buildDirectory / "Assets";
-		FileSystem::CreateDirectory(assetsDir);
+		FileSystem::CreateDirectories(assetsDir);
 
 		for (const auto& file : std::filesystem::recursive_directory_iterator(Volt::ProjectManager::GetAssetsDirectory()))
 		{
@@ -280,7 +280,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 					continue;
 				}
 
-				if (assetType == Volt::AssetType::Texture)
+				if (assetType == AssetTypes::Texture)
 				{
 					if (!Utility::IsTexturePow2(file.path()))
 					{
@@ -293,7 +293,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 
 				if (!FileSystem::Exists(assetsDir / relPath))
 				{
-					FileSystem::CreateDirectory(assetsDir / relPath);
+					FileSystem::CreateDirectories(assetsDir / relPath);
 				}
 
 				{
@@ -302,19 +302,19 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 				}
 
 				myCurrentFileNumber++;
-				FileSystem::CopyFileTo(file.path(), assetsDir / relPath);
+				FileSystem::CopyFileToDirectory(file.path(), assetsDir / relPath);
 			}
 		}
 
 		// Copy asset registry
 		myCurrentFileNumber++;
-		FileSystem::CopyFileTo(Volt::ProjectManager::GetAssetsDirectory() / "AssetRegistry.vtreg", assetsDir);
+		FileSystem::CopyFileToDirectory(Volt::ProjectManager::GetAssetsDirectory() / "AssetRegistry.vtreg", assetsDir);
 	}
 
 	// Copy Binaries
 	{
 		const auto binariesDir = buildInfo.buildDirectory / "Binaries";
-		FileSystem::CreateDirectory(binariesDir);
+		FileSystem::CreateDirectories(binariesDir);
 
 		for (const auto& file : std::filesystem::recursive_directory_iterator(Volt::ProjectManager::GetDirectory() / "Binaries"))
 		{
@@ -331,7 +331,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 				}
 
 				myCurrentFileNumber++;
-				FileSystem::CopyFileTo(file.path(), binariesDir);
+				FileSystem::CopyFileToDirectory(file.path(), binariesDir);
 			}
 		}
 	}
@@ -441,7 +441,7 @@ uint32_t GameBuilder::GetRelevantFileCount(const BuildInfo& buildInfo)
 	// Engine folder
 	{
 		const auto enginePath = buildInfo.buildDirectory / "Engine";
-		FileSystem::CreateDirectory(enginePath);
+		FileSystem::CreateDirectories(enginePath);
 
 		for (const auto& file : std::filesystem::recursive_directory_iterator(FileSystem::GetEnginePath()))
 		{
@@ -457,7 +457,7 @@ uint32_t GameBuilder::GetRelevantFileCount(const BuildInfo& buildInfo)
 	// Assets folder
 	{
 		const auto assetsPath = buildInfo.buildDirectory / "Assets";
-		FileSystem::CreateDirectory(assetsPath);
+		FileSystem::CreateDirectories(assetsPath);
 
 		for (const auto& file : std::filesystem::recursive_directory_iterator(Volt::ProjectManager::GetAssetsDirectory()))
 		{

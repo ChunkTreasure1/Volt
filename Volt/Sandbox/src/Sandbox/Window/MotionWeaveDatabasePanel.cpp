@@ -4,7 +4,7 @@
 #include "Sandbox/Utility/EditorUtilities.h"
 #include <Volt/Utility/UIUtility.h>
 
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 
 #include <Volt/Asset/Animation/MotionWeaveDatabase.h>
 
@@ -32,13 +32,13 @@ void MotionWeaveDatabasePanel::UpdateMainContent()
 	{
 		const Volt::AssetHandle& animHandle = animHandles[i];
 		Volt::AssetHandle tempHandle = animHandle;
-		EditorUtils::Property("[" + std::to_string(i) + "]", tempHandle, Volt::AssetType::Animation);
+		EditorUtils::Property("[" + std::to_string(i) + "]", tempHandle, AssetTypes::Animation);
 	}
 	ImGui::EndDisabled();
 
 
 	Volt::AssetHandle tempHandle = Volt::Asset::Null();
-	if (EditorUtils::Property("Add Animation", tempHandle, Volt::AssetType::Animation))
+	if (EditorUtils::Property("Add Animation", tempHandle, AssetTypes::Animation))
 	{
 		m_Database->AddAnimation(tempHandle);
 	}

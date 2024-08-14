@@ -6,9 +6,9 @@
 #include "Sandbox/Window/AssetBrowser/AssetCommon.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 
-AssetDirectoryProcessor::AssetDirectoryProcessor(Weak<AssetBrowser::SelectionManager> selectionManager, Volt::AssetType assetMask)
+AssetDirectoryProcessor::AssetDirectoryProcessor(Weak<AssetBrowser::SelectionManager> selectionManager, std::set<AssetType> assetMask)
 	: m_selectionManager(selectionManager), m_assetMask(assetMask)
 {}
 
@@ -62,17 +62,17 @@ Ref<AssetBrowser::DirectoryItem> AssetDirectoryProcessor::ProcessDirectories(con
 		}
 		else
 		{
-			auto type = Volt::AssetManager::GetAssetTypeFromExtension(entry.path.extension().string());
-			if (type == Volt::AssetType::None)
+			AssetType type = Volt::AssetManager::GetAssetTypeFromPath(entry.path);
+			if (type == AssetTypes::None)
 			{
-				type = Volt::AssetManager::GetAssetTypeFromPath(entry.path);
+				type = GetAssetTypeRegistry().GetTypeFromExtension(entry.path.extension().string());
 			}
 
 			const auto filename = entry.path.filename().string();
 
-			if (type != Volt::AssetType::None && !Utility::StringContains(filename, ".vtthumb.png"))
+			if (type != AssetTypes::None && !Utility::StringContains(filename, ".vtthumb.png"))
 			{
-				if (m_assetMask == Volt::AssetType::None || (m_assetMask & type) != Volt::AssetType::None)
+				if (m_assetMask.empty() || m_assetMask.contains(type))
 				{
 					auto relPath = Volt::AssetManager::GetRelativePath(entry.path);
 					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(m_selectionManager.Get(), relPath, meshImportData, meshToImportData);

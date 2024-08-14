@@ -2,7 +2,6 @@
 
 #include "Navigation/NavMesh/DtNavMesh.h"
 
-#include <Volt/Asset/Asset.h>
 #include <Volt/Scene/Entity.h>
 #include <Volt/Components/NavigationComponents.h>
 

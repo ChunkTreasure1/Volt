@@ -2,7 +2,7 @@
 #include "V012Convert.h"
 
 #include <Volt/Project/ProjectManager.h>
-#include <Volt/Asset/Asset.h>
+#include <AssetSystem/Asset.h>
 
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
 

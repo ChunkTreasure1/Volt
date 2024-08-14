@@ -3,7 +3,7 @@
 
 #include "Volt/Rendering/RenderScene.h"
 #include "Volt/Rendering/Renderer.h"
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Rendering/Material.h"
 

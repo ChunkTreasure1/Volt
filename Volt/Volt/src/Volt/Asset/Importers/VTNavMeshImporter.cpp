@@ -2,7 +2,7 @@
 #include "VTNavMeshImporter.h"
 #include "VTMeshImporter.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Mesh/MeshCompiler.h"
 
 #include "Volt/Core/Application.h"

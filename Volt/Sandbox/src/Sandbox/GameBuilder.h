@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Volt/Asset/Asset.h>
-
 #include <CoreUtilities/Containers/Vector.h>
+
+#include <AssetSystem/AssetHandle.h>
 
 #include <filesystem>
 #include <chrono>

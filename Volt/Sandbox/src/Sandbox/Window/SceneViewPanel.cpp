@@ -14,7 +14,6 @@
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/Mesh/Mesh.h>
-#include <Volt/Asset/AssetManager.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
@@ -29,6 +28,9 @@
 #include <Volt/Net/SceneInteraction/NetActorComponent.h>
 
 #include <Volt/Rendering/ShapeLibrary.h>
+#include <Volt/Project/ProjectManager.h>
+
+#include <AssetSystem/AssetManager.h>
 
 namespace Utility
 {
@@ -402,56 +404,43 @@ void SceneViewPanel::UpdateMainContent()
 	if (void* ptr = UI::DragDropTarget({ "ASSET_BROWSER_ITEM" }))
 	{
 		const Volt::AssetHandle handle = *(const Volt::AssetHandle*)ptr;
-		const Volt::AssetType type = Volt::AssetManager::GetAssetTypeFromHandle(handle);
+		const AssetType type = Volt::AssetManager::GetAssetTypeFromHandle(handle);
 
-		switch (type)
+		if (type == AssetTypes::Mesh)
 		{
-			case Volt::AssetType::Mesh:
+			Volt::Entity newEntity = m_scene->CreateEntity();
+
+			auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>();
+			auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(handle);
+			if (mesh)
 			{
-				Volt::Entity newEntity = m_scene->CreateEntity();
-
-				auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>();
-				auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(handle);
-				if (mesh)
-				{
-					meshComp.handle = mesh->handle;
-				}
-
-				newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
-
-				break;
+				meshComp.handle = mesh->handle;
 			}
 
-			case Volt::AssetType::ParticlePreset:
+			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
+		}
+		else if (type == AssetTypes::ParticlePreset)
+		{
+			Volt::Entity newEntity = m_scene->CreateEntity();
+
+			auto& particleEmitter = newEntity.AddComponent<Volt::ParticleEmitterComponent>();
+			auto preset = Volt::AssetManager::GetAsset<Volt::ParticlePreset>(handle);
+			if (preset)
 			{
-				Volt::Entity newEntity = m_scene->CreateEntity();
-
-				auto& particleEmitter = newEntity.AddComponent<Volt::ParticleEmitterComponent>();
-				auto preset = Volt::AssetManager::GetAsset<Volt::ParticlePreset>(handle);
-				if (preset)
-				{
-					particleEmitter.preset = preset->handle;
-				}
-
-				newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
-
-				break;
+				particleEmitter.preset = preset->handle;
 			}
 
-			case Volt::AssetType::Prefab:
+			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
+		}
+		else if (type == AssetTypes::Prefab)
+		{
+			auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(handle);
+			if (prefab && prefab->IsValid())
 			{
-				auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(handle);
-				if (!prefab || !prefab->IsValid())
-				{
-					break;
-				}
-
 				Volt::Entity prefabEntity = prefab->Instantiate(m_scene);
 
 				Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(prefabEntity, ObjectStateAction::Create);
 				EditorCommandStack::GetInstance().PushUndo(command);
-
-				break;
 			}
 		}
 	}

@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetFactory.h>
 
 namespace Volt
 {
@@ -11,7 +14,7 @@ namespace Volt
 		MeshSource();
 		~MeshSource() override = default;
 
-		static AssetType GetStaticType() { return AssetType::MeshSource; }
+		static AssetType GetStaticType() { return AssetTypes::MeshSource; }
 		AssetType GetType() override { return GetStaticType(); }
 		uint32_t GetVersion() const override { return 1; }
 	

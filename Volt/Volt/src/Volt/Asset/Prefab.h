@@ -1,8 +1,9 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
-
 #include "Volt/Scene/Entity.h"
+
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetFactory.h>
 
 namespace Volt
 {
@@ -37,7 +38,7 @@ namespace Volt
 
 		[[nodiscard]] const PrefabReferenceData& GetReferenceData(Entity entity) const;
 
-		static AssetType GetStaticType() { return AssetType::Prefab; }
+		static AssetType GetStaticType() { return AssetTypes::Prefab; }
 		AssetType GetType() override { return GetStaticType(); };
 		uint32_t GetVersion() const override { return m_version; }
 

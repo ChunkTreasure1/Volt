@@ -1,7 +1,7 @@
-#include "vtpch.h"
+#include "aspch.h"
 #include "AssetDependencyGraph.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include "AssetSystem/AssetManager.h"
 
 namespace Volt
 {

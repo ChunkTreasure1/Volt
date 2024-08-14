@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "NavigationMeshSerializer.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 #include <Navigation/Core/NavigationSystem.h>
 #include <Navigation/Filesystem/NavMeshImporter.h>

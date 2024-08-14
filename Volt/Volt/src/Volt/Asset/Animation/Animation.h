@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetFactory.h>
 
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 #include <CoreUtilities/FileIO/BinaryStreamReader.h>
@@ -91,7 +94,7 @@ namespace Volt
 		inline const bool HasEvents() const { return !m_events.empty(); }
 		inline const Vector<Event>& GetEvents() const { return m_events; }
 
-		static AssetType GetStaticType() { return AssetType::Animation; }
+		static AssetType GetStaticType() { return AssetTypes::Animation; }
 		AssetType GetType() override { return GetStaticType(); };
 		uint32_t GetVersion() const override { return 1; }
 

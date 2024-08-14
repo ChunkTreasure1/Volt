@@ -3,7 +3,7 @@
 
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Rendering/Material.h"
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Rendering/Texture/Texture2D.h"
 
 #include "Volt/Scene/Entity.h"
@@ -33,7 +33,7 @@ namespace Volt
 		m_buffers.sdfPrimitiveDrawDataBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(SDFPrimitiveDrawData), "SDF Primitive Draw Data", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 		m_buffers.bonesBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(glm::mat4), "GPU Bones", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 
-		m_materialChangedCallbackID = AssetManager::RegisterAssetChangedCallback(AssetType::Material, [&](AssetHandle handle, AssetChangedState state) 
+		m_materialChangedCallbackID = AssetManager::RegisterAssetChangedCallback(AssetTypes::Material, [&](AssetHandle handle, AssetChangedState state)
 		{
 			if (!m_materialIndexFromAssetHandle.contains(handle) || state != AssetChangedState::Updated)
 			{
@@ -44,7 +44,7 @@ namespace Volt
 			m_invalidMaterials.emplace_back(material, m_materialIndexFromAssetHandle.at(handle));
 		});
 
-		m_meshChangedCallbackID = AssetManager::RegisterAssetChangedCallback(AssetType::Mesh, [&](AssetHandle handle, AssetChangedState state)
+		m_meshChangedCallbackID = AssetManager::RegisterAssetChangedCallback(AssetTypes::Mesh, [&](AssetHandle handle, AssetChangedState state)
 		{
 			if (state != AssetChangedState::Updated)
 			{
@@ -65,8 +65,8 @@ namespace Volt
 
 	RenderScene::~RenderScene()
 	{
-		AssetManager::UnregisterAssetChangedCallback(AssetType::Material, m_materialChangedCallbackID);
-		AssetManager::UnregisterAssetChangedCallback(AssetType::Mesh, m_meshChangedCallbackID);
+		AssetManager::UnregisterAssetChangedCallback(AssetTypes::Material, m_materialChangedCallbackID);
+		AssetManager::UnregisterAssetChangedCallback(AssetTypes::Mesh, m_meshChangedCallbackID);
 	}
 
 	void RenderScene::PrepareForUpdate()

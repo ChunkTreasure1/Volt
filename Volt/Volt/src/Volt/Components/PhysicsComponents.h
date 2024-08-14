@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include <AssetSystem/Asset.h>
 #include "Volt/Physics/PhysicsEnums.h"
 
 #include <glm/glm.hpp>
@@ -107,7 +107,7 @@ namespace Volt
 			reflect.AddMember(&BoxColliderComponent::halfSize, "halfSize", "Half Size", "", glm::vec3{ 50.f });
 			reflect.AddMember(&BoxColliderComponent::offset, "offset", "Offset", "", glm::vec3{ 0.f });
 			reflect.AddMember(&BoxColliderComponent::isTrigger, "isTrigger", "Is Trigger", "", false);
-			reflect.AddMember(&BoxColliderComponent::material, "material", "Material", "", Asset::Null(), AssetType::PhysicsMaterial);
+			reflect.AddMember(&BoxColliderComponent::material, "material", "Material", "", Asset::Null(), AssetTypes::PhysicsMaterial);
 		}
 
 		REGISTER_COMPONENT(BoxColliderComponent);
@@ -134,7 +134,7 @@ namespace Volt
 			reflect.AddMember(&SphereColliderComponent::radius, "radius", "Radius", "", 50.f);
 			reflect.AddMember(&SphereColliderComponent::offset, "offset", "Offset", "", glm::vec3{ 0.f });
 			reflect.AddMember(&SphereColliderComponent::isTrigger, "isTrigger", "Is Trigger", "", false);
-			reflect.AddMember(&SphereColliderComponent::material, "material", "Material", "", Asset::Null(), AssetType::PhysicsMaterial);
+			reflect.AddMember(&SphereColliderComponent::material, "material", "Material", "", Asset::Null(), AssetTypes::PhysicsMaterial);
 		}
 
 		REGISTER_COMPONENT(SphereColliderComponent);
@@ -163,7 +163,7 @@ namespace Volt
 			reflect.AddMember(&CapsuleColliderComponent::height, "height", "Height", "", 50.f);
 			reflect.AddMember(&CapsuleColliderComponent::offset, "offset", "Offset", "", glm::vec3{ 0.f });
 			reflect.AddMember(&CapsuleColliderComponent::isTrigger, "isTrigger", "Is Trigger", "", false);
-			reflect.AddMember(&CapsuleColliderComponent::material, "material", "Material", "", Asset::Null(), AssetType::PhysicsMaterial);
+			reflect.AddMember(&CapsuleColliderComponent::material, "material", "Material", "", Asset::Null(), AssetTypes::PhysicsMaterial);
 		}
 
 		REGISTER_COMPONENT(CapsuleColliderComponent);
@@ -188,8 +188,8 @@ namespace Volt
 		{
 			reflect.SetGUID("{E709C708-ED3C-4F68-BC1D-2FE32B897722}"_guid);
 			reflect.SetLabel("Mesh Collider Component");
-			reflect.AddMember(&MeshColliderComponent::colliderMesh, "colliderMesh", "Collider Mesh", "", Asset::Null(), AssetType::Mesh);
-			reflect.AddMember(&MeshColliderComponent::material, "material", "Material", "", Asset::Null(), AssetType::PhysicsMaterial);
+			reflect.AddMember(&MeshColliderComponent::colliderMesh, "colliderMesh", "Collider Mesh", "", Asset::Null(), AssetTypes::Mesh);
+			reflect.AddMember(&MeshColliderComponent::material, "material", "Material", "", Asset::Null(), AssetTypes::PhysicsMaterial);
 			reflect.AddMember(&MeshColliderComponent::subMeshIndex, "subMeshIndex", "subMeshIndex", "", -1);
 			reflect.AddMember(&MeshColliderComponent::isConvex, "isConvex", "Is Convex", "", true);
 			reflect.AddMember(&MeshColliderComponent::isTrigger, "isTrigger", "Is Trigger", "", false);

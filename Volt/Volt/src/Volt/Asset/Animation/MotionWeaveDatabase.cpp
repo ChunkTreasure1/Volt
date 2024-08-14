@@ -1,10 +1,12 @@
 #include "vtpch.h"
 #include "MotionWeaveDatabase.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 namespace Volt
 {
+	VT_REGISTER_ASSET_FACTORY(AssetTypes::MotionWeave, MotionWeaveDatabase);
+
 	MotionWeaveDatabase::MotionWeaveDatabase()
 	{
 		m_skeleton = Asset::Null();
@@ -14,7 +16,7 @@ namespace Volt
 	{
 		const AssetMetadata& metadata = AssetManager::GetMetadataFromHandle(skeletonHandle);
 		metadata;
-		VT_ASSERT_MSG(metadata.type == AssetType::Skeleton, "Asset is not a skeleton!");
+		VT_ASSERT_MSG(metadata.type == AssetTypes::Skeleton, "Asset is not a skeleton!");
 
 		m_skeleton = skeletonHandle;
 	}
@@ -26,7 +28,7 @@ namespace Volt
 	{
 		const AssetMetadata& metadata = AssetManager::GetMetadataFromHandle(animationHandle);
 		metadata;
-		VT_ASSERT_MSG(metadata.type == AssetType::Animation, "Asset is not an animation!");
+		VT_ASSERT_MSG(metadata.type == AssetTypes::Animation, "Asset is not an animation!");
 
 		m_AnimationHandles.push_back(animationHandle);
 	}
@@ -34,7 +36,7 @@ namespace Volt
 	{
 		const AssetMetadata& metadata = AssetManager::GetMetadataFromHandle(animationHandle);
 		metadata;
-		VT_ASSERT_MSG(metadata.type == AssetType::Animation, "Asset is not an animation!");
+		VT_ASSERT_MSG(metadata.type == AssetTypes::Animation, "Asset is not an animation!");
 
 		auto it = std::find(m_AnimationHandles.begin(), m_AnimationHandles.end(), animationHandle);
 		if (it != m_AnimationHandles.end())

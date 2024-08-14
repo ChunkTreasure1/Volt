@@ -36,7 +36,7 @@ bool EditorLibrary::OpenAsset(Ref<Volt::Asset> asset)
 		return false;
 	}
 
-	const Volt::AssetType type = asset->GetType();
+	const AssetType type = asset->GetType();
 	auto it = std::find_if(s_editors.begin(), s_editors.end(), [type](const auto& lhs) { return lhs.assetType == type; });
 	if (it == s_editors.end())
 	{
@@ -48,7 +48,7 @@ bool EditorLibrary::OpenAsset(Ref<Volt::Asset> asset)
 	return true;
 }
 
-Ref<EditorWindow> EditorLibrary::Get(Volt::AssetType type)
+Ref<EditorWindow> EditorLibrary::Get(AssetType type)
 {
 	auto it = std::find_if(s_editors.begin(), s_editors.end(), [type](const auto& lhs) { return lhs.assetType == type; });
 	if (it == s_editors.end())

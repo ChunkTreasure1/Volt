@@ -1,12 +1,11 @@
 #include "vtpch.h"
 #include "PrefabImporter.h"
 
-#include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Prefab.h"
-
 #include "Volt/Asset/Importers/SceneImporter.h"
-
 #include "Volt/Utility/YAMLSerializationHelpers.h"
+
+#include <AssetSystem/AssetManager.h>
 
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>

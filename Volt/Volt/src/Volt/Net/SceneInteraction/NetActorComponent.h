@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Nexus/Utility/Types.h>
-#include "Volt/Asset/Asset.h"
+#include <AssetSystem/Asset.h>
 #include "Volt/Net/Replicated/ReplicationConditions.h"
 
 namespace Volt

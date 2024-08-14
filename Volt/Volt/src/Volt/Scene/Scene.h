@@ -1,5 +1,6 @@
 #pragma once
-#include "Volt/Asset/Asset.h"
+
+#include "Volt/Asset/AssetTypes.h"
 
 #include "Volt/Particles/ParticleSystem.h"
 #include "Volt/Audio/AudioSystem.h"
@@ -11,6 +12,8 @@
 #include "Volt/Scripting/Mono/MonoScriptFieldCache.h"
 
 #include "Volt/Rendering/RendererStructs.h"
+
+#include <AssetSystem/Asset.h>
 
 #include <glm/glm.hpp>
 
@@ -166,7 +169,7 @@ namespace Volt
 		static void PreloadSceneAssets(const std::filesystem::path& scenePath);
 		static Ref<Scene> CreateDefaultScene(const std::string& name, bool createDefaultMesh = true);
 
-		static AssetType GetStaticType() { return AssetType::Scene; }
+		static AssetType GetStaticType() { return AssetTypes::Scene; }
 		AssetType GetType() override { return GetStaticType(); }
 		uint32_t GetVersion() const override { return 1; }
 

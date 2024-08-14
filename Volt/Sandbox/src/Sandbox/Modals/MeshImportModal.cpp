@@ -6,6 +6,8 @@
 
 #include <Volt/Utility/UIUtility.h>
 
+#include <Volt/Project/ProjectManager.h>
+
 #include <Volt/Asset/Mesh/MeshSource.h>
 #include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Asset/Rendering/Material.h>
@@ -72,7 +74,7 @@ void MeshImportModal::DrawModalContent()
 			}
 			else
 			{
-				EditorUtils::Property("Target Skeleton", m_importOptions.targetSkeleton, Volt::AssetType::Skeleton);
+				EditorUtils::Property("Target Skeleton", m_importOptions.targetSkeleton, AssetTypes::Skeleton);
 			}
 
 			UI::EndProperties();

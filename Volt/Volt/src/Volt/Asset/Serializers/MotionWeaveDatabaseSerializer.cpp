@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "MotionWeaveDatabaseSerializer.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Animation/MotionWeaveDatabase.h"
 
 #include <format>

@@ -13,7 +13,7 @@
 #include <Volt/Core/Application.h>
 #include <Volt/Rendering/Shader/ShaderMap.h>
 
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
@@ -822,7 +822,7 @@ void Sandbox::BuildGameModal()
 
 			for (auto& handle : m_buildInfo.sceneHandles)
 			{
-				EditorUtils::Property("Scene", handle, Volt::AssetType::Scene);
+				EditorUtils::Property("Scene", handle, AssetTypes::Scene);
 			}
 
 			UI::EndProperties();

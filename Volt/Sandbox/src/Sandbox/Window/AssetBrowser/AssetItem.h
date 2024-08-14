@@ -20,7 +20,7 @@ namespace AssetBrowser
 		bool Render() override;
 
 		Volt::AssetHandle handle = 0;
-		Volt::AssetType type = Volt::AssetType::None;
+		AssetType type = AssetTypes::None;
 
 		RefPtr<Volt::RHI::Image> previewImage;
 
@@ -41,6 +41,6 @@ namespace AssetBrowser
 	private:
 		Volt::AssetHandle mySceneToOpen = Volt::Asset::Null();
 
-		const ImVec4 GetBackgroundColorFromType(Volt::AssetType type) const;
+		const ImVec4 GetBackgroundColorFromType(AssetType type) const;
 	};
 }

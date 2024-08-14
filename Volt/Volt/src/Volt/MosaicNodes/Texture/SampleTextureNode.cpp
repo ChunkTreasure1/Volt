@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "SampleTextureNode.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Utility/UIUtility.h"
 

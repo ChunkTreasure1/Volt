@@ -2,7 +2,7 @@
 #include "AssetRegistryPanel.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
 
@@ -132,7 +132,7 @@ void AssetRegistryPanel::AddNewModal()
 			if (assetHandle && !assetPath.empty() && !Volt::AssetManager::Get().ExistsInRegistry(assetPath) && !Volt::AssetManager::Get().ExistsInRegistry(assetHandle))
 			{
 				UI::Notify(NotificationType::Success, "Assethandle registered!", "Successfully added assethandle.");
-				Volt::AssetManager::Get().AddAssetToRegistry(assetPath, assetHandle);
+				//Volt::AssetManager::Get().AddAssetToRegistry(assetPath, assetHandle);
 			}
 			else
 			{

@@ -3,7 +3,7 @@
 
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 #include <Volt/Asset/Rendering/Material.h>
 #include <Volt/Asset/Mesh/Mesh.h>
 
@@ -59,24 +59,19 @@ void PreviewRenderer::RenderPreview(Weak<AssetBrowser::AssetItem> assetItem)
 
 	const bool assetWasLoaded = Volt::AssetManager::Get().IsLoaded(assetItem->handle);
 
-	switch (assetType)
+	if (assetType == AssetTypes::Mesh)
 	{
-		case Volt::AssetType::Mesh:
-			if(!RenderMeshPreview(assetItem))
-			{
-				return;
-			}
-			break;
-
-		case Volt::AssetType::Material:
-			if (!RenderMaterialPreview(assetItem))
-			{
-				return;
-			}
-			break;
-
-		default:
+		if (!RenderMeshPreview(assetItem))
+		{
 			return;
+		}
+	}
+	else if (assetType == AssetTypes::Material)
+	{
+		if (!RenderMaterialPreview(assetItem))
+		{
+			return;
+		}
 	}
 
 	//Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();

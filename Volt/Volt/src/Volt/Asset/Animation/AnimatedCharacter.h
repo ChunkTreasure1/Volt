@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetFactory.h>
 
 #include <glm/glm.hpp>
 
@@ -62,7 +65,7 @@ namespace Volt
 		inline Ref<Mesh> GetSkin() const { return mySkin; }
 		inline Ref<Skeleton> GetSkeleton() const { return mySkeleton; }
 
-		static AssetType GetStaticType() { return AssetType::AnimatedCharacter; }
+		static AssetType GetStaticType() { return AssetTypes::AnimatedCharacter; }
 		AssetType GetType() override { return GetStaticType(); };
 		uint32_t GetVersion() const override { return 1; }
 

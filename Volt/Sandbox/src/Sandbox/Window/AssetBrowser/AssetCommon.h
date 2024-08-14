@@ -2,12 +2,12 @@
 
 #include "Sandbox/Utility/AssetPreview.h"
 
-#include <Volt/Asset/Asset.h>
+#include <AssetSystem/Asset.h>
 
 struct AssetData
 {
 	Volt::AssetHandle handle = 0;
-	Volt::AssetType type = Volt::AssetType::None;
+	AssetType type = AssetTypes::None;
 	std::filesystem::path path;
 	bool selected = false;
 };

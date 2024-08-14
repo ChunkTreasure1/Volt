@@ -2,8 +2,12 @@
 #include "UIUtility.h"
 
 #include "Volt/Rendering/Texture/Texture2D.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include <RHIModule/ImGui/ImGuiImplementation.h>
+
+#include <CoreUtilities/FileSystem.h>
+#include <CoreUtilities/StringUtility.h>
 
 inline static constexpr float PROPERTY_ROW_HEIGHT = 17.f;
 inline static constexpr float PROPERTY_ROW_PADDING = 4.f;
@@ -1788,7 +1792,7 @@ bool UI::Property(const std::string& text, std::filesystem::path& path, const st
 	std::string buttonId = "Open...##" + std::to_string(s_stackId++);
 	if (ImGui::Button(buttonId.c_str(), { ImGui::GetContentRegionAvail().x, 25.f }))
 	{
-		auto newPath = FileSystem::OpenFileDialogue({ { "All (*.*)" }, { "*" } });
+		auto newPath = FileSystem::OpenFileDialogue({ { "All (*.*)" }, { "*" } }, Volt::ProjectManager::GetAssetsDirectory());
 		if (!newPath.empty())
 		{
 			path = newPath;
@@ -1827,7 +1831,7 @@ bool UI::PropertyDirectory(const std::string& text, std::filesystem::path& path,
 	std::string buttonId = "Open...##" + std::to_string(s_stackId++);
 	if (ImGui::Button(buttonId.c_str(), { ImGui::GetContentRegionAvail().x, 25.f }))
 	{
-		auto newPath = FileSystem::PickFolderDialogue();
+		auto newPath = FileSystem::PickFolderDialogue(Volt::ProjectManager::GetAssetsDirectory());
 		if (!newPath.empty())
 		{
 			path = newPath;

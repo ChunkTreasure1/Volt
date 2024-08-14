@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/Asset.h>
 
 #include <glm/glm.hpp>
 
@@ -27,8 +29,8 @@ namespace Volt
 
 		inline void SetDimension(BlendSpaceDimension dim) { myDimension = dim; }
 
-		static AssetType GetStaticType() { return AssetType::BlendSpace; }
-		virtual AssetType GetType() override { return AssetType::BlendSpace; }
+		static AssetType GetStaticType() { return AssetTypes::BlendSpace; }
+		virtual AssetType GetType() override { return AssetTypes::BlendSpace; }
 		uint32_t GetVersion() const override { return 1; }
 
 	private:

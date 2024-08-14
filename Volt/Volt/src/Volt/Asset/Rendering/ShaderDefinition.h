@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetFactory.h>
 #include <RHIModule/Shader/Shader.h>
 
 namespace Volt
@@ -10,7 +13,7 @@ namespace Volt
 	public:
 		~ShaderDefinition() override = default;
 
-		static AssetType GetStaticType() { return AssetType::ShaderDefinition; }
+		static AssetType GetStaticType() { return AssetTypes::ShaderDefinition; }
 		inline AssetType GetType() override { return GetStaticType(); }
 		inline uint32_t GetVersion() const override { return 1; }
 
@@ -18,6 +21,8 @@ namespace Volt
 		VT_NODISCARD VT_INLINE const Vector<std::string>& GetPermutations() { return m_permutaionValues; }
 		VT_NODISCARD VT_INLINE std::string_view GetName() const { return m_name; }
 		VT_NODISCARD VT_INLINE const bool IsInternal() const { return m_isInternal; }
+
+		inline static constexpr std::string_view Extension = ".vtsdef";
 
 	private:
 		friend class ShaderDefinitionImporter;
@@ -29,4 +34,6 @@ namespace Volt
 		std::string m_name;
 		bool m_isInternal = false;
 	};
+
+	VT_REGISTER_ASSET_FACTORY(AssetTypes::ShaderDefinition, ShaderDefinition);
 }

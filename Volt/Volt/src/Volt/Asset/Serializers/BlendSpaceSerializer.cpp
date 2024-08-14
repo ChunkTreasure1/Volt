@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "BlendSpaceSerializer.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Animation/BlendSpace.h"
 
 namespace Volt

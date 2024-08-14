@@ -1,7 +1,7 @@
 #include "sbpch.h"
 #include "AnimationEditorPanel.h"
 
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Utility/UIUtility.h>
 

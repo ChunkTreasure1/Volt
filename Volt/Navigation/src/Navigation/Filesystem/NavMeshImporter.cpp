@@ -3,8 +3,6 @@
 
 #include <Volt/Core/Profiling.h>
 
-#include <Volt/Asset/AssetManager.h>
-
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 #include <CoreUtilities/FileIO/BinaryStreamReader.h>
 

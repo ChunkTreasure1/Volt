@@ -2,7 +2,7 @@
 
 #include "Event.h"
 
-#include "Volt/Asset/Asset.h"
+#include <AssetSystem/Asset.h>
 
 #include <sstream>
 

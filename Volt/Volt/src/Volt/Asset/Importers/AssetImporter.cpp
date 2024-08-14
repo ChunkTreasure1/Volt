@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "AssetImporter.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Importers/TextureImporter.h"
 #include "Volt/Asset/Text/Font.h"
 

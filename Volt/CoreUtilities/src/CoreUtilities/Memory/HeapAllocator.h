@@ -9,6 +9,8 @@ public:
 	template<typename T, typename... Args>
 	VT_INLINE static T* Allocate(Args&&... args)
 	{
+		VT_PROFILE_FUNCTION();
+
 		s_totalAllocated += sizeof(T);
 
 		T* ptr = new T(std::forward<Args>(args)...);
@@ -20,6 +22,8 @@ public:
 	template<typename T>
 	VT_INLINE static void Free(T* ptr)
 	{
+		VT_PROFILE_FUNCTION();
+
 		s_totalAllocated -= sizeof(T);
 		
 		VT_PROFILE_FREE(ptr);

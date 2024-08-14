@@ -4,12 +4,12 @@
 #include "Sandbox/Utility/EditorResources.h"
 
 #include <Volt/Utility/FileSystem.h>
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 #include <Volt/Utility/UIUtility.h>
 
 static uint32_t s_assetBrowserCount;
 
-SelectiveAssetBrowserPanel::SelectiveAssetBrowserPanel(Volt::AssetType assetType, const std::string& id)
+SelectiveAssetBrowserPanel::SelectiveAssetBrowserPanel(AssetType assetType, const std::string& id)
 	: EditorWindow("Asset Browser##" + id), mySelectiveAssetType(assetType)
 {
 	m_isOpen = true;
@@ -80,7 +80,7 @@ void SelectiveAssetBrowserPanel::UpdateAssetList()
 		if (!it.is_directory())
 		{
 			const std::filesystem::path path = it.path();
-			const Volt::AssetType type = Volt::AssetManager::Get().GetAssetTypeFromPath(path);
+			const AssetType type = Volt::AssetManager::Get().GetAssetTypeFromPath(path);
 
 			if (type == mySelectiveAssetType)
 			{

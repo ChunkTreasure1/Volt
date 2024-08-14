@@ -4,8 +4,6 @@
 #include "Navigation/Core/CoreInterfaces.h"
 #include "NavigationEditor/Tools/NavMeshDebugDrawer.h"
 
-#include <Volt/Asset/AssetManager.h>
-
 #include <DetourAssert.h>
 #include <DetourNavMesh.h>
 #include <DetourNavMeshBuilder.h>

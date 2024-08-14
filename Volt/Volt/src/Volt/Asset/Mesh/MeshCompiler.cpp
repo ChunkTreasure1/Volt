@@ -5,8 +5,9 @@
 
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Rendering/Material.h"
+#include "Volt/Project/ProjectManager.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 #include <fstream>
 

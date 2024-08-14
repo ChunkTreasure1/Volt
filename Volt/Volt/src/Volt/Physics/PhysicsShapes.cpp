@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "PhysicsShapes.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Core/Application.h"
 

@@ -7,7 +7,7 @@
 #include <Volt/Scene/Reflection/ComponentRegistry.h>
 #include <Volt/Components/CoreComponents.h>
 #include <Volt/Asset/Prefab.h>
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 #include <Volt/Asset/Importers/SceneImporter.h>
 #include <Volt/Asset/Importers/PrefabImporter.h>
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>

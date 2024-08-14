@@ -62,6 +62,7 @@ include "Mosaic"
 include "LogModule"
 include "RenderCoreModule"
 include "JobSystemModule"
+include "AssetSystemModule"
 include (path.join(VoltRootDirectory, "Volt-ScriptCore"))
 
 group "Core/RHI"

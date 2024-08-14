@@ -4,7 +4,7 @@
 #include "MeshTypeImporter.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 namespace Volt
 {

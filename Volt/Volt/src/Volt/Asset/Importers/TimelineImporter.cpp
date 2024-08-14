@@ -11,7 +11,7 @@
 
 #include "Volt/Scene/Entity.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>

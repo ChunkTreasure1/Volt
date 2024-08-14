@@ -273,7 +273,7 @@ bool ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scen
 {
 	uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data);
 
-	if (member.assetType != Volt::AssetType::None)
+	if (member.assetType != AssetTypes::None)
 	{
 		if (EditorUtils::Property(std::string(member.label), *reinterpret_cast<Volt::AssetHandle*>(&bytePtr[offset + member.offset]), member.assetType))
 		{
@@ -332,13 +332,13 @@ bool ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scen
 	return false;
 }
 
-bool ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::ComponentMember& arrayMember, void* elementData, const size_t index, const std::type_index& typeIndex, Volt::AssetType arrayAssetType)
+bool ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::ComponentMember& arrayMember, void* elementData, const size_t index, const std::type_index& typeIndex, AssetType arrayAssetType)
 {
 	const std::string label = std::format("Element {0}", index);
 
-	if (arrayMember.assetType != Volt::AssetType::None || arrayAssetType != Volt::AssetType::None)
+	if (arrayMember.assetType != AssetTypes::None || arrayAssetType != AssetTypes::None)
 	{
-		if (EditorUtils::Property(label, *reinterpret_cast<Volt::AssetHandle*>(elementData), arrayMember.assetType != Volt::AssetType::None ? arrayMember.assetType : arrayAssetType))
+		if (EditorUtils::Property(label, *reinterpret_cast<Volt::AssetHandle*>(elementData), arrayMember.assetType != AssetTypes::None ? arrayMember.assetType : arrayAssetType))
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
 			EditorUtils::MarkEntityAsEdited(entity);

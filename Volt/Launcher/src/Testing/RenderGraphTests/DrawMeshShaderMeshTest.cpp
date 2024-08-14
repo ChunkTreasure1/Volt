@@ -7,7 +7,7 @@
 #include <RenderCore/RenderGraph/RenderGraph.h>
 #include <RenderCore/RenderGraph/RenderContextUtils.h>
 
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 
 using namespace Volt;
 

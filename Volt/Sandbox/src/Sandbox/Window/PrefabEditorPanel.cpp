@@ -5,7 +5,7 @@
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/EditorResources.h"
 
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 #include <Volt/Asset/Mesh/Mesh.h>
 
 #include <Volt/Utility/UIUtility.h>
@@ -19,6 +19,8 @@
 #include <Volt/Components/RenderingComponents.h>
 #include <Volt/Components/LightComponents.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
+
+#include <Volt/Project/ProjectManager.h>
 
 PrefabEditorPanel::PrefabEditorPanel()
 	: EditorWindow("Prefab Editor", true)
@@ -43,7 +45,7 @@ void PrefabEditorPanel::UpdateMainContent()
 
 void PrefabEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 {
-	if (asset && asset->IsValid() && asset->GetType() == Volt::AssetType::Mesh)
+	if (asset && asset->IsValid() && asset->GetType() == AssetTypes::Mesh)
 	{
 		myPreviewEntity.GetComponent<Volt::MeshComponent>().handle = asset->handle;
 		myCurrentMesh = std::reinterpret_pointer_cast<Volt::Mesh>(asset);
@@ -157,7 +159,7 @@ void PrefabEditorPanel::UpdateToolbar()
 
 	if (UI::ImageButton("##Load", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
 	{
-		const std::filesystem::path prefabPath = FileSystem::OpenFileDialogue({{ "Prefab (*.vtprefab)", "vtchr" }});
+		const std::filesystem::path prefabPath = FileSystem::OpenFileDialogue({{ "Prefab (*.vtprefab)", "vtchr" }}, Volt::ProjectManager::GetAssetsDirectory());
 		if (!prefabPath.empty() && FileSystem::Exists(prefabPath))
 		{
 			myCurrentMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(prefabPath);

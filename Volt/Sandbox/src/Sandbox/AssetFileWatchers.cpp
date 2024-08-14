@@ -53,60 +53,48 @@ void Sandbox::CreateModifiedWatch()
 				return;
 			}
 
-			Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
-			switch (assetType)
+			AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
+			if (assetType == AssetTypes::Mesh ||
+				assetType == AssetTypes::Prefab ||
+				assetType == AssetTypes::Material ||
+				assetType == AssetTypes::Texture)
 			{
-				case Volt::AssetType::Mesh:
-				case Volt::AssetType::Prefab:
-				case Volt::AssetType::Material:
-				case Volt::AssetType::Texture:
-					Volt::AssetManager::Get().ReloadAsset(Volt::AssetManager::GetRelativePath(newPath));
-					break;
+				Volt::AssetManager::Get().ReloadAsset(Volt::AssetManager::GetRelativePath(newPath));
+			}
+			else if (assetType == AssetTypes::ShaderSource)
+			{
+				const auto dependents = Volt::AssetManager::GetAssetsDependentOn(Volt::AssetManager::GetAssetHandleFromFilePath(newPath));
 
-				case Volt::AssetType::ShaderSource:
+				for (const auto& assetHandle : dependents)
 				{
-					const auto dependents = Volt::AssetManager::GetAssetsDependentOn(Volt::AssetManager::GetAssetHandleFromFilePath(newPath));
-
-					for (const auto& assetHandle : dependents)
+					const auto dependentType = Volt::AssetManager::GetAssetTypeFromHandle(assetHandle);
+					if (dependentType != AssetTypes::ShaderDefinition)
 					{
-						const auto dependentType = Volt::AssetManager::GetAssetTypeFromHandle(assetHandle);
-						if (dependentType != Volt::AssetType::ShaderDefinition)
-						{
-							continue;
-						}
-
-						Ref<Volt::ShaderDefinition> shaderDef = Volt::AssetManager::GetAsset<Volt::ShaderDefinition>(assetHandle);
-						bool succeded = Volt::ShaderMap::ReloadShaderByName(std::string(shaderDef->GetName()));
-						if (succeded)
-						{
-							UI::Notify(NotificationType::Success, "Recompiled shader!", std::format("Shader {0} was successfully recompiled!", shaderDef->GetName()));
-						}
-						else
-						{
-							UI::Notify(NotificationType::Error, "Failed to recompile shader!", std::format("Recompilation of shader {0} failed! Check log for more info!", shaderDef->GetName()));
-						}
+						continue;
 					}
-					break;
-				}
 
-
-				case Volt::AssetType::MeshSource:
-				{
-					/*const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::Get().GetRelativePath(newPath));
-					for (const auto& asset : assets)
+					Ref<Volt::ShaderDefinition> shaderDef = Volt::AssetManager::GetAsset<Volt::ShaderDefinition>(assetHandle);
+					bool succeded = Volt::ShaderMap::ReloadShaderByName(std::string(shaderDef->GetName()));
+					if (succeded)
 					{
-						if (EditorUtils::ReimportSourceMesh(asset))
-						{
-							UI::Notify(NotificationType::Success, "Re imported mesh!", std::format("Mesh {0} has been reimported!", Volt::AssetManager::GetFilePathFromAssetHandle(asset).string()));
-						}
-					}*/
-					break;
+						UI::Notify(NotificationType::Success, "Recompiled shader!", std::format("Shader {0} was successfully recompiled!", shaderDef->GetName()));
+					}
+					else
+					{
+						UI::Notify(NotificationType::Error, "Failed to recompile shader!", std::format("Recompilation of shader {0} failed! Check log for more info!", shaderDef->GetName()));
+					}
 				}
-
-				case Volt::AssetType::None:
-					break;
-				default:
-					break;
+			}
+			else if (assetType == AssetTypes::MeshSource)
+			{
+				/*const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::Get().GetRelativePath(newPath));
+for (const auto& asset : assets)
+{
+	if (EditorUtils::ReimportSourceMesh(asset))
+	{
+		UI::Notify(NotificationType::Success, "Re imported mesh!", std::format("Mesh {0} has been reimported!", Volt::AssetManager::GetFilePathFromAssetHandle(asset).string()));
+	}
+}*/
 			}
 		});
 	});
@@ -125,8 +113,8 @@ void Sandbox::CreateDeleteWatch()
 			}
 			else
 			{
-				Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(Volt::AssetManager::GetRelativePath(newPath));
-				if (assetType != Volt::AssetType::None)
+				AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(Volt::AssetManager::GetRelativePath(newPath));
+				if (assetType != AssetTypes::None)
 				{
 					if (Volt::AssetManager::ExistsInRegistry(Volt::AssetManager::GetRelativePath(newPath)))
 					{

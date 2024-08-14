@@ -12,12 +12,11 @@
 
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
-#include "Volt/Utility/FileSystem.h"
-
 #include "Volt/Project/ProjectManager.h"
 
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
+#include <CoreUtilities/FileSystem.h>
 
 #include <yaml-cpp/yaml.h>
 

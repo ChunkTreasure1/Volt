@@ -19,6 +19,8 @@
 
 namespace Volt
 {
+	VT_REGISTER_ASSET_FACTORY(AssetTypes::Mesh, Mesh);
+
 	namespace Utility
 	{
 		VT_NODISCARD Vector<uint32_t> ElementCountPrefixSum(const Vector<VertexContainer>& elements)

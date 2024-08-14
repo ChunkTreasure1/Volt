@@ -1,6 +1,9 @@
 #pragma once
 
-#include <Volt/Asset/Asset.h>
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetFactory.h>
 
 #include <RHIModule/Images/Image.h>
 
@@ -13,7 +16,7 @@ namespace Volt
 
 		inline RefPtr<RHI::Image> GetImage() const { return m_image; }
 
-		static AssetType GetStaticType() { return AssetType::TextureSource; }
+		static AssetType GetStaticType() { return AssetTypes::TextureSource; }
 		AssetType GetType() override { return GetStaticType(); }
 		uint32_t GetVersion() const override { return 1; }
 

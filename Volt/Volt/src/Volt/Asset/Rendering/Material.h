@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetFactory.h>
 
 #include <CoreUtilities/Core.h>
 
@@ -50,8 +53,8 @@ namespace Volt
 		inline Mosaic::MosaicGraph& GetGraph() { return *m_graph; }
 		inline const Mosaic::MosaicGraph& GetGraph() const { return *m_graph; }
 
-		static Volt::AssetType GetStaticType() { return Volt::AssetType::Material; }
-		Volt::AssetType GetType() override { return GetStaticType(); };
+		static AssetType GetStaticType() { return AssetTypes::Material; }
+		AssetType GetType() override { return GetStaticType(); };
 		void OnDependencyChanged(AssetHandle dependencyHandle, AssetChangedState state) override;
 
 	private:
@@ -69,4 +72,6 @@ namespace Volt
 		std::atomic_bool m_isDirty = false;
 		VoltGUID m_materialGUID;
 	};
+
+	VT_REGISTER_ASSET_FACTORY(AssetTypes::Material, Material);
 }

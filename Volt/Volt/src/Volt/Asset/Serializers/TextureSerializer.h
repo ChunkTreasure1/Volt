@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Volt/Asset/Serializers/AssetSerializer.h"
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/Serialization/AssetSerializer.h>
+#include <AssetSystem/AssetSerializerRegistry.h>
 
 namespace Volt
 {

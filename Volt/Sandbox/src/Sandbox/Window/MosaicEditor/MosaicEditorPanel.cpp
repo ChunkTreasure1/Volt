@@ -8,9 +8,11 @@
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Asset/Rendering/Material.h>
-#include <Volt/Asset/AssetManager.h>
 
 #include <Volt/Utility/FileSystem.h>
+#include <Volt/Project/ProjectManager.h>
+
+#include <AssetSystem/AssetManager.h>
 
 #include <Mosaic/MosaicGraph.h>
 #include <Mosaic/MosaicNode.h>
@@ -448,7 +450,7 @@ void MosaicEditorPanel::DrawMenuBar()
 		{
 			if (ImGui::MenuItem("Create"))
 			{
-				std::filesystem::path path = FileSystem::SaveFileDialogue({{ "Mosaic Graph (*.vtmat)", "vtmat" }});
+				std::filesystem::path path = FileSystem::SaveFileDialogue({{ "Mosaic Graph (*.vtmat)", "vtmat" }}, Volt::ProjectManager::GetAssetsDirectory());
 				m_material = Volt::AssetManager::CreateAsset<Volt::Material>(path.parent_path(), path.stem().string());
 				
 				Volt::AssetManager::SaveAsset(m_material);
@@ -461,7 +463,7 @@ void MosaicEditorPanel::DrawMenuBar()
 
 			if (ImGui::MenuItem("Load"))
 			{
-				std::filesystem::path path = FileSystem::OpenFileDialogue({ { "Mosaic Graph (*.vtmat)", "vtmat" }});
+				std::filesystem::path path = FileSystem::OpenFileDialogue({ { "Mosaic Graph (*.vtmat)", "vtmat" }}, Volt::ProjectManager::GetAssetsDirectory());
 				m_material = Volt::AssetManager::GetAsset<Volt::Material>(path);
 			}
 

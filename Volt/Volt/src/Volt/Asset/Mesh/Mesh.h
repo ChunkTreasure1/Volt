@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
 #include "Volt/Asset/Mesh/SubMesh.h"
 
 #include "Volt/Asset/Rendering/MaterialTable.h"
@@ -19,14 +18,16 @@
 #include <CoreUtilities/Containers/Map.h>
 #include <CoreUtilities/Containers/SparseBrickMap.h>
 
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetType.h>
+#include <AssetSystem/AssetFactory.h>
+
 namespace Volt
 {
 	namespace RHI
 	{
 		class VertexBuffer;
 		class IndexBuffer;
-
-		class Image3D;
 	}
 
 	class Material;
@@ -111,7 +112,7 @@ namespace Volt
 
 		VT_NODISCARD VT_INLINE const VertexContainer& GetVertexContainer() const { return m_vertexContainer; }
 
-		static AssetType GetStaticType() { return AssetType::Mesh; }
+		static AssetType GetStaticType() { return AssetTypes::Mesh; }
 		AssetType GetType() override { return GetStaticType(); }
 		uint32_t GetVersion() const override { return 2; }
 

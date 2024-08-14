@@ -11,6 +11,7 @@
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
+#include <Volt/Project/ProjectManager.h>
 
 namespace AssetBrowser
 {
@@ -32,7 +33,7 @@ namespace AssetBrowser
 				{
 					const std::filesystem::path newPath = path / item->path.stem();
 					Volt::AssetManager::Get().MoveFullFolder(item->path, newPath);
-					FileSystem::MoveFolder(Volt::ProjectManager::GetDirectory() / item->path, newPath);
+					FileSystem::MoveDirectory(Volt::ProjectManager::GetDirectory() / item->path, newPath);
 				}
 			}
 
@@ -56,7 +57,7 @@ namespace AssetBrowser
 				{
 					const std::filesystem::path newPath = path / item->path.stem();
 					Volt::AssetManager::Get().MoveFullFolder(item->path, newPath);
-					FileSystem::MoveFolder(Volt::ProjectManager::GetDirectory() / item->path, newPath);
+					FileSystem::MoveDirectory(Volt::ProjectManager::GetDirectory() / item->path, newPath);
 				}
 			}
 
@@ -65,7 +66,7 @@ namespace AssetBrowser
 				if (!item->isDirectory && item != this && FileSystem::Exists(Volt::ProjectManager::GetDirectory() / item->path))
 				{
 					// Check for thumbnail PNG
-					if (Volt::AssetManager::Get().GetAssetTypeFromPath(item->path) == Volt::AssetType::Texture)
+					if (Volt::AssetManager::Get().GetAssetTypeFromPath(item->path) == AssetTypes::Texture)
 					{
 						const std::filesystem::path thumbnailPath = item->path.parent_path() / (item->path.stem().string() + ".vtthumb.png");
 						if (FileSystem::Exists(thumbnailPath))

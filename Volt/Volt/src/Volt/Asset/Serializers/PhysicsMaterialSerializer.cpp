@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "PhysicsMaterialSerializer.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Physics/PhysicsMaterial.h"
 
 namespace Volt

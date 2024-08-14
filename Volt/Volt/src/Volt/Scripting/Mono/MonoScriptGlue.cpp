@@ -360,7 +360,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 
 		auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(handle);
-		if (!prefab || !prefab->IsValid() || Volt::AssetManager::GetAssetTypeFromHandle(handle) != AssetType::Prefab)
+		if (!prefab || !prefab->IsValid() || Volt::AssetManager::GetAssetTypeFromHandle(handle) != AssetTypes::Prefab)
 		{
 			return nullptr;
 		}
@@ -464,7 +464,7 @@ namespace Volt
 #pragma region Scene
 	inline static void Scene_Load(uint64_t handle)
 	{
-		if (Volt::AssetManager::GetAssetTypeFromHandle(handle) != AssetType::Scene)
+		if (Volt::AssetManager::GetAssetTypeFromHandle(handle) != AssetTypes::Scene)
 		{
 			VT_LOG(Error, "Unable to load scene with handle {0}, because it's not a scene!", handle);
 			return;
@@ -483,7 +483,7 @@ namespace Volt
 
 	inline static void Scene_Save(uint64_t handle)
 	{
-		if (Volt::AssetManager::GetAssetTypeFromHandle(handle) != AssetType::Scene)
+		if (Volt::AssetManager::GetAssetTypeFromHandle(handle) != AssetTypes::Scene)
 		{
 			VT_LOG(Error, "Unable to load scene with handle {0}, because it's not a scene!", handle);
 			return;

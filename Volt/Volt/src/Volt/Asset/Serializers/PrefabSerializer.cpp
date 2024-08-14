@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "PrefabSerializer.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Prefab.h"
 
 #include "Volt/Asset/Serializers/SceneSerializer.h"

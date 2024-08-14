@@ -1,9 +1,10 @@
 #include "vtpch.h"
 #include "MotionWeaver.h"
 #include "Volt/Asset/Animation/MotionWeaveDatabase.h"
-#include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Animation/Animation.h"
 #include "Volt/Asset/Animation/Skeleton.h"
+
+#include <AssetSystem/AssetManager.h>
 
 namespace Volt
 {

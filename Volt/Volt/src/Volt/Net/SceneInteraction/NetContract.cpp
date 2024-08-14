@@ -5,6 +5,8 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Scene/SceneManager.h"
 
+#include "Volt/Project/ProjectManager.h"
+
 #include "Volt/Net/SceneInteraction/NetActorComponent.h"
 #include "Volt/Components/CoreComponents.h"
 
@@ -14,7 +16,7 @@
 #include "Nexus/Interface/NetManager/NetManager.h"
 #include "Volt/Net/Replicated/RepEntity.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 
 namespace Volt
 {
@@ -120,11 +122,11 @@ namespace Volt
 			const auto relPath = AssetManager::GetRelativePath(path.path());
 			const auto type = AssetManager::GetAssetTypeFromPath(relPath);
 
-			if (type == AssetType::NetContract)
+			if (type == AssetTypes::NetContract)
 			{
 				if (!AssetManager::ExistsInRegistry(relPath))
 				{
-					AssetManager::Get().AddAssetToRegistry(relPath);
+					AssetManager::Get().AddAssetToRegistry(relPath, AssetTypes::NetContract);
 				}
 
 				Ref<NetContract> contract = AssetManager::GetAsset<NetContract>(relPath);

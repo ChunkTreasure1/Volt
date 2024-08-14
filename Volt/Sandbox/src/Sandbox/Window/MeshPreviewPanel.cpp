@@ -5,7 +5,6 @@
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/EditorResources.h"
 
-#include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Rendering/Material.h>
 #include <Volt/Asset/Mesh/Mesh.h>
 
@@ -18,6 +17,10 @@
 #include <Volt/Components/RenderingComponents.h>
 #include <Volt/Components/LightComponents.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
+
+#include <Volt/Project/ProjectManager.h>
+
+#include <AssetSystem/AssetManager.h>
 
 MeshPreviewPanel::MeshPreviewPanel()
 	: EditorWindow("Mesh Preview", true)
@@ -44,7 +47,7 @@ void MeshPreviewPanel::UpdateContent()
 
 void MeshPreviewPanel::OpenAsset(Ref<Volt::Asset> asset)
 {
-	if (asset && asset->IsValid() && asset->GetType() == Volt::AssetType::Mesh)
+	if (asset && asset->IsValid() && asset->GetType() == AssetTypes::Mesh)
 	{
 		myPreviewEntity.GetComponent<Volt::MeshComponent>().handle = asset->handle;
 		myCurrentMesh = std::reinterpret_pointer_cast<Volt::Mesh>(asset);
@@ -139,7 +142,7 @@ void MeshPreviewPanel::UpdateProperties()
 			if (myCurrentMesh)
 			{
 				//Volt::AssetHandle handle = myCurrentMesh->GetMaterial()->handle;
-				//if (EditorUtils::Property("Material", handle, Volt::AssetType::Material))
+				//if (EditorUtils::Property("Material", handle, AssetType::Material))
 				//{
 				//	myCurrentMesh->SetMaterial(Volt::AssetManager::GetAsset<Volt::Material>(handle));
 				//}
@@ -208,7 +211,7 @@ void MeshPreviewPanel::UpdateToolbar()
 
 	if (UI::ImageButton("##Load", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
 	{
-		const std::filesystem::path meshPath = FileSystem::OpenFileDialogue({ { "Mesh (*.vtasset)", "vtasset" } });
+		const std::filesystem::path meshPath = FileSystem::OpenFileDialogue({ { "Mesh (*.vtasset)", "vtasset" } }, Volt::ProjectManager::GetAssetsDirectory());
 		if (!meshPath.empty() && FileSystem::Exists(meshPath))
 		{
 			myCurrentMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshPath);

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
-#include "Volt/Asset/AssetPacker.h"
+#include <AssetSystem/Asset.h>
 
 namespace Volt
 {

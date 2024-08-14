@@ -5,7 +5,7 @@
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/Theme.h"
 
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
@@ -14,7 +14,7 @@
 
 #include <imgui.h>
 
-AssetBrowserPopup::AssetBrowserPopup(const std::string& id, Volt::AssetType wantedType, Volt::AssetHandle& handle)
+AssetBrowserPopup::AssetBrowserPopup(const std::string& id, AssetType wantedType, Volt::AssetHandle& handle)
 	: myId(id), myWantedType(wantedType), myHandle(handle)
 {
 }
@@ -73,7 +73,7 @@ AssetBrowserPopup::State AssetBrowserPopup::RenderView(const Vector<Volt::AssetH
 			continue;
 		}
 
-		if (Volt::AssetManager::IsSourceAsset(handle))
+		if (metadata.type->IsSourceType())
 		{
 			continue;
 		}

@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "FontSerializer.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Text/Font.h"
 
 namespace Volt

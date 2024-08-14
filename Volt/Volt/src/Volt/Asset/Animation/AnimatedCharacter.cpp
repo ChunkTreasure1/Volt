@@ -6,6 +6,8 @@
 
 namespace Volt
 {
+	VT_REGISTER_ASSET_FACTORY(AssetTypes::AnimatedCharacter, AnimatedCharacter);
+
 	const Vector<glm::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, float aStartTime, bool looping) const
 	{
 		if (myAnimations.find(index) == myAnimations.end())

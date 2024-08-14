@@ -2,7 +2,7 @@
 
 #include "Sandbox/Utility/AssetPreview.h"
 
-#include <Volt/Asset/Asset.h>
+#include <AssetSystem/Asset.h>
 
 #include <imgui.h>
 

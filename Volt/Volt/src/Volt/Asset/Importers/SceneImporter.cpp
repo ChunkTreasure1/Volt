@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "SceneImporter.h"
 
-#include "Volt/Asset/AssetManager.h"
-
 #include "Volt/Components/CoreComponents.h"
 #include "Volt/Components/RenderingComponents.h"
 
@@ -21,6 +19,12 @@
 
 #include "Volt/Utility/Algorithms.h"
 #include "Volt/Utility/FileSystem.h"
+
+#include "Volt/Project/ProjectManager.h"
+
+#include <AssetSystem/AssetManager.h>
+
+#include <CoreUtilities/FileSystem.h>
 
 namespace Volt
 {

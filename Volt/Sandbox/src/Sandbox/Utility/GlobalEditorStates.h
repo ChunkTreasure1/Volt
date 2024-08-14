@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Volt/Asset/Asset.h>
+#include <AssetSystem/Asset.h>
 
 struct GlobalEditorStates
 {

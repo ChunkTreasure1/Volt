@@ -1,7 +1,10 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
 #include "Volt/Scene/EntityID.h"
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetFactory.h>
 
 #include <CoreUtilities/Containers/Vector.h>
 
@@ -70,7 +73,7 @@ namespace Volt
 
 		int maxLength = 300;
 
-		static AssetType GetStaticType() { return AssetType::Timeline; }
+		static AssetType GetStaticType() { return AssetTypes::Timeline; }
 		virtual AssetType GetType() override { return GetStaticType(); }
 		virtual uint32_t GetVersion() const override { return 1; }
 	};

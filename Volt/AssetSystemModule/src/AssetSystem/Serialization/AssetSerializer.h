@@ -1,15 +1,14 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
-
-#include "Volt/Asset/Serialization/AssetSerializationCommon.h"
+#include "AssetSystem/Asset.h"
+#include "AssetSystem/Serialization/AssetSerializationCommon.h"
 
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 #include <CoreUtilities/FileIO/BinaryStreamReader.h>
 
 namespace Volt
 {
-	class AssetSerializer
+	class VTAS_API AssetSerializer
 	{
 	public:
 		virtual ~AssetSerializer() = default;

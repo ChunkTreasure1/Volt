@@ -1,6 +1,6 @@
 #pragma once
-#include "Volt/Asset/Asset.h"
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Mesh/Mesh.h"
 
 #include "Volt/Scene/Scene.h"

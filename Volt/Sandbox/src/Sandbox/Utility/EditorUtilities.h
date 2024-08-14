@@ -3,7 +3,7 @@
 #include "Sandbox/Window/AssetBrowser/AssetCommon.h"
 #include "Sandbox/Utility/AssetBrowserPopup.h"
 
-#include <Volt/Asset/Asset.h>
+#include <AssetSystem/Asset.h>
 #include <Volt/Utility/UIUtility.h>
 
 #include <filesystem>
@@ -59,8 +59,8 @@ enum class ImportState
 class EditorUtils
 {
 public:
-	static bool Property(const std::string& text, Volt::AssetHandle& assetHandle, Volt::AssetType wantedType = Volt::AssetType::None);
-	static bool AssetBrowserPopupField(const std::string& id, Volt::AssetHandle& assetHandle, Volt::AssetType wantedType = Volt::AssetType::None);
+	static bool Property(const std::string& text, Volt::AssetHandle& assetHandle, AssetType wantedType = AssetTypes::None);
+	static bool AssetBrowserPopupField(const std::string& id, Volt::AssetHandle& assetHandle, AssetType wantedType = AssetTypes::None);
 
 	static bool SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery, bool setAsActive = false);
 
@@ -84,7 +84,7 @@ public:
 	static void MarkEntityAndChildrenAsEdited(const Volt::Entity& entity);
 
 private:
-	static bool AssetBrowserPopupInternal(const std::string& id, Volt::AssetHandle& assetHandle, bool startState, Volt::AssetType wantedType = Volt::AssetType::None);
+	static bool AssetBrowserPopupInternal(const std::string& id, Volt::AssetHandle& assetHandle, bool startState, AssetType wantedType = AssetTypes::None);
 	struct DefaultFalse
 	{
 		bool state = false;

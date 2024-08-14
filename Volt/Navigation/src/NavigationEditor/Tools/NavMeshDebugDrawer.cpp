@@ -1,10 +1,10 @@
 #include "nvpch.h"
 #include "NavMeshDebugDrawer.h"
 
-#include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Rendering/Material.h>
-
 #include <Volt/Rendering/DebugRenderer.h>
+
+#include <AssetSystem/AssetManager.h>
 
 #include <glm/glm.hpp>
 

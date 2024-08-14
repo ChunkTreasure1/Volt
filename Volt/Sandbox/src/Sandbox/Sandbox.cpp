@@ -57,7 +57,7 @@
 #include <Volt/Core/Application.h>
 #include <Volt/Core/Window.h>
 
-#include <Volt/Asset/AssetManager.h>
+#include <AssetSystem/AssetManager.h>
 
 #include <Volt/Components/CoreComponents.h>
 #include <Volt/Components/LightComponents.h>
@@ -124,7 +124,7 @@ void Sandbox::OnAttach()
 
 	// Shelved Panels (So panel tab doesn't get cluttered up).
 #ifdef VT_DEBUG
-	EditorLibrary::RegisterWithType<PrefabEditorPanel>("", Volt::AssetType::Prefab);
+	EditorLibrary::RegisterWithType<PrefabEditorPanel>("", AssetTypes::Prefab);
 	EditorLibrary::Register<SplinePanel>("", m_runtimeScene);
 	EditorLibrary::Register<Sequencer>("", m_runtimeScene);
 	EditorLibrary::Register<TaigaPanel>("Advanced");
@@ -154,17 +154,17 @@ void Sandbox::OnAttach()
 	m_gameViewPanel = EditorLibrary::Register<GameViewPanel>("Level Editor", m_gameSceneRenderer, m_runtimeScene, m_sceneState);
 	m_assetBrowserPanel = EditorLibrary::Register<AssetBrowserPanel>("", m_runtimeScene, "##Main");
 
-	EditorLibrary::RegisterWithType<MosaicEditorPanel>("", Volt::AssetType::Material);
-	EditorLibrary::RegisterWithType<CharacterEditorPanel>("Animation", Volt::AssetType::AnimatedCharacter);
+	EditorLibrary::RegisterWithType<MosaicEditorPanel>("", AssetTypes::Material);
+	EditorLibrary::RegisterWithType<CharacterEditorPanel>("Animation", AssetTypes::AnimatedCharacter);
 	//EditorLibrary::RegisterWithType<MaterialEditorPanel>("", , myRuntimeScene);
-	EditorLibrary::RegisterWithType<SkeletonEditorPanel>("Animation", Volt::AssetType::Skeleton);
-	EditorLibrary::RegisterWithType<AnimationEditorPanel>("Animation", Volt::AssetType::Animation);
-	EditorLibrary::RegisterWithType<ParticleEmitterEditor>("", Volt::AssetType::ParticlePreset);
-	EditorLibrary::RegisterWithType<BehaviorPanel>("", Volt::AssetType::BehaviorGraph);
-	EditorLibrary::RegisterWithType<BlendSpaceEditorPanel>("Animation", Volt::AssetType::BlendSpace);
-	EditorLibrary::RegisterWithType<MeshPreviewPanel>("", Volt::AssetType::Mesh);
-	EditorLibrary::RegisterWithType<ShaderEditorPanel>("Shader", Volt::AssetType::ShaderDefinition);
-	EditorLibrary::RegisterWithType<MotionWeaveDatabasePanel>("Animation", Volt::AssetType::MotionWeave);
+	EditorLibrary::RegisterWithType<SkeletonEditorPanel>("Animation", AssetTypes::Skeleton);
+	EditorLibrary::RegisterWithType<AnimationEditorPanel>("Animation", AssetTypes::Animation);
+	EditorLibrary::RegisterWithType<ParticleEmitterEditor>("", AssetTypes::ParticlePreset);
+	EditorLibrary::RegisterWithType<BehaviorPanel>("", AssetTypes::BehaviorGraph);
+	EditorLibrary::RegisterWithType<BlendSpaceEditorPanel>("Animation", AssetTypes::BlendSpace);
+	EditorLibrary::RegisterWithType<MeshPreviewPanel>("", AssetTypes::Mesh);
+	EditorLibrary::RegisterWithType<ShaderEditorPanel>("Shader", AssetTypes::ShaderDefinition);
+	EditorLibrary::RegisterWithType<MotionWeaveDatabasePanel>("Animation", AssetTypes::MotionWeave);
 
 	EditorLibrary::Sort();
 
@@ -556,7 +556,7 @@ void Sandbox::NewScene()
 
 void Sandbox::OpenScene()
 {
-	const std::filesystem::path loadPath = FileSystem::OpenFileDialogue({ { "Scene(*.vtscene)", "vtscene" } });
+	const std::filesystem::path loadPath = FileSystem::OpenFileDialogue({ { "Scene(*.vtscene)", "vtscene" } }, Volt::ProjectManager::GetAssetsDirectory());
 	OpenScene(Volt::AssetManager::GetRelativePath(loadPath));
 }
 
@@ -580,7 +580,7 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 		}
 
 		const auto& newSceneMeta = Volt::AssetManager::GetMetadataFromHandle(newScene->handle);
-		if (newSceneMeta.type != Volt::AssetType::Scene)
+		if (newSceneMeta.type != AssetTypes::Scene)
 		{
 			return;
 		}
@@ -721,9 +721,9 @@ void Sandbox::InstallMayaTools()
 			std::filesystem::create_directory(yamlPath);
 		}
 
-		FileSystem::CopyFileTo("../Tools/MayaExporter/voltTranslator.py", pluginsPath);
-		FileSystem::CopyFileTo("../Tools/MayaExporter/voltExport.py", scriptsPath);
-		FileSystem::CopyFileTo("../Tools/MayaExporter/voltTranslatorOpts.mel", scriptsPath);
+		FileSystem::CopyFileToDirectory("../Tools/MayaExporter/voltTranslator.py", pluginsPath);
+		FileSystem::CopyFileToDirectory("../Tools/MayaExporter/voltExport.py", scriptsPath);
+		FileSystem::CopyFileToDirectory("../Tools/MayaExporter/voltTranslatorOpts.mel", scriptsPath);
 
 		FileSystem::Copy("../Tools/MayaExporter/yaml", scriptsPath / "yaml");
 	}

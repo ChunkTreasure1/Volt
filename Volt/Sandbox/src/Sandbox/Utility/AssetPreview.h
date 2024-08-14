@@ -1,15 +1,10 @@
 #pragma once
 
-#include <Volt/Asset/Asset.h>
+#include <AssetSystem/Asset.h>
 #include <Volt/Scene/Entity.h>
 
 namespace Volt
 {
-	namespace RHI
-	{
-		class Image2D;
-	}
-
 	class Scene;
 	class SceneRenderer;
 	class Camera;

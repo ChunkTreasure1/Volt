@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "MaterialSerializer.h"
 
-#include "Volt/Asset/AssetManager.h"
+#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Utility/YAMLSerializationHelpers.h"

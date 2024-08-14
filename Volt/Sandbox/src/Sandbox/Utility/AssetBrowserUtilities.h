@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
+#include <AssetSystem/Asset.h>
 
 #include <CoreUtilities/Containers/Vector.h>
 
@@ -44,6 +44,6 @@ namespace AssetBrowser
 
 		inline static Vector<Ref<Volt::Mesh>> meshesToExport;
 
-		static const std::unordered_map<Volt::AssetType, std::function<void(AssetItem*)>>& GetPopupRenderFunctions();
+		static const std::unordered_map<AssetType, std::function<void(AssetItem*)>>& GetPopupRenderFunctions();
 	};
 }
