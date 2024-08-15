@@ -113,7 +113,7 @@ namespace Volt
 		std::string_view label;
 		std::string_view description;
 
-		AssetType assetType = AssetTypes::None;
+		VoltGUID assetTypeGuid = VoltGUID::Null();
 		ComponentMemberFlag flags = ComponentMemberFlag::None;
 
 		const ICommonTypeDesc* typeDesc = nullptr;
@@ -123,6 +123,11 @@ namespace Volt
 		Scope<IDefaultValueType> defaultValue;
 
 		std::function<void(void* lhs, const void* rhs)> copyFunction;
+
+		VT_INLINE AssetType GetAssetType() const
+		{
+			return g_assetTypeRegistry.GetTypeFromGUID(assetTypeGuid);
+		}
 	};
 
 	struct EnumConstant
@@ -331,8 +336,8 @@ namespace Volt
 			return AddMember(memberPtr, name, label, description, defaultValue, AssetTypes::None, flags);
 		}
 
-		template<typename Type, typename DefaultValueT, typename TypeParent = T>
-		const ComponentMember& AddMember(Type TypeParent::* memberPtr, std::string_view name, std::string_view label, std::string_view description, const DefaultValueT& defaultValue, AssetType assetType, ComponentMemberFlag flags = ComponentMemberFlag::None)
+		template<typename Type, typename DefaultValueT, typename AssetTypeType, typename TypeParent = T>
+		const ComponentMember& AddMember(Type TypeParent::* memberPtr, std::string_view name, std::string_view label, std::string_view description, const DefaultValueT& defaultValue, AssetTypeType assetType, ComponentMemberFlag flags = ComponentMemberFlag::None)
 		{
 			static ComponentMember* nullMember = nullptr;
 
@@ -358,11 +363,11 @@ namespace Volt
 
 			if constexpr (IsArrayType<Type>() || IsReflectedType<Type>())
 			{
-				m_members.emplace_back(offset, name, label, description, assetType, flags, GetTypeDesc<Type>(), this, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
+				m_members.emplace_back(offset, name, label, description, AssetTypeType::element_type::guid, flags, GetTypeDesc<Type>(), this, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
 			}
 			else
 			{
-				m_members.emplace_back(offset, name, label, description, assetType, flags, nullptr, this, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
+				m_members.emplace_back(offset, name, label, description, AssetTypeType::element_type::guid, flags, nullptr, this, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
 			}
 
 
