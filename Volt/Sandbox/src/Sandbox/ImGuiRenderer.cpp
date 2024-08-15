@@ -11,11 +11,9 @@
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Rendering/Shader/ShaderMap.h>
-
-#include <AssetSystem/AssetManager.h>
 
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
+#include <Volt/Scripting/EnumGenerator.h>
 
 #include <Volt/Utility/PremadeCommands.h>
 #include <Volt/Utility/FileSystem.h>
@@ -24,7 +22,8 @@
 #include <Volt/Project/ProjectManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 
-#include <Volt/Scripting/EnumGenerator.h>
+#include <AssetSystem/AssetManager.h>
+#include <RenderCore/Shader/ShaderMap.h>
 
 #include <WindowModule/WindowManager.h>
 #include <WindowModule/Window.h>

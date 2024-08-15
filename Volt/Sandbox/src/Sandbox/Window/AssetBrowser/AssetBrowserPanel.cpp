@@ -16,7 +16,6 @@
 #include "Sandbox/Window/AssetBrowser/AssetDirectoryProcessor.h"
 #include "Sandbox/UserSettingsManager.h"
 
-#include <AssetSystem/AssetManager.h>
 #include <Volt/Asset/Prefab.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 #include <Volt/Asset/Rendering/Material.h>
@@ -34,7 +33,6 @@
 #include <Volt/Project/ProjectManager.h>
 
 #include <Volt/Rendering/Texture/Texture2D.h>
-#include <Volt/Rendering/Shader/ShaderMap.h>
 
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
@@ -43,8 +41,8 @@
 
 #include <Volt/Scripting/Mono/MonoScriptUtils.h>
 
-#include <InputModule/Input.h>
-#include <InputModule/KeyCodes.h>
+#include <AssetSystem/AssetManager.h>
+#include <RenderCore/Shader/ShaderMap.h>
 
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
@@ -54,6 +52,8 @@
 #include <WindowModule/Window.h>
 #include <WindowModule/Events/WindowEvents.h>
 
+#include <InputModule/Input.h>
+#include <InputModule/KeyCodes.h>
 #include <InputModule/Events/KeyboardEvents.h>
 #include <InputModule/Events/MouseEvents.h>
 

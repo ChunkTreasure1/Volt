@@ -8,8 +8,9 @@
 
 #include <Volt/Project/ProjectManager.h>
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
-#include <Volt/Rendering/Shader/ShaderMap.h>
 #include <Volt/Asset/Rendering/ShaderDefinition.h>
+
+#include <RenderCore/Shader/ShaderMap.h>
 
 #include <Volt/Utility/UIUtility.h>
 
