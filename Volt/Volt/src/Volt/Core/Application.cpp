@@ -10,7 +10,6 @@
 #include "Volt/Steam/SteamImplementation.h"
 
 #include "Volt/Rendering/Renderer.h"
-#include "Volt/Rendering/Shader/ShaderMap.h"
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Project/ProjectManager.h"
@@ -105,8 +104,6 @@ namespace Volt
 		
 		Renderer::PreInitialize();
 		m_assetmanager = CreateScope<AssetManager>(ProjectManager::GetDirectory(), ProjectManager::GetAssetsDirectory(), ProjectManager::GetEngineDirectory());
-		
-		ShaderMap::Initialize();
 		Renderer::Initialize();
 
 		//UIRenderer::Initialize();
@@ -195,7 +192,6 @@ namespace Volt
 
 		m_assetmanager = nullptr;
 
-		ShaderMap::Shutdown();
 		Renderer::Shutdown();
 
 		TextureImporter::Shutdown();

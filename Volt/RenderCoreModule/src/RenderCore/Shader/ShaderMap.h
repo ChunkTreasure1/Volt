@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Core/Base.h"
+#include "RenderCore/Config.h"
 
 #include <RHIModule/Pipelines/RenderPipeline.h>
 #include <RHIModule/Pipelines/ComputePipeline.h>
@@ -18,29 +18,27 @@ namespace Volt
 		struct RenderPipelineCreateInfo;
 	}
 
-	class ShaderMap
+	class VTRC_API ShaderMap
 	{
 	public:
-		static void Initialize();
-		static void Shutdown();
+		ShaderMap();
+		~ShaderMap();
 
 		static void ReloadAll();
 		static bool ReloadShaderByName(const std::string& name);
+
+		static void RegisterShader(const std::string& name, RefPtr<RHI::Shader> shader);
 
 		static RefPtr<RHI::Shader> Get(const std::string& name);
 		static RefPtr<RHI::ComputePipeline> GetComputePipeline(const std::string& name, bool useGlobalResouces = true);
 		static RefPtr<RHI::RenderPipeline> GetRenderPipeline(const RHI::RenderPipelineCreateInfo& pipelineInfo);
 
 	private:
-		static void LoadShaders();
-		static Vector<std::filesystem::path> FindShaderIncludes(const std::filesystem::path& filePath);
-		static void RegisterShader(const std::string& name, RefPtr<RHI::Shader> shader);
+		inline static ShaderMap* s_instance = nullptr;
 
-		inline static vt::map<std::string, RefPtr<RHI::Shader>> s_shaderMap;
-
-		inline static vt::map<size_t, RefPtr<RHI::ComputePipeline>> s_computePipelineCache;
-		inline static vt::map<size_t, RefPtr<RHI::RenderPipeline>> s_renderPipelineCache;
-
-		inline static std::mutex s_registerMutex;
+		vt::map<std::string, RefPtr<RHI::Shader>> m_shaderMap;
+		vt::map<size_t, RefPtr<RHI::ComputePipeline>> m_computePipelineCache;
+		vt::map<size_t, RefPtr<RHI::RenderPipeline>> m_renderPipelineCache;
+		std::mutex m_registerMutex;
 	};
 }

@@ -1,14 +1,13 @@
 #include "vtpch.h"
 #include "PrefixSumTechnique.h"
 
+#include "Volt/Math/Math.h"
+
 #include <RenderCore/RenderGraph/RenderGraph.h>
 #include <RenderCore/RenderGraph/Resources/RenderGraphBufferResource.h>
 #include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
 #include <RenderCore/RenderGraph/RenderGraphUtils.h>
-
-#include "Volt/Math/Math.h"
-
-#include "Volt/Rendering/Shader/ShaderMap.h"
+#include <RenderCore/Shader/ShaderMap.h>
 
 #include <RHIModule/Buffers/BufferView.h>
 #include <RHIModule/Buffers/StorageBuffer.h>

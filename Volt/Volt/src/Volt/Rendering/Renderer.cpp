@@ -2,21 +2,24 @@
 #include "Renderer.h"
 
 #include "Volt/Core/Application.h"
-#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Rendering/Material.h"
+#include "Volt/Asset/Rendering/ShaderSource.h"
+#include "Volt/Asset/Rendering/ShaderDefinition.h"
 
 #include "Volt/Project/ProjectManager.h"
 
-#include "Volt/Rendering/Shader/ShaderMap.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 
 #include "Volt/Math/Math.h"
+
+#include <AssetSystem/AssetManager.h>
 
 #include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
 #include <RenderCore/RenderGraph/RenderGraph.h>
 #include <RenderCore/RenderGraph/RenderContextUtils.h>
 #include <RenderCore/Debug/ShaderRuntimeValidator.h>
 #include <RenderCore/Resources/BindlessResourcesManager.h>
+#include <RenderCore/Shader/ShaderMap.h>
 
 #include <RHIModule/Shader/ShaderCompiler.h>
 #include <RHIModule/Shader/ShaderCache.h>
@@ -31,6 +34,7 @@
 
 #include <CoreUtilities/Containers/FunctionQueue.h>
 #include <CoreUtilities/Math/Hash.h>
+#include <CoreUtilities/Time/ScopedTimer.h>
 
 #include <WindowModule/WindowManager.h>
 #include <WindowModule/Window.h>
@@ -67,6 +71,7 @@ namespace Volt
 #endif
 			shaderCache = nullptr;
 			shaderCompiler = nullptr;
+			shaderMap = nullptr;
 			bindlessResourcesManager = nullptr;
 
 			for (auto& resourceQueue : deletionQueue)
@@ -77,6 +82,7 @@ namespace Volt
 
 		RefPtr<RHI::ShaderCompiler> shaderCompiler;
 		Scope<RHI::ShaderCache> shaderCache;
+		Scope<ShaderMap> shaderMap;
 		Scope<BindlessResourcesManager> bindlessResourcesManager;
 
 #ifndef VT_DIST
@@ -130,6 +136,9 @@ namespace Volt
 
 	void Renderer::Initialize()
 	{
+		s_rendererData->shaderMap = CreateScope<ShaderMap>();
+		LoadShaders();
+
 		RenderGraphExecutionThread::Initialize(RenderGraphExecutionThread::ExecutionMode::Multithreaded);
 
 #ifndef VT_DIST
@@ -527,5 +536,166 @@ namespace Volt
 
 		renderGraph.Compile();
 		renderGraph.ExecuteImmediate();
+	}
+
+	static Vector<std::filesystem::path> FindShaderIncludes(const std::filesystem::path& filePath)
+	{
+		constexpr const char* INCLUDE_KEYWORD = "#include";
+
+		std::ifstream input{ filePath };
+		if (!input.is_open())
+		{
+			return {};
+		}
+
+		std::string shaderString{};
+		input.seekg(0, std::ios::end);
+		shaderString.resize(input.tellg());
+		input.seekg(0, std::ios::beg);
+		input.read(&shaderString[0], shaderString.size());
+
+		input.close();
+
+		Vector<std::filesystem::path> resultIncludes{};
+
+		size_t offset = shaderString.find(INCLUDE_KEYWORD, 0);
+		while (offset != std::string::npos)
+		{
+			size_t openOffset = shaderString.find_first_of("\"<", offset);
+			if (openOffset == std::string::npos)
+			{
+				break;
+			}
+
+			size_t closeOffset = shaderString.find_first_of("\">", openOffset + 1);
+			if (closeOffset == std::string::npos)
+			{
+				break;
+			}
+
+			std::string includeString = shaderString.substr(openOffset + 1, closeOffset - openOffset - 1);
+
+			// Find real path
+			if (std::filesystem::exists(filePath.parent_path() / includeString))
+			{
+				resultIncludes.emplace_back(filePath.parent_path() / includeString);
+			}
+			else if (std::filesystem::exists(ProjectManager::GetEngineShaderIncludeDirectory() / includeString))
+			{
+				resultIncludes.emplace_back(ProjectManager::GetEngineShaderIncludeDirectory() / includeString);
+			}
+			else if (std::filesystem::exists(ProjectManager::GetAssetsDirectory() / includeString))
+			{
+				resultIncludes.emplace_back(ProjectManager::GetAssetsDirectory() / includeString);
+			}
+
+			offset = shaderString.find(INCLUDE_KEYWORD, offset + 1);
+		}
+
+		return resultIncludes;
+	}
+
+	void Renderer::LoadShaders()
+	{
+		const Vector<std::filesystem::path> searchPaths =
+		{
+			ProjectManager::GetEngineDirectory() / "Engine" / "Shaders",
+			ProjectManager::GetAssetsDirectory()
+		};
+
+		ScopedTimer timer{};
+
+		VT_LOGC(Info, LogRender, "Starting shader import!");
+
+		// Add source files to asset registry and setup dependencies
+		for (const auto& searchPath : searchPaths)
+		{
+			for (const auto& path : std::filesystem::recursive_directory_iterator(searchPath))
+			{
+				const auto relPath = AssetManager::GetRelativePath(path.path());
+				const auto extStr = relPath.extension().string();
+
+				if (extStr != ShaderSource::Extension && extStr != ShaderSource::ExtensionInclude)
+				{
+					continue;
+				}
+
+				if (!AssetManager::ExistsInRegistry(relPath))
+				{
+					AssetManager::Get().AddAssetToRegistry(relPath, AssetTypes::ShaderSource);
+				}
+
+				AssetHandle shaderHandle = AssetManager::GetAssetHandleFromFilePath(relPath);
+				if (shaderHandle == Asset::Null())
+				{
+					continue;
+				}
+
+				const auto includes = FindShaderIncludes(relPath);
+				for (const auto include : includes)
+				{
+					const auto relIncludePath = AssetManager::GetRelativePath(include);
+
+					if (!AssetManager::ExistsInRegistry(relIncludePath))
+					{
+						AssetManager::Get().AddAssetToRegistry(relIncludePath, AssetTypes::ShaderSource);
+					}
+
+					AssetHandle includeHandle = AssetManager::GetAssetHandleFromFilePath(relIncludePath);
+					if (includeHandle != Asset::Null())
+					{
+						AssetManager::AddDependencyToAsset(shaderHandle, includeHandle);
+					}
+				}
+			}
+		}
+
+		Vector<std::future<void>> shaderFutures;
+		std::mutex shaderMapMutex;
+
+		for (const auto& searchPath : searchPaths)
+		{
+			for (const auto& path : std::filesystem::recursive_directory_iterator(searchPath))
+			{
+				const auto relPath = AssetManager::GetRelativePath(path.path());
+				if (relPath.extension().string() != ShaderDefinition::Extension)
+				{
+					continue;
+				}
+
+				if (!AssetManager::ExistsInRegistry(relPath))
+				{
+					AssetManager::Get().AddAssetToRegistry(relPath, AssetTypes::ShaderDefinition);
+				}
+
+				Ref<ShaderDefinition> shaderDef = AssetManager::GetAsset<ShaderDefinition>(relPath);
+				for (const auto& sourceEntry : shaderDef->GetSourceEntries())
+				{
+					AssetManager::AddDependencyToAsset(shaderDef->handle, AssetManager::GetAssetHandleFromFilePath(sourceEntry.filePath));
+				}
+
+				shaderFutures.emplace_back(JobSystem::SubmitTask([&, def = shaderDef]() 
+				{
+					RHI::ShaderSpecification specification;
+					specification.name = def->GetName();
+					specification.sourceEntries = def->GetSourceEntries();
+					specification.permutations = def->GetPermutations();
+					specification.forceCompile = false;
+
+					RefPtr<RHI::Shader> shader = RHI::Shader::Create(specification);
+					{
+						std::scoped_lock lock{ shaderMapMutex };
+						ShaderMap::RegisterShader(std::string(def->GetName()), shader);
+					}
+				}));
+			}
+		}
+
+		for (const auto& future : shaderFutures)
+		{
+			future.wait();
+		}
+
+		VT_LOGC(Info, LogRender, "Shader import finished in {} seconds!", timer.GetTime<Time::Seconds>());
 	}
 }

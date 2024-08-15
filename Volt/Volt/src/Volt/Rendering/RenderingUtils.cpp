@@ -1,8 +1,7 @@
 #include "vtpch.h"
 #include "RenderingUtils.h"
 
-#include "Volt/Rendering/Shader/ShaderMap.h"
-
+#include <RenderCore/Shader/ShaderMap.h>
 #include <RenderCore/RenderGraph/RenderGraph.h>
 #include <RenderCore/RenderGraph/RenderGraphUtils.h>
 #include <RenderCore/RenderGraph/RenderContextUtils.h>

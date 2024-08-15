@@ -1,13 +1,12 @@
 #include "vtpch.h"
 #include "VTMeshImporter.h"
 
-#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Mesh/Mesh.h"
-
 #include "Volt/Asset/Rendering/Material.h"
 #include "Volt/Asset/Rendering/MaterialTable.h"
 
-#include "Volt/Rendering/Shader/ShaderMap.h"
+#include <AssetSystem/AssetManager.h>
+#include <RenderCore/Shader/ShaderMap.h>
 
 namespace Volt
 {

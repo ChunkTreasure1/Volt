@@ -1,22 +1,17 @@
 #include "vtpch.h"
 #include "AssetImporter.h"
 
-#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Importers/TextureImporter.h"
 #include "Volt/Asset/Text/Font.h"
-
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
 
 #include "Volt/Animation/BlendSpace.h"
-
 #include "Volt/Physics/PhysicsMaterial.h"
-
 #include "Volt/Rendering/Texture/Texture2D.h"
-
-#include "Volt/Rendering/Shader/ShaderMap.h"
-
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
+#include <AssetSystem/AssetManager.h>
+#include <RenderCore/Shader/ShaderMap.h>
 #include <RHIModule/Shader/Shader.h>
 
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>

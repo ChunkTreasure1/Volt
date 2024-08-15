@@ -2,7 +2,6 @@
 #include "VelocityTechnique.h"
 
 #include "Volt/Rendering/SceneRendererStructs.h"
-#include "Volt/Rendering/Shader/ShaderMap.h"
 #include "Volt/Rendering/Camera/Camera.h"
 #include "Volt/Rendering/Renderer.h"
 
@@ -10,6 +9,7 @@
 #include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
 #include <RenderCore/RenderGraph/RenderGraphUtils.h>
 #include <RenderCore/RenderGraph/RenderContextUtils.h>
+#include <RenderCore/Shader/ShaderMap.h>
 
 #include <RHIModule/Pipelines/RenderPipeline.h>
 

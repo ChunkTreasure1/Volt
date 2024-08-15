@@ -1,7 +1,6 @@
 #include "vtpch.h"
 #include "DirectionalShadowTechnique.h"
 
-#include "Volt/Rendering/Shader/ShaderMap.h"
 #include "Volt/Rendering/RenderScene.h"
 #include "Volt/Rendering/RendererCommon.h"
 #include "Volt/Rendering/Camera/Camera.h"
@@ -11,6 +10,7 @@
 #include <RenderCore/RenderGraph/RenderGraph.h>
 #include <RenderCore/RenderGraph/RenderGraphBlackboard.h>
 #include <RenderCore/RenderGraph/Resources/RenderGraphTextureResource.h>
+#include <RenderCore/Shader/ShaderMap.h>
 
 #include <RHIModule/Pipelines/RenderPipeline.h>
 

@@ -79,6 +79,7 @@ namespace Volt
 		static BindlessResourceRef<RHI::SamplerState> GetSamplerInternal(const RHI::SamplerStateCreateInfo& samplerInfo);
 		static void CreateDefaultResources();
 		static void GenerateBRDFLuT();
+		static void LoadShaders();
 
 		Renderer() = delete;
 	};
