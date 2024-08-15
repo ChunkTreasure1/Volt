@@ -186,14 +186,27 @@ namespace Volt
 		const auto projectAssetFiles = GetProjectAssetFiles();
 		const auto engineAssetFiles = GetEngineAssetFiles();
 
+		Vector<std::future<void>> futures;
+
 		for (auto file : engineAssetFiles)
 		{
-			DeserializeAssetMetadata(file);
+			futures.emplace_back(JobSystem::SubmitTask([this, file]()
+			{
+				DeserializeAssetMetadata(file);
+			}));
 		}
 
 		for (auto file : projectAssetFiles)
 		{
-			DeserializeAssetMetadata(GetFilesystemPath(file));
+			futures.emplace_back(JobSystem::SubmitTask([this, file]()
+			{
+				DeserializeAssetMetadata(GetFilesystemPath(file));
+			}));
+		}
+
+		for (auto& f : futures)
+		{
+			f.wait();
 		}
 
 		for (const auto& [handle, metadata] : m_assetRegistry)

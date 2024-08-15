@@ -154,8 +154,8 @@ Ref<Volt::Texture2D> EditorResources::TryLoadIcon(const std::filesystem::path& p
 
 Ref<Volt::Mesh> EditorResources::TryLoadMesh(const std::filesystem::path& path)
 {
-	Ref<Volt::Mesh> mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(path);
-	if (!mesh || !mesh->IsValid())
+	Ref<Volt::Mesh> mesh = Volt::AssetManager::QueueAsset<Volt::Mesh>(Volt::AssetManager::GetAssetHandleFromFilePath(path));
+	if (!mesh)
 	{
 		mesh = Volt::ShapeLibrary::GetCube();
 	}
