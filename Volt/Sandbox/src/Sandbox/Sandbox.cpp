@@ -140,7 +140,8 @@ void Sandbox::OnAttach()
 			}
 		}
 	}
-	else
+
+	if (!m_runtimeScene)
 	{
 		NewScene();
 	}

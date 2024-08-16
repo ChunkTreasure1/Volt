@@ -13,6 +13,7 @@
 
 #include <Volt/Core/Application.h>
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
+#include <Volt/Project/ProjectManager.h>
 
 #include <InputModule/KeyCodes.h>
 

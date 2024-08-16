@@ -6,7 +6,6 @@
 #include <Volt/Core/Application.h>
 #include <Volt/EntryPoint.h>
 
-#include <Volt/Platform/ExceptionHandling.h>
 #include <Volt/Project/ProjectManager.h>
 
 class SandboxApp : public Volt::Application

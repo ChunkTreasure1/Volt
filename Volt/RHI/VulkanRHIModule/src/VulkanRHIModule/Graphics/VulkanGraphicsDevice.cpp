@@ -9,7 +9,6 @@
 #include "VulkanRHIModule/Core.h"
 
 #include <vulkan/vulkan.h>
-#include <optick.h>
 
 namespace Volt::RHI
 {

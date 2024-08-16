@@ -19,8 +19,7 @@
 #include "nvpch.h"
 #include "PerfTimer.h"
 
-// Win32
-#include <windows.h>
+#include <CoreUtilities/Platform/Windows/VoltWindows.h>
 
 TimeVal getPerfTime()
 {

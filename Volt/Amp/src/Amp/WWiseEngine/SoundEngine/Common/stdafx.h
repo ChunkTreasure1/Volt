@@ -24,10 +24,3 @@ written agreement between you and Audiokinetic Inc.
 
 #include <AK/SoundEngine/Common/AkTypes.h>
 #include <AK/Tools/Common/AkPlatformFuncs.h>
-
-#define DIRECTINPUT_VERSION 0x0800
-#if defined(_MSC_VER) && (_MSC_VER < 1900)
-#define snprintf _snprintf
-#endif
-#include <windows.h>
-#include <wchar.h>

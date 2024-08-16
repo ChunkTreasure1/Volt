@@ -11,7 +11,6 @@
 #include <CoreUtilities/Pointers/WeakPtr.h>
 
 #include <functional>
-#include <Windows.h>
 
 #include <glm/glm.hpp>
 
@@ -78,7 +77,7 @@ namespace Volt
 		WINDOWMODULE_API inline const bool IsVSync() const { return m_data.VSync; }
 		WINDOWMODULE_API inline const WindowMode GetWindowMode() const { return m_data.WindowMode; }
 		WINDOWMODULE_API inline GLFWwindow* GetNativeWindow() const { return m_window; }
-		WINDOWMODULE_API inline HWND GetHWND() const { return m_windowHandle; }
+		WINDOWMODULE_API inline void* GetHWND() const { return m_windowHandle; }
 
 		WINDOWMODULE_API inline const RHI::Swapchain& GetSwapchain() const { return *m_swapchain; }
 		WINDOWMODULE_API inline const WeakPtr<RHI::Swapchain> GetSwapchainPtr() const { return m_swapchain; }
@@ -89,7 +88,7 @@ namespace Volt
 		static bool CheckEventCallback(GLFWwindow* window);
 
 		GLFWwindow* m_window = nullptr;
-		HWND m_windowHandle = nullptr;
+		void* m_windowHandle = nullptr;
 		bool m_hasBeenInitialized = false;
 		bool m_isFullscreen = false;
 

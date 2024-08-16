@@ -1,12 +1,13 @@
 #include "DrawIndirectTest.h"
 
-#include <Volt/Rendering/Shader/ShaderMap.h>
 #include <Volt/Core/Application.h>
 
 #include <RHIModule/Descriptors/DescriptorTable.h>
 #include <RHIModule/Buffers/StorageBuffer.h>
 
 #include <RHIModule/Utility/ResourceUtility.h>
+
+#include <RenderCore/Shader/ShaderMap.h>
 
 #include <WindowModule/WindowManager.h>
 #include <WindowModule/Window.h>

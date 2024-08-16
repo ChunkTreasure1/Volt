@@ -41,7 +41,6 @@ project "CoreUtilities"
 		"src/",
 		
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.Optick}",
 		"%{IncludeDir.tracy}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.zlib}",

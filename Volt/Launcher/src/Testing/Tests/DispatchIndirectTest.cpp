@@ -1,6 +1,6 @@
 #include "DispatchIndirectTest.h"
 
-#include <Volt/Rendering/Shader/ShaderMap.h>
+#include <RenderCore/Shader/ShaderMap.h>
 
 #include <RHIModule/Descriptors/DescriptorTable.h>
 #include <RHIModule/Buffers/StorageBuffer.h>

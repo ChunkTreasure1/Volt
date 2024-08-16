@@ -5,10 +5,8 @@
 	#if defined(_MSC_VER)
 		#include <crtdbg.h>
 	#endif
-	#ifndef WIN32_LEAN_AND_MEAN	
-		#define WIN32_LEAN_AND_MEAN
-	#endif
-	#include <Windows.h>
+
+#include "CoreUtilities/Platform/Windows/VoltWindows.h"
 #endif
 
 void AssertionFailure(const char* expression)

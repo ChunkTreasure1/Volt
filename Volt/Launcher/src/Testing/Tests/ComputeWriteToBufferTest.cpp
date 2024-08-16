@@ -1,6 +1,6 @@
 #include "ComputeWriteToBufferTest.h"
 
-#include <Volt/Rendering/Shader/ShaderMap.h>
+#include <RenderCore/Shader/ShaderMap.h>
 
 #include <RHIModule/Buffers/StorageBuffer.h>
 

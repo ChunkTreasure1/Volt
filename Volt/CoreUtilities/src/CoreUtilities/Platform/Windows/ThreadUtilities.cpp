@@ -1,8 +1,7 @@
 #include "cupch.h"
 #include "CoreUtilities/ThreadUtilities.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include "CoreUtilities/Platform/Windows/VoltWindows.h"
 
 const DWORD MS_VC_EXCEPTION = 0x406D1388;
 #pragma pack(push,8)  

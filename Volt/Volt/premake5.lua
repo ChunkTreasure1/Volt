@@ -99,7 +99,6 @@ project "Volt"
 	links
 	{
 		"ImGui",
-		"Optick",
 		"tracy",
 		"Navigation",
 		"msdf-atlas-gen",

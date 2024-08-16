@@ -1,8 +1,9 @@
+VULKAN_SDK = os.getenv("VULKAN_SDK")
+
 IncludeDir = {}
 IncludeDir["ImGui"] = "%{wks.location}/Volt/vendor/ImGui"
 IncludeDir["spdlog"] = "%{wks.location}/Volt/vendor/spdlog/include"
 IncludeDir["yaml"] = "%{wks.location}/Volt/vendor/yaml-cpp/include"
-IncludeDir["Optick"] = "%{wks.location}/Volt/vendor/Optick/src"
 IncludeDir["tracy"] = "%{wks.location}/Volt/vendor/tracy/public/tracy"
 IncludeDir["tinyddsloader"] = "%{wks.location}/Volt/vendor/tinyddsloader/"
 IncludeDir["imgui_notify"] = "%{wks.location}/Volt/vendor/imgui-notify/"

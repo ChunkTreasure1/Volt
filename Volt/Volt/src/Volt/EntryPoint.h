@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Volt/Core/Application.h"
-#include "Volt/Platform/ExceptionHandling.h"
 #include "Volt/Core/Allocator.h"
 
 #include <filesystem>
@@ -18,32 +17,11 @@ namespace Volt
 		delete app;
 	}
 
-	void StartCrashHandler()
-	{
-		FileSystem::StartProcess("CrashHandler.exe");
-	}
-
-	void CreateProxy(std::filesystem::path& dmpPath, const std::filesystem::path& path)
-	{
-#ifdef VT_DIST
-		__try
-		{
-			Create(path);
-		}
-		__except (ExceptionFilterFunction(GetExceptionInformation(), dmpPath))
-		{
-			StartCrashHandler();
-		}
-#else
-		Create(path);
-#endif
-	}
-
 	int Main(const std::filesystem::path& appPath)
 	{
 		std::filesystem::path dmpPath;
 
-		CreateProxy(dmpPath, appPath);
+		Create(appPath);
 
 		Allocator::CheckAllocations();
 		return 0;
@@ -52,7 +30,7 @@ namespace Volt
 
 #ifdef VT_DIST
 
-#include <Windows.h>
+#include <CoreUtilities/Platform/Windows/VoltWindows.h>
 
 int APIENTRY WinMain(HINSTANCE aHInstance, HINSTANCE aPrevHInstance, PSTR aCmdLine, int aCmdShow)
 {
