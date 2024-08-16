@@ -257,7 +257,7 @@ void AssetBrowserPanel::UpdateMainContent()
 			myDragDroppedMeshes.pop_back();
 
 			AssetData assetData;
-			assetData.handle = Volt::AssetManager::Get().AddAssetToRegistry(path, AssetTypes::MeshSource);
+			assetData.handle = Volt::AssetManager::Get().GetOrAddAssetToRegistry(path, AssetTypes::MeshSource);
 			assetData.path = path;
 			assetData.type = AssetTypes::MeshSource;
 

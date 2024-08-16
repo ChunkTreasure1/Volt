@@ -4,6 +4,8 @@
 
 #include <NavigationEditor/Builder/BuildInterfaces.h>
 
+#include <AssetSystem/AssetHandle.h>
+
 struct WindowSettings
 {
 	std::unordered_map<std::string, bool> windowsOpen;
@@ -46,7 +48,7 @@ struct SceneSettings
 	bool showEnvironmentProbes = false;
 	NavMeshViewMode navMeshViewMode = NavMeshViewMode::None;
 
-	std::filesystem::path lastOpenScene;
+	Volt::AssetHandle defaultOpenScene;
 };
 
 struct ExternalToolsSettings

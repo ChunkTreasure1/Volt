@@ -80,6 +80,8 @@ public:
 	static bool HasThumbnail(const std::filesystem::path& path);
 	static std::filesystem::path GetThumbnailPathFromPath(const std::filesystem::path& path);
 
+	static std::string GetDuplicatedNameFromEntity(const Volt::Entity& entity);
+
 	static void MarkEntityAsEdited(const Volt::Entity& entity);
 	static void MarkEntityAndChildrenAsEdited(const Volt::Entity& entity);
 

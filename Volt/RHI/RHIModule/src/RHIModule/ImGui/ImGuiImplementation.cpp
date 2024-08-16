@@ -7,28 +7,10 @@
 
 #include <imgui.h>
 //#include <imgui_notify.h>
-
 #include <tahoma.h>
-#include "FontAwesome.h"
 
 namespace Volt::RHI
 {
-	//void MergeIconsWithLatestFont(float font_size)
-	//{
-	//	ImGuiIO& io = ImGui::GetIO();
-
-	//	float baseFontSize = font_size; // 13.0f is the size of the default font. Change to the font size you use.
-	//	float iconFontSize = baseFontSize; // FontAwesome fonts need to have their sizes reduced by 2.0f/3.0f in order to align correctly
-
-	//	// merge in icons from Font Awesome
-	//	static const ImWchar icons_ranges[] = { ICON_MIN_FA, VT_ICON_MAX_16_FA, 0 };
-	//	ImFontConfig icons_config;
-	//	icons_config.MergeMode = true;
-	//	icons_config.PixelSnapH = true;
-	//	icons_config.GlyphMinAdvanceX = iconFontSize;
-	//	io.Fonts->AddFontFromFileTTF("Engine/Fonts/FontAwesome/" FONT_ICON_FILE_NAME_FAS, iconFontSize, &icons_config, icons_ranges);
-	//}
-
 	std::filesystem::path GetOrCreateIniPath()
 	{
 		const std::filesystem::path userIniPath = "User/imgui.ini";

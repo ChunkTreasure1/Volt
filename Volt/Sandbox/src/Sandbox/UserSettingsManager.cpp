@@ -55,7 +55,7 @@ void UserSettingsManager::LoadUserSettings()
 	s_editorSettings.sceneSettings.showEnvironmentProbes = streamReader.ReadAtKey("showEnvironmentProbes", false);
 	s_editorSettings.sceneSettings.navMeshViewMode = (NavMeshViewMode)streamReader.ReadAtKey("navMeshViewMode", 0u);
 
-	s_editorSettings.sceneSettings.lastOpenScene = streamReader.ReadAtKey("lastOpenScene", std::string());
+	s_editorSettings.sceneSettings.defaultOpenScene = streamReader.ReadAtKey("defaultOpenScene", Volt::Asset::Null());
 	streamReader.ExitScope();
 
 	streamReader.EnterScope("VersionControlSettings");
@@ -138,7 +138,7 @@ void UserSettingsManager::SaveUserSettings()
 			streamWriter.SetKey("gridSnapValue", s_editorSettings.sceneSettings.gridSnapValue);
 			streamWriter.SetKey("rotationSnapValue", s_editorSettings.sceneSettings.rotationSnapValue);
 			streamWriter.SetKey("scaleSnapValue", s_editorSettings.sceneSettings.scaleSnapValue);
-			streamWriter.SetKey("lastOpenScene", s_editorSettings.sceneSettings.lastOpenScene);
+			streamWriter.SetKey("defaultOpenScene", s_editorSettings.sceneSettings.defaultOpenScene);
 
 			streamWriter.SetKey("showLightSpheres", s_editorSettings.sceneSettings.showLightSpheres);
 			streamWriter.SetKey("showEntityGizmos", s_editorSettings.sceneSettings.showEntityGizmos);

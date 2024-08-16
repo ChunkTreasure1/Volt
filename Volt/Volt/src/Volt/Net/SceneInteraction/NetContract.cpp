@@ -124,12 +124,9 @@ namespace Volt
 
 			if (type == AssetTypes::NetContract)
 			{
-				if (!AssetManager::ExistsInRegistry(relPath))
-				{
-					AssetManager::Get().AddAssetToRegistry(relPath, AssetTypes::NetContract);
-				}
+				AssetHandle contractHandle = AssetManager::Get().GetOrAddAssetToRegistry(relPath, AssetTypes::NetContract);
 
-				Ref<NetContract> contract = AssetManager::GetAsset<NetContract>(relPath);
+				Ref<NetContract> contract = AssetManager::GetAsset<NetContract>(contractHandle);
 				m_contracts.insert({ contract->prefab, contract });
 			}
 		}

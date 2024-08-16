@@ -10,6 +10,8 @@
 
 #include "Volt/Math/Math.h"
 
+#include <JobSystem/JobSystem.h>
+
 namespace Volt
 {
 	void WorldEngine::Reset(Scene* scene, uint32_t initialCellCount, uint32_t cellCountWidth)
@@ -143,8 +145,13 @@ namespace Volt
 			return;
 		}
 
-		SceneSerializer::Get().LoadWorldCell(m_scene->shared_from_this(), cell);
-		cell.isLoaded = true;
+		JobSystem::SubmitTask([cellId, this]() 
+		{
+			auto& cell = GetCellFromID(cellId);
+
+			SceneSerializer::Get().LoadWorldCell(m_scene->shared_from_this(), cell);
+			cell.isLoaded = true;
+		});
 	}
 
 	WorldCellID WorldEngine::GetCellIDFromEntity(const Entity& entity) const

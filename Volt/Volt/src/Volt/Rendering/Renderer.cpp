@@ -620,12 +620,7 @@ namespace Volt
 					continue;
 				}
 
-				if (!AssetManager::ExistsInRegistry(relPath))
-				{
-					AssetManager::Get().AddAssetToRegistry(relPath, AssetTypes::ShaderSource);
-				}
-
-				AssetHandle shaderHandle = AssetManager::GetAssetHandleFromFilePath(relPath);
+				AssetHandle shaderHandle = AssetManager::Get().GetOrAddAssetToRegistry(relPath, AssetTypes::ShaderSource);
 				if (shaderHandle == Asset::Null())
 				{
 					continue;
@@ -636,12 +631,7 @@ namespace Volt
 				{
 					const auto relIncludePath = AssetManager::GetRelativePath(include);
 
-					if (!AssetManager::ExistsInRegistry(relIncludePath))
-					{
-						AssetManager::Get().AddAssetToRegistry(relIncludePath, AssetTypes::ShaderSource);
-					}
-
-					AssetHandle includeHandle = AssetManager::GetAssetHandleFromFilePath(relIncludePath);
+					AssetHandle includeHandle = AssetManager::Get().GetOrAddAssetToRegistry(relIncludePath, AssetTypes::ShaderSource);
 					if (includeHandle != Asset::Null())
 					{
 						AssetManager::AddDependencyToAsset(shaderHandle, includeHandle);
@@ -663,15 +653,12 @@ namespace Volt
 					continue;
 				}
 
-				if (!AssetManager::ExistsInRegistry(relPath))
-				{
-					AssetManager::Get().AddAssetToRegistry(relPath, AssetTypes::ShaderDefinition);
-				}
+				AssetHandle defHandle = AssetManager::Get().GetOrAddAssetToRegistry(relPath, AssetTypes::ShaderDefinition);
+				Ref<ShaderDefinition> shaderDef = AssetManager::GetAsset<ShaderDefinition>(defHandle);
 
-				Ref<ShaderDefinition> shaderDef = AssetManager::GetAsset<ShaderDefinition>(relPath);
 				for (const auto& sourceEntry : shaderDef->GetSourceEntries())
 				{
-					AssetManager::AddDependencyToAsset(shaderDef->handle, AssetManager::GetAssetHandleFromFilePath(sourceEntry.filePath));
+					AssetManager::AddDependencyToAsset(defHandle, AssetManager::GetAssetHandleFromFilePath(sourceEntry.filePath));
 				}
 
 				shaderFutures.emplace_back(JobSystem::SubmitTask([&, def = shaderDef]() 

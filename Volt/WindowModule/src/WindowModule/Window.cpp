@@ -509,6 +509,7 @@ namespace Volt
 
 	void Window::SetOpacity(float opacity) const
 	{
+		opacity = std::clamp(opacity, 0.f, 1.f);
 		glfwSetWindowOpacity(m_window, opacity);
 	}
 

@@ -484,7 +484,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 						UI::Notify(NotificationType::Error, "Failed to compile mesh!", std::format("Failed to compile mesh to location {}!", aImportData.destination.string()));
 					}
 
-					auto handle = Volt::AssetManager::Get().AddAssetToRegistry(aImportData.destination, AssetTypes::Mesh);
+					auto handle = Volt::AssetManager::Get().GetOrAddAssetToRegistry(aImportData.destination, AssetTypes::Mesh);
 				}
 				else
 				{
@@ -941,6 +941,26 @@ bool EditorUtils::HasThumbnail(const std::filesystem::path& path)
 std::filesystem::path EditorUtils::GetThumbnailPathFromPath(const std::filesystem::path& path)
 {
 	return path.string() + ".vtthumb.png";
+}
+
+std::string EditorUtils::GetDuplicatedNameFromEntity(const Volt::Entity& entity)
+{
+	std::string originalName = entity.GetTag();
+	auto lastNumber = originalName.find_last_of("0123456789");
+	auto lastUnderscore = originalName.find_last_of('_');
+
+	int32_t currentNumber = 0;
+
+	if (lastNumber != std::string::npos && lastUnderscore != std::string::npos && lastUnderscore < lastNumber)
+	{
+		std::string currentNumberStr = originalName.substr(lastUnderscore + 1, lastNumber - lastUnderscore);
+		originalName = originalName.substr(0, lastUnderscore);
+		currentNumber = std::stoi(currentNumberStr);
+		currentNumber++;
+	}
+
+	originalName += "_" + std::to_string(currentNumber);
+	return originalName;
 }
 
 void EditorUtils::MarkEntityAsEdited(const Volt::Entity& entity)

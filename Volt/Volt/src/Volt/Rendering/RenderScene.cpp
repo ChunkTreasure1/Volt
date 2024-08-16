@@ -243,6 +243,7 @@ namespace Volt
 			}
 
 			bufferUpload.UploadTo(renderGraph, *m_buffers.meshesBuffer);
+			m_invalidMeshes.clear();
 		}
 
 		// Temporary animation sampling

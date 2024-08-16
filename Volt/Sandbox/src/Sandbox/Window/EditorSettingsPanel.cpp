@@ -4,6 +4,7 @@
 #include "Sandbox/Sandbox.h"
 #include "Sandbox/VersionControl/VersionControl.h"
 #include "Sandbox/UserSettingsManager.h"
+#include "Sandbox/Utility/EditorUtilities.h"
 
 #include <Volt/Core/Application.h>
 #include <Volt/Utility/UIUtility.h>
@@ -207,4 +208,14 @@ void EditorSettingsPanel::DrawStyleSettings()
 
 void EditorSettingsPanel::DrawEditorSettings()
 {
+	auto& sceneSettings = m_editorSettings.sceneSettings;
+
+	UI::PushID();
+	if (UI::BeginProperties())
+	{
+		EditorUtils::Property("Default Editor Scene", sceneSettings.defaultOpenScene, AssetTypes::Scene);
+
+		UI::EndProperties();
+	}
+	UI::PopID();
 }

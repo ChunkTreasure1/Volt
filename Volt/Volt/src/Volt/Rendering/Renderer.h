@@ -53,7 +53,6 @@ namespace Volt
 		static const DefaultResources& GetDefaultResources();
 		static SceneEnvironment GenerateEnvironmentTextures(AssetHandle baseTextureHandle);
 
-
 #ifndef VT_DIST
 		static ShaderRuntimeValidator& GetRuntimeShaderValidator();
 #endif

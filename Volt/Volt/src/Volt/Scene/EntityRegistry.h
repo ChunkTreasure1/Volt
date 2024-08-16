@@ -2,6 +2,8 @@
 
 #include "Volt/Scene/EntityID.h"
 
+#include <CoreUtilities/Containers/Map.h>
+
 #include <entt.hpp>
 
 namespace Volt
@@ -27,8 +29,8 @@ namespace Volt
 		inline const std::set<EntityID>& GetRemovedEntities() const { return m_removedEntities; }
 
 	private:
-		std::unordered_map<EntityID, entt::entity> m_entityMap;
-		std::unordered_map<entt::entity, EntityID> m_handleMap;
+		vt::map<EntityID, entt::entity> m_entityMap;
+		vt::map<entt::entity, EntityID> m_handleMap;
 	
 		std::set<EntityID> m_editedEntities;
 		std::set<EntityID> m_removedEntities;

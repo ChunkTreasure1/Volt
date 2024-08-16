@@ -128,8 +128,82 @@ void Sandbox::OnAttach()
 	UserSettingsManager::LoadUserSettings();
 	const auto& userSettings = UserSettingsManager::GetSettings();
 
-	NewScene();
+	if (userSettings.sceneSettings.defaultOpenScene != Volt::Asset::Null())
+	{
+		OpenScene(userSettings.sceneSettings.defaultOpenScene);
+		if (m_runtimeScene)
+		{
+			auto& worldEngine = m_runtimeScene->GetWorldEngineMutable();
+			for (const auto& cell : worldEngine.GetCells())
+			{
+				worldEngine.BeginStreamingCell(cell.cellId);
+			}
+		}
+	}
+	else
+	{
+		NewScene();
+	}
 
+	RegisterPanels();
+
+	m_fileWatcher = CreateRef<FileWatcher>();
+	CreateWatches();
+
+	ImGuizmo::AllowAxisFlip(false);
+
+	if (!userSettings.versionControlSettings.password.empty() && !userSettings.versionControlSettings.user.empty() && !userSettings.versionControlSettings.server.empty())
+	{
+		VersionControl::Connect(userSettings.versionControlSettings.server, userSettings.versionControlSettings.user, userSettings.versionControlSettings.password);
+		if (VersionControl::IsConnected())
+		{
+			VersionControl::RefreshStreams();
+			VersionControl::RefreshWorkspaces();
+
+			if (!userSettings.versionControlSettings.workspace.empty())
+			{
+				VersionControl::SwitchWorkspace(userSettings.versionControlSettings.workspace);
+			}
+
+			if (!userSettings.versionControlSettings.stream.empty())
+			{
+				VersionControl::SwitchStream(userSettings.versionControlSettings.stream);
+			}
+		}
+	}
+
+	InitializeModals();
+
+	constexpr int64_t discordAppId = 1108502963447681106;
+
+	Volt::DiscordSDK::Init(discordAppId, false);
+
+	auto& act = Volt::DiscordSDK::GetRichPresence();
+
+	act.SetApplicationId(discordAppId);
+	act.GetAssets().SetLargeImage("icon_volt");
+	act.GetAssets().SetLargeText("Volt");
+	act.SetType(discord::ActivityType::Playing);
+
+	Volt::DiscordSDK::UpdateRichPresence();
+
+	m_isInitialized = true;
+}
+
+void Sandbox::CreateWatches()
+{
+	m_fileWatcher->AddWatch(Volt::ProjectManager::GetEngineDirectory());
+	m_fileWatcher->AddWatch(Volt::ProjectManager::GetAssetsDirectory());
+	m_fileWatcher->AddWatch(Volt::ProjectManager::GetMonoBinariesDirectory());
+
+	CreateModifiedWatch();
+	CreateDeleteWatch();
+	CreateAddWatch();
+	CreateMovedWatch();
+}
+
+void Sandbox::RegisterPanels()
+{
 	// Shelved Panels (So panel tab doesn't get cluttered up).
 #ifdef VT_DEBUG
 	EditorLibrary::RegisterWithType<PrefabEditorPanel>("", AssetTypes::Prefab);
@@ -177,70 +251,6 @@ void Sandbox::OnAttach()
 	EditorLibrary::Sort();
 
 	UserSettingsManager::SetupPanels();
-
-	m_fileWatcher = CreateRef<FileWatcher>();
-	CreateWatches();
-
-	ImGuizmo::AllowAxisFlip(false);
-
-	if (!userSettings.versionControlSettings.password.empty() && !userSettings.versionControlSettings.user.empty() && !userSettings.versionControlSettings.server.empty())
-	{
-		VersionControl::Connect(userSettings.versionControlSettings.server, userSettings.versionControlSettings.user, userSettings.versionControlSettings.password);
-		if (VersionControl::IsConnected())
-		{
-			VersionControl::RefreshStreams();
-			VersionControl::RefreshWorkspaces();
-
-			if (!userSettings.versionControlSettings.workspace.empty())
-			{
-				VersionControl::SwitchWorkspace(userSettings.versionControlSettings.workspace);
-			}
-
-			if (!userSettings.versionControlSettings.stream.empty())
-			{
-				VersionControl::SwitchStream(userSettings.versionControlSettings.stream);
-			}
-		}
-	}
-
-	InitializeModals();
-
-	if (!userSettings.sceneSettings.lastOpenScene.empty())
-	{
-		OpenScene(userSettings.sceneSettings.lastOpenScene);
-	}
-
-	if (!m_runtimeScene)
-	{
-		NewScene();
-	}
-
-	constexpr int64_t discordAppId = 1108502963447681106;
-
-	Volt::DiscordSDK::Init(discordAppId, false);
-
-	auto& act = Volt::DiscordSDK::GetRichPresence();
-
-	act.SetApplicationId(discordAppId);
-	act.GetAssets().SetLargeImage("icon_volt");
-	act.GetAssets().SetLargeText("Volt");
-	act.SetType(discord::ActivityType::Playing);
-
-	Volt::DiscordSDK::UpdateRichPresence();
-
-	m_isInitialized = true;
-}
-
-void Sandbox::CreateWatches()
-{
-	m_fileWatcher->AddWatch(Volt::ProjectManager::GetEngineDirectory());
-	m_fileWatcher->AddWatch(Volt::ProjectManager::GetAssetsDirectory());
-	m_fileWatcher->AddWatch(Volt::ProjectManager::GetMonoBinariesDirectory());
-
-	CreateModifiedWatch();
-	CreateDeleteWatch();
-	CreateAddWatch();
-	CreateMovedWatch();
 }
 
 void Sandbox::SetEditorHasMouseControl()
@@ -314,14 +324,6 @@ void Sandbox::OnDetach()
 
 	m_runtimeScene->ShutdownEngineScripts();
 
-	{
-		// #TODO_Ivar: Change so that scene copy creates a memory asset instead
-		const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(m_runtimeScene->handle);
-		if (m_runtimeScene && !metadata.filePath.empty())
-		{
-			UserSettingsManager::GetSettings().sceneSettings.lastOpenScene = metadata.filePath;
-		}
-	}
 	UserSettingsManager::SaveUserSettings();
 	EditorLibrary::Clear();
 	EditorResources::Shutdown();
@@ -573,41 +575,48 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 {
 	if (!path.empty() && FileSystem::Exists(Volt::ProjectManager::GetDirectory() / path))
 	{
-		SelectionManager::DeselectAll();
-
-		const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(m_runtimeScene->handle);
-
-		if (m_runtimeScene)
-		{
-			m_runtimeScene->ShutdownEngineScripts();
-		}
-
-		const auto newScene = Volt::AssetManager::GetAsset<Volt::Scene>(path);
-		if (!newScene)
-		{
-			return;
-		}
-
-		const auto& newSceneMeta = Volt::AssetManager::GetMetadataFromHandle(newScene->handle);
-		if (newSceneMeta.type != AssetTypes::Scene)
-		{
-			return;
-		}
-
-		if (metadata.filePath == path)
-		{
-			Volt::AssetManager::Get().ReloadAsset(m_runtimeScene->handle);
-		}
-		else if (m_runtimeScene && !metadata.filePath.empty())
-		{
-			Volt::AssetManager::Get().Unload(m_runtimeScene->handle);
-		}
-
-		m_runtimeScene = newScene;
-		m_runtimeScene->InitializeEngineScripts();
-
-		SetupNewSceneData();
+		OpenScene(Volt::AssetManager::GetAssetHandleFromFilePath(path));
 	}
+}
+
+void Sandbox::OpenScene(Volt::AssetHandle sceneHandle)
+{
+	if (sceneHandle == Volt::Asset::Null())
+	{
+		return;
+	}
+
+	SelectionManager::DeselectAll();
+
+	Volt::AssetMetadata metadata;
+
+	if (m_runtimeScene)
+	{
+		metadata = Volt::AssetManager::GetMetadataFromHandle(m_runtimeScene->handle);
+		m_runtimeScene->ShutdownEngineScripts();
+	}
+
+	const auto newScene = Volt::AssetManager::GetAsset<Volt::Scene>(sceneHandle);
+	if (!newScene)
+	{
+		return;
+	}
+
+	VT_ENSURE(Volt::AssetManager::GetMetadataFromHandle(newScene->handle).type == AssetTypes::Scene);
+
+	if (metadata.handle == sceneHandle)
+	{
+		Volt::AssetManager::Get().ReloadAsset(m_runtimeScene->handle);
+	}
+	else if (m_runtimeScene && !metadata.filePath.empty())
+	{
+		Volt::AssetManager::Get().Unload(m_runtimeScene->handle);
+	}
+
+	m_runtimeScene = newScene;
+	m_runtimeScene->InitializeEngineScripts();
+
+	SetupNewSceneData();
 }
 
 bool Sandbox::LoadScene(Volt::OnSceneTransitionEvent& e)

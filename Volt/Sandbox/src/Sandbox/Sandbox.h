@@ -77,6 +77,7 @@ public:
 	void NewScene();
 	void OpenScene();
 	void OpenScene(const std::filesystem::path& path);
+	void OpenScene(Volt::AssetHandle sceneHandle);
 	void SaveScene();
 	void TransitionToNewScene();
 
@@ -103,6 +104,7 @@ private:
 	bool LoadScene(Volt::OnSceneTransitionEvent& e);
 
 	void CreateWatches();
+	void RegisterPanels();
 
 	void SetupNewSceneData();
 	void InitializeModals();

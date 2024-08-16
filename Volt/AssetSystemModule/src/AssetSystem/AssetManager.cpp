@@ -546,6 +546,14 @@ namespace Volt
 			m_assetRegistry.at(assetHandle).filePath = newPath;
 		}
 
+		{
+			WriteLock lock{ m_assetCacheMutex };
+			if (m_assetCache.contains(assetHandle))
+			{
+				m_assetCache.at(assetHandle)->assetName = newName;
+			}
+		}
+
 		FileSystem::Rename(projDir / oldPath, newName);
 	}
 
@@ -790,19 +798,22 @@ namespace Volt
 
 	void AssetManager::AddAssetToRegistry(const std::filesystem::path& filePath, AssetHandle handle, AssetType type)
 	{
+		const std::filesystem::path cleanFilePath = GetCleanAssetFilePath(filePath);
+
+#ifndef VT_DIST
 		{
 			ReadLock lock{ m_assetRegistryMutex };
-			const std::filesystem::path cleanPath = GetCleanAssetFilePath(filePath);
-			const auto& metadata = GetMetadataFromFilePath(filePath);
+			const auto& metadata = GetMetadataFromFilePath(cleanFilePath);
 
+			VT_ENSURE(!metadata.IsValid());
 			if (metadata.IsValid())
 			{
 				return;
 			}
 		}
+#endif
 
 		const auto newHandle = handle;
-		const auto cleanFilePath = GetCleanAssetFilePath(filePath);
 
 		{
 			WriteLock lock{ m_assetRegistryMutex };
@@ -815,13 +826,23 @@ namespace Volt
 		m_dependencyGraph->AddAssetToGraph(newHandle);
 	}
 
-	AssetHandle AssetManager::AddAssetToRegistry(const std::filesystem::path& path, AssetType type)
+	AssetHandle AssetManager::GetOrAddAssetToRegistry(const std::filesystem::path& path, AssetType type)
 	{
+		const std::filesystem::path cleanPath = GetCleanAssetFilePath(path);
+
+		if (ExistsInRegistry(cleanPath))
+		{
+#ifndef VT_DIST
+			ReadLock lock{ m_assetRegistryMutex };
+			const auto& metadata = GetMetadataFromFilePath(cleanPath);
+			VT_ENSURE_MSG(metadata.type == type, "Asset types does not match!");
+#endif
+
+			return GetAssetHandleFromFilePath(cleanPath);
+		}
+
 		AssetHandle newHandle = {};
-		AddAssetToRegistry(path, newHandle, type);
-	
-		//VT_LOGC(Trace, LogAssetSystem, "Added asset {}, {} to registry!", path, type->GetName());
-		
+		AddAssetToRegistry(cleanPath, newHandle, type);
 		return newHandle;
 	}
 

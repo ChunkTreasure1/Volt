@@ -34,7 +34,7 @@ namespace AssetBrowser
 			type = GetAssetTypeRegistry().GetTypeFromExtension(path.extension().string());
 		}
 		
-		handle = Volt::AssetManager::Get().AddAssetToRegistry(path, type);
+		handle = Volt::AssetManager::Get().GetOrAddAssetToRegistry(path, type);
 	}
 
 	bool AssetItem::Render()

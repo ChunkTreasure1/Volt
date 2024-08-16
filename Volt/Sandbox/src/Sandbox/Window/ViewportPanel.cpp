@@ -845,7 +845,10 @@ void ViewportPanel::DuplicateSelection()
 			continue;
 		}
 
-		duplicated.emplace_back(Volt::Entity::Duplicate(m_editorScene->GetEntityFromUUID(ent)));
+		auto duplicatedEntity = Volt::Entity::Duplicate(m_editorScene->GetEntityFromUUID(ent));
+		duplicatedEntity.SetTag(EditorUtils::GetDuplicatedNameFromEntity(m_editorScene->GetEntityFromUUID(ent)));
+
+		duplicated.emplace_back(duplicatedEntity);
 	}
 
 	SelectionManager::DeselectAll();

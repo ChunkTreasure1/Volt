@@ -1317,7 +1317,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::ShapeLibrary::GetCube()->handle;
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtasset");
 					Volt::MeshComponent::OnMemberChanged(meshComp, ent);
 
 					ent.SetTag("New Cube");
@@ -1332,7 +1332,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Capsule.vtasset"));
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Capsule.vtasset");
 					Volt::MeshComponent::OnMemberChanged(meshComp, ent);
 
 					ent.SetTag("New Capsule");
@@ -1347,7 +1347,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cone.vtasset"));
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cone.vtasset");
 					Volt::MeshComponent::OnMemberChanged(meshComp, ent);
 
 					ent.SetTag("New Cone");
@@ -1362,7 +1362,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cylinder.vtasset"));
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cylinder.vtasset");
 					Volt::MeshComponent::OnMemberChanged(meshComp, ent);
 
 					ent.SetTag("New Cylinder");
@@ -1377,7 +1377,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::ShapeLibrary::GetSphere()->handle;
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtasset");
 					Volt::MeshComponent::OnMemberChanged(meshComp, ent);
 					ent.SetTag("New Sphere");
 
@@ -1391,7 +1391,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Plane.vtasset"));
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Plane.vtasset");
 					Volt::MeshComponent::OnMemberChanged(meshComp, ent);
 
 					ent.SetTag("New Plane");

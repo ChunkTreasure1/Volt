@@ -15,7 +15,7 @@
 
 namespace Volt
 {
-	VT_DECLARE_LOG_CATEGORY(LogAssetSystem, LogVerbosity::Trace);
+	VT_DECLARE_LOG_CATEGORY_EXPORT(VTAS_API, LogAssetSystem, LogVerbosity::Trace);
 
 	class AssetFactory;
 	class AssetSerializer;
@@ -55,7 +55,7 @@ namespace Volt
 		void RemoveFullFolderFromRegistry(const std::filesystem::path& path);
 
 		void AddAssetToRegistry(const std::filesystem::path& path, AssetHandle handle, AssetType type);
-		AssetHandle AddAssetToRegistry(const std::filesystem::path& path, AssetType type);
+		AssetHandle GetOrAddAssetToRegistry(const std::filesystem::path& path, AssetType type);
 
 		void ReloadAsset(AssetHandle handle);
 		void ReloadAsset(const std::filesystem::path& path);
@@ -201,7 +201,7 @@ namespace Volt
 			const auto& metadata = GetMetadataFromHandle(assetHandle);
 			if (!metadata.IsValid())
 			{
-				VT_LOG(Error, "[AssetManager] Trying to load asset which has invalid metadata!");
+				VT_LOGC(Error, LogAssetSystem, "Trying to load asset {} which has invalid metadata!", assetHandle);
 				return nullptr;
 			}
 		}
@@ -209,7 +209,7 @@ namespace Volt
 		Ref<Asset> asset = CreateRef<T>();
 		if (!ValidateAssetType(assetHandle, asset))
 		{
-			VT_LOG(Critical, "[AssetManager] Asset type does not match!");
+			VT_LOGC(Critical, LogAssetSystem, "Asset type does not match!");
 			return nullptr;
 		}
 
@@ -236,7 +236,7 @@ namespace Volt
 			const auto& metadata = GetMetadataFromHandle(assetHandle);
 			if (!metadata.IsValid())
 			{
-				VT_LOG(Error, "[AssetManager] Trying to load asset which has invalid metadata!");
+				VT_LOGC(Error, LogAssetSystem, "Trying to load asset which has invalid metadata!");
 				return nullptr;
 			}
 		}
@@ -272,7 +272,7 @@ namespace Volt
 			const auto& metadata = GetMetadataFromHandle(handle);
 			if (!metadata.IsValid())
 			{
-				VT_LOG(Error, "[AssetManager] Trying to load asset which has invalid metadata!");
+				VT_LOGC(Error, LogAssetSystem, "Trying to load asset which has invalid metadata!");
 				return nullptr;
 			}
 		}
@@ -294,7 +294,7 @@ namespace Volt
 		Ref<Asset> asset = CreateRef<T>();
 		if (!ValidateAssetType(handle, asset))
 		{
-			VT_LOG(Critical, "[AssetManager] Asset type does not match!");
+			VT_LOGC(Critical, LogAssetSystem, "Asset type does not match!");
 			return nullptr;
 		}
 

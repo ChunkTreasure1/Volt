@@ -7,6 +7,7 @@
 #include "VulkanRHIModule/Common/VulkanHelpers.h"
 
 #include <RHIModule/Core/Profiling.h>
+#include <RHIModule/ImGui/FontAwesome.h>
 
 #include <RHIModule/Graphics/GraphicsContext.h>
 #include <RHIModule/Graphics/PhysicalGraphicsDevice.h>
@@ -37,6 +38,22 @@ namespace Volt::RHI
 		}
 	}
 
+	inline void MergeIconsWithLatestFont(float font_size)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+	
+		float baseFontSize = font_size; // 13.0f is the size of the default font. Change to the font size you use.
+		float iconFontSize = baseFontSize; // FontAwesome fonts need to have their sizes reduced by 2.0f/3.0f in order to align correctly
+	
+		// merge in icons from Font Awesome
+		static const ImWchar icons_ranges[] = { VT_ICON_MIN_FA, VT_ICON_MAX_16_FA, 0 };
+		ImFontConfig icons_config;
+		icons_config.MergeMode = true;
+		icons_config.PixelSnapH = true;
+		icons_config.GlyphMinAdvanceX = iconFontSize;
+		io.Fonts->AddFontFromFileTTF("Engine/Fonts/FontAwesome/" FONT_ICON_FILE_NAME_FAS, iconFontSize, &icons_config, icons_ranges);
+	}
+
 	VulkanImGuiImplementation::VulkanImGuiImplementation(const ImGuiCreateInfo& createInfo)
 		: m_swapchain(createInfo.swapchain), m_windowPtr(createInfo.window)
 	{
@@ -58,6 +75,8 @@ namespace Volt::RHI
 		ImGuiIO& io = ImGui::GetIO();
 		ImFont* newFont = io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), pixelSize);
 	
+		MergeIconsWithLatestFont(pixelSize);
+
 		// Create font
 		{
 			RefPtr<CommandBuffer> commandBuffer = CommandBuffer::Create();
