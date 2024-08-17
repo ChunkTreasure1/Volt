@@ -6,8 +6,6 @@
 
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
-#include "Volt/Scene/Reflection/ComponentReflection.h"
-#include "Volt/Scene/Reflection/ComponentRegistry.h"
 #include "Volt/Asset/Prefab.h"
 
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
@@ -22,6 +20,7 @@
 
 #include "Volt/Project/ProjectManager.h"
 
+#include <EntitySystem/ComponentRegistry.h>
 #include <AssetSystem/AssetManager.h>
 
 #include <CoreUtilities/FileSystem.h>
@@ -562,7 +561,7 @@ namespace Volt
 					continue;
 				}
 
-				const IComponentTypeDesc* componentDesc = reinterpret_cast<const IComponentTypeDesc*>(ComponentRegistry::GetTypeDescFromName(storage.type().name()));
+				const IComponentTypeDesc* componentDesc = reinterpret_cast<const IComponentTypeDesc*>(GetComponentRegistry().GetTypeDescFromName(storage.type().name()));
 				if (!componentDesc)
 				{
 					continue;
@@ -795,7 +794,7 @@ namespace Volt
 				return;
 			}
 
-			const ICommonTypeDesc* typeDesc = ComponentRegistry::GetTypeDescFromGUID(compGuid);
+			const ICommonTypeDesc* typeDesc = GetComponentRegistry().GetTypeDescFromGUID(compGuid);
 			if (!typeDesc)
 			{
 				return;

@@ -7,6 +7,7 @@
 #include <meshoptimizer/meshoptimizer.h>
 
 #include <metis.h>
+#include <unordered_set>
 
 namespace Volt
 {

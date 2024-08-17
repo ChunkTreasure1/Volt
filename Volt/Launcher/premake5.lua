@@ -58,6 +58,7 @@ project "Launcher"
 		"%{IncludeDir.RenderCoreModule}",
 		"%{IncludeDir.JobSystemModule}",
 		"%{IncludeDir.AssetSystemModule}",
+		"%{IncludeDir.EntitySystemModule}",
 
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",

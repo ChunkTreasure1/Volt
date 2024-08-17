@@ -1,11 +1,13 @@
 #pragma once
+
+#include "Volt/Net/Event/NetEvent.h"
+#include "Volt/Scene/EntityID.h"
+#include "Volt/Asset/AssetTypes.h"
+
 #include <AssetSystem/Asset.h>
 
 #include <Nexus/Core/Packet/PacketID.h>
 #include <Nexus/Utility/Types.h>
-
-#include "Volt/Net/Event/NetEvent.h"
-#include "Volt/Scene/EntityID.h"
 
 #include <entt.hpp>
 

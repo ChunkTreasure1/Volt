@@ -29,7 +29,7 @@
 
 void GameLayer::OnAttach()
 {
-	const auto& startScenePath = Volt::ProjectManager::GetProject().startScenePath;
+	const auto& startScenePath = Volt::ProjectManager::GetProject().startSceneFilepath;
 
 	if (startScenePath.empty())
 	{

@@ -3,6 +3,7 @@
 #include "Volt/Asset/Mesh/SubMesh.h"
 
 #include "Volt/Asset/Rendering/MaterialTable.h"
+#include "Volt/Asset/AssetTypes.h"
 
 #include "Volt/Rendering/Vertex.h"
 #include "Volt/Rendering/BoundingStructures.h"

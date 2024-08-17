@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Volt/Scene/Reflection/ComponentReflection.h"
-#include "Volt/Scene/Reflection/ComponentRegistry.h"
 #include "Volt/Scene/Entity.h"
-
 #include "Volt/Asset/Rendering/MaterialTable.h"
+
+#include <EntitySystem/ComponentRegistry.h>
 #include <AssetSystem/Asset.h>
 
 namespace Volt
@@ -22,9 +21,9 @@ namespace Volt
 
 		[[nodiscard]] inline const AssetHandle& GetHandle() const { return handle; }
 
-		static void OnMemberChanged(MeshComponent& data, Entity entity);
-		static void OnComponentCopied(MeshComponent& data, Entity entity);
-		static void OnComponentDeserialized(MeshComponent& data, Entity entity);
+		static void OnMemberChanged(MeshComponent& data, entt::entity entity);
+		static void OnComponentCopied(MeshComponent& data, entt::entity entity);
+		static void OnComponentDeserialized(MeshComponent& data, entt::entity entity);
 
 		static void ReflectType(TypeDesc<MeshComponent>& reflect)
 		{

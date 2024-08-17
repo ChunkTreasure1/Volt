@@ -1,10 +1,6 @@
 #pragma once
-
-#include "Volt/Scene/Reflection/ComponentReflection.h"
-
+#include <AssetSystem/AssetHandle.h>
 #include <CoreUtilities/Core.h>
-
-
 
 namespace Volt
 {

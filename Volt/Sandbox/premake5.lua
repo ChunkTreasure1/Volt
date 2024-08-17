@@ -73,6 +73,7 @@ project "Sandbox"
 		"%{IncludeDir.RenderCoreModule}",
 		"%{IncludeDir.JobSystemModule}",
 		"%{IncludeDir.AssetSystemModule}",
+		"%{IncludeDir.EntitySystemModule}",
 		
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -163,6 +164,11 @@ project "Sandbox"
 		"EventModule",
 		"WindowModule",
     }
+
+	flags
+	{
+		-- "NoIncrementalLink"
+	}
 
 	debugargs 
 	{

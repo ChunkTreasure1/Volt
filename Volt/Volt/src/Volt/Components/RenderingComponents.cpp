@@ -8,11 +8,14 @@
 #include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Components/CoreComponents.h"
+#include "Volt/Scene/SceneManager.h"
 
 namespace Volt
 {
-	void MeshComponent::OnMemberChanged(MeshComponent& data, Entity entity)
+	void MeshComponent::OnMemberChanged(MeshComponent& data, entt::entity entityId)
 	{
+		Entity entity{ entityId, SceneManager::GetActiveScene() };
+
 		auto scene = entity.GetScene();
 		auto renderScene = scene->GetRenderScene();
 
@@ -95,8 +98,10 @@ namespace Volt
 		}
 	}
 
-	void MeshComponent::OnComponentCopied(MeshComponent& data, Entity entity)
+	void MeshComponent::OnComponentCopied(MeshComponent& data, entt::entity entityId)
 	{
+		Entity entity{ entityId, SceneManager::GetActiveScene() };
+
 		auto scene = entity.GetScene();
 		auto renderScene = scene->GetRenderScene();
 
@@ -146,7 +151,7 @@ namespace Volt
 		data.m_oldMaterials = data.materials;
 	}
 
-	void MeshComponent::OnComponentDeserialized(MeshComponent& data, Entity entity)
+	void MeshComponent::OnComponentDeserialized(MeshComponent& data, entt::entity entityId)
 	{
 		data.m_oldHandle = data.handle;
 		data.m_oldMaterials = data.materials;

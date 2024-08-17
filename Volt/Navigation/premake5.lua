@@ -53,6 +53,7 @@ project "Navigation"
 		"%{IncludeDir.LogModule}",
 		"%{IncludeDir.RenderCoreModule}",
 		"%{IncludeDir.AssetSystemModule}",
+		"%{IncludeDir.EntitySystemModule}",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.spdlog}",

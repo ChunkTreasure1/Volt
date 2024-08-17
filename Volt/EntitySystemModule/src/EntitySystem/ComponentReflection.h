@@ -1,17 +1,15 @@
 #pragma once
 
-#include "Volt/Core/Base.h"
+#include "EntitySystem/MemoryUtility.h"
 
-#include "Volt/Utility/MemoryUtility.h"
 #include <AssetSystem/Asset.h>
-
-#include "Volt/Scene/Entity.h"
 
 #include <CoreUtilities/VoltGUID.h>
 #include <CoreUtilities/Concepts.h>
 
-#include <typeindex>
+#include <entt.hpp>
 
+#include <typeindex>
 
 #define DECLARE_ARRAY_TYPE(type)											\
 namespace Volt																\
@@ -148,9 +146,9 @@ namespace Volt
 		[[nodiscard]] virtual ComponentMember* FindMemberByName(std::string_view name) = 0;
 		[[nodiscard]] virtual const ComponentMember* FindMemberByName(std::string_view name) const = 0;
 		
-		virtual void OnMemberChanged(void* objectPtr, Entity entity) const = 0;
-		virtual void OnComponentCopied(void* objectPtr, Entity entity) const = 0;
-		virtual void OnComponentDeserialized(void* objectPtr, Entity entity) const = 0;
+		virtual void OnMemberChanged(void* objectPtr, entt::entity entity) const = 0;
+		virtual void OnComponentCopied(void* objectPtr, entt::entity entity) const = 0;
+		virtual void OnComponentDeserialized(void* objectPtr, entt::entity entity) const = 0;
 	};
 
 	class IEnumTypeDesc : public CommonTypeDesc<ValueType::Enum>
@@ -316,9 +314,9 @@ namespace Volt
 		[[nodiscard]] inline const Vector<ComponentMember>& GetMembers() const override { return m_members; }
 		[[nodiscard]] inline const bool IsHidden() const override { return m_isHidden; }
 
-		void OnMemberChanged(void* objectPtr, Entity entity) const override;
-		void OnComponentCopied(void* objectPtr, Entity entity) const override;
-		void OnComponentDeserialized(void* objectPtr, Entity entity) const override;
+		void OnMemberChanged(void* objectPtr, entt::entity entity) const override;
+		void OnComponentCopied(void* objectPtr, entt::entity entity) const override;
+		void OnComponentDeserialized(void* objectPtr, entt::entity entity) const override;
 
 		[[nodiscard]] ComponentMember* FindMemberByOffset(const ptrdiff_t offset) override;
 		[[nodiscard]] ComponentMember* FindMemberByName(std::string_view name) override;
@@ -374,17 +372,17 @@ namespace Volt
 			return m_members.back();
 		}
 
-		void SetOnMemberChangedCallback(std::function<void(T&, Entity)>&& func)
+		void SetOnMemberChangedCallback(std::function<void(T&, entt::entity)>&& func)
 		{
 			m_onMemberChangedCallback = std::move(func);
 		}
 
-		void SetOnComponentCopiedCallback(std::function<void(T&, Entity)>&& func)
+		void SetOnComponentCopiedCallback(std::function<void(T&, entt::entity)>&& func)
 		{
 			m_onComponentCopiedCallback = std::move(func);
 		}
 
-		void SetOnComponentDeserializedCallback(std::function<void(T&, Entity)>&& func)
+		void SetOnComponentDeserializedCallback(std::function<void(T&, entt::entity)>&& func)
 		{
 			m_onComponentDeserializedCallback = std::move(func);
 		}
@@ -397,9 +395,9 @@ namespace Volt
 		std::string m_componentDescription;
 
 		bool m_isHidden = false;
-		std::function<void(T& component, Entity entity)> m_onMemberChangedCallback;
-		std::function<void(T& component, Entity entity)> m_onComponentCopiedCallback;
-		std::function<void(T& component, Entity entity)> m_onComponentDeserializedCallback;
+		std::function<void(T& component, entt::entity entity)> m_onMemberChangedCallback;
+		std::function<void(T& component, entt::entity entity)> m_onComponentCopiedCallback;
+		std::function<void(T& component, entt::entity entity)> m_onComponentDeserializedCallback;
 	};
 
 	template<Enum T>
@@ -449,7 +447,7 @@ namespace Volt
 	}
 
 	template<typename T>
-	inline void ComponentTypeDesc<T>::OnMemberChanged(void* objectPtr, Entity entity) const
+	inline void ComponentTypeDesc<T>::OnMemberChanged(void* objectPtr, entt::entity entity) const
 	{
 		if (m_onMemberChangedCallback)
 		{
@@ -458,7 +456,7 @@ namespace Volt
 	}
 
 	template<typename T>
-	inline void ComponentTypeDesc<T>::OnComponentCopied(void* objectPtr, Entity entity) const
+	inline void ComponentTypeDesc<T>::OnComponentCopied(void* objectPtr, entt::entity entity) const
 	{
 		if (m_onComponentCopiedCallback)
 		{
@@ -467,7 +465,7 @@ namespace Volt
 	}
 
 	template<typename T>
-	inline void ComponentTypeDesc<T>::OnComponentDeserialized(void* objectPtr, Entity entity) const
+	inline void ComponentTypeDesc<T>::OnComponentDeserialized(void* objectPtr, entt::entity entity) const
 	{
 		if (m_onComponentDeserializedCallback)
 		{

@@ -1,7 +1,9 @@
 #pragma once
 
-#include <AssetSystem/Asset.h>
 #include "Volt/Physics/PhysicsEnums.h"
+#include "Volt/Asset/AssetTypes.h"
+
+#include <AssetSystem/Asset.h>
 
 #include <glm/glm.hpp>
 

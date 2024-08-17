@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Volt/Scene/Reflection/ComponentReflection.h"
-#include "Volt/Scene/Reflection/ComponentRegistry.h"
+#include <EntitySystem/ComponentRegistry.h>
 
 #include <Nexus/Utility/Types.h>
 #include <stdint.h>

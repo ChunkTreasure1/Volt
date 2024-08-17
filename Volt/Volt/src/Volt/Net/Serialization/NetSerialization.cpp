@@ -13,10 +13,10 @@
 #include "Volt/Net/SceneInteraction/NetContract.h"
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Components/PhysicsComponents.h"
-#include "Volt/Scene/Reflection/ComponentRegistry.h"
 #include "Volt/Physics/PhysicsScene.h"
 #include "Volt/Physics/Physics.h"
 
+#include <EntitySystem/ComponentRegistry.h>
 
 #include <stdint.h>
 template<typename T>
@@ -478,7 +478,7 @@ void HandleComponent(Volt::EntityID in_id, const std::string& in_comp, bool in_k
 	if (in_keep) return;
 
 	auto ent = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(in_id);
-	ent.RemoveComponent(Volt::ComponentRegistry::GetGUIDFromTypeName(in_comp));
+	ent.RemoveComponent(GetComponentRegistry().GetGUIDFromTypeName(in_comp));
 }
 
 void RecursiveOwnerShipControll(Volt::EntityID in_id, const Volt::RepPrefabData& data)
@@ -511,7 +511,7 @@ void RecursiveOwnerShipControll(Volt::EntityID in_id, const Volt::RepPrefabData&
 				}
 
 				const std::string componentName = std::string(storage.type().name());
-				const Volt::ICommonTypeDesc* compTypeDesc = Volt::ComponentRegistry::GetTypeDescFromName(componentName);
+				const Volt::ICommonTypeDesc* compTypeDesc = GetComponentRegistry().GetTypeDescFromName(componentName);
 
 				// #TODO_Ivar: Name matching might not work anymore, should move to GUIDs
 				if (!Volt::NetContractContainer::RuleExists(data.handle, componentName, prefabComponent.prefabEntity) && compTypeDesc->GetGUID() != Volt::GetTypeGUID<Volt::MonoScriptComponent>())

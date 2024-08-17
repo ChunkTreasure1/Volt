@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Volt/Scene/Reflection/ComponentReflection.h"
-#include "Volt/Scene/Reflection/ComponentRegistry.h"
-
 #include "Volt/Scene/EntityID.h"
+#include "Volt/Asset/AssetTypes.h"
+
+#include <EntitySystem/ComponentRegistry.h>
 
 namespace Volt
 {

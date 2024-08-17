@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Volt/Scene/Reflection/ComponentReflection.h"
-#include "Volt/Scene/Reflection/ComponentRegistry.h"
+#include <EntitySystem/ComponentRegistry.h>
 
 namespace Volt
 {

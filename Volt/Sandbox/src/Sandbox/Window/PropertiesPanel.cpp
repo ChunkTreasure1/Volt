@@ -265,7 +265,7 @@ void PropertiesPanel::AddComponentPopup()
 		Vector<std::string> componentNames;
 		std::unordered_map<std::string, VoltGUID> nameToGUIDMap;
 
-		const auto& componentRegistry = Volt::ComponentRegistry::GetRegistry();
+		const auto& componentRegistry = GetComponentRegistry().GetRegistry();
 		for (const auto& [guid, typeDesc] : componentRegistry)
 		{
 			if (typeDesc->GetValueType() == Volt::ValueType::Component)
@@ -307,7 +307,7 @@ void PropertiesPanel::AddComponentPopup()
 			for (const auto& label : componentNames)
 			{
 				const auto compGuid = nameToGUIDMap.at(label);
-				std::string_view componentTypeName = Volt::ComponentRegistry::GetTypeNameFromGUID(compGuid);
+				std::string_view componentTypeName = GetComponentRegistry().GetTypeNameFromGUID(compGuid);
 
 				const bool newMonoScript = compGuid == Volt::MonoScriptComponent::guid;
 

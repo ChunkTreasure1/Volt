@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Volt/Core/Base.h"
-#include "Volt/Scene/Reflection/ComponentRegistry.h"
-#include "Volt/Scene/Reflection/ComponentReflection.h"
+
+#include <EntitySystem/ComponentRegistry.h>
 
 #include <cstdint>
 

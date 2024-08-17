@@ -1,11 +1,10 @@
 #pragma once
 
-#include "Volt/Scene/Reflection/ComponentReflection.h"
-#include "Volt/Scene/Reflection/ComponentRegistry.h"
 #include "Volt/Scene/Entity.h"
 
+#include <EntitySystem/ComponentRegistry.h>
+
 #include <glm/glm.hpp>
-#include <entt.hpp>
 
 #include <string>
 #include <string_view>

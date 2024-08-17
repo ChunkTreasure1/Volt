@@ -49,6 +49,7 @@ project "Volt"
 		"%{IncludeDir.RenderCoreModule}",
 		"%{IncludeDir.JobSystemModule}",
 		"%{IncludeDir.AssetSystemModule}",
+		"%{IncludeDir.EntitySystemModule}",
 		
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
@@ -119,6 +120,7 @@ project "Volt"
 		"RenderCoreModule",
 		"JobSystemModule",
 		"AssetSystemModule",
+		"EntitySystemModule",
 		
 		"D3D12RHIModule",
 		"RHIModule",

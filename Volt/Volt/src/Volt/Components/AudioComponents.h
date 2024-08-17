@@ -5,12 +5,11 @@
 
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
-#include "Volt/Scene/Reflection/ComponentReflection.h"
-#include "Volt/Scene/Reflection/ComponentRegistry.h"
+
+#include <EntitySystem/ComponentRegistry.h>
 
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 
-#include <entt.hpp>
 #include <glm/glm.hpp>
 
 #include<unordered_map> 

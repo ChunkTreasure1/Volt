@@ -4,7 +4,6 @@
 
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/Entity.h>
-#include <Volt/Scene/Reflection/ComponentRegistry.h>
 #include <Volt/Components/CoreComponents.h>
 #include <Volt/Asset/Prefab.h>
 #include <AssetSystem/AssetManager.h>
@@ -18,6 +17,8 @@
 #include <Volt/Net/SceneInteraction/NetActorComponent.h>
 #include <Volt/Net/SceneInteraction/GameModeComponent.h>
 #include <Volt/Utility/YAMLSerializationHelpers.h>
+
+#include <EntitySystem/ComponentRegistry.h>
 
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
 
@@ -294,7 +295,7 @@ namespace V013
 				return;
 			}
 
-			const Volt::ICommonTypeDesc* typeDesc = Volt::ComponentRegistry::GetTypeDescFromGUID(compGuid);
+			const Volt::ICommonTypeDesc* typeDesc = GetComponentRegistry().GetTypeDescFromGUID(compGuid);
 			if (!typeDesc)
 			{
 				return;
@@ -424,7 +425,7 @@ namespace V013
 			auto& storage = curr.second;
 			std::string_view typeName = storage.type().name();
 
-			const Volt::ICommonTypeDesc* typeDesc = Volt::ComponentRegistry::GetTypeDescFromName(typeName);
+			const Volt::ICommonTypeDesc* typeDesc = GetComponentRegistry().GetTypeDescFromName(typeName);
 			if (!typeDesc)
 			{
 				continue;
@@ -505,7 +506,7 @@ namespace V013
 			auto& storage = curr.second;
 			std::string_view typeName = storage.type().name();
 
-			const Volt::ICommonTypeDesc* typeDesc = Volt::ComponentRegistry::GetTypeDescFromName(typeName);
+			const Volt::ICommonTypeDesc* typeDesc = GetComponentRegistry().GetTypeDescFromName(typeName);
 			if (!typeDesc)
 			{
 				continue;

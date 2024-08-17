@@ -8,9 +8,6 @@
 
 #include "Sandbox/UserSettingsManager.h"
 
-#include <Volt/Scene/Reflection/ComponentReflection.h>
-#include <Volt/Scene/Reflection/ComponentRegistry.h>
-
 #include <Volt/Components/LightComponents.h>
 
 #include <Volt/Scripting/Mono/MonoScriptUtils.h>
@@ -21,6 +18,8 @@
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/PremadeCommands.h>
 
+#include <EntitySystem/ComponentRegistry.h>
+
 #include <glm/glm.hpp>
 
 template<typename T>
@@ -28,7 +27,7 @@ void RegisterPropertyType(std::unordered_map<std::type_index, std::function<bool
 {
 	outFunctionMap[std::type_index{ typeid(T) }] = [](std::string_view label, void* data, const size_t offset) -> bool
 	{
-		uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data);
+		uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data); 
 		return UI::Property(std::string(label), *reinterpret_cast<T*>(&bytePtr[offset]));
 	};
 }
@@ -122,7 +121,7 @@ void ComponentPropertyUtility::DrawComponents(Weak<Volt::Scene> scene, Volt::Ent
 		if (auto& storage = curr.second; storage.contains(entity))
 		{
 			std::string_view typeName = storage.type().name();
-			const Volt::ICommonTypeDesc* typeDesc = Volt::ComponentRegistry::GetTypeDescFromName(typeName);
+			const Volt::ICommonTypeDesc* typeDesc = GetComponentRegistry().GetTypeDescFromName(typeName);
 			if (!typeDesc)
 			{
 				continue;

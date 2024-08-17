@@ -261,7 +261,7 @@ void NetContractPanel::DrawRuleSet(Ref<Volt::NetContract> in_contract, Volt::Ent
 	{
 		if (auto& storage = curr.second; storage.contains(entity))
 		{
-			auto typeDesc = Volt::ComponentRegistry::GetTypeDescFromName(storage.type().name());
+			auto typeDesc = GetComponentRegistry().GetTypeDescFromName(storage.type().name());
 			if (!typeDesc)
 			{
 				continue;
