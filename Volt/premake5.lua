@@ -51,6 +51,9 @@ include "Volt/vendor/cityhash"
 include "Volt/vendor/tracy"
 include "Volt/vendor/ufbx"
 
+group "Plugins"
+include "Plugins/ExamplePlugin"
+
 group "Core"
 include "Amp"
 include "Volt"

@@ -65,7 +65,7 @@ namespace V015
 		std::string ext(".vtmeta");
 
 		// Project Directory
-		const auto assetsDir = Volt::ProjectManager::GetProject().projectDirectory / Volt::ProjectManager::GetProject().assetsDirectory;
+		const auto assetsDir = Volt::ProjectManager::GetProject().rootDirectory / Volt::ProjectManager::GetProject().assetsDirectory;
 
 		if (FileSystem::Exists(assetsDir))
 		{

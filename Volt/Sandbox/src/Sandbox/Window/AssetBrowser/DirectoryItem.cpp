@@ -33,13 +33,13 @@ namespace AssetBrowser
 				{
 					const std::filesystem::path newPath = path / item->path.stem();
 					Volt::AssetManager::Get().MoveFullFolder(item->path, newPath);
-					FileSystem::MoveDirectory(Volt::ProjectManager::GetDirectory() / item->path, newPath);
+					FileSystem::MoveDirectory(Volt::ProjectManager::GetRootDirectory() / item->path, newPath);
 				}
 			}
 
 			for (const auto& item : mySelectionManager->GetSelectedItems())
 			{
-				if (!item->isDirectory && item != this && FileSystem::Exists(Volt::ProjectManager::GetDirectory() / item->path))
+				if (!item->isDirectory && item != this && FileSystem::Exists(Volt::ProjectManager::GetRootDirectory() / item->path))
 				{
 
 					Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::GetAssetHandleFromFilePath(item->path), path);
@@ -57,13 +57,13 @@ namespace AssetBrowser
 				{
 					const std::filesystem::path newPath = path / item->path.stem();
 					Volt::AssetManager::Get().MoveFullFolder(item->path, newPath);
-					FileSystem::MoveDirectory(Volt::ProjectManager::GetDirectory() / item->path, newPath);
+					FileSystem::MoveDirectory(Volt::ProjectManager::GetRootDirectory() / item->path, newPath);
 				}
 			}
 
 			for (const auto& item : mySelectionManager->GetSelectedItems())
 			{
-				if (!item->isDirectory && item != this && FileSystem::Exists(Volt::ProjectManager::GetDirectory() / item->path))
+				if (!item->isDirectory && item != this && FileSystem::Exists(Volt::ProjectManager::GetRootDirectory() / item->path))
 				{
 					// Check for thumbnail PNG
 					if (Volt::AssetManager::Get().GetAssetTypeFromPath(item->path) == AssetTypes::Texture)
@@ -71,7 +71,7 @@ namespace AssetBrowser
 						const std::filesystem::path thumbnailPath = item->path.parent_path() / (item->path.stem().string() + ".vtthumb.png");
 						if (FileSystem::Exists(thumbnailPath))
 						{
-							FileSystem::Move(Volt::ProjectManager::GetDirectory() / thumbnailPath, path);
+							FileSystem::Move(Volt::ProjectManager::GetRootDirectory() / thumbnailPath, path);
 						}
 					}
 
@@ -124,7 +124,7 @@ namespace AssetBrowser
 
 		if (ImGui::MenuItem("Show in Explorer"))
 		{
-			FileSystem::ShowFileInExplorer(Volt::ProjectManager::GetDirectory() / path);
+			FileSystem::ShowFileInExplorer(Volt::ProjectManager::GetRootDirectory() / path);
 		}
 
 		if (ImGui::MenuItem("Rename"))
@@ -153,7 +153,7 @@ namespace AssetBrowser
 		const std::filesystem::path newDir = path.parent_path() / myCurrentRenamingName;
 		RecursivlyRenameAssets(this, newDir);
 
-		FileSystem::Rename(Volt::ProjectManager::GetDirectory() / path, myCurrentRenamingName);
+		FileSystem::Rename(Volt::ProjectManager::GetRootDirectory() / path, myCurrentRenamingName);
 		return true;
 	}
 

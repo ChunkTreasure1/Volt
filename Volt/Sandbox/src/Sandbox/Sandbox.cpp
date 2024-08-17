@@ -574,7 +574,7 @@ void Sandbox::OpenScene()
 
 void Sandbox::OpenScene(const std::filesystem::path& path)
 {
-	if (!path.empty() && FileSystem::Exists(Volt::ProjectManager::GetDirectory() / path))
+	if (!path.empty() && FileSystem::Exists(Volt::ProjectManager::GetRootDirectory() / path))
 	{
 		OpenScene(Volt::AssetManager::GetAssetHandleFromFilePath(path));
 	}

@@ -71,12 +71,12 @@ namespace AssetBrowser
 
 		if (ImGui::MenuItem("Open Externally"))
 		{
-			FileSystem::OpenFileExternally(Volt::ProjectManager::GetDirectory() / path);
+			FileSystem::OpenFileExternally(Volt::ProjectManager::GetRootDirectory() / path);
 		}
 
 		if (ImGui::MenuItem("Show In Explorer"))
 		{
-			FileSystem::ShowFileInExplorer(Volt::ProjectManager::GetDirectory() / path);
+			FileSystem::ShowFileInExplorer(Volt::ProjectManager::GetRootDirectory() / path);
 		}
 
 		if (ImGui::MenuItem("Reload"))

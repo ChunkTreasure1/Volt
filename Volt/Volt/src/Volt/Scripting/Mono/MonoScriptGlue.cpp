@@ -3808,7 +3808,7 @@ namespace Volt
 #pragma region Project
 	inline static MonoString* Project_GetDirectory()
 	{
-		std::string directory = ProjectManager::GetDirectory().string();
+		std::string directory = ProjectManager::GetRootDirectory().string();
 		return MonoScriptUtils::GetMonoStringFromString(directory);
 	}
 

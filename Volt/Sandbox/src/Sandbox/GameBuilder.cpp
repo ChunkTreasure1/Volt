@@ -260,7 +260,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 
 	// Copy Project file
 	{
-		const auto& projectFilePath = Volt::ProjectManager::GetProject().projectFilePath;
+		const auto& projectFilePath = Volt::ProjectManager::GetProject().filepath;
 		FileSystem::Copy(projectFilePath, buildInfo.buildDirectory / projectFilePath.filename());
 	}
 
@@ -316,7 +316,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 		const auto binariesDir = buildInfo.buildDirectory / "Binaries";
 		FileSystem::CreateDirectories(binariesDir);
 
-		for (const auto& file : std::filesystem::recursive_directory_iterator(Volt::ProjectManager::GetDirectory() / "Binaries"))
+		for (const auto& file : std::filesystem::recursive_directory_iterator(Volt::ProjectManager::GetRootDirectory() / "Binaries"))
 		{
 			if (!file.is_directory())
 			{

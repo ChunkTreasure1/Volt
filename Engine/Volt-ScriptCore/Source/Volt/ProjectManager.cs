@@ -9,7 +9,7 @@ namespace Volt
 {
     public static class ProjectManager
     {
-        public static string GetDirectory()
+        public static string GetRootDirectory()
         {
             return InternalCalls.Project_GetDirectory();
         }

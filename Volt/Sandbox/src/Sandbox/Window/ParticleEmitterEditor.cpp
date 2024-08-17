@@ -104,7 +104,7 @@ bool ParticleEmitterEditor::SavePreset(const std::filesystem::path& indata)
 	}
 
 	const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myCurrentPreset->handle);
-	if (!FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / metadata.filePath))
+	if (!FileSystem::IsWriteable(Volt::ProjectManager::GetRootDirectory() / metadata.filePath))
 	{
 		UI::Notify(NotificationType::Error, "ParticlePreset save Failed", "Make sure file is writable");
 		return false;

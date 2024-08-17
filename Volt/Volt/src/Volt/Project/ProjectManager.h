@@ -1,36 +1,22 @@
 #pragma once
 
+#include "Volt/Project/Project.h"
 #include "Volt/Utility/Version.h"
 
 #include <CoreUtilities/Core.h>
 
+VT_DECLARE_LOG_CATEGORY(LogProject, LogVerbosity::Trace);
+
 namespace Volt
 {
-	struct Project
-	{
-		std::string name;
-		std::string companyName;
-		Version engineVersion;
-		std::filesystem::path projectFilePath;
-		std::filesystem::path projectDirectory;
-
-		std::filesystem::path audioBanksDirectory;
-		std::filesystem::path assetsDirectory;
-
-		std::filesystem::path cursorPath;
-		std::filesystem::path iconPath;
-		std::filesystem::path startScenePath;
-
-		bool isDeprecated = false;
-	};
+	class PluginRegistry;
 
 	class ProjectManager
 	{
 	public:
-		static void SetupProject(const std::filesystem::path projectPath);
+		static void LoadProject(const std::filesystem::path projectPath, PluginRegistry& pluginRegistry);
 
 		static void SerializeProject();
-		static void DeserializeProject();
 
 		static const std::filesystem::path GetEngineScriptsDirectory();
 		static const std::filesystem::path GetEngineShaderIncludeDirectory();
@@ -46,7 +32,7 @@ namespace Volt
 		static const std::filesystem::path GetOrCreateSettingsDirectory();
 		static const std::filesystem::path GetPhysicsSettingsPath();
 		static const std::filesystem::path GetPhysicsLayersPath();
-		static const std::filesystem::path& GetDirectory();
+		static const std::filesystem::path& GetRootDirectory();
 
 		static const bool IsCurrentProjectDeprecated();
 		static const bool AreCurrentProjectMetaFilesDeprecated();
@@ -55,6 +41,7 @@ namespace Volt
 		static void OnProjectUpgraded();
 
 	private:
+		static void DeserializeProject(PluginRegistry& pluginRegistry);
 
 		ProjectManager() = delete;
 

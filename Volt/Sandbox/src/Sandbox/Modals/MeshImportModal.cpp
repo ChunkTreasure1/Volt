@@ -244,7 +244,7 @@ void MeshImportModal::Import(const std::filesystem::path& importPath)
 	if (m_currentImportType == ImportType::SkeletalMesh)
 	{
 		Ref<Volt::Skeleton> skeleton = CreateRef<Volt::Skeleton>();
-		if (Volt::MeshTypeImporter::ImportSkeleton(Volt::ProjectManager::GetDirectory() / importPath, *skeleton))
+		if (Volt::MeshTypeImporter::ImportSkeleton(Volt::ProjectManager::GetRootDirectory() / importPath, *skeleton))
 		{
 			Volt::AssetManager::SaveAssetAs(skeleton, Utility::GetNonExistingFilePath(destinationDirectory, destinationFileName + "_Skeleton"));
 		}
@@ -252,7 +252,7 @@ void MeshImportModal::Import(const std::filesystem::path& importPath)
 		if (m_importOptions.importAnimations && skeleton && m_fbxFileInformation.hasAnimation)
 		{
 			Ref<Volt::Animation> animation = CreateRef<Volt::Animation>();
-			if (Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / importPath, skeleton, *animation))
+			if (Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetRootDirectory() / importPath, skeleton, *animation))
 			{
 				Volt::AssetManager::SaveAssetAs(animation, Utility::GetNonExistingFilePath(destinationDirectory, destinationFileName + "_Animation"));
 			}
@@ -264,7 +264,7 @@ void MeshImportModal::Import(const std::filesystem::path& importPath)
 		if (targetSkeleton && targetSkeleton->IsValid())
 		{
 			Ref<Volt::Animation> animation = CreateRef<Volt::Animation>();
-			if (Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / importPath, targetSkeleton, *animation))
+			if (Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetRootDirectory() / importPath, targetSkeleton, *animation))
 			{
 				Volt::AssetManager::SaveAssetAs(animation, Utility::GetNonExistingFilePath(destinationDirectory, destinationFileName + "_Animation"));
 			}

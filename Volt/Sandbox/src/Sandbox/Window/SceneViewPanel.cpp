@@ -225,7 +225,7 @@ void SceneViewPanel::UpdateMainContent()
 							if (!metadata.filePath.empty())
 							{
 								std::filesystem::path layerPath = metadata.filePath.parent_path() / "Layers" / ("layer_" + std::to_string(layer.id) + ".vtlayer");
-								const auto path = Volt::ProjectManager::GetDirectory() / layerPath;
+								const auto path = Volt::ProjectManager::GetRootDirectory() / layerPath;
 
 								if (FileSystem::Exists(path))
 								{

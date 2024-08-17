@@ -33,21 +33,21 @@ typedef void* HMODULE;
 class DynamicLibraryHelper
 {
 public:
-	 VTCOREUTIL_API DynamicLibraryHelper(std::string_view libraryFilepath);
-	 VTCOREUTIL_API DynamicLibraryHelper(const DynamicLibraryHelper& other) = delete;
-	 VTCOREUTIL_API ~DynamicLibraryHelper();
+	VTCOREUTIL_API DynamicLibraryHelper(std::string_view libraryFilepath);
+	VTCOREUTIL_API DynamicLibraryHelper(const DynamicLibraryHelper& other) = delete;
+	VTCOREUTIL_API ~DynamicLibraryHelper();
 
-	 VTCOREUTIL_API void Free();
-	 VTCOREUTIL_API void Release();
-	 VTCOREUTIL_API void Load(std::string_view libraryFilepath);
+	VTCOREUTIL_API void Free();
+	VTCOREUTIL_API void Release();
+	VTCOREUTIL_API void Load(std::string_view libraryFilepath);
 
-	 VT_INLINE bool IsLoaded() const { return m_moduleHandle != nullptr; }
+	VT_INLINE bool IsLoaded() const { return m_moduleHandle != nullptr; }
 
-	 template<typename ProcFunc>
-	 VT_INLINE ProcFunc GetProcAddress(std::string_view procName) const
-	 {
-		 return static_cast<ProcFunc>(VT_GET_PROC_ADDRESS(m_moduleHandle, procName.data()));
-	 }
+	template<typename ProcFunc>
+	VT_INLINE ProcFunc GetProcAddress(std::string_view procName) const
+	{
+		return static_cast<ProcFunc>(VT_GET_PROC_ADDRESS(m_moduleHandle, procName.data()));
+	}
 
 private:
 	HMODULE m_moduleHandle;

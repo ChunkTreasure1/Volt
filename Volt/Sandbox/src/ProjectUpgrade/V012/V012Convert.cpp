@@ -12,7 +12,7 @@ namespace V012
 	{
 		auto& project = Volt::ProjectManager::GetProject();
 
-		const std::filesystem::path assetsPath = project.projectDirectory / project.assetsDirectory;
+		const std::filesystem::path assetsPath = project.rootDirectory / project.assetsDirectory;
 
 		Vector<std::filesystem::path> animGraphsToConvert;
 		Vector<std::filesystem::path> characterAssets;

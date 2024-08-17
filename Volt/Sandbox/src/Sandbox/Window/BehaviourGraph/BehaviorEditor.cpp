@@ -572,7 +572,7 @@ void BehaviorEditor::DrawPanels()
 		{
 			const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myBehaviourTree->handle);
 
-			if (FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / metadata.filePath))
+			if (FileSystem::IsWriteable(Volt::ProjectManager::GetRootDirectory() / metadata.filePath))
 			{
 				UI::Notify(NotificationType::Success, "BehaviorTree saved", "");
 				Volt::AssetManager::Get().SaveAsset(myBehaviourTree);

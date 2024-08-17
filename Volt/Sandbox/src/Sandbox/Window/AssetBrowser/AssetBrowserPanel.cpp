@@ -355,7 +355,7 @@ bool AssetBrowserPanel::OnDragDropEvent(Volt::WindowDragDropEvent& e)
 				std::string tempName = originalName;
 
 				uint32_t i = 1;
-				const auto relativePath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path;
+				const auto relativePath = Volt::ProjectManager::GetRootDirectory() / myCurrentDirectory->path;
 
 				while (FileSystem::Exists(relativePath / (tempName + path.extension().string())))
 				{
@@ -724,21 +724,21 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 			{
 				const std::filesystem::path newPath = dirData->path / item->path.stem();
 				Volt::AssetManager::Get().MoveFullFolder(item->path, newPath);
-				FileSystem::MoveDirectory(Volt::ProjectManager::GetDirectory() / item->path, Volt::ProjectManager::GetDirectory() / newPath);
+				FileSystem::MoveDirectory(Volt::ProjectManager::GetRootDirectory() / item->path, Volt::ProjectManager::GetRootDirectory() / newPath);
 			}
 		}
 
 		for (const auto& item : mySelectionManager->GetSelectedItems())
 		{
-			if (!item->isDirectory && item != dirData.get() && std::filesystem::exists(Volt::ProjectManager::GetDirectory() / item->path))
+			if (!item->isDirectory && item != dirData.get() && std::filesystem::exists(Volt::ProjectManager::GetRootDirectory() / item->path))
 			{
 				// Check for thumbnail PNG
 				if (Volt::AssetManager::GetAssetTypeFromPath(item->path) == AssetTypes::Texture)
 				{
-					const std::filesystem::path thumbnailPath = Volt::ProjectManager::GetDirectory() / item->path.parent_path() / (item->path.filename().string() + ".vtthumb.png");
+					const std::filesystem::path thumbnailPath = Volt::ProjectManager::GetRootDirectory() / item->path.parent_path() / (item->path.filename().string() + ".vtthumb.png");
 					if (FileSystem::Exists(thumbnailPath))
 					{
-						FileSystem::Move(thumbnailPath, Volt::ProjectManager::GetDirectory() / dirData->path);
+						FileSystem::Move(thumbnailPath, Volt::ProjectManager::GetRootDirectory() / dirData->path);
 					}
 				}
 
@@ -943,13 +943,13 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 				std::string tempName = originalName;
 
 				uint32_t i = 0;
-				while (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / tempName))
+				while (FileSystem::Exists(Volt::ProjectManager::GetRootDirectory() / myCurrentDirectory->path / tempName))
 				{
 					tempName = originalName + " (" + std::to_string(i) + ")";
 					i++;
 				}
 
-				FileSystem::CreateDirectories(Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / tempName);
+				FileSystem::CreateDirectories(Volt::ProjectManager::GetRootDirectory() / myCurrentDirectory->path / tempName);
 				Reload();
 
 				auto dirIt = std::find_if(myCurrentDirectory->subDirectories.begin(), myCurrentDirectory->subDirectories.end(), [tempName](const Ref<AssetBrowser::DirectoryItem> data)
@@ -999,7 +999,7 @@ void AssetBrowserPanel::DeleteFilesModal()
 				if (item->isDirectory)
 				{
 					Volt::AssetManager::Get().RemoveFullFolderFromRegistry(Volt::AssetManager::GetRelativePath(item->path));
-					FileSystem::MoveToRecycleBin(Volt::ProjectManager::GetDirectory() / item->path);
+					FileSystem::MoveToRecycleBin(Volt::ProjectManager::GetRootDirectory() / item->path);
 				}
 			}
 
@@ -1213,7 +1213,7 @@ void AssetBrowserPanel::RecursiveRemoveFolderContents(DirectoryData* aDir)
 {
 	for (const auto& asset : aDir->assets)
 	{
-		if (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / asset.path))
+		if (FileSystem::Exists(Volt::ProjectManager::GetRootDirectory() / asset.path))
 		{
 			Volt::AssetManager::Get().RemoveAsset(asset.handle);
 		}
@@ -1223,10 +1223,10 @@ void AssetBrowserPanel::RecursiveRemoveFolderContents(DirectoryData* aDir)
 
 	for (const auto& dir : aDir->subDirectories)
 	{
-		if (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / dir->path))
+		if (FileSystem::Exists(Volt::ProjectManager::GetRootDirectory() / dir->path))
 		{
 			RecursiveRemoveFolderContents(dir.get());
-			FileSystem::Remove(Volt::ProjectManager::GetDirectory() / dir->path);
+			FileSystem::Remove(Volt::ProjectManager::GetRootDirectory() / dir->path);
 		}
 	}
 
@@ -1292,7 +1292,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(AssetType type)
 	tempName = originalName;
 
 	const std::string ext = ".vtasset";
-	while (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / Volt::AssetManager::GetRelativePath(myCurrentDirectory->path) / (tempName + ext)))
+	while (FileSystem::Exists(Volt::ProjectManager::GetRootDirectory() / Volt::AssetManager::GetRelativePath(myCurrentDirectory->path) / (tempName + ext)))
 	{
 		tempName = originalName + " (" + std::to_string(i) + ")";
 		i++;
@@ -1415,13 +1415,13 @@ void AssetBrowserPanel::CreateNewShaderModal()
 			std::string tempName = myNewShaderData.name;
 			uint32_t i = 0;
 
-			while (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + ".vtsdef")))
+			while (FileSystem::Exists(Volt::ProjectManager::GetRootDirectory() / myCurrentDirectory->path / (tempName + ".vtsdef")))
 			{
 				tempName = myNewShaderData.name + " (" + std::to_string(i) + ")";
 				i++;
 			}
 
-			const std::filesystem::path definitionDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + ".vtsdef");
+			const std::filesystem::path definitionDestinationPath = Volt::ProjectManager::GetRootDirectory() / myCurrentDirectory->path / (tempName + ".vtsdef");
 			Vector<std::filesystem::path> shaderPaths;
 
 			switch (myNewShaderData.shaderType)
@@ -1431,8 +1431,8 @@ void AssetBrowserPanel::CreateNewShaderModal()
 				{
 					const std::filesystem::path defaultPixelPath = myNewShaderData.shaderType == PBR_SHADER ? "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_ps.hlsl" : "Engine/Shaders/Source/HLSL/Forward/ForwardPBRTransparent_ps.hlsl";
 					const std::filesystem::path defaultVertexPath = "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl";
-					const std::filesystem::path pixelDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_ps.hlsl");
-					const std::filesystem::path vertexDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_vs.hlsl");
+					const std::filesystem::path pixelDestinationPath = Volt::ProjectManager::GetRootDirectory() / myCurrentDirectory->path / (tempName + "_ps.hlsl");
+					const std::filesystem::path vertexDestinationPath = Volt::ProjectManager::GetRootDirectory() / myCurrentDirectory->path / (tempName + "_vs.hlsl");
 
 					if (myNewShaderData.createPixelShader)
 					{
@@ -1463,8 +1463,8 @@ void AssetBrowserPanel::CreateNewShaderModal()
 				{
 					const std::filesystem::path defaultPixelPath = "Engine/Shaders/Source/HLSL/Deferred/Decal_ps.hlsl";
 					const std::filesystem::path defaultVertexPath = "Engine/Shaders/Source/HLSL/Deferred/Decal_vs.hlsl";
-					const std::filesystem::path pixelDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_ps.hlsl");
-					const std::filesystem::path vertexDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_vs.hlsl");
+					const std::filesystem::path pixelDestinationPath = Volt::ProjectManager::GetRootDirectory() / myCurrentDirectory->path / (tempName + "_ps.hlsl");
+					const std::filesystem::path vertexDestinationPath = Volt::ProjectManager::GetRootDirectory() / myCurrentDirectory->path / (tempName + "_vs.hlsl");
 
 					if (myNewShaderData.createPixelShader)
 					{
@@ -1497,9 +1497,9 @@ void AssetBrowserPanel::CreateNewShaderModal()
 					const std::filesystem::path defaultGeometryPath = "Engine/Shaders/Source/HLSL/2D/Particle_gs.hlsl";
 					const std::filesystem::path defaultVertexPath = "Engine/Shaders/Source/HLSL/2D/Particle_vs.hlsl";
 
-					const std::filesystem::path pixelDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_ps.hlsl");
-					const std::filesystem::path geometryDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_gs.hlsl");
-					const std::filesystem::path vertexDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_vs.hlsl");
+					const std::filesystem::path pixelDestinationPath = Volt::ProjectManager::GetRootDirectory() / myCurrentDirectory->path / (tempName + "_ps.hlsl");
+					const std::filesystem::path geometryDestinationPath = Volt::ProjectManager::GetRootDirectory() / myCurrentDirectory->path / (tempName + "_gs.hlsl");
+					const std::filesystem::path vertexDestinationPath = Volt::ProjectManager::GetRootDirectory() / myCurrentDirectory->path / (tempName + "_vs.hlsl");
 
 					if (myNewShaderData.createPixelShader)
 					{
@@ -1537,7 +1537,7 @@ void AssetBrowserPanel::CreateNewShaderModal()
 				case POST_PROCESSING_SHADER:
 				{
 					const std::filesystem::path path = myCurrentDirectory->path / (tempName + "_cs.hlsl");
-					const std::filesystem::path computeDestinationPath = Volt::ProjectManager::GetDirectory() / path;
+					const std::filesystem::path computeDestinationPath = Volt::ProjectManager::GetRootDirectory() / path;
 
 					FileSystem::Copy(templatesPath / "PostProcessing/templatePostProcessing_cs.hlsl", computeDestinationPath);
 					shaderPaths.emplace_back(path);

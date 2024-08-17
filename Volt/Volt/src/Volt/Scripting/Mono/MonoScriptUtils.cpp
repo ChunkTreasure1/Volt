@@ -218,8 +218,8 @@ namespace Volt
 
 	bool MonoScriptUtils::CreateNewCSFile(std::string name, std::filesystem::path directoryFromAssets, bool regenerate)
 	{
-		auto parentDir = Volt::ProjectManager::GetDirectory() / ((directoryFromAssets.empty()) ? "Assets/Scripts" : directoryFromAssets.string());
-		auto newFilePath = Volt::ProjectManager::GetDirectory() / parentDir / (name + ".cs");
+		auto parentDir = Volt::ProjectManager::GetRootDirectory() / ((directoryFromAssets.empty()) ? "Assets/Scripts" : directoryFromAssets.string());
+		auto newFilePath = Volt::ProjectManager::GetRootDirectory() / parentDir / (name + ".cs");
 		
 		if (!FileSystem::Exists(parentDir)) { std::filesystem::create_directory(newFilePath.parent_path()); }
 		if (!FileSystem::Exists(newFilePath))

@@ -235,7 +235,7 @@ Volt::SceneRendererSettings GameLayer::LoadGraphicSettings()
 {
 	Volt::SceneRendererSettings settings{};
 
-	std::filesystem::path path = Volt::ProjectManager::GetDirectory() / "Assets/Settings/GameSettings.yaml";
+	std::filesystem::path path = Volt::ProjectManager::GetRootDirectory() / "Assets/Settings/GameSettings.yaml";
 	std::ifstream file(path);
 	std::stringstream sstream;
 	sstream << file.rdbuf();

@@ -62,7 +62,7 @@ namespace Volt
 		* glm::mat4: transform
 		*/
 
-		BinarySerializer serializer{ Volt::ProjectManager::GetDirectory() / destination, CalculateMeshSize(mesh) };
+		BinarySerializer serializer{ Volt::ProjectManager::GetRootDirectory() / destination, CalculateMeshSize(mesh) };
 
 		const uint32_t submeshCount = (uint32_t)mesh->m_subMeshes.size();
 		const uint32_t vertexCount = (uint32_t)mesh->m_vertexContainer.positions.size();

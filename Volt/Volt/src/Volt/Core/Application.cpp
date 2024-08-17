@@ -7,6 +7,7 @@
 #include <InputModule/KeyCodes.h>
 
 #include "Volt/Core/Layer/Layer.h"
+#include "Volt/Core/DynamicLibraryManager.h"
 #include "Volt/Steam/SteamImplementation.h"
 
 #include "Volt/Rendering/Renderer.h"
@@ -14,6 +15,9 @@
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Scene/SceneManager.h"
+
+#include "Volt/PluginSystem/PluginRegistry.h"
+#include "Volt/PluginSystem/PluginSystem.h"
 
 #include "Volt/Physics/Physics.h"
 #include "Volt/Utility/FileSystem.h"
@@ -60,11 +64,16 @@ namespace Volt
 		m_log->SetLogOutputFilepath(m_info.projectPath / "Log/Log.txt");
 
 		m_jobSystem = CreateScope<JobSystem>();
+		m_dynamicLibraryManager = CreateScope<DynamicLibraryManager>();
+		m_pluginRegistry = CreateScope<PluginRegistry>();
+		m_pluginSystem = CreateScope<PluginSystem>(*m_pluginRegistry);
 
 		m_info = info;
 		Noise::Initialize();
 
-		ProjectManager::SetupProject(m_info.projectPath);
+		ProjectManager::LoadProject(m_info.projectPath, *m_pluginRegistry);
+		m_pluginRegistry->BuildPluginDependencies();
+		m_pluginSystem->LoadPlugins(ProjectManager::GetProject());
 
 		WindowProperties windowProperties{};
 		windowProperties.Width = info.width;
@@ -80,8 +89,8 @@ namespace Volt
 		if (m_info.isRuntime)
 		{
 			windowProperties.Title = ProjectManager::GetProject().name;
-			windowProperties.CursorPath = ProjectManager::GetProject().cursorPath;
-			windowProperties.IconPath = ProjectManager::GetProject().iconPath;
+			windowProperties.CursorPath = ProjectManager::GetProject().cursorFilepath;
+			windowProperties.IconPath = ProjectManager::GetProject().iconFilepath;
 		}
 
 		if (ProjectManager::GetProject().isDeprecated)
@@ -103,7 +112,7 @@ namespace Volt
 		TextureImporter::Initialize();
 		
 		Renderer::PreInitialize();
-		m_assetmanager = CreateScope<AssetManager>(ProjectManager::GetDirectory(), ProjectManager::GetAssetsDirectory(), ProjectManager::GetEngineDirectory());
+		m_assetmanager = CreateScope<AssetManager>(ProjectManager::GetRootDirectory(), ProjectManager::GetAssetsDirectory(), ProjectManager::GetEngineDirectory());
 		Renderer::Initialize();
 
 		//UIRenderer::Initialize();
@@ -170,10 +179,14 @@ namespace Volt
 		{
 			m_steamImplementation = SteamImplementation::Create();
 		}
+
+		m_pluginSystem->InitializePlugins();
 	}
 
 	Application::~Application()
 	{
+		m_pluginSystem->ShutdownPlugins();
+
 		m_navigationSystem = nullptr;
 		m_layerStack.Clear();
 		m_imguiImplementation = nullptr;
@@ -204,6 +217,9 @@ namespace Volt
 		
 		m_rhiProxy = nullptr;
 
+		m_pluginSystem->UnloadPlugins();
+		m_pluginSystem = nullptr;
+		m_pluginRegistry = nullptr;
 		m_jobSystem = nullptr;
 		m_log = nullptr;
 		s_instance = nullptr;

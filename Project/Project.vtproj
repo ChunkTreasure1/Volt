@@ -7,3 +7,5 @@ Project:
   IconPath: ""
   CursorPath: ""
   StartScenePath: ""
+  Plugins:
+    - "ExamplePlugin"

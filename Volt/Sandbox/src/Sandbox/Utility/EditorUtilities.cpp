@@ -195,7 +195,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 		auto meshPath = Volt::AssetManager::GetFilePathFromAssetHandle(assetHandle);
 		meshPath.replace_extension(".fbx");
 
-		if (!FileSystem::Exists(Volt::ProjectManager::GetDirectory() / meshPath))
+		if (!FileSystem::Exists(Volt::ProjectManager::GetRootDirectory() / meshPath))
 		{
 			UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The source mesh {0} does not exist!", sourcePath.string()));
 			return false;
@@ -204,7 +204,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 		sourcePath = meshPath;
 	}
 
-	if (!FileSystem::Exists(Volt::ProjectManager::GetDirectory() / sourcePath))
+	if (!FileSystem::Exists(Volt::ProjectManager::GetRootDirectory() / sourcePath))
 	{
 		UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The source mesh {0} does not exist!", sourcePath.string()));
 		return false;
@@ -219,7 +219,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 
 	const auto& origialAssetMeta = Volt::AssetManager::GetMetadataFromHandle(assetHandle);
 
-	if (!FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / origialAssetMeta.filePath))
+	if (!FileSystem::IsWriteable(Volt::ProjectManager::GetRootDirectory() / origialAssetMeta.filePath))
 	{
 		UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The asset {0} is not writeable!", originalAsset->assetName));
 		return false;
@@ -228,7 +228,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 	if (originalAsset->GetType() == AssetTypes::Animation)
 	{
 		Ref<Volt::Animation> newAnim = CreateRef<Volt::Animation>();
-		if (Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / sourcePath, targetSkeleton, *newAnim))
+		if (Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetRootDirectory() / sourcePath, targetSkeleton, *newAnim))
 		{
 			//newAnim->handle = originalAsset->handle;
 
@@ -247,7 +247,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 	else if (originalAsset->GetType() == AssetTypes::Skeleton)
 	{
 		Ref<Volt::Skeleton> newSkel = CreateRef<Volt::Skeleton>();
-		if (Volt::MeshTypeImporter::ImportSkeleton(Volt::ProjectManager::GetDirectory() / sourcePath, *newSkel))
+		if (Volt::MeshTypeImporter::ImportSkeleton(Volt::ProjectManager::GetRootDirectory() / sourcePath, *newSkel))
 		{
 			//newSkel->handle = originalAsset->handle;
 
@@ -266,7 +266,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 		//Ref<Volt::Mesh> originalMesh = std::reinterpret_pointer_cast<Volt::Mesh>(originalAsset);
 
 		Ref<Volt::Mesh> newMesh = CreateRef<Volt::Mesh>();
-		if (!Volt::MeshTypeImporter::ImportMesh(Volt::ProjectManager::GetDirectory() / sourcePath, *newMesh))
+		if (!Volt::MeshTypeImporter::ImportMesh(Volt::ProjectManager::GetRootDirectory() / sourcePath, *newMesh))
 		{
 			UI::Notify(NotificationType::Error, "Unable to re import mesh!", std::format("Failed to import mesh from {0}!", sourcePath.string()));
 		}
@@ -500,7 +500,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 			if (aImportData.importSkeleton)
 			{
 				Ref<Volt::Skeleton> skeleton = CreateRef<Volt::Skeleton>();
-				if (!Volt::MeshTypeImporter::ImportSkeleton(Volt::ProjectManager::GetDirectory() / aMeshToImport, *skeleton))
+				if (!Volt::MeshTypeImporter::ImportSkeleton(Volt::ProjectManager::GetRootDirectory() / aMeshToImport, *skeleton))
 				{
 					UI::Notify(NotificationType::Error, "Failed to import skeleton!", std::format("Failed to import skeleton from {}!", aMeshToImport.string()));
 				}
@@ -522,7 +522,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 					else
 					{
 						Ref<Volt::Animation> animation = CreateRef<Volt::Animation>();
-						if (!Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / aMeshToImport, targetSkeleton, *animation))
+						if (!Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetRootDirectory() / aMeshToImport, targetSkeleton, *animation))
 						{
 							UI::Notify(NotificationType::Error, "Failed to import animation!", std::format("Failed to import animaition from {}!", aMeshToImport.string()));
 						}
@@ -553,7 +553,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 				else
 				{
 					Ref<Volt::Animation> animation = CreateRef<Volt::Animation>();
-					if (!Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / aMeshToImport, targetSkeleton, *animation))
+					if (!Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetRootDirectory() / aMeshToImport, targetSkeleton, *animation))
 					{
 						UI::Notify(NotificationType::Error, "Failed to import animation!", std::format("Failed to import animaition from {}!", aMeshToImport.string()));
 					}
@@ -935,7 +935,7 @@ Ref<Volt::Texture2D> EditorUtils::GenerateThumbnail(const std::filesystem::path&
 
 bool EditorUtils::HasThumbnail(const std::filesystem::path& path)
 {
-	return FileSystem::Exists(Volt::ProjectManager::GetDirectory() / GetThumbnailPathFromPath(path));
+	return FileSystem::Exists(Volt::ProjectManager::GetRootDirectory() / GetThumbnailPathFromPath(path));
 }
 
 std::filesystem::path EditorUtils::GetThumbnailPathFromPath(const std::filesystem::path& path)

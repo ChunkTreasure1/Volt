@@ -581,7 +581,7 @@ namespace Volt
 
 		if (registry.any_of<VertexPaintedComponent>(id))
 		{
-			std::filesystem::path vpPath = (ProjectManager::GetDirectory() / metadata.filePath.parent_path() / "Layers" / ("ent_" + std::to_string((uint32_t)registry.get<IDComponent>(id).id) + ".entVp"));
+			std::filesystem::path vpPath = (ProjectManager::GetRootDirectory() / metadata.filePath.parent_path() / "Layers" / ("ent_" + std::to_string((uint32_t)registry.get<IDComponent>(id).id) + ".entVp"));
 			auto& vpComp = registry.get<VertexPaintedComponent>(id);
 
 			// #TODO_Ivar: This is kind of questionable after TGA
@@ -847,7 +847,7 @@ namespace Volt
 		if (scene->GetRegistry().any_of<VertexPaintedComponent>(entity))
 		{
 			std::filesystem::path vpPath = metadata.filePath.parent_path();
-			vpPath = ProjectManager::GetDirectory() / vpPath / "Layers" / ("ent_" + std::to_string((uint32_t)entityId) + ".entVp");
+			vpPath = ProjectManager::GetRootDirectory() / vpPath / "Layers" / ("ent_" + std::to_string((uint32_t)entityId) + ".entVp");
 
 			if (std::filesystem::exists(vpPath))
 			{

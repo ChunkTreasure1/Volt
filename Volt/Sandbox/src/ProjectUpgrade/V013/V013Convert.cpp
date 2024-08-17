@@ -613,7 +613,7 @@ namespace V013
 	inline void ConvertPrefabsToV013()
 	{
 		auto& project = Volt::ProjectManager::GetProject();
-		const std::filesystem::path assetsPath = project.projectDirectory / project.assetsDirectory;
+		const std::filesystem::path assetsPath = project.rootDirectory / project.assetsDirectory;
 
 		Vector<std::filesystem::path> prefabFilePaths;
 		for (const auto& entry : std::filesystem::recursive_directory_iterator(assetsPath))
@@ -660,7 +660,7 @@ namespace V013
 
 		// Find all scene directories
 		auto& project = Volt::ProjectManager::GetProject();
-		const std::filesystem::path assetsPath = project.projectDirectory / project.assetsDirectory;
+		const std::filesystem::path assetsPath = project.rootDirectory / project.assetsDirectory;
 
 		Vector<std::filesystem::path> sceneFilePaths;
 		for (const auto& entry : std::filesystem::recursive_directory_iterator(assetsPath))

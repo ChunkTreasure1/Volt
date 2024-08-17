@@ -60,6 +60,9 @@ namespace Volt
 
 	class SteamImplementation;
 	class AssetManager;
+	class PluginRegistry;
+	class PluginSystem;
+	class DynamicLibraryManager;
 
 	namespace RHI
 	{
@@ -125,6 +128,9 @@ namespace Volt
 
 		Scope<Log> m_log;
 		Scope<JobSystem> m_jobSystem;
+		Scope<DynamicLibraryManager> m_dynamicLibraryManager;
+		Scope<PluginRegistry> m_pluginRegistry;
+		Scope<PluginSystem> m_pluginSystem;
 
 		RefPtr<RHI::ImGuiImplementation> m_imguiImplementation;
 		RefPtr<RHI::GraphicsContext> m_graphicsContext;

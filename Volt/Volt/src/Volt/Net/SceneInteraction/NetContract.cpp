@@ -112,7 +112,7 @@ namespace Volt
 
 	void NetContractContainer::Load()
 	{
-		auto pajsdfbklk = ProjectManager::GetDirectory() / "Assets/Networking/Contracts";
+		auto pajsdfbklk = ProjectManager::GetRootDirectory() / "Assets/Networking/Contracts";
 		if (!std::filesystem::exists(pajsdfbklk))
 		{
 			return;
