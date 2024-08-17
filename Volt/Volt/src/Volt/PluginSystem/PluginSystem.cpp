@@ -123,6 +123,14 @@ namespace Volt
 		}
 	}
 
+	void PluginSystem::SendEventToPlugins(Volt::Event& event)
+	{
+		for (const auto& plugin : m_loadedGamePlugins)
+		{
+			plugin.pluginPtr->OnEvent(event);
+		}
+	}
+
 	bool PluginSystem::LoadPlugin(const PluginDefinition& pluginDefinition)
 	{
 		const auto& binaryFilepath = pluginDefinition.binaryFilepath;

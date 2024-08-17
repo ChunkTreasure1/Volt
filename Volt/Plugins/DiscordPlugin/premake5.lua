@@ -1,4 +1,4 @@
-project "ExamplePlugin"
+project "DiscordPlugin"
 	location "."
 	kind "SharedLib"
 	language "C++"
@@ -22,11 +22,15 @@ project "ExamplePlugin"
 		"src/**.cpp",
 		"src/**.hpp",
 		"**.natvis",
+		
+		"vendor/DiscordSDK/**.cpp",
+		"vendor/DiscordSDK/**.h",
 	}
 
 	includedirs
 	{
 		"src/",
+		"vendor/DiscordSDK/include/discord",
 
 		"%{IncludeDir.LogModule}",
 		"%{IncludeDir.RHIModule}",
@@ -39,7 +43,11 @@ project "ExamplePlugin"
 
 	links
 	{
-		"LogModule"
+		"LogModule",
+		"CoreUtilities",
+		"EventModule",
+
+		"vendor/DiscordSDK/lib/discord_game_sdk.dll.lib"
 	}
 
 	flags

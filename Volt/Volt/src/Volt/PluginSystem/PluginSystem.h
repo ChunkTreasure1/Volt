@@ -52,6 +52,8 @@ namespace Volt
 		void InitializePlugins();
 		void ShutdownPlugins();
 
+		void SendEventToPlugins(Volt::Event& event);
+
 	private:
 		struct IndexData
 		{

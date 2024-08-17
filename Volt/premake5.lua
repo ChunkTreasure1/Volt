@@ -53,6 +53,7 @@ include "Volt/vendor/ufbx"
 
 group "Plugins"
 include "Plugins/ExamplePlugin"
+include "Plugins/DiscordPlugin"
 
 group "Core"
 include "Amp"

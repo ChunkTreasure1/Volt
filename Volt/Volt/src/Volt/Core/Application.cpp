@@ -278,7 +278,10 @@ namespace Volt
 				break;
 			}
 		}
+
 		Input::OnEvent(event);
+	
+		m_pluginSystem->SendEventToPlugins(event);
 	}
 
 	void Application::PushLayer(Layer* layer)
