@@ -53,7 +53,6 @@ include "Volt/vendor/ufbx"
 
 group "Plugins"
 include "Plugins/ExamplePlugin"
-include "Plugins/NavigationPlugin"
 
 group "Core"
 include "Amp"
