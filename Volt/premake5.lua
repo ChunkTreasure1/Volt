@@ -53,6 +53,7 @@ include "Volt/vendor/ufbx"
 
 group "Plugins"
 include "Plugins/ExamplePlugin"
+include "Plugins/NavigationPlugin"
 
 group "Core"
 include "Amp"
@@ -68,6 +69,7 @@ include "LogModule"
 include "RenderCoreModule"
 include "JobSystemModule"
 include "AssetSystemModule"
+include "EntitySystemModule"
 include (path.join(VoltRootDirectory, "Volt-ScriptCore"))
 
 group "Core/RHI"

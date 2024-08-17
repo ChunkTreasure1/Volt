@@ -41,6 +41,11 @@ project "ExamplePlugin"
 		"LogModule"
 	}
 
+	flags
+	{
+		"NoImportLib"
+	}
+
 	defines
 	{
 		"TRACY_IMPORTS",
@@ -50,7 +55,8 @@ project "ExamplePlugin"
 	postbuildcommands
 	{
 		'{MKDIR} "../../../Engine/Plugins/%{prj.name}"',
-		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../../Engine/Plugins/%{prj.name}"'
+		'{COPYFILE} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../../Engine/Plugins/%{prj.name}"',
+		'{COPYFILE} "%{prj.name}.vtconfig" "../../../Engine/Plugins/%{prj.name}"'
 	}
 
 	filter "files:vendor/**.cpp"

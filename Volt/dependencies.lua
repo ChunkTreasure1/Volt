@@ -40,16 +40,6 @@ IncludeDir["ufbx"] = "%{wks.location}/Volt/vendor/ufbx"
 IncludeDir["dxc"] = "%{wks.location}/Volt/vendor/dxc/include"
 IncludeDir["libacc"] = "%{wks.location}/Volt/vendor/libacc"
 
-IncludeDir["VulkanRHIModule"] = "%{wks.location}/RHI/VulkanRHIModule/src"
-IncludeDir["D3D12RHIModule"] = "%{wks.location}/RHI/D3D12RHIModule/src"
-IncludeDir["RHIModule"] = "%{wks.location}/RHI/RHIModule/src"
-
-IncludeDir["EventModule"] = "%{wks.location}/EventModule/src"
-IncludeDir["InputModule"] = "%{wks.location}/InputModule/src"
-IncludeDir["WindowModule"] = "%{wks.location}/WindowModule/src"
-
-IncludeDir["LogModule"] =  "%{wks.location}/LogModule/src"
-
 IncludeDir["vma"] = "%{wks.location}/Volt/vendor/vma"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 IncludeDir["shaderc_utils"] = "%{wks.location}/Volt/vendor/shaderc/libshaderc_util/include"
@@ -81,6 +71,14 @@ IncludeDir["VulkanRHIModule"] = "%{wks.location}/RHI/VulkanRHIModule/src"
 IncludeDir["D3D12RHIModule"] = "%{wks.location}/RHI/D3D12RHIModule/src"
 IncludeDir["JobSystemModule"] = "%{wks.location}/JobSystemModule/src"
 IncludeDir["AssetSystemModule"] = "%{wks.location}/AssetSystemModule/src"
+IncludeDir["VulkanRHIModule"] = "%{wks.location}/RHI/VulkanRHIModule/src"
+IncludeDir["D3D12RHIModule"] = "%{wks.location}/RHI/D3D12RHIModule/src"
+IncludeDir["RHIModule"] = "%{wks.location}/RHI/RHIModule/src"
+IncludeDir["EventModule"] = "%{wks.location}/EventModule/src"
+IncludeDir["InputModule"] = "%{wks.location}/InputModule/src"
+IncludeDir["WindowModule"] = "%{wks.location}/WindowModule/src"
+IncludeDir["LogModule"] =  "%{wks.location}/LogModule/src"
+IncludeDir["EntitySystemModule"] = "%{wks.location}/EntitySystemModule/src"
 
 LibraryDir = {}
 LibraryDir["PhysX"] = "%{wks.location}/Volt/vendor/PhysX/lib/%{cfg.buildcfg}"
