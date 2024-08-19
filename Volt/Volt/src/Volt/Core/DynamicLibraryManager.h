@@ -12,7 +12,7 @@ namespace Volt
 		DynamicLibraryManager();
 		~DynamicLibraryManager();
 
-		VT_NODISCARD DLLHandle LoadDynamicLibrary(const std::filesystem::path& binaryFilepath);
+		VT_NODISCARD DLLHandle LoadDynamicLibrary(const std::filesystem::path& binaryFilepath, bool& outExternallyLoaded);
 		bool UnloadDynamicLibrary(const std::filesystem::path& binaryFilepath);
 
 		VT_NODISCARD VT_INLINE static DynamicLibraryManager& Get() { return *s_instance; }

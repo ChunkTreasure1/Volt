@@ -32,6 +32,7 @@ namespace FileSystem
 	extern VTCOREUTIL_API std::filesystem::path OpenFileDialogue(const Vector<FileFilter>& filters, const std::filesystem::path& baseDir);
 	extern VTCOREUTIL_API std::filesystem::path SaveFileDialogue(const Vector<FileFilter>& filters, const std::filesystem::path& baseDir);
 	extern VTCOREUTIL_API std::filesystem::path GetDocumentsPath();
+	extern VTCOREUTIL_API std::filesystem::path GetExecutablePath();
 
 	extern VTCOREUTIL_API void Initialize();
 	extern VTCOREUTIL_API void Shutdown();

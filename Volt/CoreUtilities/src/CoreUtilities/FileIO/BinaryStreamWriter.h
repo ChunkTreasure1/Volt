@@ -4,7 +4,6 @@
 #include "CoreUtilities/Buffer/Buffer.h"
 #include "CoreUtilities/Containers/Vector.h"
 
-
 #include <array>
 #include <string>
 #include <map>

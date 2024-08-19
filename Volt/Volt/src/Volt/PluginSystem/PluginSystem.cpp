@@ -3,7 +3,6 @@
 
 #include "Volt/Project/Project.h"
 #include "Volt/PluginSystem/PluginRegistry.h"
-
 #include "Volt/Core/DynamicLibraryManager.h"
 
 #include <CoreUtilities/DynamicLibraryHelpers.h>
@@ -17,7 +16,7 @@ namespace Volt
 
 	void PluginSystem::LoadPlugins(const Project& project)
     {
-		VT_LOGC(Info, LogPuginSystem, "Started loading of plugins!");
+		VT_LOGC(Info, LogPluginSystem, "Started loading of plugins!");
 		auto pluginsToLoad = project.pluginDefinitions;
 
 		// Try to load all plugins defined in project file
@@ -36,34 +35,25 @@ namespace Volt
 					}
 					else
 					{
-						VT_LOGC(Warning, LogPuginSystem, "The dependency {} of plugin {} was not found! Plugin might not work as expected!", pluginDependency, pluginDef.name);
+						VT_LOGC(Warning, LogPluginSystem, "The dependency {} of plugin {} was not found! Plugin might not work as expected!", pluginDependency, pluginDef.name);
 					}
 				}
 			}
 		}
-		VT_LOGC(Info, LogPuginSystem, "Finished loading of plugins!");
+		VT_LOGC(Info, LogPluginSystem, "Finished loading of plugins!");
     }
 
 	void PluginSystem::UnloadPlugins()
 	{
-		for (const auto& plugin : m_loadedGamePlugins)
+		for (auto& plugin : m_loadedPlugins)
 		{
-			m_pluginFactories.at(plugin.binaryFilepath)->DestroyInstance(plugin.pluginPtr);
-			m_pluginFactories.erase(plugin.binaryFilepath);
+			m_pluginFactories.at(plugin.nativePlugin.GetBinaryFilepath())->DestroyInstance(plugin.pluginPtr);
+			m_pluginFactories.erase(plugin.nativePlugin.GetBinaryFilepath());
 
-			DynamicLibraryManager::Get().UnloadDynamicLibrary(plugin.binaryFilepath);
+			plugin.nativePlugin.Unload();
 		}
 
-		for (const auto& plugin : m_loadedEnginePlugins)
-		{
-			m_pluginFactories.at(plugin.binaryFilepath)->DestroyInstance(plugin.pluginPtr);
-			m_pluginFactories.erase(plugin.binaryFilepath);
-
-			DynamicLibraryManager::Get().UnloadDynamicLibrary(plugin.binaryFilepath);
-		}
-
-		m_loadedGamePlugins.clear();
-		m_loadedEnginePlugins.clear();
+		m_loadedPlugins.clear();
 		m_pluginFactories.clear();
 	}
 
@@ -71,8 +61,7 @@ namespace Volt
 	{
 		const auto& dependencyGraph = m_pluginRegistry.GetPluginDependencyGraph();
 
-		Vector<UUID64> initialEnginePlugins;
-		Vector<UUID64> initialGamePlugins;
+		Vector<UUID64> initialPlugins;
 		for (const auto& node : dependencyGraph.GetNodes())
 		{
 			if (!node.GetInputEdges().empty())
@@ -85,26 +74,10 @@ namespace Volt
 				continue;
 			}
 
-			const auto nodePluginType = m_guidToIndexMap.at(node.nodeData).pluginType;
-			if (nodePluginType == Plugin::Type::Engine)
-			{
-				initialEnginePlugins.emplace_back(node.id);
-			}
-			else if (nodePluginType == Plugin::Type::Game)
-			{
-				initialGamePlugins.emplace_back(node.id);
-			}
+			initialPlugins.emplace_back(node.id);
 		}
 
-		// We first want to initialize engine plugins and after that, game plugins.
-		// This is because game plugins may depend on engine plugins.
-
-		for (const auto& nodeId : initialEnginePlugins)
-		{
-			InitializePluginAndDependencies(nodeId, dependencyGraph);
-		}
-
-		for (const auto& nodeId : initialGamePlugins)
+		for (const auto& nodeId : initialPlugins)
 		{
 			InitializePluginAndDependencies(nodeId, dependencyGraph);
 		}
@@ -112,12 +85,7 @@ namespace Volt
 
 	void PluginSystem::ShutdownPlugins()
 	{
-		for (const auto& plugin : m_loadedGamePlugins)
-		{
-			plugin.pluginPtr->Shutdown();
-		}
-
-		for (const auto& plugin : m_loadedEnginePlugins)
+		for (const auto& plugin : m_loadedPlugins)
 		{
 			plugin.pluginPtr->Shutdown();
 		}
@@ -125,24 +93,29 @@ namespace Volt
 
 	void PluginSystem::SendEventToPlugins(Volt::Event& event)
 	{
-		for (const auto& plugin : m_loadedGamePlugins)
-		{
-			plugin.pluginPtr->OnEvent(event);
-		}
 	}
 
 	bool PluginSystem::LoadPlugin(const PluginDefinition& pluginDefinition)
 	{
 		const auto& binaryFilepath = pluginDefinition.binaryFilepath;
 
-		DLLHandle libHandle = DynamicLibraryManager::Get().LoadDynamicLibrary(binaryFilepath);
+		bool externallyLoaded;
+		DLLHandle libHandle = DynamicLibraryManager::Get().LoadDynamicLibrary(binaryFilepath, externallyLoaded);
 		if (libHandle == nullptr)
 		{
 			return false;
 		}
 
+		NativePluginModule nativePlugin{ binaryFilepath, externallyLoaded };
+
 		PFN_PluginCreateInstance createFunc = reinterpret_cast<PFN_PluginCreateInstance>(VT_GET_PROC_ADDRESS(libHandle, PLUGIN_CREATE_FUNC_NAME));
 		PFN_PluginDestroyInstance destroyFunc = reinterpret_cast<PFN_PluginDestroyInstance>(VT_GET_PROC_ADDRESS(libHandle, PLUGIN_DESTROY_FUNC_NAME));
+
+		if (!createFunc || !destroyFunc)
+		{
+			VT_LOGC(Error, LogPluginSystem, "Unable to find required functions in plugin!");
+			return false;
+		}
 
 		Scope<PluginFactory> pluginFactory = CreateScope<PluginFactory>(createFunc, destroyFunc);
 
@@ -154,30 +127,20 @@ namespace Volt
 		
 		if (pluginPtr == nullptr || initializationInfo.outError != Plugin::Error::None)
 		{
-			VT_LOGC(Error, LogPuginSystem, "Unable to create instance of plugin {}!", binaryFilepath.string());
-			DynamicLibraryManager::Get().UnloadDynamicLibrary(binaryFilepath);
+			if (pluginPtr)
+			{
+				pluginFactory->DestroyInstance(pluginPtr);
+			}
+
+			VT_LOGC(Error, LogPluginSystem, "Unable to create instance of plugin {}!", binaryFilepath.string());
 			return false;
 		}
 
-		if (initializationInfo.outType == Plugin::Type::Game)
-		{
-			m_loadedGamePlugins.emplace_back(reinterpret_cast<GamePlugin*>(pluginPtr), binaryFilepath);
-			m_guidToIndexMap[pluginDefinition.guid] = { m_loadedGamePlugins.size() - 1, initializationInfo.outType };
-		}
-		else if (initializationInfo.outType == Plugin::Type::Engine)
-		{
-			m_loadedEnginePlugins.emplace_back(reinterpret_cast<EnginePlugin*>(pluginPtr), binaryFilepath);
-			m_guidToIndexMap[pluginDefinition.guid] = { m_loadedEnginePlugins.size() - 1, initializationInfo.outType };
-		}
-		else
-		{
-			VT_LOGC(Error, LogPuginSystem, "Invalid plugin type found in plugin {}!", binaryFilepath.string());
-			DynamicLibraryManager::Get().UnloadDynamicLibrary(binaryFilepath);
-			return false;
-		}
+		m_loadedPlugins.emplace_back(pluginPtr, std::move(nativePlugin));
+		m_guidToIndexMap[pluginDefinition.guid] = { m_loadedPlugins.size() - 1};
 
 		m_pluginFactories[binaryFilepath] = std::move(pluginFactory);
-		VT_LOGC(Info, LogPuginSystem, "Plugin {} has been loaded and created!", pluginDefinition.name);
+		VT_LOGC(Info, LogPluginSystem, "Plugin {} has been loaded and created!", pluginDefinition.name);
 		return true;
 	}
 
@@ -189,25 +152,11 @@ namespace Volt
 			return;
 		}
 
-		const IndexData& pluginIndexData = m_guidToIndexMap.at(node.nodeData);
-
-		if (pluginIndexData.pluginType == Plugin::Type::Engine)
+		auto& pluginContainer = m_loadedPlugins.at(m_guidToIndexMap.at(node.nodeData));
+		if (!pluginContainer.initialized)
 		{
-			auto& pluginContainer = m_loadedEnginePlugins.at(pluginIndexData.index);
-			if (!pluginContainer.initialized)
-			{
-				pluginContainer.pluginPtr->Initialize();
-				pluginContainer.initialized = true;
-			}
-		}
-		else if (pluginIndexData.pluginType == Plugin::Type::Game)
-		{
-			auto& pluginContainer = m_loadedGamePlugins.at(pluginIndexData.index);
-			if (!pluginContainer.initialized)
-			{
-				pluginContainer.pluginPtr->Initialize();
-				pluginContainer.initialized = true;
-			}
+			pluginContainer.pluginPtr->Initialize();
+			pluginContainer.initialized = true;
 		}
 
 		for (const auto& edgeId : node.GetOutputEdges())

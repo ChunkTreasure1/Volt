@@ -14,8 +14,6 @@
 #include <Sandbox/Utility/EditorUtilities.h>
 #include <Sandbox/UserSettingsManager.h>
 
-#include <Volt/Discord/DiscordSDK.h>
-
 void NavigationPanel::UpdateMainContent()
 {
 	if (ImGui::BeginTabBar("tabs"))

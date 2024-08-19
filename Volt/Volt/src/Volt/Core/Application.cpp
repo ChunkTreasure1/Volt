@@ -21,7 +21,6 @@
 
 #include "Volt/Physics/Physics.h"
 #include "Volt/Utility/FileSystem.h"
-#include "Volt/Discord/DiscordSDK.h"
 
 #include "Volt/Utility/Noise.h"
 #include "Volt/Utility/UIUtility.h"
@@ -343,11 +342,6 @@ namespace Volt
 		{
 			VT_PROFILE_SCOPE("Application::Net");
 			m_netHandler->Update(m_currentDeltaTime);
-		}
-
-		{
-			VT_PROFILE_SCOPE("Discord SDK");
-			DiscordSDK::Update();
 		}
 
 		RenderGraphExecutionThread::WaitForFinishedExecution();

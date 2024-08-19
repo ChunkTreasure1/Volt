@@ -42,22 +42,20 @@ project "ExamplePlugin"
 		"LogModule"
 	}
 
-	flags
-	{
-		"NoImportLib"
-	}
-
 	defines
 	{
 		"TRACY_IMPORTS",
-		"VT_ENABLE_NV_AFTERMATH"
+		"VT_ENABLE_NV_AFTERMATH",
+		"VT_PLUGIN_BUILD_DLL"
 	}
 
 	postbuildcommands
 	{
 		'{MKDIR} "../../../Engine/Plugins/%{prj.name}"',
 		'{COPYFILE} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../../Engine/Plugins/%{prj.name}"',
-		'{COPYFILE} "%{prj.name}.vtconfig" "../../../Engine/Plugins/%{prj.name}"'
+		'{COPYFILE} "%{prj.name}.vtconfig" "../../../Engine/Plugins/%{prj.name}"',
+		'{COPYFILE} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox"',
+		'{COPYFILE} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}/%{prj.name}.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher"'
 	}
 
 	filter "files:vendor/**.cpp"

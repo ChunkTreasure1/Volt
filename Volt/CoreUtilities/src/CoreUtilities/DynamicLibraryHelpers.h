@@ -9,6 +9,7 @@
 
 #define VT_LOAD_LIBRARY(name) ::LoadLibraryA(name)
 #define VT_GET_CURRENT_MODULE() ::GetModuleHandle(nullptr)
+#define VT_GET_MODULE_HANDLE(name) ::GetModuleHandleA(name)
 #define VT_GET_MODULE_FILENAME(module, filename, size) ::GetModuleFileName(module, filename, size)
 #define VT_SHARED_LIBRARY_SUPPORTED true
 #define VT_SHARED_LIBRARY_EXTENSION ".dll"

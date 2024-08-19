@@ -76,7 +76,6 @@ project "Launcher"
 		"%{IncludeDir.meshoptimizer}",
 		"%{IncludeDir.half}",
 		"%{IncludeDir.steam}",
-		"%{IncludeDir.discord}",
 
 		"%{IncludeDir.entt}",
 
@@ -102,7 +101,6 @@ project "Launcher"
         "Volt",
 		"Amp",
 		"meshoptimizer",
-		"DiscordSDK",
 
 		"ImGuiNodeEditor",
 
@@ -121,11 +119,10 @@ project "Launcher"
 
 		"%{Library.mono}",
 		"%{Library.steam}",
-		"%{Library.discord}",
 		
 		"%{Library.METIS}",
 
-		"EventModule",
+		"EventModule", 
 		"WindowModule",
 		"InputModule",
     }

@@ -1,13 +1,18 @@
 #pragma once
 
-#include <Volt/PluginSystem/GamePlugin.h>
+#include <Volt/PluginSystem/Plugin.h>
+
+#include <CoreUtilities/CompilerTraits.h>
 
 class IDiscordManager;
 
-class DiscordPlugin : public Volt::GamePlugin
+class PLUGIN_API DiscordPlugin : public Volt::Plugin
 {
 public:
+	DiscordPlugin();
 	~DiscordPlugin() override = default;
+
+	VT_DECLARE_PLUGIN_GUID("{D45ED8C0-50EF-4BB5-BD83-E081D4641AE6}"_guid);
 
 	inline uint32_t GetVersion() const override { return 1; }
 	inline std::string_view GetName() const override { return "DiscordPlugin"; }
@@ -16,8 +21,6 @@ public:
 
 	void Initialize() override;
 	void Shutdown() override;
-
-	void OnEvent(Volt::Event& event) override;
 
 	VT_INLINE IDiscordManager& GetManager() const { return *m_discordManager; }
 	VT_INLINE static DiscordPlugin& GetInstance() { return *s_instance; }
@@ -28,4 +31,4 @@ private:
 	Scope<IDiscordManager> m_discordManager;
 };
 
-VT_REGISTER_GAME_PLUGIN(DiscordPlugin);
+VT_REGISTER_PLUGIN(DiscordPlugin);

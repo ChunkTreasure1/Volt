@@ -8,7 +8,7 @@
 #include <CoreUtilities/Containers/Map.h>
 #include <CoreUtilities/Containers/Graph.h>
 
-VT_DECLARE_LOG_CATEGORY(LogPuginSystem, LogVerbosity::Trace);
+VT_DECLARE_LOG_CATEGORY(LogPluginSystem, LogVerbosity::Trace);
 
 namespace Volt
 {

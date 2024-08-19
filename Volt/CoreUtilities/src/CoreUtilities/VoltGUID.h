@@ -2,6 +2,7 @@
 
 #include "CoreUtilities/Core.h"
 
+// #TODO_Ivar: Remove there headers from here.
 #include "CoreUtilities/FileIO/BinaryStreamReader.h"
 #include "CoreUtilities/FileIO/BinaryStreamWriter.h"
 

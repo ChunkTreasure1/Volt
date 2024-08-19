@@ -79,10 +79,10 @@
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
 #include <Volt/Events/SettingsEvent.h>
-
-#include <Volt/Discord/DiscordSDK.h>
-
 #include <Volt/Events/ApplicationEvents.h>
+
+#include <DiscordPlugin/Plugin.h>
+#include <DiscordPlugin/DiscordManagerInterface.h>
 
 #include <WindowModule/Events/WindowEvents.h>
 #include <WindowModule/WindowManager.h>
@@ -91,7 +91,6 @@
 #include <NavigationEditor/Tools/NavMeshDebugDrawer.h>
 
 #include <RHIModule/Images/Image.h>
-
 #include <EventModule/Event.h>
 
 
@@ -177,16 +176,18 @@ void Sandbox::OnAttach()
 
 	constexpr int64_t discordAppId = 1108502963447681106;
 
-	Volt::DiscordSDK::Init(discordAppId, false);
+	DiscordPlugin::GetInstance().GetManager().SetApplicationID(discordAppId);
 
-	auto& act = Volt::DiscordSDK::GetRichPresence();
-
-	act.SetApplicationId(discordAppId);
-	act.GetAssets().SetLargeImage("icon_volt");
-	act.GetAssets().SetLargeText("Volt");
-	act.SetType(discord::ActivityType::Playing);
-
-	Volt::DiscordSDK::UpdateRichPresence();
+	//Volt::DiscordSDK::Init(discordAppId, false);
+	//
+	//auto& act = Volt::DiscordSDK::GetRichPresence();
+	//
+	//act.SetApplicationId(discordAppId);
+	//act.GetAssets().SetLargeImage("icon_volt");
+	//act.GetAssets().SetLargeText("Volt");
+	//act.SetType(discord::ActivityType::Playing);
+	//
+	//Volt::DiscordSDK::UpdateRichPresence();
 
 	m_isInitialized = true;
 }
@@ -1124,17 +1125,17 @@ bool Sandbox::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 		notRuntimeScene = false;
 	}
 
-	auto& act = Volt::DiscordSDK::GetRichPresence();
-
-	auto scene = e.GetScene();
-
-	act.SetDetails("Working on:");
-	act.SetState(scene->GetName().c_str());
-	act.GetParty().GetSize().SetCurrentSize(m_runtimeScene->GetActiveLayer() + 1);
-	act.GetParty().GetSize().SetMaxSize(static_cast<int32_t>(m_runtimeScene->GetLayers().size()));
-	act.GetTimestamps().SetStart(std::time(nullptr));
-
-	Volt::DiscordSDK::UpdateRichPresence();
+	//auto& act = Volt::DiscordSDK::GetRichPresence();
+	//
+	//auto scene = e.GetScene();
+	//
+	//act.SetDetails("Working on:");
+	//act.SetState(scene->GetName().c_str());
+	//act.GetParty().GetSize().SetCurrentSize(m_runtimeScene->GetActiveLayer() + 1);
+	//act.GetParty().GetSize().SetMaxSize(static_cast<int32_t>(m_runtimeScene->GetLayers().size()));
+	//act.GetTimestamps().SetStart(std::time(nullptr));
+	//
+	//Volt::DiscordSDK::UpdateRichPresence();
 
 	return false;
 }

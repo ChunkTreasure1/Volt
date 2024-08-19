@@ -12,7 +12,8 @@ function AddCommonWarnings()
 		"4100",
 		"4505",
         "4005",
-		"4251"
+		"4251",
+		"4275"
     }
 end
 

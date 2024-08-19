@@ -243,6 +243,15 @@ namespace FileSystem
 		return documentsPath;
 	}
 
+	std::filesystem::path GetExecutablePath()
+	{
+		constexpr uint64_t MAX_LENGTH = 255;
+		char filename[MAX_LENGTH];
+		::GetModuleFileNameA(nullptr, filename, MAX_LENGTH);
+
+		return std::filesystem::path(filename);
+	}
+
 	void Initialize()
 	{
 		NFD::Init();

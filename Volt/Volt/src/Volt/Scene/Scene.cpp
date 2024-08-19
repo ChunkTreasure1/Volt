@@ -38,8 +38,6 @@
 
 #include "Volt/Animation/MotionWeaver.h"
 
-#include "Volt/Discord/DiscordSDK.h"
-
 #include "Volt/Project/ProjectManager.h"
 
 #include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
@@ -1340,13 +1338,6 @@ namespace Volt
 		{
 			m_activeLayerIndex = (uint32_t)std::distance(m_sceneLayers.begin(), it);
 		}
-
-		auto& act = Volt::DiscordSDK::GetRichPresence();
-
-		act.GetParty().GetSize().SetCurrentSize(GetActiveLayer() + 1);
-		act.GetParty().GetSize().SetMaxSize(static_cast<int32_t>(GetLayers().size()));
-
-		Volt::DiscordSDK::UpdateRichPresence();
 	}
 
 	bool Scene::LayerExists(uint32_t layerId)

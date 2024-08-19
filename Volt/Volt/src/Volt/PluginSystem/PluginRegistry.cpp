@@ -5,7 +5,7 @@
 #include <CoreUtilities/DynamicLibraryHelpers.h>
 #include <CoreUtilities/FileSystem.h>
 
-VT_DEFINE_LOG_CATEGORY(LogPuginSystem);
+VT_DEFINE_LOG_CATEGORY(LogPluginSystem);
 
 namespace Volt
 {
@@ -25,7 +25,7 @@ namespace Volt
 			return;
 		}
 
-		VT_LOGC(Info, LogPuginSystem, "Starting registering of plugins in directory {}!", directory.string());
+		VT_LOGC(Info, LogPluginSystem, "Starting registering of plugins in directory {}!", directory.string());
 
 		for (const auto& path : std::filesystem::recursive_directory_iterator(directory))
 		{
@@ -43,7 +43,7 @@ namespace Volt
 			DeserializePlugin(filepath);
 		}
 
-		VT_LOGC(Info, LogPuginSystem, "Finished registering of plugins!");
+		VT_LOGC(Info, LogPluginSystem, "Finished registering of plugins!");
 	}
 
 	const PluginDefinition& PluginRegistry::GetPluginDefinitionByName(const std::string& name) const
@@ -93,13 +93,13 @@ namespace Volt
 
 		if (!streamReader.OpenFile(filepath))
 		{
-			VT_LOGC(Warning, LogPuginSystem, "Unable to open file {}!", filepath.string());
+			VT_LOGC(Warning, LogPluginSystem, "Unable to open file {}!", filepath.string());
 			return;
 		}
 
 		if (!streamReader.HasKey("Plugin"))
 		{
-			VT_LOGC(Warning, LogPuginSystem, "Plugin file {} is invalid!", filepath.string());
+			VT_LOGC(Warning, LogPluginSystem, "Plugin file {} is invalid!", filepath.string());
 		}
 
 		PluginDefinition newPlugin{};
@@ -109,7 +109,7 @@ namespace Volt
 		newPlugin.name = streamReader.ReadAtKey("name", std::string(""));
 		if (newPlugin.name.empty())
 		{
-			VT_LOGC(Error, LogPuginSystem, "Plugin {} does not have a name defined!", filepath.string());
+			VT_LOGC(Error, LogPluginSystem, "Plugin {} does not have a name defined!", filepath.string());
 			return;
 		}
 
@@ -125,11 +125,18 @@ namespace Volt
 
 		if (newPlugin.guid == VoltGUID::Null())
 		{
-			VT_LOGC(Error, LogPuginSystem, "Plugin {} does not have a GUID defined!", filepath.string());
+			VT_LOGC(Error, LogPluginSystem, "Plugin {} does not have a GUID defined!", filepath.string());
 			return;
 		}
 
-		newPlugin.binaryFilepath = filepath.parent_path() / (filepath.stem().string() + VT_SHARED_LIBRARY_EXTENSION);
+		const std::filesystem::path executableDirectory = FileSystem::GetExecutablePath().parent_path();
+		newPlugin.binaryFilepath = executableDirectory / (filepath.stem().string() + VT_SHARED_LIBRARY_EXTENSION);
+		
+		if (!FileSystem::Exists(newPlugin.binaryFilepath))
+		{
+			VT_LOGC(Error, LogPluginSystem, "Plugin {} does not have a binary at the correct location!", filepath.string());
+			return;
+		}
 
 		streamReader.ForEach("Plugins", [&]() 
 		{
@@ -139,6 +146,6 @@ namespace Volt
 		streamReader.ExitScope();
 
 		m_registeredPlugins[newPlugin.guid] = newPlugin;
-		VT_LOGC(Info, LogPuginSystem, "Plugin {} has been registered!", newPlugin.name);
+		VT_LOGC(Info, LogPluginSystem, "Plugin {} has been registered!", newPlugin.name);
 	}
 }

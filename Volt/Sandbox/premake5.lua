@@ -93,7 +93,6 @@ project "Sandbox"
 		"%{IncludeDir.meshoptimizer}",
 		"%{IncludeDir.half}",
 		"%{IncludeDir.steam}",
-		"%{IncludeDir.discord}",
 
 		"%{IncludeDir.imgui_node_editor}",
 		"%{IncludeDir.DirectXTex}",
@@ -116,6 +115,8 @@ project "Sandbox"
 		"%{IncludeDir.InputModule}",
 		"%{IncludeDir.EventModule}",
 		"%{IncludeDir.WindowModule}",
+
+		"../Plugins/DiscordPlugin/src",
 	}
 
     links
@@ -123,11 +124,16 @@ project "Sandbox"
         "Volt",
 		"Amp",
 		"meshoptimizer",
-		"DiscordSDK",
 
 		"ImGuizmo",
 		"ImGuiNodeEditor",
 		"CoreUtilities",
+
+		"InputModule",
+		"EventModule",
+		"WindowModule",
+
+		"DiscordPlugin",
 
 		"%{Library.fmod}",
 		"%{Library.fmodstudio}",
@@ -156,13 +162,9 @@ project "Sandbox"
 
 		"%{Library.mono}",
 		"%{Library.steam}",
-		"%{Library.discord}",
 
 		"%{Library.METIS}",
 
-		"InputModule",
-		"EventModule",
-		"WindowModule",
     }
 
 	flags

@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Volt/PluginSystem/GamePlugin.h"
-#include "Volt/PluginSystem/EnginePlugin.h"
+#include "Volt/PluginSystem/Plugin.h"
+#include "Volt/PluginSystem/NativePluginModule.h"
+
+#include <EventModule/Event.h>
 
 #include <CoreUtilities/Containers/Map.h>
 #include <CoreUtilities/Containers/Graph.h>
@@ -24,7 +26,7 @@ namespace Volt
 	struct PluginContainer
 	{
 		PluginType* pluginPtr;
-		std::filesystem::path binaryFilepath;
+		NativePluginModule nativePlugin;
 		bool initialized = false;
 	};
 
@@ -55,12 +57,6 @@ namespace Volt
 		void SendEventToPlugins(Volt::Event& event);
 
 	private:
-		struct IndexData
-		{
-			size_t index;
-			Plugin::Type pluginType;
-		};
-
 		bool LoadPlugin(const PluginDefinition& pluginDefinition);
 		
 		void InitializePluginAndDependencies(UUID64 nodeId, const Graph<VoltGUID, uint32_t>& dependencyGraph);
@@ -68,9 +64,8 @@ namespace Volt
 		PluginRegistry& m_pluginRegistry;
 
 		vt::map<std::filesystem::path, Scope<PluginFactory>> m_pluginFactories;
-		vt::map<VoltGUID, IndexData> m_guidToIndexMap;
+		vt::map<VoltGUID, size_t> m_guidToIndexMap;
 
-		Vector<PluginContainer<GamePlugin>> m_loadedGamePlugins;
-		Vector<PluginContainer<EnginePlugin>> m_loadedEnginePlugins;
+		Vector<PluginContainer<Plugin>> m_loadedPlugins;
 	};
 }
