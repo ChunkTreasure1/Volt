@@ -32,6 +32,10 @@ CharacterEditorPanel::CharacterEditorPanel()
 	: EditorWindow("Character Editor", true)
 {
 	m_windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+
+	RegisterListener<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(CharacterEditorPanel::OnRenderEvent));
+	RegisterListener<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(CharacterEditorPanel::OnUpdateEvent));
+
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
 	myScene = Volt::Scene::CreateDefaultScene("Character Editor", false);
@@ -108,17 +112,6 @@ void CharacterEditorPanel::UpdateContent()
 	EditorUtils::NewCharacterModal("New Character##NewCharacterEditor", myCurrentCharacter, myNewCharacterData);
 	AddAnimationEventModal();
 	AddJointAttachmentPopup();
-}
-
-void CharacterEditorPanel::OnEvent(Volt::Event& e)
-{
-	if (!IsOpen()) { return; }
-
-	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(CharacterEditorPanel::OnRenderEvent));
-	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(CharacterEditorPanel::OnUpdateEvent));
-
-	myCameraController->OnEvent(e);
 }
 
 void CharacterEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
@@ -282,8 +275,6 @@ void CharacterEditorPanel::UpdateViewport()
 	ImGui::SetNextWindowClass(GetWindowClass());
 
 	ImGui::Begin("Viewport##charEdit");
-
-	myCameraController->SetIsControllable(ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows));
 
 	auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 	auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();

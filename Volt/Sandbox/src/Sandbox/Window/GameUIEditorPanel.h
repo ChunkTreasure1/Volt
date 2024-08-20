@@ -26,8 +26,6 @@ public:
 	void UpdateMainContent() override {}
 	void UpdateContent() override;
 
-	void OnEvent(Volt::Event& e) override;
-
 	void OnOpen() override;
 	void OnClose() override;
 

@@ -9,7 +9,6 @@ public:
 	NetContractPanel();
 	~NetContractPanel();
 
-	void OnEvent(Volt::Event& e) override;
 	void UpdateMainContent() override;
 
 private:

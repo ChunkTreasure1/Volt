@@ -7,7 +7,6 @@
 #include <Volt/Scene/SceneManager.h>
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/Scene.h>
-#include <AssetSystem/AssetManager.h>
 #include <Volt/Asset/Prefab.h>
 
 #include <Volt/Net/Replicated/RepEntity.h>
@@ -24,6 +23,9 @@
 #include <Volt/Scripting/Mono/MonoScriptGlue.h>
 
 #include "Volt/Events/SceneEvents.h"
+
+#include <AssetSystem/AssetManager.h>
+#include <EventSystem/EventSystem.h>
 
 namespace Volt
 {
@@ -115,7 +117,7 @@ namespace Volt
 	{
 		AssetHandle handle = SceneManager::GetActiveScene()->handle;
 		Volt::OnSceneTransitionEvent loadEvent{ handle };
-		Volt::Application::Get().OnEvent(loadEvent);
+		EventSystem::DispatchEvent(loadEvent);
 
 		m_reload = true;
 	}
@@ -159,7 +161,7 @@ namespace Volt
 			Application::Get().GetNetHandler().Stop();
 			Volt::AssetHandle handle = Volt::AssetManager::Get().GetAssetHandleFromFilePath("Assets/Scenes/Levels/SC_LVL_MainMenu/SC_LVL_MainMenu.vtscene");
 			Volt::OnSceneTransitionEvent loadEvent{ handle };
-			Volt::Application::Get().OnEvent(loadEvent);
+			EventSystem::DispatchEvent(loadEvent);
 			return;
 		}
 

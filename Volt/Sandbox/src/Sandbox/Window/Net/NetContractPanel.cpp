@@ -30,10 +30,6 @@ NetContractPanel::~NetContractPanel()
 {
 }
 
-void NetContractPanel::OnEvent(Volt::Event& e)
-{
-}
-
 void NetContractPanel::UpdateMainContent()
 {
 	DrawPanel();

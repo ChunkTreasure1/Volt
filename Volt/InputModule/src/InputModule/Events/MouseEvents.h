@@ -2,7 +2,7 @@
 
 #include "InputModule/Config.h"
 
-#include <EventModule/Event.h>
+#include <EventSystem/Event.h>
 
 namespace Volt
 {

@@ -10,8 +10,8 @@
 
 #include "Volt/Utility/Version.h"
 
+#include <EventSystem/EventListener.h>
 #include <WindowModule/WindowMode.h>
-
 #include <JobSystem/JobSystem.h>
 
 #include <string>
@@ -63,6 +63,8 @@ namespace Volt
 	class PluginRegistry;
 	class PluginSystem;
 	class DynamicLibraryManager;
+	class EventSystem;
+	class Input;
 
 	namespace RHI
 	{
@@ -71,14 +73,13 @@ namespace Volt
 		class RHIProxy;
 	}
 
-	class Application
+	class Application : public EventListener
 	{
 	public:
 		Application(const ApplicationInfo& info = ApplicationInfo());
 		virtual ~Application();
 
 		void Run();
-		void OnEvent(Event& event);
 
 		void PushLayer(Layer* layer);
 		void PopLayer(Layer* layer);
@@ -102,6 +103,7 @@ namespace Volt
 	private:
 		void MainUpdate();
 		void CreateGraphicsContext();
+		void RegisterEventListeners();
 
 		bool OnAppUpdateEvent(class AppUpdateEvent& e);
 		bool OnWindowCloseEvent(class WindowCloseEvent& e);
@@ -127,10 +129,12 @@ namespace Volt
 		MultiTimer m_frameTimer;
 
 		Scope<Log> m_log;
+		Scope<Input> m_input;
 		Scope<JobSystem> m_jobSystem;
 		Scope<DynamicLibraryManager> m_dynamicLibraryManager;
 		Scope<PluginRegistry> m_pluginRegistry;
 		Scope<PluginSystem> m_pluginSystem;
+		Scope<EventSystem> m_eventSystem;
 
 		RefPtr<RHI::ImGuiImplementation> m_imguiImplementation;
 		RefPtr<RHI::GraphicsContext> m_graphicsContext;

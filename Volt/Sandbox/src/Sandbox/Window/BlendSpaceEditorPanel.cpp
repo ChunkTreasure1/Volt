@@ -22,10 +22,6 @@ void BlendSpaceEditorPanel::UpdateContent()
 	UpdateProperties();
 }
 
-void BlendSpaceEditorPanel::OnEvent(Volt::Event& e)
-{
-}
-
 void BlendSpaceEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 {
 	myCurrentBlendSpace = std::reinterpret_pointer_cast<Volt::BlendSpace>(asset);

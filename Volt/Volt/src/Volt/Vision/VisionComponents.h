@@ -119,8 +119,6 @@ namespace Volt
 		void Init(Entity& camEntity);
 		void Update(Entity& camEntity, float aDeltaTime);
 
-		void OnEvent(Volt::Event& e);
-
 		void FreeController(Entity& camEntity, float aDeltaTime);
 		void TPSController(Entity& camEntity, float aDeltaTime);
 		void FPSController(Entity& camEntity, float aDeltaTime);

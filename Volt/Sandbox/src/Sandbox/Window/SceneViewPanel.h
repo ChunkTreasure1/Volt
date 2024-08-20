@@ -20,7 +20,6 @@ class SceneViewPanel : public EditorWindow
 public:
 	SceneViewPanel(Ref<Volt::Scene>& scene, const std::string& id);
 	void UpdateMainContent() override;
-	void OnEvent(Volt::Event& e) override;
 
 	void HighlightEntity(Volt::Entity entity);
 

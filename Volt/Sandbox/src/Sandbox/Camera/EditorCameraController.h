@@ -1,5 +1,7 @@
 #pragma once
 
+#include <EventSystem/EventListener.h>
+
 #include <glm/glm.hpp>
 
 namespace Volt
@@ -12,23 +14,21 @@ namespace Volt
 	class MouseButtonReleasedEvent;
 }
 
-class EditorCameraController
+class EditorCameraController : public Volt::EventListener
 {
 public:
 	EditorCameraController(float fov, float nearPlane, float farPlane);
 	~EditorCameraController();
 
 	void UpdateProjection(uint32_t width, uint32_t height);
-	void OnEvent(Volt::Event& e);
-
-	void SetIsControllable(bool hovered);
-	void ForceLooseControl();
 
 	void SetTranslationSpeed(float speed) { m_translationSpeed = speed; }
 	float GetTranslationSpeed() { return m_translationSpeed; }
 
-	inline const bool HasControl() const { return m_isControllable; }
 	void Focus(const glm::vec3& focusPoint);
+	
+	void SetControllable(bool enabled);
+	void ForceDisable();
 
 	inline Ref<Volt::Camera> GetCamera() { return m_camera; }
 
@@ -38,6 +38,8 @@ private:
 		Fly,
 		ArcBall
 	};
+
+	void RegisterEventListeners();
 
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
 	bool OnMouseScrolled(Volt::MouseScrolledEvent& e);
@@ -76,10 +78,8 @@ private:
 	float m_maxTranslationSpeed = 100000.f;
 	float m_sensitivity = 0.12f;
 
+	bool m_isEnabled = false;
 	bool m_isControllable = false;
-	bool m_isViewportHovered = false;
-
-	inline static bool s_mouseEnabled = true;
 
 	Mode m_cameraMode = Mode::Fly;
 };

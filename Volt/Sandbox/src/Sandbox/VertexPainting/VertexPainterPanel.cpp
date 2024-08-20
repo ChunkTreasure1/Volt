@@ -11,7 +11,7 @@
 
 #include <Volt/Rendering/Camera/Camera.h>
 
-#include <EventModule/Event.h>
+#include <EventSystem/Event.h>
 
 #include <Volt/Core/Base.h>
 #include "Sandbox/Utility/SelectionManager.h"
@@ -31,6 +31,8 @@
 VertexPainterPanel::VertexPainterPanel(Ref<Volt::Scene>& in_scene, Ref<EditorCameraController>& in_cc)
 	: ex_scene(in_scene), ex_cameraController(in_cc), EditorWindow("Vertex Painting")
 {
+	RegisterListener<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(VertexPainterPanel::UpdateDeltaTime));
+	RegisterListener<Volt::ViewportResizeEvent>(VT_BIND_EVENT_FN(VertexPainterPanel::OnViewportResizeEvent));
 }
 
 VertexPainterPanel::~VertexPainterPanel()
@@ -55,13 +57,6 @@ bool VertexPainterPanel::OnViewportResizeEvent(Volt::ViewportResizeEvent& e)
 	myViewportSize = { e.GetWidth(), e.GetHeight() };
 	myViewportPosition = { e.GetX(), e.GetY() };
 	return false;
-}
-
-void VertexPainterPanel::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(VertexPainterPanel::UpdateDeltaTime));
-	dispatcher.Dispatch<Volt::ViewportResizeEvent>(VT_BIND_EVENT_FN(VertexPainterPanel::OnViewportResizeEvent));
 }
 
 bool VertexPainterPanel::BrushUpdate()

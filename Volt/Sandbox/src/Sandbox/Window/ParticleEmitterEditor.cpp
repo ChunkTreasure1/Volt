@@ -25,6 +25,10 @@ ParticleEmitterEditor::ParticleEmitterEditor()
 	: EditorWindow("Particle Editor")
 {
 	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+
+	RegisterListener<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(ParticleEmitterEditor::OnRenderEvent));
+	RegisterListener<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(ParticleEmitterEditor::OnUpdateEvent));
+
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myPreviewScene = Volt::Scene::CreateDefaultScene("Particle Editor", false);
 	myReferenceModel = myPreviewScene->CreateEntity("Reference Entity");
@@ -114,14 +118,6 @@ bool ParticleEmitterEditor::SavePreset(const std::filesystem::path& indata)
 	return true;
 }
 
-void ParticleEmitterEditor::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(ParticleEmitterEditor::OnRenderEvent));
-	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(ParticleEmitterEditor::OnUpdateEvent));
-	myCameraController->OnEvent(e);
-}
-
 bool ParticleEmitterEditor::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	myPreviewRenderer->OnRenderEditor(myCameraController->GetCamera());
@@ -146,7 +142,6 @@ void ParticleEmitterEditor::UpdateViewport()
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
 
 	ImGui::BeginChild("viewport");
-	myCameraController->SetIsControllable(ImGui::IsWindowHovered());
 
 	auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 	auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();

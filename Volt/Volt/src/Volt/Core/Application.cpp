@@ -51,6 +51,8 @@
 #include <WindowModule/WindowManager.h>
 #include <WindowModule/Window.h>
 
+#include <EventSystem/EventSystem.h>
+
 namespace Volt
 {
 	Application::Application(const ApplicationInfo& info)
@@ -59,8 +61,12 @@ namespace Volt
 		VT_ASSERT_MSG(!s_instance, "Application already exists!");
 		s_instance = this;
 
+		m_eventSystem = CreateScope<EventSystem>();
+
 		m_log = CreateScope<Log>();
 		m_log->SetLogOutputFilepath(m_info.projectPath / "Log/Log.txt");
+
+		m_input = CreateScope<Input>();
 
 		m_jobSystem = CreateScope<JobSystem>();
 		m_dynamicLibraryManager = CreateScope<DynamicLibraryManager>();
@@ -102,10 +108,7 @@ namespace Volt
 		CreateGraphicsContext();
 		WindowManager::Initialize(windowProperties);
 
-		WindowManager::Get().GetMainWindow().SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
-
 		FileSystem::Initialize();
-		
 		
 		MeshTypeImporter::Initialize();
 		TextureImporter::Initialize();
@@ -180,6 +183,7 @@ namespace Volt
 		}
 
 		m_pluginSystem->InitializePlugins();
+		RegisterEventListeners();
 	}
 
 	Application::~Application()
@@ -220,7 +224,9 @@ namespace Volt
 		m_pluginSystem = nullptr;
 		m_pluginRegistry = nullptr;
 		m_jobSystem = nullptr;
+		m_input = nullptr;
 		m_log = nullptr;
+		m_eventSystem = nullptr;
 		s_instance = nullptr;
 	}
 
@@ -237,50 +243,6 @@ namespace Volt
 
 			m_frameIndex++;
 		}
-	}
-
-	void Application::OnEvent(Event& event)
-	{
-		VT_PROFILE_SCOPE((std::string("Application::OnEvent: ") + std::string(event.GetName())).c_str());
-
-		if (event.GetGUID() == MouseMovedEvent::GetStaticGUID())
-		{
-			if (m_hasSentMouseMovedEvent)
-			{
-				return;
-			}
-			else
-			{
-				m_hasSentMouseMovedEvent = true;
-			}
-		}
-
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<AppUpdateEvent>(VT_BIND_EVENT_FN(Application::OnAppUpdateEvent));
-		dispatcher.Dispatch<WindowCloseEvent>(VT_BIND_EVENT_FN(Application::OnWindowCloseEvent));
-		dispatcher.Dispatch<WindowResizeEvent>(VT_BIND_EVENT_FN(Application::OnWindowResizeEvent));
-		dispatcher.Dispatch<ViewportResizeEvent>(VT_BIND_EVENT_FN(Application::OnViewportResizeEvent));
-		dispatcher.Dispatch<KeyPressedEvent>(VT_BIND_EVENT_FN(Application::OnKeyPressedEvent));
-
-		m_netHandler->OnEvent(event);
-
-		if (m_navigationSystem)
-		{
-			m_navigationSystem->OnEvent(event);
-		}
-
-		for (auto layer : m_layerStack)
-		{
-			layer->OnEvent(event);
-			if (event.IsHandled())
-			{
-				break;
-			}
-		}
-
-		Input::OnEvent(event);
-	
-		m_pluginSystem->SendEventToPlugins(event);
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -316,7 +278,7 @@ namespace Volt
 		{
 			VT_PROFILE_SCOPE("Application::Update");
 			AppUpdateEvent updateEvent(m_currentDeltaTime * m_timeScale);
-			OnEvent(updateEvent);
+			EventSystem::DispatchEvent(updateEvent);
 
 			AssetManager::Update();
 		}
@@ -333,7 +295,7 @@ namespace Volt
 			m_imguiImplementation->Begin();
 
 			AppImGuiUpdateEvent imguiEvent{};
-			OnEvent(imguiEvent);
+			EventSystem::DispatchEvent(imguiEvent);
 
 			m_imguiImplementation->End();
 		}
@@ -354,7 +316,7 @@ namespace Volt
 		{
 			VT_PROFILE_SCOPE("Application::PostFrameUpdate");
 			AppPostFrameUpdateEvent postFrameUpdateEvent{ m_currentDeltaTime * m_timeScale };
-			OnEvent(postFrameUpdateEvent);
+			EventSystem::DispatchEvent(postFrameUpdateEvent);
 		}
 
 		m_frameTimer.Accumulate();
@@ -380,13 +342,22 @@ namespace Volt
 			callbackInfo.requestCloseEventCallback = []()
 			{
 				WindowCloseEvent closeEvent{};
-				Application::Get().OnEvent(closeEvent);
+				EventSystem::DispatchEvent(closeEvent);
 			};
 
 			m_rhiProxy->SetRHICallbackInfo(callbackInfo);
 		}
 
 		m_graphicsContext = RHI::GraphicsContext::Create(cinfo);
+	}
+
+	void Application::RegisterEventListeners()
+	{
+		RegisterListener<AppUpdateEvent>(VT_BIND_EVENT_FN(Application::OnAppUpdateEvent));
+		RegisterListener<WindowCloseEvent>(VT_BIND_EVENT_FN(Application::OnWindowCloseEvent));
+		RegisterListener<WindowResizeEvent>(VT_BIND_EVENT_FN(Application::OnWindowResizeEvent));
+		RegisterListener<ViewportResizeEvent>(VT_BIND_EVENT_FN(Application::OnViewportResizeEvent));
+		RegisterListener<KeyPressedEvent>(VT_BIND_EVENT_FN(Application::OnKeyPressedEvent));
 	}
 
 	bool Application::OnAppUpdateEvent(AppUpdateEvent&)

@@ -8,6 +8,8 @@
 #include <Volt/Scene/Entity.h>
 #include <Volt/Core/Layer/Layer.h>
 
+#include <EventSystem/EventListener.h>
+
 #include <imgui.h>
 #include <ImGuizmo.h>
 
@@ -47,7 +49,7 @@ class AssetBrowserPanel;
 class EditorWindow;
 class EditorCameraController;
 
-class Sandbox : public Volt::Layer
+class Sandbox : public Volt::Layer, public Volt::EventListener
 {
 public:
 	Sandbox();
@@ -55,8 +57,6 @@ public:
 
 	void OnAttach() override;
 	void OnDetach() override;
-
-	void OnEvent(Volt::Event& e) override;
 
 	void OnScenePlay();
 	void OnSceneStop();
@@ -92,8 +92,8 @@ private:
 	} m_saveSceneData;
 
 	void SaveSceneAs();
-
 	void InstallMayaTools();
+	void RegisterEventListeners();
 
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
 	bool OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e);

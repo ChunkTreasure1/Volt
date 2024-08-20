@@ -32,8 +32,6 @@ public:
 	AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string& id);
 
 	void UpdateMainContent() override;
-	void OnEvent(Volt::Event& e) override;
-
 	void Reload();
 
 private:

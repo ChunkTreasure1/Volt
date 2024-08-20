@@ -8,19 +8,19 @@
 #include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Events/SceneEvents.h>
 
+#include <EventSystem/EventListener.h>
+
 static const int MAX_POLYS = 256;
 
 namespace Volt
 {
 	namespace AI
 	{
-		class NavigationSystem
+		class NavigationSystem : public EventListener
 		{
 		public:
 			NavigationSystem();
 			~NavigationSystem() = default;
-
-			void OnEvent(Event& event);
 
 			void SetVTNavMesh(Ref<NavMesh> navmesh);
 			const Ref<NavMesh>& GetVTNavMesh() { return myNavMesh; };

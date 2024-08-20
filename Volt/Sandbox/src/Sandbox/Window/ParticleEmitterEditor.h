@@ -25,8 +25,6 @@ public:
 	void OpenAsset(Ref<Volt::Asset> asset) override;
 	bool SavePreset(const std::filesystem::path& indata);
 
-	void OnEvent(Volt::Event& e) override;
-
 private:
 	struct ParticleSystemData
 	{

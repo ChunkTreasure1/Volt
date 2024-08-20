@@ -26,6 +26,8 @@
 MeshPreviewPanel::MeshPreviewPanel()
 	: EditorWindow("Mesh Preview", true)
 {
+	RegisterListener<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(MeshPreviewPanel::OnRenderEvent));
+
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myScene = Volt::Scene::CreateDefaultScene("Mesh Preview", false);
 
@@ -54,16 +56,6 @@ void MeshPreviewPanel::OpenAsset(Ref<Volt::Asset> asset)
 		myCurrentMesh = std::reinterpret_pointer_cast<Volt::Mesh>(asset);
 		mySelectedSubMesh = -1;
 	}
-}
-
-void MeshPreviewPanel::OnEvent(Volt::Event& e)
-{
-	if (!IsOpen()) { return; }
-
-	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(MeshPreviewPanel::OnRenderEvent));
-
-	myCameraController->OnEvent(e);
 }
 
 void MeshPreviewPanel::OnOpen()
@@ -107,8 +99,6 @@ void MeshPreviewPanel::UpdateViewport()
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
 
 	ImGui::Begin("Viewport##meshPreview");
-
-	myCameraController->SetIsControllable(ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows));
 
 	auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 	auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();

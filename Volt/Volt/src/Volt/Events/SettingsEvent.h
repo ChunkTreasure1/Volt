@@ -1,6 +1,6 @@
 #pragma once
 
-#include <EventModule/Event.h>
+#include <EventSystem/Event.h>
 
 #include "Volt/Rendering/SceneRendererSettings.h"
 

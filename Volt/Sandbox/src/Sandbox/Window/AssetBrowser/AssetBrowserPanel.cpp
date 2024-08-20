@@ -46,7 +46,7 @@
 
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 
-#include <EventModule/Event.h>
+#include <EventSystem/Event.h>
 
 #include <WindowModule/WindowManager.h>
 #include <WindowModule/Window.h>
@@ -66,7 +66,11 @@ AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string
 {
 	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	m_backgroundColor = EditorTheme::MiddleGreyBackground;
-	m_isOpen = true;
+	Open();
+
+	RegisterListener<Volt::WindowDragDropEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnDragDropEvent));
+	RegisterListener<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnKeyPressedEvent));
+	RegisterListener<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnRenderEvent));
 
 	SetMinWindowSize({ 700.f, 300.f });
 
@@ -328,14 +332,6 @@ void AssetBrowserPanel::UpdateMainContent()
 	DeleteFilesModal();
 }
 
-void AssetBrowserPanel::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::WindowDragDropEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnDragDropEvent));
-	dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnKeyPressedEvent));
-	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(AssetBrowserPanel::OnRenderEvent));
-}
-
 bool AssetBrowserPanel::OnDragDropEvent(Volt::WindowDragDropEvent& e)
 {
 	float x = Volt::Input::GetMouseX();
@@ -394,7 +390,7 @@ bool AssetBrowserPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 	{
 		case VT_KEY_DELETE:
 		{
-			if (m_isFocused && mySelectionManager->IsAnySelected())
+			if (IsFocused() && mySelectionManager->IsAnySelected())
 			{
 				myShouldDeleteSelected = true;
 			}

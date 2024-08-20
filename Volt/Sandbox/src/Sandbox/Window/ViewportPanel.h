@@ -37,7 +37,6 @@ public:
 
 	void UpdateMainContent() override;
 	void UpdateContent() override;
-	void OnEvent(Volt::Event& e) override;
 
 	glm::vec2 GetSize() { return m_viewportSize; }
 	glm::vec2 GetViewportLocalPosition(const ImVec2& mousePos);
@@ -47,6 +46,9 @@ private:
 	bool OnMousePressed(Volt::MouseButtonPressedEvent& e);
 	bool OnKeyPressedEvent(Volt::KeyPressedEvent& e);
 	bool OnMouseReleased(Volt::MouseButtonReleasedEvent& e);
+
+	void OnClose();
+	void OnOpen();
 
 	void CheckDragDrop();
 	void UpdateCreatedEntityPosition();

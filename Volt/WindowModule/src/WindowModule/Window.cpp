@@ -10,6 +10,8 @@
 #include <InputModule/Events/KeyboardEvents.h>
 #include <InputModule/Events/MouseEvents.h>
 
+#include <EventSystem/EventSystem.h>
+
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
@@ -120,8 +122,6 @@ namespace Volt
 
 		glfwSetWindowSizeCallback(m_window, [](GLFWwindow* window, int32_t width, int32_t height)
 		{
-			if (!CheckEventCallback(window)) return;
-
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			data.Width = width;
@@ -131,63 +131,51 @@ namespace Volt
 			glfwGetWindowPos(window, &x, &y);
 
 			WindowResizeEvent event((uint32_t)x, (uint32_t)y, width, height);
-			data.EventCallback(event);
+			EventSystem::DispatchEvent(event);
 		});
 
 		glfwSetWindowCloseCallback(m_window, [](GLFWwindow* window)
 		{
-			if (!CheckEventCallback(window)) return;
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
 			WindowCloseEvent event{};
-			data.EventCallback(event);
+			EventSystem::DispatchEvent(event);
 		});
 
 		if (m_properties.UseTitlebar && m_properties.UseCustomTitlebar)
 		{
 			glfwSetTitlebarHitTestCallback(m_window, [](GLFWwindow* window, int x, int y, int* hit)
 			{
-				if (!CheckEventCallback(window)) return;
-
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
 				WindowTitlebarHittestEvent event{ x, y, *hit };
-				data.EventCallback(event);
+				EventSystem::DispatchEvent(event);
 			});
 		}
 
 		glfwSetKeyCallback(m_window, [](GLFWwindow* window, int32_t key, int32_t, int32_t action, int32_t)
 		{
-			if (!CheckEventCallback(window)) return;
-
 			if (key == -1)
 			{
 				return;
 			}
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			switch (action)
 			{
 				case GLFW_PRESS:
 				{
 					KeyPressedEvent event(key, 0);
-					data.EventCallback(event);
+					EventSystem::DispatchEvent(event);
 					break;
 				}
 
 				case GLFW_RELEASE:
 				{
 					KeyReleasedEvent event(key);
-					data.EventCallback(event);
+					EventSystem::DispatchEvent(event);
 					break;
 				}
 
 				case GLFW_REPEAT:
 				{
 					KeyPressedEvent event(key, 1);
-					data.EventCallback(event);
+					EventSystem::DispatchEvent(event);
 					break;
 				}
 			}
@@ -195,32 +183,24 @@ namespace Volt
 
 		glfwSetCharCallback(m_window, [](GLFWwindow* window, uint32_t key)
 		{
-			if (!CheckEventCallback(window)) return;
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
 			KeyTypedEvent event(key);
-			data.EventCallback(event);
+			EventSystem::DispatchEvent(event);
 		});
 
 		glfwSetMouseButtonCallback(m_window, [](GLFWwindow* window, int button, int action, int)
 		{
-			if (!CheckEventCallback(window)) return;
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
 			switch (action)
 			{
 				case GLFW_PRESS:
 				{
 					MouseButtonPressedEvent event(button);
-					data.EventCallback(event);
+					EventSystem::DispatchEvent(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
 					MouseButtonReleasedEvent event(button);
-					data.EventCallback(event);
+					EventSystem::DispatchEvent(event);
 					break;
 				}
 			}
@@ -228,32 +208,20 @@ namespace Volt
 
 		glfwSetScrollCallback(m_window, [](GLFWwindow* window, double xOffset, double yOffset)
 		{
-			if (!CheckEventCallback(window)) return;
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
 			MouseScrolledEvent event((float)xOffset, (float)yOffset);
-			data.EventCallback(event);
+			EventSystem::DispatchEvent(event);
 		});
 
 		glfwSetCursorPosCallback(m_window, [](GLFWwindow* window, double xPos, double yPos)
 		{
-			if (!CheckEventCallback(window)) return;
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
 			MouseMovedEvent event((float)xPos, (float)yPos);
-			data.EventCallback(event);
+			EventSystem::DispatchEvent(event);
 		});
 
 		glfwSetDropCallback(m_window, [](GLFWwindow* window, int32_t count, const char** paths)
 		{
-			if (!CheckEventCallback(window)) return;
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
 			WindowDragDropEvent event(count, paths);
-			data.EventCallback(event);
+			EventSystem::DispatchEvent(event);
 		});
 
 		if (!m_properties.UseTitlebar || (m_properties.UseTitlebar && m_properties.UseCustomTitlebar))
@@ -390,13 +358,13 @@ namespace Volt
 	{
 		m_swapchain->BeginFrame();
 		WindowBeginFrameEvent beginFrameEvent;
-		m_data.EventCallback(beginFrameEvent);
+		EventSystem::DispatchEvent(beginFrameEvent);
 	}
 
 	void Window::Render()
 	{
 		WindowRenderEvent renderEvent;
-		m_data.EventCallback(renderEvent);
+		EventSystem::DispatchEvent(renderEvent);
 	}
 
 	void Window::Present()
@@ -405,7 +373,7 @@ namespace Volt
 		glfwPollEvents();
 
 		WindowPresentFrameEvent presentFrameEvent;
-		m_data.EventCallback(presentFrameEvent);
+		EventSystem::DispatchEvent(presentFrameEvent);
 	}
 
 	void Window::Resize(uint32_t aWidth, uint32_t aHeight)
@@ -447,11 +415,6 @@ namespace Volt
 		m_viewportWidth = width;
 
 		m_viewportHeight = height;
-	}
-
-	void Window::SetEventCallback(const EventCallbackFn& callback)
-	{
-		m_data.EventCallback = callback;
 	}
 
 	void Window::Maximize() const
@@ -549,16 +512,5 @@ namespace Volt
 	Scope<Window> Window::Create(const WindowProperties& aProperties)
 	{
 		return CreateScope<Window>(aProperties);
-	}
-
-	bool Window::CheckEventCallback(GLFWwindow* window)
-	{
-		WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-		if (!data.EventCallback)
-		{
-			VT_LOGC(Warning, LogWindowManagement, "Window with title '{0}' does not have a callback assigned! Skipping event!", data.Title);
-			return false;
-		}
-		return true;
 	}
 }

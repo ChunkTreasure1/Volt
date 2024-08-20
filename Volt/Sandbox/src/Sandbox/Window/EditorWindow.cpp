@@ -7,6 +7,8 @@ EditorWindow::EditorWindow(const std::string& title, bool dockSpace, std::string
 	: m_title(title + id), m_hasDockspace(dockSpace), m_id(id)
 {
 	m_backgroundColor = EditorTheme::DarkGreyBackground;
+
+	BlockAllEvents();
 }
 
 bool EditorWindow::Begin()
@@ -88,6 +90,8 @@ void EditorWindow::End()
 
 void EditorWindow::Open()
 {
+	UnblockAllEvents();
+
 	m_isOpen = true;
 	OnOpen();
 }
@@ -96,6 +100,8 @@ void EditorWindow::Close()
 {
 	m_isOpen = false;
 	OnClose();
+
+	BlockAllEvents();
 }
 
 void EditorWindow::SetMinWindowSize(ImVec2 minSize)

@@ -17,7 +17,6 @@ public:
 
 	void UpdateMainContent() override;
 	bool OnViewportResizeEvent(Volt::ViewportResizeEvent& e);
-	virtual void OnEvent(Volt::Event& e) override;
 	void SetBrushPosition(const glm::vec3& in_position) { m_brushPosition = in_position; }
 	void OnClose() override { SetView(false); }
 

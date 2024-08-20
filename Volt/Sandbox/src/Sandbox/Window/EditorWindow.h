@@ -2,6 +2,8 @@
 
 #include "Sandbox/EditorCommandStack.h"
 
+#include <EventSystem/EventListener.h>
+
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -13,7 +15,7 @@ namespace Volt
 	class Event;
 }
 
-class EditorWindow
+class EditorWindow : public Volt::EventListener
 {
 public:
 	EditorWindow(const std::string& title, bool dockSpace = false, std::string id = "");
@@ -31,19 +33,19 @@ public:
 
 	virtual void UpdateMainContent() = 0;
 	virtual void UpdateContent() {}
-	virtual void OnEvent(Volt::Event& e) {}
 	virtual void OpenAsset(Ref<Volt::Asset> asset) {}
 
 	inline const std::string& GetTitle() const { return m_title; }
 	inline const bool& IsOpen() const { return m_isOpen; }
 	inline const bool IsFocused() const { return m_isFocused; }
 	inline const bool IsHovered() const { return m_isHovered; }
-	virtual void OnClose() {}
-	virtual void OnOpen() {}
 
 	inline EditorCommandStack& GetCommandStack() { return myCommandStack; }
 
 protected:
+	virtual void OnClose() {}
+	virtual void OnOpen() {}
+
 	void ForceWindowDocked(ImGuiWindow* childWindow);
 	inline ImGuiWindowClass* GetWindowClass() { return &m_windowClass; };
 
@@ -57,9 +59,6 @@ protected:
 	ImVec2 m_minSize = { -1.f, -1.f };
 	glm::vec4 m_backgroundColor = 0.f;
 
-	bool m_isOpen = false;
-	bool m_isFocused = false;
-	bool m_isHovered = false;
 	bool m_isDockspace = false;
 	bool m_hasDockspace = false;
 
@@ -70,5 +69,9 @@ protected:
 	ImGuiWindowClass m_windowClass;
 
 private:
+	bool m_isOpen = false;
+	bool m_isFocused = false;
+	bool m_isHovered = false;
+
 	std::unordered_map<ImGuiID, ImGuiID> m_dockIDs;
 };

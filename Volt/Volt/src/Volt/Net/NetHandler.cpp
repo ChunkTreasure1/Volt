@@ -14,7 +14,7 @@
 
 #include "Volt/Events/SceneEvents.h"
 
-#include <EventModule/Event.h>
+#include <EventSystem/Event.h>
 
 namespace Volt
 {

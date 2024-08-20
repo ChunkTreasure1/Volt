@@ -50,13 +50,14 @@ project "InputModule"
 	{
 		"src/",
 
-		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.EventSystemModule}",
 		"%{IncludeDir.tracy}",
 	}
 
     links
     {
-		"EventModule",
+		"EventSystemModule",
+		"CoreUtilities",
 		"tracy"
     }
 

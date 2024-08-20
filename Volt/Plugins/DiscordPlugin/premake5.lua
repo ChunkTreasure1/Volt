@@ -35,7 +35,7 @@ project "DiscordPlugin"
 		"%{IncludeDir.LogModule}",
 		"%{IncludeDir.RHIModule}",
 		"%{IncludeDir.JobSystemModule}",
-		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.EventSystemModule}",
 		"%{IncludeDir.Volt}",
 
 		"%{IncludeDir.half}",
@@ -45,7 +45,7 @@ project "DiscordPlugin"
 	{
 		"LogModule",
 		"CoreUtilities",
-		"EventModule",
+		"EventSystemModule",
 
 		"vendor/DiscordSDK/lib/discord_game_sdk.dll.lib"
 	}

@@ -28,8 +28,6 @@ namespace Volt
 
 		void Update(float aDeltaTime);
 
-		void OnEvent(Volt::Event& e);
-
 		void SetActiveCamera(const std::string aCamName);
 		void SetActiveCamera(const size_t aIndex);
 		void SetActiveCamera(const Volt::Entity aCamEntity);

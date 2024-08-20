@@ -15,10 +15,10 @@ MotionWeaveDatabasePanel::MotionWeaveDatabasePanel()
 
 void MotionWeaveDatabasePanel::UpdateMainContent()
 {
-		if (ImGui::Button("Save##MWDBSave"))
-		{
-			Volt::AssetManager::Get().SaveAsset(m_Database);
-		}
+	if (ImGui::Button("Save##MWDBSave"))
+	{
+		Volt::AssetManager::Get().SaveAsset(m_Database);
+	}
 
 	if (!m_Database)
 	{
@@ -53,10 +53,6 @@ void MotionWeaveDatabasePanel::UpdateContent()
 void MotionWeaveDatabasePanel::OpenAsset(Ref<Volt::Asset> asset)
 {
 	m_Database = std::static_pointer_cast<Volt::MotionWeaveDatabase>(asset);
-}
-
-void MotionWeaveDatabasePanel::OnEvent(Volt::Event& e)
-{
 }
 
 void MotionWeaveDatabasePanel::OnOpen()

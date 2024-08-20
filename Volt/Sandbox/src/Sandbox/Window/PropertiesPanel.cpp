@@ -26,7 +26,7 @@
 PropertiesPanel::PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, SceneState& sceneState, const std::string& id)
 	: EditorWindow("Properties", false, id), myCurrentScene(currentScene), myCurrentSceneRenderer(currentSceneRenderer), mySceneState(sceneState)
 {
-	m_isOpen = true;
+	Open();
 	myMaxEventListSize = 20;
 	myLastValue = std::make_shared<PropertyEvent>();
 }

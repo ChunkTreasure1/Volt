@@ -17,6 +17,12 @@
 GameUIEditorPanel::GameUIEditorPanel()
 	: EditorWindow("Game UI Editor", true)
 {
+	RegisterListener<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnRenderEvent));
+	RegisterListener<Volt::MouseButtonPressedEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseButtonPressedEvent));
+	RegisterListener<Volt::MouseButtonReleasedEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseButtonReleasedEvent));
+	RegisterListener<Volt::MouseScrolledEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseScrollEvent));
+	RegisterListener<Volt::MouseMovedEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseMovedEvent));
+
 	m_uiScene = CreateRef<Volt::UIScene>();
 
 	{
@@ -38,16 +44,6 @@ void GameUIEditorPanel::UpdateContent()
 
 	UpdateHierarchy();
 	UpdateDetails();
-}
-
-void GameUIEditorPanel::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnRenderEvent));
-	dispatcher.Dispatch<Volt::MouseButtonPressedEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseButtonPressedEvent));
-	dispatcher.Dispatch<Volt::MouseButtonReleasedEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseButtonReleasedEvent));
-	dispatcher.Dispatch<Volt::MouseScrolledEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseScrollEvent));
-	dispatcher.Dispatch<Volt::MouseMovedEvent>(VT_BIND_EVENT_FN(GameUIEditorPanel::OnMouseMovedEvent));
 }
 
 void GameUIEditorPanel::OnOpen()

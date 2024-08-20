@@ -61,6 +61,8 @@
 
 #include <InputModule/Input.h>
 
+#include <EventSystem/EventSystem.h>
+
 namespace Volt
 {
 #define VT_ADD_INTERNAL_CALL(Name) mono_add_internal_call("Volt.InternalCalls::" #Name, Name)
@@ -75,7 +77,7 @@ namespace Volt
 	inline static void VoltApplication_SetResolution(uint32_t aResolutionX, uint32_t aResolutionY)
 	{
 		Volt::WindowResizeEvent event{ aResolutionX, aResolutionY };
-		Volt::Application::Get().OnEvent(event);
+		EventSystem::DispatchEvent(event);
 	}
 
 	inline static void VoltApplication_SetWindowMode(uint32_t aWindowMode)
@@ -88,13 +90,13 @@ namespace Volt
 		std::string levelPath = MonoScriptUtils::GetStringFromMonoString(aLevelAssetPath);
 		Volt::AssetHandle aHandle = Volt::AssetManager::Get().GetAssetHandleFromFilePath(levelPath);
 		Volt::OnSceneTransitionEvent loadEvent{ aHandle };
-		Volt::Application::Get().OnEvent(loadEvent);
+		EventSystem::DispatchEvent(loadEvent);
 	}
 
 	inline static void VoltApplication_Quit()
 	{
 		Volt::WindowCloseEvent loadEvent{};
-		Volt::Application::Get().OnEvent(loadEvent);
+		EventSystem::DispatchEvent(loadEvent);
 	}
 
 	inline static MonoString* VoltApplication_GetClipboard()
@@ -478,7 +480,7 @@ namespace Volt
 		}
 
 		OnSceneTransitionEvent scene(handle);
-		Application::Get().OnEvent(scene);
+		EventSystem::DispatchEvent(scene);
 	}
 
 	inline static void Scene_Preload(MonoString* path)
@@ -4954,13 +4956,13 @@ namespace Volt
 	inline static void Renderer_SetRenderScale(float renderScale)
 	{
 		OnRenderScaleChangedEvent renderScaleEvent{ renderScale };
-		Application::Get().OnEvent(renderScaleEvent);
+		EventSystem::DispatchEvent(renderScaleEvent);
 	}
 
 	inline static void Renderer_SetRendererSettings(SceneRendererSettings* rendererSettings)
 	{
 		OnRendererSettingsChangedEvent settingsEvent{ *rendererSettings };
-		Application::Get().OnEvent(settingsEvent);
+		EventSystem::DispatchEvent(settingsEvent);
 	}
 #pragma endregion Renderer
 

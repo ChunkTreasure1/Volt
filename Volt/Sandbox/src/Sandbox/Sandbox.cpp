@@ -13,7 +13,6 @@
 #include "Sandbox/Window/SceneViewPanel.h"
 #include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
 #include "Sandbox/Window/LogPanel.h"
-#include "Sandbox/Window/MaterialEditorPanel.h"
 #include "Sandbox/Window/SplinePanel.h"
 #include "Sandbox/Window/VisonPanel.h"
 #include "Sandbox/Window/EngineStatisticsPanel.h"
@@ -91,8 +90,8 @@
 #include <NavigationEditor/Tools/NavMeshDebugDrawer.h>
 
 #include <RHIModule/Images/Image.h>
-#include <EventModule/Event.h>
 
+#include <EventSystem/EventSystem.h>
 
 #include <imgui.h>
 
@@ -109,6 +108,8 @@ Sandbox::~Sandbox()
 
 void Sandbox::OnAttach()
 {
+	RegisterEventListeners();
+
 	SelectionManager::Initialize();
 
 	if (!Volt::ProjectManager::GetProject().isDeprecated)
@@ -177,17 +178,10 @@ void Sandbox::OnAttach()
 	constexpr int64_t discordAppId = 1108502963447681106;
 
 	DiscordPlugin::GetInstance().GetManager().SetApplicationID(discordAppId);
-
-	//Volt::DiscordSDK::Init(discordAppId, false);
-	//
-	//auto& act = Volt::DiscordSDK::GetRichPresence();
-	//
-	//act.SetApplicationId(discordAppId);
-	//act.GetAssets().SetLargeImage("icon_volt");
-	//act.GetAssets().SetLargeText("Volt");
-	//act.SetType(discord::ActivityType::Playing);
-	//
-	//Volt::DiscordSDK::UpdateRichPresence();
+	DiscordPlugin::GetInstance().GetManager().SetLargeImage("icon_volt");
+	DiscordPlugin::GetInstance().GetManager().SetLargeText("Volt");
+	DiscordPlugin::GetInstance().GetManager().SetActivityType(ActivityType::Playing);
+	DiscordPlugin::GetInstance().GetManager().UpdateChanges();
 
 	m_isInitialized = true;
 }
@@ -304,7 +298,7 @@ void Sandbox::SetupNewSceneData()
 
 	Volt::SceneManager::SetActiveScene(m_runtimeScene);
 	Volt::OnSceneLoadedEvent loadEvent{ m_runtimeScene };
-	Volt::Application::Get().OnEvent(loadEvent);
+	Volt::EventSystem::DispatchEvent(loadEvent);
 }
 
 void Sandbox::InitializeModals()
@@ -348,96 +342,6 @@ void Sandbox::OnDetach()
 	VersionControl::Shutdown();
 }
 
-void Sandbox::OnEvent(Volt::Event& e)
-{
-	if (!m_isInitialized)
-	{
-		return;
-	}
-
-	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnUpdateEvent));
-	dispatcher.Dispatch<Volt::AppImGuiUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnImGuiUpdateEvent));
-	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(Sandbox::OnRenderEvent));
-	dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(Sandbox::OnKeyPressedEvent));
-	dispatcher.Dispatch<Volt::ViewportResizeEvent>(VT_BIND_EVENT_FN(Sandbox::OnViewportResizeEvent));
-	dispatcher.Dispatch<Volt::OnSceneLoadedEvent>(VT_BIND_EVENT_FN(Sandbox::OnSceneLoadedEvent));
-	dispatcher.Dispatch<Volt::OnSceneTransitionEvent>(VT_BIND_EVENT_FN(Sandbox::LoadScene));
-	dispatcher.Dispatch<Volt::WindowTitlebarHittestEvent>([&](Volt::WindowTitlebarHittestEvent& e)
-	{
-		e.SetHit(m_titlebarHovered);
-		return true;
-	});
-
-	dispatcher.Dispatch<Volt::OnRenderScaleChangedEvent>([&](Volt::OnRenderScaleChangedEvent& e)
-	{
-		if (m_sceneState == SceneState::Play)
-		{
-			auto sceneRenderer = m_sceneRenderer;
-
-			//if (!lowMemory)
-			//{
-			//	sceneRenderer = m_gameSceneRenderer;
-			//}
-			//sceneRenderer->GetSettings().renderScale = e.GetRenderScale();
-			//sceneRenderer->ApplySettings();
-		}
-
-		return true;
-	});
-
-	dispatcher.Dispatch<Volt::OnRendererSettingsChangedEvent>([&](Volt::OnRendererSettingsChangedEvent& e)
-	{
-		if (m_sceneState == SceneState::Play)
-		{
-			auto sceneRenderer = m_sceneRenderer;
-
-			//if (!lowMemory)
-			//{
-			//	sceneRenderer = m_gameSceneRenderer;
-			//}
-
-			//sceneRenderer->UpdateSettings(e.GetSettings());
-			//sceneRenderer->ApplySettings();
-		}
-		return true;
-	});
-
-	if (!m_playHasMouseControl)
-	{
-		m_editorCameraController->OnEvent(e);
-	}
-
-	{
-		VT_PROFILE_SCOPE("Update Windows");
-		for (auto& window : EditorLibrary::GetPanels())
-		{
-			VT_PROFILE_SCOPE(std::format("Update Window: {0}", window.editorWindow->GetTitle()).c_str());
-
-			if (window.editorWindow->IsOpen())
-			{
-				window.editorWindow->OnEvent(e);
-			}
-		}
-	}
-
-	//TODO: Reimplement, what does this do?
-	/*if (!m_playHasMouseControl)
-	{
-		if ((e.GetCategoryFlags() & Volt::EventCategoryAnyInput) != 0)
-		{
-			return;
-		}
-	}*/
-
-	if (e.IsHandled())
-	{
-		return;
-	}
-
-	m_runtimeScene->OnEvent(e);
-}
-
 void Sandbox::OnScenePlay()
 {
 	if (!Volt::Application::Get().GetNetHandler().IsRunning())
@@ -460,10 +364,10 @@ void Sandbox::OnScenePlay()
 	m_runtimeScene->OnRuntimeStart();
 
 	Volt::OnScenePlayEvent playEvent{};
-	Volt::Application::Get().OnEvent(playEvent);
+	Volt::EventSystem::DispatchEvent(playEvent);
 
 	Volt::ViewportResizeEvent e2 = { m_viewportPosition.x,m_viewportPosition.y, m_viewportSize.x, m_viewportSize.y };
-	Volt::Application::Get().OnEvent(e2);
+	Volt::EventSystem::DispatchEvent(e2);
 
 	if (m_shouldMovePlayer)
 	{
@@ -495,10 +399,10 @@ void Sandbox::OnSceneStop()
 	SelectionManager::DeselectAll();
 
 	Volt::OnSceneStopEvent stopEvent{};
-	Volt::Application::Get().OnEvent(stopEvent);
+	Volt::EventSystem::DispatchEvent(stopEvent);
 
 	Volt::ViewportResizeEvent e2 = { m_viewportPosition.x,m_viewportPosition.y, m_viewportSize.x, m_viewportSize.y };
-	Volt::Application::Get().OnEvent(e2);
+	Volt::EventSystem::DispatchEvent(e2);
 
 	m_runtimeScene->OnRuntimeEnd();
 
@@ -532,7 +436,7 @@ void Sandbox::OnSimulationStart()
 	m_runtimeScene->OnSimulationStart();
 
 	Volt::OnScenePlayEvent playEvent{};
-	Volt::Application::Get().OnEvent(playEvent);
+	Volt::EventSystem::DispatchEvent(playEvent);
 }
 
 void Sandbox::OnSimulationStop()
@@ -540,7 +444,7 @@ void Sandbox::OnSimulationStop()
 	SelectionManager::DeselectAll();
 
 	Volt::OnSceneStopEvent stopEvent{};
-	Volt::Application::Get().OnEvent(stopEvent);
+	Volt::EventSystem::DispatchEvent(stopEvent);
 
 	m_runtimeScene->OnSimulationEnd();
 	m_runtimeScene = m_intermediateScene;
@@ -685,10 +589,10 @@ void Sandbox::TransitionToNewScene()
 	m_runtimeScene->OnRuntimeStart();
 
 	Volt::ViewportResizeEvent windowResizeEvent{ m_viewportPosition.x, m_viewportPosition.y, m_viewportSize.x, m_viewportSize.y };
-	Volt::Application::Get().OnEvent(windowResizeEvent);
+	Volt::EventSystem::DispatchEvent(windowResizeEvent);
 
 	Volt::OnScenePlayEvent playEvent{};
-	Volt::Application::Get().OnEvent(playEvent);
+	Volt::EventSystem::DispatchEvent(playEvent);
 
 	m_shouldLoadNewScene = false;
 	m_storedScene = nullptr;
@@ -751,6 +655,25 @@ void Sandbox::InstallMayaTools()
 	UI::Notify(NotificationType::Success, "Successfully installed Maya tools!", "The Maya tools were successfully installed!");
 }
 
+void Sandbox::RegisterEventListeners()
+{
+	auto isInitializedPred = [this]() { return m_isInitialized; };
+
+	RegisterListener<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnUpdateEvent), isInitializedPred);
+	RegisterListener<Volt::AppImGuiUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnImGuiUpdateEvent), isInitializedPred);
+	RegisterListener<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(Sandbox::OnRenderEvent), isInitializedPred);
+	RegisterListener<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(Sandbox::OnKeyPressedEvent), isInitializedPred);
+	RegisterListener<Volt::ViewportResizeEvent>(VT_BIND_EVENT_FN(Sandbox::OnViewportResizeEvent), isInitializedPred);
+	RegisterListener<Volt::OnSceneLoadedEvent>(VT_BIND_EVENT_FN(Sandbox::OnSceneLoadedEvent), isInitializedPred);
+	RegisterListener<Volt::OnSceneTransitionEvent>(VT_BIND_EVENT_FN(Sandbox::LoadScene), isInitializedPred);
+	
+	RegisterListener<Volt::WindowTitlebarHittestEvent>([&](Volt::WindowTitlebarHittestEvent& e)
+	{
+		e.SetHit(m_titlebarHovered);
+		return false;
+	}, isInitializedPred);
+}
+
 bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 {
 	VT_PROFILE_FUNCTION();
@@ -810,7 +733,7 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 
 	m_fileChangeQueue.clear();
 
-	return true;
+	return false;
 }
 
 bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
@@ -1108,7 +1031,7 @@ bool Sandbox::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 	e.GetScene()->SetRenderSize(m_viewportSize.x, m_viewportSize.y);
 
 	Volt::ViewportResizeEvent e2 = { m_viewportPosition.x,m_viewportPosition.y, m_viewportSize.x, m_viewportSize.y };
-	Volt::Application::Get().OnEvent(e2);
+	Volt::EventSystem::DispatchEvent(e2);
 
 	// Mono Scripts
 	static bool notRuntimeScene = true;
@@ -1125,17 +1048,14 @@ bool Sandbox::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 		notRuntimeScene = false;
 	}
 
-	//auto& act = Volt::DiscordSDK::GetRichPresence();
-	//
-	//auto scene = e.GetScene();
-	//
-	//act.SetDetails("Working on:");
-	//act.SetState(scene->GetName().c_str());
-	//act.GetParty().GetSize().SetCurrentSize(m_runtimeScene->GetActiveLayer() + 1);
-	//act.GetParty().GetSize().SetMaxSize(static_cast<int32_t>(m_runtimeScene->GetLayers().size()));
-	//act.GetTimestamps().SetStart(std::time(nullptr));
-	//
-	//Volt::DiscordSDK::UpdateRichPresence();
+	auto scene = e.GetScene();
+	
+	DiscordPlugin::GetInstance().GetManager().SetState(scene->GetName());
+	DiscordPlugin::GetInstance().GetManager().SetPartySize(m_runtimeScene->GetActiveLayer() + 1);
+	DiscordPlugin::GetInstance().GetManager().SetMaxPartySize(static_cast<int32_t>(m_runtimeScene->GetLayers().size()));
+	DiscordPlugin::GetInstance().GetManager().SetStartTime(std::time(nullptr));
+
+	DiscordPlugin::GetInstance().GetManager().UpdateChanges();
 
 	return false;
 }

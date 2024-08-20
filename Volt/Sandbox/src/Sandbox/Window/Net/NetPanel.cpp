@@ -15,27 +15,16 @@
 NetPanel::NetPanel()
 	: EditorWindow("Network Panel")
 {
+
 }
 
 NetPanel::~NetPanel()
 {
 }
 
-void NetPanel::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(NetPanel::OnUpdateEvent));
-}
-
 void NetPanel::UpdateMainContent()
 {
 	DrawPanel();
-}
-
-bool NetPanel::OnUpdateEvent(Volt::Event& e)
-{
-	e;
-	return false;
 }
 
 void NetPanel::DrawPanel()

@@ -26,6 +26,8 @@
 PrefabEditorPanel::PrefabEditorPanel()
 	: EditorWindow("Prefab Editor", true)
 {
+	RegisterListener<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(PrefabEditorPanel::OnRenderEvent));
+
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myScene = Volt::Scene::CreateDefaultScene("Prefab Editor", false);
 
@@ -52,14 +54,6 @@ void PrefabEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 		myCurrentMesh = std::reinterpret_pointer_cast<Volt::Mesh>(asset);
 		mySelectedSubMesh = 0;
 	}
-}
-
-void PrefabEditorPanel::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(PrefabEditorPanel::OnRenderEvent));
-
-	myCameraController->OnEvent(e);
 }
 
 void PrefabEditorPanel::OnOpen()
@@ -95,8 +89,6 @@ void PrefabEditorPanel::UpdateViewport()
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
 
 	ImGui::Begin("Viewport##prefabEditor");
-
-	myCameraController->SetIsControllable(ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows));
 
 	auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 	auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();

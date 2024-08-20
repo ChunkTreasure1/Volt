@@ -1,7 +1,7 @@
 #pragma once
 #include "WindowModule/Config.h"
 
-#include <EventModule/Event.h>
+#include <EventSystem/Event.h>
 
 #include <filesystem>
 #include <CoreUtilities/Containers/Vector.h>

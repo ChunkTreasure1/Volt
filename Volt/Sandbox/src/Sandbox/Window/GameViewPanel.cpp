@@ -32,9 +32,14 @@ GameViewPanel::GameViewPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::
 	: EditorWindow(GAMEVIEWPANEL_TITLE), m_sceneRenderer(sceneRenderer), m_editorScene(editorScene),
 	m_sceneState(aSceneState)
 {
-	m_isOpen = true;
+	Open();
 	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	m_isFullscreenImage = true;
+
+	RegisterListener<Volt::MouseMovedEvent>(VT_BIND_EVENT_FN(GameViewPanel::OnMouseMoved));
+	RegisterListener<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(GameViewPanel::OnKeyPressedEvent));
+	RegisterListener<Volt::MouseButtonPressedEvent>(VT_BIND_EVENT_FN(GameViewPanel::OnMousePressed));
+	RegisterListener<Volt::MouseButtonReleasedEvent>(VT_BIND_EVENT_FN(GameViewPanel::OnMouseReleased));
 }
 
 void GameViewPanel::UpdateMainContent()
@@ -61,15 +66,6 @@ void GameViewPanel::UpdateMainContent()
 	}
 
 	ImGui::PopStyleColor();
-}
-
-void GameViewPanel::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::MouseMovedEvent>(VT_BIND_EVENT_FN(GameViewPanel::OnMouseMoved));
-	dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(GameViewPanel::OnKeyPressedEvent));
-	dispatcher.Dispatch<Volt::MouseButtonPressedEvent>(VT_BIND_EVENT_FN(GameViewPanel::OnMousePressed));
-	dispatcher.Dispatch<Volt::MouseButtonReleasedEvent>(VT_BIND_EVENT_FN(GameViewPanel::OnMouseReleased));
 }
 
 void GameViewPanel::OnOpen()
@@ -106,7 +102,7 @@ bool GameViewPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 	switch (e.GetMouseButton())
 	{
 		case VT_MOUSE_BUTTON_RIGHT:
-			if (m_isHovered)
+			if (IsHovered())
 			{
 				ImGui::SetWindowFocus("Game Viewport");
 			}
@@ -114,7 +110,7 @@ bool GameViewPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 
 		case VT_MOUSE_BUTTON_LEFT:
 		{
-			if (m_isHovered && m_sceneState == SceneState::Play)
+			if (IsHovered() && m_sceneState == SceneState::Play)
 			{
 				Sandbox::Get().SetPlayHasMouseControl();
 			}
@@ -127,7 +123,7 @@ bool GameViewPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 
 bool GameViewPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	if (!m_isHovered || Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
+	if (!IsHovered() || Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
 	{
 		return false;
 	}

@@ -2,12 +2,14 @@
 
 #include <Volt/Core/Layer/Layer.h>
 
+#include <EventSystem/EventListener.h>
+
 namespace Volt
 {
 	class AppImGuiUpdateEvent;
 }
 
-class ProjectUpgradeLayer : public Volt::Layer
+class ProjectUpgradeLayer : public Volt::Layer, public Volt::EventListener
 {
 public:
 	ProjectUpgradeLayer();
@@ -15,8 +17,6 @@ public:
 
 	void OnAttach() override;
 	void OnDetach() override;
-
-	void OnEvent(Volt::Event& e) override;
 
 private:
 	void DrawUpgradeUI();

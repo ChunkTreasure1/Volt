@@ -13,6 +13,9 @@ Timeline::Timeline(Ref<Volt::Scene>& aScene, EditorCameraController* editorCamer
 	:EditorWindow("Timeline", true), myCurrentScene(aScene), myEditorCamera(editorCamera)
 {
 	m_windowFlags = ImGuiWindowFlags_MenuBar;
+
+	RegisterListener<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(Timeline::OnUpdateEvent));
+	RegisterListener<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(Timeline::CameraQuickshotKeyframe));
 }
 
 void Timeline::UpdateMainContent()
@@ -75,17 +78,6 @@ void Timeline::UpdateContent()
 void Timeline::OpenAsset(Ref<Volt::Asset> asset)
 {
 	myTimelinePreset = Volt::AssetManager::GetAsset<Volt::TimelinePreset>(asset->handle);
-}
-
-void Timeline::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(Timeline::OnUpdateEvent));
-
-	if (Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL))
-	{
-		dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(Timeline::CameraQuickshotKeyframe));
-	}
 }
 
 bool Timeline::OnUpdateEvent(Volt::AppUpdateEvent& e)
@@ -247,6 +239,11 @@ void Timeline::SortTrack(Volt::Track& track)
 
 bool Timeline::CameraQuickshotKeyframe(Volt::KeyPressedEvent& e)
 {
+	if (!Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL))
+	{
+		return false;
+	}
+
 	if (e.GetKeyCode() != VT_KEY_Q) { return false; }
 
 	if (mySelectedTrack == nullptr)

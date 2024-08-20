@@ -42,6 +42,7 @@
 #include <Volt/Math/RayTriangle.h>
 #include <Volt/Math/Math.h>
 
+#include <EventSystem/EventSystem.h>
 #include <WindowModule/Events/WindowEvents.h>
 
 #include <RHIModule/Images/Image.h>
@@ -53,10 +54,14 @@ ViewportPanel::ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::
 	: EditorWindow("Viewport"), m_sceneRenderer(sceneRenderer), m_editorCameraController(cameraController), m_editorScene(editorScene),
 	m_sceneState(aSceneState), m_animatedPhysicsIcon("Editor/Textures/Icons/Physics/LampPhysicsAnim1.dds", 30)
 {
-	m_isOpen = true;
+	Open();
 	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	m_midEvent = false;
 	m_isFullscreenImage = true;
+
+	RegisterListener<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(ViewportPanel::OnKeyPressedEvent));
+	RegisterListener<Volt::MouseButtonPressedEvent>(VT_BIND_EVENT_FN(ViewportPanel::OnMousePressed));
+	RegisterListener<Volt::MouseButtonReleasedEvent>(VT_BIND_EVENT_FN(ViewportPanel::OnMouseReleased));
 
 	auto& meshModal = ModalSystem::AddModal<MeshImportModal>("Import Mesh##viewport");
 	m_meshImportModal = meshModal.GetID();
@@ -199,7 +204,7 @@ void ViewportPanel::UpdateMainContent()
 			}
 		}
 
-		m_editorCameraController->SetIsControllable(m_isHovered && !isUsing);
+		m_editorCameraController->SetControllable(IsHovered() && !isUsing);
 	}
 	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver() && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT))
 	{
@@ -463,23 +468,13 @@ void ViewportPanel::UpdateContent()
 	ImGui::End();
 }
 
-void ViewportPanel::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(ViewportPanel::OnKeyPressedEvent));
-	dispatcher.Dispatch<Volt::MouseButtonPressedEvent>(VT_BIND_EVENT_FN(ViewportPanel::OnMousePressed));
-	dispatcher.Dispatch<Volt::MouseButtonReleasedEvent>(VT_BIND_EVENT_FN(ViewportPanel::OnMouseReleased));
-
-	m_animatedPhysicsIcon.OnEvent(e);
-}
-
 bool ViewportPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 {
 	switch (e.GetMouseButton())
 	{
 		case VT_MOUSE_BUTTON_RIGHT:
 		{
-			if (m_isHovered)
+			if (IsHovered())
 			{
 				ImGui::SetWindowFocus("Viewport");
 			}
@@ -492,7 +487,7 @@ bool ViewportPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 
 bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	if (!m_isHovered || Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
+	if (!IsHovered() || Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
 	{
 		return false;
 	}
@@ -673,7 +668,7 @@ bool ViewportPanel::OnMouseReleased(Volt::MouseButtonReleasedEvent& e)
 {
 	if (e.GetMouseButton() == VT_MOUSE_BUTTON_LEFT && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT) && GlobalEditorStates::dragStartedInAssetBrowser)
 	{
-		if (m_isHovered)
+		if (IsHovered())
 		{
 			SelectionManager::DeselectAll();
 			SelectionManager::Select(m_createdEntity.GetID());
@@ -688,6 +683,16 @@ bool ViewportPanel::OnMouseReleased(Volt::MouseButtonReleasedEvent& e)
 	}
 
 	return false;
+}
+
+void ViewportPanel::OnClose()
+{
+	m_animatedPhysicsIcon.SetIsEnabled(false);
+}
+
+void ViewportPanel::OnOpen()
+{
+	m_animatedPhysicsIcon.SetIsEnabled(true);
 }
 
 void ViewportPanel::CheckDragDrop()
@@ -835,7 +840,7 @@ void ViewportPanel::UpdateCreatedEntityPosition()
 
 void ViewportPanel::DuplicateSelection()
 {
-	m_editorCameraController->ForceLooseControl();
+	m_editorCameraController->ForceDisable();
 
 	Vector<Volt::Entity> duplicated;
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
@@ -1144,7 +1149,7 @@ void ViewportPanel::Resize(const glm::vec2& viewportSize)
 	m_editorCameraController->UpdateProjection((uint32_t)m_viewportSize.x, (uint32_t)m_viewportSize.y);
 
 	Volt::ViewportResizeEvent resizeEvent{ (uint32_t)m_perspectiveBounds[0].x, (uint32_t)m_perspectiveBounds[0].y, (uint32_t)m_viewportSize.x, (uint32_t)m_viewportSize.y };
-	Volt::Application::Get().OnEvent(resizeEvent);
+	Volt::EventSystem::DispatchEvent(resizeEvent);
 }
 
 glm::vec2 ViewportPanel::GetViewportLocalPosition(const ImVec2& mousePos)

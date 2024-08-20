@@ -83,7 +83,7 @@ project "Navigation"
 		"%{IncludeDir.shaderc_glslc}",
 		"%{IncludeDir.shaderc_utils}",
 
-		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.EventSystemModule}",
 	}
 
 	filter "files:vendor/**.c"

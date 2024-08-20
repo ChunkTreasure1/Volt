@@ -92,7 +92,7 @@ project "Volt"
 		"%{IncludeDir.zlib}",
 		"%{IncludeDir.ufbx}",
 
-		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.EventSystemModule}",
 		"%{IncludeDir.WindowModule}",
 		"%{IncludeDir.InputModule}",
 	}
@@ -126,7 +126,7 @@ project "Volt"
 		"RHIModule",
 		"VulkanRHIModule",
 
-		"EventModule",
+		"EventSystemModule",
 		"WindowModule",
 		"InputModule",
 	}

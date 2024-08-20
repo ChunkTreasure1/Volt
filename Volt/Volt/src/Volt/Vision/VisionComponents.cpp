@@ -13,32 +13,6 @@
 #include <InputModule/Input.h>
 #include <InputModule/Events/MouseEvents.h>
 
-void Volt::VisionCameraComponent::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher{ e };
-	dispatcher.Dispatch<Volt::MouseMovedEvent>([this](Volt::MouseMovedEvent& e)
-	{
-		myMousePos = { e.GetX(), e.GetY() };
-		return false;
-	});
-
-	/*dispatcher.Dispatch<Volt::OnGameStateChangedEvent>([this](Volt::OnGameStateChangedEvent& e)
-	{
-		if (e.GetState() == Volt::OnGameStateChangedEvent::PLAY)
-		{
-			auto [x, y] = Volt::Input::GetMousePosition();
-
-			myMousePos.x = x;
-			myMousePos.y = y;
-
-			myLastMousePos.x = x;
-			myLastMousePos.y = y;
-		}
-
-		return false;
-	});*/
-}
-
 void Volt::VisionCameraComponent::Init(Entity& camEntity)
 {
 	if (cameraType == Volt::eCameraType::ThirdPerson || cameraType == Volt::eCameraType::FirstPerson)
@@ -71,6 +45,8 @@ void Volt::VisionCameraComponent::Init(Entity& camEntity)
 
 void Volt::VisionCameraComponent::Update(Entity& camEntity, float aDeltaTime)
 {
+	myMousePos = Input::GetMousePosition();
+
 	switch (cameraType)
 	{
 		case Volt::eCameraType::Free:

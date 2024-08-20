@@ -13,6 +13,8 @@ namespace Volt
 
 	ResourceHandle RenderGraphPassResources::GetImage(const RenderGraphImageHandle resourceHandle, const int32_t mip, const int32_t layer) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		ValidateResourceAccess(resourceHandle);
 		auto handle = m_renderGraph.GetImage(resourceHandle, mip, layer);
 
@@ -25,6 +27,8 @@ namespace Volt
 
 	ResourceHandle RenderGraphPassResources::GetBuffer(const RenderGraphBufferHandle resourceHandle) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		ValidateResourceAccess(resourceHandle);
 		auto handle = m_renderGraph.GetBuffer(resourceHandle);
 		
@@ -37,6 +41,8 @@ namespace Volt
 
 	ResourceHandle RenderGraphPassResources::GetUniformBuffer(const RenderGraphUniformBufferHandle resourceHandle) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		ValidateResourceAccess(resourceHandle);
 		auto handle = m_renderGraph.GetUniformBuffer(resourceHandle);
 
@@ -49,6 +55,7 @@ namespace Volt
 
 	void RenderGraphPassResources::ValidateResourceAccess(const RenderGraphResourceHandle resourceHandle) const
 	{
+		VT_PROFILE_FUNCTION();
 		const bool isRegisteredForAccess = m_pass.ReadsResource(resourceHandle) || m_pass.WritesResource(resourceHandle) || m_pass.CreatesResource(resourceHandle);
 
 		if (!isRegisteredForAccess)

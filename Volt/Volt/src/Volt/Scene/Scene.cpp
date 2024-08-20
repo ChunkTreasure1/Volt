@@ -57,6 +57,8 @@ namespace Volt
 	Scene::Scene(const std::string& name)
 		: m_name(name)
 	{
+		RegisterEventListeners();
+
 		m_visionSystem = CreateRef<Vision>(this);
 		m_renderScene = CreateRef<RenderScene>(this);
 
@@ -76,6 +78,8 @@ namespace Volt
 
 	Scene::Scene()
 	{
+		RegisterEventListeners();
+
 		m_visionSystem = CreateRef<Vision>(this);
 		m_renderScene = CreateRef<RenderScene>(this);
 
@@ -83,22 +87,6 @@ namespace Volt
 		AddLayer("Main", 0);
 
 		m_worldEngine.Reset(this, 16, 4);
-	}
-
-	void Scene::OnEvent(Event& e)
-	{
-		VT_PROFILE_SCOPE((std::string("Scene::OnEvent: ") + std::string(e.GetName())).c_str());
-
-		EventDispatcher dispatcher{ e };
-		dispatcher.Dispatch<AppPostFrameUpdateEvent>(VT_BIND_EVENT_FN(Scene::PostFrameUpdateEvent));
-
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		m_audioSystem.OnEvent(m_registry, e);
-		m_visionSystem->OnEvent(e);
 	}
 
 	void Scene::SetRenderSize(uint32_t aWidth, uint32_t aHeight)
@@ -874,6 +862,11 @@ namespace Volt
 		return resultTransform;
 	}
 
+	void Scene::RegisterEventListeners()
+	{
+		RegisterListener<AppPostFrameUpdateEvent>(VT_BIND_EVENT_FN(Scene::PostFrameUpdateEvent));
+	}
+
 	void Scene::MoveToLayerRecursive(Entity entity, uint32_t targetLayer)
 	{
 		if (!entity.HasComponent<CommonComponent>())
@@ -882,7 +875,7 @@ namespace Volt
 		}
 
 		entity.GetComponent<CommonComponent>().layerId = targetLayer;
-
+		
 		for (const auto& child : entity.GetChildren())
 		{
 			MoveToLayerRecursive(child, targetLayer);

@@ -25,8 +25,6 @@ public:
 	void UpdateContent() override;
 	void OpenAsset(Ref<Volt::Asset> asset) override;
 
-	void OnEvent(Volt::Event& e) override;
-
 	void OnOpen() override;
 	void OnClose() override;
 

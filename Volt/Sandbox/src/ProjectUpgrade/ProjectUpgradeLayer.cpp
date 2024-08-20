@@ -17,10 +17,13 @@
 #include <WindowModule/WindowManager.h>
 #include <WindowModule/Window.h>
 
+#include <EventSystem/EventSystem.h>
+
 #include <imgui.h>
 
 ProjectUpgradeLayer::ProjectUpgradeLayer()
 {
+	RegisterListener<Volt::AppImGuiUpdateEvent>(VT_BIND_EVENT_FN(ProjectUpgradeLayer::OnImGuiUpdateEvent));
 }
 
 ProjectUpgradeLayer::~ProjectUpgradeLayer()
@@ -33,12 +36,6 @@ void ProjectUpgradeLayer::OnAttach()
 
 void ProjectUpgradeLayer::OnDetach()
 {
-}
-
-void ProjectUpgradeLayer::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher{ e };
-	dispatcher.Dispatch<Volt::AppImGuiUpdateEvent>(VT_BIND_EVENT_FN(ProjectUpgradeLayer::OnImGuiUpdateEvent));
 }
 
 void ProjectUpgradeLayer::DrawUpgradeUI()
@@ -75,7 +72,7 @@ void ProjectUpgradeLayer::DrawUpgradeUI()
 		Volt::ProjectManager::SerializeProject();
 
 		Volt::WindowCloseEvent loadEvent{};
-		Volt::Application::Get().OnEvent(loadEvent);
+		Volt::EventSystem::DispatchEvent(loadEvent);
 	}
 
 	ImGui::SameLine();
@@ -83,7 +80,7 @@ void ProjectUpgradeLayer::DrawUpgradeUI()
 	if (ImGui::Button("No"))
 	{
 		Volt::WindowCloseEvent loadEvent{};
-		Volt::Application::Get().OnEvent(loadEvent);
+		Volt::EventSystem::DispatchEvent(loadEvent);
 	}
 }
 

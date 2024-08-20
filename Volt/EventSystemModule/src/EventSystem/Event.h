@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EventModule/Config.h"
+#include "EventSystem/Config.h"
 
 #include <string>
 #include <CoreUtilities/VoltGUID.h>
@@ -11,6 +11,9 @@
 #define EVENT_CLASS(eventClass, eventGUID) static VoltGUID GetStaticGUID() {return eventGUID;}\
 										virtual const VoltGUID GetGUID() const override {return GetStaticGUID(); }\
 										virtual const char* GetName() const override { return #eventClass; }
+
+#define VT_BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
+
 namespace Volt
 {
 	class EVENTMODULE_API Event
@@ -27,29 +30,8 @@ namespace Volt
 		bool m_handled = false;
 	};
 
-	class EVENTMODULE_API EventDispatcher
-	{
-	public:
-		EventDispatcher(Event& event)
-			: m_event(event)
-		{
-		}
-
-		template<typename T, typename F>
-		bool Dispatch(const F& func)
-		{
-			if (m_event.GetGUID() == T::GetStaticGUID())
-			{
-				m_event.SetHandled(func(static_cast<T&>(m_event)));
-				return true;
-			}
-
-			return false;
-		}
-
-	private:
-		Event& m_event;
-	};
-
 	EVENTMODULE_API inline std::ostream& operator <<(std::ostream& os, const Event& e);
+
+	template<typename T>
+	concept IsEvent = std::is_base_of_v<Event, T>;
 }

@@ -11,14 +11,6 @@ Volt::Vision::Vision(Scene* aScene)
 	myScene = aScene;
 }
 
-void Volt::Vision::OnEvent(Volt::Event& e)
-{
-	for (auto& cam : myVTCams)
-	{
-		cam.GetComponent<VisionCameraComponent>().OnEvent(e);
-	}
-}
-
 void Volt::Vision::Initialize()
 {
 	Vector<Volt::Entity> camEntIDs = myScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();

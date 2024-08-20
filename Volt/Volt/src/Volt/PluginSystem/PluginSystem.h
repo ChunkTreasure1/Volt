@@ -3,7 +3,7 @@
 #include "Volt/PluginSystem/Plugin.h"
 #include "Volt/PluginSystem/NativePluginModule.h"
 
-#include <EventModule/Event.h>
+#include <EventSystem/Event.h>
 
 #include <CoreUtilities/Containers/Map.h>
 #include <CoreUtilities/Containers/Graph.h>

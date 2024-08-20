@@ -14,6 +14,7 @@
 #include "Volt/Rendering/RendererStructs.h"
 
 #include <AssetSystem/Asset.h>
+#include <EventSystem/EventListener.h>
 
 #include <glm/glm.hpp>
 
@@ -51,7 +52,7 @@ namespace Volt
 		bool locked = false;
 	};
 
-	class Scene : public Asset, public std::enable_shared_from_this<Scene>
+	class Scene : public Asset, public EventListener, public std::enable_shared_from_this<Scene>
 	{
 	public:
 		struct Statistics
@@ -93,8 +94,6 @@ namespace Volt
 		void FixedUpdate(float aDeltaTime);
 		void UpdateEditor(float aDeltaTime);
 		void UpdateSimulation(float aDeltaTime);
-
-		void OnEvent(Event& e);
 
 		void SortScene();
 
@@ -181,6 +180,7 @@ namespace Volt
 		friend class SceneImporter;
 		friend class SceneSerializer;
 
+		void RegisterEventListeners();
 		void MoveToLayerRecursive(Entity entity, uint32_t targetLayer);
 
 		void SetupComponentFunctions();

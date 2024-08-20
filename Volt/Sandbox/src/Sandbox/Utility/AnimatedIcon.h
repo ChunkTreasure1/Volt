@@ -2,6 +2,8 @@
 
 #include <Volt/Core/Base.h>
 
+#include <EventSystem/EventListener.h>
+
 #include <filesystem>
 
 namespace Volt
@@ -11,29 +13,31 @@ namespace Volt
 	class AppUpdateEvent;
 }
 
-class AnimatedIcon
+class AnimatedIcon : public Volt::EventListener
 {
 public:
 	AnimatedIcon(const std::filesystem::path& firstFrame, uint32_t frameCount, float animTime = 1.f);
 
-	void OnEvent(Volt::Event& e);
-	inline Ref<Volt::Texture2D> GetCurrentFrame() const { return myCurrentTexture; }
+	VT_NODISCARD VT_INLINE Ref<Volt::Texture2D> GetCurrentFrame() const { return m_currentTexture; }
 
-	inline void Play() { myIsPlaying = true; }
-	inline void Stop() { myIsPlaying = false; myCurrentTexture = myTextures.at(0); }
+	VT_INLINE void Play() { m_isPlaying = true; }
+	VT_INLINE void Stop() { m_isPlaying = false; m_currentTexture = m_textures.at(0); }
+
+	VT_INLINE void SetIsEnabled(bool state) { m_isEnabled = state; }
 
 private:
 	bool Animate(Volt::AppUpdateEvent& e);
 
-	Vector<Ref<Volt::Texture2D>> myTextures;
-	Ref<Volt::Texture2D> myCurrentTexture;
+	Vector<Ref<Volt::Texture2D>> m_textures;
+	Ref<Volt::Texture2D> m_currentTexture;
 
-	float myAnimationTime = 0.f;
-	float myPerFrameTime = 0.f;
-	uint32_t myFrameCount = 0;
+	float m_animationTime = 0.f;
+	float m_perFrameTime = 0.f;
+	uint32_t m_frameCount = 0;
 
-	float myCurrentTime = 0.f;
-	uint32_t myCurrentFrame = 0;
+	float m_currentTime = 0.f;
+	uint32_t m_currentFrame = 0;
 
-	bool myIsPlaying = false;
+	bool m_isPlaying = false;
+	bool m_isEnabled = false;
 };

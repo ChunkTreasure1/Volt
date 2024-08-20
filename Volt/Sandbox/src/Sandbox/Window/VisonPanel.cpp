@@ -15,6 +15,9 @@ VisionPanel::VisionPanel(Ref<Volt::Scene>& aScene, EditorCameraController* aEdit
 	:EditorWindow("Vision", true), myCurrentScene(aScene), myEditorCamera(aEditorCamera)
 {
 	m_windowFlags = ImGuiWindowFlags_MenuBar;
+
+	RegisterListener<Volt::OnSceneLoadedEvent>(VT_BIND_EVENT_FN(VisionPanel::RelocateSetOnLoad));
+	RegisterListener<Volt::OnSceneStopEvent>(VT_BIND_EVENT_FN(VisionPanel::SaveChangedProperties));
 }
 
 void VisionPanel::UpdateMainContent()
@@ -63,14 +66,6 @@ void VisionPanel::UpdateContent()
 	{
 		//UpdateSelectedCamera();
 	}
-}
-
-void VisionPanel::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher{ e };
-
-	dispatcher.Dispatch<Volt::OnSceneLoadedEvent>(VT_BIND_EVENT_FN(VisionPanel::RelocateSetOnLoad));
-	dispatcher.Dispatch<Volt::OnSceneStopEvent>(VT_BIND_EVENT_FN(VisionPanel::SaveChangedProperties));
 }
 
 void VisionPanel::UpdateCameraProperties()

@@ -113,7 +113,7 @@ project "Sandbox"
 		"%{IncludeDir.zlib}",
 
 		"%{IncludeDir.InputModule}",
-		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.EventSystemModule}",
 		"%{IncludeDir.WindowModule}",
 
 		"../Plugins/DiscordPlugin/src",
@@ -130,7 +130,7 @@ project "Sandbox"
 		"CoreUtilities",
 
 		"InputModule",
-		"EventModule",
+		"EventSystemModule",
 		"WindowModule",
 
 		"DiscordPlugin",

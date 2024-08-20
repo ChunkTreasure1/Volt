@@ -21,13 +21,9 @@ namespace Volt
 		NavigationSystem::NavigationSystem()
 		{
 			myNavMesh = CreateRef<NavMesh>();
-		}
 
-		void NavigationSystem::OnEvent(Event& event)
-		{
-			EventDispatcher dispatcher(event);
-			dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(NavigationSystem::OnAppUpdateEvent));
-			dispatcher.Dispatch<Volt::OnSceneLoadedEvent>(VT_BIND_EVENT_FN(NavigationSystem::OnSceneLoadedEvent));
+			RegisterListener<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(NavigationSystem::OnAppUpdateEvent));
+			RegisterListener<Volt::OnSceneLoadedEvent>(VT_BIND_EVENT_FN(NavigationSystem::OnSceneLoadedEvent));
 		}
 
 		void NavigationSystem::SetVTNavMesh(Ref<NavMesh> navmesh)

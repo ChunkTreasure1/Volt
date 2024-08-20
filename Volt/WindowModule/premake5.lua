@@ -57,7 +57,7 @@ project "WindowModule"
 		"%{IncludeDir.DirectXTex}",
 		"%{IncludeDir.RHIModule}",
 		"%{IncludeDir.LogModule}",
-		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.EventSystemModule}",
 		"%{IncludeDir.InputModule}",
 		"%{IncludeDir.tracy}",
 		"%{IncludeDir.GLFW}",
@@ -72,7 +72,7 @@ project "WindowModule"
 
 		"RHIModule",
 		"LogModule",
-		"EventModule",
+		"EventSystemModule",
 		"InputModule",
 		"tracy",
 	}

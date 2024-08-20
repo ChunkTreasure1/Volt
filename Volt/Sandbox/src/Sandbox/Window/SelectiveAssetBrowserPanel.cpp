@@ -12,7 +12,7 @@ static uint32_t s_assetBrowserCount;
 SelectiveAssetBrowserPanel::SelectiveAssetBrowserPanel(AssetType assetType, const std::string& id)
 	: EditorWindow("Asset Browser##" + id), mySelectiveAssetType(assetType)
 {
-	m_isOpen = true;
+	Open();
 	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	UpdateAssetList();
 }

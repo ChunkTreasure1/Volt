@@ -22,6 +22,8 @@
 #include <Volt/Project/ProjectManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 
+#include <EventSystem/EventSystem.h>
+
 #include <AssetSystem/AssetManager.h>
 #include <RenderCore/Shader/ShaderMap.h>
 
@@ -529,7 +531,7 @@ float Sandbox::DrawTitlebar()
 		if (UI::ImageButton("##close", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Close)), { buttonSize, buttonSize }))
 		{
 			Volt::WindowCloseEvent e{};
-			Volt::Application::Get().OnEvent(e);
+			Volt::EventSystem::DispatchEvent(e);
 		}
 	}
 
@@ -629,11 +631,17 @@ void Sandbox::DrawMenuBar()
 				{
 					for (const auto& editor : editors)
 					{
-						if (ImGui::MenuItem(editor->GetTitle().c_str(), "", &const_cast<bool&>(editor->IsOpen())))
+						bool open = editor->IsOpen();
+
+						if (ImGui::MenuItem(editor->GetTitle().c_str(), "", open))
 						{
-							if (editor->IsOpen())
+							if (open)
 							{
-								editor->OnOpen();
+								editor->Open();
+							}
+							else
+							{
+								editor->Close();
 							}
 						}
 					}
@@ -645,11 +653,17 @@ void Sandbox::DrawMenuBar()
 
 			for (const auto& editor : uncategorizedEditors)
 			{
-				if (ImGui::MenuItem(editor->GetTitle().c_str(), "", &const_cast<bool&>(editor->IsOpen())))
+				bool open = editor->IsOpen();
+
+				if (ImGui::MenuItem(editor->GetTitle().c_str(), "", open))
 				{
-					if (editor->IsOpen())
+					if (open)
 					{
-						editor->OnOpen();
+						editor->Open();
+					}
+					else
+					{
+						editor->Close();
 					}
 				}
 			}

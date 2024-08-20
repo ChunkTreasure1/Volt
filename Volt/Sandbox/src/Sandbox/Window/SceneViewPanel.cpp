@@ -49,8 +49,10 @@ namespace Utility
 SceneViewPanel::SceneViewPanel(Ref<Volt::Scene>& scene, const std::string& id)
 	: EditorWindow("Scene View", false, id), m_scene(scene)
 {
+	Open();
 	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-	m_isOpen = true;
+
+	RegisterListener<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(SceneViewPanel::OnKeyPressedEvent));
 }
 
 void SceneViewPanel::UpdateMainContent()
@@ -452,12 +454,6 @@ void SceneViewPanel::UpdateMainContent()
 	//SelectionManager::ResetSelectionKey();
 }
 
-void SceneViewPanel::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(SceneViewPanel::OnKeyPressedEvent));
-}
-
 void SceneViewPanel::HighlightEntity(Volt::Entity entity)
 {
 	m_scrollToEntity = entity.GetID();
@@ -488,7 +484,7 @@ void RecursiveUnpackPrefab(Ref<Volt::Scene> scene, Volt::EntityID id)
 
 bool SceneViewPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	if (!m_isHovered || ImGui::IsAnyItemActive())
+	if (!IsHovered() || ImGui::IsAnyItemActive())
 	{
 		return false;
 	}
@@ -669,7 +665,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 	};
 
 	const bool descendantSelected = isAnyDescendantSelected(entity, isAnyDescendantSelected);
-	const glm::vec4 selectedColor = m_isFocused ? EditorTheme::ItemSelectedFocused : EditorTheme::ItemSelected;
+	const glm::vec4 selectedColor = IsFocused() ? EditorTheme::ItemSelectedFocused : EditorTheme::ItemSelected;
 
 	if (isRowHovered)
 	{

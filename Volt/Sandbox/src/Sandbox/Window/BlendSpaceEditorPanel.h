@@ -13,7 +13,6 @@ public:
 
 	void UpdateContent() override;
 	void UpdateMainContent() override {}
-	void OnEvent(Volt::Event& e) override;
 
 	void OpenAsset(Ref<Volt::Asset> asset) override;
 

@@ -7,7 +7,6 @@
 #include "Volt/Net/Replicated/RepEntity.h"
 
 #include "Volt/Scene/SceneManager.h"
-#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Prefab.h"
 
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
@@ -19,6 +18,9 @@
 #include "Volt/Core/Application.h"
 
 #include "Volt/Events/SceneEvents.h"
+
+#include <EventSystem/EventSystem.h>
+#include <AssetSystem/AssetManager.h>
 
 namespace Volt
 {
@@ -125,7 +127,7 @@ namespace Volt
 			Application::Get().GetNetHandler().Stop();
 			Volt::AssetHandle handle = Volt::AssetManager::Get().GetAssetHandleFromFilePath("Assets/Scenes/Levels/SC_LVL_MainMenu/SC_LVL_MainMenu.vtscene");
 			Volt::OnSceneTransitionEvent loadEvent{ handle };
-			Volt::Application::Get().OnEvent(loadEvent);
+			EventSystem::DispatchEvent(loadEvent);
 			return;
 		}
 
@@ -148,7 +150,7 @@ namespace Volt
 		Application::Get().GetNetHandler().Stop();
 		Volt::AssetHandle handle = Volt::AssetManager::Get().GetAssetHandleFromFilePath("Assets/Scenes/Levels/SC_LVL_MainMenu/SC_LVL_MainMenu.vtscene");
 		Volt::OnSceneTransitionEvent loadEvent{ handle };
-		Volt::Application::Get().OnEvent(loadEvent);
+		EventSystem::DispatchEvent(loadEvent);
 		return;
 	}
 
@@ -175,7 +177,7 @@ namespace Volt
 		AssetHandle handle = 0;
 		m_currentPacket.second >> handle;
 		Volt::OnSceneTransitionEvent loadEvent{ handle };
-		Volt::Application::Get().OnEvent(loadEvent);
+		EventSystem::DispatchEvent(loadEvent);
 	}
 
 	void NetClient::OnCreateEntity()

@@ -13,7 +13,6 @@ public:
 	NetPanel();
 	~NetPanel();
 
-	void OnEvent(Volt::Event& e) override;
 	void UpdateMainContent() override;
 
 private:
@@ -51,7 +50,6 @@ private:
 		Nexus::TYPE::REP_ID repId = 0;
 	}m_eventSetting;
 
-	bool OnUpdateEvent(Volt::Event& e);
 	void DrawPanel();
 
 	void DrawStats();

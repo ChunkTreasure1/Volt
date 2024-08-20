@@ -8,76 +8,69 @@
 
 namespace Volt
 {
-	glm::vec2 Input::myMousePos;
-	glm::vec2 Input::myViewportMousePos;
-	bool Input::myDisableInput = false;
-	float Input::myScrollOffset = 0;
-	std::array<Input::KeyState, 349> Input::myKeyStates;
-
-	void Input::OnEvent(Event& e)
+	Input::Input()
 	{
-		EventDispatcher dispatcher(e);
+		VT_ENSURE(s_instance == nullptr);
+		s_instance = this;
 
-		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& keyEvent)
+		RegisterListener<KeyPressedEvent>([&](KeyPressedEvent& keyEvent)
 		{
 			if (keyEvent.GetRepeatCount() == 1)
 			{
 				return false;
 			}
 
-			myKeyStates[keyEvent.GetKeyCode()] = KeyState::Pressed;
+			s_instance->m_keyStates[keyEvent.GetKeyCode()] = KeyState::Pressed;
 			return false;
 		});
 
-		dispatcher.Dispatch<KeyReleasedEvent>([&](KeyReleasedEvent& keyEvent)
+		RegisterListener<KeyReleasedEvent>([&](KeyReleasedEvent& keyEvent)
 		{
-			myKeyStates[keyEvent.GetKeyCode()] = KeyState::Released;
+			s_instance->m_keyStates[keyEvent.GetKeyCode()] = KeyState::Released;
 			return false;
 		});
 
-		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& keyEvent)
+		RegisterListener<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& keyEvent)
 		{
-			myKeyStates[keyEvent.GetMouseButton()] = KeyState::Pressed;
+			s_instance->m_keyStates[keyEvent.GetMouseButton()] = KeyState::Pressed;
 			return false;
 		});
 
-		dispatcher.Dispatch<MouseButtonReleasedEvent>([&](MouseButtonReleasedEvent& keyEvent)
+		RegisterListener<MouseButtonReleasedEvent>([&](MouseButtonReleasedEvent& keyEvent)
 		{
-			myKeyStates[keyEvent.GetMouseButton()] = KeyState::Released;
+			s_instance->m_keyStates[keyEvent.GetMouseButton()] = KeyState::Released;
 			return false;
 		});
 
-		dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& scrollEvent)
+		RegisterListener<MouseScrolledEvent>([&](MouseScrolledEvent& scrollEvent)
 		{
-			myScrollOffset = scrollEvent.GetYOffset();
+			s_instance->m_scrollOffset = scrollEvent.GetYOffset();
 			return false;
 		});
 
-		dispatcher.Dispatch<MouseMovedEvent>([&](MouseMovedEvent& moveEvent)
+		RegisterListener<MouseMovedEvent>([&](MouseMovedEvent& moveEvent)
 		{
-			myMousePos = { moveEvent.GetX(), moveEvent.GetY() };
+			s_instance->m_mousePos = { moveEvent.GetX(), moveEvent.GetY() };
 			return false;
 		});
 	}
 
-	void Input::Update()
+	Input::~Input()
 	{
-		memset(myKeyStates.data(), 0, sizeof(KeyState) * myKeyStates.size());
-
-		myScrollOffset = 0.f;
+		s_instance = nullptr;
 	}
 
 	bool Input::IsKeyPressed(int keyCode)
 	{
-		return myKeyStates[keyCode] == KeyState::Pressed;
+		return s_instance->m_keyStates[keyCode] == KeyState::Pressed;
 	}
 
 	Vector<int> Input::GetAllKeyPressed()
 	{
 		Vector<int> keyPressedVec;
-		for (int i = 0; i < myKeyStates.size(); i++)
+		for (int i = 0; i < s_instance->m_keyStates.size(); i++)
 		{
-			if (myKeyStates[i] == KeyState::Pressed)
+			if (s_instance->m_keyStates[i] == KeyState::Pressed)
 			{
 				keyPressedVec.push_back(i);
 			}
@@ -87,22 +80,22 @@ namespace Volt
 
 	bool Input::IsKeyReleased(int keyCode)
 	{
-		return myKeyStates[keyCode] == KeyState::Released;
+		return s_instance->m_keyStates[keyCode] == KeyState::Released;
 	}
 
 	bool Input::IsMouseButtonPressed(int button)
 	{
-		return myKeyStates[button] == KeyState::Pressed;
+		return s_instance->m_keyStates[button] == KeyState::Pressed;
 	}
 
 	bool Input::IsMouseButtonReleased(int button)
 	{
-		return myKeyStates[button] == KeyState::Released;
+		return s_instance->m_keyStates[button] == KeyState::Released;
 	}
 
 	bool Input::IsKeyDown(int keyCode)
 	{
-		return myKeyStates[keyCode] == KeyState::Pressed;
+		return s_instance->m_keyStates[keyCode] == KeyState::Pressed;
 		//TODO: Reeimplement
 		/*const bool imguiEnabled = Application::Get().GetInfo().enableImGui;
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
@@ -142,7 +135,7 @@ namespace Volt
 
 	bool Input::IsKeyUp(int keyCode)
 	{
-		return myKeyStates[keyCode] == KeyState::Released;
+		return s_instance->m_keyStates[keyCode] == KeyState::Released;
 		//TODO: Reeimplement
 		/*const bool imguiEnabled = Application::Get().GetInfo().enableImGui;
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
@@ -182,7 +175,7 @@ namespace Volt
 
 	bool Input::IsMouseButtonDown(int button)
 	{
-		return myKeyStates[button] == KeyState::Pressed;
+		return s_instance->m_keyStates[button] == KeyState::Pressed;
 		//TODO: Reeimplement
 		/*const bool imguiEnabled = Application::Get().GetInfo().enableImGui;
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
@@ -222,7 +215,7 @@ namespace Volt
 
 	bool Input::IsMouseButtonUp(int button)
 	{
-		return myKeyStates[button] == KeyState::Released;
+		return s_instance->m_keyStates[button] == KeyState::Released;
 		//TODO: Reeimplement
 		/*const bool imguiEnabled = Application::Get().GetInfo().enableImGui;
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
@@ -279,23 +272,23 @@ namespace Volt
 		glfwGetCursorPos(window, &xPos, &yPos);
 
 		return { (float)xPos + wx, (float)yPos + wy };*/
-		return myMousePos;
+		return s_instance->m_mousePos;
 	}
 
 	float Input::GetMouseX()
 	{
-		return myMousePos.x;
+		return s_instance->m_mousePos.x;
 	}
 
 	float Input::GetMouseY()
 	{
-		return myMousePos.y;
+		return s_instance->m_mousePos.y;
 	}
 
 
 	float Input::GetScrollOffset()
 	{
-		return myScrollOffset;
+		return s_instance->m_scrollOffset;
 	}
 
 	void Input::ShowCursor(bool state)
@@ -307,16 +300,16 @@ namespace Volt
 
 	void Input::DisableInput(bool state)
 	{
-		myDisableInput = state;
+		s_instance->m_disableInput = state;
 	}
 
 	const glm::vec2& Input::GetViewportMousePosition()
 	{
-		return myViewportMousePos;
+		return s_instance->m_viewportMousePos;
 	}
 
 	void Input::SetViewportMousePosition(const glm::vec2& viewportPos)
 	{
-		myViewportMousePos = viewportPos;
+		s_instance->m_viewportMousePos = viewportPos;
 	}
 }

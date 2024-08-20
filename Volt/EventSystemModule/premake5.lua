@@ -1,4 +1,4 @@
-project "EventModule"
+project "EventSystemModule"
 	location "."
 	kind "SharedLib"
 	language "C++"
@@ -52,7 +52,9 @@ project "EventModule"
 
     links
     {
-    }
+		"CoreUtilities",
+		"tracy"
+	}
 
 	postbuildcommands
 	{

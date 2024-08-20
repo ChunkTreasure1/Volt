@@ -42,7 +42,6 @@ namespace Volt
 		WINDOWMODULE_API void Resize(uint32_t aWidth, uint32_t aHeight);
 		WINDOWMODULE_API void SetViewportSize(uint32_t width, uint32_t height);
 
-		WINDOWMODULE_API void SetEventCallback(const EventCallbackFn& callback);
 		WINDOWMODULE_API void SetWindowMode(WindowMode aWindowMode, bool first = false);
 
 		WINDOWMODULE_API void SetVsync(bool aState);
@@ -85,8 +84,6 @@ namespace Volt
 		static Scope<Window> Create(const WindowProperties& aProperties = WindowProperties());
 
 	private:
-		static bool CheckEventCallback(GLFWwindow* window);
-
 		GLFWwindow* m_window = nullptr;
 		void* m_windowHandle = nullptr;
 		bool m_hasBeenInitialized = false;
@@ -101,8 +98,6 @@ namespace Volt
 			uint32_t Height;
 			bool VSync;
 			WindowMode WindowMode;
-
-			EventCallbackFn EventCallback;
 
 		} m_data;
 

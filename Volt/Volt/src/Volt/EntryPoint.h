@@ -3,6 +3,9 @@
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Allocator.h"
 
+#include <CoreUtilities/Platform/Windows/VoltWindows.h>
+#include <shellapi.h>
+
 #include <filesystem>
 
 extern Volt::Application* Volt::CreateApplication(const std::filesystem::path& appPath);

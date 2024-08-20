@@ -26,7 +26,7 @@ namespace Utility
 LogPanel::LogPanel()
 	: EditorWindow("Log")
 {
-	m_isOpen = true;
+	Open();
 
 	m_callbackHandle = Log::Get().RegisterCallback([&](const LogCallbackData& message)
 	{
