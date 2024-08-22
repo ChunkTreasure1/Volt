@@ -3,6 +3,8 @@
 #ifndef ENTT_CONFIG_CONFIG_H
 #define ENTT_CONFIG_CONFIG_H
 
+#define ENTT_NO_ETO 1
+
 // #include "version.h"
 #ifndef ENTT_CONFIG_VERSION_H
 #define ENTT_CONFIG_VERSION_H

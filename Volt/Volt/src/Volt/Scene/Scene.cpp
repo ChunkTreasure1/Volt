@@ -57,8 +57,6 @@ namespace Volt
 	Scene::Scene(const std::string& name)
 		: m_name(name)
 	{
-		RegisterEventListeners();
-
 		m_visionSystem = CreateRef<Vision>(this);
 		m_renderScene = CreateRef<RenderScene>(this);
 
@@ -78,8 +76,6 @@ namespace Volt
 
 	Scene::Scene()
 	{
-		RegisterEventListeners();
-
 		m_visionSystem = CreateRef<Vision>(this);
 		m_renderScene = CreateRef<RenderScene>(this);
 
@@ -134,6 +130,7 @@ namespace Volt
 					{
 						MonoScriptEngine::OnCreateInstance(scriptComp.scriptIds[i], idComponent.id, scriptComp.scriptNames[i]);
 					}
+
 				}
 			});
 		}
@@ -474,7 +471,6 @@ namespace Volt
 		std::scoped_lock lock{ m_removeEntityMutex };
 		RemoveEntityInternal(entity, false);
 		SortScene();
-		//m_entityRemoveQueue.push_back(entity.GetID());
 	}
 
 	void Scene::ParentEntity(Entity parent, Entity child)
@@ -862,11 +858,6 @@ namespace Volt
 		return resultTransform;
 	}
 
-	void Scene::RegisterEventListeners()
-	{
-		RegisterListener<AppPostFrameUpdateEvent>(VT_BIND_EVENT_FN(Scene::PostFrameUpdateEvent));
-	}
-
 	void Scene::MoveToLayerRecursive(Entity entity, uint32_t targetLayer)
 	{
 		if (!entity.HasComponent<CommonComponent>())
@@ -1021,27 +1012,9 @@ namespace Volt
 		m_registry.destroy(entity);
 	}
 
-	void Scene::ExecuteEntityRemoveQueue()
-	{
-		std::scoped_lock lock{ m_removeEntityMutex };
-		for (const auto& entityId : m_entityRemoveQueue)
-		{
-			Entity entity = GetEntityFromUUID(entityId);
-			RemoveEntityInternal(entity, false);
-		}
-
-		SortScene();
-	}
-
 	void Scene::AddLayer(const std::string& layerName, uint32_t layerId)
 	{
 		m_sceneLayers.emplace_back(layerId, layerName);
-	}
-
-	bool Scene::PostFrameUpdateEvent(const AppPostFrameUpdateEvent& e)
-	{
-		ExecuteEntityRemoveQueue();
-		return false;
 	}
 
 	void Scene::SetLayers(const Vector<SceneLayer>& sceneLayers)

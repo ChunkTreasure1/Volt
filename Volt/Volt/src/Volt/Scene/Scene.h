@@ -180,7 +180,6 @@ namespace Volt
 		friend class SceneImporter;
 		friend class SceneSerializer;
 
-		void RegisterEventListeners();
 		void MoveToLayerRecursive(Entity entity, uint32_t targetLayer);
 
 		void SetupComponentFunctions();
@@ -190,11 +189,8 @@ namespace Volt
 		void ConvertToLocalSpace(Entity entity);
 
 		void RemoveEntityInternal(Entity entity, bool removingParent);
-		void ExecuteEntityRemoveQueue();
 
 		void AddLayer(const std::string& layerName, uint32_t layerId);
-
-		bool PostFrameUpdateEvent(const AppPostFrameUpdateEvent& e);
 
 		const glm::mat4 GetWorldTransform(Entity entity) const;
 		const Vector<Entity> FlattenEntityHeirarchy(Entity entity);

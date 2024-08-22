@@ -111,13 +111,9 @@ void Sandbox::OnAttach()
 	RegisterEventListeners();
 
 	SelectionManager::Initialize();
-
-	if (!Volt::ProjectManager::GetProject().isDeprecated)
-	{
-		EditorResources::Initialize();
-	}
-
+	EditorResources::Initialize();
 	VersionControl::Initialize(VersionControlSystem::Perforce);
+
 	NodeEditorHelpers::Initialize();
 	IONodeGraphEditorHelpers::Initialize();
 
@@ -152,26 +148,6 @@ void Sandbox::OnAttach()
 	CreateWatches();
 
 	ImGuizmo::AllowAxisFlip(false);
-
-	if (!userSettings.versionControlSettings.password.empty() && !userSettings.versionControlSettings.user.empty() && !userSettings.versionControlSettings.server.empty())
-	{
-		VersionControl::Connect(userSettings.versionControlSettings.server, userSettings.versionControlSettings.user, userSettings.versionControlSettings.password);
-		if (VersionControl::IsConnected())
-		{
-			VersionControl::RefreshStreams();
-			VersionControl::RefreshWorkspaces();
-
-			if (!userSettings.versionControlSettings.workspace.empty())
-			{
-				VersionControl::SwitchWorkspace(userSettings.versionControlSettings.workspace);
-			}
-
-			if (!userSettings.versionControlSettings.stream.empty())
-			{
-				VersionControl::SwitchStream(userSettings.versionControlSettings.stream);
-			}
-		}
-	}
 
 	InitializeModals();
 
@@ -310,8 +286,6 @@ void Sandbox::InitializeModals()
 void Sandbox::OnDetach()
 {
 	m_isInitialized = false;
-
-	//Volt::Log::ClearCallbacks();
 
 	if (m_sceneState == SceneState::Play)
 	{
