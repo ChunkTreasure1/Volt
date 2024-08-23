@@ -24,6 +24,8 @@ using namespace Volt;
 
 void RenderingTestingLayer::OnAttach()
 {
+	RegisterListener<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(RenderingTestingLayer::OnRenderEvent));
+
 	//m_renderingTests.emplace_back(CreateScope<SwapchainClearColorTest>());
 	//m_renderingTests.emplace_back(CreateScope<ComputeWriteToBufferTest>());
 	//m_renderingTests.emplace_back(CreateScope<ComputeWriteToBufferTest>());
@@ -43,12 +45,6 @@ void RenderingTestingLayer::OnAttach()
 void RenderingTestingLayer::OnDetach()
 {
 	m_renderingTests.clear();
-}
-
-void RenderingTestingLayer::OnEvent(Volt::Event& e)
-{
-	EventDispatcher dispatcher{ e };
-	dispatcher.Dispatch<WindowRenderEvent>(VT_BIND_EVENT_FN(RenderingTestingLayer::OnRenderEvent));
 }
 
 bool RenderingTestingLayer::OnRenderEvent(Volt::WindowRenderEvent& e)

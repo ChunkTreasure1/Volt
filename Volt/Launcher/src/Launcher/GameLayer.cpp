@@ -25,10 +25,18 @@
 
 #include <InputModule/Events/KeyboardEvents.h>
 
+#include <EventSystem/EventSystem.h>
+
 #include <yaml-cpp/yaml.h>
 
 void GameLayer::OnAttach()
 {
+	RegisterListener<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(GameLayer::OnUpdateEvent));
+	RegisterListener<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(GameLayer::OnRenderEvent));
+	RegisterListener<Volt::WindowResizeEvent>(VT_BIND_EVENT_FN(GameLayer::OnWindowResizeEvent));
+	RegisterListener<Volt::OnSceneTransitionEvent>(VT_BIND_EVENT_FN(GameLayer::OnSceneTransition));
+	RegisterListener<Volt::OnSceneLoadedEvent>(VT_BIND_EVENT_FN(GameLayer::OnSceneLoaded));
+
 	const auto& startScenePath = Volt::ProjectManager::GetProject().startSceneFilepath;
 
 	if (startScenePath.empty())
@@ -74,55 +82,16 @@ void GameLayer::OnDetach()
 	m_scene = nullptr;
 }
 
-void GameLayer::OnEvent(Volt::Event& e)
-{
-	Volt::EventDispatcher dispatcher{ e };
-	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(GameLayer::OnUpdateEvent));
-	dispatcher.Dispatch<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(GameLayer::OnRenderEvent));
-	dispatcher.Dispatch<Volt::WindowResizeEvent>(VT_BIND_EVENT_FN(GameLayer::OnWindowResizeEvent));
-	dispatcher.Dispatch<Volt::OnSceneTransitionEvent>(VT_BIND_EVENT_FN(GameLayer::OnSceneTransition));
-	dispatcher.Dispatch<Volt::OnSceneLoadedEvent>(VT_BIND_EVENT_FN(GameLayer::OnSceneLoaded));
-	//dispatcher.Dispatch<Volt::OnGameStateChangedEvent>(VT_BIND_EVENT_FN(GameLayer::OnGameStateChanged));
-
-	dispatcher.Dispatch<Volt::OnRenderScaleChangedEvent>([&](Volt::OnRenderScaleChangedEvent& e)
-	{
-		//mySceneRenderer->GetSettings().renderScale = e.GetRenderScale();
-		//mySceneRenderer->ApplySettings();
-
-		return true;
-	});
-
-	dispatcher.Dispatch<Volt::KeyPressedEvent>([&](Volt::KeyPressedEvent& e) 
-	{
-		if (e.GetKeyCode() == VT_KEY_F6)
-		{
-			//Volt::RenderMode renderMode = mySceneRenderer->GetCurrentRenderMode();
-			//(*(uint32_t*)&renderMode)++;
-
-			//if (renderMode == Volt::RenderMode::COUNT)
-			//{
-			//	renderMode = Volt::RenderMode::Default;
-			//}
-
-			//mySceneRenderer->SetRenderMode(renderMode);
-		}
-
-		return false;
-	});
-
-	m_scene->OnEvent(e);
-}
-
 void GameLayer::LoadStartScene()
 {
 	Volt::SceneManager::SetActiveScene(m_scene);
 
 	Volt::OnSceneLoadedEvent loadEvent{ m_scene };
-	Volt::Application::Get().OnEvent(loadEvent);
+	Volt::EventSystem::DispatchEvent(loadEvent);
 
 	m_scene->OnRuntimeStart();
 	Volt::OnScenePlayEvent playEvent{};
-	Volt::Application::Get().OnEvent(playEvent);
+	Volt::EventSystem::DispatchEvent(playEvent);
 
 	// #TODO: Remove
 	if (!Volt::Application::Get().GetNetHandler().IsRunning())
@@ -204,7 +173,7 @@ bool GameLayer::OnWindowResizeEvent(Volt::WindowResizeEvent& e)
 	Volt::ViewportResizeEvent resizeEvent{ e.GetX(), e.GetY(), e.GetWidth(), e.GetHeight() };
 
 	//myScene->OnEvent(resizeEvent);
-	Volt::Application::Get().OnEvent(resizeEvent);
+	Volt::EventSystem::DispatchEvent(resizeEvent);
 
 	return false;
 }
@@ -318,13 +287,13 @@ void GameLayer::TrySceneTransition()
 	Volt::SceneManager::SetActiveScene(m_scene);
 
 	Volt::OnSceneLoadedEvent loadEvent{ m_scene };
-	Volt::Application::Get().OnEvent(loadEvent);
+	Volt::EventSystem::DispatchEvent(loadEvent);
 
 	m_scene->OnRuntimeStart();
 
 	Volt::OnScenePlayEvent playEvent{};
-	Volt::Application::Get().OnEvent(playEvent);
+	Volt::EventSystem::DispatchEvent(playEvent);
 
 	Volt::ViewportResizeEvent resizeEvent{ 0, 0, m_lastWidth, m_lastHeight };
-	m_scene->OnEvent(resizeEvent);
+	Volt::EventSystem::DispatchEvent(resizeEvent);
 }

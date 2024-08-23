@@ -3,6 +3,8 @@
 #include <Volt/Core/Layer/Layer.h>
 #include <Volt/Events/ApplicationEvents.h>
 
+#include <EventSystem/EventListener.h>
+
 namespace Volt
 {
 	class Scene;
@@ -16,7 +18,7 @@ namespace Volt
 	class OnSceneLoadedEvent;
 }
 
-class GameLayer : public Volt::Layer
+class GameLayer : public Volt::Layer, public Volt::EventListener
 {
 public:
 	GameLayer() = default;
@@ -24,8 +26,6 @@ public:
 
 	void OnAttach() override;
 	void OnDetach() override;
-
-	void OnEvent(Volt::Event& e) override;
 
 	void LoadStartScene(); // remove
 

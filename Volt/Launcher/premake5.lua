@@ -90,7 +90,7 @@ project "Launcher"
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.zlib}",
 
-		"%{IncludeDir.EventModule}",
+		"%{IncludeDir.EventSystemModule}",
 		"%{IncludeDir.WindowModule}",
 		"%{IncludeDir.InputModule}",
 
@@ -122,7 +122,7 @@ project "Launcher"
 		
 		"%{Library.METIS}",
 
-		"EventModule", 
+		"EventSystemModule", 
 		"WindowModule",
 		"InputModule",
     }

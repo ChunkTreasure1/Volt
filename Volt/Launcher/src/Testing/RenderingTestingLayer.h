@@ -6,7 +6,9 @@
 #include <Volt/Events/ApplicationEvents.h>
 #include <WindowModule/Events/WindowEvents.h>
 
-class RenderingTestingLayer : public Volt::Layer
+#include <EventSystem/EventListener.h>
+
+class RenderingTestingLayer : public Volt::Layer, public Volt::EventListener
 {
 public:
 	RenderingTestingLayer() = default;
@@ -14,8 +16,6 @@ public:
 
 	void OnAttach() override;
 	void OnDetach() override;
-
-	void OnEvent(Volt::Event& e) override;
 
 private:
 	bool OnRenderEvent(Volt::WindowRenderEvent& e);
