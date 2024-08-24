@@ -1632,63 +1632,6 @@ bool UI::PropertyEntity(Weak<Volt::Scene> scene, Volt::EntityID& value, const fl
 	return changed;
 }
 
-bool UI::PropertyEntityCustomMonoType(const std::string& text, Weak<Volt::Scene> scene, Volt::EntityID& value, const Volt::MonoTypeInfo& monoTypeInfo, const std::string& toolTip)
-{
-	bool changed = false;
-
-	BeginPropertyRow();
-
-	ImGui::TextUnformatted(text.c_str());
-	SimpleToolTip(toolTip);
-
-	ImGui::TableNextColumn();
-	std::string id = "##" + std::to_string(s_stackId++);
-
-	Volt::Entity entity = scene->GetEntityFromUUID(value);
-
-	std::string entityName;
-	if (entity)
-	{
-		entityName = entity.GetComponent<Volt::TagComponent>().tag;
-	}
-	else
-	{
-		entityName = "Null";
-	}
-
-	changed = DrawItem([&]()
-		{
-			return ImGui::InputTextString(id.c_str(), &entityName, ImGuiInputTextFlags_ReadOnly);
-		});
-
-	if (auto ptr = UI::DragDropTarget("scene_entity_hierarchy"))
-	{
-		Volt::EntityID entityId = *(Volt::EntityID*)ptr;
-		auto droppedEntity = scene->GetEntityFromUUID(entityId);
-
-		// Check that the dropped entity has the required script
-		if (droppedEntity.HasComponent<Volt::MonoScriptComponent>())
-		{
-			const auto& monoComponent = droppedEntity.GetComponent<Volt::MonoScriptComponent>();
-
-			for (const auto& scriptName : monoComponent.scriptNames)
-			{
-				if (scriptName == monoTypeInfo.typeName)
-				{
-					value = entityId;
-					changed = true;
-					break;
-				}
-			}
-		}
-
-	}
-
-	EndPropertyRow();
-
-	return changed;
-}
-
 bool UI::Property(const std::string& text, const std::string& value, bool readOnly, const std::string& toolTip)
 {
 	bool changed = false;

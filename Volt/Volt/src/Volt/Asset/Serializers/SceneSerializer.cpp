@@ -9,9 +9,6 @@
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
 
-#include "Volt/Scripting/Mono/MonoScriptClass.h"
-#include "Volt/Scripting/Mono/MonoScriptEngine.h"
-
 #include "Volt/Core/BinarySerializer.h"
 
 #include "Volt/Utility/Algorithms.h"
@@ -271,11 +268,6 @@ namespace Volt
 		}
 		streamWriter.EndSequence();
 
-		if (registry.any_of<MonoScriptComponent>(id))
-		{
-			SerializeMono(id, scene, streamWriter);
-		}
-
 		if (registry.any_of<VertexPaintedComponent>(id))
 		{
 			std::filesystem::path vpPath = (ProjectManager::GetRootDirectory() / metadata.filePath.parent_path() / "Layers" / ("ent_" + std::to_string((uint32_t)id) + ".entVp"));
@@ -348,11 +340,6 @@ namespace Volt
 
 		});
 
-		if (scene->GetRegistry().any_of<MonoScriptComponent>(entity))
-		{
-			DeserializeMono(entity, scene, streamReader);
-		}
-
 		if (scene->GetRegistry().any_of<VertexPaintedComponent>(entity))
 		{
 			std::filesystem::path vpPath = metadata.filePath.parent_path();
@@ -389,68 +376,6 @@ namespace Volt
 		}
 
 		streamReader.ExitScope();
-	}
-
-	void SceneSerializer::DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLMemoryStreamReader& streamReader) const
-	{
-		Entity entity{ id, scene };
-
-		streamReader.ForEach("MonoScripts", [&]()
-		{
-			streamReader.EnterScope("ScriptEntry");
-
-			if (!entity.HasComponent<MonoScriptComponent>())
-			{
-				entity.AddComponent<MonoScriptComponent>();
-			}
-
-			const std::string scriptName = streamReader.ReadAtKey("name", std::string(""));
-			const UUID64 scriptId = streamReader.ReadAtKey("id", UUID64(0));
-
-			auto scriptClass = MonoScriptEngine::GetScriptClass(scriptName);
-			if (!scriptClass)
-			{
-				streamReader.ExitScope();
-				return;
-			}
-
-			auto& scriptComp = entity.GetComponent<MonoScriptComponent>();
-			scriptComp.scriptIds.emplace_back(scriptId);
-			scriptComp.scriptNames.emplace_back(scriptName);
-
-			const auto& classFields = scriptClass->GetFields();
-			auto& fieldCache = scene->GetScriptFieldCache().GetCache()[scriptId];
-
-			streamReader.ForEach("members", [&]()
-			{
-				const std::string memberName = streamReader.ReadAtKey("name", std::string(""));
-
-				if (!classFields.contains(memberName))
-				{
-					return;
-				}
-
-				fieldCache[memberName] = CreateRef<MonoScriptFieldInstance>();
-
-				auto field = fieldCache[memberName];
-				field->field = classFields.at(memberName);
-
-				if (field->field.type.IsString())
-				{
-					const std::string str = streamReader.ReadAtKey("data", std::string(""));
-					field->SetValue(str, str.size());
-				}
-				else
-				{
-					if (s_typeDeserializers.contains(field->field.type.typeIndex))
-					{
-						field->data.Allocate(field->field.type.typeSize);
-						s_typeDeserializers.at(field->field.type.typeIndex)(streamReader, field->data.As<uint8_t>(), 0);
-					}
-				}
-			});
-			streamReader.ExitScope();
-		});
 	}
 
 	void SceneSerializer::LoadWorldCell(const Ref<Scene>& scene, const WorldCell& worldCell) const
@@ -856,64 +781,6 @@ namespace Volt
 				}
 			}
 			streamWriter.EndMap();
-		}
-		streamWriter.EndSequence();
-	}
-
-	void SceneSerializer::SerializeMono(entt::entity id, const Ref<Scene>& scene, YAMLMemoryStreamWriter& streamWriter) const
-	{
-		const auto& scriptFieldCache = scene->GetScriptFieldCache();
-
-		streamWriter.BeginSequence("MonoScripts");
-		{
-			MonoScriptComponent& monoScriptComp = scene->GetRegistry().get<MonoScriptComponent>(id);
-			if (monoScriptComp.scriptIds.size() == monoScriptComp.scriptNames.size())
-			{
-				for (size_t i = 0; i < monoScriptComp.scriptIds.size(); ++i)
-				{
-					const auto& scriptId = monoScriptComp.scriptIds.at(i);
-					const auto& scriptName = monoScriptComp.scriptNames.at(i);
-
-					streamWriter.BeginMap();
-					streamWriter.BeginMapNamned("ScriptEntry");
-
-					streamWriter.SetKey("name", scriptName);
-					streamWriter.SetKey("id", scriptId);
-
-					if (scriptFieldCache.GetCache().contains(scriptId))
-					{
-						streamWriter.BeginSequence("members");
-						const auto& fieldMap = scriptFieldCache.GetCache().at(scriptId);
-						for (const auto& [name, value] : fieldMap)
-						{
-							streamWriter.BeginMap();
-							streamWriter.SetKey("name", name);
-
-							if (value->field.type.IsString())
-							{
-								auto cStr = value->data.As<const char>();
-								std::string str(cStr);
-
-								streamWriter.SetKey("data", str);
-							}
-							else
-							{
-								if (s_typeSerializers.contains(value->field.type.typeIndex))
-								{
-									s_typeSerializers.at(value->field.type.typeIndex)(streamWriter, value->data.As<const uint8_t>(), 0);
-								}
-							}
-
-							streamWriter.EndMap();
-						}
-
-						streamWriter.EndSequence();
-					}
-
-					streamWriter.EndMap();
-					streamWriter.EndMap();
-				}
-			}
 		}
 		streamWriter.EndSequence();
 	}

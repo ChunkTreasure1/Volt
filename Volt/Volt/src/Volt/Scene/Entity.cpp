@@ -3,14 +3,10 @@
 
 #include "Volt/Components/CoreComponents.h"
 
-#include "Volt/Scripting/Mono/MonoScriptEngine.h"
-
 #include "Volt/Utility/StringUtility.h"
 
 #include "Volt/Physics/Physics.h"
 #include "Volt/Physics/PhysicsScene.h"
-
-#include "Volt/Net/SceneInteraction/NetActorComponent.h"
 
 #include <cassert>
 
@@ -439,22 +435,6 @@ namespace Volt
 		{
 			return;
 		}
-
-		if (MonoScriptEngine::IsRunning() && HasComponent<MonoScriptComponent>())
-		{
-			const auto& monoComp = GetComponent<MonoScriptComponent>();
-			for (const auto& scriptId : monoComp.scriptIds)
-			{
-				if (state)
-				{
-					MonoScriptEngine::OnEnableInstance(scriptId);
-				}
-				else
-				{
-					MonoScriptEngine::OnDisableInstance(scriptId);
-				}
-			}
-		}
 	}
 
 	void Entity::SetLocked(bool state)
@@ -579,8 +559,6 @@ namespace Volt
 
 			CopyComponent(reinterpret_cast<const uint8_t*>(storage.get(srcEntity)), componentData, 0, componentDesc, dstEntity);
 		}
-
-		CopyMonoScripts(srcEntity, dstEntity);
 	}
 
 	Entity Entity::Duplicate(Entity srcEntity, Ref<Scene> targetScene, Entity parent, const EntityCopyFlags copyFlags)
@@ -590,11 +568,6 @@ namespace Volt
 		Entity newEntity = scene->CreateEntity();
 
 		Copy(srcEntity, newEntity, EntityCopyFlags::SkipID | EntityCopyFlags::SkipRelationships | copyFlags);
-
-		if (newEntity.HasComponent<NetActorComponent>())
-		{
-			newEntity.GetComponent<NetActorComponent>().repId = Nexus::RandRepID();
-		}
 
 		Vector<EntityID> newChildren;
 
@@ -645,65 +618,6 @@ namespace Volt
 		}
 
 		compDesc->OnComponentCopied(&dstData[offset], dstEntity);
-	}
-
-	void Entity::CopyMonoScripts(Entity srcEntity, Entity dstEntity)
-	{
-		if (!srcEntity.HasComponent<MonoScriptComponent>() || !dstEntity.HasComponent<MonoScriptComponent>())
-		{
-			return;
-		}
-
-		const auto& srcComponent = srcEntity.GetComponent<MonoScriptComponent>();
-		auto& dstComponent = dstEntity.GetComponent<MonoScriptComponent>();
-
-		auto srcScene = srcEntity.GetScene();
-		auto dstScene = dstEntity.GetScene();
-
-		dstComponent.scriptNames = srcComponent.scriptNames;
-		dstComponent.scriptIds.clear();
-
-		for (size_t i = 0; i < srcComponent.scriptNames.size() && i < srcComponent.scriptIds.size(); i++)
-		{
-			dstComponent.scriptIds.emplace_back();
-
-			if (!MonoScriptEngine::EntityClassExists(srcComponent.scriptNames.at(i)))
-			{
-				continue;
-			}
-
-			const auto& classFields = MonoScriptEngine::GetScriptClass(srcComponent.scriptNames.at(i))->GetFields();
-
-			if (!srcScene->GetScriptFieldCache().GetCache().contains(srcComponent.scriptIds.at(i)))
-			{
-				continue;
-			}
-
-			const auto& srcFields = srcScene->GetScriptFieldCache().GetCache().at(srcComponent.scriptIds.at(i));
-			auto& dstFields = dstScene->GetScriptFieldCache().GetCache()[dstComponent.scriptIds[i]];
-
-			for (const auto [name, field] : classFields)
-			{
-				if (!srcFields.contains(name))
-				{
-					continue;
-				}
-
-				if (field.type.IsCustomMonoType())
-				{
-					// #TODO_Ivar: Handle copying custom mono types
-					continue;
-				}
-
-				auto& srcField = srcFields.at(name);
-
-				dstFields[name] = CreateRef<MonoScriptFieldInstance>();
-				dstFields.at(name)->field = srcField->field;
-
-				const void* dataPtr = srcField->data.As<void>();
-				dstFields.at(name)->SetValue(dataPtr, srcField->field.type.typeSize);
-			}
-		}
 	}
 
 	void Entity::UpdatePhysicsTranslation(bool updateThis)

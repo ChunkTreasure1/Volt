@@ -178,9 +178,6 @@ private:
 	bool m_playHasMouseControl = false;
 	bool m_isInitialized = false;
 
-	bool m_shouldMovePlayer = false;
-	glm::vec3 m_movePlayerToPosition = 0.f;
-
 	Ref<Volt::Scene> m_storedScene;
 	bool m_shouldLoadNewScene = false;
 	uint32_t m_assetBrowserCount = 0;

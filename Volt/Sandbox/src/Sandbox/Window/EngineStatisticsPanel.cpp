@@ -3,8 +3,6 @@
 
 #include <Volt/Core/Application.h>
 #include <Volt/Scene/Scene.h>
-#include <Volt/Scripting/EnumGenerator.h>
-#include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
 #include <Volt/Rendering/SceneRenderer.h>
 

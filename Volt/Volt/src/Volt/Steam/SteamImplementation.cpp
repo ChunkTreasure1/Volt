@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "SteamImplementation.h"
 
-#include "Volt/Scripting/Mono/MonoScriptGlue.h"
-
 namespace Volt
 {
 	bool ParseCommandLine(const char* pchCmdLine, const char** ppchServerAddress, const char** ppchLobbyID)
@@ -272,7 +270,6 @@ namespace Volt
 
 		if (ParseCommandLine(pCallback->m_rgchConnect, &pchServerAddress, &pchLobbyID))
 		{
-			MonoScriptGlue::SteamAPI_OnJoinRequest(pchServerAddress);
 		}
 	}
 

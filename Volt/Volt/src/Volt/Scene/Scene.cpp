@@ -21,9 +21,6 @@
 #include "Volt/Physics/Physics.h"
 #include "Volt/Physics/PhysicsScene.h"
 
-#include "Volt/Scripting/Mono/MonoScriptEngine.h"
-#include "Volt/Scripting/Mono/MonoGCManager.h"
-
 #include "Volt/Utility/FileSystem.h"
 
 #include "Volt/Math/Math.h"
@@ -96,64 +93,6 @@ namespace Volt
 		Volt::Application::Get().SetTimeScale(aTimeScale);
 	}
 
-	void Scene::InitializeEngineScripts()
-	{
-		MonoScriptEngine::OnRuntimeStart(this);
-
-		// Awake
-		{
-			ForEachWithComponents<const MonoScriptComponent, const IDComponent>([](const entt::entity id, const MonoScriptComponent& scriptComp, const IDComponent& idComponent)
-			{
-				for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
-				{
-					auto scriptClass = MonoScriptEngine::GetScriptClass(scriptComp.scriptNames[i]);
-
-					if (scriptClass && scriptClass->IsEngineScript())
-					{
-						MonoScriptEngine::OnAwakeInstance(scriptComp.scriptIds[i], idComponent.id, scriptComp.scriptNames[i]);
-					}
-				}
-			});
-		}
-
-		MonoScriptEngine::DoOnAwakeInstance();
-
-		// Create
-		{
-			ForEachWithComponents<const MonoScriptComponent, const IDComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp, const IDComponent& idComponent)
-			{
-				for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
-				{
-					auto scriptClass = MonoScriptEngine::GetScriptClass(scriptComp.scriptNames[i]);
-
-					if (scriptClass && scriptClass->IsEngineScript())
-					{
-						MonoScriptEngine::OnCreateInstance(scriptComp.scriptIds[i], idComponent.id, scriptComp.scriptNames[i]);
-					}
-
-				}
-			});
-		}
-	}
-
-	void Scene::ShutdownEngineScripts()
-	{
-		ForEachWithComponents<const MonoScriptComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp)
-		{
-			for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
-			{
-				auto scriptClass = MonoScriptEngine::GetScriptClass(scriptComp.scriptNames[i]);
-
-				if (scriptClass && scriptClass->IsEngineScript())
-				{
-					MonoScriptEngine::OnDestroyInstance(scriptComp.scriptIds[i]);
-				}
-			}
-		});
-
-		MonoScriptEngine::OnRuntimeEnd();
-	}
-
 	void Scene::OnRuntimeStart()
 	{
 		Physics::CreateScene(this);
@@ -167,8 +106,6 @@ namespace Volt
 
 		Application::Get().GetNavigationSystem().OnRuntimeStart();
 
-		MonoScriptEngine::OnRuntimeStart(this);
-
 		ForEachWithComponents<CommonComponent>([](entt::entity, CommonComponent& dataComp)
 		{
 			dataComp.timeSinceCreation = 0.f;
@@ -176,24 +113,6 @@ namespace Volt
 		});
 
 		m_visionSystem->Initialize();
-
-		ForEachWithComponents<const MonoScriptComponent, const IDComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp, const IDComponent& idComponent)
-		{
-			for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
-			{
-				MonoScriptEngine::OnAwakeInstance(scriptComp.scriptIds[i], idComponent.id, scriptComp.scriptNames[i]);
-			}
-		});
-
-		MonoScriptEngine::DoOnAwakeInstance();
-
-		ForEachWithComponents<const MonoScriptComponent, const IDComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp, const IDComponent& idComponent)
-		{
-			for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
-			{
-				MonoScriptEngine::OnCreateInstance(scriptComp.scriptIds[i], idComponent.id, scriptComp.scriptNames[i]);
-			}
-		});
 
 		ForEachWithComponents<MotionWeaveComponent, const MeshComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave, const MeshComponent& meshComp)
 		{
@@ -224,25 +143,6 @@ namespace Volt
 	void Scene::OnRuntimeEnd()
 	{
 		m_isPlaying = false;
-
-		ForEachWithComponents<const MonoScriptComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp)
-		{
-			for (const auto& instId : scriptComp.scriptIds)
-			{
-				MonoScriptEngine::OnDestroyInstance(instId);
-			}
-		});
-
-		ForEachWithComponents<MotionWeaveComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave)
-		{
-			motionWeave.MotionWeaver = nullptr;
-			for (const auto& objId : motionWeave.renderObjectIds)
-			{
-				m_renderScene->Unregister(objId);
-			}
-		});
-
-		MonoScriptEngine::OnRuntimeEnd();
 
 		Physics::DestroyScene();
 		m_audioSystem.RuntimeStop(m_registry, shared_from_this());
@@ -279,25 +179,6 @@ namespace Volt
 				dataComp.timeSinceCreation += aDeltaTime;
 			});
 		}
-
-		MonoScriptEngine::DoDestroyQueue();
-		MonoScriptEngine::OnUpdate(aDeltaTime);
-
-		ForEachWithComponents<const MonoScriptComponent, const TransformComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp, const TransformComponent& transformComponent)
-		{
-			if (!transformComponent.visible)
-			{
-				return;
-			}
-
-			for (size_t i = 0; i < scriptComp.scriptIds.size(); i++)
-			{
-				VT_PROFILE_SCOPE(std::string("Updating script" + scriptComp.scriptNames.at(i)).c_str());
-				MonoScriptEngine::OnUpdateInstance(scriptComp.scriptIds.at(i), aDeltaTime);
-			}
-		});
-
-		MonoScriptEngine::OnUpdateEntity(aDeltaTime);
 
 		ForEachWithComponents<CameraComponent, const TransformComponent>([&](entt::entity id, CameraComponent& cameraComp, const TransformComponent& transComp)
 		{
@@ -997,14 +878,6 @@ namespace Volt
 				RemoveEntityInternal(childEnt, true);
 			
 				relComp = entity.GetComponent<RelationshipComponent>();
-			}
-		}
-
-		if (entity.HasComponent<MonoScriptComponent>())
-		{
-			for (const auto& scriptId : entity.GetComponent<MonoScriptComponent>().scriptIds)
-			{
-				MonoScriptEngine::OnDestroyInstance(scriptId);
 			}
 		}
 

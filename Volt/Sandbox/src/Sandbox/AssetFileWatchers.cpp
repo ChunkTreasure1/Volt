@@ -7,7 +7,6 @@
 #include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
 
 #include <Volt/Project/ProjectManager.h>
-#include <Volt/Scripting/Mono/MonoScriptEngine.h>
 #include <Volt/Asset/Rendering/ShaderDefinition.h>
 
 #include <RenderCore/Shader/ShaderMap.h>
@@ -37,17 +36,6 @@ void Sandbox::CreateModifiedWatch()
 				if (m_sceneState == SceneState::Play)
 				{
 					Sandbox::Get().OnSceneStop();
-				}
-				else if (m_sceneState == SceneState::Edit)
-				{
-					m_runtimeScene->ShutdownEngineScripts();
-				}
-
-				Volt::MonoScriptEngine::ReloadAssembly();
-
-				if (m_sceneState == SceneState::Edit)
-				{
-					m_runtimeScene->InitializeEngineScripts();
 				}
 
 				UI::Notify(NotificationType::Success, "C# Assembly Reloaded!", "The C# assembly was reloaded successfully!");

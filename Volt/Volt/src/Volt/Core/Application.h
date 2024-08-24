@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Volt/Net/NetHandler.h"
-
 #include "Volt/Core/Base.h"
 #include "Volt/Core/Layer/LayerStack.h"
 #include "Volt/Core/MultiTimer.h"
@@ -51,7 +49,6 @@ namespace Volt
 		bool enableImGui = true;
 		bool enableSteam = false;
 		bool isRuntime = false;
-		bool netEnabled = true;
 		bool UseTitlebar = false;
 		bool UseCustomTitlebar = false;
 
@@ -96,7 +93,6 @@ namespace Volt
 
 		inline void SetTimeScale(const float aTimeScale) { m_timeScale = aTimeScale; }
 
-		NetHandler& GetNetHandler() { return *m_netHandler; }
 		AI::NavigationSystem& GetNavigationSystem() { return *m_navigationSystem; }
 		SteamImplementation& GetSteam() { return *m_steamImplementation; }
 
@@ -141,7 +137,6 @@ namespace Volt
 		RefPtr<RHI::RHIProxy> m_rhiProxy;
 
 		Scope<AssetManager> m_assetmanager;
-		Scope<NetHandler> m_netHandler;
 		Scope<AI::NavigationSystem> m_navigationSystem;
 
 		Scope<SteamImplementation> m_steamImplementation;

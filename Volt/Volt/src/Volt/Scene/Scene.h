@@ -9,8 +9,6 @@
 #include "Volt/Scene/EntityRegistry.h"
 #include "Volt/Scene/WorldEngine/WorldEngine.h"
 
-#include "Volt/Scripting/Mono/MonoScriptFieldCache.h"
-
 #include "Volt/Rendering/RendererStructs.h"
 
 #include <AssetSystem/Asset.h>
@@ -81,9 +79,6 @@ namespace Volt
 
 		void SetTimeScale(const float aTimeScale);
 
-		void InitializeEngineScripts();
-		void ShutdownEngineScripts();
-
 		void OnRuntimeStart();
 		void OnRuntimeEnd();
 
@@ -112,9 +107,6 @@ namespace Volt
 		inline const uint32_t GetActiveLayer() const { return m_sceneLayers.at(m_activeLayerIndex).id; }
 		inline const Vector<SceneLayer>& GetLayers() const { return m_sceneLayers; }
 		inline Vector<SceneLayer>& GetLayersMutable() { return m_sceneLayers; }
-
-		inline const MonoScriptFieldCache& GetScriptFieldCache() const { return m_monoFieldCache; }
-		inline MonoScriptFieldCache& GetScriptFieldCache() { return m_monoFieldCache; }
 
 		inline SceneSettings& GetSceneSettingsMutable() { return m_sceneSettings; }
 		inline const SceneSettings& GetSceneSettings() const { return m_sceneSettings; }
@@ -246,7 +238,6 @@ namespace Volt
 			
 		ParticleSystem m_particleSystem;
 		AudioSystem m_audioSystem;
-		MonoScriptFieldCache m_monoFieldCache;
 
 		Ref<Vision> m_visionSystem; // Needs to be of ptr type because of include loop
 		Ref<RenderScene> m_renderScene;

@@ -39,8 +39,6 @@
 #include <Volt/Utility/YAMLSerializationHelpers.h>
 #include <Volt/Utility/PremadeCommands.h>
 
-#include <Volt/Scripting/Mono/MonoScriptUtils.h>
-
 #include <AssetSystem/AssetManager.h>
 #include <RenderCore/Shader/ShaderMap.h>
 
@@ -327,7 +325,6 @@ void AssetBrowserPanel::UpdateMainContent()
 	}
 
 	CreateNewShaderModal();
-	CreateNewMonoScriptModal();
 	CreateNewMotionWeaveDatabaseModal();
 	DeleteFilesModal();
 }
@@ -1581,41 +1578,6 @@ void AssetBrowserPanel::CreateNewShaderModal()
 	}
 }
 
-void AssetBrowserPanel::CreateNewMonoScriptModal()
-{
-	if (UI::BeginModal("New MonoScript##assetBrowser"))
-	{
-		static std::string name;
-		static bool regeneratePrj = true;
-
-		if (UI::BeginProperties("scriptProp"))
-		{
-			UI::Property("Name", name);
-			UI::Property("Regenerate Project", regeneratePrj);
-
-			UI::EndProperties();
-		}
-
-		if (ImGui::Button("Create"))
-		{
-			Volt::MonoScriptUtils::CreateNewCSFile(name, myCurrentDirectory->path, regeneratePrj);
-
-			name = "";
-			ImGui::CloseCurrentPopup();
-		}
-
-		ImGui::SameLine();
-
-		if (ImGui::Button("Cancel"))
-		{
-			name = "";
-			ImGui::CloseCurrentPopup();
-		}
-
-		UI::EndModal();
-	}
-}
-
 void AssetBrowserPanel::CreateNewMotionWeaveDatabaseModal()
 {
 	if (UI::BeginModal("New MotionWeaveDatabase##assetBrowser"))
@@ -1635,7 +1597,6 @@ void AssetBrowserPanel::CreateNewMotionWeaveDatabaseModal()
 		}
 		if (ImGui::Button("Create"))
 		{
-
 			Ref<Volt::MotionWeaveDatabase> motionWeaveGraph = Volt::AssetManager::CreateAsset<Volt::MotionWeaveDatabase>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), m_NewMotionWeaveDatabaseData.name, m_NewMotionWeaveDatabaseData.skeleton);
 			Volt::AssetManager::SaveAsset(motionWeaveGraph);
 			

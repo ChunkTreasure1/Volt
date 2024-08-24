@@ -2,10 +2,6 @@
 #include "ProjectUpgradeLayer.h"
 
 #include "Sandbox/Utility/Theme.h"
-#include "ProjectUpgrade/V011/V011Convert.h"
-#include "ProjectUpgrade/V012/V012Convert.h"
-#include "ProjectUpgrade/V013/V013Convert.h"
-#include "ProjectUpgrade/V015/V015Convert.h"
 
 #include <Volt/Project/ProjectManager.h>
 
@@ -50,22 +46,18 @@ void ProjectUpgradeLayer::DrawUpgradeUI()
 	{
 		if (projectVersion.GetMinor() < 1 && projectVersion.GetMajor() == 0)
 		{
-			V011::Convert();
 		}
 
 		if (projectVersion.GetPatch() < 2 && projectVersion.GetMinor() < 2 && projectVersion.GetMajor() == 0)
 		{
-			V012::Convert();
 		}
 
 		if (projectVersion.GetPatch() < 3 && projectVersion.GetMinor() < 2 && projectVersion.GetMajor() == 0)
 		{
-			V013::Convert();
 		}
 
 		if (projectVersion.GetPatch() < 5 && projectVersion.GetMinor() < 2 && projectVersion.GetMajor() == 0)
 		{
-			V015::Convert();
 		}
 
 		Volt::ProjectManager::OnProjectUpgraded();

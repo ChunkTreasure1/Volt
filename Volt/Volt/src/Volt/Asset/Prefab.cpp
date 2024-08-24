@@ -4,7 +4,6 @@
 #include "Volt/Components/CoreComponents.h"
 #include "Volt/Components/PhysicsComponents.h"
 #include "Volt/Components/RenderingComponents.h"
-#include "Volt/Net/SceneInteraction/NetActorComponent.h"
 
 #include "Volt/Scene/Scene.h"
 
@@ -198,11 +197,6 @@ namespace Volt
 
 			const auto& srcComp = prefabEntity.GetComponent<CharacterControllerComponent>();
 			entity.AddComponent<CharacterControllerComponent>(srcComp.climbingMode, srcComp.slopeLimit, srcComp.invisibleWallHeight, srcComp.maxJumpHeight, srcComp.contactOffset, srcComp.stepOffset, srcComp.density, srcComp.layer, srcComp.hasGravity);
-		}
-
-		if (entity.HasComponent<NetActorComponent>())
-		{
-			entity.GetComponent<NetActorComponent>().repId = Nexus::RandRepID();
 		}
 
 		// Common data

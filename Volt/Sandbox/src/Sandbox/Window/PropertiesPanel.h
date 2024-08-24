@@ -37,8 +37,6 @@ public:
 
 private:
 	void AddComponentPopup();
-	void AddMonoScriptPopup();
-	void AcceptMonoDragDrop();
 
 	Ref<Volt::Scene>& myCurrentScene;
 	Ref<Volt::SceneRenderer>& myCurrentSceneRenderer;

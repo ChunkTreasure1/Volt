@@ -40,7 +40,6 @@ project "Volt"
 	
 		"%{IncludeDir.Amp}",
 		"%{IncludeDir.Navigation}",
-		"%{IncludeDir.Nexus}",
 		"%{IncludeDir.Mosaic}",
 		"%{IncludeDir.LogModule}",
 		"%{IncludeDir.RHIModule}",
@@ -106,7 +105,6 @@ project "Volt"
 		"YamlCPP",
 		"DirectXTex",
 		"efsw-static-lib",
-		"Nexus",
 		"NFD-Extended",
 		"cityhash",
 		"ufbx",

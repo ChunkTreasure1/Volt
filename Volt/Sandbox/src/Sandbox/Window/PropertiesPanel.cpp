@@ -20,9 +20,6 @@
 #include <Volt/Utility/StringUtility.h>
 #include <Volt/Utility/PremadeCommands.h>
 
-#include <Volt/Scripting/Mono/MonoScriptEngine.h>
-#include <Volt/Scripting/Mono/MonoScriptUtils.h>
-
 PropertiesPanel::PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, SceneState& sceneState, const std::string& id)
 	: EditorWindow("Properties", false, id), myCurrentScene(currentScene), myCurrentSceneRenderer(currentSceneRenderer), mySceneState(sceneState)
 {
@@ -144,7 +141,7 @@ void PropertiesPanel::UpdateMainContent()
 						Volt::Entity ent = myCurrentScene->GetEntityFromUUID(entId);
 						ent.SetLocalPosition(transform.position);
 						myCurrentScene->InvalidateEntityTransform(entId);
-					
+
 						EditorUtils::MarkEntityAndChildrenAsEdited(ent);
 					}
 				}
@@ -190,7 +187,7 @@ void PropertiesPanel::UpdateMainContent()
 						Volt::Entity ent = myCurrentScene->GetEntityFromUUID(entId);
 						ent.SetLocalScale(transform.scale);
 						myCurrentScene->InvalidateEntityTransform(entId);
-					
+
 						EditorUtils::MarkEntityAsEdited(ent);
 					}
 				}
@@ -213,48 +210,24 @@ void PropertiesPanel::UpdateMainContent()
 		Volt::Entity entity = myCurrentScene->GetEntityFromUUID(id);
 
 		ComponentPropertyUtility::DrawComponents(myCurrentScene, entity);
-		ComponentPropertyUtility::DrawMonoScripts(myCurrentScene, entity);
 	}
 
 	ImGui::PushStyleColor(ImGuiCol_Button, { 0.2f, 0.2f, 0.2f, 1.f });
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 
-	if (ImGui::BeginTable("addTable", 2, ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_SizingFixedFit))
+	constexpr float buttonHeight = 22.f;
+
+	if (ImGui::Button("Add Component", { ImGui::GetContentRegionAvail().x, buttonHeight }))
 	{
-		const float width = ImGui::GetContentRegionAvail().x / 2.f;
-		constexpr float buttonHeight = 22.f;
-
-		ImGui::TableSetupColumn("Column1", 0, width);
-		ImGui::TableSetupColumn("Column2", 0, width);
-
-		ImGui::TableNextRow();
-		ImGui::TableNextColumn();
-
-		if (ImGui::Button("Add Component", { width, buttonHeight }))
-		{
-			myComponentSearchQuery = "";
-			myActivateComponentSearch = true;
-			UI::OpenPopup("AddComponent");
-		}
-
-		ImGui::TableNextColumn();
-
-		if (ImGui::Button("Add Script", { width, buttonHeight }))
-		{
-			myScriptSearchQuery = "";
-			myActivateScriptSearch = true;
-			UI::OpenPopup("AddMonoScript");
-		}
-
-		ImGui::EndTable();
+		myComponentSearchQuery = "";
+		myActivateComponentSearch = true;
+		UI::OpenPopup("AddComponent");
 	}
 
 	ImGui::PopStyleVar();
 	ImGui::PopStyleColor();
 
 	AddComponentPopup();
-	AddMonoScriptPopup();
-	AcceptMonoDragDrop();
 }
 
 void PropertiesPanel::AddComponentPopup()
@@ -275,9 +248,9 @@ void PropertiesPanel::AddComponentPopup()
 				{
 					continue;
 				}
-				
+
 				const std::string strLabel = std::string(compDesc->GetLabel());
-				
+
 				componentNames.emplace_back(strLabel);
 				nameToGUIDMap[strLabel] = guid;
 			}
@@ -309,10 +282,8 @@ void PropertiesPanel::AddComponentPopup()
 				const auto compGuid = nameToGUIDMap.at(label);
 				std::string_view componentTypeName = GetComponentRegistry().GetTypeNameFromGUID(compGuid);
 
-				const bool newMonoScript = compGuid == Volt::MonoScriptComponent::guid;
-
 				Volt::Entity frontEntity = myCurrentScene->GetEntityFromUUID(SelectionManager::GetSelectedEntities().front());
-				if (!frontEntity.HasComponent(componentTypeName) || newMonoScript)
+				if (!frontEntity.HasComponent(componentTypeName))
 				{
 					UI::ShiftCursor(4.f, 0.f);
 					UI::RenderMatchingTextBackground(myComponentSearchQuery, label, EditorTheme::MatchingTextBackground);
@@ -327,18 +298,6 @@ void PropertiesPanel::AddComponentPopup()
 								Volt::ComponentRegistry::Helpers::AddComponentWithGUID(compGuid, myCurrentScene->GetRegistry(), entity);
 								EditorUtils::MarkEntityAsEdited(entity);
 							}
-
-							if (newMonoScript)
-							{
-								Volt::MonoScriptComponent& comp = myCurrentScene->GetRegistry().get<Volt::MonoScriptComponent>(frontEntity);
-								if (comp.scriptIds.size() < Volt::MonoScriptEngine::MAX_SCRIPTS_PER_ENTITY)
-								{
-									comp.scriptIds.emplace_back();
-									comp.scriptNames.emplace_back("");
-
-									EditorUtils::MarkEntityAsEdited(entity);
-								}
-							}
 						}
 
 						ImGui::CloseCurrentPopup();
@@ -350,188 +309,5 @@ void PropertiesPanel::AddComponentPopup()
 		}
 
 		UI::EndPopup();
-	}
-}
-
-void PropertiesPanel::AddMonoScriptPopup()
-{
-	ImGui::SetNextWindowSize({ 250.f, 500.f });
-	if (UI::BeginPopup("AddMonoScript" + m_id))
-	{
-		const auto& scriptInfo = Volt::MonoScriptEngine::GetRegisteredClasses();
-
-		Vector<std::string> scriptNames;
-		Vector<std::string> fullScriptNames;
-
-		for (const auto& klass : scriptInfo)
-		{
-			auto classname = Volt::MonoScriptUtils::GetClassName2(klass.first);
-			classname[0] = static_cast<char>(std::toupper(classname[0]));
-			scriptNames.emplace_back(classname);
-			fullScriptNames.emplace_back(klass.first);
-		}
-
-		std::sort(scriptNames.begin(), scriptNames.end());
-
-		// Search bar
-		{
-			bool t;
-			EditorUtils::SearchBar(myScriptSearchQuery, t, myActivateScriptSearch);
-			if (myActivateScriptSearch)
-			{
-				myActivateScriptSearch = false;
-			}
-		}
-
-		if (!myScriptSearchQuery.empty())
-		{
-			scriptNames = UI::GetEntriesMatchingQuery(myScriptSearchQuery, scriptNames);
-		}
-
-		bool addedScript = false;
-
-		{
-			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
-			ImGui::BeginChild("scrolling", ImGui::GetContentRegionAvail());
-
-			for (const auto& name : scriptNames)
-			{
-				UI::ShiftCursor(4.f, 0.f);
-				UI::RenderMatchingTextBackground(myScriptSearchQuery, name, EditorTheme::MatchingTextBackground);
-				if (ImGui::MenuItem(name.c_str()))
-				{
-					for (auto& id : SelectionManager::GetSelectedEntities())
-					{
-						Volt::Entity entity = myCurrentScene->GetEntityFromUUID(id);
-						EditorUtils::MarkEntityAsEdited(entity);
-
-						if (!entity.HasComponent<Volt::MonoScriptComponent>())
-						{
-							entity.AddComponent<Volt::MonoScriptComponent>();
-						}
-
-						auto& comp = entity.GetComponent<Volt::MonoScriptComponent>();
-						if (comp.scriptIds.size() < Volt::MonoScriptEngine::MAX_SCRIPTS_PER_ENTITY)
-						{
-							std::string fullScriptName = "";
-
-							for (const auto& scriptName : fullScriptNames)
-							{
-								size_t lastDotPos = scriptName.find_last_of(".");
-								std::string aSubstr = scriptName.substr(lastDotPos + 1);
-
-								if (aSubstr == name)
-								{
-									fullScriptName = scriptName;
-								}
-							}
-
-							if (!fullScriptName.empty())
-							{
-								comp.scriptIds.emplace_back(UUID64());
-								comp.scriptNames.emplace_back(fullScriptName);
-							}
-						}
-					}
-					ImGui::CloseCurrentPopup();
-
-					addedScript = true;
-				}
-			}
-
-			if (!myScriptSearchQuery.empty() && ImGui::MenuItem(("Create " + myScriptSearchQuery + " script").c_str()))
-			{
-				UI::ShiftCursor(4.f, 0.f);
-
-				Volt::MonoScriptUtils::CreateNewCSFile(myScriptSearchQuery, "", true);
-
-				for (auto& id : SelectionManager::GetSelectedEntities())
-				{
-					Volt::Entity entity = myCurrentScene->GetEntityFromUUID(id);
-					EditorUtils::MarkEntityAsEdited(entity);
-
-					if (!entity.HasComponent<Volt::MonoScriptComponent>())
-					{
-						entity.AddComponent<Volt::MonoScriptComponent>();
-					}
-
-					auto& comp = entity.GetComponent<Volt::MonoScriptComponent>();
-					if (comp.scriptIds.size() < Volt::MonoScriptEngine::MAX_SCRIPTS_PER_ENTITY)
-					{
-						std::string fullScriptName = "Project." + myScriptSearchQuery;
-
-						comp.scriptIds.emplace_back(UUID64());
-						comp.scriptNames.emplace_back(fullScriptName);
-					}
-				}
-				ImGui::CloseCurrentPopup();
-
-				addedScript = true;
-			}
-
-			ImGui::EndChild();
-		}
-
-		if (addedScript && mySceneState == SceneState::Edit)
-		{
-			myCurrentScene->ShutdownEngineScripts();
-			myCurrentScene->InitializeEngineScripts();
-		}
-
-		UI::EndPopup();
-	}
-}
-
-void PropertiesPanel::AcceptMonoDragDrop()
-{
-	ImGui::Dummy(ImGui::GetContentRegionAvail());
-	if (void* ptr = UI::DragDropTarget({ "ASSET_BROWSER_ITEM" }))
-	{
-		Volt::AssetHandle handle = *(Volt::AssetHandle*)ptr;
-		auto path = Volt::AssetManager::Get().GetFilesystemPath(handle);
-		if (path.extension() == ".cs")
-		{
-			auto name = path.filename();
-			name.replace_extension("");
-
-			std::string fullMonoClassName;
-			for (const auto& klass : Volt::MonoScriptEngine::GetRegisteredClasses())
-			{
-				auto className = klass.first;
-				auto pos = className.find(".");
-				while (pos != std::string::npos)
-				{
-					className = className.substr(pos + 1, className.size());
-					pos = className.find('.');
-				}
-
-				if (name == className)
-				{
-					fullMonoClassName = klass.first;
-					break;
-				}
-			}
-
-			if (!fullMonoClassName.empty())
-			{
-				for (auto& id : SelectionManager::GetSelectedEntities())
-				{
-					Volt::Entity entity = myCurrentScene->GetEntityFromUUID(id);
-					EditorUtils::MarkEntityAsEdited(entity);
-
-					if (!entity.HasComponent<Volt::MonoScriptComponent>())
-					{
-						entity.AddComponent<Volt::MonoScriptComponent>();
-					}
-
-					auto& comp = entity.GetComponent<Volt::MonoScriptComponent>();
-					if (comp.scriptIds.size() < Volt::MonoScriptEngine::MAX_SCRIPTS_PER_ENTITY)
-					{
-						comp.scriptIds.emplace_back(UUID64());
-						comp.scriptNames.emplace_back(fullMonoClassName);
-					}
-				}
-			}
-		}
 	}
 }

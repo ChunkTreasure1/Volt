@@ -23,9 +23,7 @@
 #include <Volt/Components/LightComponents.h>
 #include <Volt/Vision/VisionComponents.h>
 
-#include <Volt/Scripting/Mono/MonoScriptEngine.h>
 #include <Volt/ImGui/FontAwesome.h>
-#include <Volt/Net/SceneInteraction/NetActorComponent.h>
 
 #include <Volt/Rendering/ShapeLibrary.h>
 #include <Volt/Project/ProjectManager.h>
@@ -559,10 +557,9 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 	const bool matchesQuery = MatchesQuery(entityName, filter);
 	const bool hasId = std::to_string(static_cast<uint32_t>(entity.GetID())) == filter;
 	const bool hasComponent = HasComponent(entity, filter);
-	const bool hasScript = HasScript(entity, filter);
 	const bool isVisionCamera = entity.HasComponent<Volt::VisionCameraComponent>();
 
-	if (!matchesQuery && !hasId && !hasMatchingChild && !hasMatchingParent && !hasComponent && !hasScript)
+	if (!matchesQuery && !hasId && !hasMatchingChild && !hasMatchingParent && !hasComponent)
 	{
 		return;
 	}
@@ -1155,7 +1152,7 @@ bool SceneViewPanel::SearchRecursively(Volt::Entity entity, const std::string& f
 		if (child.HasComponent<Volt::TagComponent>())
 		{
 			std::string t = child.GetComponent<Volt::TagComponent>().tag;
-			if (MatchesQuery(t, filter) || child.ToString() == filter || HasComponent(child, filter) || HasScript(child, filter))
+			if (MatchesQuery(t, filter) || child.ToString() == filter || HasComponent(child, filter))
 			{
 				return true;
 			}
@@ -1254,36 +1251,6 @@ bool SceneViewPanel::HasComponent(Volt::Entity entity, const std::string& filter
 
 	const std::string compSearchString = filter.substr(1);
 	return entity.HasComponent(compSearchString);
-}
-
-bool SceneViewPanel::HasScript(Volt::Entity entity, const std::string& filter)
-{
-	if (filter.empty())
-	{
-		return false;
-	}
-
-	if (!(filter.at(0) == ';'))
-	{
-		return false;
-	}
-
-	const std::string scriptSearchString = filter.substr(1);
-
-	if (!entity.HasComponent<Volt::MonoScriptComponent>())
-	{
-		return false;
-	}
-
-	for (const auto& name : entity.GetComponent<Volt::MonoScriptComponent>().scriptNames)
-	{
-		if (Utility::StringContains(Utility::ToLower(name), Utility::ToLower(scriptSearchString)))
-		{
-			return true;
-		}
-	}
-
-	return false;
 }
 
 void SceneViewPanel::DrawMainRightClickPopup()
@@ -1494,16 +1461,6 @@ void SceneViewPanel::DrawMainRightClickPopup()
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::MenuItem("Net go brrr"))
-		{
-			m_scene->ForEachWithComponents<Volt::NetActorComponent>([](const entt::entity id, Volt::NetActorComponent& dataComp)
-			{
-				dataComp.repId = Nexus::RandRepID();
-				dataComp.clientId = 0;
-			});
-			UI::Notify(NotificationType::Success, "8===D", "Brrrrrrrrrrrrrrrrrrrr");
-		}
-
 		ImGui::MenuItem("Show UUIDS", nullptr, &m_showEntityUUIDs);
 
 		ImGui::EndPopup();
@@ -1533,10 +1490,9 @@ void SceneViewPanel::RebuildEntityDrawListRecursive(Volt::Entity entity, const s
 	const bool hasMatchingChild = SearchRecursively(entity, filter, 10);
 	const bool matchesQuery = MatchesQuery(entity.GetTag(), filter);
 	const bool hasComponent = HasComponent(entity, filter);
-	const bool hasScript = HasScript(entity, filter);
 	const bool hasId = entity.ToString() == filter;
 
-	if (!matchesQuery && !hasId && !hasScript && !hasComponent && !hasMatchingChild)
+	if (!matchesQuery && !hasId && !hasComponent && !hasMatchingChild)
 	{
 		return;
 	}

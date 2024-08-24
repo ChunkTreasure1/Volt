@@ -68,7 +68,6 @@ private:
 	///// Asset Creation /////	
 	void CreateNewAssetInCurrentDirectory(AssetType type);
 	void CreateNewShaderModal();
-	void CreateNewMonoScriptModal();
 	void CreateNewMotionWeaveDatabaseModal();
 
 	struct NewShaderData

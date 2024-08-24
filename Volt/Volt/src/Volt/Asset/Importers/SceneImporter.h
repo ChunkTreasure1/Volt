@@ -34,7 +34,6 @@ namespace Volt
 
 		void SerializeEntity(entt::entity id, const AssetMetadata& metadata, const Ref<Scene>& scene, YAMLFileStreamWriter& streamWriter) const;
 		void DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLFileStreamReader& streamReader) const;
-		void DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLFileStreamReader& streamReader) const;
 
 		void LoadWorldCell(const Ref<Scene>& scene, const WorldCell& worldCell) const;
 
@@ -59,7 +58,6 @@ namespace Volt
 
 		void SerializeClass(const uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLFileStreamWriter& streamWriter, bool isSubComponent) const;
 		void SerializeArray(const uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLFileStreamWriter& streamWriter) const;
-		void SerializeMono(entt::entity id, const Ref<Scene>& scene, YAMLFileStreamWriter& streamWriter) const;
 
 		void DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLFileStreamReader& streamReader) const;
 		void DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLFileStreamReader& streamReader) const;

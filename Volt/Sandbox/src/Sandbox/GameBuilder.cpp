@@ -6,8 +6,6 @@
 
 #include <Volt/Project/ProjectManager.h>
 
-#include <Volt/Scripting/Mono/MonoScriptClass.h>
-
 #include <Volt/Utility/YAMLSerializationHelpers.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
 
@@ -374,25 +372,6 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 					}
 				}
 			}*/
-
-			for (const auto& [instanceId, fieldMap] : scene->GetScriptFieldCache().GetCache())
-			{
-				for (const auto& [name, instance] : fieldMap)
-				{
-					if (!instance)
-					{
-						continue;
-					}
-
-					if (!instance->field.type.IsAsset())
-					{
-						continue;
-					}
-
-					uint64_t assetHandle = *instance->data.As<uint64_t>();
-					sceneDependencies.emplace(assetHandle);
-				}
-			}
 
 			// Save dependency list
 			{

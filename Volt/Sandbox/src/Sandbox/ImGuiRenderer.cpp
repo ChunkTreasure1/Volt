@@ -12,9 +12,6 @@
 
 #include <Volt/Core/Application.h>
 
-#include <Volt/Scripting/Mono/MonoScriptEngine.h>
-#include <Volt/Scripting/EnumGenerator.h>
-
 #include <Volt/Utility/PremadeCommands.h>
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
@@ -700,50 +697,21 @@ void Sandbox::DrawMenuBar()
 				Volt::ShaderMap::ReloadAll();
 			}
 
-			if (ImGui::MenuItem("Compile C#"))
+			if (ImGui::MenuItem("Compile Project"))
 			{
-				// Not threadsafe, fix later
-				//std::thread thread{ []()
+				if (Volt::PremadeCommands::RunBuildCSProjectCommand(UserSettingsManager::GetSettings().externalToolsSettings.customExternalScriptEditor))
 				{
-					if (Volt::PremadeCommands::RunBuildCSProjectCommand(UserSettingsManager::GetSettings().externalToolsSettings.customExternalScriptEditor))
-					{
-						UI::Notify(NotificationType::Success, "Build succeeded!", "Successfully compiled Project.sln in DIST config!");
-					}
-					else
-					{
-						UI::Notify(NotificationType::Error, "Build failed!", "Could not find visual studio build tools!");
-					}
+					UI::Notify(NotificationType::Success, "Build succeeded!", "Successfully compiled Project.sln in DIST config!");
 				}
-				//};
-				//thread.detach();
+				else
+				{
+					UI::Notify(NotificationType::Error, "Build failed!", "Could not find visual studio build tools!");
+				}
 			}
 
-			if (ImGui::MenuItem("Reload C#"))
-			{
-				Volt::MonoScriptEngine::ReloadAssembly();
-			}
-
-			if (ImGui::MenuItem("Open C# Solution"))
+			if (ImGui::MenuItem("Open Project Solution"))
 			{
 				Volt::PremadeCommands::RunOpenProjectSolutionCommand();
-			}
-
-			if (ImGui::MenuItem("Reload WWise Enums"))
-			{
-				//TODO:ANDREAS Hard coded, change later
-				std::filesystem::path defaultPath = Volt::ProjectManager::GetAudioBanksDirectory();
-				Vector<std::string> eventNames = Amp::WwiseAudioManager::GetAllEventNames(defaultPath);
-
-				Volt::EnumGenerator generator{ "WWiseEvents"};
-				for (auto& event : eventNames)
-				{
-					if (event.empty()) continue;
-
-					std::string name = event;
-
-					generator.AddEnumValue(name);
-				}
-				generator.WriteToFile("WWiseEvents.cs");
 			}
 
 			if (ImGui::MenuItem("Clear Collider Cache"))
@@ -797,7 +765,7 @@ void Sandbox::SaveSceneAsModal()
 			}
 
 			const auto relPath = Volt::AssetManager::Get().GetRelativePath(destPath.string() + "\\" + m_saveSceneData.name + ".vtscene");
-			
+
 			//myRuntimeScene->CopyTo(myRuntimeScene);
 			m_runtimeScene->handle = {};
 

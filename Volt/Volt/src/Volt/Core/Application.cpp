@@ -12,7 +12,6 @@
 
 #include "Volt/Rendering/Renderer.h"
 
-#include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Scene/SceneManager.h"
 
@@ -56,7 +55,7 @@
 namespace Volt
 {
 	Application::Application(const ApplicationInfo& info)
-		: m_frameTimer(100)
+		: m_frameTimer(100), m_info(info)
 	{
 		VT_ASSERT_MSG(!s_instance, "Application already exists!");
 		s_instance = this;
@@ -64,7 +63,7 @@ namespace Volt
 		m_eventSystem = CreateScope<EventSystem>();
 
 		m_log = CreateScope<Log>();
-		m_log->SetLogOutputFilepath(m_info.projectPath / "Log/Log.txt");
+		m_log->SetLogOutputFilepath(m_info.projectPath.parent_path() / "Log/Log.txt");
 
 		m_input = CreateScope<Input>();
 
@@ -73,7 +72,6 @@ namespace Volt
 		m_pluginRegistry = CreateScope<PluginRegistry>();
 		m_pluginSystem = CreateScope<PluginSystem>(*m_pluginRegistry);
 
-		m_info = info;
 		Noise::Initialize();
 
 		ProjectManager::LoadProject(m_info.projectPath, *m_pluginRegistry);
@@ -119,8 +117,6 @@ namespace Volt
 
 		//UIRenderer::Initialize();
 		//DebugRenderer::Initialize();
-
-		MonoScriptEngine::Initialize();
 
 		Physics::LoadSettings();
 		Physics::Initialize();
@@ -168,11 +164,6 @@ namespace Volt
 			ImGui::SetCurrentContext(m_imguiImplementation->GetContext());
 		}
 
-		if (info.netEnabled)
-		{
-			m_netHandler = CreateScope<Volt::NetHandler>();
-		}
-
 		m_navigationSystem = CreateScope<Volt::AI::NavigationSystem>();
 
 		// Extras
@@ -198,8 +189,6 @@ namespace Volt
 		Physics::SaveLayers();
 		Physics::Shutdown();
 		Physics::SaveSettings();
-
-		MonoScriptEngine::Shutdown();
 
 		//DebugRenderer::Shutdown();
 		//UIRenderer::Shutdown();
@@ -298,12 +287,6 @@ namespace Volt
 			EventSystem::DispatchEvent(imguiEvent);
 
 			m_imguiImplementation->End();
-		}
-
-		if (m_info.netEnabled)
-		{
-			VT_PROFILE_SCOPE("Application::Net");
-			m_netHandler->Update(m_currentDeltaTime);
 		}
 
 		RenderGraphExecutionThread::WaitForFinishedExecution();

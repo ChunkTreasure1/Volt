@@ -32,9 +32,6 @@
 #include "Sandbox/Window/Timeline.h"
 #include "Sandbox/Window/ShaderEditorPanel.h"
 #include "Sandbox/Window/NavigationPanel.h"
-#include "Sandbox/Window/Net/NetPanel.h"
-#include "Sandbox/Window/Net/NetContractPanel.h"
-#include "Sandbox/Window/BehaviourGraph/BehaviorPanel.h"
 #include "Sandbox/Window/SceneSettingsPanel.h"
 #include "Sandbox/Window/WorldEnginePanel.h"
 #include "Sandbox/Window/MosaicEditor/MosaicEditorPanel.h"
@@ -75,7 +72,6 @@
 #include <Volt/Utility/UIUtility.h>
 
 #include <Volt/Project/ProjectManager.h>
-#include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
 #include <Volt/Events/SettingsEvent.h>
 #include <Volt/Events/ApplicationEvents.h>
@@ -197,8 +193,6 @@ void Sandbox::RegisterPanels()
 	EditorLibrary::Register<RendererSettingsPanel>("Advanced", m_sceneRenderer);
 	EditorLibrary::Register<VertexPainterPanel>("", m_runtimeScene, m_editorCameraController);
 
-	EditorLibrary::Register<NetPanel>("Advanced");
-	EditorLibrary::Register<NetContractPanel>("Advanced");
 	EditorLibrary::Register<SceneSettingsPanel>("", m_runtimeScene);
 	EditorLibrary::Register<WorldEnginePanel>("", m_runtimeScene);
 	EditorLibrary::Register<GameUIEditorPanel>("UI");
@@ -214,7 +208,6 @@ void Sandbox::RegisterPanels()
 	EditorLibrary::RegisterWithType<SkeletonEditorPanel>("Animation", AssetTypes::Skeleton);
 	EditorLibrary::RegisterWithType<AnimationEditorPanel>("Animation", AssetTypes::Animation);
 	EditorLibrary::RegisterWithType<ParticleEmitterEditor>("", AssetTypes::ParticlePreset);
-	EditorLibrary::RegisterWithType<BehaviorPanel>("", AssetTypes::BehaviorGraph);
 	EditorLibrary::RegisterWithType<BlendSpaceEditorPanel>("Animation", AssetTypes::BlendSpace);
 	EditorLibrary::RegisterWithType<MeshPreviewPanel>("", AssetTypes::Mesh);
 	EditorLibrary::RegisterWithType<ShaderEditorPanel>("Shader", AssetTypes::ShaderDefinition);
@@ -292,8 +285,6 @@ void Sandbox::OnDetach()
 		OnSceneStop();
 	}
 
-	m_runtimeScene->ShutdownEngineScripts();
-
 	UserSettingsManager::SaveUserSettings();
 	EditorLibrary::Clear();
 	EditorResources::Shutdown();
@@ -318,14 +309,10 @@ void Sandbox::OnDetach()
 
 void Sandbox::OnScenePlay()
 {
-	if (!Volt::Application::Get().GetNetHandler().IsRunning())
-		Volt::Application::Get().GetNetHandler().StartSinglePlayer();
-
 	m_sceneState = SceneState::Play;
 	SelectionManager::DeselectAll();
 
 	m_intermediateScene = m_runtimeScene;
-	m_intermediateScene->ShutdownEngineScripts();
 
 	m_runtimeScene = CreateRef<Volt::Scene>();
 	m_intermediateScene->CopyTo(m_runtimeScene);
@@ -342,34 +329,10 @@ void Sandbox::OnScenePlay()
 
 	Volt::ViewportResizeEvent e2 = { m_viewportPosition.x,m_viewportPosition.y, m_viewportSize.x, m_viewportSize.y };
 	Volt::EventSystem::DispatchEvent(e2);
-
-	if (m_shouldMovePlayer)
-	{
-		m_shouldMovePlayer = false;
-
-		m_runtimeScene->ForEachWithComponents<const Volt::MonoScriptComponent>([&](const entt::entity id, const Volt::MonoScriptComponent& scriptComp)
-		{
-			for (const auto& name : scriptComp.scriptNames)
-			{
-				if (name == "Project.GameManager")
-				{
-					Volt::Entity entity{ id, m_runtimeScene.get() };
-					entity.SetPosition(m_movePlayerToPosition);
-
-					break;
-				}
-			}
-		});
-	}
-
-	//if (!Volt::Application::Get().GetNetHandler().IsRunning())
-		//Volt::Application::Get().GetNetHandler().StartSinglePlayer();
 }
 
 void Sandbox::OnSceneStop()
 {
-	if (Volt::Application::Get().GetNetHandler().IsRunning())
-		Volt::Application::Get().GetNetHandler().Stop();
 	SelectionManager::DeselectAll();
 
 	Volt::OnSceneStopEvent stopEvent{};
@@ -384,7 +347,6 @@ void Sandbox::OnSceneStop()
 	m_viewportPanel->Focus();
 
 	m_runtimeScene = m_intermediateScene;
-	m_runtimeScene->InitializeEngineScripts();
 
 	m_sceneState = SceneState::Edit;
 
@@ -435,13 +397,7 @@ void Sandbox::NewScene()
 		Volt::AssetManager::Get().Unload(m_runtimeScene->handle);
 	}
 
-	if (m_runtimeScene)
-	{
-		m_runtimeScene->ShutdownEngineScripts();
-	}
-
 	m_runtimeScene = Volt::Scene::CreateDefaultScene("New Scene", true);
-	m_runtimeScene->InitializeEngineScripts();
 	SetupNewSceneData();
 }
 
@@ -473,7 +429,6 @@ void Sandbox::OpenScene(Volt::AssetHandle sceneHandle)
 	if (m_runtimeScene)
 	{
 		metadata = Volt::AssetManager::GetMetadataFromHandle(m_runtimeScene->handle);
-		m_runtimeScene->ShutdownEngineScripts();
 	}
 
 	const auto newScene = Volt::AssetManager::GetAsset<Volt::Scene>(sceneHandle);
@@ -494,7 +449,6 @@ void Sandbox::OpenScene(Volt::AssetHandle sceneHandle)
 	}
 
 	m_runtimeScene = newScene;
-	m_runtimeScene->InitializeEngineScripts();
 
 	SetupNewSceneData();
 }
@@ -967,8 +921,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 		{
 			if (ctrlPressed && m_sceneState != SceneState::Play)
 			{
-				m_shouldMovePlayer = true;
-				m_movePlayerToPosition = m_editorCameraController->GetCamera()->GetPosition();
+				// #TODO_Ivar: Reimplement moving player to editor camera.
 				OnScenePlay();
 			}
 
@@ -1006,21 +959,6 @@ bool Sandbox::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 
 	Volt::ViewportResizeEvent e2 = { m_viewportPosition.x,m_viewportPosition.y, m_viewportSize.x, m_viewportSize.y };
 	Volt::EventSystem::DispatchEvent(e2);
-
-	// Mono Scripts
-	static bool notRuntimeScene = true;
-	if (m_sceneState == SceneState::Edit && notRuntimeScene)
-	{
-		Volt::MonoScriptEngine::OnSceneLoaded();
-	}
-	else if (!notRuntimeScene)
-	{
-		notRuntimeScene = true;
-	}
-	else
-	{
-		notRuntimeScene = false;
-	}
 
 	auto scene = e.GetScene();
 	

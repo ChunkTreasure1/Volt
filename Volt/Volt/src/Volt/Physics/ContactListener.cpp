@@ -6,9 +6,6 @@
 
 #include "Volt/Components/CoreComponents.h"
 
-#include "Volt/Scripting/Mono/MonoScriptEngine.h"
-#include "Volt/Scripting/Mono/MonoScriptInstance.h"
-
 namespace Volt
 {
 	void ContactListener::onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count)
@@ -28,6 +25,8 @@ namespace Volt
 		PX_UNUSED(actors);
 		PX_UNUSED(count);
 	}
+
+	// #TODO_Ivar: These callbacks needs to be setup with the new system.
 
 	void ContactListener::onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32)
 	{
@@ -52,37 +51,6 @@ namespace Volt
 				return;
 			}
 
-			if (entityA.HasComponent<MonoScriptComponent>() && entityA.IsVisible())
-			{
-				auto& scriptComp = entityA.GetComponent<MonoScriptComponent>();
-				for (const auto& script : scriptComp.scriptIds)
-				{
-					myFrameEvents.emplace_back([script, entityA, entityB]()
-					{
-						Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
-						if (scriptInstance)
-						{
-							scriptInstance->InvokeOnCollisionEnter(entityB);
-						}
-					});
-				}
-			}
-
-			if (entityB.HasComponent<MonoScriptComponent>() && entityB.IsVisible())
-			{
-				auto& scriptComp = entityB.GetComponent<MonoScriptComponent>();
-				for (const auto& script : scriptComp.scriptIds)
-				{
-					myFrameEvents.emplace_back([script, entityA, entityB]()
-					{
-						Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
-						if (scriptInstance)
-						{
-							scriptInstance->InvokeOnCollisionEnter(entityA);
-						}
-					});
-				}
-			}
 		}
 		else if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_LOST_TOUCH)
 		{
@@ -94,37 +62,6 @@ namespace Volt
 				return;
 			}
 
-			if (entityA.HasComponent<MonoScriptComponent>() && entityA.IsVisible())
-			{
-				auto& scriptComp = entityA.GetComponent<MonoScriptComponent>();
-				for (const auto& script : scriptComp.scriptIds)
-				{
-					myFrameEvents.emplace_back([script, entityA, entityB]()
-					{
-						Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
-						if (scriptInstance)
-						{
-							scriptInstance->InvokeOnCollisionExit(entityB);
-						}
-					});
-				}
-			}
-
-			if (entityB.HasComponent<MonoScriptComponent>() && entityB.IsVisible())
-			{
-				auto& scriptComp = entityB.GetComponent<MonoScriptComponent>();
-				for (const auto& script : scriptComp.scriptIds)
-				{
-					myFrameEvents.emplace_back([script, entityA, entityB]()
-					{
-						Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
-						if (scriptInstance)
-						{
-							scriptInstance->InvokeOnCollisionExit(entityA);
-						}
-					});
-				}
-			}
 		}
 	}
 
@@ -160,37 +97,6 @@ namespace Volt
 					return;
 				}
 
-				if (triggerEntity.HasComponent<MonoScriptComponent>() && triggerEntity.IsVisible())
-				{
-					auto& scriptComp = triggerEntity.GetComponent<MonoScriptComponent>();
-					for (const auto& script : scriptComp.scriptIds)
-					{
-						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]()
-						{
-							Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
-							if (scriptInstance)
-							{
-								scriptInstance->InvokeOnTriggerEnter(otherEntity);
-							}
-						});
-					}
-				}
-
-				if (otherEntity.HasComponent<MonoScriptComponent>() && otherEntity.IsVisible())
-				{
-					auto& scriptComp = otherEntity.GetComponent<MonoScriptComponent>();
-					for (const auto& script : scriptComp.scriptIds)
-					{
-						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]()
-						{
-							Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
-							if (scriptInstance)
-							{
-								scriptInstance->InvokeOnTriggerEnter(triggerEntity);
-							}
-						});
-					}
-				}
 			}
 			else if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 			{
@@ -202,38 +108,6 @@ namespace Volt
 					return;
 				}
 
-				if (triggerEntity.HasComponent<MonoScriptComponent>() && triggerEntity.IsVisible())
-				{
-					auto& scriptComp = triggerEntity.GetComponent<MonoScriptComponent>();
-					for (const auto& script : scriptComp.scriptIds)
-					{
-						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]()
-						{
-							Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
-							if (scriptInstance)
-							{
-								scriptInstance->InvokeOnTriggerExit(otherEntity);
-							}
-						});
-
-					}
-				}
-
-				if (otherEntity.HasComponent<MonoScriptComponent>() && otherEntity.IsVisible())
-				{
-					auto& scriptComp = otherEntity.GetComponent<MonoScriptComponent>();
-					for (const auto& script : scriptComp.scriptIds)
-					{
-						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]()
-						{
-							Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
-							if (scriptInstance)
-							{
-								scriptInstance->InvokeOnTriggerExit(triggerEntity);
-							}
-						});
-					}
-				}
 			}
 		}
 	}

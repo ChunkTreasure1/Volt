@@ -159,20 +159,6 @@ namespace Volt
 		}
 	};
 
-	struct PrefabScriptLocalChange
-	{
-		std::string scriptName;
-		std::string memberName;
-
-		static void ReflectType(TypeDesc<PrefabScriptLocalChange>& reflect)
-		{
-			reflect.SetGUID("{1E471349-604D-4E47-96B1-30B87B4DB159}"_guid);
-			reflect.SetLabel("¨Prefab Script Local Change");
-			reflect.AddMember(&PrefabScriptLocalChange::scriptName, "scriptName", "Script Name", "", std::string(""));
-			reflect.AddMember(&PrefabScriptLocalChange::memberName, "memberName", "Member Name", "", std::string(""));
-		}
-	};
-
 	struct PrefabComponent
 	{
 		AssetHandle prefabAsset = Asset::Null();
@@ -181,7 +167,6 @@ namespace Volt
 		uint32_t version = 0;
 
 		Vector<PrefabComponentLocalChange> componentLocalChanges;
-		Vector<PrefabScriptLocalChange> scriptLocalChanges;
 
 		bool isDirty = false;
 
@@ -195,34 +180,8 @@ namespace Volt
 			reflect.AddMember(&PrefabComponent::sceneRootEntity, "sceneRootEntity", "Scene Root Entity", "", EntityID(0));
 			reflect.AddMember(&PrefabComponent::version, "version", "Version", "", 0);
 			reflect.AddMember(&PrefabComponent::componentLocalChanges, "componentLocalChanges", "Component Local Changes", "", Vector<PrefabComponentLocalChange>{});
-			reflect.AddMember(&PrefabComponent::scriptLocalChanges, "scriptLocalChanges", "Script Local Changes", "", Vector<PrefabScriptLocalChange>{});
 		}
 
 		REGISTER_COMPONENT(PrefabComponent);
-	};
-
-	struct MonoScriptEntry
-	{
-		MonoScriptEntry(std::string& aName, UUID64& aId) : name(aName), id(aId) {}
-
-		std::string& name;
-		UUID64& id;
-	};
-
-	struct MonoScriptComponent
-	{
-		Vector<std::string> scriptNames;
-		Vector<UUID64> scriptIds;
-
-		static constexpr VoltGUID guid = "{CF0E9A06-FB14-4B56-BC9C-5557E808B829}"_guid;
-
-		static void ReflectType(TypeDesc<MonoScriptComponent>& reflect)
-		{
-			reflect.SetGUID(guid);
-			reflect.SetLabel("MonoScript Component");
-			reflect.SetHidden();
-		}
-
-		REGISTER_COMPONENT(MonoScriptComponent);
 	};
 }

@@ -10,9 +10,6 @@
 
 #include "Volt/Components/CoreComponents.h"
 
-#include "Volt/Scripting/Mono/MonoScriptEngine.h"
-#include "Volt/Scripting/Mono//MonoScriptInstance.h"
-
 #include <PhysX/PxActor.h>
 
 namespace Volt
@@ -80,26 +77,7 @@ namespace Volt
 		{
 			if (advanced)
 			{
-				VT_PROFILE_SCOPE("InvokeOnFixedUpdate");
-
-				auto& registry = myEntityScene->GetRegistry();
-				auto view = registry.view<const MonoScriptComponent, const TransformComponent>();
-				view.each([&](const entt::entity, const MonoScriptComponent& scriptComp, const TransformComponent& transComp) 
-				{
-					if (!transComp.visible)
-					{
-						return;
-					}
-
-					for (const auto& script : scriptComp.scriptIds)
-					{
-						Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
-						if (scriptInstance)
-						{
-							scriptInstance->InvokeOnFixedUpdate(timeStep);
-						}
-					}
-				});
+				// #TODO_Ivar: Implement with new system.
 			}
 		}
 

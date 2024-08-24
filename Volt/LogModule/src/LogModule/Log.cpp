@@ -29,7 +29,7 @@ void Log::SetLogOutputFilepath(const std::filesystem::path& path)
 	auto max_size = 1048576 * 5;
 	auto max_files = 3;
 
-	if (std::filesystem::is_directory(path.parent_path()) && std::filesystem::exists(path.parent_path()))
+	if (!std::filesystem::exists(path.parent_path()))
 	{
 		std::filesystem::create_directories(path.parent_path());
 	}
