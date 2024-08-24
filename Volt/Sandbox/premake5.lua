@@ -160,7 +160,6 @@ project "Sandbox"
 
 		"%{Library.PhysX}",
 
-		"%{Library.mono}",
 		"%{Library.steam}",
 
 		"%{Library.METIS}",

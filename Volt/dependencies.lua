@@ -15,7 +15,6 @@ IncludeDir["msdf_atlas_gen"] = "%{wks.location}/Volt/vendor/msdf-atlas-gen/msdf-
 IncludeDir["msdfgen"] = "%{wks.location}/Volt/vendor/msdf-atlas-gen/msdfgen"
 IncludeDir["PhysX"] = "%{wks.location}/Volt/vendor/PhysX/include"
 IncludeDir["stb_image"] = "%{wks.location}/Volt/vendor/stb_image/"
-IncludeDir["mono"] = "%{wks.location}/Volt/vendor/mono/include/"
 IncludeDir["DirectXTex"] = "%{wks.location}/Volt/vendor/DirectXTex/src"
 IncludeDir["fmod"] = "%{wks.location}/Amp/vendor/fmod/include"
 IncludeDir["wwise"] = "%{wks.location}/Amp/vendor/wwise/include"
@@ -83,7 +82,6 @@ LibraryDir = {}
 LibraryDir["PhysX"] = "%{wks.location}/Volt/vendor/PhysX/lib/%{cfg.buildcfg}"
 LibraryDir["fmod"] = "%{wks.location}/Volt/vendor/fmod/lib/%{cfg.buildcfg}"
 LibraryDir["wwise"] = "%{wks.location}/Amp/vendor/wwise/lib/%{cfg.buildcfg}"
-LibraryDir["mono"] = "%{wks.location}/Volt/vendor/mono/lib/%{cfg.buildcfg}"
 LibraryDir["steam"] = "%{wks.location}/Volt/vendor/steam/lib/win64"
 LibraryDir["zlib"] = "%{wks.location}/Volt/vendor/zlib/lib/%{cfg.buildcfg}"
 
@@ -112,7 +110,6 @@ Library["AkRoomVerbFX"] = "%{LibraryDir.wwise}/AkRoomVerbFX.lib"
 
 Library["zlib"] = "%{LibraryDir.zlib}/libz-static.lib"
 
-Library["mono"] = "%{LibraryDir.mono}/libmono-static-sgen.lib"
 Library["steam"] = "%{LibraryDir.steam}/steam_api64.lib"
 Library["discord"] = "%{LibraryDir.discord}/discord_game_sdk.dll.lib"
 

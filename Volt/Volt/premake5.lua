@@ -71,7 +71,6 @@ project "Volt"
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.libacc}",
 
-		"%{IncludeDir.mono}",
 		"%{IncludeDir.DirectXTex}",
 		"%{IncludeDir.efsw}",
 		"%{IncludeDir.asio}",
