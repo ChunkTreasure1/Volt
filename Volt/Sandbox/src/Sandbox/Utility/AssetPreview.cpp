@@ -4,8 +4,8 @@
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/Scene.h>
 
-#include <Volt/Components/LightComponents.h>
-#include <Volt/Components/RenderingComponents.h>
+#include <Volt/Public/Components/LightComponents.h>
+#include <Volt/Public/Components/RenderingComponents.h>
 #include <AssetSystem/AssetManager.h>
 
 #include <Volt/Rendering/Texture/Texture2D.h>

@@ -6,7 +6,7 @@
 #include <Volt/Project/ProjectManager.h>
 
 #include <Volt/Core/Application.h>
-#include <Volt/Events/ApplicationEvents.h>
+#include <Volt/Public/Events/ApplicationEvents.h>
 #include <Volt/Utility/UIUtility.h>
 
 #include <WindowModule/Events/WindowEvents.h>

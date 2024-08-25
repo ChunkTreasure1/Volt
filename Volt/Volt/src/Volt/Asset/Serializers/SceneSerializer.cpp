@@ -3,8 +3,8 @@
 
 #include <AssetSystem/AssetManager.h>
 
-#include "Volt/Components/CoreComponents.h"
-#include "Volt/Components/RenderingComponents.h"
+#include "Volt/Public/Components/CoreComponents.h"
+#include "Volt/Public/Components/RenderingComponents.h"
 
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
@@ -17,7 +17,7 @@
 
 #include "Volt/Project/ProjectManager.h"
 
-#include <EntitySystem/ComponentRegistry.h>
+#include <EntitySystem/Public/ComponentRegistry.h>
 
 #include <CoreUtilities/FileIO/YAMLMemoryStreamWriter.h>
 #include <CoreUtilities/FileIO/YAMLMemoryStreamReader.h>
@@ -25,11 +25,11 @@
 namespace Volt
 {
 	template<typename T>
-	void RegisterSerializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLMemoryStreamWriter&, const uint8_t*, const size_t)>>& outTypes)
+	void RegisterSerializationFunction(std::unordered_map<TypeTraits::TypeIndex, std::function<void(YAMLMemoryStreamWriter&, const uint8_t*, const size_t)>>& outTypes)
 	{
 		VT_PROFILE_FUNCTION();
 
-		outTypes[std::type_index{ typeid(T) }] = [](YAMLMemoryStreamWriter& streamWriter, const uint8_t* data, const size_t offset)
+		outTypes[TypeTraits::TypeIndex::FromType<T>()] = [](YAMLMemoryStreamWriter& streamWriter, const uint8_t* data, const size_t offset)
 		{
 			const T& var = *reinterpret_cast<const T*>(&data[offset]);
 			streamWriter.SetKey("data", var);
@@ -37,11 +37,11 @@ namespace Volt
 	}
 
 	template<typename T>
-	void RegisterDeserializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLMemoryStreamReader&, uint8_t*, const size_t)>>& outTypes)
+	void RegisterDeserializationFunction(std::unordered_map<TypeTraits::TypeIndex, std::function<void(YAMLMemoryStreamReader&, uint8_t*, const size_t)>>& outTypes)
 	{
 		VT_PROFILE_FUNCTION();
 
-		outTypes[std::type_index{ typeid(T) }] = [](YAMLMemoryStreamReader& streamReader, uint8_t* data, const size_t offset)
+		outTypes[TypeTraits::TypeIndex::FromType<T>()] = [](YAMLMemoryStreamReader& streamReader, uint8_t* data, const size_t offset)
 		{
 			*reinterpret_cast<T*>(&data[offset]) = streamReader.ReadAtKey("data", T());
 		};

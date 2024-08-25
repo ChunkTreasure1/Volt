@@ -25,7 +25,7 @@ void AssertionFailure(const char* expression)
 	VT_UNUSED(expression);
 #endif
 
-	VT_DEBUGBREAK();
+ 	VT_DEBUGBREAK();
 }
 
 void AssertionFailure(std::string_view expression)

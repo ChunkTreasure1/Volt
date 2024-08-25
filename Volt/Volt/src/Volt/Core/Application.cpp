@@ -52,6 +52,11 @@
 
 #include <EventSystem/EventSystem.h>
 
+#include <EntitySystem/Public/Scripting/ECSAccessBuilder.h>
+#include <EntitySystem/Public/Scripting/ECSBuilder.h>
+
+#include <CoreUtilities/TypeTraits/TypeId.h>
+
 namespace Volt
 {
 	Application::Application(const ApplicationInfo& info)

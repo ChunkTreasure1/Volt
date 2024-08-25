@@ -1,6 +1,6 @@
 #pragma once
 
-#include <EntitySystem/ComponentRegistry.h>
+#include <EntitySystem/Public/ComponentRegistry.h>
 
 #include <AssetSystem/Asset.h>
 
@@ -69,7 +69,7 @@ namespace Volt
 		float separationWeight = 0.f;
 		ObstacleAvoidanceQuality obstacleAvoidanceQuality = ObstacleAvoidanceQuality::None;
 		bool active = true;
-
+		 
 		static void ReflectType(TypeDesc<NavAgentComponent>& reflect)
 		{
 			reflect.SetGUID("{2B4469CE-9B15-4FA9-ABA6-77BA83465357}"_guid);

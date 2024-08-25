@@ -3,7 +3,7 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Asset/Rendering/MaterialTable.h"
 
-#include <EntitySystem/ComponentRegistry.h>
+#include <EntitySystem/Public/ComponentRegistry.h>
 #include <AssetSystem/Asset.h>
 
 namespace Volt

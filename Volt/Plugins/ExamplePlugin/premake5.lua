@@ -74,7 +74,6 @@ project "ExamplePlugin"
 		defines 
 		{
 			"VT_PLATFORM_WINDOWS",
-			"VTRC_BUILD_DLL"
 		}
 
 		filter "configurations:Debug"

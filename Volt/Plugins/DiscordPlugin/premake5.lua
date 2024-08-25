@@ -37,6 +37,7 @@ project "DiscordPlugin"
 		"%{IncludeDir.JobSystemModule}",
 		"%{IncludeDir.EventSystemModule}",
 		"%{IncludeDir.Volt}",
+		"%{IncludeDir.Volt}/Volt/Public",
 
 		"%{IncludeDir.half}",
 	}

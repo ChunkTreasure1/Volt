@@ -14,6 +14,8 @@ enum class GameLoop
 struct ECSSystem
 {
 	std::function<void(entt::registry& registry)> systemFunc;
+
+	  
 };
 
 class ECSGameLoopContainer
@@ -25,7 +27,7 @@ public:
 	void Update();
 
 	template<typename Ret, typename... Args>
-	void RegisterSystem(Ret(*func)(Args...))
+	ECSSystem& RegisterSystem(Ret(*func)(Args...))
 	{
 		using Traits = FunctionTraits<Ret(*)(Args...)>;
 		using ArgumentTypes = typename Traits::ArgumentTypes;
@@ -35,10 +37,10 @@ public:
 
 		using ComponentView = std::tuple_element_t<0, ArgumentTypes>;
 
-		// And the first should be and entity type
+		// And the first should be an entity type
 		static_assert(ComponentView::ConstructType == ECS::Type::Entity);
 
-		using ComponentTuple = typename ComponentView::ComponentTuple;
+		using ComponentTuple = typename ComponentView::ComponentViewTuple;
 
 		UUID64 id{};
 		ECSSystem system{};
@@ -53,6 +55,7 @@ public:
 		};
 
 		m_registeredSystems[id] = std::move(system);
+		return m_registeredSystems.at(id);
 	}
 
 private:
@@ -98,12 +101,12 @@ private:
 		if constexpr (T::ConstructType == ECS::Type::Entity)
 		{
 			using ComponentTuple = typename T::ComponentTuple;
-			return T(GetComponentView<ComponentTuple>(mainView, entityId));
+			return T(GetComponentView<ComponentTuple>(mainView, entityId), entityId, registry);
 		}
 		else if constexpr (T::ConstructType == ECS::Type::Query)
 		{
-			using ComponentTuple = typename T::ComponentTuple;
-			return T(GetRegistryView<ComponentTuple>(registry));
+			using ComponentTuple = typename T::ComponentViewTuple;
+			return T(GetRegistryView<ComponentTuple>(registry), registry);
 		}
 	}
 

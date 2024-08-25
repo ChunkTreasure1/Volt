@@ -8,5 +8,5 @@ Project:
   CursorPath: ""
   StartScenePath: ""
   Plugins:
-    - "ExamplePlugin"
+    - "GamePlugin"
     - "DiscordPlugin"

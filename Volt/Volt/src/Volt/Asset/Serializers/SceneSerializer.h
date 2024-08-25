@@ -6,7 +6,7 @@
 #include <AssetSystem/Serialization/AssetSerializer.h>
 #include <AssetSystem/AssetSerializerRegistry.h>
 
-#include <typeindex>
+#include <CoreUtilities/TypeTraits/TypeIndex.h>
 
 class YAMLMemoryStreamWriter;
 class YAMLMemoryStreamReader;
@@ -53,8 +53,8 @@ namespace Volt
 		void DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, Entity dstEntity, YAMLMemoryStreamReader& streamReader) const;
 		void DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, Entity dstEntity, YAMLMemoryStreamReader& streamReader) const;
 
-		inline static std::unordered_map<std::type_index, std::function<void(YAMLMemoryStreamWriter&, const uint8_t*, const size_t)>> s_typeSerializers;
-		inline static std::unordered_map<std::type_index, std::function<void(YAMLMemoryStreamReader&, uint8_t*, const size_t)>> s_typeDeserializers;
+		inline static std::unordered_map<TypeTraits::TypeIndex, std::function<void(YAMLMemoryStreamWriter&, const uint8_t*, const size_t)>> s_typeSerializers;
+		inline static std::unordered_map<TypeTraits::TypeIndex, std::function<void(YAMLMemoryStreamReader&, uint8_t*, const size_t)>> s_typeDeserializers;
 	};
 
 	VT_REGISTER_ASSET_SERIALIZER(AssetTypes::Scene, SceneSerializer);

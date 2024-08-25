@@ -9,8 +9,8 @@
 #include "Volt/Utility/FileSystem.h"
 #include "Volt/Utility/Random.h"
 
-#include "Volt/Components/RenderingComponents.h"
-#include "Volt/Components/CoreComponents.h"
+#include "Volt/Public/Components/RenderingComponents.h"
+#include "Volt/Public/Components/CoreComponents.h"
 
 #include <Volt/Core/Base.h>
 #include <AssetSystem/AssetManager.h>

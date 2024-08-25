@@ -2,7 +2,7 @@
 
 #include "Volt/Scene/Entity.h"
 
-#include <EntitySystem/ComponentRegistry.h>
+#include <EntitySystem/Public/ComponentRegistry.h>
 
 #include <glm/glm.hpp>
 

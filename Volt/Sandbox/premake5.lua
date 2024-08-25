@@ -64,6 +64,7 @@ project "Sandbox"
 		"src/",
 
 		"%{IncludeDir.Volt}",
+		"%{IncludeDir.Volt}/Volt/Public",
 		"%{IncludeDir.Amp}",
 		"%{IncludeDir.Navigation}",
 		"%{IncludeDir.Nexus}",

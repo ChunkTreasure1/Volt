@@ -7,8 +7,8 @@
 
 #include "Volt/Scene/Entity.h"
 
-#include "Volt/Components/CoreComponents.h"
-#include "Volt/Components/PhysicsComponents.h"
+#include "Volt/Public/Components/CoreComponents.h"
+#include "Volt/Public/Components/PhysicsComponents.h"
 
 #include "Volt/Physics/PhysicsMaterial.h"
 #include "Volt/Physics/PhysXInternal.h"

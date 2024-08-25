@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Volt/Core/Base.h>
-#include <Volt/Components/CoreComponents.h>
+#include <Volt/Public/Components/CoreComponents.h>
 
 #include <stack>
 #include "EditorCommand.h"

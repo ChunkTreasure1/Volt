@@ -10,7 +10,7 @@
 #include <Volt/Physics/PhysicsScene.h>
 #include <Volt/Physics/PhysicsActor.h>
 #include <Volt/Physics/PhysicsControllerActor.h>
-#include <Volt/Components/PhysicsComponents.h>
+#include <Volt/Public/Components/PhysicsComponents.h>
 
 #include <AssetSystem/AssetManager.h>
 

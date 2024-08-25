@@ -3,7 +3,7 @@
 
 #include <Volt/Core/Base.h>
 #include <Volt/Scene/Scene.h>
-#include <Volt/Events/ApplicationEvents.h>
+#include <Volt/Public/Events/ApplicationEvents.h>
 #include <Volt/Particles/Particle.h>
 
 

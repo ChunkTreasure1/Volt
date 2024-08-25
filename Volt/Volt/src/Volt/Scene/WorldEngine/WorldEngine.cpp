@@ -4,7 +4,7 @@
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
 
-#include "Volt/Components/CoreComponents.h"
+#include "Volt/Public/Components/CoreComponents.h"
 
 #include "Volt/Asset/Serializers/SceneSerializer.h"
 

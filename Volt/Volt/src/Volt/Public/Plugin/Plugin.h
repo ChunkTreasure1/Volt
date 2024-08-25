@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Volt/PluginSystem/PluginDefines.h"
-
+#include "Plugin/PluginDefines.h"
 #include <CoreUtilities/VoltGUID.h>
 
 #include <string_view>

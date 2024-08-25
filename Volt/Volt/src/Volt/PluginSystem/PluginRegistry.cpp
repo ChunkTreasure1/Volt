@@ -129,13 +129,25 @@ namespace Volt
 			return;
 		}
 
+		const std::filesystem::path filename = (filepath.stem().string() + VT_SHARED_LIBRARY_EXTENSION);
+
 		const std::filesystem::path executableDirectory = FileSystem::GetExecutablePath().parent_path();
-		newPlugin.binaryFilepath = executableDirectory / (filepath.stem().string() + VT_SHARED_LIBRARY_EXTENSION);
-		
-		if (!FileSystem::Exists(newPlugin.binaryFilepath))
+		const std::filesystem::path executablePluginBinaryPath = executableDirectory / filename;
+		const std::filesystem::path pluginsDirBinaryPath = filepath.parent_path() / filename;
+
+		if (!FileSystem::Exists(executablePluginBinaryPath) && !FileSystem::Exists(pluginsDirBinaryPath))
 		{
 			VT_LOGC(Error, LogPluginSystem, "Plugin {} does not have a binary at the correct location!", filepath.string());
 			return;
+		}
+
+		if (FileSystem::Exists(executablePluginBinaryPath))
+		{
+			newPlugin.binaryFilepath = executablePluginBinaryPath;
+		}
+		else
+		{
+			newPlugin.binaryFilepath = pluginsDirBinaryPath;
 		}
 
 		streamReader.ForEach("Plugins", [&]() 

@@ -4,11 +4,11 @@
 
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
+#include <CoreUtilities/TypeTraits/TypeIndex.h>
 
 #include "Volt/Scene/Entity.h"
 
 #include <thread>
-#include <typeindex>
 
 namespace GraphKey
 {
@@ -62,7 +62,7 @@ namespace Volt
 		void DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLFileStreamReader& streamReader) const;
 		void DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLFileStreamReader& streamReader) const;
 
-		inline static std::unordered_map<std::type_index, std::function<void(YAMLFileStreamWriter&,	const uint8_t*, const size_t)>> s_typeSerializers;
-		inline static std::unordered_map<std::type_index, std::function<void(YAMLFileStreamReader&,	uint8_t*, const size_t)>> s_typeDeserializers;
+		inline static std::unordered_map<TypeTraits::TypeIndex, std::function<void(YAMLFileStreamWriter&, const uint8_t*, const size_t)>> s_typeSerializers;
+		inline static std::unordered_map<TypeTraits::TypeIndex, std::function<void(YAMLFileStreamReader&, uint8_t*, const size_t)>> s_typeDeserializers;
 	};
 }

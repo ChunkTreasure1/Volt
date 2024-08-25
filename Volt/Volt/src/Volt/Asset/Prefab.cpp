@@ -1,9 +1,9 @@
 #include "vtpch.h"
 #include "Prefab.h"
 
-#include "Volt/Components/CoreComponents.h"
-#include "Volt/Components/PhysicsComponents.h"
-#include "Volt/Components/RenderingComponents.h"
+#include "Volt/Public/Components/CoreComponents.h"
+#include "Volt/Public/Components/PhysicsComponents.h"
+#include "Volt/Public/Components/RenderingComponents.h"
 
 #include "Volt/Scene/Scene.h"
 

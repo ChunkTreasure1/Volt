@@ -3,7 +3,7 @@
 #include "Volt/Scene/Scene.h"
 
 #include <AssetSystem/Asset.h>
-#include <EntitySystem/ComponentRegistry.h>
+#include <EntitySystem/Public/ComponentRegistry.h>
 
 #include <glm/glm.hpp>
 

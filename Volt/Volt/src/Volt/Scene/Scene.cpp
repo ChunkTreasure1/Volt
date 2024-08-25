@@ -11,10 +11,10 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Scene/Entity.h"
 
-#include "Volt/Components/AudioComponents.h"
-#include "Volt/Components/LightComponents.h"
-#include "Volt/Components/CoreComponents.h"
-#include "Volt/Components/RenderingComponents.h"
+#include "Volt/Public/Components/AudioComponents.h"
+#include "Volt/Public/Components/LightComponents.h"
+#include "Volt/Public/Components/CoreComponents.h"
+#include "Volt/Public/Components/RenderingComponents.h"
 
 #include "Volt/Animation/AnimationManager.h"
 
@@ -463,32 +463,6 @@ namespace Volt
 		}
 	}
 
-	Entity Scene::InstantiateSplitMesh(AssetHandle meshHandle)
-	{
-		auto mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-		if (!mesh || !mesh->IsValid())
-		{
-			VT_LOG(Warning, "Trying to instantiate invalid mesh {0}!", meshHandle);
-			return Entity{};
-		}
-
-		Entity parentEntity = CreateEntity();
-
-		for (uint32_t i = 0; const auto & subMesh : mesh->GetSubMeshes())
-		{
-			subMesh;
-			Entity childEntity = CreateEntity();
-			ParentEntity(parentEntity, childEntity);
-
-			auto& meshComponent = childEntity.AddComponent<MeshComponent>();
-			meshComponent.handle = mesh->handle;
-			//meshComponent.subMeshIndex = i;
-			i++;
-		}
-
-		return parentEntity;
-	}
-
 	const Entity Scene::GetEntityWithName(std::string name)
 	{
 		Entity entity;
@@ -888,16 +862,6 @@ namespace Volt
 	void Scene::AddLayer(const std::string& layerName, uint32_t layerId)
 	{
 		m_sceneLayers.emplace_back(layerId, layerName);
-	}
-
-	void Scene::SetLayers(const Vector<SceneLayer>& sceneLayers)
-	{
-		m_sceneLayers = sceneLayers;
-
-		for (const auto& layer : m_sceneLayers)
-		{
-			m_lastLayerId = std::max(m_lastLayerId, layer.id);
-		}
 	}
 
 	void Scene::RigidbodyComponent_OnCreate(entt::registry& registry, entt::entity id)

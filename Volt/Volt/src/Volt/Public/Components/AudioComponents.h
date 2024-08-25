@@ -6,7 +6,7 @@
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
 
-#include <EntitySystem/ComponentRegistry.h>
+#include <EntitySystem/Public/ComponentRegistry.h>
 
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 

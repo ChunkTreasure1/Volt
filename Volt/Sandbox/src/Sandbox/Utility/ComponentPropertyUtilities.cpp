@@ -8,19 +8,19 @@
 
 #include "Sandbox/UserSettingsManager.h"
 
-#include <Volt/Components/LightComponents.h>
+#include <Volt/Public/Components/LightComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/PremadeCommands.h>
 
-#include <EntitySystem/ComponentRegistry.h>
+#include <EntitySystem/Public/ComponentRegistry.h>
 
 #include <glm/glm.hpp>
 
 template<typename T>
-void RegisterPropertyType(std::unordered_map<std::type_index, std::function<bool(std::string_view, void*, const size_t)>>& outFunctionMap)
+void RegisterPropertyType(std::unordered_map<TypeTraits::TypeIndex, std::function<bool(std::string_view, void*, const size_t)>>& outFunctionMap)
 {
-	outFunctionMap[std::type_index{ typeid(T) }] = [](std::string_view label, void* data, const size_t offset) -> bool
+	outFunctionMap[TypeTraits::TypeIndex::FromType<T>()] = [](std::string_view label, void* data, const size_t offset) -> bool
 	{
 		uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data); 
 		return UI::Property(std::string(label), *reinterpret_cast<T*>(&bytePtr[offset]));
@@ -201,7 +201,7 @@ bool ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, Volt::Enti
 
 bool ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::ComponentMember& member, void* data, const size_t offset)
 {
-	uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data);
+	uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data); 
 
 	if (member.GetAssetType() != AssetTypes::None)
 	{
@@ -237,7 +237,7 @@ bool ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scen
 	}
 
 	// Special case for entities
-	if (member.typeIndex == std::type_index{ typeid(Volt::EntityID) })
+	if (member.typeIndex == TypeTraits::TypeIndex::FromType<Volt::EntityID>())
 	{
 		if (UI::PropertyEntity(std::string(member.label), scene, *reinterpret_cast<Volt::EntityID*>(&bytePtr[offset + member.offset])))
 		{
@@ -262,7 +262,7 @@ bool ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scen
 	return false;
 }
 
-bool ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::ComponentMember& arrayMember, void* elementData, const size_t index, const std::type_index& typeIndex, AssetType arrayAssetType)
+bool ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene> scene, Volt::Entity entity, const Volt::ComponentMember& arrayMember, void* elementData, const size_t index, const TypeTraits::TypeIndex& typeIndex, AssetType arrayAssetType)
 {
 	const std::string label = std::format("Element {0}", index);
 
@@ -303,7 +303,7 @@ bool ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 	}
 
 	// Special case for entities
-	if (arrayMember.typeIndex == std::type_index{ typeid(Volt::EntityID) })
+	if (arrayMember.typeIndex == TypeTraits::TypeIndex::FromType<Volt::EntityID>())
 	{
 		if (UI::PropertyEntity(label, scene, *reinterpret_cast<Volt::EntityID*>(elementData)))
 		{

@@ -54,8 +54,8 @@
 
 #include <AssetSystem/AssetManager.h>
 
-#include <Volt/Components/CoreComponents.h>
-#include <Volt/Components/LightComponents.h>
+#include <Volt/Public/Components/CoreComponents.h>
+#include <Volt/Public/Components/LightComponents.h>
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/Scene.h>
@@ -73,8 +73,7 @@
 
 #include <Volt/Project/ProjectManager.h>
 
-#include <Volt/Events/SettingsEvent.h>
-#include <Volt/Events/ApplicationEvents.h>
+#include <Volt/Public/Events/ApplicationEvents.h>
 
 #include <DiscordPlugin/Plugin.h>
 #include <DiscordPlugin/DiscordManagerInterface.h>
@@ -943,8 +942,6 @@ bool Sandbox::OnViewportResizeEvent(Volt::ViewportResizeEvent& e)
 
 	return false;
 }
-
-VT_OPTIMIZE_OFF
 
 bool Sandbox::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 {

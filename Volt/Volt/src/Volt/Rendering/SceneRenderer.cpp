@@ -30,9 +30,9 @@
 
 #include "Volt/Math/Math.h"
 
-#include "Volt/Components/LightComponents.h"
-#include "Volt/Components/RenderingComponents.h"
-#include "Volt/Components/CoreComponents.h"
+#include "Volt/Public/Components/LightComponents.h"
+#include "Volt/Public/Components/RenderingComponents.h"
+#include "Volt/Public/Components/CoreComponents.h"
 
 #include "Volt/Utility/ShadowMappingUtility.h"
 #include "Volt/Utility/Noise.h"

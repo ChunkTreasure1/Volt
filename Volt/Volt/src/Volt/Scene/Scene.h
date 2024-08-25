@@ -96,7 +96,6 @@ namespace Volt
 		void RemoveLayer(const std::string& layerName);
 		void RemoveLayer(uint32_t layerId);
 		void MoveToLayer(Entity entity, uint32_t targetLayer);
-		void SetLayers(const Vector<SceneLayer>& sceneLayers); // #TODO_Ivar: We probably don't want to expose this
 		void SetActiveLayer(uint32_t layerId);
 		bool LayerExists(uint32_t layerId);
 
@@ -133,8 +132,6 @@ namespace Volt
 
 		Vision& GetVision() { return *m_visionSystem; }
 		TimelinePlayer& GetTimelinePlayer() { return m_timelinePlayer; };
-
-		Entity InstantiateSplitMesh(AssetHandle meshHandle);
 
 		const TQS GetWorldTQS(Entity entity) const;
 		const Entity GetEntityWithName(std::string name);

@@ -4,7 +4,7 @@
 #include "Volt/Physics/PhysicsActor.h"
 #include "Volt/Physics/PhysicsLayer.h"
 
-#include "Volt/Components/CoreComponents.h"
+#include "Volt/Public/Components/CoreComponents.h"
 
 namespace Volt
 {

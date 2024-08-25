@@ -3,7 +3,7 @@
 #include "Sandbox/Window/EditorWindow.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
-#include <Volt/Events/ApplicationEvents.h>
+#include <Volt/Public/Events/ApplicationEvents.h>
 #include <AssetSystem/Asset.h>
 
 #include <glm/glm.hpp>

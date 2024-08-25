@@ -30,6 +30,8 @@ project "EntitySystemModule"
 	includedirs
 	{
 		"src/",
+		"src/EntitySystem/Public",
+		"src/EntitySystem/Private",
 
 		"%{IncludeDir.LogModule}",
 		"%{IncludeDir.CoreUtilities}",

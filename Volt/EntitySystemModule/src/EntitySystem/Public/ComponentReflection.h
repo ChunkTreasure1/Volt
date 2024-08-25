@@ -1,15 +1,14 @@
 #pragma once
 
-#include "EntitySystem/MemoryUtility.h"
+#include "MemoryUtility.h"
 
 #include <AssetSystem/Asset.h>
 
 #include <CoreUtilities/VoltGUID.h>
 #include <CoreUtilities/Concepts.h>
+#include <CoreUtilities/TypeTraits/TypeIndex.h>
 
 #include <entt.hpp>
-
-#include <typeindex>
 
 #define DECLARE_ARRAY_TYPE(type)											\
 namespace Volt																\
@@ -117,7 +116,7 @@ namespace Volt
 		const ICommonTypeDesc* typeDesc = nullptr;
 		const ICommonTypeDesc* ownerTypeDesc = nullptr;
 
-		std::type_index typeIndex = typeid(void);
+		TypeTraits::TypeIndex typeIndex = TypeTraits::TypeIndex::FromType<void>();
 		Scope<IDefaultValueType> defaultValue;
 
 		std::function<void(void* lhs, const void* rhs)> copyFunction;
@@ -164,7 +163,7 @@ namespace Volt
 	{
 	public:
 		[[nodiscard]] virtual const ICommonTypeDesc* GetElementTypeDesc() const = 0;
-		[[nodiscard]] virtual const std::type_index& GetElementTypeIndex() const = 0;
+		[[nodiscard]] virtual const TypeTraits::TypeIndex& GetElementTypeIndex() const = 0;
 		[[nodiscard]] virtual const size_t GetElementTypeSize() const = 0;
 
 		// NOTE: This function heap allocates an object that MUST be manually deleted!
@@ -280,14 +279,14 @@ namespace Volt
 			}
 		}
 
-		[[nodiscard]] inline const std::type_index& GetElementTypeIndex() const override { return m_elementTypeIndex; }
+		[[nodiscard]] inline const TypeTraits::TypeIndex& GetElementTypeIndex() const override { return m_elementTypeIndex; }
 
 	private:
 		VoltGUID m_guid = VoltGUID::Null();
 		std::string m_label;
 		std::string m_description;
 
-		std::type_index m_elementTypeIndex = { typeid(ELEMENT_TYPE) };
+		TypeTraits::TypeIndex m_elementTypeIndex = TypeTraits::TypeIndex::FromType<ELEMENT_TYPE>();
 
 		std::function<size_t(const void* pArray)> m_sizeFunction;
 		std::function<void* (void* pArray, size_t pos)> m_atFunction;
@@ -361,11 +360,11 @@ namespace Volt
 
 			if constexpr (IsArrayType<Type>() || IsReflectedType<Type>())
 			{
-				m_members.emplace_back(offset, name, label, description, AssetTypeType::element_type::guid, flags, GetTypeDesc<Type>(), this, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
+				m_members.emplace_back(offset, name, label, description, AssetTypeType::element_type::guid, flags, GetTypeDesc<Type>(), this, TypeTraits::TypeIndex::FromType<Type>(), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
 			}
 			else
 			{
-				m_members.emplace_back(offset, name, label, description, AssetTypeType::element_type::guid, flags, nullptr, this, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
+				m_members.emplace_back(offset, name, label, description, AssetTypeType::element_type::guid, flags, nullptr, this, TypeTraits::TypeIndex::FromType<Type>(), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
 			}
 
 

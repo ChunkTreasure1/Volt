@@ -1,5 +1,5 @@
-#include "vtpch.h"
-#include "ECSBuilder.h"
+#include "espch.h"
+#include "Scripting/ECSBuilder.h"
 
 ECSBuilder::ECSBuilder(entt::registry* registry)
 	: m_registry(registry)

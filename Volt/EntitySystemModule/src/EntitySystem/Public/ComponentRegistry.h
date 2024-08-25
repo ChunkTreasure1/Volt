@@ -1,7 +1,7 @@
 #pragma once
 
-#include "EntitySystem/Config.h"
-#include "EntitySystem/ComponentReflection.h"
+#include "Config.h"
+#include "ComponentReflection.h"
 
 #include <unordered_map>
 #include <entt.hpp>

@@ -10,7 +10,7 @@
 #include "Sandbox/UserSettingsManager.h"
 #include "Sandbox/EditorCommandStack.h"
 
-#include <Volt/Components/LightComponents.h>
+#include <Volt/Public/Components/LightComponents.h>
 
 #include <InputModule/Input.h>
 #include <InputModule/KeyCodes.h>
