@@ -54,8 +54,8 @@
 
 #include <AssetSystem/AssetManager.h>
 
-#include <Volt/Public/Components/CoreComponents.h>
-#include <Volt/Public/Components/LightComponents.h>
+#include <Volt/Components/CoreComponents.h>
+#include <Volt/Components/LightComponents.h>
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/Scene.h>
@@ -73,7 +73,7 @@
 
 #include <Volt/Project/ProjectManager.h>
 
-#include <Volt/Public/Events/ApplicationEvents.h>
+#include <Volt/Events/ApplicationEvents.h>
 
 #include <DiscordPlugin/Plugin.h>
 #include <DiscordPlugin/DiscordManagerInterface.h>

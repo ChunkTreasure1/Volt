@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "Vision.h"
 
-#include <Volt/Public/Components/RenderingComponents.h>
-#include <Volt/Public/Components/CoreComponents.h>
+#include <Volt/Components/RenderingComponents.h>
+#include <Volt/Components/CoreComponents.h>
 
 #include <Volt/Utility/Noise.h>
 

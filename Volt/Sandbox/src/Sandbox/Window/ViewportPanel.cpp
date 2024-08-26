@@ -30,8 +30,8 @@
 #include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Camera/Camera.h>
 
-#include <Volt/Public/Components/CoreComponents.h>
-#include <Volt/Public/Components/RenderingComponents.h>
+#include <Volt/Components/CoreComponents.h>
+#include <Volt/Components/RenderingComponents.h>
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/SceneManager.h>

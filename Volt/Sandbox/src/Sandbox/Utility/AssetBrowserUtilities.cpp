@@ -14,7 +14,7 @@
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
 #include <Volt/Asset/TextureSource.h>
 
-#include <Volt/Public/Components/RenderingComponents.h>
+#include <Volt/Components/RenderingComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/MeshExporterUtilities.h>

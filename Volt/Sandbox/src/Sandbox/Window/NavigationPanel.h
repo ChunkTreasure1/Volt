@@ -4,7 +4,7 @@
 #include "NavigationEditor/Builder/RecastBuilder.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Public/Events/ApplicationEvents.h>
+#include <Volt/Events/ApplicationEvents.h>
 
 #include <Sandbox/UserSettingsManager.h>
 

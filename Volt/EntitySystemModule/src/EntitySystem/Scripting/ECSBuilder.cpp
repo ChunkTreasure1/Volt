@@ -1,5 +1,5 @@
 #include "espch.h"
-#include "Scripting/ECSBuilder.h"
+#include "ECSBuilder.h"
 
 ECSBuilder::ECSBuilder(entt::registry* registry)
 	: m_registry(registry)
@@ -18,10 +18,10 @@ ECSGameLoopContainer::ECSGameLoopContainer(entt::registry* registry)
 {
 }
 
-void ECSGameLoopContainer::Update()
+void ECSGameLoopContainer::Execute(float deltaTime)
 {
 	for (auto& [id, system] : m_registeredSystems)
 	{
-		system.systemFunc(*m_registry);
+		system.systemFunc(*m_registry, deltaTime);
 	}
 }

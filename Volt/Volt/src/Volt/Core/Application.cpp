@@ -52,8 +52,8 @@
 
 #include <EventSystem/EventSystem.h>
 
-#include <EntitySystem/Public/Scripting/ECSAccessBuilder.h>
-#include <EntitySystem/Public/Scripting/ECSBuilder.h>
+#include <EntitySystem/Scripting/ECSAccessBuilder.h>
+#include <EntitySystem/Scripting/ECSBuilder.h>
 
 #include <CoreUtilities/TypeTraits/TypeId.h>
 

@@ -5,7 +5,7 @@
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/Random.h>
 #include <Volt/Core/Application.h>
-#include <Volt/Public/Components/PhysicsComponents.h>
+#include <Volt/Components/PhysicsComponents.h>
 #include <Volt/Vision/VisionTrigger.h>
 #include <Volt/Vision/Vision.h>
 

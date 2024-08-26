@@ -1,6 +1,6 @@
 #pragma once
 
-#include <EntitySystem/Public/ComponentRegistry.h>
+#include <EntitySystem/ComponentRegistry.h>
 
 #include <AssetSystem/Asset.h>
 

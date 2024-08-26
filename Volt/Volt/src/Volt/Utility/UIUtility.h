@@ -10,7 +10,7 @@
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
 
-#include "Volt/Public/Components/CoreComponents.h"
+#include "Volt/Components/CoreComponents.h"
 
 #include <InputModule/Input.h>
 #include <InputModule/MouseButtonCodes.h>

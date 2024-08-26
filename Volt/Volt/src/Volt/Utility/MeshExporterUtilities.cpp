@@ -3,8 +3,8 @@
 
 #include <AssetSystem/AssetManager.h>
 
-#include "Volt/Public/Components/RenderingComponents.h"
-#include "Volt/Public/Components/CoreComponents.h"
+#include "Volt/Components/RenderingComponents.h"
+#include "Volt/Components/CoreComponents.h"
 
 namespace Volt
 {

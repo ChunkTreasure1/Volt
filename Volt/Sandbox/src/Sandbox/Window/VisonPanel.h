@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Volt/Vision/VisionComponents.h"
-#include <Volt/Public/Components/RenderingComponents.h>
+#include <Volt/Components/RenderingComponents.h>
 
 #include <Volt/Scene/Scene.h>
 #include <Volt/Core/Base.h>
-#include <Volt/Public/Events/ApplicationEvents.h>
-#include <Volt/Public/Events/SceneEvents.h>
+#include <Volt/Events/ApplicationEvents.h>
+#include <Volt/Events/SceneEvents.h>
 #include <Sandbox/Camera/EditorCameraController.h>
 
 #include "Sandbox/Window/EditorWindow.h"

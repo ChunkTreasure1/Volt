@@ -37,7 +37,6 @@ project "Volt"
 	includedirs
 	{
 		"src/",
-		"src/Volt/Public",
 	
 		"%{IncludeDir.Amp}",
 		"%{IncludeDir.Navigation}",

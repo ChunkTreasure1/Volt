@@ -3,7 +3,7 @@
 #include <Volt/Scene/Scene.h>
 #include "Volt/Asset/TimelinePreset.h"
 
-#include <Volt/Public/Events/ApplicationEvents.h>
+#include <Volt/Events/ApplicationEvents.h>
 #include <InputModule/Events/KeyboardEvents.h>
 
 #include <Sandbox/Camera/EditorCameraController.h>

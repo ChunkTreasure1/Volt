@@ -4,7 +4,7 @@
 
 #include <InputModule/Events/KeyboardEvents.h>
 #include <WindowModule/Events/WindowEvents.h>
-#include <Volt/Public/Events/ApplicationEvents.h>
+#include <Volt/Events/ApplicationEvents.h>
 
 
 #include <Volt/Scene/EntityID.h>

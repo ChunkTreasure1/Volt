@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Volt/Scene/Entity.h"
-#include "Volt/Public/Components/PhysicsComponents.h"
+#include "Volt/Components/PhysicsComponents.h"
 
 #include "Volt/Physics/PhysicsActorBase.h"
 

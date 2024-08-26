@@ -18,8 +18,8 @@
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/Entity.h>
 
-#include <Volt/Public/Components/RenderingComponents.h>
-#include <Volt/Public/Components/LightComponents.h>
+#include <Volt/Components/RenderingComponents.h>
+#include <Volt/Components/LightComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Project/ProjectManager.h>

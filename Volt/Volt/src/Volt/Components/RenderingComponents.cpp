@@ -1,5 +1,5 @@
 #include "vtpch.h"
-#include "Volt/Public/Components/RenderingComponents.h"
+#include "Volt/Components/RenderingComponents.h"
 
 #include "Volt/Rendering/RenderScene.h"
 #include "Volt/Rendering/Renderer.h"
@@ -7,7 +7,7 @@
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Rendering/Material.h"
 
-#include "Volt/Public/Components/CoreComponents.h"
+#include "Volt/Components/CoreComponents.h"
 #include "Volt/Scene/SceneManager.h"
 
 namespace Volt

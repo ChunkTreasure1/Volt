@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Public/Plugin/Plugin.h"
+#include "Volt/Plugin/Plugin.h"
 #include "Volt/PluginSystem/NativePluginModule.h"
 
 #include <EventSystem/Event.h>

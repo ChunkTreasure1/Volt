@@ -28,7 +28,7 @@
 
 #include <Volt/Animation/BlendSpace.h>
 
-#include <Volt/Public/Components/CoreComponents.h>
+#include <Volt/Components/CoreComponents.h>
 #include <Volt/Scene/Scene.h>
 #include <Volt/Project/ProjectManager.h>
 

@@ -1,7 +1,7 @@
 @echo off
 
 pushd ..\
-call scripts\data\premake5.exe vs2022
+call scripts\data\premake5.exe vs2022 %*
 popd
 
 REM pushd ..\..\Project

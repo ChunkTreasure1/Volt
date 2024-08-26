@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "SceneImporter.h"
 
-#include "Volt/Public/Components/CoreComponents.h"
-#include "Volt/Public/Components/RenderingComponents.h"
+#include "Volt/Components/CoreComponents.h"
+#include "Volt/Components/RenderingComponents.h"
 
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
@@ -17,7 +17,7 @@
 
 #include "Volt/Project/ProjectManager.h"
 
-#include <EntitySystem/Public/ComponentRegistry.h>
+#include <EntitySystem/ComponentRegistry.h>
 #include <AssetSystem/AssetManager.h>
 
 #include <CoreUtilities/FileSystem.h>

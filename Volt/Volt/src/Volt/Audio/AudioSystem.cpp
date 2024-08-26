@@ -5,8 +5,8 @@
 #include "../Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
 
-#include <Volt/Public/Components/AudioComponents.h>
-#include <Volt/Public/Components/CoreComponents.h>
+#include <Volt/Components/AudioComponents.h>
+#include <Volt/Components/CoreComponents.h>
 
 #include <Volt/Rendering/DebugRenderer.h>
 #include <Volt/Physics/Physics.h>

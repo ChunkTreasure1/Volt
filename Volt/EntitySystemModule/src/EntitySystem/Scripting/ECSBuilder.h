@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EntitySystem/Config.h"
 #include "ECSAccessBuilder.h"
 
 #include <CoreUtilities/Containers/Map.h>
@@ -13,9 +14,7 @@ enum class GameLoop
 
 struct ECSSystem
 {
-	std::function<void(entt::registry& registry)> systemFunc;
-
-	  
+	std::function<void(entt::registry& registry, float deltaTime)> systemFunc;
 };
 
 class ECSGameLoopContainer
@@ -24,7 +23,7 @@ public:
 	ECSGameLoopContainer(entt::registry* registry);
 	ECSGameLoopContainer() = default;
 
-	void Update();
+	void Execute(float deltaTime);
 
 	template<typename Ret, typename... Args>
 	ECSSystem& RegisterSystem(Ret(*func)(Args...))
@@ -34,6 +33,7 @@ public:
 
 		// A system must have at least one argument...
 		static_assert(std::tuple_size_v<ArgumentTypes> > 0);
+		//static_assert(std::is_same_v<std::tuple_element_t<std::tuple_size_v<ArgumentTypes> - 1, ArgumentTypes>, float>);
 
 		using ComponentView = std::tuple_element_t<0, ArgumentTypes>;
 
@@ -44,7 +44,7 @@ public:
 
 		UUID64 id{};
 		ECSSystem system{};
-		system.systemFunc = [func](entt::registry& registry)
+		system.systemFunc = [func](entt::registry& registry, float deltaTime)
 		{
 			auto view = GetRegistryView<ComponentTuple>(registry);
 			for (const auto& entity : view)
@@ -85,7 +85,15 @@ private:
 	template<typename Tuple, typename EntityView, std::size_t... Indices>
 	static auto GetComponentViewImpl(std::index_sequence<Indices...>, EntityView& view, entt::entity entity)
 	{
-		return view.get<std::remove_reference_t<std::tuple_element_t<Indices, Tuple>>...>(entity);
+		// Note: We need to make sure that we always return a tuple
+		if constexpr (sizeof... (Indices) > 1)
+		{
+			return view.get<std::remove_reference_t<std::tuple_element_t<Indices, Tuple>>...>(entity);
+		}
+		else
+		{
+			return std::tuple<std::tuple_element_t<Indices, Tuple>...>{ view.get<std::remove_reference_t<std::tuple_element_t<Indices, Tuple>>...>(entity) };
+		}
 	}
 
 	template<typename Tuple, typename EntityView>
@@ -127,13 +135,13 @@ private:
 	entt::registry* m_registry = nullptr;
 };
 
-struct ECSBuilder
+class ECSBuilder
 {
 public:
 	ECSBuilder(entt::registry* registry);
 	ECSBuilder() = default;
 
-	ECSGameLoopContainer& GetGameLoop(GameLoop gameLoopType);
+	VTES_API ECSGameLoopContainer& GetGameLoop(GameLoop gameLoopType);
 
 private:
 	vt::map<GameLoop, ECSGameLoopContainer> m_gameLoops;

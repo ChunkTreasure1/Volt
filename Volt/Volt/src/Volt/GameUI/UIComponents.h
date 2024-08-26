@@ -3,7 +3,7 @@
 #include "Volt/Scene/EntityID.h"
 #include "Volt/Asset/AssetTypes.h"
 
-#include <EntitySystem/Public/ComponentRegistry.h>
+#include <EntitySystem/ComponentRegistry.h>
 
 namespace Volt
 {

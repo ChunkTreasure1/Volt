@@ -11,10 +11,10 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Scene/Entity.h"
 
-#include "Volt/Public/Components/AudioComponents.h"
-#include "Volt/Public/Components/LightComponents.h"
-#include "Volt/Public/Components/CoreComponents.h"
-#include "Volt/Public/Components/RenderingComponents.h"
+#include "Volt/Components/AudioComponents.h"
+#include "Volt/Components/LightComponents.h"
+#include "Volt/Components/CoreComponents.h"
+#include "Volt/Components/RenderingComponents.h"
 
 #include "Volt/Animation/AnimationManager.h"
 

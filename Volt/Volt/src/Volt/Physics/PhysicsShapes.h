@@ -2,7 +2,7 @@
 
 #include "Volt/Physics/PhysicsEnums.h"
 #include "Volt/Scene/Entity.h"
-#include "Volt/Public/Components/PhysicsComponents.h"
+#include "Volt/Components/PhysicsComponents.h"
 
 #include <glm/glm.hpp>
 #include <PhysX/PxPhysicsAPI.h>

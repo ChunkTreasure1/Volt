@@ -11,7 +11,7 @@
 
 #include "Volt/Utility/UIUtility.h"
 
-#include <Volt/Public/Events/ApplicationEvents.h>
+#include <Volt/Events/ApplicationEvents.h>
 #include <InputModule/Events/KeyboardEvents.h>
 #include <InputModule/Events/MouseEvents.h>
 

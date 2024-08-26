@@ -1,5 +1,11 @@
 local VoltRootDirectory = os.getenv("VOLT_PATH")
 
+newoption {
+	trigger = "project",
+	value = "path",
+	description = "The project to associate the solution with."
+}
+
 include "./scripts/premakeCustomization/premakeCommon.lua"
 include "./scripts/premakeCustomization/solution_items.lua"
 include "Dependencies.lua"
@@ -53,6 +59,9 @@ include "Volt/vendor/ufbx"
 group "Plugins"
 include "Plugins/ExamplePlugin"
 include "Plugins/DiscordPlugin"
+
+group "Game"
+include (_OPTIONS["project"] or "")
 
 group "Core"
 include "Amp"

@@ -2,7 +2,7 @@
 
 #include "Volt/Core/Base.h"
 
-#include <EntitySystem/Public/ComponentRegistry.h>
+#include <EntitySystem/ComponentRegistry.h>
 
 #include <cstdint>
 

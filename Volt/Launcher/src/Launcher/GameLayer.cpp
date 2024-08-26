@@ -3,7 +3,7 @@
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/SceneManager.h>
 
-#include <Volt/Public/Events/SettingsEvent.h>
+#include <Volt/Events/SettingsEvent.h>
 
 #include <AssetSystem/AssetManager.h>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Plugin/PluginDefines.h"
+#include "PluginDefines.h"
 #include <CoreUtilities/VoltGUID.h>
 
 #include <string_view>

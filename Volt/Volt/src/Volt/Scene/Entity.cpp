@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "Entity.h"
 
-#include "Volt/Public/Components/CoreComponents.h"
+#include "Volt/Components/CoreComponents.h"
 
 #include "Volt/Utility/StringUtility.h"
 

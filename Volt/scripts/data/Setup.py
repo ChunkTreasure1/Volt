@@ -5,8 +5,11 @@ import os
 
 from SetupPython import Python
 
-def GenerateProjects():
-        subprocess.call("Win-GenProjects-vs2022.bat")
+def GenerateProjects(filename):
+        if (filename is not None and filename != ""):
+                subprocess.call(['Win-GenProjects-vs2022.bat', '--project=' + filename])
+        else:
+                subprocess.call(['Win-GenProjects-vs2022.bat'])
 
 
 Python.CheckPython()
@@ -28,4 +31,12 @@ subprocess.call("VoltSetup.exe")
 os.chdir('../../Volt/scripts')
 
 sys.stdout.write(Fore.WHITE)
-GenerateProjects()
+
+from argparse import ArgumentParser
+
+parser = ArgumentParser()
+parser.add_argument('-p', '--project')
+
+args = parser.parse_args()
+
+GenerateProjects(args.project)

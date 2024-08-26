@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Volt/Scene/Entity.h>
-#include <Volt/Public/Components/CoreComponents.h>
+#include <Volt/Components/CoreComponents.h>
 #include <AssetSystem/AssetManager.h>
 #include <Volt/Utility/UIUtility.h>
 

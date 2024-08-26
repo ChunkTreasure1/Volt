@@ -8,12 +8,12 @@
 
 #include "Sandbox/UserSettingsManager.h"
 
-#include <Volt/Public/Components/LightComponents.h>
+#include <Volt/Components/LightComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/PremadeCommands.h>
 
-#include <EntitySystem/Public/ComponentRegistry.h>
+#include <EntitySystem/ComponentRegistry.h>
 
 #include <glm/glm.hpp>
 

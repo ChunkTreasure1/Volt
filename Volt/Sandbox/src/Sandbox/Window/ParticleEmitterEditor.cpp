@@ -9,8 +9,8 @@
 
 #include <Volt/Rendering/SceneRenderer.h>
 
-#include <Volt/Public/Components/LightComponents.h>
-#include <Volt/Public/Components/RenderingComponents.h>
+#include <Volt/Components/LightComponents.h>
+#include <Volt/Components/RenderingComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Project/ProjectManager.h>

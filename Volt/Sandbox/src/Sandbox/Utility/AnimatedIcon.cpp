@@ -4,7 +4,7 @@
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Asset/Importers/TextureImporter.h>
 
-#include <Volt/Public/Events/ApplicationEvents.h>
+#include <Volt/Events/ApplicationEvents.h>
 
 #include <EventSystem/Event.h>
 

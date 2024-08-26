@@ -1,7 +1,7 @@
 #pragma once
 
 #include <CoreUtilities/Buffer/Buffer.h>
-#include "Volt/Public/Components/PhysicsComponents.h"
+#include "Volt/Components/PhysicsComponents.h"
 #include "Volt/Physics/PhysicsEnums.h"
 
 #include <glm/glm.hpp>
