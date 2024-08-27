@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Volt/Core/UUID.h"
-#include "Volt/Scene/EntityID.h"
+
+#include <EntitySystem/EntityID.h>
 
 #include <entt.hpp>
 

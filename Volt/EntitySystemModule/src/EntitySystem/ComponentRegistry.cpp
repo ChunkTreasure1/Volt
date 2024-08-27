@@ -62,4 +62,14 @@ namespace Volt
 		VT_ENSURE(componentRegistry.m_componentHelperFunctions.contains(guid));
 		return componentRegistry.m_componentHelperFunctions.at(guid).getComponent(registry, entity);
 	}
+
+	void ComponentRegistry::Helpers::SetupComponentCallbacks(entt::registry& registry)
+	{
+		ComponentRegistry& componentRegistry = GetComponentRegistry();
+		for (auto& [uuid, helpers] : componentRegistry.m_componentHelperFunctions)
+		{
+			helpers.setupOnCreate(registry);
+			helpers.setupOnDestroy(registry);
+		}
+	}
 }

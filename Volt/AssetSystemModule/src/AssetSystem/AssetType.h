@@ -83,7 +83,8 @@ namespace AssetTypes \
 		VT_INLINE constexpr const Vector<std::string>& GetExtensions() const override { return extensions; } \
 	}; \
 	extern Ref<typeName ## Type> typeName; \
-}
+} \
+extern bool AssetType_ ## typeName ## _Registered;
 
 #define VT_DECLARE_ASSET_TYPE_EXPORT_IMPL(typeName, isSourceTypeVal, typeExtensions, typeGuid, exportKeyword) \
 namespace AssetTypes \
@@ -114,6 +115,6 @@ namespace AssetTypes \
 
 #define VT_REGISTER_ASSET_TYPE(typeName) \
 	namespace AssetTypes { Ref<typeName ## Type> typeName = CreateRef<typeName ## Type>(); } \
-	inline static bool AssetType_ ## typeName ## _Registered = GetAssetTypeRegistry().RegisterAssetType(AssetTypes::typeName ## Type::guid, AssetTypes::typeName);
+	bool AssetType_ ## typeName ## _Registered = GetAssetTypeRegistry().RegisterAssetType(AssetTypes::typeName ## Type::guid, AssetTypes::typeName);
 
 VT_DECLARE_ASSET_TYPE_EXPORT_IMPL(None, false, EXPAND({}), VoltGUID::Null(), VTAS_API);

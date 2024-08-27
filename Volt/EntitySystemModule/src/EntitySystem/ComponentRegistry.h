@@ -30,6 +30,8 @@ namespace Volt
 			std::function<void(entt::registry&, entt::entity)> removeComponent;
 			std::function<bool(const entt::registry&, entt::entity)> hasComponent;
 			std::function<void*(entt::registry&, entt::entity)> getComponent;
+			std::function<void(entt::registry&)> setupOnCreate;
+			std::function<void(entt::registry&)> setupOnDestroy;
 		};
 
 		class Helpers
@@ -39,6 +41,7 @@ namespace Volt
 			VTES_API static void RemoveComponentWithGUID(const VoltGUID& guid, entt::registry& registry, entt::entity entity);
 			VTES_API static const bool HasComponentWithGUID(const VoltGUID& guid, const entt::registry& registry, entt::entity entity);
 			VTES_API static void* GetComponentWithGUID(const VoltGUID& guid, entt::registry& registry, entt::entity entity);
+			VTES_API static void SetupComponentCallbacks(entt::registry& registry);
 
 		private:
 			Helpers() = default;
@@ -46,6 +49,12 @@ namespace Volt
 
 	private:
 		friend class Helpers;
+
+		template<typename T>
+		static void OnConstructComponent(entt::registry& registry, entt::entity entity);
+
+		template<typename T>
+		static void OnDestructComponent(entt::registry& registry, entt::entity entity);
 
 		std::unordered_map<VoltGUID, HelperFunctions> m_componentHelperFunctions;
 		std::unordered_map<VoltGUID, const ICommonTypeDesc*> m_typeRegistry;
@@ -100,6 +109,16 @@ namespace Volt
 			return nullptr;
 		};
 
+		helpers.setupOnCreate = [](entt::registry& registry)
+		{
+			registry.on_construct<T>().connect<&ComponentRegistry::OnConstructComponent<T>>();
+		};
+
+		helpers.setupOnDestroy = [](entt::registry& registry)
+		{
+			registry.on_destroy<T>().connect<&ComponentRegistry::OnDestructComponent<T>>();
+		};
+
 		return true;
 	}
 
@@ -121,6 +140,26 @@ namespace Volt
 		m_typeNameToGUIDMap[name] = guid;
 		m_guidToTypeNameMap[guid] = name;
 		return true;
+	}
+
+	template<typename T>
+	inline void ComponentRegistry::OnConstructComponent(entt::registry& registry, entt::entity entity)
+	{
+		const auto* typeDesc = GetTypeDesc<T>();
+		const IComponentTypeDesc* compDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
+
+		void* compPtr = &registry.get<T>(entity);
+		compDesc->OnCreate(compPtr, entity);
+	}
+
+	template<typename T>
+	inline void ComponentRegistry::OnDestructComponent(entt::registry& registry, entt::entity entity)
+	{
+		const auto* typeDesc = GetTypeDesc<T>();
+		const IComponentTypeDesc* compDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
+
+		void* compPtr = &registry.get<T>(entity);
+		compDesc->OnDestroy(compPtr, entity);
 	}
 }
 

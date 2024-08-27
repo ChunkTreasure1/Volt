@@ -21,10 +21,6 @@ namespace Volt
 
 		[[nodiscard]] inline const AssetHandle& GetHandle() const { return handle; }
 
-		static void OnMemberChanged(MeshComponent& data, entt::entity entity);
-		static void OnComponentCopied(MeshComponent& data, entt::entity entity);
-		static void OnComponentDeserialized(MeshComponent& data, entt::entity entity);
-
 		static void ReflectType(TypeDesc<MeshComponent>& reflect)
 		{
 			reflect.SetGUID("{45D008BE-65C9-4D6F-A0C6-377F7B384E47}"_guid);
@@ -34,11 +30,18 @@ namespace Volt
 			reflect.SetOnMemberChangedCallback(&MeshComponent::OnMemberChanged);
 			reflect.SetOnComponentCopiedCallback(&MeshComponent::OnComponentCopied);
 			reflect.SetOnComponentDeserializedCallback(&MeshComponent::OnComponentDeserialized);
+			reflect.SetOnDestroyCallback(&MeshComponent::OnDestroy);
 		}
 
 		REGISTER_COMPONENT(MeshComponent);
 
+		static void OnMemberChanged(MeshComponent& data, entt::entity entity);
+		static void OnComponentCopied(MeshComponent& data, entt::entity entity);
+		static void OnComponentDeserialized(MeshComponent& data, entt::entity entity);
+
 	private:
+		static void OnDestroy(MeshComponent& component, entt::entity entity);
+
 		AssetHandle m_oldHandle = Asset::Null();
 		Vector<AssetHandle> m_oldMaterials;
 	};
@@ -60,9 +63,13 @@ namespace Volt
 			reflect.AddMember(&CameraComponent::nearPlane, "nearPlane", "Near Plane", "", 1.f);
 			reflect.AddMember(&CameraComponent::farPlane, "farPlane", "Far Plane", "", 100'000.f);
 			reflect.AddMember(&CameraComponent::priority, "priority", "Priority", "", 0);
+			reflect.SetOnCreateCallback(&CameraComponent::OnCreate);
 		}
 
 		REGISTER_COMPONENT(CameraComponent);
+
+	private:
+		static void OnCreate(CameraComponent& component, entt::entity id);
 	};
 
 	struct AnimatedCharacterComponent

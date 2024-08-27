@@ -1,11 +1,13 @@
 #pragma once
 
+#include "EntitySystem/Config.h"
+
 class BinaryStreamReader;
 class BinaryStreamWriter;
 
 namespace Volt
 {
-	class EntityID
+	class VTES_API EntityID
 	{
 	public:
 		EntityID();
@@ -18,7 +20,7 @@ namespace Volt
 		~EntityID() = default;
 
 		operator uint32_t() const { return m_uuid; }
-		
+
 		static void Serialize(BinaryStreamWriter& streamWriter, const EntityID& data);
 		static void Deserialize(BinaryStreamReader& streamReader, EntityID& outData);
 

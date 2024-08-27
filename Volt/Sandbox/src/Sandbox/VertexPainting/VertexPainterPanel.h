@@ -7,7 +7,7 @@
 #include <Volt/Events/ApplicationEvents.h>
 
 
-#include <Volt/Scene/EntityID.h>
+#include <EntitySystem/EntityID.h>
 
 class VertexPainterPanel : public EditorWindow
 {

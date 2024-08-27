@@ -11,6 +11,7 @@ namespace Volt
 		static void Shutdown();
 		inline static void SetActiveScene(Weak<Scene> scene) { m_activeScene = scene; }
 		inline static Weak<Scene> GetActiveScene() { return m_activeScene; }
+		static bool IsPlaying();
 
 	private:
 		SceneManager() = delete;

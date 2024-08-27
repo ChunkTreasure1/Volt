@@ -1,9 +1,10 @@
 
 #pragma once
 
-#include "Volt/Scene/Entity.h"
-
+#include <EntitySystem/EntityID.h>
 #include <EntitySystem/ComponentRegistry.h>
+
+#include <Volt/Asset/AssetTypes.h>
 
 #include <glm/glm.hpp>
 

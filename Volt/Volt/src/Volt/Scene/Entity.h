@@ -2,7 +2,8 @@
 
 #include "Volt/Core/Base.h"
 #include "Volt/Scene/Scene.h"
-#include "Volt/Scene/EntityID.h"
+
+#include <EntitySystem/EntityID.h>
 
 #include <CoreUtilities/VoltGUID.h>
 #include <entt.hpp>

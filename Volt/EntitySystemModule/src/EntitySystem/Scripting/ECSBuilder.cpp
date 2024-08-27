@@ -1,21 +1,11 @@
 #include "espch.h"
 #include "ECSBuilder.h"
 
-ECSBuilder::ECSBuilder(entt::registry* registry)
-	: m_registry(registry)
-{
-}
-
 ECSGameLoopContainer& ECSBuilder::GetGameLoop(GameLoop gameLoopType)
 {
-	ECSGameLoopContainer container(m_registry);
+	ECSGameLoopContainer container;
 	m_gameLoops[gameLoopType] = container;
 	return m_gameLoops[gameLoopType];
-}
-
-ECSGameLoopContainer::ECSGameLoopContainer(entt::registry* registry)
-	: m_registry(registry)
-{
 }
 
 void ECSGameLoopContainer::Execute(float deltaTime)

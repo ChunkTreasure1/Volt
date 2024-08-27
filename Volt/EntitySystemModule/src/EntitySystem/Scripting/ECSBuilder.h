@@ -20,7 +20,6 @@ struct ECSSystem
 class ECSGameLoopContainer
 {
 public:
-	ECSGameLoopContainer(entt::registry* registry);
 	ECSGameLoopContainer() = default;
 
 	void Execute(float deltaTime);
@@ -138,7 +137,6 @@ private:
 class ECSBuilder
 {
 public:
-	ECSBuilder(entt::registry* registry);
 	ECSBuilder() = default;
 
 	VTES_API ECSGameLoopContainer& GetGameLoop(GameLoop gameLoopType);

@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Volt/Scene/EntityID.h"
 #include "Volt/Asset/AssetTypes.h"
 
 #include <AssetSystem/Asset.h>
 #include <AssetSystem/AssetFactory.h>
+
+#include <EntitySystem/EntityID.h>
 
 #include <CoreUtilities/Containers/Vector.h>
 

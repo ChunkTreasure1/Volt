@@ -45,9 +45,15 @@ namespace Volt
 			reflect.AddMember(&CharacterControllerComponent::density, "density", "Density", "", 1.f);
 			reflect.AddMember(&CharacterControllerComponent::layer, "layer", "Layer", "", 0);
 			reflect.AddMember(&CharacterControllerComponent::hasGravity, "hasGravity", "Has Gravity", "", true);
+			reflect.SetOnCreateCallback(&CharacterControllerComponent::OnCreate);
+			reflect.SetOnDestroyCallback(&CharacterControllerComponent::OnDestroy);
 		}
 
 		REGISTER_COMPONENT(CharacterControllerComponent);
+
+	private:
+		static void OnCreate(CharacterControllerComponent& component, entt::entity id);
+		static void OnDestroy(CharacterControllerComponent& component, entt::entity id);
 	};
 
 	struct RigidbodyComponent
@@ -83,9 +89,15 @@ namespace Volt
 			reflect.AddMember(&RigidbodyComponent::collisionType, "collisionType", "Collision Type", "", CollisionDetectionType::Discrete);
 			reflect.AddMember(&RigidbodyComponent::disableGravity, "disableGravity", "Disable Gravity", "", false);
 			reflect.AddMember(&RigidbodyComponent::isKinematic, "isKinematic", "Is Kinematic", "", false);
+			reflect.SetOnCreateCallback(&RigidbodyComponent::OnCreate);
+			reflect.SetOnDestroyCallback(&RigidbodyComponent::OnDestroy);
 		}
 
 		REGISTER_COMPONENT(RigidbodyComponent);
+
+	private:
+		static void OnCreate(RigidbodyComponent& component, entt::entity id);
+		static void OnDestroy(RigidbodyComponent& component, entt::entity id);
 	};
 
 	struct BoxColliderComponent
@@ -110,9 +122,15 @@ namespace Volt
 			reflect.AddMember(&BoxColliderComponent::offset, "offset", "Offset", "", glm::vec3{ 0.f });
 			reflect.AddMember(&BoxColliderComponent::isTrigger, "isTrigger", "Is Trigger", "", false);
 			reflect.AddMember(&BoxColliderComponent::material, "material", "Material", "", Asset::Null(), AssetTypes::PhysicsMaterial);
+			reflect.SetOnCreateCallback(&BoxColliderComponent::OnCreate);
+			reflect.SetOnDestroyCallback(&BoxColliderComponent::OnDestroy);
 		}
 
 		REGISTER_COMPONENT(BoxColliderComponent);
+
+	private:
+		static void OnCreate(BoxColliderComponent& component, entt::entity id);
+		static void OnDestroy(BoxColliderComponent& component, entt::entity id);
 	};
 
 	struct SphereColliderComponent
@@ -137,9 +155,15 @@ namespace Volt
 			reflect.AddMember(&SphereColliderComponent::offset, "offset", "Offset", "", glm::vec3{ 0.f });
 			reflect.AddMember(&SphereColliderComponent::isTrigger, "isTrigger", "Is Trigger", "", false);
 			reflect.AddMember(&SphereColliderComponent::material, "material", "Material", "", Asset::Null(), AssetTypes::PhysicsMaterial);
+			reflect.SetOnCreateCallback(&SphereColliderComponent::OnCreate);
+			reflect.SetOnDestroyCallback(&SphereColliderComponent::OnDestroy);
 		}
 
 		REGISTER_COMPONENT(SphereColliderComponent);
+	
+	private:
+		static void OnCreate(SphereColliderComponent& component, entt::entity id);
+		static void OnDestroy(SphereColliderComponent& component, entt::entity id);
 	};
 
 	struct CapsuleColliderComponent
@@ -166,9 +190,15 @@ namespace Volt
 			reflect.AddMember(&CapsuleColliderComponent::offset, "offset", "Offset", "", glm::vec3{ 0.f });
 			reflect.AddMember(&CapsuleColliderComponent::isTrigger, "isTrigger", "Is Trigger", "", false);
 			reflect.AddMember(&CapsuleColliderComponent::material, "material", "Material", "", Asset::Null(), AssetTypes::PhysicsMaterial);
+			reflect.SetOnCreateCallback(&CapsuleColliderComponent::OnCreate);
+			reflect.SetOnDestroyCallback(&CapsuleColliderComponent::OnDestroy);
 		}
 
 		REGISTER_COMPONENT(CapsuleColliderComponent);
+
+	private:
+		static void OnCreate(CapsuleColliderComponent& component, entt::entity id);
+		static void OnDestroy(CapsuleColliderComponent& component, entt::entity id);
 	};
 
 	struct MeshColliderComponent
@@ -195,8 +225,14 @@ namespace Volt
 			reflect.AddMember(&MeshColliderComponent::subMeshIndex, "subMeshIndex", "subMeshIndex", "", -1);
 			reflect.AddMember(&MeshColliderComponent::isConvex, "isConvex", "Is Convex", "", true);
 			reflect.AddMember(&MeshColliderComponent::isTrigger, "isTrigger", "Is Trigger", "", false);
+			reflect.SetOnCreateCallback(&MeshColliderComponent::OnCreate);
+			reflect.SetOnDestroyCallback(&MeshColliderComponent::OnDestroy);
 		}
 
 		REGISTER_COMPONENT(MeshColliderComponent);
+
+	private:
+		static void OnCreate(MeshColliderComponent& component, entt::entity id);
+		static void OnDestroy(MeshColliderComponent& component, entt::entity id);
 	};
 }

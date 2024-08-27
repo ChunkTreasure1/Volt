@@ -41,6 +41,7 @@ project "GamePlugin"
 		"LogModule",
 		"CoreUtilities",
 		"EntitySystemModule",
+		"AssetSystemModule",
 		"Volt"
 	}
 

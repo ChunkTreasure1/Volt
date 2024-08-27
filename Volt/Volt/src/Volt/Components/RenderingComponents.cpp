@@ -3,15 +3,25 @@
 
 #include "Volt/Rendering/RenderScene.h"
 #include "Volt/Rendering/Renderer.h"
-#include <AssetSystem/AssetManager.h>
+#include "Volt/Rendering/Camera/Camera.h"
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Components/CoreComponents.h"
 #include "Volt/Scene/SceneManager.h"
 
+#include <AssetSystem/AssetManager.h>
+
 namespace Volt
 {
+	void MeshComponent::OnDestroy(MeshComponent& component, entt::entity entity)
+	{
+		for (const auto& renderId : component.renderObjectIds)
+		{
+			SceneManager::GetActiveScene()->GetRenderScene()->Unregister(renderId);
+		}
+	}
+
 	void MeshComponent::OnMemberChanged(MeshComponent& data, entt::entity entityId)
 	{
 		Entity entity{ entityId, SceneManager::GetActiveScene() };
@@ -155,5 +165,10 @@ namespace Volt
 	{
 		data.m_oldHandle = data.handle;
 		data.m_oldMaterials = data.materials;
+	}
+
+	void CameraComponent::OnCreate(CameraComponent& component, entt::entity id)
+	{
+		component.camera = CreateRef<Camera>(component.fieldOfView, 1.f, 16.f / 9.f, component.nearPlane, component.farPlane);
 	}
 }

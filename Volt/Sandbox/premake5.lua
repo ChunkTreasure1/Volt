@@ -132,6 +132,7 @@ project "Sandbox"
 
 		"InputModule",
 		"EventSystemModule",
+		"EntitySystemModule",
 		"WindowModule",
 
 		"DiscordPlugin",

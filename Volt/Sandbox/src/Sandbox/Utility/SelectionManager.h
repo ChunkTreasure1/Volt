@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Volt/Scene/EntityID.h>
+#include <EntitySystem/EntityID.h>
 
 #include <CoreUtilities/Core.h>
 #include <CoreUtilities/Containers/Vector.h>

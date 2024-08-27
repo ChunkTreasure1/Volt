@@ -21,33 +21,24 @@ namespace Volt
 	{
 		bool isDefault = true;
 
-		void OnCreate(EntityID entityID)
-		{
-			m_id = entityID;
-			Amp::WwiseAudioManager::RegisterListener(static_cast<uint32_t>(m_id), std::to_string(static_cast<uint32_t>(m_id)).c_str(), isDefault);
-		}
-
 		static void ReflectType(TypeDesc<AudioListenerComponent>& reflect)
 		{
 			reflect.SetGUID("{C540C160-3AF7-4C5D-A0E0-7121F27C7DA5}"_guid);
 			reflect.SetLabel("Audio Listener Component");
 			reflect.AddMember(&AudioListenerComponent::isDefault, "default", "Default", "", true);
+			reflect.SetOnCreateCallback(&AudioListenerComponent::OnCreate);
 		}
 
 		REGISTER_COMPONENT(AudioListenerComponent);
 
 	private:
+		static void OnCreate(AudioListenerComponent& component, entt::entity id);
+
 		EntityID m_id = Entity::NullID();
 	};
 
 	struct AudioSourceComponent
 	{
-		void OnCreate(EntityID entityID)
-		{
-			Amp::WwiseAudioManager::CreateAudioObject(static_cast<uint32_t>(entityID), "SpawnedObj");
-			m_id = entityID;
-		}
-
 		void OnStart(Volt::Entity entity)
 		{
 			Amp::WwiseAudioManager::CreateAudioObject(entity.GetID(), entity.GetTag().c_str());
@@ -110,11 +101,14 @@ namespace Volt
 		{
 			reflect.SetGUID("{06A69F94-BB09-4A3A-AF17-C9DA7D552BFE}"_guid);
 			reflect.SetLabel("Audio Source Component");
+			reflect.SetOnCreateCallback(&AudioSourceComponent::OnCreate);
 		}
 
 		REGISTER_COMPONENT(AudioSourceComponent);
 
 	private:
+		static void OnCreate(AudioSourceComponent& component, entt::entity id);
+
 		EntityID m_id = Entity::NullID();
 	};
 

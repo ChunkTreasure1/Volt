@@ -12,7 +12,9 @@
 #include "Volt/Rendering/RendererStructs.h"
 
 #include <AssetSystem/Asset.h>
+
 #include <EventSystem/EventListener.h>
+#include <EntitySystem/Scripting/ECSBuilder.h>
 
 #include <glm/glm.hpp>
 
@@ -68,8 +70,6 @@ namespace Volt
 		Scene();
 		Scene(const std::string& name);
 		~Scene() override;
-
-		void PostInitialize();
 
 		inline entt::registry& GetRegistry() { return m_registry; }
 		inline const std::string& GetName() const { return m_name; }
@@ -141,7 +141,7 @@ namespace Volt
 
 		template<typename... T>
 		const Vector<Entity> GetAllEntitiesWith() const;
-		
+
 		template<typename... T>
 		Vector<Entity> GetAllEntitiesWith();
 
@@ -169,9 +169,9 @@ namespace Volt
 		friend class SceneImporter;
 		friend class SceneSerializer;
 
-		void MoveToLayerRecursive(Entity entity, uint32_t targetLayer);
+		void Initialize();
 
-		void SetupComponentFunctions();
+		void MoveToLayerRecursive(Entity entity, uint32_t targetLayer);
 
 		void IsRecursiveChildOf(Entity mainParent, Entity currentEntity, bool& outChild);
 		void ConvertToWorldSpace(Entity entity);
@@ -183,26 +183,6 @@ namespace Volt
 
 		const glm::mat4 GetWorldTransform(Entity entity) const;
 		const Vector<Entity> FlattenEntityHeirarchy(Entity entity);
-
-		///// Component Functions /////
-		void RigidbodyComponent_OnCreate(entt::registry& registry, entt::entity id);
-		void CharacterControllerComponent_OnCreate(entt::registry& registry, entt::entity id);
-		void BoxColliderComponent_OnCreate(entt::registry& registry, entt::entity id);
-		void SphereColliderComponent_OnCreate(entt::registry& registry, entt::entity id);
-		void CapsuleColliderComponent_OnCreate(entt::registry& registry, entt::entity id);
-		void MeshColliderComponent_OnCreate(entt::registry& registry, entt::entity id);
-		void AudioSourceComponent_OnCreate(entt::registry& registry, entt::entity id);
-		void AudioListenerComponent_OnCreate(entt::registry& registry, entt::entity id);
-		void CameraComponent_OnCreate(entt::registry& registry, entt::entity id);
-
-		void RigidbodyComponent_OnDestroy(entt::registry& registry, entt::entity id);
-		void CharacterControllerComponent_OnDestroy(entt::registry& registry, entt::entity id);
-		void BoxColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
-		void SphereColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
-		void CapsuleColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
-		void MeshColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
-		void MeshComponent_OnDestroy(entt::registry& registry, entt::entity id);
-		//////////////////////////////
 
 		SceneEnvironment m_environment;
 		SceneSettings m_sceneSettings;
@@ -232,12 +212,14 @@ namespace Volt
 		uint32_t m_lastLayerId = 1;
 		uint32_t m_activeLayerIndex = 0;
 		TimelinePlayer m_timelinePlayer;
-			
+
 		ParticleSystem m_particleSystem;
 		AudioSystem m_audioSystem;
 
 		Ref<Vision> m_visionSystem; // Needs to be of ptr type because of include loop
 		Ref<RenderScene> m_renderScene;
+
+		ECSBuilder m_ecsBuilder;
 	};
 
 	template<typename ...T>

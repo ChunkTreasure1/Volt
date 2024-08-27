@@ -1,14 +1,12 @@
 #include "vtpch.h"
 #include "Scene.h"
 
-#include <Volt/Core/Application.h>
+#include "Volt/Core/Application.h"
 
-#include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Animation/Animation.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
 #include "Volt/Asset/Rendering/Material.h"
 
-#include "Volt/Scene/Entity.h"
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Components/AudioComponents.h"
@@ -37,9 +35,9 @@
 
 #include "Volt/Project/ProjectManager.h"
 
-#include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
-
+#include <AssetSystem/AssetManager.h>
 #include <Navigation/Core/NavigationSystem.h>
+#include <EntitySystem/Scripting/ECSSystemRegistry.h>
 
 #include <CoreUtilities/Time/TimeUtility.h>
 #include <CoreUtilities/FileSystem.h>
@@ -54,32 +52,16 @@ namespace Volt
 	Scene::Scene(const std::string& name)
 		: m_name(name)
 	{
-		m_visionSystem = CreateRef<Vision>(this);
-		m_renderScene = CreateRef<RenderScene>(this);
-
-		SetupComponentFunctions();
-		AddLayer("Main", 0);
-
-		m_worldEngine.Reset(this, 16, 4);
-	}
-
-	void Scene::PostInitialize()
-	{
-	}
-
-	Scene::~Scene()
-	{
+		Initialize();
 	}
 
 	Scene::Scene()
 	{
-		m_visionSystem = CreateRef<Vision>(this);
-		m_renderScene = CreateRef<RenderScene>(this);
+		Initialize();
+	}
 
-		SetupComponentFunctions();
-		AddLayer("Main", 0);
-
-		m_worldEngine.Reset(this, 16, 4);
+	Scene::~Scene()
+	{
 	}
 
 	void Scene::SetRenderSize(uint32_t aWidth, uint32_t aHeight)
@@ -728,25 +710,18 @@ namespace Volt
 		}
 	}
 
-	void Scene::SetupComponentFunctions()
+	void Scene::Initialize()
 	{
-		m_registry.on_construct<RigidbodyComponent>().connect<&Scene::RigidbodyComponent_OnCreate>(this);
-		m_registry.on_construct<CharacterControllerComponent>().connect<&Scene::CharacterControllerComponent_OnCreate>(this);
-		m_registry.on_construct<BoxColliderComponent>().connect<&Scene::BoxColliderComponent_OnCreate>(this);
-		m_registry.on_construct<SphereColliderComponent>().connect<&Scene::SphereColliderComponent_OnCreate>(this);
-		m_registry.on_construct<CapsuleColliderComponent>().connect<&Scene::CapsuleColliderComponent_OnCreate>(this);
-		m_registry.on_construct<MeshColliderComponent>().connect<&Scene::MeshColliderComponent_OnCreate>(this);
-		m_registry.on_construct<AudioSourceComponent>().connect<&Scene::AudioSourceComponent_OnCreate>(this);
-		m_registry.on_construct<AudioListenerComponent>().connect<&Scene::AudioListenerComponent_OnCreate>(this);
-		m_registry.on_construct<CameraComponent>().connect<&Scene::CameraComponent_OnCreate>(this);
+		m_visionSystem = CreateRef<Vision>(this);
+		m_renderScene = CreateRef<RenderScene>(this);
 
-		m_registry.on_destroy<RigidbodyComponent>().connect<&Scene::RigidbodyComponent_OnDestroy>(this);
-		m_registry.on_destroy<CharacterControllerComponent>().connect<&Scene::CharacterControllerComponent_OnDestroy>(this);
-		m_registry.on_destroy<BoxColliderComponent>().connect<&Scene::BoxColliderComponent_OnDestroy>(this);
-		m_registry.on_destroy<SphereColliderComponent>().connect<&Scene::SphereColliderComponent_OnDestroy>(this);
-		m_registry.on_destroy<CapsuleColliderComponent>().connect<&Scene::CapsuleColliderComponent_OnDestroy>(this);
-		m_registry.on_destroy<MeshColliderComponent>().connect<&Scene::MeshColliderComponent_OnDestroy>(this);
-		m_registry.on_destroy<MeshComponent>().connect<&Scene::MeshComponent_OnDestroy>(this);
+		ComponentRegistry::Helpers::SetupComponentCallbacks(m_registry);
+
+		AddLayer("Main", 0);
+
+		m_worldEngine.Reset(this, 16, 4);
+
+		GetECSSystemRegistry().Build(m_ecsBuilder);
 	}
 
 	const bool Scene::IsRelatedTo(Entity entity, Entity otherEntity)
@@ -862,230 +837,6 @@ namespace Volt
 	void Scene::AddLayer(const std::string& layerName, uint32_t layerId)
 	{
 		m_sceneLayers.emplace_back(layerId, layerName);
-	}
-
-	void Scene::RigidbodyComponent_OnCreate(entt::registry& registry, entt::entity id)
-	{
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		Physics::CreateActor(Entity{ id, this });
-	}
-
-	void Scene::CharacterControllerComponent_OnCreate(entt::registry& registry, entt::entity id)
-	{
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		Physics::CreateControllerActor(Entity{ id, this });
-	}
-
-	void Scene::BoxColliderComponent_OnCreate(entt::registry& registry, entt::entity id)
-	{
-		auto entity = Entity{ id, this };
-
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		auto actor = Physics::GetScene()->GetActor(entity);
-		BoxColliderComponent& comp = registry.get<BoxColliderComponent>(id);
-
-		if (actor && !comp.added)
-		{
-			actor->AddCollider(comp, entity);
-		}
-	}
-
-	void Scene::SphereColliderComponent_OnCreate(entt::registry& registry, entt::entity id)
-	{
-		auto entity = Entity{ id, this };
-
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		auto actor = Physics::GetScene()->GetActor(entity);
-		SphereColliderComponent& comp = registry.get<SphereColliderComponent>(id);
-
-		if (actor && !comp.added)
-		{
-			actor->AddCollider(comp, entity);
-		}
-	}
-
-	void Scene::CapsuleColliderComponent_OnCreate(entt::registry& registry, entt::entity id)
-	{
-		auto entity = Entity{ id, this };
-
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		auto actor = Physics::GetScene()->GetActor(entity);
-		CapsuleColliderComponent& comp = registry.get<CapsuleColliderComponent>(id);
-
-		if (actor && !comp.added)
-		{
-			actor->AddCollider(comp, entity);
-		}
-	}
-
-	void Scene::MeshColliderComponent_OnCreate(entt::registry& registry, entt::entity id)
-	{
-		auto entity = Entity{ id, this };
-
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		auto actor = Physics::GetScene()->GetActor(entity);
-		MeshColliderComponent& comp = registry.get<MeshColliderComponent>(id);
-
-		if (actor && !comp.added)
-		{
-			actor->AddCollider(comp, entity);
-		}
-	}
-
-	void Scene::AudioSourceComponent_OnCreate(entt::registry& registry, entt::entity id)
-	{
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		AudioSourceComponent& comp = registry.get<AudioSourceComponent>(id);
-		const IDComponent& idComp = registry.get<const IDComponent>(id);
-
-		comp.OnCreate(idComp.id);
-	}
-
-	void Scene::AudioListenerComponent_OnCreate(entt::registry& registry, entt::entity id)
-	{
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		AudioListenerComponent& comp = registry.get<AudioListenerComponent>(id);
-		const IDComponent& idComp = registry.get<const IDComponent>(id);
-		comp.OnCreate(idComp.id);
-	}
-
-	void Scene::CameraComponent_OnCreate(entt::registry& registry, entt::entity id)
-	{
-		CameraComponent& camComp = registry.get<CameraComponent>(id);
-		camComp.camera = CreateRef<Camera>(camComp.fieldOfView, 1.f, float(m_viewportWidth) / float(m_viewportHeight), camComp.nearPlane, camComp.farPlane);
-	}
-
-	void Scene::RigidbodyComponent_OnDestroy(entt::registry& registry, entt::entity id)
-	{
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
-		if (actor)
-		{
-			Physics::GetScene()->RemoveActor(actor);
-		}
-	}
-
-	void Scene::CharacterControllerComponent_OnDestroy(entt::registry& registry, entt::entity id)
-	{
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		auto actor = Physics::GetScene()->GetControllerActor(Entity{ id, this });
-		if (actor)
-		{
-			Physics::GetScene()->RemoveControllerActor(actor);
-		}
-	}
-
-	void Scene::BoxColliderComponent_OnDestroy(entt::registry& registry, entt::entity id)
-	{
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
-		if (actor)
-		{
-			actor->RemoveCollider(ColliderType::Box);
-		}
-	}
-
-	void Scene::SphereColliderComponent_OnDestroy(entt::registry& registry, entt::entity id)
-	{
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
-		if (actor)
-		{
-			actor->RemoveCollider(ColliderType::Sphere);
-		}
-	}
-
-	void Scene::CapsuleColliderComponent_OnDestroy(entt::registry& registry, entt::entity id)
-	{
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
-		if (actor)
-		{
-			actor->RemoveCollider(ColliderType::Capsule);
-		}
-	}
-
-	void Scene::MeshColliderComponent_OnDestroy(entt::registry& registry, entt::entity id)
-	{
-		if (!m_isPlaying)
-		{
-			return;
-		}
-
-		auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
-		if (actor)
-		{
-			auto& comp = registry.get<MeshColliderComponent>(id);
-			if (comp.isConvex)
-			{
-				actor->RemoveCollider(ColliderType::ConvexMesh);
-			}
-			else
-			{
-				actor->RemoveCollider(ColliderType::TriangleMesh);
-			}
-		}
-	}
-
-	void Scene::MeshComponent_OnDestroy(entt::registry& registry, entt::entity id)
-	{
-		auto& meshComp = registry.get<MeshComponent>(id);
-		for (const auto& renderId : meshComp.renderObjectIds)
-		{
-			m_renderScene->Unregister(renderId);
-		}
 	}
 
 	void Scene::SortScene()
