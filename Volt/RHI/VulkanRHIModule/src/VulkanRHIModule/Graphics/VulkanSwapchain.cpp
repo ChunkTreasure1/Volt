@@ -230,7 +230,7 @@ namespace Volt::RHI
 
 		QuerySwapchainCapabilities();
 
-		GraphicsContext::GetDevice()->As<VulkanGraphicsDevice>()->WaitForIdle();
+		GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Compute)->WaitForQueue();
 
 		CreateSwapchain(width, height, enableVSync);
 	}

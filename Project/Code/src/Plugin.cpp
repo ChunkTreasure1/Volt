@@ -22,7 +22,7 @@ using PlayerEntity = ECS::Access
 	::With<PlayerComponent>
 	::As<ECS::Type::Entity>;
 
-void PlayerSystem(PlayerEntity entity)
+void PlayerSystem(PlayerEntity entity, float deltaTime)
 {
 }
 

@@ -161,9 +161,13 @@ namespace Volt
 			reflect.SetGUID("{5D3B2C0D-5457-43D8-9623-98730E1556F4}"_guid);
 			reflect.SetLabel("Motion Weave Component");
 			reflect.AddMember(&MotionWeaveComponent::motionWeaveDatabase, "motionGraph", "Motion Graph", "", Asset::Null(), AssetTypes::MotionWeave);
+			reflect.SetOnStartCallback(&MotionWeaveComponent::OnStart);
 		}
 
 		REGISTER_COMPONENT(MotionWeaveComponent);
+
+	private:
+		static void OnStart(MotionWeaveComponent& component, entt::entity id);
 	};
 
 	struct VertexPaintedComponent

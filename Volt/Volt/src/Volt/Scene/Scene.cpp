@@ -70,11 +70,6 @@ namespace Volt
 		m_viewportHeight = aHeight;
 	}
 
-	void Scene::SetTimeScale(const float aTimeScale)
-	{
-		Volt::Application::Get().SetTimeScale(aTimeScale);
-	}
-
 	void Scene::OnRuntimeStart()
 	{
 		Physics::CreateScene(this);
@@ -88,46 +83,17 @@ namespace Volt
 
 		Application::Get().GetNavigationSystem().OnRuntimeStart();
 
-		ForEachWithComponents<CommonComponent>([](entt::entity, CommonComponent& dataComp)
-		{
-			dataComp.timeSinceCreation = 0.f;
-			dataComp.randomValue = Random::Float(0.f, 1.f);
-		});
-
 		m_visionSystem->Initialize();
-
-		ForEachWithComponents<MotionWeaveComponent, const MeshComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave, const MeshComponent& meshComp)
-		{
-			motionWeave.MotionWeaver = MotionWeaver::Create(motionWeave.motionWeaveDatabase);
-
-			Entity entity{ id, shared_from_this() };
-
-			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshComp.handle);
-			if (mesh && mesh->IsValid())
-			{
-				const auto& idComp = entity.GetComponent<IDComponent>();
-				const auto& materialTable = mesh->GetMaterialTable();
-
-				for (size_t i = 0; i < mesh->GetSubMeshes().size(); i++)
-				{
-					auto material = AssetManager::QueueAsset<Material>(materialTable.GetMaterial(mesh->GetSubMeshes().at(i).materialIndex));
-					if (!material->IsValid())
-					{
-					}
-
-					auto uuid = m_renderScene->Register(idComp.id, motionWeave.MotionWeaver, mesh, material, static_cast<uint32_t>(i));
-					motionWeave.renderObjectIds.emplace_back(uuid);
-				}
-			}
-		});
+		ComponentOnStart();
 	}
 
 	void Scene::OnRuntimeEnd()
 	{
 		m_isPlaying = false;
+		ComponentOnStop();
 
-		Physics::DestroyScene();
 		m_audioSystem.RuntimeStop(m_registry, shared_from_this());
+		Physics::DestroyScene();
 	}
 
 	void Scene::OnSimulationStart()
@@ -153,34 +119,7 @@ namespace Volt
 		m_timeSinceStart += aDeltaTime;
 		m_currentDeltaTime = aDeltaTime;
 
-		{
-			VT_PROFILE_SCOPE("Update entity time");
-
-			ForEachWithComponents<CommonComponent>([&](entt::entity id, CommonComponent& dataComp)
-			{
-				dataComp.timeSinceCreation += aDeltaTime;
-			});
-		}
-
-		ForEachWithComponents<CameraComponent, const TransformComponent>([&](entt::entity id, CameraComponent& cameraComp, const TransformComponent& transComp)
-		{
-			if (transComp.visible)
-			{
-				Entity entity = { id, this };
-
-				cameraComp.camera->SetPerspectiveProjection(cameraComp.fieldOfView, (float)m_viewportWidth / (float)m_viewportHeight, cameraComp.nearPlane, cameraComp.farPlane);
-				cameraComp.camera->SetPosition(entity.GetPosition());
-				cameraComp.camera->SetRotation(glm::eulerAngles(entity.GetRotation()));
-			}
-		});
-
-		ForEachWithComponents<MotionWeaveComponent, const MeshComponent>([&](entt::entity id, MotionWeaveComponent& motionWeave, const MeshComponent& mesh)
-		{
-			if (motionWeave.MotionWeaver)
-			{
-				motionWeave.MotionWeaver->Update(aDeltaTime);
-			}
-		});
+		m_ecsBuilder.GetGameLoop(GameLoop::Variable).Execute(m_registry, aDeltaTime);
 
 		m_particleSystem.Update(m_registry, shared_from_this(), aDeltaTime);
 		m_audioSystem.Update(m_registry, shared_from_this(), aDeltaTime);
@@ -188,6 +127,7 @@ namespace Volt
 
 	void Scene::FixedUpdate(float aDeltaTime)
 	{
+		m_ecsBuilder.GetGameLoop(GameLoop::Fixed).Execute(m_registry, aDeltaTime);
 	}
 
 	void Scene::UpdateEditor(float aDeltaTime)
@@ -611,6 +551,7 @@ namespace Volt
 		otherScene->m_sceneLayers = m_sceneLayers;
 		otherScene->m_activeLayerIndex = m_activeLayerIndex;
 		otherScene->m_lastLayerId = m_lastLayerId;
+		otherScene->m_ecsBuilder = m_ecsBuilder;
 
 		m_registry.each([&](entt::entity id)
 		{
@@ -722,6 +663,63 @@ namespace Volt
 		m_worldEngine.Reset(this, 16, 4);
 
 		GetECSSystemRegistry().Build(m_ecsBuilder);
+		m_ecsBuilder.Compile();
+	}
+
+	void Scene::ComponentOnStart()
+	{
+		VT_PROFILE_FUNCTION();
+
+		for (auto&& curr : m_registry.storage())
+		{
+			auto& storage = curr.second;
+			std::string_view typeName = storage.type().name();
+
+			const ICommonTypeDesc* typeDesc = GetComponentRegistry().GetTypeDescFromName(typeName);
+			if (!typeDesc)
+			{
+				continue;
+			}
+
+			if (typeDesc->GetValueType() != ValueType::Component)
+			{
+				continue;
+			}
+
+			for (auto& entity : storage)
+			{
+				const IComponentTypeDesc* compTypeDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
+				compTypeDesc->OnStart(storage.get(entity), entity);
+			}
+		}
+	}
+
+	void Scene::ComponentOnStop()
+	{
+		VT_PROFILE_FUNCTION();
+
+		for (auto&& curr : m_registry.storage())
+		{
+			auto& storage = curr.second;
+			std::string_view typeName = storage.type().name();
+
+			const ICommonTypeDesc* typeDesc = GetComponentRegistry().GetTypeDescFromName(typeName);
+			if (!typeDesc)
+			{
+				continue;
+			}
+
+			if (typeDesc->GetValueType() != ValueType::Component)
+			{
+				continue;
+			}
+
+			for (auto& entity : storage)
+			{
+				const IComponentTypeDesc* compTypeDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
+				compTypeDesc->OnStop(storage.get(entity), entity);
+			}
+		}
 	}
 
 	const bool Scene::IsRelatedTo(Entity entity, Entity otherEntity)

@@ -91,8 +91,6 @@ namespace Volt
 		inline const float GetAverageFrameTime() const { return m_frameTimer.GetAverageTime(); }
 		inline const float GetMaxFrameTime() const { return m_frameTimer.GetMaxFrameTime(); }
 
-		inline void SetTimeScale(const float aTimeScale) { m_timeScale = aTimeScale; }
-
 		AI::NavigationSystem& GetNavigationSystem() { return *m_navigationSystem; }
 		SteamImplementation& GetSteam() { return *m_steamImplementation; }
 
@@ -113,7 +111,6 @@ namespace Volt
 		bool m_isMinimized = false;
 		bool m_hasSentMouseMovedEvent = false;
 
-		float m_timeScale = 1.f;
 		float m_currentDeltaTime = 0.f;
 		float m_lastTotalTime = 0.f;
 

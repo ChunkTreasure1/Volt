@@ -338,6 +338,11 @@ namespace Volt
 			return obj.id == id;
 		});
 
+		if (it == m_renderObjects.end())
+		{
+			return;
+		}
+
 		const bool isAnimated = (*it).IsAnimated();
 
 		if (it != m_renderObjects.end())

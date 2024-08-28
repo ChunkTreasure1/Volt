@@ -47,9 +47,13 @@ namespace Volt
 			reflect.SetHidden();
 			reflect.AddMember(&CommonComponent::layerId, "layerid", "Layer ID", "", 0u);
 			reflect.AddMember(&CommonComponent::timeCreatedID, "timecreatedid", "Time Created", "", 0u);
+			reflect.SetOnStartCallback(&CommonComponent::OnStart);
 		}
 
 		REGISTER_COMPONENT(CommonComponent);
+	
+	private:
+		static void OnStart(CommonComponent& component, entt::entity entity);
 	};
 
 	struct TagComponent

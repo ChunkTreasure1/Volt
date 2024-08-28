@@ -77,8 +77,6 @@ namespace Volt
 		inline const bool IsPlaying() const { return m_isPlaying; }
 		inline const float GetDeltaTime() const { return m_currentDeltaTime; }
 
-		void SetTimeScale(const float aTimeScale);
-
 		void OnRuntimeStart();
 		void OnRuntimeEnd();
 
@@ -170,6 +168,8 @@ namespace Volt
 		friend class SceneSerializer;
 
 		void Initialize();
+		void ComponentOnStart();
+		void ComponentOnStop();
 
 		void MoveToLayerRecursive(Entity entity, uint32_t targetLayer);
 

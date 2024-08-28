@@ -147,6 +147,8 @@ namespace Volt
 		
 		virtual void OnCreate(void* objectPtr, entt::entity entity) const = 0;
 		virtual void OnDestroy(void* objectPtr, entt::entity entity) const = 0;
+		virtual void OnStart(void* objectPtr, entt::entity entity) const = 0;
+		virtual void OnStop(void* objectPtr, entt::entity entity) const = 0;
 		virtual void OnMemberChanged(void* objectPtr, entt::entity entity) const = 0;
 		virtual void OnComponentCopied(void* objectPtr, entt::entity entity) const = 0;
 		virtual void OnComponentDeserialized(void* objectPtr, entt::entity entity) const = 0;
@@ -317,6 +319,8 @@ namespace Volt
 
 		void OnCreate(void* objectPtr, entt::entity entity) const override;
 		void OnDestroy(void* objectPtr, entt::entity entity) const override;
+		void OnStart(void* objectPtr, entt::entity entity) const override;
+		void OnStop(void* objectPtr, entt::entity entity) const override;
 		void OnMemberChanged(void* objectPtr, entt::entity entity) const override;
 		void OnComponentCopied(void* objectPtr, entt::entity entity) const override;
 		void OnComponentDeserialized(void* objectPtr, entt::entity entity) const override;
@@ -385,6 +389,16 @@ namespace Volt
 			m_onDestroyCallback = std::move(func);
 		}
 
+		void SetOnStartCallback(std::function<void(T&, entt::entity)>&& func)
+		{
+			m_onStartCallback = std::move(func);
+		}
+
+		void SetOnStopCallback(std::function<void(T&, entt::entity)>&& func)
+		{
+			m_onStopCallback = std::move(func);
+		}
+
 		void SetOnMemberChangedCallback(std::function<void(T&, entt::entity)>&& func)
 		{
 			m_onMemberChangedCallback = std::move(func);
@@ -410,6 +424,8 @@ namespace Volt
 		bool m_isHidden = false;
 		std::function<void(T& component, entt::entity entity)> m_onCreateCallback;
 		std::function<void(T& component, entt::entity entity)> m_onDestroyCallback;
+		std::function<void(T& component, entt::entity entity)> m_onStartCallback;
+		std::function<void(T& component, entt::entity entity)> m_onStopCallback;
 		std::function<void(T& component, entt::entity entity)> m_onMemberChangedCallback;
 		std::function<void(T& component, entt::entity entity)> m_onComponentCopiedCallback;
 		std::function<void(T& component, entt::entity entity)> m_onComponentDeserializedCallback;
@@ -476,6 +492,24 @@ namespace Volt
 		if (m_onDestroyCallback)
 		{
 			m_onDestroyCallback(*reinterpret_cast<T*>(objectPtr), entity);
+		}
+	}
+
+	template<typename T>
+	inline void ComponentTypeDesc<T>::OnStart(void* objectPtr, entt::entity entity) const
+	{
+		if (m_onStartCallback)
+		{
+			m_onStartCallback(*reinterpret_cast<T*>(objectPtr), entity);
+		}
+	}
+
+	template<typename T>
+	inline void ComponentTypeDesc<T>::OnStop(void* objectPtr, entt::entity entity) const
+	{
+		if (m_onStopCallback)
+		{
+			m_onStopCallback(*reinterpret_cast<T*>(objectPtr), entity);
 		}
 	}
 

@@ -271,7 +271,7 @@ namespace Volt
 
 		{
 			VT_PROFILE_SCOPE("Application::Update");
-			AppUpdateEvent updateEvent(m_currentDeltaTime * m_timeScale);
+			AppUpdateEvent updateEvent(m_currentDeltaTime);
 			EventSystem::DispatchEvent(updateEvent);
 
 			AssetManager::Update();
@@ -303,7 +303,7 @@ namespace Volt
 
 		{
 			VT_PROFILE_SCOPE("Application::PostFrameUpdate");
-			AppPostFrameUpdateEvent postFrameUpdateEvent{ m_currentDeltaTime * m_timeScale };
+			AppPostFrameUpdateEvent postFrameUpdateEvent{ m_currentDeltaTime };
 			EventSystem::DispatchEvent(postFrameUpdateEvent);
 		}
 

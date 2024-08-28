@@ -127,8 +127,8 @@ namespace ECS
 
 		inline static constexpr Type ConstructType = ::ECS::Type::Entity;
 
-		ConstructComponents(ComponentTuple tuple, entt::entity entityId, entt::registry& registry)
-			: m_tuple(tuple), m_entityId(entityId), m_registry(registry)
+		ConstructComponents(entt::entity entityId, entt::registry& registry)
+			: m_entityId(entityId), m_registry(registry)
 		{
 		}
 
@@ -139,15 +139,14 @@ namespace ECS
 
 			if constexpr (ComponentTraits::IsValid)
 			{
-				constexpr std::size_t index = ComponentTraits::Value;
-				return std::get<index>(m_tuple);
+				return m_registry.get<T>(m_entityId);
 			}
 			else
 			{
 				using WriteIfExistsTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<T>>, ComponentTupleWriteIfExists>;
 
 				static_assert(WriteIfExistsTraits::IsValid);
-				return m_registry->get<T>(m_entityId);
+				return m_registry.get<T>(m_entityId);
 			}
 		}
 
@@ -158,8 +157,7 @@ namespace ECS
 
 			if constexpr (ComponentTraits::IsValid)
 			{
-				constexpr std::size_t index = ComponentTraits::Value;
-				return std::get<index>(m_tuple);
+				return m_registry.get<T>(m_entityId);
 			}
 			else
 			{
@@ -190,7 +188,6 @@ namespace ECS
 		}
 
 	private:
-		ComponentTuple m_tuple;
 		entt::entity m_entityId;
 		entt::registry& m_registry;
 	};
@@ -239,7 +236,7 @@ namespace ECS
 
 			VT_INLINE constexpr ConstructComponents<Type::Entity, T...> operator*() const
 			{
-				return ConstructComponents<Type::Entity, T...>(GetComponentView<ComponentTuple>(m_view, *m_iterator), *m_iterator, m_registry);
+				return ConstructComponents<Type::Entity, T...>(*m_iterator, m_registry);
 			}
 
 			VT_INLINE constexpr Iterator& operator++()
@@ -259,19 +256,6 @@ namespace ECS
 			}
 
 		private:
-			template<typename Tuple, typename EntityView, std::size_t... Indices>
-			static auto GetComponentViewImpl(std::index_sequence<Indices...>, EntityView& view, entt::entity entity)
-			{
-				return view.get<std::remove_reference_t<std::tuple_element_t<Indices, Tuple>>...>(entity);
-			}
-
-			template<typename Tuple, typename EntityView>
-			static auto GetComponentView(EntityView& view, entt::entity entity)
-			{
-				constexpr std::size_t tupleSize = std::tuple_size_v<Tuple>;
-				return GetComponentViewImpl<Tuple>(std::make_index_sequence<tupleSize>{}, view, entity);
-			}
-
 			ViewType::iterator m_iterator;
 			ViewType& m_view;
 			entt::registry& m_registry = nullptr;
