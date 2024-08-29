@@ -3,8 +3,6 @@
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/SceneManager.h>
 
-#include <Volt/Events/SettingsEvent.h>
-
 #include <AssetSystem/AssetManager.h>
 
 #include <Volt/Rendering/SceneRenderer.h>
@@ -12,7 +10,6 @@
 #include <Navigation/Core/NavigationSystem.h>
 
 #include <Volt/Core/Application.h>
-#include <Volt/Scripting/Mono/MonoScriptEngine.h>
 #include <Volt/Project/ProjectManager.h>
 
 #include <InputModule/KeyCodes.h>
@@ -50,33 +47,11 @@ void GameLayer::OnAttach()
 		throw std::runtime_error("Start scene is not a valid scene!");
 	}
 
-	// Scene Renderer
-	{
-		Volt::SceneRendererSpecification spec{};
-		spec.debugName = "Main Renderer";
-		spec.scene = m_scene;
-
-		spec.initialResolution = { Volt::WindowManager::Get().GetMainWindow().GetWidth(), Volt::WindowManager::Get().GetMainWindow().GetHeight() };
-
-
-		Volt::SceneRendererSettings settings{}; //= LoadGraphicSettings();
-		settings.enableUI = true;
-		settings.enablePostProcessing = true;
-		settings.enableVolumetricFog = true;
-
-		m_sceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
-
-		m_scene->SetRenderSize(spec.initialResolution.x, spec.initialResolution.y);
-	}
 }
 
 void GameLayer::OnDetach()
 {
 	m_scene->OnRuntimeEnd();
-
-	// #TODO: Remove
-	if (Volt::Application::Get().GetNetHandler().IsRunning())
-		Volt::Application::Get().GetNetHandler().Stop();
 
 	m_sceneRenderer = nullptr;
 	m_scene = nullptr;
@@ -93,9 +68,6 @@ void GameLayer::LoadStartScene()
 	Volt::OnScenePlayEvent playEvent{};
 	Volt::EventSystem::DispatchEvent(playEvent);
 
-	// #TODO: Remove
-	if (!Volt::Application::Get().GetNetHandler().IsRunning())
-		Volt::Application::Get().GetNetHandler().StartSinglePlayer();
 }
 
 bool GameLayer::OnUpdateEvent(Volt::AppUpdateEvent& e)
@@ -190,7 +162,6 @@ bool GameLayer::OnSceneTransition(Volt::OnSceneTransitionEvent& e)
 
 bool GameLayer::OnSceneLoaded(Volt::OnSceneLoadedEvent& e)
 {
-	Volt::MonoScriptEngine::OnSceneLoaded();
 	return false;
 }
 
@@ -199,40 +170,6 @@ bool GameLayer::OnSceneLoaded(Volt::OnSceneLoadedEvent& e)
 //	m_isPaused = e.GetState();
 //	return false;
 //}
-
-Volt::SceneRendererSettings GameLayer::LoadGraphicSettings()
-{
-	Volt::SceneRendererSettings settings{};
-
-	std::filesystem::path path = Volt::ProjectManager::GetRootDirectory() / "Assets/Settings/GameSettings.yaml";
-	std::ifstream file(path);
-	std::stringstream sstream;
-	sstream << file.rdbuf();
-
-	YAML::Node root = YAML::Load(sstream.str());
-
-	if (root["Shadows"])
-	{
-		settings.enableShadows = root["Shadows"].as<bool>();
-	}
-	if (root["AO"])
-	{
-		settings.enableAO = root["AO"].as<bool>();
-	}
-	if (root["Bloom"])
-	{
-		settings.enableBloom = root["Bloom"].as<bool>();
-	}
-	if (root["AA"])
-	{
-		settings.enableAntiAliasing = root["AA"].as<bool>();
-	}
-	if (root["RenderScale"])
-	{
-		settings.renderScale = root["RenderScale"].as<float>();
-	}
-	return settings;
-}
 
 void GameLayer::TrySceneTransition()
 {

@@ -101,6 +101,14 @@ namespace Volt
 		Vector<SDFPrimitiveDrawData> BuildSDFPrimitiveDrawData();
 		void BuildSingleSDFPrimitiveDrawData(SDFPrimitiveDrawData& primtiveDrawData, const RenderObject& renderObject);
 
+
+		void TryAddMesh(Ref<Mesh> mesh);
+		void TryAddMaterial(Ref<Material> material);
+
+		void UpdateInvalidMaterials(RenderGraph& renderGraph);
+		void UpdateInvalidMeshes(RenderGraph& renderGraph);
+		void UpdateInvalidPrimitiveData(RenderGraph& renderGraph);
+
 		struct InvalidMaterial
 		{
 			Weak<Material> material;
@@ -125,6 +133,7 @@ namespace Volt
 
 		Vector<GPUMesh> m_gpuMeshes;
 		Vector<GPUMeshSDF> m_gpuSDFMeshes;
+		Vector<GPUMaterial> m_gpuMaterials;
 		Vector<PrimitiveDrawData> m_primitiveDrawData;
 		Vector<SDFPrimitiveDrawData> m_sdfPrimitiveDrawData;
 
@@ -138,7 +147,7 @@ namespace Volt
 		vt::map<UUID64, uint32_t> m_sdfPrimitiveIndexFromRenderObjectID;
 
 		vt::map<AssetHandle, size_t> m_materialIndexFromAssetHandle;
-		vt::map<size_t, size_t> m_meshIndexFromMeshAssetHash;
+		vt::map<size_t, size_t> m_gpuMeshIndexFromMeshAssetHash;
 		vt::map<size_t, uint32_t> m_meshSubMeshToGPUMeshIndex;
 		vt::map<size_t, uint32_t> m_meshSubMeshToGPUMeshSDFIndex;
 		

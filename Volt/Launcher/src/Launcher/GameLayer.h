@@ -39,8 +39,6 @@ private:
 	bool OnSceneLoaded(Volt::OnSceneLoadedEvent& e);
 	//bool OnGameStateChanged(Volt::OnGameStateChangedEvent& e);
 
-	Volt::SceneRendererSettings LoadGraphicSettings();
-
 	void TrySceneTransition();
 
 	Ref<Volt::SceneRenderer> m_sceneRenderer;

@@ -87,6 +87,8 @@ namespace Volt
 		// #TODO_Ivar: TEMP, Should not be public!
 		void Invalidate();
 
+		void Enable();
+
 		const uint64_t GetFrameTotalGPUAllocationSize() const;
 
 	private:
@@ -127,6 +129,8 @@ namespace Volt
 		void AddVisualizeBricksPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphImageHandle dstImage);
 
 		void CreateMainRenderTarget(const uint32_t width, const uint32_t height);
+
+		bool m_enabled = false;
 
 		RefPtr<RHI::Image> m_outputImage;
 		RefPtr<RHI::Image> m_objectIDImage;

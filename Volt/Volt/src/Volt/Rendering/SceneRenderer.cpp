@@ -219,8 +219,13 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 
 		auto renderScene = m_scene->GetRenderScene();
-		renderScene->PrepareForUpdate();
+		//renderScene->PrepareForUpdate();
 		renderScene->SetValid();
+	}
+
+	void SceneRenderer::Enable()
+	{
+		m_enabled = true;
 	}
 
 	const uint64_t SceneRenderer::GetFrameTotalGPUAllocationSize() const

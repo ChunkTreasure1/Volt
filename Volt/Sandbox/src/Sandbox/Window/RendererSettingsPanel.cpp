@@ -50,6 +50,11 @@ void RendererSettingsPanel::UpdateMainContent()
 		m_sceneRenderer->SetVisualizationMode(static_cast<Volt::SceneRenderer::VisualizationMode>(currentValue));
 	}
 
+	if (ImGui::Button("Enable"))
+	{
+		m_sceneRenderer->Enable();
+	}
+
 	//UI::Header("Settings");
 
 	//bool changed = false;

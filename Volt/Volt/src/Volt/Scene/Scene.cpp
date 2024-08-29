@@ -505,7 +505,7 @@ namespace Volt
 				//auto id = ent.GetComponent<IDComponent>();
 
 				auto& meshComp = ent.AddComponent<MeshComponent>();
-				meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube_Mesh.vtasset");
+				meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtasset");
 
 				//ent.AddComponent<RigidbodyComponent>();
 			}

@@ -117,9 +117,7 @@ project "Launcher"
 
 		"%{Library.AkRoomVerbFX}",
 
-		"%{Library.mono}",
 		"%{Library.steam}",
-		
 		"%{Library.METIS}",
 
 		"EventSystemModule", 
