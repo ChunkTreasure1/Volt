@@ -4,6 +4,7 @@
 .idea/
 bin/
 bin-int/
+Temp/
 
 Engine/User
 Engine/Engine/Shaders/Cache
