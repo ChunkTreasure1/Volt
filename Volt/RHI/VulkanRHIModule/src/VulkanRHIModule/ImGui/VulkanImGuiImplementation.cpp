@@ -55,7 +55,7 @@ namespace Volt::RHI
 	}
 
 	VulkanImGuiImplementation::VulkanImGuiImplementation(const ImGuiCreateInfo& createInfo)
-		: m_swapchain(createInfo.swapchain), m_windowPtr(createInfo.window)
+		: m_swapchain(createInfo.swapchain), m_windowPtr(createInfo.window), m_commandBufferSet(createInfo.swapchain->GetFramesInFlight())
 	{
 	}
 
@@ -104,7 +104,7 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		auto swapchainPtr = m_swapchain->As<VulkanSwapchain>();
-		auto commandBuffer = swapchainPtr->GetCommandBuffer();
+		auto commandBuffer = m_commandBufferSet.IncrementAndGetCommandBuffer();
 
 		{
 			ResourceBarrierInfo barrier{};
@@ -235,7 +235,7 @@ namespace Volt::RHI
 	{
 		auto device = GraphicsContext::GetDevice()->As<VulkanGraphicsDevice>();
 
-		m_swapchain->GetCommandBuffer()->WaitForFence();
+		GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics)->WaitForQueue();
 
 		vkDestroyDescriptorPool(device->GetHandle<VkDevice>(), m_descriptorPool, nullptr);
 		ImGui_ImplVulkan_Shutdown();

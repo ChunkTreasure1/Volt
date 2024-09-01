@@ -35,7 +35,7 @@ namespace Volt::RHI
 		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None, ImageLayout::Undefined);
 
 		InvalidateSwapchainImage(specification);
-		SetName("Swapchain Image");
+		SetName(std::format("Swapchain Image {}", specification.imageIndex));
 	}
 
 	VulkanImage::~VulkanImage()

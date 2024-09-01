@@ -47,7 +47,6 @@ namespace Volt::RHI
 		const uint32_t GetFramesInFlight() const override;
 		const PixelFormat GetFormat() const override;
 		RefPtr<Image> GetCurrentImage() const override;
-		RefPtr<CommandBuffer> GetCommandBuffer() const override;
 
 		inline VkImage_T* GetImageAtIndex(const uint32_t index) const { return m_perImageData.at(index).image; }
 

@@ -2,6 +2,8 @@
 
 #include "Testing/RenderingTestBase.h"
 
+#include <RHIModule/Buffers/CommandBufferSet.h>
+
 namespace Volt
 {
 	class Mesh;
@@ -19,4 +21,6 @@ public:
 private:
 	Ref<Volt::Mesh> m_cubeMesh;
 	Ref<Volt::Mesh> m_sphereMesh;
+
+	Volt::RHI::CommandBufferSet m_commandBufferSet;
 };

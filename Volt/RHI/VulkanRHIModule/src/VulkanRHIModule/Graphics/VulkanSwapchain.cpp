@@ -262,13 +262,8 @@ namespace Volt::RHI
 
 	RefPtr<Image> VulkanSwapchain::GetCurrentImage() const
 	{
-		const auto& data = m_perImageData.at(GetCurrentFrame());
+		const auto& data = m_perImageData.at(m_currentImage);
 		return data.imageReference;
-	}
-
-	RefPtr<CommandBuffer> VulkanSwapchain::GetCommandBuffer() const
-	{
-		return m_commandBuffers.at(m_currentFrame);
 	}
 
 	void* VulkanSwapchain::GetHandleImpl() const

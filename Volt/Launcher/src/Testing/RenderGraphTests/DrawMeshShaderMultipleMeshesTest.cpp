@@ -2,6 +2,8 @@
 
 #include <Volt/Core/Application.h>
 #include <Volt/Asset/Mesh/Mesh.h>
+#include <Volt/Rendering/Renderer.h>
+
 #include <AssetSystem/AssetManager.h>
 
 #include <RenderCore/RenderGraph/RenderGraph.h>
@@ -15,6 +17,7 @@
 using namespace Volt;
 
 RG_DrawMeshShaderMultipleMeshesTest::RG_DrawMeshShaderMultipleMeshesTest()
+	: m_commandBufferSet(Renderer::GetFramesInFlight())
 {
 	m_cubeMesh = AssetManager::GetAsset<Mesh>("Engine/Meshes/Primitives/SM_Cube.vtasset");
 	m_sphereMesh = AssetManager::GetAsset<Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtasset");
@@ -28,7 +31,7 @@ bool RG_DrawMeshShaderMultipleMeshesTest::RunTest()
 {
 	auto& swapchain = Volt::WindowManager::Get().GetMainWindow().GetSwapchain();
 
-	RenderGraph renderGraph{ m_commandBuffer };
+	RenderGraph renderGraph{ m_commandBufferSet.IncrementAndGetCommandBuffer() };
 
 	auto targetImage = swapchain.GetCurrentImage();
 	RenderGraphImageHandle targetImageHandle = renderGraph.AddExternalImage(targetImage);

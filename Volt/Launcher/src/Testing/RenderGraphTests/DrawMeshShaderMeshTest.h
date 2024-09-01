@@ -2,6 +2,8 @@
 
 #include "Testing/RenderingTestBase.h"
 
+#include <RHIModule/Buffers/CommandBufferSet.h>
+
 namespace Volt
 {
 	class Mesh;
@@ -17,5 +19,7 @@ public:
 	std::string GetName() const override { return "RG_DrawMeshShaderTriangleTest"; }
 
 private:
+	Volt::RHI::CommandBufferSet m_commandBufferSet;
+
 	Ref<Volt::Mesh> m_mesh;
 };

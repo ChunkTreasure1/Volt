@@ -1,6 +1,7 @@
 #include "SwapchainClearColorTest.h"
 
 #include <Volt/Core/Application.h>
+#include <Volt/Rendering/Renderer.h>
 
 #include <WindowModule/WindowManager.h>
 #include <WindowModule/Window.h>
@@ -8,6 +9,7 @@
 using namespace Volt;
 
 SwapchainClearColorTest::SwapchainClearColorTest()
+	: m_commandBufferSet(Renderer::GetFramesInFlight())
 {
 }
 
@@ -19,21 +21,23 @@ bool SwapchainClearColorTest::RunTest()
 {
 	auto& swapchain = Volt::WindowManager::Get().GetMainWindow().GetSwapchain();
 
-	m_commandBuffer->Begin();
-	m_commandBuffer->BeginMarker("SwapchainClearColorTest", { 1.f });
+	auto commandBuffer = m_commandBufferSet.IncrementAndGetCommandBuffer();
+
+	commandBuffer->Begin();
+	commandBuffer->BeginMarker("SwapchainClearColorTest", { 1.f });
 
 	{
 		RHI::ResourceBarrierInfo barrier{};
 		barrier.type = RHI::BarrierType::Image;
 		barrier.imageBarrier().srcAccess = RHI::BarrierAccess::None;
-		barrier.imageBarrier().srcStage = RHI::BarrierStage::All;
+		barrier.imageBarrier().srcStage = RHI::BarrierStage::RenderTarget;
 		barrier.imageBarrier().srcLayout = RHI::ImageLayout::Undefined;
 		barrier.imageBarrier().dstAccess = RHI::BarrierAccess::RenderTarget;
 		barrier.imageBarrier().dstStage = RHI::BarrierStage::RenderTarget;
 		barrier.imageBarrier().dstLayout = RHI::ImageLayout::RenderTarget;
 		barrier.imageBarrier().resource = swapchain.GetCurrentImage();
 
-		m_commandBuffer->ResourceBarrier({ barrier });
+		commandBuffer->ResourceBarrier({ barrier });
 	}
 
 	RHI::AttachmentInfo attachment{};
@@ -46,12 +50,12 @@ bool SwapchainClearColorTest::RunTest()
 	renderingInfo.renderArea.extent.width = swapchain.GetWidth();
 	renderingInfo.renderArea.extent.height = swapchain.GetHeight();
 
-	m_commandBuffer->BeginRendering(renderingInfo);
-	m_commandBuffer->EndRendering();
+	commandBuffer->BeginRendering(renderingInfo);
+	commandBuffer->EndRendering();
 
-	m_commandBuffer->EndMarker();
-	m_commandBuffer->End();
-	m_commandBuffer->Execute();
+	commandBuffer->EndMarker();
+	commandBuffer->End();
+	commandBuffer->Execute();
 
 	return true;
 }

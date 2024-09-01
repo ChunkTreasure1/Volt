@@ -4,6 +4,7 @@
 
 #include <RHIModule/ImGui/ImGuiImplementation.h>
 #include <RHIModule/Buffers/CommandBuffer.h>
+#include <RHIModule/Buffers/CommandBufferSet.h>
 
 #include <CoreUtilities/Pointers/RefPtr.h>
 
@@ -38,5 +39,7 @@ namespace Volt::RHI
 		GLFWwindow* m_windowPtr = nullptr;
 		WeakPtr<Swapchain> m_swapchain;
 		VkDescriptorPool_T* m_descriptorPool;
+		
+		CommandBufferSet m_commandBufferSet;
 	};
 }

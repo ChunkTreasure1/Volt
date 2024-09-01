@@ -1,4 +1,3 @@
-#include "Resources.hlsli"
 #include "Vertex.hlsli"
 
 static const float PI = 3.14159265359;

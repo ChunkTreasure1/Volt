@@ -22,7 +22,6 @@ namespace Volt::RHI
 
 		VT_NODISCARD virtual const uint32_t GetCurrentFrame() const = 0;
 		VT_NODISCARD virtual RefPtr<Image> GetCurrentImage() const = 0;
-		VT_NODISCARD virtual RefPtr<CommandBuffer> GetCommandBuffer() const = 0;
 		VT_NODISCARD virtual const uint32_t GetWidth() const = 0;
 		VT_NODISCARD virtual const uint32_t GetHeight() const = 0;
 		VT_NODISCARD virtual const uint32_t GetFramesInFlight() const = 0;

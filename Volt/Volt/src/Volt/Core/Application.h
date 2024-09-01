@@ -49,7 +49,7 @@ namespace Volt
 		bool enableImGui = true;
 		bool enableSteam = false;
 		bool isRuntime = false;
-		bool UseTitlebar = false;
+		bool UseTitlebar = true;
 		bool UseCustomTitlebar = false;
 
 		Version version = VT_VERSION;

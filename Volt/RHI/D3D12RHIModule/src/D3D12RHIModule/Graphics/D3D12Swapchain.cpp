@@ -145,11 +145,6 @@ namespace Volt::RHI
 		return m_perImageData.at(m_currentImageIndex).imageReference;
 	}
 
-	RefPtr<CommandBuffer> D3D12Swapchain::GetCommandBuffer() const
-	{
-		return RefPtr<CommandBuffer>();
-	}
-
 	const PixelFormat D3D12Swapchain::GetFormat() const
 	{
 		return PixelFormat::R8G8B8A8_UNORM;

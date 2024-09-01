@@ -694,12 +694,6 @@ namespace Volt
 
 			for (const auto& invalidMesh : m_invalidMeshes)
 			{
-				const uint32_t meshIndex = GetMeshIndex(invalidMesh.mesh);
-				if (meshIndex == std::numeric_limits<uint32_t>::max())
-				{
-					continue;
-				}
-
 				auto& data = bufferUpload.AddUploadItem(invalidMesh.index);
 				data = invalidMesh.mesh->GetGPUMeshes().at(invalidMesh.subMeshIndex);
 
