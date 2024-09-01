@@ -23,6 +23,7 @@ namespace Volt
             //Engine
             conf.AddProject<Volt>(target);
             conf.AddProject<CoreUtilities>(target);
+            conf.AddProject<LogModule>(target);
 
             //Editor
             conf.AddProject<Sandbox>(target);

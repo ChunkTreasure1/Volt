@@ -5,7 +5,7 @@
 #include "LogModule/LogCategory.h"
 #include "LogModule/DefaultLoggingCategories.h"
 
-#include <CoreUtilities/Assert.h>
+#include <CoreUtilities/VoltAssert.h>
 #include <CoreUtilities/Containers/Vector.h>
 #include <CoreUtilities/UUID.h>
 

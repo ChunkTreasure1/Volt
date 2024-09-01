@@ -210,7 +210,7 @@ namespace Volt
 
             if (this.GetType() != typeof(CoreUtilities))
             {
-                conf.AddPrivateDependency<CoreUtilities>(target);
+                conf.AddPublicDependency<CoreUtilities>(target);
             }
 
             conf.IncludePrivatePaths.Add("Private/");
@@ -225,6 +225,7 @@ namespace Volt
 
             conf.Options.Add(new Sharpmake.Options.Vc.Compiler.DisableSpecificWarnings("4005", "4100", "4201", "4251", "4275", "4505"));
             conf.Options.Add(new Sharpmake.Options.Vc.Linker.DisableSpecificWarnings("4006", "4099"));
+            
         }
     }
 
