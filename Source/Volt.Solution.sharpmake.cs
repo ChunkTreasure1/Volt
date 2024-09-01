@@ -1,9 +1,10 @@
 using Sharpmake;
 using System.Reflection;
 using System;
+using System.Linq;
 
 namespace Volt
-{
+{ 
     [Sharpmake.Generate]
     public class VoltSolution : CommonSolution
     {
@@ -17,22 +18,11 @@ namespace Volt
         {
             base.ConfigureAll(conf, target);
 
-            //Sharpmake project
+            //Sharpmake project, special case since it isnt a CommonProject
             conf.AddProject<SharpmakeProject>(target);
 
-            //Engine
-            conf.AddProject<Volt>(target);
-            conf.AddProject<CoreUtilities>(target);
-            conf.AddProject<LogModule>(target);
-
-            //Editor
-            conf.AddProject<Sandbox>(target);
-
-            //ThirdParty
-            conf.AddProject<glm>(target);
-            conf.AddProject<nfd_extended>(target);
-            conf.AddProject<tracy>(target);
-            conf.AddProject<yaml>(target);
+            foreach (Type projectType in Assembly.GetExecutingAssembly().GetTypes().Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(CommonProject))))
+                conf.AddProject(projectType, target);
         }
     }
 }
