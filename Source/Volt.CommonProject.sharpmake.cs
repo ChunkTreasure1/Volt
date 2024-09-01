@@ -240,15 +240,6 @@ namespace Volt
             conf.IncludePrivatePaths.Add("Public/" + Name);
             conf.IncludePrivatePaths.Add("Private/" + Name);
 
-            int moduleIndex = Name.IndexOf("Module");
-            if (moduleIndex != -1)
-            {
-                string modulelessName = Name.Substring(0, moduleIndex);
-
-                conf.IncludePrivatePaths.Add("Public/" + modulelessName);
-                conf.IncludePrivatePaths.Add("Private/" + modulelessName);
-            }
-
             conf.Options.Add(Options.Vc.Compiler.Exceptions.Enable);
 
             conf.Options.Add(new Sharpmake.Options.Vc.Compiler.DisableSpecificWarnings("4005", "4100", "4201", "4251", "4275", "4505"));
