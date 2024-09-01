@@ -6,7 +6,7 @@ namespace Volt
     [Sharpmake.Generate]
     public class CoreUtilities : CommonVoltDllProject
     {
-        public CoreUtilities()
+        public CoreUtilities() 
         {
             AddTargets(CommonTarget.GetDefaultTargets());
             Name = "CoreUtilities";
@@ -20,8 +20,6 @@ namespace Volt
 
             conf.PrecompHeader = "cupch.h";
             conf.PrecompSource = "cupch.cpp";
-
-            conf.IncludePaths.Add(SourceRootPath);
 
             conf.AddPublicDependency<glm>(target);
             conf.AddPublicDependency<tracy>(target);
