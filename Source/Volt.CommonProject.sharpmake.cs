@@ -216,6 +216,7 @@ namespace Volt
 
             conf.Options.Add(Options.Vc.General.TreatWarningsAsErrors.Enable);
             conf.Options.Add(Options.Vc.General.ExternalWarningLevel.Level0);
+            conf.Options.Add(Options.Vc.General.TreatAngleIncludeAsExternal.Enable);
 
             if (this.GetType() != typeof(CoreUtilities))
             {
@@ -227,6 +228,15 @@ namespace Volt
             conf.IncludePaths.Add("Public/");
 
             //TEMP
+            int moduleIndex = Name.IndexOf("Module");
+            if (moduleIndex != -1)
+            {
+                string modulelessName = Name.Substring(0, moduleIndex);
+
+                conf.IncludePrivatePaths.Add("Public/" + modulelessName);
+                conf.IncludePrivatePaths.Add("Private/" + modulelessName);
+            }
+
             conf.IncludePrivatePaths.Add("Public/" + Name);
             conf.IncludePrivatePaths.Add("Private/" + Name);
 
@@ -243,6 +253,7 @@ namespace Volt
 
             conf.Options.Add(new Sharpmake.Options.Vc.Compiler.DisableSpecificWarnings("4005", "4100", "4201", "4251", "4275", "4505"));
             conf.Options.Add(new Sharpmake.Options.Vc.Linker.DisableSpecificWarnings("4006", "4099"));
+            
         }
     }
 
