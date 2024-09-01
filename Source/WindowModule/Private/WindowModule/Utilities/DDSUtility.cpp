@@ -1,7 +1,7 @@
 #include "windowpch.h"
-#include "DDSUtility.h"
+#include "Utilities/DDSUtility.h"
 
-#include <DirectXTex/DirectXTex.h>
+#include <DirectXTex.h>
 
 #include <filesystem>
 

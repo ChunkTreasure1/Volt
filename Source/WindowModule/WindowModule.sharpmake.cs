@@ -25,6 +25,8 @@ namespace Volt
             conf.AddPrivateDependency<DirectXTex>(target);
             conf.AddPrivateDependency<InputModule>(target);
             conf.AddPrivateDependency<EventSystemModule>(target);
+            conf.AddPrivateDependency<RHIModule>(target);
+            conf.AddPrivateDependency<LogModule>(target);
         }
     }
 }

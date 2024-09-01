@@ -37,6 +37,10 @@ namespace Volt
                 "src/null_monitor.c",
                 "src/null_window.c",
                 "src/null_joystick.c");
+
+            conf.IncludePaths.Add("include/");
+
+            conf.Defines.Add("_GLFW_BUILD_DLL");
         }
 
         public override void ConfigureWin64(Configuration conf, CommonTarget target)
