@@ -8,7 +8,6 @@ namespace Volt
     {
         public tracy() : base()
         {
-            AddTargets(CommonTarget.GetDefaultTargets());
             Name = "tracy";
         }
 

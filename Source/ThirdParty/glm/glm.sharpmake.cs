@@ -10,7 +10,6 @@ namespace Volt
         {
             SourceRootPath = @"[project.RootPath]/[project.Name]/glm";
 
-            AddTargets(CommonTarget.GetDefaultTargets());
             Name = "glm";
         }
 

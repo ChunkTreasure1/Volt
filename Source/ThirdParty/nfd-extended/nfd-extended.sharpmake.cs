@@ -8,7 +8,6 @@ namespace Volt
     {
         public nfd_extended() : base()
         {
-            AddTargets(CommonTarget.GetDefaultTargets());
             Name = "nfd-extended";
         }
 

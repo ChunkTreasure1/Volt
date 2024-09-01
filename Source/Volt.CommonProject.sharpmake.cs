@@ -20,6 +20,8 @@ namespace Volt
         protected CommonProject()
             : base(typeof(CommonTarget))
         {
+            AddTargets(CommonTarget.GetDefaultTargets());
+
             RootPath = Globals.RootDirectory; // default to RootDirectory
             IsFileNameToLower = false;
             IsTargetFileNameToLower = false;
@@ -61,6 +63,13 @@ namespace Volt
             conf.Defines.Add("_HAS_EXCEPTIONS=0");
             conf.Defines.Add("VT_PLATFORM_WINDOWS");
         }
+
+        [ConfigurePriority(ConfigurePriorities.Platform)]
+        [Configure(Platform.linux)]
+        public virtual void ConfigureLinux(Configuration conf, CommonTarget target)
+        {
+        }
+
         #endregion
         ////////////////////////////////////////////////////////////////////////
 
@@ -210,7 +219,7 @@ namespace Volt
 
             if (this.GetType() != typeof(CoreUtilities))
             {
-                conf.AddPrivateDependency<CoreUtilities>(target);
+                conf.AddPublicDependency<CoreUtilities>(target);
             }
 
             conf.IncludePrivatePaths.Add("Private/");
@@ -220,6 +229,15 @@ namespace Volt
             //TEMP
             conf.IncludePrivatePaths.Add("Public/" + Name);
             conf.IncludePrivatePaths.Add("Private/" + Name);
+
+            int moduleIndex = Name.IndexOf("Module");
+            if (moduleIndex != -1)
+            {
+                string modulelessName = Name.Substring(0, moduleIndex);
+
+                conf.IncludePrivatePaths.Add("Public/" + modulelessName);
+                conf.IncludePrivatePaths.Add("Private/" + modulelessName);
+            }
 
             conf.Options.Add(Options.Vc.Compiler.Exceptions.Enable);
 

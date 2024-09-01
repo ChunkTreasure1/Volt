@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreUtilities/Assert.h"
+#include "CoreUtilities/VoltAssert.h"
 
 #include <array>
 

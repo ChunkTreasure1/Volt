@@ -1,6 +1,6 @@
 #include "inputpch.h"
 
-#include "MouseEvents.h"
+#include "Events/MouseEvents.h"
 
 namespace Volt
 {
