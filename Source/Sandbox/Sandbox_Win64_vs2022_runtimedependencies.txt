@@ -1,0 +1,18 @@
+﻿
+Debug|x64
+  g:\projects\volt\temp\bin\win64_debug_msbuild\coreutilities\CoreUtilities.dll
+  g:\projects\volt\temp\bin\win64_debug_msbuild\coreutilities\coreutilities.pdb
+  g:\projects\volt\temp\bin\win64_debug_msbuild\tracy\tracy.dll
+  g:\projects\volt\temp\bin\win64_debug_msbuild\tracy\tracy.pdb
+
+Dist|x64
+  g:\projects\volt\temp\bin\win64_dist_msbuild\coreutilities\CoreUtilities.dll
+  g:\projects\volt\temp\bin\win64_dist_msbuild\coreutilities\coreutilities.pdb
+  g:\projects\volt\temp\bin\win64_dist_msbuild\tracy\tracy.dll
+  g:\projects\volt\temp\bin\win64_dist_msbuild\tracy\tracy.pdb
+
+Release|x64
+  g:\projects\volt\temp\bin\win64_release_msbuild\coreutilities\CoreUtilities.dll
+  g:\projects\volt\temp\bin\win64_release_msbuild\coreutilities\coreutilities.pdb
+  g:\projects\volt\temp\bin\win64_release_msbuild\tracy\tracy.dll
+  g:\projects\volt\temp\bin\win64_release_msbuild\tracy\tracy.pdb
