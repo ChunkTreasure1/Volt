@@ -207,6 +207,7 @@ namespace Volt
 
             conf.Options.Add(Options.Vc.General.TreatWarningsAsErrors.Enable);
             conf.Options.Add(Options.Vc.General.ExternalWarningLevel.Level0);
+            conf.Options.Add(Options.Vc.General.TreatAngleIncludeAsExternal.Enable);
 
             if (this.GetType() != typeof(CoreUtilities))
             {
@@ -218,6 +219,15 @@ namespace Volt
             conf.IncludePaths.Add("Public/");
 
             //TEMP
+            int moduleIndex = Name.IndexOf("Module");
+            if (moduleIndex != -1)
+            {
+                string modulelessName = Name.Substring(0, moduleIndex);
+
+                conf.IncludePrivatePaths.Add("Public/" + modulelessName);
+                conf.IncludePrivatePaths.Add("Private/" + modulelessName);
+            }
+
             conf.IncludePrivatePaths.Add("Public/" + Name);
             conf.IncludePrivatePaths.Add("Private/" + Name);
 

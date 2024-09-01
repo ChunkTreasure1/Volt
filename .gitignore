@@ -6,6 +6,9 @@ bin/
 bin-int/
 Temp/
 
+Source/SharpmakeProject/obj
+Source/SharpmakeProject/output
+
 Engine/User
 Engine/Engine/Shaders/Cache
 Engine/Scripts/Intermediates
