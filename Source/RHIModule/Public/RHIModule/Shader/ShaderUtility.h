@@ -1,7 +1,5 @@
 #pragma once
 
-#include "rhipch.h"
-
 #include "RHIModule/Graphics/GraphicsContext.h"
 
 #include <filesystem>

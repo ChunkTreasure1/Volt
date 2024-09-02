@@ -24,6 +24,7 @@ namespace Volt
 
             string vulkanSDKPath = Path.Combine(Environment.GetEnvironmentVariable("VULKAN_SDK"), "Include");
             conf.IncludePrivatePaths.Add(vulkanSDKPath);
+            conf.IncludePaths.Add("[project.RootPath]/[project.Name]");
         }
     }
 }

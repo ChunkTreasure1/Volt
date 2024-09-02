@@ -47,7 +47,6 @@ namespace Volt
             conf.Output = Configuration.OutputType.Lib; // defaults to creating static libs
 
             conf.Options.Add(Options.Vc.Compiler.CppLanguageStandard.CPP20);
-            conf.Options.Add(Options.Vc.Compiler.MultiProcessorCompilation.Enable);
 
             conf.Options.Add(Options.Vc.Linker.GenerateMapFile.Disable);
 
@@ -150,8 +149,7 @@ namespace Volt
         [Configure(BuildSystem.MSBuild)]
         public virtual void ConfigureMSBuild(Configuration conf, CommonTarget target)
         {
-            // starting with vs2019 16.10, need this to fix warning: argument unused during compilation: '/MP'
-            conf.Options.Add(Options.Vc.Compiler.MultiProcessorCompilation.Disable);
+            conf.Options.Add(Options.Vc.Compiler.MultiProcessorCompilation.Enable);
         }
         #endregion
         ////////////////////////////////////////////////////////////////////////
