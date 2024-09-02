@@ -47,6 +47,7 @@ namespace Volt
             conf.Output = Configuration.OutputType.Lib; // defaults to creating static libs
 
             conf.Options.Add(Options.Vc.Compiler.CppLanguageStandard.CPP20);
+            conf.Options.Add(Options.Vc.Compiler.MultiProcessorCompilation.Enable);
 
             conf.Options.Add(Options.Vc.Linker.GenerateMapFile.Disable);
 
