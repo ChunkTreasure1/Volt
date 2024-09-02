@@ -1,5 +1,5 @@
 #include "espch.h"
-#include "ECSBuilder.h"
+#include "Scripting/ECSBuilder.h"
 
 #include <queue>
 

@@ -19,6 +19,6 @@
 
 #include <LogModule/Log.h>
 
-#include <CoreUtilities/Assert.h>
+#include <CoreUtilities/VoltAssert.h>
 
 VT_DECLARE_LOG_CATEGORY(LogJobSystem, LogVerbosity::Trace);

@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef VTAS_BUILD_DLL
+#ifdef ASSETSYSTEMMODULE_DLL_EXPORT
 #define VTAS_API __declspec(dllexport)
 #else
 #define VTAS_API __declspec(dllimport)

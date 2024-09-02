@@ -1,5 +1,5 @@
 #include "aspch.h"
-#include "AssetSerializationCommon.h"
+#include "Serialization/AssetSerializationCommon.h"
 
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 #include <CoreUtilities/FileIO/BinaryStreamReader.h>
