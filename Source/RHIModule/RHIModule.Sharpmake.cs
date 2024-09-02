@@ -23,11 +23,9 @@ namespace Volt
 
             conf.AddPublicDependency<LogModule>(target);
             conf.AddPublicDependency<imgui>(target);
+            conf.AddPrivateDependency<Aftermath>(target);
 
-            conf.IncludePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "Aftermath/include"));
             conf.IncludePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "imgui-notify"));
-            conf.LibraryPaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "Aftermath/lib/x64"));
-            conf.LibraryFiles.Add("GFSDK_Aftermath_Lib.x64.lib");
 
             conf.Defines.Add("VT_ENABLE_NV_AFTERMATH");
             conf.ExportDefines.Add("VT_ENABLE_NV_AFTERMATH");

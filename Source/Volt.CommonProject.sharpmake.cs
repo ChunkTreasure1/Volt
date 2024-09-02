@@ -51,7 +51,6 @@ namespace Volt
             conf.Options.Add(Options.Vc.Linker.GenerateMapFile.Disable);
 
             conf.Options.Add(Options.Vc.General.CharacterSet.Unicode);
-
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -150,6 +149,8 @@ namespace Volt
         public virtual void ConfigureMSBuild(Configuration conf, CommonTarget target)
         {
             conf.Options.Add(Options.Vc.Compiler.MultiProcessorCompilation.Enable);
+
+            conf.Defines.Add("NOMINMAX");
         }
         #endregion
         ////////////////////////////////////////////////////////////////////////

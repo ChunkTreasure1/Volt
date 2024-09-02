@@ -27,19 +27,15 @@ namespace Volt
             conf.AddPublicDependency<imgui>(target);
 
             conf.AddPrivateDependency<VulkanMemoryAllocator>(target);
+            conf.AddPrivateDependency<Aftermath>(target);
+            conf.AddPrivateDependency<DXC>(target);
 
             string vulkanSDKPath = Path.Combine(Environment.GetEnvironmentVariable("VULKAN_SDK"), "Include");
             conf.IncludePrivatePaths.Add(vulkanSDKPath);
-            conf.IncludePrivatePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "dxc", "include"));
 
             string vulkanSDKLibPath = Path.Combine(Environment.GetEnvironmentVariable("VULKAN_SDK"), "Lib");
             conf.LibraryPaths.Add(vulkanSDKLibPath);
-            conf.LibraryPaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "dxc", "lib"));
-            conf.LibraryPaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "Aftermath/lib/x64"));
-
-            conf.LibraryFiles.Add("GFSDK_Aftermath_Lib.x64.lib");
             conf.LibraryFiles.Add("vulkan-1.lib");
-            conf.LibraryFiles.Add("dxcompiler.lib");
         }
 
         public override void ConfigureDebug(Configuration conf, CommonTarget target)
