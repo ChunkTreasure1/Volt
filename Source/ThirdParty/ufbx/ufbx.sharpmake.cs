@@ -16,7 +16,7 @@ namespace Volt
         {
             base.ConfigureAll(conf, target);
 
-            conf.IncludePaths.Add(@"[project.RootPath]");
+            conf.IncludePaths.Add(@"[project.RootPath]/[project.Name]");
         }
     }
 }
