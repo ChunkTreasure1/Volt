@@ -25,7 +25,7 @@ namespace Volt
             conf.AddPublicDependency<tracy>(target);
             conf.IncludePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "unordered_dense\\include"));
 
-            conf.AddPrivateDependency<nfd_extended>(target);
+            conf.AddPublicDependency<nfd_extended>(target);
             conf.AddPublicDependency<yaml>(target);
             conf.IncludePrivatePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "zlib\\include"));
             

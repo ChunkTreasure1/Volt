@@ -16,6 +16,7 @@ namespace Volt
         {
             base.ConfigureAll(conf, target);
             conf.IncludePaths.Add(@"stb");
+            conf.IncludePaths.Add(@"[project.RootPath]/[project.Name]");
         }
     }
 }
