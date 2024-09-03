@@ -1,5 +1,5 @@
 #include "mcpch.h"
-#include "MosaicGraph.h"
+#include "Mosaic/MosaicGraph.h"
 
 #include "Mosaic/NodeRegistry.h"
 #include "Mosaic/MosaicNode.h"

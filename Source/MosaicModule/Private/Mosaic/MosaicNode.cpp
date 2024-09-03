@@ -1,5 +1,5 @@
 #include "mcpch.h"
-#include "MosaicNode.h"
+#include "Mosaic/MosaicNode.h"
 
 namespace Mosaic
 {

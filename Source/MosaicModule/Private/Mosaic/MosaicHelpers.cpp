@@ -1,5 +1,5 @@
 #include "mcpch.h"
-#include "MosaicHelpers.h"
+#include "Mosaic/MosaicHelpers.h"
 
 namespace Mosaic::Helpers
 {
