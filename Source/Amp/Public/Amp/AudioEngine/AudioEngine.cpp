@@ -1,7 +1,7 @@
 #include "amppch.h"
 #include <cassert>
 
-#include "AudioEngine.h"
+#include "AudioEngine/AudioEngine.h"
 #include "fmod_errors.h"
 
 #include <CoreUtilities/StringUtility.h>

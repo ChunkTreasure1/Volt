@@ -13,7 +13,7 @@ written agreement between you and Audiokinetic Inc.
 *******************************************************************************/
 
 #include "amppch.h"
-#include "AkJobWorkerMgr.h"
+#include "WWiseEngine/SoundEngine/Common/AkJobWorkerMgr.h"
 #include <AK/Tools/Common/AkFifoQueue.h>
 #include <AK/Tools/Common/AkInstrument.h>
 

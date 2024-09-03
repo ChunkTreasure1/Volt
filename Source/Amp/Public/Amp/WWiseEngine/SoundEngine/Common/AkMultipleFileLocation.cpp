@@ -38,8 +38,8 @@ written agreement between you and Audiokinetic Inc.
 
 //#include "AkFileHelpers.h"
 
-#include "AkMultipleFileLocation.h"
-#include "AkGeneratedSoundBanksResolver.h"
+#include "WWiseEngine/SoundEngine/Common/AkMultipleFileLocation.h"
+#include "WWiseEngine/SoundEngine/Common/AkGeneratedSoundBanksResolver.h"
 
 #define MAX_NUMBER_STRING_SIZE      (10)    // 4G
 #define MAX_EXTENSION_SIZE          (4)     // .xxx
