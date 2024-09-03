@@ -26,7 +26,7 @@ namespace Volt
             conf.IncludePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "unordered_dense\\include"));
 
             conf.AddPrivateDependency<nfd_extended>(target);
-            conf.AddPrivateDependency<yaml>(target);
+            conf.AddPublicDependency<yaml>(target);
             conf.IncludePrivatePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "zlib\\include"));
             
             string targetOptimization = target.Optimization.ToString();
