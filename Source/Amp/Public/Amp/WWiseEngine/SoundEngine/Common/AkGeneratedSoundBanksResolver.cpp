@@ -14,7 +14,7 @@ written agreement between you and Audiokinetic Inc.
 
 #include "amppch.h"
 
-#include "AkGeneratedSoundBanksResolver.h"
+#include "WWiseEngine/SoundEngine/Common/AkGeneratedSoundBanksResolver.h"
 
 #define ID_TO_STRING_FORMAT_BANK    AKTEXT("%u.bnk")
 #define ID_TO_STRING_FORMAT_WEM     AKTEXT("%u.wem")

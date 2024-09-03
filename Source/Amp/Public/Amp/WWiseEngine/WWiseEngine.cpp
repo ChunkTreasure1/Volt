@@ -2,7 +2,7 @@
 #include <iostream>
 #include <thread>
 
-#include "WWiseEngine.h"
+#include "WWiseEngine/WWiseEngine.h"
 
 #include <AK/SoundEngine/Common/AkMemoryMgr.h>
 #include <AK/SoundEngine/Common/AkSoundEngine.h>

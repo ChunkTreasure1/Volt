@@ -47,7 +47,7 @@ written agreement between you and Audiokinetic Inc.
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "AkFilePackageLowLevelIO.h"
+#include "WWiseEngine/SoundEngine/Win32/AkFilePackageLowLevelIOBlocking.h"
 #include <AK/SoundEngine/Platforms/Windows/AkFileHelpers.h>
 //#include "AkFileHelpers.h"
 #include <AK/Tools/Common/AkPlatformFuncs.h>

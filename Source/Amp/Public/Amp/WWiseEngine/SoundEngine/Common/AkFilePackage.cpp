@@ -25,7 +25,7 @@ written agreement between you and Audiokinetic Inc.
 //////////////////////////////////////////////////////////////////////
 
 #include "amppch.h"
-#include "AkFilePackage.h"
+#include "WWiseEngine/SoundEngine/Common/AkFilePackage.h"
 
 // Destroy file package and free memory.
 void CAkFilePackage::Destroy()
