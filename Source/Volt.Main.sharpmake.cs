@@ -10,6 +10,7 @@ using Sharpmake;
 [module: Sharpmake.Include("Volt.*.sharpmake.cs")]
 [module: Sharpmake.Include("*/*.sharpmake.cs")]
 [module: Sharpmake.Include("ThirdParty/*/*.sharpmake.cs")]
+[module: Sharpmake.Include("ThirdParty/*/*/*.sharpmake.cs")]
 
 namespace Volt
 {
