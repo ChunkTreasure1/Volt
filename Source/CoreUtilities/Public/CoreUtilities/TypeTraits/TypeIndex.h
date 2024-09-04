@@ -10,6 +10,11 @@ namespace TypeTraits
 			: id(inId)
 		{ }
 
+		constexpr TypeIndex(const TypeIndex& other) noexcept
+			: id(other.id)
+		{
+		}
+
 		template<typename T>
 		constexpr static TypeIndex FromType()
 		{

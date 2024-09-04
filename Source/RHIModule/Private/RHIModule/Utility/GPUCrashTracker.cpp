@@ -22,6 +22,10 @@ namespace Volt::RHI
 		{
 			case GraphicsAPI::Vulkan: return GFSDK_Aftermath_GpuCrashDumpWatchedApiFlags_Vulkan;
 			case GraphicsAPI::D3D12: return GFSDK_Aftermath_GpuCrashDumpWatchedApiFlags_DX;
+
+			case GraphicsAPI::MoltenVk:
+			case GraphicsAPI::Mock:
+				break;
 		}
 
 		return GFSDK_Aftermath_GpuCrashDumpWatchedApiFlags_None;

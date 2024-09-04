@@ -168,7 +168,7 @@ class PxBroadcastingAllocator : public PxBroadcast<PxAllocationListener, PxAlloc
 	\brief The default constructor.
 	*/
 	virtual ~PxBroadcastingAllocator()
-	{	
+	{
 		mListeners.clear();
 	}
 

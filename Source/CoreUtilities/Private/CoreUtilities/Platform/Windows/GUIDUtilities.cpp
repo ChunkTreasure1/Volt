@@ -11,7 +11,7 @@ namespace GUIDUtilities
 	{
 		GUID newGuid;
 		HRESULT result = CoCreateGuid(&newGuid);
-		result;
+		VT_UNUSED(result);
 		assert(SUCCEEDED(result));
 
 		return VoltGUID::Construct(newGuid.Data1, newGuid.Data2, newGuid.Data3,

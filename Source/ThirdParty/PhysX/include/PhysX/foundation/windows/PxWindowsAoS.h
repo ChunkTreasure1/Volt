@@ -42,15 +42,75 @@ namespace physx
 namespace aos
 {
 
-typedef __m128 FloatV;
-typedef __m128 Vec3V;
-typedef __m128 Vec4V;
-typedef __m128 BoolV;
-typedef __m128 VecU32V;
-typedef __m128 VecI32V;
-typedef __m128 VecU16V;
-typedef __m128 VecI16V;
-typedef __m128 QuatV;
+#if PD_CLANG
+	typedef int8_t   __int8_t;
+	typedef int16_t  __int16_t;
+	typedef int32_t  __int32_t;
+	typedef int64_t  __int64_t;
+	typedef uint16_t __uint16_t;
+	typedef uint32_t __uint32_t;
+	typedef uint64_t __uint64_t;
+
+	typedef union UnionM128
+	{
+		UnionM128()
+		{
+		}
+		UnionM128(__m128 in)
+		{
+			m128 = in;
+		}
+
+		UnionM128(__m128i in)
+		{
+			m128i = in;
+		}
+
+		operator __m128()
+		{
+			return m128;
+		}
+
+		operator const __m128() const
+		{
+			return m128;
+		}
+
+		float m128_f32[4];
+		__int8_t m128_i8[16];
+		__int16_t m128_i16[8];
+		__int32_t m128_i32[4];
+		__int64_t m128_i64[2];
+		__uint16_t m128_u16[8];
+		__uint32_t m128_u32[4];
+		__uint64_t m128_u64[2];
+		__m128 m128;
+		__m128i m128i;
+	} UnionM128;
+
+	typedef __m128 FloatV;
+	typedef __m128 Vec3V;
+	typedef __m128 Vec4V;
+	typedef __m128 BoolV;
+	typedef __m128 QuatV;
+	typedef __m128i VecI32V;
+	typedef UnionM128 VecU32V;
+	typedef UnionM128 VecU16V;
+	typedef UnionM128 VecI16V;
+	typedef UnionM128 VecU8V;
+#else
+	typedef __m128 FloatV;
+	typedef __m128 Vec3V;
+	typedef __m128 Vec4V;
+	typedef __m128 BoolV;
+	typedef __m128 VecU32V;
+	typedef __m128 VecI32V;
+	typedef __m128 VecU16V;
+	typedef __m128 VecI16V;
+	typedef __m128 QuatV;
+#endif
+
+
 
 #define FloatVArg FloatV &
 #define Vec3VArg Vec3V &

@@ -71,8 +71,8 @@ namespace Volt
 
 		inline RigidbodyComponent(BodyType aBodyType = BodyType::Static, uint32_t aLayerId = 0, float aMass = 1.f, float aLinearDrag = 0.01f, uint32_t aLockFlags = 0,
 			float aAngularDrag = 0.05f, bool aDisableGravity = false, bool aIsKinematic = false, CollisionDetectionType aCollisionType = CollisionDetectionType::Discrete)
-			: bodyType(aBodyType), layerId(aLayerId), mass(aMass), linearDrag(aLinearDrag), lockFlags(aLockFlags), angularDrag(aAngularDrag), disableGravity(aDisableGravity),
-			isKinematic(aIsKinematic), collisionType(aCollisionType)
+			: bodyType(aBodyType), layerId(aLayerId), mass(aMass), linearDrag(aLinearDrag), lockFlags(aLockFlags), angularDrag(aAngularDrag), collisionType(aCollisionType),
+			disableGravity(aDisableGravity), isKinematic(aIsKinematic)
 		{
 		}
 
@@ -212,7 +212,7 @@ namespace Volt
 		bool added = false;
 
 		inline MeshColliderComponent(AssetHandle aColliderMesh = Asset::Null(), bool aIsConvex = false, bool aIsTrigger = false, AssetHandle aMaterial = Asset::Null(), int32_t aSubMeshIndex = -1)
-			: colliderMesh(aColliderMesh), isConvex(aIsConvex), isTrigger(aIsTrigger), material(aMaterial), subMeshIndex(aSubMeshIndex)
+			: colliderMesh(aColliderMesh), material(aMaterial), subMeshIndex(aSubMeshIndex), isConvex(aIsConvex), isTrigger(aIsTrigger)
 		{
 		}
 

@@ -79,5 +79,15 @@ namespace Volt
             conf.LibraryFiles.Add("spirv-cross-glsl.lib");
             conf.LibraryFiles.Add("SPIRV-Tools.lib");
         }
+
+        public override void ConfigureClangCl(Configuration conf, CommonTarget target)
+        {
+            base.ConfigureClangCl(conf, target);
+
+            conf.AdditionalCompilerOptions.Add(
+                "-Wno-switch",
+                "-Wno-delete-non-abstract-non-virtual-dtor"
+            );
+        }
     }
 }

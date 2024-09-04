@@ -45,6 +45,7 @@ namespace Volt
 		Vector<RenderGraphPassResourceAccess> resourceWrites;
 		Vector<RenderGraphPassResourceAccess> resourceCreates;
 
+		virtual ~RenderGraphPassNodeBase() = default;
 		virtual void Execute(RenderGraph& frameGraph, RenderContext& context) = 0;
 
 		const bool ReadsResource(RenderGraphResourceHandle handle) const;
@@ -71,6 +72,8 @@ namespace Volt
 	{
 		T data{};
 		std::function<void(const T& data, RenderContext& context)> executeFunction;
+
+		~RenderGraphPassNode() override = default;
 
 		void Execute(RenderGraph& renderGraph, RenderContext& context) override
 		{

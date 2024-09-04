@@ -11,6 +11,8 @@ namespace Mosaic::Helpers
 		{
 			case ValueBaseType::Float: result = "float"; break;
 			case ValueBaseType::Int: result = "int"; break;
+			case ValueBaseType::Bool: result = "bool"; break;
+			case ValueBaseType::Dynamic: break;
 		}
 
 		if (typeInfo.vectorSize == 1)
@@ -33,8 +35,8 @@ namespace Mosaic::Helpers
 	{
 		TypeInfo result;
 
-		if (A.baseType == ValueBaseType::Float && B.baseType == ValueBaseType::Int || 
-			A.baseType == ValueBaseType::Int && B.baseType == ValueBaseType::Float)
+		if ((A.baseType == ValueBaseType::Float && B.baseType == ValueBaseType::Int) || 
+			(A.baseType == ValueBaseType::Int && B.baseType == ValueBaseType::Float))
 		{
 			// Float can represent both integers and floating points and therefor is
 			// higher ranked

@@ -48,6 +48,7 @@ struct VoltGUID
 	constexpr bool operator>(const VoltGUID& rhs) const { return hiPart > rhs.hiPart || ((hiPart == rhs.hiPart) && loPart > rhs.loPart); }
 	constexpr bool operator<=(const VoltGUID& rhs) const { return hiPart < rhs.hiPart || ((hiPart == rhs.hiPart) && loPart <= rhs.loPart); }
 	constexpr bool operator>=(const VoltGUID& rhs) const { return hiPart > rhs.hiPart || ((hiPart == rhs.hiPart) && loPart >= rhs.loPart); }
+	constexpr VoltGUID& operator=(const VoltGUID& rhs) { hiPart = rhs.hiPart; loPart = rhs.loPart; return *this; }
 
 	struct StringUtils
 	{

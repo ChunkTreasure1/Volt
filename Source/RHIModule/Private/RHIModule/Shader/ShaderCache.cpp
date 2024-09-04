@@ -24,6 +24,7 @@ namespace Volt::RHI
 				case GraphicsAPI::Vulkan: subDir = "Vulkan"; break;
 				case GraphicsAPI::D3D12: subDir = "D3D12"; break;
 				case GraphicsAPI::MoltenVk: subDir = "MoltenVK"; break;
+				case GraphicsAPI::Mock: subDir = "Mock"; break;
 			}
 
 			return { subDir };

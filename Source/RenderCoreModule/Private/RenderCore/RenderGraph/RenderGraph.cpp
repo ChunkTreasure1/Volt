@@ -1365,7 +1365,7 @@ namespace Volt
 
 		AddRuntimeShaderValidationBuffers(tempBuilder);
 
-		newNode->executeFunction = [tempData, size, bufferHandle, stagingBuffer](const Empty&, RenderContext& context)
+		newNode->executeFunction = [size, bufferHandle, stagingBuffer](const Empty&, RenderContext& context)
 		{
 			context.CopyBuffer(stagingBuffer, bufferHandle, size);
 		};

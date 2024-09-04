@@ -26,7 +26,7 @@ namespace Volt
 			const Ref<NavMesh>& GetVTNavMesh() { return myNavMesh; };
 
 		private:
-			friend class Scene;
+			friend class Volt::Scene;
 
 			bool OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e);
 			bool OnAppUpdateEvent(Volt::AppUpdateEvent& e);

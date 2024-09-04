@@ -179,6 +179,10 @@ namespace FileSystem
 			{
 				return outPath.get();
 			}
+
+			case NFD_ERROR:
+			case NFD_CANCEL:
+				break;
 		}
 
 		return "";
@@ -203,6 +207,10 @@ namespace FileSystem
 			{
 				return outPath.get();
 			}
+
+			case NFD_ERROR:
+			case NFD_CANCEL:
+				break;
 		}
 
 		return "";
@@ -227,6 +235,10 @@ namespace FileSystem
 			{
 				return outPath.get();
 			}
+
+			case NFD_ERROR:
+			case NFD_CANCEL:
+				break;
 		}
 
 		return "";

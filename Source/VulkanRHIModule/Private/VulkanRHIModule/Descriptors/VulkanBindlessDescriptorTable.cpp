@@ -49,8 +49,8 @@ namespace Volt::RHI
 	}
 
 	VulkanBindlessDescriptorTable::VulkanBindlessDescriptorTable(uint64_t framesInFlight)
-		: m_image2DRegistry(1, framesInFlight), m_image2DArrayRegistry(1, framesInFlight), m_imageCubeRegistry(1, framesInFlight),
-		m_bufferRegistry(1, framesInFlight), m_samplerRegistry(1, framesInFlight), m_image3DRegistry(1, framesInFlight)
+		: m_image2DRegistry(1, framesInFlight), m_image2DArrayRegistry(1, framesInFlight), m_image3DRegistry(1, framesInFlight), m_imageCubeRegistry(1, framesInFlight),
+		m_bufferRegistry(1, framesInFlight), m_samplerRegistry(1, framesInFlight)
 	{
 		m_activeDescriptorWrites.reserve(100);
 		Invalidate();

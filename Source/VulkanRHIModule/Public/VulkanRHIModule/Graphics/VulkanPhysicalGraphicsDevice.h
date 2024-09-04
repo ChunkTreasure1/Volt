@@ -55,6 +55,5 @@ namespace Volt::RHI
 		Vector<ExtensionProperties> m_availiableExtensions;
 
 		PhysicalDeviceProperties m_deviceProperties;
-		PhysicalDeviceCreateInfo m_createInfo{};
 	};
 }

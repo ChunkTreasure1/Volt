@@ -132,59 +132,59 @@ namespace ECS
 		{
 		}
 
-		template<typename T>
-		T& GetComponent()
+		template<typename Comp>
+		Comp& GetComponent()
 		{
-			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<T>>, ComponentTupleRaw>;
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Comp>>, ComponentTupleRaw>;
 
 			if constexpr (ComponentTraits::IsValid)
 			{
-				return m_registry.get<T>(m_entityId);
+				return m_registry.get<Comp>(m_entityId);
 			}
 			else
 			{
-				using WriteIfExistsTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<T>>, ComponentTupleWriteIfExists>;
+				using WriteIfExistsTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Comp>>, ComponentTupleWriteIfExists>;
 
 				static_assert(WriteIfExistsTraits::IsValid);
-				return m_registry.get<T>(m_entityId);
+				return m_registry.get<Comp>(m_entityId);
 			}
 		}
 
-		template<typename T>
-		const T& GetComponent() const
+		template<typename Comp>
+		const Comp& GetComponent() const
 		{
-			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<T>>, ComponentTupleRaw>;
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Comp>>, ComponentTupleRaw>;
 
 			if constexpr (ComponentTraits::IsValid)
 			{
-				return m_registry.get<T>(m_entityId);
+				return m_registry.get<Comp>(m_entityId);
 			}
 			else
 			{
-				using ReadIfExistsTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<T>>, ComponentTupleReadIfExists>;
-				using WriteIfExistsTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<T>>, ComponentTupleWriteIfExists>;
+				using ReadIfExistsTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Comp>>, ComponentTupleReadIfExists>;
+				using WriteIfExistsTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Comp>>, ComponentTupleWriteIfExists>;
 
 				static_assert(ReadIfExistsTraits::IsValid && WriteIfExistsTraits::IsValid);
-				return m_registry.get<T>(m_entityId);
+				return m_registry.get<Comp>(m_entityId);
 			}
 		}
 
-		template<typename T, typename... Args>
-		T& AddComponent(Args&&... args)
+		template<typename Comp, typename... Args>
+		Comp& AddComponent(Args&&... args)
 		{
-			m_registry.emplace<T>(m_entityId, std::forward<Args>(args)...);
+			m_registry.emplace<Comp>(m_entityId, std::forward<Args>(args)...);
 		}
 
-		template<typename T>
+		template<typename Comp>
 		bool HasComponent()
 		{
-			return m_registry.any_of<T>(m_entityId);
+			return m_registry.any_of<Comp>(m_entityId);
 		}
 
-		template<typename T>
+		template<typename Comp>
 		void RemoveComponent()
 		{
-			return m_registry.remove<T>(m_entityId);
+			return m_registry.remove<Comp>(m_entityId);
 		}
 
 	private:
@@ -258,7 +258,7 @@ namespace ECS
 		private:
 			ViewType::iterator m_iterator;
 			ViewType& m_view;
-			entt::registry& m_registry = nullptr;
+			entt::registry& m_registry;
 		};
 
 		VT_INLINE constexpr Iterator begin() { return Iterator(m_view.begin(), m_view, m_registry); }
@@ -269,7 +269,7 @@ namespace ECS
 
 	private:
 		mutable ViewType m_view;
-		entt::registry& m_registry = nullptr;
+		entt::registry& m_registry;
 	};
 
 	template<typename... T>

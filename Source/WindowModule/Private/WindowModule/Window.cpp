@@ -268,7 +268,7 @@ namespace Volt
 				}
 				else
 				{
-					const auto [wx, wy] = GetPosition();
+					//const auto [wx, wy] = GetPosition();
 					//WindowResizeEvent resizeWindow{ static_cast<uint32_t>(wx), static_cast<uint32_t>(wy), static_cast<uint32_t>(mode->width), static_cast<uint32_t>(mode->height) };
 					//Application::Get().OnEvent(resizeWindow);
 				}
@@ -324,7 +324,7 @@ namespace Volt
 				}
 				else
 				{
-					const auto [wx, wy] = GetPosition();
+					//const auto [wx, wy] = GetPosition();
 					/*WindowResizeEvent resizeWindow{ static_cast<uint32_t>(wx), static_cast<uint32_t>(wy), static_cast<uint32_t>(mode->width), static_cast<uint32_t>(mode->height) };
 					Application::Get().OnEvent(resizeWindow);*/
 				}

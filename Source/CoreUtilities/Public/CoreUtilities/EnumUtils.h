@@ -124,7 +124,7 @@ namespace Utils
 				enumNames.push_back(memberName);
 				enumValues.push_back(memberValue);
 			}
-			for (int i = 0; i < enumValues.size(); i++)
+			for (size_t i = 0; i < enumValues.size(); i++)
 			{
 				if (enumValues[i] == std::numeric_limits<uint64_t>::max())
 				{
@@ -139,7 +139,7 @@ namespace Utils
 				}
 			}
 			auto& enumMap = myRegistry[name];
-			for (int i = 0; i < enumNames.size(); i++)
+			for (size_t i = 0; i < enumNames.size(); i++)
 			{
 				enumMap.insert({ enumValues[i], enumNames[i] });
 			}

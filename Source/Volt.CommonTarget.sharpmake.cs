@@ -13,10 +13,18 @@ namespace Volt
         Dist = 1 << 2
     }
 
+    [Fragment, Flags]
+    public enum Compiler
+    {
+        MSVC = 1 << 0,
+        ClangCl = 1 << 1
+    }
+
     [DebuggerDisplay("\"{Platform}_{DevEnv}\" {Name}")]
     public class CommonTarget : Sharpmake.ITarget
     {
         public Platform Platform;
+        public Compiler Compiler;
         public DevEnv DevEnv;
         public Optimization Optimization;
         public Blob Blob;
@@ -27,6 +35,7 @@ namespace Volt
 
         public CommonTarget(
             Platform platform,
+            Compiler compiler,
             DevEnv devEnv,
             Optimization optimization,
             Blob blob,
@@ -40,6 +49,7 @@ namespace Volt
             Blob = blob;
             BuildSystem = buildSystem;
             Framework = framework;
+            Compiler = compiler;
         }
 
         public override string Name
@@ -48,6 +58,7 @@ namespace Volt
             {
                 var nameParts = new List<string>
                 {
+                    Compiler.ToString(),
                     Optimization.ToString()
                 };
                 return string.Join(" ", nameParts);
@@ -76,6 +87,7 @@ namespace Volt
                 var dirNameParts = new List<string>();
 
                 dirNameParts.Add(Platform.ToString());
+                dirNameParts.Add(Compiler.ToString());
                 dirNameParts.Add(Optimization.ToString());
                 dirNameParts.Add(BuildSystem.ToString());
 
@@ -114,6 +126,7 @@ namespace Volt
         {
             var defaultTarget = new CommonTarget(
                 Platform.win64,
+                Compiler.MSVC | Compiler.ClangCl,
                 DevEnv.vs2022,
                 Optimization.Debug | Optimization.Release | Optimization.Dist,
                 Blob.NoBlob,

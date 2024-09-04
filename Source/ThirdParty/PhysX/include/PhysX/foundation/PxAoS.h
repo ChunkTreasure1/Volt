@@ -30,6 +30,7 @@
 #define PX_AOS_H
 
 #include "foundation/Px.h"
+#include "foundation/PxPreprocessor.h"
 
 #if PX_WINDOWS && !PX_NEON
 #include "windows/PxWindowsAoS.h"

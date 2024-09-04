@@ -27,7 +27,7 @@ namespace Volt::RHI
 				"int64_t",
 				"float16_t",
 				"uint16_t",
-				"ínt16_t"
+				"int16_t"
 			};
 
 			for (const auto& baseType : baseTypes)
@@ -1142,7 +1142,7 @@ namespace Volt::RHI
 		}
 		else if (tempStr == "rgb10_a2")
 		{
-			PixelFormat::A2R10G10B10_UNORM_PACK32;
+			return PixelFormat::A2R10G10B10_UNORM_PACK32;
 		}
 
 		// Signed int

@@ -99,20 +99,20 @@ namespace Volt
 		}
 
 		template<typename... Args>
-		VT_INLINE VT_NODISCARD static Scope<BindlessResource<T>> CreateScope(Args&&... args)
+		VT_NODISCARD VT_INLINE static Scope<BindlessResource<T>> CreateScope(Args&&... args)
 		{
 			return ::CreateScope<BindlessResource<T>>(T::Create(args...));
 		}
 
 		template<typename... Args>
-		VT_INLINE VT_NODISCARD static Ref<BindlessResource<T>> CreateRef(Args&&... args)
+		VT_NODISCARD VT_INLINE static Ref<BindlessResource<T>> CreateRef(Args&&... args)
 		{
 			return ::CreateRef<BindlessResource<T>>(T::Create(args...));
 		}
 
-		VT_INLINE VT_NODISCARD bool IsValid() const { return m_resource != nullptr; }
-		VT_INLINE VT_NODISCARD ResourceHandle GetResourceHandle() const { return m_resourceHandle; }
-		VT_INLINE VT_NODISCARD RefPtr<T> GetResource() const { return m_resource; }
+		VT_NODISCARD VT_INLINE bool IsValid() const { return m_resource != nullptr; }
+		VT_NODISCARD VT_INLINE ResourceHandle GetResourceHandle() const { return m_resourceHandle; }
+		VT_NODISCARD VT_INLINE RefPtr<T> GetResource() const { return m_resource; }
 
 	private:
 		RefPtr<T> m_resource;

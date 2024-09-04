@@ -1072,20 +1072,6 @@ namespace Volt::RHI
 		const VkImageAspectFlags srcImageAspect = static_cast<VkImageAspectFlags>(srcVkImage.GetImageAspect());
 		const VkImageAspectFlags dstImageAspect = static_cast<VkImageAspectFlags>(dstVkImage.GetImageAspect());
 
-		VkImageSubresourceRange srcRange{};
-		srcRange.aspectMask = srcImageAspect;
-		srcRange.baseArrayLayer = 0;
-		srcRange.baseMipLevel = 0;
-		srcRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-		srcRange.levelCount = VK_REMAINING_MIP_LEVELS;
-
-		VkImageSubresourceRange dstRange{};
-		srcRange.aspectMask = dstImageAspect;
-		srcRange.baseArrayLayer = 0;
-		srcRange.baseMipLevel = 0;
-		srcRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-		srcRange.levelCount = VK_REMAINING_MIP_LEVELS;
-
 		VkImageCopy2 info{};
 		info.sType = VK_STRUCTURE_TYPE_IMAGE_COPY_2;
 		info.pNext = nullptr;

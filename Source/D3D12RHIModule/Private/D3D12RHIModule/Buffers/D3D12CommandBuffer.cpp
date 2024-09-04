@@ -389,7 +389,7 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		auto device = GraphicsContext::GetDevice();
-		device->GetDeviceQueue(m_queueType)->Execute({ { this } });
+		device->GetDeviceQueue(m_queueType)->Execute({ { this }, {}, {} });
 	}
 
 	void D3D12CommandBuffer::ExecuteAndWait()
@@ -397,7 +397,7 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		auto device = GraphicsContext::GetDevice();
-		device->GetDeviceQueue(m_queueType)->Execute({ { this } });
+		device->GetDeviceQueue(m_queueType)->Execute({ { this }, {}, {} });
 
 		m_commandListData.fence->Wait();
 	}

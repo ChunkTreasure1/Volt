@@ -147,7 +147,7 @@ public:
 		return std::hash<void*>()(m_object);
 	}
 
-	VT_NODISCARD VT_INLINE void Reset() noexcept
+	VT_INLINE void Reset() noexcept
 	{
 		if (m_weakCounter)
 		{

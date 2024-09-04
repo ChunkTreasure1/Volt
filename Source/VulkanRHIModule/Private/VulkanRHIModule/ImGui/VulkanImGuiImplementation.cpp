@@ -55,7 +55,7 @@ namespace Volt::RHI
 	}
 
 	VulkanImGuiImplementation::VulkanImGuiImplementation(const ImGuiCreateInfo& createInfo)
-		: m_swapchain(createInfo.swapchain), m_windowPtr(createInfo.window)
+		: m_windowPtr(createInfo.window), m_swapchain(createInfo.swapchain)
 	{
 	}
 

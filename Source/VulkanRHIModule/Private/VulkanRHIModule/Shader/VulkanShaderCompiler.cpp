@@ -495,7 +495,7 @@ namespace Volt::RHI
 			return false;
 		}
 
-		outData.bindings[name] = { set, binding };
+		outData.bindings[name] = { set, binding, ShaderRegisterType::UnorderedAccess };
 		return true;
 	}
 
