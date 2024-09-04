@@ -149,7 +149,7 @@ namespace Volt::RHI
 
 			for (const auto& binding : descriptorSetLayoutBindings)
 			{
-				binding;
+				VT_UNUSED(binding);
 
 				auto& flags = bindingFlags.emplace_back();
 				flags = 0;

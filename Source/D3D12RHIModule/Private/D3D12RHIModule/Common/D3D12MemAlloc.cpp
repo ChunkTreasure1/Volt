@@ -3034,6 +3034,7 @@ void BlockMetadata::DebugLogAllocation(UINT64 offset, UINT64 size, void* private
 
         privateData = allocation->GetPrivateData();
         LPCWSTR name = allocation->GetName();
+        VT_UNUSED(name);
 
         D3D12MA_DEBUG_LOG(L"UNFREED ALLOCATION; Offset: %llu; Size: %llu; PrivateData: %p; Name: %s",
             offset, size, privateData, name ? name : L"D3D12MA_Empty");
@@ -6470,8 +6471,8 @@ private:
     BlockVector* m_PoolBlockVector;
     BlockVector** m_pBlockVectors;
     size_t m_ImmovableBlockCount = 0;
-    DEFRAGMENTATION_STATS m_GlobalStats = { 0 };
-    DEFRAGMENTATION_STATS m_PassStats = { 0 };
+    DEFRAGMENTATION_STATS m_GlobalStats = { 0, 0, 0, 0 };
+    DEFRAGMENTATION_STATS m_PassStats = { 0, 0, 0, 0 };
     void* m_AlgorithmState = NULL;
 
     static MoveAllocationData GetMoveData(AllocHandle handle, BlockMetadata* metadata);
@@ -9265,7 +9266,7 @@ HRESULT DefragmentationContextPimpl::DefragmentPassEnd(DEFRAGMENTATION_PASS_MOVE
     m_GlobalStats.BytesFreed += m_PassStats.BytesFreed;
     m_GlobalStats.BytesMoved += m_PassStats.BytesMoved;
     m_GlobalStats.HeapsFreed += m_PassStats.HeapsFreed;
-    m_PassStats = { 0 };
+    m_PassStats = { 0, 0, 0, 0 };
 
     // Move blocks with immovable allocations according to algorithm
     if (immovableBlocks.size() > 0)

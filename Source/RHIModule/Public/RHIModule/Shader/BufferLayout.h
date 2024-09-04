@@ -56,7 +56,7 @@ namespace Volt::RHI
 	{
 		BufferElement() = default;
 		BufferElement(ElementType aElementType, const std::string& aName, uint32_t aArrayIndex = 0, InputUsage aUsage = InputUsage::PerVertex, uint32_t aInputSlot = 0)
-			: type(aElementType), name(aName), size(GetSizeFromType(aElementType)), arrayIndex(aArrayIndex), usage(aUsage), inputSlot(aInputSlot)
+			: name(aName), size(GetSizeFromType(aElementType)), arrayIndex(aArrayIndex), inputSlot(aInputSlot), type(aElementType), usage(aUsage)
 		{
 		}
 

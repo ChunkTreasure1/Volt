@@ -35,9 +35,9 @@ namespace Volt::RHI
 		void MarkAsDirty(ResourceHandle handle);
 		void ClearDirtyResources();
 
-		VT_INLINE VT_NODISCARD std::mutex& GetMutex() { return m_mutex; }
-		VT_INLINE VT_NODISCARD std::span<const ResourceHandle> GetDirtyResources() const { return m_dirtyResources; }
-		VT_INLINE VT_NODISCARD const RegisteredResource& GetResource(ResourceHandle resourceHandle) const { return m_resources.at(resourceHandle); }
+		VT_NODISCARD VT_INLINE std::mutex& GetMutex() { return m_mutex; }
+		VT_NODISCARD VT_INLINE std::span<const ResourceHandle> GetDirtyResources() const { return m_dirtyResources; }
+		VT_NODISCARD VT_INLINE const RegisteredResource& GetResource(ResourceHandle resourceHandle) const { return m_resources.at(resourceHandle); }
 
 	private:
 		friend class BindlessResourcesManager;

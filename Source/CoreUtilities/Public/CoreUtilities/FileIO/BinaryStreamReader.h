@@ -22,14 +22,14 @@ public:
 	template<typename T>
 	void Read(T& outData);
 
-	template<typename T>
-	bool TryRead(T& outData);
-
 	template<>
 	void Read(std::string& data);
 
 	template<>
 	void Read(Buffer& data);
+
+	template<typename T>
+	bool TryRead(T& outData);
 
 	template<typename F>
 	void Read(Vector<F>& data);
@@ -236,7 +236,6 @@ inline void BinaryStreamReader::Read(std::map<Key, Value>& data)
 template<typename Key, typename Value>
 inline void BinaryStreamReader::Read(std::unordered_map<Key, Value>& data)
 {
-	TypeHeader typeHeader{};
 	TypeHeader serializedTypeHeader = ReadTypeHeader();
 
 	const size_t elementCount = serializedTypeHeader.totalTypeSize;

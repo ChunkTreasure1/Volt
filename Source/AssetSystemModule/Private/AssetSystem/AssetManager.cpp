@@ -18,7 +18,7 @@ namespace Volt
 	VT_DEFINE_LOG_CATEGORY(LogAssetSystem);
 
 	AssetManager::AssetManager(const std::filesystem::path& projectDirectory, const std::filesystem::path& assetsDirectory, const std::filesystem::path& engineDirectory)
-		: m_assetsDirectory(assetsDirectory), m_engineDirectory(engineDirectory), m_projectDirectory(projectDirectory)
+		: m_projectDirectory(projectDirectory), m_assetsDirectory(assetsDirectory), m_engineDirectory(engineDirectory)
 	{
 		VT_ASSERT_MSG(!s_instance, "AssetManager already exists!");
 		s_instance = this;

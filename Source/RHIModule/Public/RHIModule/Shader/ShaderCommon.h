@@ -112,6 +112,9 @@ namespace Volt::RHI
 				case ShaderUniformBaseType::RWTexture3D: size = 4; break;
 				case ShaderUniformBaseType::RWBuffer: size = 4; break;
 				case ShaderUniformBaseType::Sampler: size = 4; break;
+
+				case ShaderUniformBaseType::Invalid:
+					break;
 			}
 
 			size = size * vecsize * columns;

@@ -32,7 +32,7 @@ namespace Volt::RHI
 		VT_INLINE const PixelFormat GetFormat() const override { return m_specification.format; }
 		VT_INLINE const ImageUsage GetUsage() const override { return m_specification.usage; }
  		const uint32_t CalculateMipCount() const override;
-		VT_INLINE const bool IsSwapchainImage() const { return m_isSwapchainImage; };
+		VT_INLINE const bool IsSwapchainImage() const override { return m_isSwapchainImage; };
 		VT_INLINE const ImageAspect GetImageAspect() const override { return m_imageAspect; }
 
 		VT_INLINE ResourceType GetType() const override { return m_specification.imageType; }

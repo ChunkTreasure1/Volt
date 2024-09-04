@@ -105,7 +105,7 @@ void ECSGameLoopContainer::Execute(entt::registry& registry, float deltaTime)
 }
 
 ECSSystem::ECSSystem(UUID64 id, ECSSystemFunc&& func)
-	: m_id(id), m_systemFunc(std::move(func))
+	: m_systemFunc(std::move(func)), m_id(id)
 {
 }
 

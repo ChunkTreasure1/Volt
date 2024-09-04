@@ -46,14 +46,14 @@ public:
 		{
 		}
 
-		VT_INLINE VT_NODISCARD bool Contains(const glm::vec3& p) const
+		VT_NODISCARD VT_INLINE bool Contains(const glm::vec3& p) const
 		{
 			return (p.x >= min.x && p.x <= max.x &&
 					p.y >= min.y && p.y <= max.y &&
 					p.z >= min.z && p.z <= max.z);
 		}
 
-		VT_INLINE VT_NODISCARD int32_t GetOctant(const glm::vec3& point) const
+		VT_NODISCARD VT_INLINE int32_t GetOctant(const glm::vec3& point) const
 		{
 			int index = 0;
 			glm::vec3 mid = (min + max) / 2.0f;
@@ -122,9 +122,9 @@ public:
 		Traverse(execFunc, m_nodes.at(m_rootNode), maxDepth);
 	}
 
-	VT_INLINE VT_NODISCARD const Vector<Node>& GetNodes() const { return m_nodes; }
-	VT_INLINE VT_NODISCARD const Brick& GetBrick(SONodeID brickId) const { return m_bricks.at(brickId); }
-	VT_INLINE VT_NODISCARD const bool IsValid() const { return m_rootNode != NullID; }
+	VT_NODISCARD VT_INLINE const Vector<Node>& GetNodes() const { return m_nodes; }
+	VT_NODISCARD VT_INLINE const Brick& GetBrick(SONodeID brickId) const { return m_bricks.at(brickId); }
+	VT_NODISCARD VT_INLINE const bool IsValid() const { return m_rootNode != NullID; }
 
 private:
 	void Traverse(const std::function<void(const Node& node, const SparseBrickMap& brickMap)>& execFunc, const Node& currentNode, int32_t maxDepth) const

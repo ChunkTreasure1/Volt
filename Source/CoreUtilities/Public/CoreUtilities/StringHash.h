@@ -67,6 +67,14 @@ struct StringHash
 	constexpr bool operator>(const StringHash& rhs) const { return hash > rhs.hash; }
 	constexpr bool operator<=(const StringHash& rhs) const { return hash < rhs.hash; }
 	constexpr bool operator>=(const StringHash& rhs) const { return hash > rhs.hash; }
+	constexpr StringHash& operator=(const StringHash& rhs) 
+	{ 
+		hash = rhs.hash;
+#ifndef VT_DIST
+		string = rhs.string;
+#endif
+		return *this;
+	}
 
 	size_t hash;
 

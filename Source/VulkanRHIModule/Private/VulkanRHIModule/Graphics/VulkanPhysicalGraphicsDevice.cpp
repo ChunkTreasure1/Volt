@@ -109,7 +109,6 @@ namespace Volt::RHI
 	}
 
 	VulkanPhysicalGraphicsDevice::VulkanPhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& createInfo)
-		: m_createInfo(createInfo)
 	{
 		VkInstance vulkanInstance = GraphicsContext::Get().AsRef<VulkanGraphicsContext>().GetInstance();
 		VkPhysicalDevice selectedDevice = Utility::FindBestSuitableDevice(vulkanInstance);

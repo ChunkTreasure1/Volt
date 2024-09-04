@@ -35,7 +35,7 @@ class DynamicLibraryHelper
 {
 public:
 	VTCOREUTIL_API DynamicLibraryHelper(std::string_view libraryFilepath);
-	VTCOREUTIL_API DynamicLibraryHelper(const DynamicLibraryHelper& other) = delete;
+	DynamicLibraryHelper(const DynamicLibraryHelper& other) = delete;
 	VTCOREUTIL_API ~DynamicLibraryHelper();
 
 	VTCOREUTIL_API void Free();

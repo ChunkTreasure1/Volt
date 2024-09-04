@@ -121,7 +121,6 @@ private:
 	{
 		if constexpr (T::ConstructType == ECS::Type::Entity)
 		{
-			using ComponentTuple = typename T::ComponentTuple;
 			return T(entityId, registry);
 		}
 		else if constexpr (T::ConstructType == ECS::Type::Query)

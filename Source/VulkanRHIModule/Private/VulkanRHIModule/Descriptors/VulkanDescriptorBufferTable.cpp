@@ -253,7 +253,7 @@ namespace Volt::RHI
 
 		for (const auto& set : m_shader->GetResources().usedSets)
 		{
-			set;
+			VT_UNUSED(set);
 
 			auto& bindingInfo = descriptorBindingBufferInfos.emplace_back();
 			bindingInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_INFO_EXT;

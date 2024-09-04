@@ -111,12 +111,12 @@ namespace Volt
 
 		helpers.setupOnCreate = [](entt::registry& registry)
 		{
-			registry.on_construct<T>().connect<&ComponentRegistry::OnConstructComponent<T>>();
+			registry.on_construct<T>().template connect<&ComponentRegistry::OnConstructComponent<T>>();
 		};
 
 		helpers.setupOnDestroy = [](entt::registry& registry)
 		{
-			registry.on_destroy<T>().connect<&ComponentRegistry::OnDestructComponent<T>>();
+			registry.on_destroy<T>().template connect<&ComponentRegistry::OnDestructComponent<T>>();
 		};
 
 		return true;

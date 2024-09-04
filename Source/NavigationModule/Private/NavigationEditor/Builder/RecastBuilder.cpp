@@ -934,17 +934,6 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildTiledNavMesh()
 	m_cacheBuildTimeMs = m_ctx->getAccumulatedTime(RC_TIMER_TOTAL) / 1000.0f;
 	m_cacheBuildMemUsage = static_cast<unsigned int>(m_talloc->high);
 
-	const dtNavMesh* nav = navMesh.get();
-	int navmeshMemUsage = 0;
-	for (int i = 0; i < nav->getMaxTiles(); ++i)
-	{
-		const dtMeshTile* tile = nav->getTile(i);
-		if (tile->header)
-		{
-			navmeshMemUsage += tile->dataSize;
-		}
-	}
-
 	result = CreateRef<Volt::AI::NavMesh>();
 	result->Initialize(navMesh, tileCache);
 

@@ -47,7 +47,7 @@ namespace Volt
 
 	void ShaderMap::ReloadAll()
 	{
-		for (const auto [name, shader] : s_instance->m_shaderMap)
+		for (const auto& [name, shader] : s_instance->m_shaderMap)
 		{
 			shader->Reload(true);
 		}

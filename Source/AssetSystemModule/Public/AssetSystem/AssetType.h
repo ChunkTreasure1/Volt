@@ -5,6 +5,8 @@
 #include <CoreUtilities/VoltGUID.h>
 #include <CoreUtilities/Containers/Map.h>
 
+#include <string>
+
 class VTAS_API AssetTypeBase
 {
 public:
@@ -106,15 +108,15 @@ namespace AssetTypes \
 }
 
 #define VT_DECLARE_ASSET_TYPE(typeName, typeGuid) \
-	VT_DECLARE_ASSET_TYPE_IMPL(typeName, false, {}, typeGuid)
+	VT_DECLARE_ASSET_TYPE_IMPL(typeName, false, (Vector<std::string>{}), typeGuid)
 
 #define VT_DECLARE_ASSET_SOURCE_TYPE(typeName, extensions, typeGuid) \
 	VT_DECLARE_ASSET_TYPE_IMPL(typeName, true, extensions, typeGuid)
 
-#define EXPAND(...) __VA_ARGS__
+#define EXPAND(...) __VA_OPT__(__VA_ARGS__)
 
 #define VT_REGISTER_ASSET_TYPE(typeName) \
 	namespace AssetTypes { Ref<typeName ## Type> typeName = CreateRef<typeName ## Type>(); } \
 	bool AssetType_ ## typeName ## _Registered = GetAssetTypeRegistry().RegisterAssetType(AssetTypes::typeName ## Type::guid, AssetTypes::typeName);
 
-VT_DECLARE_ASSET_TYPE_EXPORT_IMPL(None, false, EXPAND({}), VoltGUID::Null(), VTAS_API);
+VT_DECLARE_ASSET_TYPE_EXPORT_IMPL(None, false, (Vector<std::string>{}), VoltGUID::Null(), VTAS_API);

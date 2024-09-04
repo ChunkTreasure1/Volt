@@ -68,11 +68,11 @@ namespace Volt
 	Vector<int> Input::GetAllKeyPressed()
 	{
 		Vector<int> keyPressedVec;
-		for (int i = 0; i < s_instance->m_keyStates.size(); i++)
+		for (size_t i = 0; i < s_instance->m_keyStates.size(); i++)
 		{
 			if (s_instance->m_keyStates[i] == KeyState::Pressed)
 			{
-				keyPressedVec.push_back(i);
+				keyPressedVec.push_back(static_cast<int32_t>(i));
 			}
 		}
 		return keyPressedVec;

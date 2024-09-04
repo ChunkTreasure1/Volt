@@ -27,5 +27,14 @@ namespace Volt
 
             conf.IncludePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "half"));
         }
+
+        public override void ConfigureClangCl(Configuration conf, CommonTarget target)
+        {
+            base.ConfigureClangCl(conf, target);
+
+            conf.AdditionalCompilerOptions.Add(
+                "-Wno-switch"
+            );
+        }
     }
 }

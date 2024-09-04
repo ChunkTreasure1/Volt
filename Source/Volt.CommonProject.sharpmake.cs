@@ -13,6 +13,7 @@ namespace Volt
         /*     SHARPMAKE DEFAULT IS 0     */
         public const int Blobbing = 25;
         public const int BuildSystem = 50;
+        public const int Compiler = 75;
     }
 
     public abstract class CommonProject : Sharpmake.Project
@@ -47,6 +48,7 @@ namespace Volt
             conf.Output = Configuration.OutputType.Lib; // defaults to creating static libs
 
             conf.Options.Add(Options.Vc.Compiler.CppLanguageStandard.CPP20);
+            conf.Options.Add(Options.Vc.Compiler.Exceptions.Enable);
 
             conf.Options.Add(Options.Vc.Linker.GenerateMapFile.Disable);
 
@@ -149,8 +151,36 @@ namespace Volt
         public virtual void ConfigureMSBuild(Configuration conf, CommonTarget target)
         {
             conf.Options.Add(Options.Vc.Compiler.MultiProcessorCompilation.Enable);
-
             conf.Defines.Add("NOMINMAX");
+        }
+        #endregion
+        ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        #region Compilers and toolchains
+        [ConfigurePriority(ConfigurePriorities.Compiler)]
+        [Configure(Compiler.MSVC)]
+        public virtual void ConfigureMSVC(Configuration conf, CommonTarget target)
+        {
+        }
+
+        [ConfigurePriority(ConfigurePriorities.Compiler)]
+        [Configure(Compiler.ClangCl)]
+        public virtual void ConfigureClangCl(Configuration conf, CommonTarget target)
+        {
+            conf.Options.Add(Options.Vc.General.PlatformToolset.ClangCL);
+            conf.Options.Add(Options.Clang.Compiler.ExtraWarnings.Disable);
+
+            conf.AdditionalCompilerOptions.Add(
+                "-Wno-c++98-compat",
+                "-Wno-microsoft-include",
+                "-Wno-ignored-qualifiers",
+                "-Wno-unused-parameter",
+                "-Wno-comment",
+                "-Wno-unused-function",
+                "-Wno-missing-braces",
+                "-Wno-return-type-c-linkage"
+            );
         }
         #endregion
         ////////////////////////////////////////////////////////////////////////
@@ -170,6 +200,15 @@ namespace Volt
             conf.SolutionFolder = "ThirdParty";
 
             conf.Options.Add(Options.Vc.General.WarningLevel.Level0);
+        }
+
+        public override void ConfigureClangCl(Configuration conf, CommonTarget target)
+        {
+            base.ConfigureClangCl(conf, target);
+
+            conf.AdditionalCompilerOptions.Add(
+                "-Wno-everything"
+            );
         }
     }
 
@@ -240,11 +279,8 @@ namespace Volt
             conf.IncludePrivatePaths.Add("Public/" + Name);
             conf.IncludePrivatePaths.Add("Private/" + Name);
 
-            conf.Options.Add(Options.Vc.Compiler.Exceptions.Enable);
-
             conf.Options.Add(new Sharpmake.Options.Vc.Compiler.DisableSpecificWarnings("4005", "4100", "4201", "4251", "4275", "4505"));
-            conf.Options.Add(new Sharpmake.Options.Vc.Linker.DisableSpecificWarnings("4006", "4099"));
-            
+            conf.Options.Add(new Sharpmake.Options.Vc.Linker.DisableSpecificWarnings("4006", "4099"));   
         }
     }
 

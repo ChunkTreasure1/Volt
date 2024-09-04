@@ -65,7 +65,7 @@ namespace Volt::RHI
 		void ResourceBarrier(const Vector<ResourceBarrierInfo>& resourceBarriers) override;
 
 		void BeginMarker(std::string_view markerLabel, const std::array<float, 4>& markerColor) override;
-		void EndMarker();
+		void EndMarker() override;
 
 		const uint32_t BeginTimestamp() override;
 		void EndTimestamp(uint32_t timestampIndex) override;

@@ -6,8 +6,6 @@
 	#define WIN32_LEAN_AND_MEAN
 #endif
 
-#define NOMINMAX
-
 // Make sure that Winsock.h isn't included by Windows.h
 #ifndef _WINSOCKAPI_
 	#define _WINSOCKAPI_

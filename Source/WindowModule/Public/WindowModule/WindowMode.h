@@ -2,7 +2,7 @@
 #include "Config.h"
 namespace Volt
 {
-	enum class WINDOWMODULE_API WindowMode : uint32_t
+	enum class WindowMode : uint32_t
 	{
 		Windowed = 0,
 		Fullscreen,

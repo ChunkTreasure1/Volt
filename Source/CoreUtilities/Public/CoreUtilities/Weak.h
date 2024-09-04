@@ -9,6 +9,7 @@ public:
 	Weak() = default;
 	Weak(std::shared_ptr<T> sharedPtr);
 	Weak(std::weak_ptr<T> weakPtr);
+	Weak(const Weak<T>& other);
 
 	template<typename U>
 	Weak(std::weak_ptr<U> weakPtr);
@@ -18,6 +19,7 @@ public:
 
 	template<typename U>
 	Weak(std::shared_ptr<U> sharedPtr);
+
 
 	T* operator->();
 	T& operator*();
@@ -74,6 +76,12 @@ template<typename U>
 inline Weak<T>::Weak(std::shared_ptr<U> sharedPtr)
 	: m_weakPtr(std::reinterpret_pointer_cast<T>(sharedPtr))
 {
+}
+
+template<typename T>
+inline Weak<T>::Weak(const Weak<T>& other)
+{
+	m_weakPtr = other.m_weakPtr;
 }
 
 template<typename T>
