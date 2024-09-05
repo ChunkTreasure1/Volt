@@ -1,4 +1,4 @@
-#include "RenderingTestBase.h"
+#include "Testing/RenderingTestBase.h"
 
 RenderingTestBase::RenderingTestBase()
 {

@@ -1,4 +1,4 @@
-#include "DispatchIndirectTest.h"
+#include "Testing/Tests/DispatchIndirectTest.h"
 
 #include <RenderCore/Shader/ShaderMap.h>
 

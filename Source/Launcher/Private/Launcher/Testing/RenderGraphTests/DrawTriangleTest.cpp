@@ -1,4 +1,4 @@
-#include "DrawMeshShaderTriangleTest.h"
+#include "Testing/RenderGraphTests/DrawTriangleTest.h"
 
 #include <Volt/Core/Application.h>
 
@@ -11,42 +11,39 @@
 
 using namespace Volt;
 
-RG_DrawMeshShaderTriangleTest::RG_DrawMeshShaderTriangleTest()
+RG_DrawTriangleTest::RG_DrawTriangleTest()
 {
 }
 
-RG_DrawMeshShaderTriangleTest::~RG_DrawMeshShaderTriangleTest()
+RG_DrawTriangleTest::~RG_DrawTriangleTest()
 {
 }
 
-bool RG_DrawMeshShaderTriangleTest::RunTest()
+bool RG_DrawTriangleTest::RunTest()
 {
 	auto& swapchain = Volt::WindowManager::Get().GetMainWindow().GetSwapchain();
 
 	RenderGraph renderGraph{ m_commandBuffer };
-
+	
 	auto targetImage = swapchain.GetCurrentImage();
 	RenderGraphImageHandle targetImageHandle = renderGraph.AddExternalImage(targetImage);
 
-	renderGraph.AddPass("Triangle Pass",
-	[&](RenderGraph::Builder& builder)
+	renderGraph.AddPass("Triangle Pass", 
+	[&](RenderGraph::Builder& builder) 
 	{
 		builder.WriteResource(targetImageHandle);
 		builder.SetHasSideEffect();
-	},
+	}, 
 	[=](RenderContext& context)
 	{
 		RenderingInfo renderingInfo = context.CreateRenderingInfo(targetImage->GetWidth(), targetImage->GetHeight(), { targetImageHandle });
-
+	
 		RHI::RenderPipelineCreateInfo pipelineInfo{};
-		pipelineInfo.shader = ShaderMap::Get("RG_DrawMeshShaderTriangleTest");
-		pipelineInfo.cullMode = RHI::CullMode::None;
-
+		pipelineInfo.shader = ShaderMap::Get("RG_DrawTriangleTest");
 		auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
 
 		context.BeginRendering(renderingInfo);
-		context.BindPipeline(pipeline);
-		context.DispatchMeshTasks(1, 1, 1);
+		RCUtils::DrawFullscreenTriangle(context, pipeline);
 		context.EndRendering();
 	});
 

@@ -1,4 +1,4 @@
-#include "ComputeWriteToBufferTest.h"
+#include "Testing/Tests/ComputeWriteToBufferTest.h"
 
 #include <RenderCore/Shader/ShaderMap.h>
 

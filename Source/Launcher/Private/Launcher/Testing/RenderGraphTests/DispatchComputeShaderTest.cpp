@@ -1,4 +1,6 @@
-#include "ShaderRuntimeValidationTest.h"
+#include "Testing/RenderGraphTests/DispatchComputeShaderTest.h"
+
+#include <Volt/Core/Application.h>
 
 #include <RenderCore/RenderGraph/RenderGraph.h>
 #include <RenderCore/RenderGraph/RenderContextUtils.h>
@@ -7,15 +9,15 @@
 
 using namespace Volt;
 
-RG_ShaderRuntimeValidationTest::RG_ShaderRuntimeValidationTest()
+RG_DispatchComputeShaderTest::RG_DispatchComputeShaderTest()
 {
 }
 
-RG_ShaderRuntimeValidationTest::~RG_ShaderRuntimeValidationTest()
+RG_DispatchComputeShaderTest::~RG_DispatchComputeShaderTest()
 {
 }
 
-bool RG_ShaderRuntimeValidationTest::RunTest()
+bool RG_DispatchComputeShaderTest::RunTest()
 {
 	RenderGraph renderGraph{ m_commandBuffer };
 
@@ -35,7 +37,7 @@ bool RG_ShaderRuntimeValidationTest::RunTest()
 		builder.SetHasSideEffect();
 		builder.SetIsComputePass();
 	},
-	[=](const Data& data, RenderContext& context)
+	[=](const Data& data, RenderContext& context) 
 	{
 		auto pipeline = ShaderMap::GetComputePipeline("RG_DispatchComputeShaderTest");
 
