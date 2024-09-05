@@ -15,9 +15,7 @@ namespace VoltSharpmake
         [Configure]
         public virtual void ConfigureAll(Configuration conf, CommonTarget target)
         {
-            conf.SolutionFileName = "[solution.Name]_[target.Platform]";
-            if (target.DevEnv != DevEnv.xcode)
-                conf.SolutionFileName += "_[target.DevEnv]";
+            conf.SolutionFileName = "[solution.Name]";
 
             conf.PlatformName = "[target.SolutionPlatformName]";
 

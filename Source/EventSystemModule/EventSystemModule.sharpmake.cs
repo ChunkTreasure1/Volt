@@ -8,7 +8,6 @@ namespace VoltSharpmake
     {
         public EventSystemModule()
         {
-            AddTargets(CommonTarget.GetDefaultTargets());
             Name = "EventSystemModule";
         }
 

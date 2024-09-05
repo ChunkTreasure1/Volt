@@ -304,6 +304,31 @@ namespace VoltSharpmake
         }
     }
 
+    public abstract class CommonVoltPluginProject : CommonVoltProject
+    {
+        protected CommonVoltPluginProject() : base()
+        { }
+
+        public override void ConfigureAll(Configuration conf, CommonTarget target)
+        {
+            base.ConfigureAll(conf, target);
+
+            conf.Output = Configuration.OutputType.Dll;
+
+            if (target.Platform == Platform.win64)
+            {
+                string pluginDir = Globals.EngineDirectory + "\\Plugins\\" + Name;
+                conf.EventPostBuild.Add(@"mkdir " + "\"" + pluginDir + "\"");
+                conf.EventPostBuild.Add(@"copy /Y " + "\"" + SourceRootPath + "\\" + Name + ".vtconfig\"" + " \"" + pluginDir + "\"");
+                conf.EventPostBuild.Add(@"copy /Y " + "\"" + conf.TargetPath + "\\" + Name + ".dll\"" + " \"" + pluginDir + "\"");
+            }
+
+            string UpperProjectName = Name.ToUpper();
+
+            conf.Defines.Add("VT_PLUGIN_BUILD_DLL");
+        }
+    }
+
     public abstract class CommonVoltDllProject : CommonVoltProject
     {
         protected CommonVoltDllProject() : base()
