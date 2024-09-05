@@ -31,7 +31,7 @@ IF %argC% gtr 0 (
 
 REM Call Python with the appropriate parameters
 IF "%projectDir%"=="" (
-	call python data/Setup.py
+	call python Scripts/data/Setup.py
 ) ELSE (
-	call python data/Setup.py -p="%projectDir%"
+	call python Scripts/data/Setup.py -p="%projectDir%"
 )

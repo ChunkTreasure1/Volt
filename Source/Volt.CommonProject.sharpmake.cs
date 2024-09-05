@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using Sharpmake;
 
-namespace Volt
+namespace VoltSharpmake
 {
     public static class ConfigurePriorities
     {

@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace Volt
+namespace VoltSharpmake
 {
     [Sharpmake.Generate]
     public class Volt : CommonVoltLibProject

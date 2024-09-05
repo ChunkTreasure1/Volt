@@ -37,4 +37,4 @@ class Utility:
     @staticmethod
     def UnzipFile(source, destination):
         with zipfile.ZipFile(source, 'r') as zipObj:
-            zipObj.extract("premake5.exe", destination)
+            zipObj.extractall(destination)

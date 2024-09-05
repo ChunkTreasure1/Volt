@@ -2,7 +2,7 @@ using Sharpmake;
 using System;
 using System.IO;
 
-namespace Volt
+namespace VoltSharpmake
 {
     [Sharpmake.Export]
     public class p4 : Sharpmake.Project

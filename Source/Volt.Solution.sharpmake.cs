@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.IO;
 
-namespace Volt
+namespace VoltSharpmake
 { 
     [Sharpmake.Generate]
     public class VoltSolution : CommonSolution

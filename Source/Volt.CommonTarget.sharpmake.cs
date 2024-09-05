@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Sharpmake;
 
-namespace Volt
+namespace VoltSharpmake
 {
     [Fragment, Flags]
     public enum Optimization

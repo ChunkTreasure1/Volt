@@ -1,7 +1,7 @@
 using Sharpmake;
 using System.IO;
 
-namespace Volt
+namespace VoltSharpmake
 {
     public class CommonSolution : Sharpmake.Solution
     {

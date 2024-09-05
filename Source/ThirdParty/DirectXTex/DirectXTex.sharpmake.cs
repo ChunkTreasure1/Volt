@@ -3,7 +3,7 @@ using System.IO;
 
 using Sharpmake;
 
-namespace Volt
+namespace VoltSharpmake
 {
     [Sharpmake.Generate]
     public class DirectXTex : CommonThirdPartyLibProject

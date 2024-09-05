@@ -6,10 +6,13 @@ import os
 from SetupPython import Python
 
 def GenerateProjects(filename):
+        os.chdir('../')
         if (filename is not None and filename != ""):
-                subprocess.call(['Win-GenProjects-vs2022.bat', '--project=' + filename])
+                escaped_filename = filename.replace('\\', '\\\\')
+                
+                subprocess.call(['GenerateProjects.bat', '/project(\'' + escaped_filename + '\')'])
         else:
-                subprocess.call(['Win-GenProjects-vs2022.bat'])
+                subprocess.call(['GenerateProjects.bat'])
 
 
 Python.CheckPython()
@@ -17,18 +20,20 @@ Python.CheckPython()
 import colorama
 
 from colorama import Fore
-from SetupPremake import Premake
+from SetupSharpmake import Sharpmake
 from SetupVulkan import Vulkan
+
+os.chdir("Scripts")
 
 colorama.init()
 
 Vulkan.CheckVulkan()
 print("")
-Premake.CheckPremake()
+Sharpmake.CheckSharpmake()
 
-os.chdir('../../Engine/Setup')
+os.chdir('../Engine/Setup')
 subprocess.call("VoltSetup.exe")
-os.chdir('../../Volt/scripts')
+os.chdir('../../Scripts')
 
 sys.stdout.write(Fore.WHITE)
 

@@ -2,7 +2,7 @@ using Sharpmake;
 using System;
 using System.IO;
 
-namespace Volt
+namespace VoltSharpmake
 {
     [Sharpmake.Export]
     public class Aftermath : Sharpmake.Project

@@ -3,7 +3,7 @@ using System.IO;
 
 using Sharpmake;
 
-namespace Volt
+namespace VoltSharpmake
 {
     [Sharpmake.Generate]
     public class GLFW : CommonThirdPartyDllProject
@@ -76,7 +76,7 @@ namespace Volt
         {
             base.ConfigureLinux(conf, target);
 
-            conf.Options.Add(Linux.Options.Compiler.PositionIndependentCode.Enable);
+            //conf.Options.Add(Linux.Options.Compiler.PositionIndependentCode.Enable);
 
             SourceFilesFilters.Add(
                 "src/x11_init.c",

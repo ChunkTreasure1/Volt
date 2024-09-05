@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Volt
+namespace VoltSharpmake
 {
     [Sharpmake.Generate]
     public class msdf_atlas_gen : CommonThirdPartyLibProject

@@ -12,9 +12,9 @@ using Sharpmake;
 [module: Sharpmake.Include("ThirdParty/*/*.sharpmake.cs")]
 [module: Sharpmake.Include("ThirdParty/*/*/*.sharpmake.cs")]
 
-namespace Volt
+namespace VoltSharpmake
 {
-    public static class Globals
+	public static class Globals
     {
         // branch root path relative to current sharpmake file location
         public const string RelativeRootPath = @"..\Source";
@@ -26,7 +26,7 @@ namespace Volt
         public const string RelativeEnginePath = @"..\Engine";
         public static string EngineDirectory;
 
-        public const string RelativeVtProjectPath = @"..\Project\Project.vtproj";
+        public static string RelativeVtProjectPath = @"..\Project\Project.vtproj";
         public static string VtProjectDirectory;
 
         public const string RelativeSharpmakePath = @"..\Sharpmake";
@@ -34,9 +34,19 @@ namespace Volt
 
         public static string TmpDirectory { get { return Path.Combine(RootDirectory, "../Temp"); } }
         public static string OutputDirectory { get { return Path.Combine(TmpDirectory, "bin"); } }
-    }
 
-    public static class Main
+		[CommandLine.Option("project",
+		@"Specify the project to link with the solution: ex: /project('filepath/to/project')")]
+		public static void CommandLineProject(string projectArg)
+		{
+			if (projectArg != "")
+			{
+				RelativeVtProjectPath = projectArg;
+			}
+		}
+	}
+
+	public static class Main
     {
         private static void ConfigureRootDirectory()
         {
@@ -70,7 +80,9 @@ namespace Volt
         [Sharpmake.Main]
         public static void SharpmakeMain(Sharpmake.Arguments arguments)
         {
-            ConfigureRootDirectory();
+			CommandLine.ExecuteOnType(typeof(VoltSharpmake.Globals));
+
+			ConfigureRootDirectory();
             ConfigureAutoCleanup();
 
             KitsRootPaths.SetKitsRoot10ToHighestInstalledVersion(DevEnv.vs2022);
