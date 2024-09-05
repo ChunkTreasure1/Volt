@@ -2,6 +2,7 @@ using Sharpmake;
 using System.Reflection;
 using System;
 using System.Linq;
+using System.IO;
 
 namespace Volt
 { 
@@ -22,7 +23,11 @@ namespace Volt
             conf.AddProject<SharpmakeProject>(target);
 
             foreach (Type projectType in Assembly.GetExecutingAssembly().GetTypes().Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(CommonProject))))
-                conf.AddProject(projectType, target);
-        }
-    }
+			{
+				conf.AddProject(projectType, target);
+			}
+
+			conf.Solution.ExtraItems["Solution Items"] = new Strings(Path.Combine(Globals.RootDirectory, ".editorconfig"));
+		}
+	}
 }
