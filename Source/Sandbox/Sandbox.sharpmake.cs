@@ -23,7 +23,8 @@ namespace Volt
 
             conf.VcxprojUserFile = new Configuration.VcxprojUserFileSettings
             {
-                LocalDebuggerWorkingDirectory = Globals.EngineDirectory
+                LocalDebuggerWorkingDirectory = Globals.EngineDirectory,
+                LocalDebuggerCommandArguments = Globals.VtProjectDirectory
             };
 
             conf.AddPublicDependency<Volt>(target);

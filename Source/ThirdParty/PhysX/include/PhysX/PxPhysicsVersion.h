@@ -1,3 +1,4 @@
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -22,21 +23,43 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2021 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
-// Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
+// Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
 
-#ifndef PX_AOS_H
-#define PX_AOS_H
+#ifndef PX_PHYSICS_VERSION_NUMBER_H
+#define PX_PHYSICS_VERSION_NUMBER_H
 
-#include "foundation/Px.h"
+/*
+VersionNumbers:  The combination of these
+numbers uniquely identifies the API, and should
+be incremented when the SDK API changes.  This may
+include changes to file formats.
 
-#if PX_WINDOWS && !PX_NEON
-#include "windows/PxWindowsAoS.h"
-#elif(PX_UNIX_FAMILY || PX_SWITCH)
-#include "unix/PxUnixAoS.h"
-#else
-#error "Platform not supported!"
-#endif
+This header is included in the main SDK header files
+so that the entire SDK and everything that builds on it
+is completely rebuilt when this file changes.  Thus,
+this file is not to include a frequently changing
+build number.  See BuildNumber.h for that.
 
-#endif
+Each of these three values should stay below 255 because
+sometimes they are stored in a byte.
+*/
+/** \addtogroup foundation
+  @{
+*/
+
+#define PX_PHYSICS_VERSION_MAJOR 4
+#define PX_PHYSICS_VERSION_MINOR 1
+#define PX_PHYSICS_VERSION_BUGFIX 2
+
+/**
+The constant PX_PHYSICS_VERSION is used when creating certain PhysX module objects.
+This is to ensure that the application is using the same header version as the library was built with.
+*/
+#define PX_PHYSICS_VERSION ((PX_PHYSICS_VERSION_MAJOR<<24) + (PX_PHYSICS_VERSION_MINOR<<16) + (PX_PHYSICS_VERSION_BUGFIX<<8) + 0)
+
+
+#endif // PX_PHYSICS_VERSION_NUMBER_H
+
+ /** @} */

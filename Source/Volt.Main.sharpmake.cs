@@ -26,7 +26,7 @@ namespace Volt
         public const string RelativeEnginePath = @"..\Engine";
         public static string EngineDirectory;
 
-        public const string RelativeVtProjectPath = @"..\Project";
+        public const string RelativeVtProjectPath = @"..\Project\Project.vtproj";
         public static string VtProjectDirectory;
 
         public const string RelativeSharpmakePath = @"..\Sharpmake";

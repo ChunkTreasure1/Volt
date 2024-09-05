@@ -1,3 +1,4 @@
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -22,21 +23,62 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2021 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
-// Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
+// Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
 
-#ifndef PX_AOS_H
-#define PX_AOS_H
 
-#include "foundation/Px.h"
+#ifndef PX_PHYSICS_PX_PHYSICS_INSERTION_CALLBACK
+#define PX_PHYSICS_PX_PHYSICS_INSERTION_CALLBACK
 
-#if PX_WINDOWS && !PX_NEON
-#include "windows/PxWindowsAoS.h"
-#elif(PX_UNIX_FAMILY || PX_SWITCH)
-#include "unix/PxUnixAoS.h"
-#else
-#error "Platform not supported!"
+#include "common/PxBase.h"
+
+/** \addtogroup common
+@{
+*/
+
+#if !PX_DOXYGEN
+namespace physx
+{
 #endif
 
+	/**
+
+	\brief Callback interface that permits PxCooking to insert a
+	TriangleMesh, HeightfieldMesh or ConvexMesh directly into PxPhysics without the need to store
+	the cooking results into a stream.
+
+
+	Using this is advised only if real-time cooking is required; using "offline" cooking and
+	streams is otherwise preferred.
+
+	The default PxPhysicsInsertionCallback implementation must be used. The PxPhysics
+	default callback can be obtained using the PxPhysics::getPhysicsInsertionCallback().
+
+	@see PxCooking PxPhysics
+	*/
+	class PxPhysicsInsertionCallback
+	{
+	public:
+		PxPhysicsInsertionCallback()				{}		
+
+		/**
+		\brief Builds object (TriangleMesh, HeightfieldMesh or ConvexMesh) from given data in PxPhysics.		
+
+		\param type Object type to build.
+		\param data Object data
+		\return PxBase Created object in PxPhysics.
+		*/
+		virtual PxBase* buildObjectFromData(PxConcreteType::Enum type, void* data) = 0;
+
+	protected:
+		virtual ~PxPhysicsInsertionCallback()		{}
+	};
+
+
+#if !PX_DOXYGEN
+} // namespace physx
+#endif
+
+/** @} */
 #endif

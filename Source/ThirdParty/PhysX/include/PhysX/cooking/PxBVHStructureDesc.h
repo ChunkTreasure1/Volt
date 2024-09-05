@@ -1,3 +1,4 @@
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -22,21 +23,87 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2021 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
 
-#ifndef PX_AOS_H
-#define PX_AOS_H
 
-#include "foundation/Px.h"
+#ifndef PX_BVH_STRUCTURE_DESC_H
+#define PX_BVH_STRUCTURE_DESC_H
+/** \addtogroup cooking
+@{
+*/
 
-#if PX_WINDOWS && !PX_NEON
-#include "windows/PxWindowsAoS.h"
-#elif(PX_UNIX_FAMILY || PX_SWITCH)
-#include "unix/PxUnixAoS.h"
-#else
-#error "Platform not supported!"
+#include "common/PxCoreUtilityTypes.h"
+#include "common/PxPhysXCommonConfig.h"
+#include "foundation/PxTransform.h"
+#include "foundation/PxBounds3.h"
+
+#if !PX_DOXYGEN
+namespace physx
+{
 #endif
 
+/**
+
+\brief Descriptor class for #PxBVHStructure.
+
+@see PxBVHStructure
+*/
+class PxBVHStructureDesc
+{
+public:
+	PX_INLINE PxBVHStructureDesc();
+
+	/**
+	\brief Pointer to first bounding box.
+	*/
+	PxBoundedData bounds;
+
+	/**
+	\brief	Initialize the BVH structure descriptor
+	*/
+	PX_INLINE void setToDefault();
+
+	/**
+	\brief Returns true if the descriptor is valid.
+	\return true if the current settings are valid.
+	*/
+	PX_INLINE bool isValid() const;
+
+
+protected:	
+};
+
+
+
+PX_INLINE PxBVHStructureDesc::PxBVHStructureDesc()
+{
+}
+
+PX_INLINE void PxBVHStructureDesc::setToDefault()
+{
+	*this = PxBVHStructureDesc();
+}
+
+PX_INLINE bool PxBVHStructureDesc::isValid() const
+{
+	// Check BVH desc data
+	if(!bounds.data)
+		return false;
+	if(bounds.stride < sizeof(PxBounds3))	//should be at least one point's worth of data
+		return false;
+
+	if(bounds.count == 0)
+		return false;
+
+	return true;
+}
+
+#if !PX_DOXYGEN
+} // namespace physx
 #endif
+
+
+  /** @} */
+#endif // PX_BVH_STRUCTURE_DESC_H
