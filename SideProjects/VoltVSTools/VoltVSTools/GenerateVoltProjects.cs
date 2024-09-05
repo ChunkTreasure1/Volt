@@ -2,21 +2,22 @@
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using Task = System.Threading.Tasks.Task;
-using VoltVSTools.Debugging;
 using Microsoft.VisualStudio;
-using Mono.Debugging.VisualStudio;
 using EnvDTE;
-using Mono.Debugging.Soft;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.OLE.Interop;
+using System.IO;
 
 namespace VoltVSTools
 {
 	/// <summary>
 	/// Command handler
 	/// </summary>
-	internal sealed class AttachVoltCommand
+	internal sealed class GenerateVoltProjects
 	{
 		/// <summary>
 		/// Command ID.
@@ -38,12 +39,12 @@ namespace VoltVSTools
 		private MenuCommand m_MenuItem;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="AttachVoltCommand"/> class.
+		/// Initializes a new instance of the <see cref="GenerateVoltProjects"/> class.
 		/// Adds our command handlers for menu (commands must exist in the command table file)
 		/// </summary>
 		/// <param name="package">Owner package, not null.</param>
 		/// <param name="commandService">Command service to add command to, not null.</param>
-		private AttachVoltCommand(AsyncPackage package, OleMenuCommandService commandService)
+		private GenerateVoltProjects(AsyncPackage package, OleMenuCommandService commandService)
 		{
 			this.package = package ?? throw new ArgumentNullException(nameof(package));
 			commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
@@ -56,7 +57,7 @@ namespace VoltVSTools
 		/// <summary>
 		/// Gets the instance of the command.
 		/// </summary>
-		public static AttachVoltCommand Instance
+		public static GenerateVoltProjects Instance
 		{
 			get;
 			private set;
@@ -84,7 +85,7 @@ namespace VoltVSTools
 			await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
 
 			OleMenuCommandService commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
-			Instance = new AttachVoltCommand(package, commandService);
+			Instance = new GenerateVoltProjects(package, commandService);
 			Instance.m_SolutionBuildManager = await package.GetServiceAsync(typeof(IVsSolutionBuildManager)) as IVsSolutionBuildManager;
 		}
 
@@ -99,24 +100,17 @@ namespace VoltVSTools
 		{
 			ThreadHelper.ThrowIfNotOnUIThread();
 
-			m_SolutionBuildManager.get_StartupProject(out var vsHierarchy);
-			vsHierarchy.GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out object projectObj);
-			Project project = projectObj as Project;
+            string solutionDir = VoltToolsPackage.Instance.SolutionEventsListener?.SolutionDirectory;
 
-			var startArgs = new SoftDebuggerConnectArgs(project.Name, IPAddress.Parse("127.0.0.1"), 2550)
+			if (solutionDir != null)
 			{
-				MaxConnectionAttempts = 2
-			};
+				string generateProjectsFilePath = Path.Combine(solutionDir, "GenerateProjects.bat");
+                Console.WriteLine(generateProjectsFilePath);
 
-			var startInfo = new VoltStartInfo(startArgs, null, project, VoltSessionType.AttachVoltDebugger)
-			{
-				WorkingDirectory = VoltToolsPackage.Instance.SolutionEventsListener?.SolutionDirectory
-			};
-
-			var session = new VoltDebuggerSession();
-			session.Breakpoints.Clear();
-			var launcher = new MonoDebuggerLauncher(new Progress<string>());
-			launcher.StartSession(startInfo, session);
-		}
-	}
+                System.Diagnostics.Process proc = new System.Diagnostics.Process();
+                proc.StartInfo.FileName = generateProjectsFilePath;
+                proc.Start();
+            }
+        }
+    }
 }
