@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "GameViewPanel.h"
+#include "Window/GameViewPanel.h"
 
 #include "Sandbox/Camera/EditorCameraController.h"
 #include "Sandbox/Utility/SelectionManager.h"

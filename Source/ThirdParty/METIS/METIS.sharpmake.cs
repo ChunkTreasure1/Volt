@@ -19,7 +19,10 @@ namespace Volt
             conf.IncludePaths.Add(@"[project.RootPath]\include");
             conf.LibraryPaths.Add(@"[project.RootPath]\libmetis\" + target.Optimization.ToString());
 
-            conf.Output = Configuration.OutputType.Dll;
+            conf.LibraryFiles.Add(
+               "metis.lib"
+               );
+           conf.Output = Configuration.OutputType.None;
         }
     }
 }

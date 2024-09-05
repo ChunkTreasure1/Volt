@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "MotionWeaveDatabasePanel.h"
+#include "Window/MotionWeaveDatabasePanel.h"
 
 #include "Sandbox/Utility/EditorUtilities.h"
 #include <Volt/Utility/UIUtility.h>

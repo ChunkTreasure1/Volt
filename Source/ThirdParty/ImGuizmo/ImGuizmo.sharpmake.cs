@@ -17,7 +17,7 @@ namespace Volt
             base.ConfigureAll(conf, target);
 
             conf.AddPrivateDependency<imgui>(target);
-            conf.IncludePaths.Add(@"[project.RootPath]");
+            conf.IncludePaths.Add(@"[project.RootPath]\[project.Name]" );
         }
     }
 }

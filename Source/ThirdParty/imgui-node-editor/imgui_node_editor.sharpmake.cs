@@ -9,7 +9,7 @@ namespace Volt
         public imgui_node_editor()
         {
             AddTargets(CommonTarget.GetDefaultTargets());
-            Name = "imgui_node_editor";
+            Name = "imgui-node-editor";
             SourceRootPath = @"[project.RootPath]";
         }
 
@@ -38,7 +38,7 @@ namespace Volt
 
             conf.AddPrivateDependency<imgui>(target);
 
-            conf.IncludePaths.Add(@"[project.RootPath]");
+            conf.IncludePaths.Add(@"[project.RootPath]\[project.Name]");
         }
     }
 }

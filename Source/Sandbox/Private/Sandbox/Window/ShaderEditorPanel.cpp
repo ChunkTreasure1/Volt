@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "ShaderEditorPanel.h"
+#include "Window/ShaderEditorPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
 

@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "VertexPainterPanel.h"
+#include "VertexPainting/VertexPainterPanel.h"
 
 #include <InputModule/Input.h>
 #include <AssetSystem/AssetManager.h>

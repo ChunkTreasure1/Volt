@@ -19,13 +19,17 @@ namespace Volt
 
             conf.Defines.Add(
                 "PX_PHYSX_STATIC_LIB",
+                "PX_COOKING",
                 "WIN64",
                 "_CRT_SECURE_NO_DEPRECATE",
                 "_CRT_NONSTDC_NO_DEPRECATE",
                 "_WINSOCK_DEPRECATED_NO_WARNINGS",
-                "PX_COOKING",
                 "DISABLE_CUDA_PHYSX"
             );
+            conf.ExportDefines.Add(
+                "PX_PHYSX_STATIC_LIB",
+                "PX_COOKING"
+                );
 
             conf.IncludePaths.Add(@"[project.RootPath]/[project.Name]/include");
 

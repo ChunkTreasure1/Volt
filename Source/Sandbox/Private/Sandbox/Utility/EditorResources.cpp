@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "EditorResources.h"
+#include "Utility/EditorResources.h"
 
 #include <Volt/Asset/Importers/TextureImporter.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>

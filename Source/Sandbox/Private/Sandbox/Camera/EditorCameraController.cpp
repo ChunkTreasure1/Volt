@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "EditorCameraController.h"
+#include "Camera/EditorCameraController.h"
 
 #include "Volt/Core/Application.h"
 #include "Volt/Rendering/Camera/Camera.h"

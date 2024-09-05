@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "WorldEnginePanel.h"
+#include "Window/WorldEnginePanel.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Math/Math.h>

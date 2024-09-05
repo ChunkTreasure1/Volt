@@ -1,6 +1,6 @@
 #include "sbpch.h"
 
-#include "EditorAssetRegistry.h"
+#include "Window/AssetBrowser/EditorAssetRegistry.h"
 
 #include "Volt/Asset/Rendering/Material.h"
 

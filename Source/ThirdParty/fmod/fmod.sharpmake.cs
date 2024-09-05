@@ -19,7 +19,7 @@ namespace Volt
             conf.IncludePaths.Add(@"[project.RootPath]\include");
             conf.LibraryPaths.Add(@"[project.RootPath]\lib\" + target.Optimization.ToString());
 
-            conf.Output = Configuration.OutputType.Dll;
+            conf.Output = Configuration.OutputType.None;
         }
     }
 }

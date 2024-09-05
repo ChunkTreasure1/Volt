@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "CharacterEditorPanel.h"
+#include "Sandbox/Window/CharacterEditorPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Camera/EditorCameraController.h"

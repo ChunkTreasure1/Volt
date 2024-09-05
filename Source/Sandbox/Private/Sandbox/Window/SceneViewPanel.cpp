@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "SceneViewPanel.h"
+#include "Window/SceneViewPanel.h"
 
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorResources.h"

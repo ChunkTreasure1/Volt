@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "PhysicsPanel.h"
+#include "Window/PhysicsPanel.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Physics/PhysicsLayer.h>

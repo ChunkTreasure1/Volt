@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "AssetBrowserUtilities.h"
+#include "Utility/AssetBrowserUtilities.h"
 
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 #include "Sandbox/UISystems/ModalSystem.h"

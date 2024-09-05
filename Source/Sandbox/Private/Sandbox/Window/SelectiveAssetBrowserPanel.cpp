@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "SelectiveAssetBrowserPanel.h"
+#include "Window/SelectiveAssetBrowserPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
 

@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "EngineStatisticsPanel.h"
+#include "Window/EngineStatisticsPanel.h"
 
 #include <Volt/Core/Application.h>
 #include <Volt/Scene/Scene.h>

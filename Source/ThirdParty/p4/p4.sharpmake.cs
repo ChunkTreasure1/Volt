@@ -19,7 +19,18 @@ namespace Volt
             conf.IncludePaths.Add(@"[project.RootPath]\include");
             conf.LibraryPaths.Add(@"[project.RootPath]\lib\" + target.Optimization.ToString());
 
-            conf.Output = Configuration.OutputType.Dll;
+            conf.LibraryFiles.Add(
+               "libclient.lib",
+               "libp4api.lib",
+               "libp4script.lib",
+               "libp4script_c.lib",
+               "libp4script_curl.lib",
+               "libp4script_sqlite.lib",
+               "librpc.lib",
+               "libsupp.lib"
+               );
+
+           conf.Output = Configuration.OutputType.None;
         }
     }
 }

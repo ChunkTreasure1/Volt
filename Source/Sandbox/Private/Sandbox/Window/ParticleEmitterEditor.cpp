@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "ParticleEmitterEditor.h"
+#include "Window/ParticleEmitterEditor.h"
 
 #include "Sandbox/Camera/EditorCameraController.h"
 #include "Sandbox/Utility/EditorUtilities.h"

@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "NodeGraphEditor.h"
+#include "NodeGraph/NodeGraphEditor.h"
 
 #include "Sandbox/NodeGraph/NodeGraphEditorBackend.h"
 

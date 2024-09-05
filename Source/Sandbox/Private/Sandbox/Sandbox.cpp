@@ -75,8 +75,8 @@
 
 #include <Volt/Events/ApplicationEvents.h>
 
-#include <DiscordPlugin/Plugin.h>
-#include <DiscordPlugin/DiscordManagerInterface.h>
+//#include <DiscordPlugin/Plugin.h>
+//#include <DiscordPlugin/DiscordManagerInterface.h>
 
 #include <WindowModule/Events/WindowEvents.h>
 #include <WindowModule/WindowManager.h>
@@ -146,13 +146,13 @@ void Sandbox::OnAttach()
 
 	InitializeModals();
 
-	constexpr int64_t discordAppId = 1108502963447681106;
+	//constexpr int64_t discordAppId = 1108502963447681106;
 
-	DiscordPlugin::GetInstance().GetManager().SetApplicationID(discordAppId);
-	DiscordPlugin::GetInstance().GetManager().SetLargeImage("icon_volt");
-	DiscordPlugin::GetInstance().GetManager().SetLargeText("Volt");
-	DiscordPlugin::GetInstance().GetManager().SetActivityType(ActivityType::Playing);
-	DiscordPlugin::GetInstance().GetManager().UpdateChanges();
+	//DiscordPlugin::GetInstance().GetManager().SetApplicationID(discordAppId);
+	//DiscordPlugin::GetInstance().GetManager().SetLargeImage("icon_volt");
+	//DiscordPlugin::GetInstance().GetManager().SetLargeText("Volt");
+	//DiscordPlugin::GetInstance().GetManager().SetActivityType(ActivityType::Playing);
+	//DiscordPlugin::GetInstance().GetManager().UpdateChanges();
 
 	m_isInitialized = true;
 }
@@ -959,12 +959,12 @@ bool Sandbox::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 
 	auto scene = e.GetScene();
 	
-	DiscordPlugin::GetInstance().GetManager().SetState(scene->GetName());
+	/*DiscordPlugin::GetInstance().GetManager().SetState(scene->GetName());
 	DiscordPlugin::GetInstance().GetManager().SetPartySize(m_runtimeScene->GetActiveLayer() + 1);
 	DiscordPlugin::GetInstance().GetManager().SetMaxPartySize(static_cast<int32_t>(m_runtimeScene->GetLayers().size()));
 	DiscordPlugin::GetInstance().GetManager().SetStartTime(std::time(nullptr));
 
-	DiscordPlugin::GetInstance().GetManager().UpdateChanges();
+	DiscordPlugin::GetInstance().GetManager().UpdateChanges();*/
 
 	return false;
 }

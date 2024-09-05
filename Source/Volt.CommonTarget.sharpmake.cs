@@ -126,7 +126,7 @@ namespace Volt
         {
             var defaultTarget = new CommonTarget(
                 Platform.win64,
-                Compiler.MSVC | Compiler.ClangCl,
+                Compiler.MSVC,
                 DevEnv.vs2022,
                 Optimization.Debug | Optimization.Release | Optimization.Dist,
                 Blob.NoBlob,

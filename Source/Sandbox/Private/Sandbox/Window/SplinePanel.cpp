@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "SplinePanel.h"
+#include "Window/SplinePanel.h"
 
 
 SplinePanel::SplinePanel(Ref<Volt::Scene>& aScene)

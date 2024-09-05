@@ -19,7 +19,11 @@ namespace Volt
             conf.IncludePaths.Add(@"[project.RootPath]\include");
             conf.LibraryPaths.Add(@"[project.RootPath]\lib\" + target.Optimization.ToString());
 
-            conf.Output = Configuration.OutputType.Dll;
+            conf.LibraryFiles.Add(
+                "libcrypto.lib",
+                "libssl.lib"
+                );
+            conf.Output = Configuration.OutputType.None;
         }
     }
 }

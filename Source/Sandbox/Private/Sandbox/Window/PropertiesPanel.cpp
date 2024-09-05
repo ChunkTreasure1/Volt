@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "PropertiesPanel.h"
+#include "Window/PropertiesPanel.h"
 
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorUtilities.h"

@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "CurveGraphPanel.h"
+#include "Window/CurveGraphPanel.h"
 
 #include <imgui_bezier.h>
 

@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "NavigationPanel.h"
+#include "Window/NavigationPanel.h"
 #include "NavigationEditor/Tools/NavMeshDebugDrawer.h"
 
 #include <AssetSystem/AssetManager.h>

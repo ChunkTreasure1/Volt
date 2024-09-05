@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "NodeGraphEditorBackend.h"
+#include "NodeGraph/NodeGraphEditorBackend.h"
 
 namespace NodeGraph
 {

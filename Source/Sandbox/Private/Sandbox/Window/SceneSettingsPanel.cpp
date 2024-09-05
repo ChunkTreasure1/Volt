@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "SceneSettingsPanel.h"
+#include "Window/SceneSettingsPanel.h"
 
 #include "Sandbox/Modals/ConvertToWorldEngineModal.h"
 #include "Sandbox/UISystems/ModalSystem.h"

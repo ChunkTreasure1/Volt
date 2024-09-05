@@ -1,6 +1,6 @@
 #include "sbpch.h"
 
-#include "VisonPanel.h"
+#include "Window/VisonPanel.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/Random.h>

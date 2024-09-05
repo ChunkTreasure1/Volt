@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "AssetRegistryPanel.h"
+#include "Window/AssetRegistryPanel.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
 #include <AssetSystem/AssetManager.h>

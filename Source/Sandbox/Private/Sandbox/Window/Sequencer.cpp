@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "Sequencer.h"
+#include "Window/Sequencer.h"
 
 Sequencer::Sequencer(Ref<Volt::Scene>& aScene)
 	:EditorWindow("Sequencer", false), myCurrentScene(aScene)

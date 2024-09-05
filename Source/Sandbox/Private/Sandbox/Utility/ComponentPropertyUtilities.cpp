@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "ComponentPropertyUtilities.h"
+#include "Utility/ComponentPropertyUtilities.h"
 
 #include "Sandbox/Sandbox.h"
 

@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "EditorUtilities.h"
+#include "Utility/EditorUtilities.h"
 
 #include "Sandbox/Utility/AssetBrowserUtilities.h"
 #include "Sandbox/Utility/EditorResources.h"
@@ -23,8 +23,6 @@
 
 #include <stb/stb_image.h>
 #include <stb/stb_image_write.h>
-
-#include <DirectXTex/DirectXTex.h>
 
 bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHandle, AssetType wantedType)
 {

@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "PreviewRenderer.h"
+#include "Window/AssetBrowser/PreviewRenderer.h"
 
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 

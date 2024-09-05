@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "MosaicEditorPanel.h"
+#include "Window/MosaicEditor/MosaicEditorPanel.h"
 
 #include "Sandbox/NodeGraph/NodeGraphEditorPinUtility.h"
 #include "Sandbox/NodeGraph/IONodeGraphEditorHelpers.h"
@@ -620,8 +620,8 @@ void MosaicEditorPanel::DrawNodes()
 		for (auto& input : node.nodeData->GetInputParameters())
 		{
 			float alpha = ImGui::GetStyle().Alpha;
-			ed::PinId linkStartPin = { m_newLinkPinId };
-			ed::PinId inputPin = { input.id };
+			ed::PinId linkStartPin = { static_cast<ed::PinId>(m_newLinkPinId) };
+			ed::PinId inputPin = { static_cast<ed::PinId>(input.id)};
 
 			const auto reason = CanLinkPins(linkStartPin.Get(), inputPin.Get());
 			if (m_newLinkPinId && reason != IncompatiblePinReason::None && input.id != m_newLinkPinId)

@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "TaigaPanel.h"
+#include "Window/Taiga/TaigaPanel.h"
 
 #include <Volt/Utility/UIUtility.h>
 

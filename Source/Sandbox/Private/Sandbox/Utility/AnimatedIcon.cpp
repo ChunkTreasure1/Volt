@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "AnimatedIcon.h"
+#include "Sandbox/Utility/AnimatedIcon.h"
 
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Asset/Importers/TextureImporter.h>

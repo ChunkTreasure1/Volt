@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "LogPanel.h"
+#include "Window/LogPanel.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>

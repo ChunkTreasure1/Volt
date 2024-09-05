@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "AssetBrowserPopup.h"
+#include "Utility/AssetBrowserPopup.h"
 
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorUtilities.h"

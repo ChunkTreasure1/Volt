@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "SkeletonEditorPanel.h"
+#include "Window/SkeletonEditorPanel.h"
 
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/Theme.h"

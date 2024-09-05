@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "EditorLibrary.h"
+#include "Utility/EditorLibrary.h"
 
 #include "Sandbox/Window/EditorWindow.h"
 

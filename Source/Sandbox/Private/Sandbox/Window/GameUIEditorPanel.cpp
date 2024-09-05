@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "GameUIEditorPanel.h"
+#include "Window/GameUIEditorPanel.h"
 
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/Theme.h"

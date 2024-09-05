@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "Modal.h"
+#include "Modals/Modal.h"
 
 #include <Volt/Utility/UIUtility.h>
 

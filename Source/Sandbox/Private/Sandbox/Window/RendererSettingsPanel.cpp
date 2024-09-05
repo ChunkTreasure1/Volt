@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "RendererSettingsPanel.h"
+#include "Window/RendererSettingsPanel.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Rendering/SceneRenderer.h>

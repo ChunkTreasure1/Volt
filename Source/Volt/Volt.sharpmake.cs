@@ -1,6 +1,7 @@
 using Sharpmake;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Volt
 {
@@ -22,24 +23,26 @@ namespace Volt
             conf.PrecompHeader = "vtpch.h";
             conf.PrecompSource = "vtpch.cpp";
 
-            conf.AddPrivateDependency<LogModule>(target);
-            conf.AddPrivateDependency<AssetSystemModule>(target);
-            conf.AddPrivateDependency<EntitySystemModule>(target);
-            conf.AddPrivateDependency<EventSystemModule>(target);
-            conf.AddPrivateDependency<RHIModule>(target);
-            conf.AddPrivateDependency<RenderCoreModule>(target);
-            conf.AddPrivateDependency<NavigationModule>(target);
-            conf.AddPrivateDependency<MosaicModule>(target);
-            conf.AddPrivateDependency<WindowModule>(target);
-            conf.AddPrivateDependency<InputModule>(target);
-            conf.AddPrivateDependency<Amp>(target);
+            conf.AddPublicDependency<LogModule>(target);
+            conf.AddPublicDependency<AssetSystemModule>(target);
+            conf.AddPublicDependency<EntitySystemModule>(target);
+            conf.AddPublicDependency<EventSystemModule>(target);
+            conf.AddPublicDependency<RHIModule>(target);
+            conf.AddPublicDependency<RenderCoreModule>(target);
+            conf.AddPublicDependency<WindowModule>(target);
+            conf.AddPublicDependency<InputModule>(target);
 
-            conf.AddPrivateDependency<VulkanRHIModule>(target);
-            conf.AddPrivateDependency<D3D12RHIModule>(target);
+            conf.AddPublicDependency<VulkanRHIModule>(target);
+            conf.AddPublicDependency<D3D12RHIModule>(target);
 
-            conf.AddPrivateDependency<PhysX>(target);
+
+            conf.AddPublicDependency<NavigationModule>(target);
+            conf.AddPublicDependency<MosaicModule>(target);
+            conf.AddPublicDependency<Amp>(target);
+
+            conf.AddPublicDependency<PhysX>(target);
             conf.AddPrivateDependency<meshoptimizer>(target);
-            conf.AddPrivateDependency<stb_image>(target);
+            conf.AddPublicDependency<stb_image>(target);
             conf.AddPrivateDependency<ufbx>(target);
             conf.AddPrivateDependency<msdfgen>(target);
             conf.AddPrivateDependency<msdf_atlas_gen>(target);

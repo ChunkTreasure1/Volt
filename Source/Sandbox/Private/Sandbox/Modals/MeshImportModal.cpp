@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "MeshImportModal.h"
+#include "Modals/MeshImportModal.h"
 
 #include "Sandbox/Utility/Theme.h"
 #include "Sandbox/Utility/EditorUtilities.h"

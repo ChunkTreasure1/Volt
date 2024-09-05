@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "PrefabEditorPanel.h"
+#include "Window/PrefabEditorPanel.h"
 
 #include "Sandbox/Camera/EditorCameraController.h"
 #include "Sandbox/Utility/EditorUtilities.h"

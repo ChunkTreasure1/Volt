@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "AnimationEditorPanel.h"
+#include "Window/AnimationEditorPanel.h"
 
 #include <AssetSystem/AssetManager.h>
 #include <Volt/Asset/Animation/Animation.h>

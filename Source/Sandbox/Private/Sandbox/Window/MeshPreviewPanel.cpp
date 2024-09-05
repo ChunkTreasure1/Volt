@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "MeshPreviewPanel.h"
+#include "Window/MeshPreviewPanel.h"
 
 #include "Sandbox/Camera/EditorCameraController.h"
 #include "Sandbox/Utility/EditorUtilities.h"

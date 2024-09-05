@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "FileWatcher.h"
+#include "FileWatcher/FileWatcher.h"
 
 #include "Sandbox/FileWatcher/FileListener.h"
 

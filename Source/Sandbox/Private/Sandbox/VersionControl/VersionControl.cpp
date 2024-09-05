@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "VersionControl.h"
+#include "VersionControl/VersionControl.h"
 
 #include "Sandbox/VersionControl/P4/P4Implementation.h"
 

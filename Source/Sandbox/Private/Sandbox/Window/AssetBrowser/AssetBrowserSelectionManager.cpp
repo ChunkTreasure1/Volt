@@ -1,5 +1,5 @@
 #include "sbpch.h"
-#include "AssetBrowserSelectionManager.h"
+#include "Window/AssetBrowser/AssetBrowserSelectionManager.h"
 
 namespace AssetBrowser
 {
