@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="VoltTools" Version="1.0" Language="en-US" Publisher="Ivar Jönsson" />
+        <Identity Id="VoltTools" Version="1.1" Language="en-US" Publisher="Volt Dev Team" />
         <DisplayName>Volt VS Tools</DisplayName>
         <Description xml:space="preserve">The Volt Engine Visual Studio tools.</Description>
         <Icon>icon.png</Icon>
@@ -21,7 +21,6 @@
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
     </Assets>
     <Prerequisites>
-        <Prerequisite Id="Microsoft.VisualStudio.Component.MonoDebugger" Version="[16.0,)" DisplayName="Mono debugger" />
         <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,)" DisplayName="Visual Studio core editor" />
         <Prerequisite Id="Microsoft.VisualStudio.Component.Roslyn.LanguageServices" Version="[17.0,)" DisplayName="Roslyn Language Services" />
     </Prerequisites>

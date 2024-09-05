@@ -1,48 +1,64 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <CommandTable language="en-us" xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable">
 
-    <Include href="KnownImageIds.vsct" />
+	<Include href="KnownImageIds.vsct" />
 
-    <Extern href="stdidcmd.h" />
-    <Extern href="vsshlids.h" />
-    <Extern href="VSDbgCmd.h" />
-    <Extern href="VsDebugGuids.h" />
+	<Extern href="stdidcmd.h" />
+	<Extern href="vsshlids.h" />
+	<Extern href="VSDbgCmd.h" />
+	<Extern href="VsDebugGuids.h" />
 
-    <Commands package="guidVoltToolsPackage">
-        <Groups>
-            <Group guid="guidVoltToolsPackageCmdSet" id="MyMenuGroup" priority="0x0600">
-                <Parent guid="guidVSDebugGroup" id="IDM_DEBUG_MENU" />
-            </Group>
-        </Groups>
+	<Commands package="guidVoltToolsPackage">
 
-        <Buttons>
-            <Button guid="guidVoltToolsPackageCmdSet" id="AttachVoltCommandId" priority="0x0100" type="Button">
-                <Parent guid="guidVoltToolsPackageCmdSet" id="MyMenuGroup" />
-                <Icon guid="ImageCatalogGuid" id="Play" />
-                <CommandFlag>DynamicVisibility</CommandFlag>
-                <CommandFlag>IconIsMoniker</CommandFlag>
-                <Strings>
-                    <ButtonText>Attach to Volt</ButtonText>
-                </Strings>
-            </Button>
-        </Buttons>
-    </Commands>
+		<Bitmaps>
+			<Bitmap guid="guidVoltIcons" href="Resources\GenerateProjects.bmp" usedList="GenerateProjectsIcon"/>
+		</Bitmaps>
 
-    <KeyBindings>
-        <KeyBinding guid="guidVoltToolsPackageCmdSet" id="AttachVoltCommandId" editor="guidVSStd97" key1="VK_F7" mod1="Control Shift" />
-    </KeyBindings>
-    
-    <VisibilityConstraints>
-        <VisibilityItem guid="guidVoltToolsPackageCmdSet" id="AttachVoltCommandId" context="guidUIContextHasCSProject" />
-    </VisibilityConstraints>
+		<Menus>
+			<Menu guid="guidVoltToolsPackageCmdSet" id="Toolbar" type="Toolbar">
+				<CommandFlag>DefaultDocked</CommandFlag>
+				<Strings>
+					<ButtonText>Volt Tools</ButtonText>
+					<CommandName>Volt Tools</CommandName>
+				</Strings>
+			</Menu>
+		</Menus>
 
-    <Symbols>
-        <GuidSymbol name="guidVoltToolsPackage" value="{010FEDBE-99D0-45B9-AA1A-FF11E4C5E9D0}" />
-        <GuidSymbol name="guidUIContextHasCSProject" value="{B95AF128-812D-47D0-B875-6398CF6DD004}" />
+		<Groups>
+			<Group guid="guidVoltToolsPackageCmdSet" id="MyToolbarGroup" priority="0x0000">
+				<Parent guid="guidVoltToolsPackageCmdSet" id="Toolbar" />
+			</Group>
+		</Groups>
 
-        <GuidSymbol value="{BED7CE54-DB82-4DF1-8807-3F119077C4D0}" name="guidVoltToolsPackageCmdSet">
-            <IDSymbol value="4128" name="MyMenuGroup" />
-            <IDSymbol value="256" name="AttachVoltCommandId" />
-        </GuidSymbol>
-    </Symbols>
+		<Buttons>
+			<Button guid="guidVoltToolsPackageCmdSet" id="GenerateVoltProjectsCommandId" priority="0x0100" type="Button">
+				<Parent guid="guidVoltToolsPackageCmdSet" id="MyToolbarGroup" />
+				<Icon guid="guidVoltIcons" id="GenerateProjectsIcon" />
+				<Strings>
+					<ButtonText>Generate Volt Projects</ButtonText>
+				</Strings>
+			</Button>
+		</Buttons>
+	</Commands>
+
+	<KeyBindings>
+		<KeyBinding guid="guidVoltToolsPackageCmdSet" id="GenerateVoltProjectsCommandId" editor="guidVSStd97" key1="VK_F7" mod1="Control Shift" />
+	</KeyBindings>
+
+	<Symbols>
+		<GuidSymbol name="guidVoltToolsPackage" value="{010FEDBE-99D0-45B9-AA1A-FF11E4C5E9D0}" />
+		<GuidSymbol name="guidUIContextHasCSProject" value="{B95AF128-812D-47D0-B875-6398CF6DD004}" />
+
+		<GuidSymbol name="guidVoltIcons" value="{04CB7964-DCF7-4FD9-97FC-74C07272C950}" >
+			<IDSymbol value="1" name="GenerateProjectsIcon" />
+		</GuidSymbol>
+
+		<GuidSymbol value="{BED7CE54-DB82-4DF1-8807-3F119077C4D0}" name="guidVoltToolsPackageCmdSet">
+			<IDSymbol value="4128" name="MyToolbarGroup" />
+			<IDSymbol value="256" name="GenerateVoltProjectsCommandId" />
+
+			<IDSymbol value="512" name="Toolbar"  />
+			<IDSymbol value="540" name="ToolbarGroup"  />
+		</GuidSymbol>
+	</Symbols>
 </CommandTable>
