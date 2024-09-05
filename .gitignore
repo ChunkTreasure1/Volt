@@ -39,6 +39,7 @@ Project/Generated
 *.csproj.user
 *.cached
 *.dmp
+*_runtimedependencies.txt
 
 !SideProjects/VoltLauncher/VoltLauncher.sln
 !SideProjects/VoltLauncher/VoltLauncher/VoltLauncher.csproj
