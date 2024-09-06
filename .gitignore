@@ -4,6 +4,11 @@
 .idea/
 bin/
 bin-int/
+Temp/
+
+Source/SharpmakeProject/obj
+Source/SharpmakeProject/output
+Source/Properties
 
 Engine/User
 Engine/Engine/Shaders/Cache
@@ -35,6 +40,7 @@ Project/Generated
 *.csproj.user
 *.cached
 *.dmp
+*_runtimedependencies.txt
 
 !SideProjects/VoltLauncher/VoltLauncher.sln
 !SideProjects/VoltLauncher/VoltLauncher/VoltLauncher.csproj
@@ -45,8 +51,8 @@ Project/Generated
 !SideProjects/VoltVSTools/VoltVSTools.sln
 !SideProjects/VoltVSTools/VoltVSTools/VoltVSTools.csproj
 
-Volt/scripts/data/__pycache__
-Volt/scripts/data/premake5.exe
+Scripts/data/__pycache__
+Sharpmake/
 
 Volt/Volt/vendor/efsw/lib
 Volt/Volt/vendor/efsw/obj

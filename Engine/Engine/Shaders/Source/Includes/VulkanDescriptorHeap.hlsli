@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ResourceType.hlsli"
+
 #define DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(textureType, binding, space) \
     textureType<float> u_##textureType##float[] : register(binding, space); \
     textureType<float2> u_##textureType##float2[] : register(binding, space); \
@@ -60,31 +62,31 @@ RWByteAddressBuffer u_RWByteAddressBuffer[] : register(u8, space0);
 
 SamplerState u_SamplerState[] : register(s10, space0);
 
-#ifdef ENABLE_RUNTIME_VALIDATION
+//#ifdef ENABLE_RUNTIME_VALIDATION
+//
+//#include "ShaderRuntimeValidator.hlsli"
+//
+//void ValidateResourceAccess(uint handleType, uint shouldBeType)
+//{
+//    // We skip the type "INVALID" as this can mean that the resource hasn't been marked with any type
+//    if (handleType != shouldBeType && handleType != ResourceType::INVALID)
+//    {
+//        RuntimeValidationError error;
+//        error.Initialize();
+//        error.errorType = RuntimeErrorType::INVALID_RESOURCE_HANDLE_TYPE;
+//        error.userdata0 = handleType;
+//        error.userdata1 = shouldBeType;
+//
+//        WriteRuntimeError(error, u_RWByteAddressBuffer[u_renderGraphConstants.shaderValidationBuffer]);
+//    }
+//}
 
-#include "ShaderRuntimeValidator.hlsli"
-
-void ValidateResourceAccess(uint handleType, uint shouldBeType)
-{
-    // We skip the type "INVALID" as this can mean that the resource hasn't been marked with any type
-    if (handleType != shouldBeType && handleType != ResourceType::INVALID)
-    {
-        RuntimeValidationError error;
-        error.Initialize();
-        error.errorType = RuntimeErrorType::INVALID_RESOURCE_HANDLE_TYPE;
-        error.userdata0 = handleType;
-        error.userdata1 = shouldBeType;
-
-        WriteRuntimeError(error, u_RWByteAddressBuffer[u_renderGraphConstants.shaderValidationBuffer]);
-    }
-}
-
-#else
+//#else
 
 void ValidateResourceAccess(uint handleType, uint shouldBeType)
 {}
 
-#endif
+//#endif
 
 struct VulkanResourceDescriptorHeapInternal
 {

@@ -1,0 +1,54 @@
+#pragma once
+
+#include <AssetSystem/Asset.h>
+
+#include <CoreUtilities/Containers/Vector.h>
+
+#include <unordered_map>
+
+namespace Volt
+{
+	class Mesh;
+	class Skeleton;
+	class Animation;
+
+	class MeshTypeImporter
+	{
+	public:
+		virtual ~MeshTypeImporter() = default;
+
+		static void Initialize();
+		static void Shutdown();
+
+		static bool ImportMesh(const std::filesystem::path& path, Mesh& dstMesh);
+		static bool ImportSkeleton(const std::filesystem::path& path, Skeleton& dstSkeleton);
+		static bool ImportAnimation(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation);
+
+		static void ExportMesh(Vector<Ref<Mesh>> assets, const std::filesystem::path& path);
+		static void ExportSkeleton(Vector<Ref<Skeleton>> assets, const std::filesystem::path& path);
+		static void ExportAnimation(Vector<Ref<Animation>> assets, const std::filesystem::path& path);
+
+	protected:
+		virtual bool ImportMeshImpl(const std::filesystem::path& path, Mesh& dstMesh) = 0;
+		virtual bool ImportSkeletonImpl(const std::filesystem::path& path, Skeleton& dstSkeleton) = 0;
+		virtual bool ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation) = 0;
+
+		virtual void ExportMeshImpl(Vector<Ref<Mesh>>, const std::filesystem::path&) {};
+		virtual void ExportSkeletonImpl(Vector<Ref<Skeleton>>, const std::filesystem::path&) {};
+		virtual void ExportAnimationImpl(Vector<Ref<Animation>>, const std::filesystem::path&) {};
+
+	private:
+		enum class MeshFormat
+		{
+			Fbx,
+			GLTF,
+			VTMESH,
+			OBJ,
+			Other
+		};
+
+		static MeshFormat FormatFromExtension(const std::filesystem::path& path);
+
+		inline static std::unordered_map<MeshFormat, Scope<MeshTypeImporter>> myImporters;
+	};
+}

@@ -1,0 +1,596 @@
+[2024-09-04 22:24:52.553] [VOLT] [info] [LogPluginSystem]: Starting registering of plugins in directory G:/Projects/Volt/Engine\Plugins!
+[2024-09-04 22:24:52.556] [VOLT] [info] [LogPluginSystem]: Plugin DiscordPlugin has been registered!
+[2024-09-04 22:24:52.557] [VOLT] [info] [LogPluginSystem]: Plugin ExamplePlugin has been registered!
+[2024-09-04 22:24:52.557] [VOLT] [info] [LogPluginSystem]: Finished registering of plugins!
+[2024-09-04 22:24:52.557] [VOLT] [info] [LogProject]: Loading project 
+[2024-09-04 22:24:52.557] [VOLT] [error] [LogProject]: Failed to open file: !
+[2024-09-04 22:24:52.558] [VOLT] [info] [LogPluginSystem]: Started loading of plugins!
+[2024-09-04 22:24:52.558] [VOLT] [info] [LogPluginSystem]: Finished loading of plugins!
+[2024-09-04 22:24:52.558] [VOLT] [trace] [LogWindowManagement]: Initializing GLFW
+[2024-09-04 22:24:52.961] [VOLT] [trace] [LogTemp]: Validation layer:windows_get_device_registry_files: GUID for 2 is not SoftwareComponent skipping
+[2024-09-04 22:24:52.962] [VOLT] [trace] [LogTemp]: Validation layer:windows_get_device_registry_files: GUID for 3 is not SoftwareComponent skipping
+[2024-09-04 22:24:52.965] [VOLT] [trace] [LogTemp]: Validation layer:Searching for ICD drivers named .\nvoglv64.dll
+[2024-09-04 22:24:52.965] [VOLT] [warning] [LogTemp]: Validation layer:Layer VK_LAYER_OW_OVERLAY uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[2024-09-04 22:24:52.965] [VOLT] [warning] [LogTemp]: Validation layer:Layer VK_LAYER_OW_OBS_HOOK uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[2024-09-04 22:24:53.175] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library G:\VulkanSDK\Bin\.\VkLayer_khronos_validation.dll
+[2024-09-04 22:24:53.179] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library C:\ProgramData\obs-studio-hook\.\graphics-hook64.dll
+[2024-09-04 22:24:53.182] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library F:\Overwolf\0.258.0.6\.\ow-graphics-vulkan.dll
+[2024-09-04 22:24:53.219] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library F:\Overwolf\0.258.0.6\.\owclient.dll
+[2024-09-04 22:24:53.219] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\.\nvoglv64.dll
+[2024-09-04 22:24:53.424] [VOLT] [trace] [LogWindowManagement]: Initializing WindowManager
+[2024-09-04 22:24:53.424] [VOLT] [trace] [LogWindowManagement]: Creating New Window with Title: 'Volt'
+[2024-09-04 22:24:53.648] [VOLT] [trace] [LogVulkanRHI]: Initializing VulkanShaderCompiler
+[2024-09-04 22:24:53.665] [VOLT] [info] [LogAssetSystem]: Fetching asset meta data...
+[2024-09-04 22:24:53.698] [VOLT] [info] [LogAssetSystem]: Finished fetching meta data in 0.0325263 seconds!
+[2024-09-04 22:24:53.699] [VOLT] [info] [LogRender]: Starting shader import!
+[2024-09-04 22:24:53.871] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.871] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.872] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.872] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.873] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.873] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.874] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.874] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.874] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.875] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.875] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.875] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.876] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.876] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.877] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.877] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.877] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.878] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.886] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.888] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.888] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.889] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.890] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.891] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.891] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.892] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.892] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.893] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.893] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.894] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.894] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.894] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.895] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.895] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.897] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.897] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.898] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.898] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.898] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.899] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.899] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.900] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.900] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.900] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.901] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.902] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.902] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.904] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.905] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.905] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.905] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.906] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.906] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.906] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.908] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.908] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.908] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.909] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.909] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.909] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.910] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.910] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.911] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.911] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.912] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.912] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.913] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.913] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.913] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.914] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.914] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.914] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.915] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.915] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.916] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.916] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.917] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.917] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.917] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.918] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.918] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.920] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.921] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.921] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.922] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.922] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.923] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.923] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.924] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.924] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.925] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.925] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.925] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:24:53.926] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:24:53.926] [VOLT] [warning] [LogAsset[2024-09-04 22:29:57.304] [VOLT] [info] [LogPluginSystem]: Starting registering of plugins in directory G:/Projects/Volt/Engine\Plugins!
+[2024-09-04 22:29:57.306] [VOLT] [info] [LogPluginSystem]: Plugin DiscordPlugin has been registered!
+[2024-09-04 22:29:57.307] [VOLT] [info] [LogPluginSystem]: Plugin ExamplePlugin has been registered!
+[2024-09-04 22:29:57.308] [VOLT] [info] [LogPluginSystem]: Finished registering of plugins!
+[2024-09-04 22:29:57.308] [VOLT] [info] [LogProject]: Loading project 
+[2024-09-04 22:29:57.309] [VOLT] [error] [LogProject]: Failed to open file: !
+[2024-09-04 22:29:57.309] [VOLT] [info] [LogPluginSystem]: Started loading of plugins!
+[2024-09-04 22:29:57.309] [VOLT] [info] [LogPluginSystem]: Finished loading of plugins!
+[2024-09-04 22:29:57.310] [VOLT] [trace] [LogWindowManagement]: Initializing GLFW
+[2024-09-04 22:29:57.681] [VOLT] [trace] [LogTemp]: Validation layer:windows_get_device_registry_files: GUID for 2 is not SoftwareComponent skipping
+[2024-09-04 22:29:57.682] [VOLT] [trace] [LogTemp]: Validation layer:windows_get_device_registry_files: GUID for 3 is not SoftwareComponent skipping
+[2024-09-04 22:29:57.684] [VOLT] [trace] [LogTemp]: Validation layer:Searching for ICD drivers named .\nvoglv64.dll
+[2024-09-04 22:29:57.685] [VOLT] [warning] [LogTemp]: Validation layer:Layer VK_LAYER_OW_OVERLAY uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[2024-09-04 22:29:57.685] [VOLT] [warning] [LogTemp]: Validation layer:Layer VK_LAYER_OW_OBS_HOOK uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[2024-09-04 22:29:57.730] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library G:\VulkanSDK\Bin\.\VkLayer_khronos_validation.dll
+[2024-09-04 22:29:57.732] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library C:\ProgramData\obs-studio-hook\.\graphics-hook64.dll
+[2024-09-04 22:29:57.734] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library F:\Overwolf\0.258.0.6\.\ow-graphics-vulkan.dll
+[2024-09-04 22:29:57.764] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library F:\Overwolf\0.258.0.6\.\owclient.dll
+[2024-09-04 22:29:57.765] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\.\nvoglv64.dll
+[2024-09-04 22:29:57.920] [VOLT] [trace] [LogWindowManagement]: Initializing WindowManager
+[2024-09-04 22:29:57.920] [VOLT] [trace] [LogWindowManagement]: Creating New Window with Title: 'Volt'
+[2024-09-04 22:29:58.128] [VOLT] [trace] [LogVulkanRHI]: Initializing VulkanShaderCompiler
+[2024-09-04 22:29:58.149] [VOLT] [info] [LogAssetSystem]: Fetching asset meta data...
+[2024-09-04 22:29:58.178] [VOLT] [info] [LogAssetSystem]: Finished fetching meta data in 0.0288845 seconds!
+[2024-09-04 22:29:58.179] [VOLT] [info] [LogRender]: Starting shader import!
+[2024-09-04 22:29:58.304] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.305] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.306] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.306] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.307] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.307] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.308] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.309] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.310] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.310] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.311] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.311] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.312] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.313] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.314] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.314] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.314] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.314] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.323] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.324] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.324] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.325] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.326] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.326] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.327] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.327] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.328] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.328] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.329] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.329] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.329] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.329] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.330] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.330] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.332] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.332] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.333] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.334] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.335] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.335] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.336] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.336] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.337] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.337] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.338] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.346] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.347] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.349] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.349] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.351] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.351] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.351] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.352] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.352] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.353] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.354] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.354] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.355] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.356] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.356] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.357] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.357] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.358] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.359] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.360] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.360] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.360] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.361] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.361] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.362] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.362] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.363] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.364] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.366] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.366] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.367] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.367] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.368] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.368] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.369] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.369] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.369] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.370] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.370] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.371] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.372] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.372] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.373] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.374] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.374] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.374] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.375] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.375] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:29:58.375] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:29:58.376] [VOLT] [warning] [LogAsset[2024-09-04 22:40:26.432] [VOLT] [info] [LogPluginSystem]: Starting registering of plugins in directory G:/Projects/Volt/Engine\Plugins!
+[2024-09-04 22:40:26.434] [VOLT] [info] [LogPluginSystem]: Plugin DiscordPlugin has been registered!
+[2024-09-04 22:40:26.434] [VOLT] [info] [LogPluginSystem]: Plugin ExamplePlugin has been registered!
+[2024-09-04 22:40:26.435] [VOLT] [info] [LogPluginSystem]: Finished registering of plugins!
+[2024-09-04 22:40:26.435] [VOLT] [info] [LogProject]: Loading project 
+[2024-09-04 22:40:26.435] [VOLT] [error] [LogProject]: Failed to open file: !
+[2024-09-04 22:40:26.435] [VOLT] [info] [LogPluginSystem]: Started loading of plugins!
+[2024-09-04 22:40:26.435] [VOLT] [info] [LogPluginSystem]: Finished loading of plugins!
+[2024-09-04 22:40:26.435] [VOLT] [trace] [LogWindowManagement]: Initializing GLFW
+[2024-09-04 22:40:26.825] [VOLT] [trace] [LogTemp]: Validation layer:windows_get_device_registry_files: GUID for 2 is not SoftwareComponent skipping
+[2024-09-04 22:40:26.826] [VOLT] [trace] [LogTemp]: Validation layer:windows_get_device_registry_files: GUID for 3 is not SoftwareComponent skipping
+[2024-09-04 22:40:26.829] [VOLT] [trace] [LogTemp]: Validation layer:Searching for ICD drivers named .\nvoglv64.dll
+[2024-09-04 22:40:26.830] [VOLT] [warning] [LogTemp]: Validation layer:Layer VK_LAYER_OW_OVERLAY uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[2024-09-04 22:40:26.830] [VOLT] [warning] [LogTemp]: Validation layer:Layer VK_LAYER_OW_OBS_HOOK uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[2024-09-04 22:40:26.876] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library G:\VulkanSDK\Bin\.\VkLayer_khronos_validation.dll
+[2024-09-04 22:40:26.877] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library C:\ProgramData\obs-studio-hook\.\graphics-hook64.dll
+[2024-09-04 22:40:26.879] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library F:\Overwolf\0.258.0.6\.\ow-graphics-vulkan.dll
+[2024-09-04 22:40:26.910] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library F:\Overwolf\0.258.0.6\.\owclient.dll
+[2024-09-04 22:40:26.911] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\.\nvoglv64.dll
+[2024-09-04 22:40:27.053] [VOLT] [trace] [LogWindowManagement]: Initializing WindowManager
+[2024-09-04 22:40:27.054] [VOLT] [trace] [LogWindowManagement]: Creating New Window with Title: 'Volt'
+[2024-09-04 22:40:27.272] [VOLT] [trace] [LogVulkanRHI]: Initializing VulkanShaderCompiler
+[2024-09-04 22:40:27.290] [VOLT] [info] [LogAssetSystem]: Fetching asset meta data...
+[2024-09-04 22:40:27.319] [VOLT] [info] [LogAssetSystem]: Finished fetching meta data in 0.0280988 seconds!
+[2024-09-04 22:40:27.319] [VOLT] [info] [LogRender]: Starting shader import!
+[2024-09-04 22:40:27.450] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.451] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.452] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.452] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.452] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.452] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.453] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.453] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.454] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.454] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.455] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.455] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.455] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.456] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.457] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.457] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.457] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.457] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.467] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.467] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.467] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.468] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.469] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.469] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.470] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.471] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.471] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.472] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.472] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.472] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.473] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.473] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.473] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.473] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.475] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.475] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.476] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.477] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.477] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.479] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.480] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.483] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.484] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.484] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.486] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.486] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.486] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.487] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.487] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.488] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.488] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.489] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.490] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.490] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.492] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.492] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.492] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.492] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.493] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.493] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.494] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.495] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.496] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.496] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.497] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.498] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.499] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.499] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.500] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.501] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.502] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.503] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.504] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.504] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.505] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.505] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.505] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.507] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.508] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.508] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.509] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.509] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.510] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.512] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.513] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.515] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.515] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.515] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.516] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.517] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.518] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.520] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.520] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:40:27.520] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:40:27.521] [VOLT] [warning] [LogAsset[2024-09-04 22:49:36.227] [VOLT] [info] [LogPluginSystem]: Starting registering of plugins in directory G:/Projects/Volt/Engine\Plugins!
+[2024-09-04 22:49:36.228] [VOLT] [info] [LogPluginSystem]: Plugin DiscordPlugin has been registered!
+[2024-09-04 22:49:36.230] [VOLT] [info] [LogPluginSystem]: Plugin ExamplePlugin has been registered!
+[2024-09-04 22:49:36.230] [VOLT] [info] [LogPluginSystem]: Finished registering of plugins!
+[2024-09-04 22:49:36.230] [VOLT] [info] [LogProject]: Loading project 
+[2024-09-04 22:49:36.230] [VOLT] [error] [LogProject]: Failed to open file: !
+[2024-09-04 22:49:36.230] [VOLT] [info] [LogPluginSystem]: Started loading of plugins!
+[2024-09-04 22:49:36.230] [VOLT] [info] [LogPluginSystem]: Finished loading of plugins!
+[2024-09-04 22:49:36.231] [VOLT] [trace] [LogWindowManagement]: Initializing GLFW
+[2024-09-04 22:49:36.606] [VOLT] [trace] [LogTemp]: Validation layer:windows_get_device_registry_files: GUID for 2 is not SoftwareComponent skipping
+[2024-09-04 22:49:36.607] [VOLT] [trace] [LogTemp]: Validation layer:windows_get_device_registry_files: GUID for 3 is not SoftwareComponent skipping
+[2024-09-04 22:49:36.610] [VOLT] [trace] [LogTemp]: Validation layer:Searching for ICD drivers named .\nvoglv64.dll
+[2024-09-04 22:49:36.610] [VOLT] [warning] [LogTemp]: Validation layer:Layer VK_LAYER_OW_OVERLAY uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[2024-09-04 22:49:36.611] [VOLT] [warning] [LogTemp]: Validation layer:Layer VK_LAYER_OW_OBS_HOOK uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[2024-09-04 22:49:36.655] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library G:\VulkanSDK\Bin\.\VkLayer_khronos_validation.dll
+[2024-09-04 22:49:36.657] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library C:\ProgramData\obs-studio-hook\.\graphics-hook64.dll
+[2024-09-04 22:49:36.658] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library F:\Overwolf\0.258.0.6\.\ow-graphics-vulkan.dll
+[2024-09-04 22:49:36.688] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library F:\Overwolf\0.258.0.6\.\owclient.dll
+[2024-09-04 22:49:36.689] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\.\nvoglv64.dll
+[2024-09-04 22:49:36.844] [VOLT] [trace] [LogWindowManagement]: Initializing WindowManager
+[2024-09-04 22:49:36.844] [VOLT] [trace] [LogWindowManagement]: Creating New Window with Title: 'Volt'
+[2024-09-04 22:49:37.047] [VOLT] [trace] [LogVulkanRHI]: Initializing VulkanShaderCompiler
+[2024-09-04 22:49:37.064] [VOLT] [info] [LogAssetSystem]: Fetching asset meta data...
+[2024-09-04 22:49:37.093] [VOLT] [info] [LogAssetSystem]: Finished fetching meta data in 0.0291197 seconds!
+[2024-09-04 22:49:37.094] [VOLT] [info] [LogRender]: Starting shader import!
+[2024-09-04 22:49:37.211] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.211] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.212] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.214] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.215] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.215] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.216] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.216] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.217] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.218] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.219] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.219] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.220] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.220] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.221] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.221] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.222] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.222] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.233] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.233] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.234] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.234] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.235] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.235] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.236] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.237] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.238] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.240] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.241] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.241] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.241] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.242] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.243] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.243] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.245] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.246] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.247] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.247] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.248] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.248] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.249] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.250] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.250] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.251] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.252] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.256] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.256] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.258] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.258] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.259] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.259] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.259] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.260] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.260] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.261] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.262] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.262] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.263] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.263] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.263] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.264] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.264] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.265] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.265] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.266] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.266] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.266] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.267] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.267] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.267] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.268] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.268] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.269] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.272] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.273] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.273] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.274] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.274] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.275] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.275] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.276] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.276] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.277] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.278] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.280] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.280] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.280] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.281] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.282] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.282] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.282] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.283] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.283] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:49:37.283] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:49:37.284] [VOLT] [warning] [LogAsset[2024-09-04 22:55:02.594] [VOLT] [info] [LogPluginSystem]: Starting registering of plugins in directory G:/Projects/Volt/Engine\Plugins!
+[2024-09-04 22:55:02.595] [VOLT] [info] [LogPluginSystem]: Plugin DiscordPlugin has been registered!
+[2024-09-04 22:55:02.597] [VOLT] [info] [LogPluginSystem]: Plugin ExamplePlugin has been registered!
+[2024-09-04 22:55:02.597] [VOLT] [info] [LogPluginSystem]: Finished registering of plugins!
+[2024-09-04 22:55:02.597] [VOLT] [info] [LogProject]: Loading project 
+[2024-09-04 22:55:02.597] [VOLT] [error] [LogProject]: Failed to open file: !
+[2024-09-04 22:55:02.597] [VOLT] [info] [LogPluginSystem]: Started loading of plugins!
+[2024-09-04 22:55:02.597] [VOLT] [info] [LogPluginSystem]: Finished loading of plugins!
+[2024-09-04 22:55:02.597] [VOLT] [trace] [LogWindowManagement]: Initializing GLFW
+[2024-09-04 22:55:02.978] [VOLT] [trace] [LogTemp]: Validation layer:windows_get_device_registry_files: GUID for 2 is not SoftwareComponent skipping
+[2024-09-04 22:55:02.978] [VOLT] [trace] [LogTemp]: Validation layer:windows_get_device_registry_files: GUID for 3 is not SoftwareComponent skipping
+[2024-09-04 22:55:02.981] [VOLT] [trace] [LogTemp]: Validation layer:Searching for ICD drivers named .\nvoglv64.dll
+[2024-09-04 22:55:02.982] [VOLT] [warning] [LogTemp]: Validation layer:Layer VK_LAYER_OW_OVERLAY uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[2024-09-04 22:55:02.982] [VOLT] [warning] [LogTemp]: Validation layer:Layer VK_LAYER_OW_OBS_HOOK uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[2024-09-04 22:55:03.023] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library G:\VulkanSDK\Bin\.\VkLayer_khronos_validation.dll
+[2024-09-04 22:55:03.025] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library C:\ProgramData\obs-studio-hook\.\graphics-hook64.dll
+[2024-09-04 22:55:03.026] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library F:\Overwolf\0.258.0.6\.\ow-graphics-vulkan.dll
+[2024-09-04 22:55:03.057] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library F:\Overwolf\0.258.0.6\.\owclient.dll
+[2024-09-04 22:55:03.057] [VOLT] [trace] [LogTemp]: Validation layer:Loading layer library C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\.\nvoglv64.dll
+[2024-09-04 22:55:03.196] [VOLT] [trace] [LogWindowManagement]: Initializing WindowManager
+[2024-09-04 22:55:03.196] [VOLT] [trace] [LogWindowManagement]: Creating New Window with Title: 'Volt'
+[2024-09-04 22:55:03.407] [VOLT] [trace] [LogVulkanRHI]: Initializing VulkanShaderCompiler
+[2024-09-04 22:55:03.423] [VOLT] [info] [LogAssetSystem]: Fetching asset meta data...
+[2024-09-04 22:55:03.452] [VOLT] [info] [LogAssetSystem]: Finished fetching meta data in 0.0280489 seconds!
+[2024-09-04 22:55:03.452] [VOLT] [info] [LogRender]: Starting shader import!
+[2024-09-04 22:55:03.571] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.571] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.572] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.576] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.576] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.577] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.577] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.578] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.578] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.578] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.579] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.579] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.580] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.580] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.581] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.581] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.581] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.583] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.592] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.592] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.593] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.594] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.595] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.595] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.596] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.596] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.597] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.599] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.600] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.600] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.600] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.601] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.601] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.601] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.603] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.603] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.604] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.605] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.605] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.609] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.610] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.611] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.612] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.613] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.615] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.617] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.618] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.618] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.619] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.621] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.622] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.622] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.623] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.623] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.624] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.624] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.625] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.625] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.625] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.626] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.626] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.626] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.627] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.627] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.628] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.629] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.629] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.636] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.636] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.637] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.637] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.640] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.641] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.647] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.648] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.649] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.650] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.650] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.651] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.651] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.652] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.652] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.653] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.653] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.655] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.656] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.656] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.656] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.657] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.658] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.658] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.659] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.659] [VOLT] [warning] [LogAssetSystem]: No importer for asset found!
+[2024-09-04 22:55:03.659] [VOLT] [error] [LogVulkanRHI]: Trying to create a shader  without any sources!
+[2024-09-04 22:55:03.660] [VOLT] [warning] [LogAsset
