@@ -113,11 +113,10 @@ namespace VoltSharpmake
         {
             conf.DefaultOption = Options.DefaultTarget.Release;
             conf.Defines.Add("VT_DIST");
-
             conf.Defines.Add("NDEBUG");
 
             conf.Options.Add(Options.Vc.Compiler.RuntimeLibrary.MultiThreadedDLL);
-        }
+		}
         #endregion
         ////////////////////////////////////////////////////////////////////////
 
@@ -164,7 +163,8 @@ namespace VoltSharpmake
         [Configure(Compiler.MSVC)]
         public virtual void ConfigureMSVC(Configuration conf, CommonTarget target)
         {
-        }
+			conf.AdditionalCompilerOptimizeOptions.Add("/O2");
+		}
 
         [ConfigurePriority(ConfigurePriorities.Compiler)]
         [Configure(Compiler.ClangCl)]
@@ -304,7 +304,14 @@ namespace VoltSharpmake
                 conf.EventPostBuild.Add(@"copy /Y " + "\"" + conf.TargetPath + "\\" + Name + ".exe\"" + " \"" + Globals.EngineDirectory + "\"");
             }
         }
-    }
+
+		public override void ConfigureDist(Configuration conf, CommonTarget target)
+		{
+			base.ConfigureDist(conf, target);
+
+			conf.Options.Add(Options.Vc.Linker.SubSystem.Windows);
+		}
+	}
 
     public abstract class CommonVoltPluginProject : CommonVoltProject
     {

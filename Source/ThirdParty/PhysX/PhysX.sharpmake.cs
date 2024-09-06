@@ -24,6 +24,9 @@ namespace VoltSharpmake
             conf.TargetPath = Path.Combine(@"[project.RootPath]\lib\", targetOptimization);
             conf.TargetLibraryPath = Path.Combine(@"[project.RootPath]\lib\", targetOptimization);
             conf.Output = Configuration.OutputType.Lib;
+
+			conf.ExportDefines.Add("PX_PHYSX_STATIC_LIB");
+			conf.Defines.Add("PX_PHYSX_STATIC_LIB");
         }
     }
 }
