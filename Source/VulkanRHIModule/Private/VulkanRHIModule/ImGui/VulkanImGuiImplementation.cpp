@@ -106,6 +106,8 @@ namespace Volt::RHI
 		auto swapchainPtr = m_swapchain->As<VulkanSwapchain>();
 		auto commandBuffer = m_commandBufferSet.IncrementAndGetCommandBuffer();
 
+		commandBuffer->Begin();
+
 		{
 			ResourceBarrierInfo barrier{};
 			barrier.type = BarrierType::Image;
@@ -154,6 +156,8 @@ namespace Volt::RHI
 		ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer->GetHandle<VkCommandBuffer>());
 
 		commandBuffer->EndRendering();
+		commandBuffer->End();
+		commandBuffer->Execute();
 	}
 
 	void VulkanImGuiImplementation::InitializeAPI(ImGuiContext* context)
