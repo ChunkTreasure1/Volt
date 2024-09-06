@@ -52,7 +52,7 @@ namespace VoltSharpmake
             conf.Options.Add(Options.Vc.Compiler.RTTI.Disable);
             conf.Options.Add(Options.Vc.Compiler.FloatingPointModel.Precise);
 
-            conf.Options.Add(Options.Vc.Linker.GenerateMapFile.Disable);
+            conf.Options.Add(Options.Vc.Linker.GenerateMapFile.Full);
 
             conf.Options.Add(Options.Vc.General.CharacterSet.Unicode);
         }
@@ -283,6 +283,7 @@ namespace VoltSharpmake
 
             conf.Options.Add(new Sharpmake.Options.Vc.Compiler.DisableSpecificWarnings("4005", "4100", "4201", "4251", "4275", "4505"));
             conf.Options.Add(new Sharpmake.Options.Vc.Linker.DisableSpecificWarnings("4006", "4099"));   
+            conf.Options.Add(new Sharpmake.Options.Vc.Linker.DisableSpecificWarnings("4098", "4217"));   
         }
     }
 
