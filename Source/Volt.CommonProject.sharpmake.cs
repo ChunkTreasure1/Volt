@@ -297,8 +297,9 @@ namespace VoltSharpmake
             base.ConfigureAll(conf, target);
 
             conf.Output = Configuration.OutputType.Exe;
+			conf.Options.Add(new Sharpmake.Options.Vc.Linker.DisableSpecificWarnings("4075"));
 
-            if (target.Platform == Platform.win64)
+			if (target.Platform == Platform.win64)
             {
                 conf.EventPostBuild.Add(@"copy /Y " + "\"" + conf.TargetPath + "\\" + Name + ".exe\"" + " \"" + Globals.EngineDirectory + "\"");
             }

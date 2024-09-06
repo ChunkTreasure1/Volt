@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using Sharpmake;
 
 namespace VoltSharpmake
@@ -124,11 +125,19 @@ namespace VoltSharpmake
 
         public static CommonTarget[] GetWin64Targets()
         {
+			Compiler compiler = Compiler.MSVC;
+			DevEnv devEnv = DevEnv.vs2022;
+
+			if (File.Exists(Sharpmake.ClangForWindows.GetWindowsClangExecutablePath(devEnv)))
+			{
+				compiler |= Compiler.ClangCl;
+			}
+
             var defaultTarget = new CommonTarget(
                 Platform.win64,
-                Compiler.MSVC,
-                DevEnv.vs2022,
-                Optimization.Debug | Optimization.Release | Optimization.Dist,
+				compiler,
+				devEnv,
+				Optimization.Debug | Optimization.Release | Optimization.Dist,
                 Blob.NoBlob,
                 BuildSystem.MSBuild,
                 DotNetFramework.net6_0
