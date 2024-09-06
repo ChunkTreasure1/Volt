@@ -46,9 +46,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AttachVoltCommand.cs" />
-    <Compile Include="Debugging\VoltDebuggerSession.cs" />
-    <Compile Include="Debugging\VoltStartInfo.cs" />
+    <Compile Include="GenerateVoltProjects.cs" />
     <Compile Include="VoltSolutionEventsListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VoltToolsPackage.cs" />
@@ -100,6 +98,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="Resources\GenerateProjects.bmp" />
+    <Content Include="Resources\GenerateProjects.png" />
+    <Content Include="Resources\GenerateProjectsx16.bmp" />
     <VSCTCompile Include="VoltToolsPackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
@@ -107,6 +108,7 @@
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <GetVsixSourceItemsDependsOn>$(GetVsixSourceItemsDependsOn);IncludeNuGetResolvedAssets</GetVsixSourceItemsDependsOn>
   </PropertyGroup>

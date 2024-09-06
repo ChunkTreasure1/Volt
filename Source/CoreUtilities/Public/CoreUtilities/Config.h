@@ -1,0 +1,24 @@
+#pragma once
+
+#ifdef COREUTILITIES_DLL_EXPORT
+#define VTCOREUTIL_API __declspec(dllexport)
+#else
+#define VTCOREUTIL_API __declspec(dllimport)
+#endif
+
+#ifdef VT_DEBUG
+	#define VT_ENABLE_ENSURES
+	#define VT_ENABLE_OPTIMIZATION_TOGGLE
+
+	#define VT_ENABLE_GPU_MARKERS
+	#define VT_ENABLE_DEBUG_ALLOCATIONS
+	#define VT_ENABLE_COMMAND_BUFFER_VALIDATION
+#elif VT_RELEASE
+	#define VT_ENABLE_ENSURES
+	#define VT_ENABLE_OPTIMIZATION_TOGGLE
+
+	#define VT_ENABLE_GPU_MARKERS
+	#define VT_ENABLE_COMMAND_BUFFER_VALIDATION
+#elif VT_DIST
+
+#endif

@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Mono.Debugging.Client;
 using Task = System.Threading.Tasks.Task;
 
 namespace VoltVSTools
@@ -63,9 +62,10 @@ namespace VoltVSTools
 			// When initialized asynchronously, the current thread may be a background thread at this point.
 			// Do any initialization that requires the UI thread after switching to the UI thread.
 			await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-			await AttachVoltCommand.InitializeAsync(this);
 
 			SolutionEventsListener = new VoltSolutionEventsListener(this);
+			
+		    await VoltVSTools.GenerateVoltProjects.InitializeAsync(this);
 		}
 
 		public async Task ShowErrorMessageBoxAsync(string title, string message)
