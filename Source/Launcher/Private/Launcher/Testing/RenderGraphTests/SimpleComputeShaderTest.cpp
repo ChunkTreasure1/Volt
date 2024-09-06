@@ -1,4 +1,4 @@
-#include "SimpleComputeShaderTest.h"
+#include "Launcher/Testing/RenderGraphTests/SimpleComputeShaderTest.h"
 
 #include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Core/Application.h>

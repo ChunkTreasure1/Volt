@@ -28,6 +28,7 @@ namespace VoltSharpmake
 
         public static string RelativeVtProjectPath = @"..\Project\Project.vtproj";
         public static string VtProjectDirectory;
+		public static bool ProjectFilepathUpdated = false;
 
         public const string RelativeSharpmakePath = @"..\Sharpmake";
         public static string SharpmakeDirectory;
@@ -43,6 +44,7 @@ namespace VoltSharpmake
 			{
 				RelativeVtProjectPath = projectArg;
 				Environment.SetEnvironmentVariable("VOLT_PROJECT", projectArg);
+				ProjectFilepathUpdated = true;
 			}
 			else
 			{
@@ -89,6 +91,24 @@ namespace VoltSharpmake
                 Directory.CreateDirectory(Util.FilesAutoCleanupDBPath);
         }
 
+		private static void HandleProjectFilepathUpdate()
+		{
+			if (!Globals.ProjectFilepathUpdated) 
+			{
+				return;
+			}
+
+			// Delete all vcxproj, as the command line args won't be updated otherwise...
+			string[] files = Directory.GetFiles(Globals.RootDirectory, "*vcxproj*", SearchOption.AllDirectories);
+			foreach (string file in files)
+			{
+				if (File.Exists(file))
+				{
+					File.Delete(file);
+				}
+			}
+		}
+
         [Sharpmake.Main]
         public static void SharpmakeMain(Sharpmake.Arguments arguments)
         {
@@ -96,6 +116,7 @@ namespace VoltSharpmake
 
 			ConfigureRootDirectory();
             ConfigureAutoCleanup();
+			HandleProjectFilepathUpdate();
 
             KitsRootPaths.SetKitsRoot10ToHighestInstalledVersion(DevEnv.vs2022);
 
