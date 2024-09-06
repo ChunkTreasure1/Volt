@@ -1,5 +1,5 @@
 #include "circuitpch.h"
-#include "Widget.h"
+#include "Widgets/Widget.h"
 
 namespace Circuit
 {

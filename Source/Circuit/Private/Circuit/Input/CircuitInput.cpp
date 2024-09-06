@@ -1,5 +1,5 @@
 #include "circuitpch.h"
-#include "CircuitInput.h"
+#include "Input/CircuitInput.h"
 
 namespace Circuit
 {

@@ -1,5 +1,5 @@
 #include "circuitpch.h"
-#include "CircuitWindow.h"
+#include "Window/CircuitWindow.h"
 #include "Circuit/CircuitPainter.h"
 
 namespace Circuit

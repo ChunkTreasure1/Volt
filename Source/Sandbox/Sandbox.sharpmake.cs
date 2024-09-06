@@ -29,6 +29,8 @@ namespace VoltSharpmake
 
             conf.AddPublicDependency<Volt>(target);
 
+            conf.AddPublicDependency<Circuit>(target);
+
             conf.AddPublicDependency<ImGuizmo>(target);
             conf.AddPublicDependency<imgui_node_editor>(target);
             conf.AddPublicDependency<p4>(target);

@@ -91,13 +91,8 @@
 #include <imgui.h>
 
 #include "Circuit/Widgets/SliderWidget.h"
-#include "Circuit/Widgets/Primitives/RectWidget.h"
-#include "Circuit/Widgets/Primitives/CircleWidget.h"
-#include "Delegates/Observer.h"
-#include "Circuit/CircuitManager.h"
 
-#include "Circuit/Events/Tell/AllTellEventsInclude.h"
-#include "Circuit/Events/Listen/WindowManagementListenEvents.h"
+#include "Circuit/CircuitManager.h"
 
 #include "Circuit/Input/CircuitInput.h"
 
@@ -493,43 +488,43 @@ bool Sandbox::LoadScene(Volt::OnSceneTransitionEvent& e)
 
 void Sandbox::HandleCircuitTellEvents(const Circuit::TellEvent& e)
 {
-	switch (e.GetType())
-	{
-		case Circuit::CircuitTellEventType::OpenWindow:
-		{
-			const Circuit::OpenWindowTellEvent& openWindowEvent = reinterpret_cast<const Circuit::OpenWindowTellEvent&>(e);
+	//switch (e.GetType())
+	//{
+	//	case Circuit::CircuitTellEventType::OpenWindow:
+	//	{
+	//		const Circuit::OpenWindowTellEvent& openWindowEvent = reinterpret_cast<const Circuit::OpenWindowTellEvent&>(e);
 
-			Volt::WindowProperties windowProperties;
-			windowProperties.Title = openWindowEvent.GetParams().title;
-			windowProperties.VSync = false;
+	//		Volt::WindowProperties windowProperties;
+	//		windowProperties.Title = openWindowEvent.GetParams().title;
+	//		windowProperties.VSync = false;
 
-			windowProperties.Width = openWindowEvent.GetParams().startWidth;
-			windowProperties.Height = openWindowEvent.GetParams().startHeight;
+	//		windowProperties.Width = openWindowEvent.GetParams().startWidth;
+	//		windowProperties.Height = openWindowEvent.GetParams().startHeight;
 
-			windowProperties.UseTitlebar = true;
-			windowProperties.UseCustomTitlebar = true;
+	//		windowProperties.UseTitlebar = true;
+	//		windowProperties.UseCustomTitlebar = true;
 
-			Volt::WindowHandle handle = Volt::WindowManager::Get().CreateNewWindow(windowProperties);
-			Volt::Window& window = Volt::WindowManager::Get().GetWindow(handle);
-			window.SetEventCallback(VT_BIND_EVENT_FN(Sandbox::HandleCircuitWindowEventCallback));
+	//		Volt::WindowHandle handle = Volt::WindowManager::Get().CreateNewWindow(windowProperties);
+	//		Volt::Window& window = Volt::WindowManager::Get().GetWindow(handle);
+	//		window.SetEventCallback(VT_BIND_EVENT_FN(Sandbox::HandleCircuitWindowEventCallback));
 
 
-			Circuit::WindowOpenedListenEvent ev(handle);
-			Circuit::CircuitManager::Get().BroadcastListenEvent(ev);
+	//		Circuit::WindowOpenedListenEvent ev(handle);
+	//		Circuit::CircuitManager::Get().BroadcastListenEvent(ev);
 
-			m_circuitRenderers.push_back(CreateScope<CircuitRenderer>(handle));
+	//		m_circuitRenderers.push_back(CreateScope<CircuitRenderer>(handle));
 
-			break;
-		}
-		default:
-			VT_LOG(Error, "Unhandled Circuit Event!");
-			break;
-	}
+	//		break;
+	//	}
+	//	default:
+	//		VT_LOG(Error, "Unhandled Circuit Event!");
+	//		break;
+	//}
 }
 
 void Sandbox::HandleCircuitWindowEventCallback(Volt::Event& e)
 {
-	Volt::EventDispatcher dispatcher(e);
+	/*Volt::EventDispatcher dispatcher(e);
 
 	dispatcher.Dispatch<Volt::KeyPressedEvent>([](Volt::KeyPressedEvent& e)
 	{
@@ -561,7 +556,7 @@ void Sandbox::HandleCircuitWindowEventCallback(Volt::Event& e)
 		return false;
 	});
 
-	VT_LOG(Info,"Window Event: {0}", e.ToString());
+	VT_LOG(Info,"Window Event: {0}", e.ToString());*/
 }
 
 Circuit::KeyCode Sandbox::VoltKeyCodeToCircuitKeyCode(uint32_t keyCode)

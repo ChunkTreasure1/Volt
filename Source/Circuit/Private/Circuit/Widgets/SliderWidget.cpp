@@ -1,10 +1,9 @@
 #include "circuitpch.h"
-#include "SliderWidget.h"
+
+#include "Widgets/SliderWidget.h"
+
 #include "Circuit/WidgetBuilder.h"
 #include "Circuit/CircuitColor.h"
-#include "Circuit/Widgets/Primitives/RectWidget.h"
-#include "Circuit/Widgets/Primitives/CircleWidget.h"
-#include "Delegates/Observer.h"
 
 #include "Circuit/Input/CircuitInput.h"
 

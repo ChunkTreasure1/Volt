@@ -1,7 +1,7 @@
 #include "circuitpch.h"
-#include "CircuitRenderer.h"
 
-#include "CircuitRendererStructs.h"
+#include "Rendering/CircuitRenderer.h"
+#include "Rendering/CircuitRendererStructs.h"
 
 #include <RenderCore/RenderGraph/RenderGraph.h>
 #include <RenderCore/RenderGraph/RenderGraphUtils.h>

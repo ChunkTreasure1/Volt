@@ -2,9 +2,6 @@
 #include "Circuit/Config.h"
 #include "Circuit/Window/CircuitWindow.h"
 
-#include "Circuit/Events/Tell/BaseTellEvent.h"
-#include "Circuit/Events/Listen/BaseListenEvent.h"
-
 #include <WindowModule/WindowHandle.h>
 
 #include <vector>
@@ -31,8 +28,6 @@ namespace Circuit
 
 		CIRCUIT_API void Update();
 
-		CIRCUIT_API void BroadcastListenEvent(const ListenEvent& event);
-
 		CIRCUIT_API CircuitWindow& OpenWindow(OpenWindowParams& params);
 
 		CIRCUIT_API const std::map<Volt::WindowHandle, std::unique_ptr<CircuitWindow>>& GetWindows();
@@ -40,8 +35,6 @@ namespace Circuit
 		CIRCUIT_API inline static std::unique_ptr<CircuitManager> s_Instance = nullptr;
 
 		void Init();
-		void BroadcastTellEvent(const TellEvent& event);
-		void HandleListenEvent(const ListenEvent& event);
 
 
 		std::function<void(const TellEvent&)> m_tellEventCallback;
