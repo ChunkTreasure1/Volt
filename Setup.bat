@@ -19,16 +19,6 @@ for %%x in (%*) do Set /A argC+=1
 REM Set projectDir to the passed argument
 set "projectDir=%*"
 
-REM Set the VOLT_PROJECT environment variable if there is an argument
-IF %argC% gtr 0 (
-	setx VOLT_PROJECT "%projectDir%"
-) ELSE (
-	REM If no argument, use the existing VOLT_PROJECT variable
-	IF defined VOLT_PROJECT (
-		set "projectDir=%VOLT_PROJECT%"
-	)
-)
-
 REM Call Python with the appropriate parameters
 IF "%projectDir%"=="" (
 	call python Scripts/data/Setup.py

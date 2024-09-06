@@ -42,6 +42,18 @@ namespace VoltSharpmake
 			if (projectArg != "")
 			{
 				RelativeVtProjectPath = projectArg;
+				Environment.SetEnvironmentVariable("VOLT_PROJECT", projectArg);
+			}
+			else
+			{
+				string voltProjPath = Environment.GetEnvironmentVariable("VOLT_PROJECT");
+				if (voltProjPath != null)
+				{
+					if (voltProjPath != "")
+					{
+						RelativeVtProjectPath = voltProjPath;
+					}
+				}
 			}
 		}
 	}
