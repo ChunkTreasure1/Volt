@@ -5,9 +5,6 @@ setlocal enabledelayedexpansion
 REM Initialize the args variable by capturing all arguments
 set "args=%*"
 
-REM Remove all quotation marks from the arguments
-set "args=%args:"=%"
-
 REM Change directory to Sharpmake
 pushd Sharpmake
 
