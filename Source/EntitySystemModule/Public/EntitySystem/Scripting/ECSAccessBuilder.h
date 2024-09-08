@@ -1,5 +1,8 @@
 #pragma once
 
+#include "EntitySystem/Scripting/CoreComponents.h"
+#include "EntitySystem/EntityID.h"
+
 #include <entt.hpp>
 
 namespace ECS
@@ -186,6 +189,16 @@ namespace ECS
 		{
 			return m_registry.remove<Comp>(m_entityId);
 		}
+
+		Volt::EntityID GetID() const
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::IDComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+
+			return m_registry.get<Volt::IDComponent>(m_entityId).id;
+		}
+
+		VT_NODISCARD VT_INLINE entt::entity GetHandle() const { return m_entityId; }
 
 	private:
 		entt::entity m_entityId;

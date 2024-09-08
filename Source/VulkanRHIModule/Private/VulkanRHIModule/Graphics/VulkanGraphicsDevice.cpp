@@ -133,6 +133,10 @@ namespace Volt::RHI
 			s_enabledFeatures.physicalDeviceFeatures.features.independentBlend = VK_TRUE;
 			s_enabledFeatures.physicalDeviceFeatures.features.shaderImageGatherExtended = VK_TRUE;
 			s_enabledFeatures.physicalDeviceFeatures.features.robustBufferAccess = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.shaderSampledImageArrayDynamicIndexing = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.shaderStorageBufferArrayDynamicIndexing = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.shaderStorageImageArrayDynamicIndexing = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.shaderUniformBufferArrayDynamicIndexing = VK_TRUE;
 
 			s_enabledFeatures.physicalDeviceFeatures.features.shaderInt16 = VK_TRUE; // #TODO_Ivar: does not work on older cards
 		}

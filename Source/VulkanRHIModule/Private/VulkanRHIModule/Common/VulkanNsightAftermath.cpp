@@ -53,7 +53,7 @@ namespace Volt::RHI
 		if (resultValue != VK_SUCCESS) 
 		{ 
 			//VT_LOGC(Error, LogTemp, "Vulkan Error: {0}", VKResultToString(resultValue));
-			VT_DEBUGBREAK(); 
+			//VT_DEBUGBREAK(); 
 		}
 	}
 }

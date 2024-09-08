@@ -163,7 +163,10 @@ namespace VoltSharpmake
         [Configure(Compiler.MSVC)]
         public virtual void ConfigureMSVC(Configuration conf, CommonTarget target)
         {
-			conf.AdditionalCompilerOptimizeOptions.Add("/O2");
+			if (target.Optimization == Optimization.Dist)
+			{
+				conf.AdditionalCompilerOptimizeOptions.Add("/O2");
+			}
 		}
 
         [ConfigurePriority(ConfigurePriorities.Compiler)]

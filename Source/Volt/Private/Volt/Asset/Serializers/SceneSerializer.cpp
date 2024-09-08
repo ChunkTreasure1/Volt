@@ -835,7 +835,7 @@ namespace Volt
 			}
 		});
 
-		compDesc->OnComponentDeserialized(&data[offset], dstEntity);
+		compDesc->OnComponentDeserialized(dstEntity.GetScene()->GetRegistry(), dstEntity.GetHandle());
 	}
 
 	void SceneSerializer::DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, Entity dstEntity, YAMLMemoryStreamReader& streamReader) const
