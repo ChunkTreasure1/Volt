@@ -35,7 +35,8 @@ namespace Volt::RHI
 		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None, ImageLayout::Undefined);
 
 		InvalidateSwapchainImage(specification);
-		SetName(std::format("Swapchain Image {}", specification.imageIndex));
+		m_specification.debugName = std::format("Swapchain Image {}", specification.imageIndex);
+		SetName(m_specification.debugName);
 	}
 
 	VulkanImage::~VulkanImage()
@@ -359,6 +360,8 @@ namespace Volt::RHI
 
 	void VulkanImage::SetName(std::string_view name)
 	{
+		m_specification.debugName = std::string(name);
+
 		if (!Volt::RHI::vkSetDebugUtilsObjectNameEXT)
 		{
 			return;
@@ -377,10 +380,15 @@ namespace Volt::RHI
 			nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkImage>();
 		}
 
-		nameInfo.pObjectName = name.data();
+		nameInfo.pObjectName = m_specification.debugName.c_str();
 
 		auto device = GraphicsContext::GetDevice();
 		Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
+	}
+
+	std::string_view VulkanImage::GetName() const
+	{
+		return m_specification.debugName;
 	}
 
 	const uint64_t VulkanImage::GetDeviceAddress() const

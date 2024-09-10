@@ -502,7 +502,7 @@ namespace Volt
 			RenderGraphConstants renderGraphConstants;
 			renderGraphConstants.constatsBufferIndex = BindlessResourcesManager::Get().GetBufferHandle(m_perPassConstantsBuffer);
 			renderGraphConstants.constantsOffset = m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
-#ifndef VT_DIST
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
 			renderGraphConstants.shaderValidationBuffer = m_renderGraph->GetRuntimeShaderValidationErrorBuffer();
 #endif
 			{

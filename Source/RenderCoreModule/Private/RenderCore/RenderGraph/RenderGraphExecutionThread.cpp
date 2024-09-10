@@ -110,7 +110,7 @@ namespace Volt
 			}
 
 			// #TODO_Ivar: This really shouldn't be here
-			//RHI::GraphicsContext::GetDevice()->GetDeviceQueue(RHI::QueueType::Graphics)->WaitForQueue();
+			RHI::GraphicsContext::GetDevice()->GetDeviceQueue(RHI::QueueType::Graphics)->WaitForQueue();
 
 			std::function<void()> executeFunction{};
 			while (s_data->executionQueue.try_pop(executeFunction))

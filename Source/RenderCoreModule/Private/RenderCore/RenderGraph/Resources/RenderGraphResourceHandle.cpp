@@ -5,6 +5,6 @@ namespace Volt
 {
 	bool RenderGraphResourceHandle::operator==(const RenderGraphNullHandle& other)
 	{
-		return m_value == 0;
+		return m_value == other.Get();
 	}
 }

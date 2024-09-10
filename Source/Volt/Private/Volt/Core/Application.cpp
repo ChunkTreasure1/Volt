@@ -327,10 +327,16 @@ namespace Volt
 			AppImGuiUpdateEvent imguiEvent{};
 			EventSystem::DispatchEvent(imguiEvent);
 
+			// #TODO_Ivar: HACK!
+			RenderGraphExecutionThread::WaitForFinishedExecution();
+
 			m_imguiImplementation->End();
 		}
+		else
+		{
+			RenderGraphExecutionThread::WaitForFinishedExecution();
+		}
 
-		RenderGraphExecutionThread::WaitForFinishedExecution();
 		Renderer::EndOfFrameUpdate();
 
 		{

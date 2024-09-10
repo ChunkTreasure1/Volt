@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CoreUtilities/Config.h"
+
 // Static analasys assume
 #if defined (_MSC_VER) && (_MSC_VER >= 1300)
 	#define VT_ANALASYS_ASSUME(x) __analysis_assume(!!(x))

@@ -381,6 +381,8 @@ namespace Volt::RHI
 
 	void D3D12Image::SetName(std::string_view name)
 	{
+		m_specification.debugName = name;
+
 		std::wstring wname(name.begin(), name.end());
 		if (m_isSwapchainImage)
 		{
@@ -390,6 +392,11 @@ namespace Volt::RHI
 		{
 			m_allocation->GetResourceHandle<ID3D12Resource*>()->SetName(wname.c_str());
 		}
+	}
+
+	std::string_view D3D12Image::GetName() const
+	{
+		return m_specification.debugName;
 	}
 
 	const uint64_t D3D12Image::GetDeviceAddress() const
