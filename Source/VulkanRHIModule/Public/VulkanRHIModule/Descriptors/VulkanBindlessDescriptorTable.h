@@ -51,6 +51,8 @@ namespace Volt::RHI
 		VkDescriptorSet_T* GetOrAllocateConstantsSet();
 		void WriteConstantsSet(VkDescriptorSet_T* dstSet);
 
+		VkDescriptorSet_T* GetCurrentMainDescriptorSet() const;
+
 		ResourceRegistry m_image2DRegistry;
 		ResourceRegistry m_image2DArrayRegistry;
 		ResourceRegistry m_image3DRegistry;
@@ -65,12 +67,15 @@ namespace Volt::RHI
 		Vector<DescriptorWrite> m_activeDescriptorWrites;
 
 		VkDescriptorPool_T* m_descriptorPool = nullptr;
-		VkDescriptorSet_T* m_mainDescriptorSet = nullptr;
+		Vector<VkDescriptorSet_T*> m_mainDescriptorSet;
 
 		Vector<VkDescriptorSet_T*> m_availiableConstantsSet;
 
 		uint32_t m_offsetIndex = 0;
 		uint32_t m_offsetStride = 0;
 		WeakPtr<UniformBuffer> m_constantsBuffer;
+
+		uint64_t m_frameIndex = 0;
+		uint64_t m_framesInFlight = 0;
 	};
 }

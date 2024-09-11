@@ -327,9 +327,8 @@ namespace Volt
 			AppImGuiUpdateEvent imguiEvent{};
 			EventSystem::DispatchEvent(imguiEvent);
 
-			// #TODO_Ivar: HACK!
+			// #TODO_Ivar: HACK! Will keep this here for now. We need to make sure that the scene renderer output image is ready. 
 			RenderGraphExecutionThread::WaitForFinishedExecution();
-
 			m_imguiImplementation->End();
 		}
 		else

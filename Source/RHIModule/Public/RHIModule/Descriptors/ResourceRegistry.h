@@ -36,7 +36,7 @@ namespace Volt::RHI
 		void ClearDirtyResources();
 
 		VT_NODISCARD VT_INLINE std::mutex& GetMutex() { return m_mutex; }
-		VT_NODISCARD VT_INLINE std::span<const ResourceHandle> GetDirtyResources() const { return m_dirtyResources; }
+		VT_NODISCARD VT_INLINE std::span<const ResourceHandle> GetDirtyResources() const { return m_dirtyResources.at(m_frameIndex); }
 		VT_NODISCARD VT_INLINE const RegisteredResource& GetResource(ResourceHandle resourceHandle) const { return m_resources.at(resourceHandle); }
 
 	private:
@@ -44,7 +44,7 @@ namespace Volt::RHI
 
 		Vector<RegisteredResource> m_resources;
 		Vector<ResourceHandle> m_vacantResourceHandles;
-		Vector<ResourceHandle> m_dirtyResources;
+		Vector<Vector<ResourceHandle>> m_dirtyResources;
 		Vector<FunctionQueue> m_removalQueue;
 
 		std::unordered_map<size_t, ResourceHandle> m_resourceHashToHandle;

@@ -7,6 +7,7 @@ namespace Volt::RHI
 		: m_handleSize(handleSize), m_framesInFlight(frameCount)
 	{
 		m_removalQueue.resize(m_framesInFlight);
+		m_dirtyResources.resize(m_framesInFlight);
 	}
 
 	void ResourceRegistry::Update()
@@ -20,16 +21,19 @@ namespace Volt::RHI
 	void ResourceRegistry::MarkAsDirty(ResourceHandle handle)
 	{
 		std::scoped_lock lock{ m_mutex };
-		auto it = std::find(m_dirtyResources.begin(), m_dirtyResources.end(), handle);
-		if (it == m_dirtyResources.end())
+		for (auto& dirtyResources : m_dirtyResources)
 		{
-			m_dirtyResources.push_back(handle);
+			auto it = std::find(dirtyResources.begin(), dirtyResources.end(), handle);
+			if (it == dirtyResources.end())
+			{
+				dirtyResources.push_back(handle);
+			}
 		}
 	}
 
 	void ResourceRegistry::ClearDirtyResources()
 	{
-		m_dirtyResources.clear();
+		m_dirtyResources.at(m_frameIndex).clear();
 	}
 
 	ResourceHandle ResourceRegistry::RegisterResource(WeakPtr<RHI::RHIInterface> resource, RHI::ImageUsage imageUsage, uint32_t userData)
@@ -74,7 +78,11 @@ namespace Volt::RHI
 		registeredResourcePtr->userData = userData;
 
 		m_resourceHashToHandle[resourceHash] = newHandle;
-		m_dirtyResources.emplace_back(newHandle);
+		
+		for (auto& dirtyResources : m_dirtyResources)
+		{
+			dirtyResources.emplace_back(newHandle);
+		}
 
 		return newHandle;
 	}
@@ -99,14 +107,17 @@ namespace Volt::RHI
 		resource.referenceCount = 0;
 		m_resourceHashToHandle.erase(resource.resource.GetHash());
 
-		auto it = std::find_if(m_dirtyResources.begin(), m_dirtyResources.end(), [handle](const auto& dirtyHandle)
+		for (auto& dirtyResources : m_dirtyResources)
 		{
-			return handle == dirtyHandle;
-		});
+			auto it = std::find_if(dirtyResources.begin(), dirtyResources.end(), [handle](const auto& dirtyHandle)
+			{
+				return handle == dirtyHandle;
+			});
 
-		if (it != m_dirtyResources.end())
-		{
-			m_dirtyResources.erase(it);
+			if (it != dirtyResources.end())
+			{
+				dirtyResources.erase(it);
+			}
 		}
 
 		m_removalQueue.at(m_frameIndex).Push([handle, this]()
