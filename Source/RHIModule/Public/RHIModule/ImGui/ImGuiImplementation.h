@@ -25,7 +25,7 @@ namespace Volt::RHI
 	public:
 		virtual ~ImGuiImplementation();
 
-		VT_DELETE_COMMON_OPERATORS(ImGuiImplementation);
+		VT_DELETE_COPY_MOVE(ImGuiImplementation);
 
 		void Begin();
 		void End();

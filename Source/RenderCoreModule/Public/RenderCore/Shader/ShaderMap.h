@@ -39,6 +39,9 @@ namespace Volt
 		vt::map<std::string, RefPtr<RHI::Shader>> m_shaderMap;
 		vt::map<size_t, RefPtr<RHI::ComputePipeline>> m_computePipelineCache;
 		vt::map<size_t, RefPtr<RHI::RenderPipeline>> m_renderPipelineCache;
+		
 		std::mutex m_registerMutex;
+		std::mutex m_computeCacheMutex;
+		std::mutex m_renderCacheMutex;
 	};
 }

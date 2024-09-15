@@ -1,28 +1,27 @@
-#include "RenderCore/RenderGraph/RenderContext.h"
 #include "rcpch.h"
 
-#include "RenderCore/RenderGraph/RenderGraphPass.h"
 #include "RenderCore/RenderGraph/RenderGraph.h"
+
+#include "RenderCore/RenderGraph/RenderContext.h"
+#include "RenderCore/RenderGraph/SharedRenderContext.h"
+#include "RenderCore/RenderGraph/Resources/RenderGraphResource.h"
 #include "RenderCore/Resources/BindlessResourcesManager.h"
-#include "RenderCore/Debug/ShaderRuntimeValidator.h"
 
+#include <RHIModule/Buffers/CommandBuffer.h>
 #include <RHIModule/Buffers/StorageBuffer.h>
-#include <RHIModule/Buffers/UniformBuffer.h>
-#include <RHIModule/Descriptors/DescriptorTable.h>
-
-#include <RHIModule/Graphics/GraphicsContext.h>
-
-#include <RHIModule/Images/ImageView.h>
 
 namespace Volt
 {
-	RenderContext::RenderContext(RefPtr<RHI::CommandBuffer> commandBuffer)
-		: m_commandBuffer(commandBuffer)
+	RenderContext::RenderContext(RenderGraph& renderGraph, RenderGraphPassNodeBase& currentPassNode, SharedRenderContext& sharedContext, RefPtr<RHI::CommandBuffer> commandBuffer)
+		: m_renderGraph(renderGraph), m_currentPassNode(currentPassNode), m_sharedContext(sharedContext), m_commandBuffer(commandBuffer)
 	{
+		memset(m_passConstantsData, 0, RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE);
 	}
 
-	RenderContext::~RenderContext()
+	void RenderContext::EndContext()
 	{
+		uint8_t* passConstantsPtr = m_sharedContext.GetPassConstantsPointer(m_currentPassNode.index);
+		memcpy_s(passConstantsPtr, RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, m_passConstantsData, RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE);
 	}
 
 	void RenderContext::BeginMarker(std::string_view markerName, const glm::vec4& markerColor)
@@ -43,7 +42,7 @@ namespace Volt
 		m_commandBuffer->SetScissors({ renderingInfo.scissor });
 		m_commandBuffer->BeginRendering(renderingInfo.renderingInfo);
 	}
-
+	
 	void RenderContext::EndRendering()
 	{
 		VT_PROFILE_FUNCTION();
@@ -67,12 +66,12 @@ namespace Volt
 		StackVector<RHI::AttachmentInfo, RHI::MAX_COLOR_ATTACHMENT_COUNT> colorAttachments;
 		RHI::AttachmentInfo depthAttachment{};
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
 
 		for (const auto& resourceHandle : attachments)
 		{
 			resourceAccess.ValidateResourceAccess(resourceHandle);
-			const auto view = m_renderGraph->GetImageView(resourceHandle);
+			const auto view = m_renderGraph.GetImageView(resourceHandle);
 
 			if ((view->GetImageAspect() & RHI::ImageAspect::Color) != RHI::ImageAspect::None)
 			{
@@ -108,10 +107,10 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(handle);
 
-		const auto image = m_renderGraph->GetImageRaw(handle);
+		const auto image = m_renderGraph.GetImageRaw(handle);
 		m_commandBuffer->ClearImage(image, { clearColor.x, clearColor.y, clearColor.z, clearColor.w });
 	}
 
@@ -119,10 +118,10 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(handle);
 
-		const auto buffer = m_renderGraph->GetBufferRaw(handle);
+		const auto buffer = m_renderGraph.GetBufferRaw(handle);
 		m_commandBuffer->ClearBuffer(buffer, clearValue);
 	}
 
@@ -130,12 +129,12 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(src);
 		resourceAccess.ValidateResourceAccess(dst);
 
-		const auto srcBuffer = m_renderGraph->GetBufferRaw(src);
-		const auto dstBuffer = m_renderGraph->GetBufferRaw(dst);
+		const auto srcBuffer = m_renderGraph.GetBufferRaw(src);
+		const auto dstBuffer = m_renderGraph.GetBufferRaw(dst);
 
 		VT_ENSURE_MSG(dstBuffer->GetByteSize() >= size, "Destination buffer is too small!");
 		VT_ENSURE_MSG(srcBuffer->GetByteSize() >= size, "Source buffer is smaller than the specified copy size!");
@@ -148,10 +147,10 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(bufferHandle);
 
-		const auto buffer = m_renderGraph->GetBufferRaw(bufferHandle);
+		const auto buffer = m_renderGraph.GetBufferRaw(bufferHandle);
 		uint8_t* mappedPtr = buffer->Map<uint8_t>();
 		memcpy_s(mappedPtr, size, data, size);
 		buffer->Unmap();
@@ -197,10 +196,10 @@ namespace Volt
 		BindDescriptorTableIfRequired();
 		ValidateCurrentPipelineConstants();
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(commandsBuffer);
 
-		const auto cmdsBuffer = m_renderGraph->GetBufferRaw(commandsBuffer);
+		const auto cmdsBuffer = m_renderGraph.GetBufferRaw(commandsBuffer);
 		m_commandBuffer->DispatchMeshTasksIndirect(cmdsBuffer, offset, drawCount, stride);
 	}
 
@@ -211,12 +210,12 @@ namespace Volt
 		BindDescriptorTableIfRequired();
 		ValidateCurrentPipelineConstants();
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(commandsBuffer);
 		resourceAccess.ValidateResourceAccess(countBuffer);
 
-		const auto cmdsBuffer = m_renderGraph->GetBufferRaw(commandsBuffer);
-		const auto cntsBuffer = m_renderGraph->GetBufferRaw(countBuffer);
+		const auto cmdsBuffer = m_renderGraph.GetBufferRaw(commandsBuffer);
+		const auto cntsBuffer = m_renderGraph.GetBufferRaw(countBuffer);
 
 		m_commandBuffer->DispatchMeshTasksIndirectCount(cmdsBuffer, offset, cntsBuffer, countBufferOffset, maxDrawCount, stride);
 	}
@@ -238,10 +237,10 @@ namespace Volt
 		BindDescriptorTableIfRequired();
 		ValidateCurrentPipelineConstants();
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(commandsBuffer);
 
-		const auto cmdsBuffer = m_renderGraph->GetBufferRaw(commandsBuffer);
+		const auto cmdsBuffer = m_renderGraph.GetBufferRaw(commandsBuffer);
 		m_commandBuffer->DispatchIndirect(cmdsBuffer, offset);
 	}
 
@@ -256,12 +255,12 @@ namespace Volt
 			return;
 		}
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(commandsBuffer);
 		resourceAccess.ValidateResourceAccess(countBuffer);
 
-		const auto cmdsBuffer = m_renderGraph->GetBufferRaw(commandsBuffer);
-		const auto cntsBuffer = m_renderGraph->GetBufferRaw(countBuffer);
+		const auto cmdsBuffer = m_renderGraph.GetBufferRaw(commandsBuffer);
+		const auto cntsBuffer = m_renderGraph.GetBufferRaw(countBuffer);
 		m_commandBuffer->DrawIndirectCount(cmdsBuffer, offset, cntsBuffer, countBufferOffset, maxDrawCount, stride);
 	}
 
@@ -277,10 +276,10 @@ namespace Volt
 			return;
 		}
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(commandsBuffer);
 
-		const auto cmdsBuffer = m_renderGraph->GetBufferRaw(commandsBuffer);
+		const auto cmdsBuffer = m_renderGraph.GetBufferRaw(commandsBuffer);
 		m_commandBuffer->DrawIndexedIndirect(cmdsBuffer, offset, drawCount, stride);
 	}
 
@@ -320,7 +319,7 @@ namespace Volt
 		m_commandBuffer->BindPipeline(pipeline);
 
 		m_descriptorTableIsBound = false;
-	
+
 		InitializeCurrentPipelineConstantsValidation();
 	}
 
@@ -348,10 +347,10 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
 		resourceAccess.ValidateResourceAccess(indexBuffer);
 
-		const auto idxBuffer = m_renderGraph->GetBufferRaw(indexBuffer);
+		const auto idxBuffer = m_renderGraph.GetBufferRaw(indexBuffer);
 		m_commandBuffer->BindIndexBuffer(idxBuffer);
 	}
 
@@ -369,8 +368,8 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
-		
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
+
 		for (const auto& buffer : vertexBuffers)
 		{
 			resourceAccess.ValidateResourceAccess(buffer);
@@ -379,80 +378,106 @@ namespace Volt
 		StackVector<WeakPtr<RHI::StorageBuffer>, RHI::MAX_VERTEX_BUFFER_COUNT> buffers{};
 		for (const auto& buffer : vertexBuffers)
 		{
-			buffers.EmplaceBack() = m_renderGraph->GetBufferRaw(buffer);
+			buffers.EmplaceBack() = m_renderGraph.GetBufferRaw(buffer);
 		}
 
 		m_commandBuffer->BindVertexBuffers(buffers, firstBinding);
 	}
 
-	void RenderContext::SetPerPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer)
+	void RenderContext::SetConstant(const StringHash& name, const RenderGraphImageHandle& data, const int32_t mip, const int32_t layer)
 	{
 		VT_PROFILE_FUNCTION();
-		m_perPassConstantsBuffer = constantsBuffer;
-		m_perPassConstantsBufferData.resize_uninitialized(constantsBuffer->GetByteSize());
-		memset(m_perPassConstantsBufferData.data(), 0, m_perPassConstantsBufferData.size());
+		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
+
+		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
+		VT_ENSURE(constantsData.uniforms.contains(name));
+
+		const auto& uniform = constantsData.uniforms.at(name);
+
+#ifdef VT_ENABLE_RENDERGRAPH_VALIDATION
+		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
+
+		VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2D ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2D ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2DArray ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2DArray ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::TextureCube ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::Texture3D ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture3D);
+
+		auto node = m_renderGraph.m_resourceNodes.at(data);
+
+		VT_ENSURE(node->GetResourceType() == ResourceType::Image2D || node->GetResourceType() == ResourceType::Image3D);
+
+		if (node->GetResourceType() == ResourceType::Image2D)
+		{
+			VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2D ||
+					  uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2D ||
+					  uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2DArray ||
+					  uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2DArray ||
+					  uniform.type.baseType == RHI::ShaderUniformBaseType::TextureCube);
+		}
+		else if (node->GetResourceType() == ResourceType::Image3D)
+		{
+			VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Texture3D || uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture3D);
+		}
+
+		if (uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2D ||
+			uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2DArray ||
+			uniform.type.baseType == RHI::ShaderUniformBaseType::TextureCube ||
+			uniform.type.baseType == RHI::ShaderUniformBaseType::Texture3D)
+		{
+			VT_ENSURE(m_currentPassNode.ReadsResource(data));
+		}
+		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2D ||
+				 uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2DArray ||
+				 uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture3D)
+		{
+			VT_ENSURE(m_currentPassNode.WritesResource(data) || m_currentPassNode.CreatesResource(data));
+		}
+#endif
+
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
+		const ResourceHandle resourceHandle = resourceAccess.GetImage(data, mip, layer);
+
+		memcpy_s(&m_passConstantsData[uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE - uniform.offset, &resourceHandle, sizeof(ResourceHandle));
 	}
 
-	void RenderContext::SetRenderGraphConstantsBuffer(WeakPtr<RHI::UniformBuffer> constantsBuffer)
+	void RenderContext::BindDescriptorTableIfRequired()
 	{
 		VT_PROFILE_FUNCTION();
-		m_renderGraphConstantsBuffer = constantsBuffer;
-	}
+		VT_ENSURE(m_currentComputePipeline || m_currentRenderPipeline);
 
-	void RenderContext::SetCurrentPass(Weak<RenderGraphPassNodeBase> currentPassNode)
-	{
-		VT_PROFILE_FUNCTION();
+		if (m_descriptorTableIsBound)
+		{
+			return;
+		}
 
-		m_currentPassIndex = currentPassNode->index;
-		m_currentPassNode = currentPassNode;
-	}
+		// Set render graph constants
+		{
+			RenderGraphConstants renderGraphConstants;
+			renderGraphConstants.constatsBufferIndex = m_sharedContext.GetPassConstantsBufferResourceHandle();
+			renderGraphConstants.constantsOffset = m_currentPassNode.index * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
+			renderGraphConstants.shaderValidationBuffer = m_renderGraph.GetRuntimeShaderValidationErrorBuffer();
+#endif
+			{
+				uint8_t* constantsPtr = m_sharedContext.GetRenderGraphConstantsPointer(m_currentPassNode.index);
+				memcpy_s(constantsPtr, sizeof(RenderGraphConstants), &renderGraphConstants, sizeof(RenderGraphConstants));
+			}
+		}
 
-	void RenderContext::SetRenderGraphInstance(RenderGraph* renderGraph)
-	{
-		VT_PROFILE_FUNCTION();
-		m_renderGraph = renderGraph;
-	}
+		auto descriptorTable = BindlessResourcesManager::Get().GetDescriptorTable();
+		m_commandBuffer->BindDescriptorTable(descriptorTable, m_sharedContext.GetRenderGraphConstantsBuffer(), m_currentPassNode.index, sizeof(RenderGraphConstants));
 
-	void RenderContext::UploadConstantsData()
-	{
-		VT_PROFILE_FUNCTION();
-
-		uint8_t* mappedPtr = m_perPassConstantsBuffer->Map<uint8_t>();
-		memcpy_s(mappedPtr, m_perPassConstantsBuffer->GetByteSize(), m_perPassConstantsBufferData.data(), m_perPassConstantsBufferData.size());
-		m_perPassConstantsBuffer->Unmap();
-	}
-
-	void RenderContext::Flush(RefPtr<RHI::Fence> fence)
-	{
-		VT_PROFILE_FUNCTION();
-
-		// Setup state and execute command buffer
-		UploadConstantsData();
-		BindlessResourcesManager::Get().PrepareForRender();
-
-		m_commandBuffer->Flush(fence);
-	}
-
-	void RenderContext::CopyImage(RenderGraphImageHandle src, RenderGraphImageHandle dst, const uint32_t width, const uint32_t height, const uint32_t depth)
-	{
-		VT_PROFILE_FUNCTION();
-
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
-		resourceAccess.ValidateResourceAccess(src);
-		resourceAccess.ValidateResourceAccess(dst);
-
-		const auto srcImage = m_renderGraph->GetImageRaw(src);
-		const auto dstImage = m_renderGraph->GetImageRaw(dst);
-
-		VT_ENSURE_MSG(width > 0 && height > 0 && depth > 0, "Width, height and depth must be greater than zero!");
-		m_commandBuffer->CopyImage(srcImage, dstImage, width, height, depth);
+		m_descriptorTableIsBound = true;
 	}
 
 	void RenderContext::InitializeCurrentPipelineConstantsValidation()
 	{
-#ifdef VT_DEBUG
+#ifdef VT_ENABLE_RENDERGRAPH_VALIDATION
 		VT_ASSERT_MSG(m_currentRenderPipeline || m_currentComputePipeline, "A pipeline must be bound!");
-	
+
 		m_boundPipelineData.uniformHasBeenSetMap.clear();
 
 		const auto& currentConstants = GetRenderGraphConstantsData();
@@ -465,11 +490,10 @@ namespace Volt
 
 	void RenderContext::ValidateCurrentPipelineConstants()
 	{
-#ifdef VT_DEBUG
-
+#ifdef VT_ENABLE_RENDERGRAPH_VALIDATION
 		for (const auto& [hash, value] : m_boundPipelineData.uniformHasBeenSetMap)
 		{
-			VT_ASSERT_MSG(value, "All constants must have been set!");
+			VT_ENSURE_MSG(value, "All constants must have been set!");
 		}
 #endif
 	}
@@ -487,44 +511,10 @@ namespace Volt
 		}
 	}
 
-	void RenderContext::BindDescriptorTableIfRequired()
-	{
-		VT_PROFILE_FUNCTION();
-		VT_ENSURE(m_currentComputePipeline || m_currentRenderPipeline);
-
-		if (m_descriptorTableIsBound)
-		{
-			return;
-		}
-
-		// Set render graph constants
-		{
-			RenderGraphConstants renderGraphConstants;
-			renderGraphConstants.constatsBufferIndex = BindlessResourcesManager::Get().GetBufferHandle(m_perPassConstantsBuffer);
-			renderGraphConstants.constantsOffset = m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
-#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
-			renderGraphConstants.shaderValidationBuffer = m_renderGraph->GetRuntimeShaderValidationErrorBuffer();
-#endif
-			{
-				uint8_t* constantsPtr = m_renderGraphConstantsBuffer->Map<uint8_t>(m_currentPassIndex);
-				memcpy_s(constantsPtr, sizeof(RenderGraphConstants), &renderGraphConstants, sizeof(RenderGraphConstants));
-				m_renderGraphConstantsBuffer->Unmap();
-			}
-		}
-
-		auto descriptorTable = BindlessResourcesManager::Get().GetDescriptorTable();
-		descriptorTable->SetConstantsBuffer(m_renderGraphConstantsBuffer);
-		descriptorTable->SetOffsetIndexAndStride(m_currentPassIndex, sizeof(RenderGraphConstants));
-		m_commandBuffer->BindDescriptorTable(descriptorTable);
-
-		m_descriptorTableIsBound = true;
-	}
-
 	template<>
-	void RenderContext::SetConstant(const StringHash& name, const ResourceHandle& data)
+	inline void RenderContext::SetConstant(const StringHash& name, const ResourceHandle& data)
 	{
 		VT_PROFILE_FUNCTION();
-
 		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
 
 		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
@@ -532,79 +522,18 @@ namespace Volt
 
 		const auto& uniform = constantsData.uniforms.at(name);
 
-#ifdef VT_DEBUG
+#ifdef VT_ENABLE_RENDERGRAPH_VALIDATION
 		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
 		VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Sampler);
 #endif
 
-		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(ResourceHandle));
-	}
-	
-	void RenderContext::SetConstant(const StringHash& name, const RenderGraphImageHandle& data, const int32_t mip, const int32_t layer)
-	{
-		VT_PROFILE_FUNCTION();
-
-		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
-
-		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
-		VT_ENSURE(constantsData.uniforms.contains(name));
-
-		const auto& uniform = constantsData.uniforms.at(name);
-
-#ifdef VT_DEBUG
-		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
-
-		VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2D ||
-				uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2D ||
-				uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2DArray ||
-				uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2DArray ||
-				uniform.type.baseType == RHI::ShaderUniformBaseType::TextureCube ||
-				uniform.type.baseType == RHI::ShaderUniformBaseType::Texture3D ||
-				uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture3D);
-
-		auto node = m_renderGraph->m_resourceNodes.at(data);
-
-		VT_ENSURE(node->GetResourceType() == ResourceType::Image2D || node->GetResourceType() == ResourceType::Image3D);
-
-		if (node->GetResourceType() == ResourceType::Image2D)
-		{
-			VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2D || 
-					  uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2D ||
-					  uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2DArray ||
-					  uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2DArray ||
-					  uniform.type.baseType == RHI::ShaderUniformBaseType::TextureCube);
-		}
-		else if (node->GetResourceType() == ResourceType::Image3D)
-		{
-			VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Texture3D || uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture3D);
-		}
-
-		if (uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2D ||
-			uniform.type.baseType == RHI::ShaderUniformBaseType::Texture2DArray ||
-			uniform.type.baseType == RHI::ShaderUniformBaseType::TextureCube ||
-			uniform.type.baseType == RHI::ShaderUniformBaseType::Texture3D)
-		{
-			VT_ENSURE(m_currentPassNode->ReadsResource(data));
-		}
-		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2D ||
-				 uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture2DArray ||
-				 uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture3D)
-		{
-			VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
-		}
-#endif
-
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
-		const ResourceHandle resourceHandle = resourceAccess.GetImage(data, mip, layer);
-
-		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &resourceHandle, sizeof(ResourceHandle));
+		memcpy_s(&m_passConstantsData[uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE - uniform.offset, &data, sizeof(ResourceHandle));
 	}
 
 	template<>
-	void RenderContext::SetConstant(const StringHash& name, const RenderGraphBufferHandle& data)
+	inline void RenderContext::SetConstant(const StringHash& name, const RenderGraphBufferHandle& data)
 	{
 		VT_PROFILE_FUNCTION();
-
 		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
 
 		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
@@ -612,7 +541,7 @@ namespace Volt
 
 		const auto& uniform = constantsData.uniforms.at(name);
 
-#ifdef VT_DEBUG
+#ifdef VT_ENABLE_RENDERGRAPH_VALIDATION
 		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
 
 		VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Buffer ||
@@ -620,22 +549,22 @@ namespace Volt
 
 		if (uniform.type.baseType == RHI::ShaderUniformBaseType::Buffer)
 		{
-			VT_ENSURE(m_currentPassNode->ReadsResource(data) || m_currentPassNode->CreatesResource(data));
+			VT_ENSURE(m_currentPassNode.ReadsResource(data) || m_currentPassNode.CreatesResource(data));
 		}
 		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWBuffer)
 		{
-			VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
+			VT_ENSURE(m_currentPassNode.WritesResource(data) || m_currentPassNode.CreatesResource(data));
 		}
 #endif
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
 		const ResourceHandle resourceHandle = resourceAccess.GetBuffer(data);
 
-		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &resourceHandle, sizeof(ResourceHandle));
+		memcpy_s(&m_passConstantsData[uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE - uniform.offset, &resourceHandle, sizeof(ResourceHandle));
 	}
 
 	template<>
-	void RenderContext::SetConstant(const StringHash& name, const RenderGraphUniformBufferHandle& data)
+	inline void RenderContext::SetConstant(const StringHash& name, const RenderGraphUniformBufferHandle& data)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -646,20 +575,41 @@ namespace Volt
 
 		const auto& uniform = constantsData.uniforms.at(name);
 
-#ifdef VT_DEBUG
+#ifdef VT_ENABLE_RENDERGRAPH_VALIDATION
 		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
-
 		VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::UniformBuffer);
-
-		if (uniform.type.baseType == RHI::ShaderUniformBaseType::UniformBuffer)
-		{
-			VT_ENSURE(m_currentPassNode->ReadsResource(data));
-		}
+		VT_ENSURE(m_currentPassNode.ReadsResource(data));
 #endif
 
-		RenderGraphPassResources resourceAccess{ *m_renderGraph, *m_currentPassNode };
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
 		const ResourceHandle resourceHandle = resourceAccess.GetUniformBuffer(data);
 
-		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &resourceHandle, sizeof(ResourceHandle));
+		memcpy_s(&m_passConstantsData[uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE - uniform.offset, &resourceHandle, sizeof(ResourceHandle));
+	}
+
+	void RenderContext::Flush(RefPtr<RHI::Fence> fence)
+	{
+		VT_PROFILE_FUNCTION();
+
+		// Setup state and execute command buffer
+		//UploadConstantsData();
+		//BindlessResourcesManager::Get().PrepareForRender();
+		//
+		//m_commandBuffer->Flush(fence);
+	}
+
+	void RenderContext::CopyImage(RenderGraphImageHandle src, RenderGraphImageHandle dst, const uint32_t width, const uint32_t height, const uint32_t depth)
+	{
+		VT_PROFILE_FUNCTION();
+
+		RenderGraphPassResources resourceAccess{ m_renderGraph, m_currentPassNode };
+		resourceAccess.ValidateResourceAccess(src);
+		resourceAccess.ValidateResourceAccess(dst);
+
+		const auto srcImage = m_renderGraph.GetImageRaw(src);
+		const auto dstImage = m_renderGraph.GetImageRaw(dst);
+
+		VT_ENSURE_MSG(width > 0 && height > 0 && depth > 0, "Width, height and depth must be greater than zero!");
+		m_commandBuffer->CopyImage(srcImage, dstImage, width, height, depth);
 	}
 }

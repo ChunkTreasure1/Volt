@@ -59,7 +59,7 @@ namespace Volt
 	{
 		s_data->executionQueue.emplace([rg = std::move(renderGraph)]() mutable
 		{
-			rg.ExecuteInternal(false);
+			rg.ExecuteInternal(true, false);
 		});
 
 		s_data->executeVariable.notify_one();

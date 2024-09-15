@@ -5,6 +5,7 @@
 #include "RenderCore/RenderGraph/RenderGraphPass.h"
 #include "RenderCore/RenderGraph/Resources/RenderGraphResourceHandle.h"
 #include "RenderCore/RenderGraph/RenderContext.h"
+#include "RenderCore/RenderGraph/SharedRenderContext.h"
 #include "RenderCore/TransientResourceSystem/TransientResourceSystem.h" 
 
 #include "RenderCore/Debug/ShaderRuntimeValidator.h"
@@ -12,6 +13,7 @@
 #include <RHIModule/Core/ResourceStateTracker.h>
 
 #include <CoreUtilities/Containers/Map.h>
+#include <CoreUtilities/Containers/ThreadSafeVector.h>
 
 #include <string_view>
 #include <functional>
@@ -131,17 +133,7 @@ namespace Volt
 		friend class Builder;
 		friend class RenderGraphExecutionThread;
 		friend class RenderContext;
-
-		void ExecuteInternal(bool waitForCompletion);
-		void InsertStandaloneMarkers(const uint32_t passIndex);
-		void DestroyResources();
-		void AllocateConstantsBuffer();
-		void ExtractResources();
-
-		void InitializeRuntimeShaderValidator();
-		void AddRuntimeShaderValidationBuffers(Builder& builder);
-
-		void PrintPassBarriers(const Vector<RHI::ResourceBarrierInfo>& barriers);
+		friend class RenderContext3;
 
 		struct Image2DExtractionInfo
 		{
@@ -234,6 +226,17 @@ namespace Volt
 			vt::map<uint32_t, Vector<ResourceUsageInfo>> m_passBarriers;
 		};
 
+		void ExecuteInternal(bool waitForCompletedExecution, bool waitForSync);
+
+		void DestroyResources();
+		void AllocateConstantsBuffer();
+		void ExtractResources();
+
+		void InitializeRuntimeShaderValidator();
+		void AddRuntimeShaderValidationBuffers(Builder& builder);
+
+		void PrintPassBarriers(const Vector<RHI::ResourceBarrierInfo>& barriers);
+
 		WeakPtr<RHI::ImageView> GetImageView(const RenderGraphImageHandle resourceHandle);
 		WeakPtr<RHI::Image> GetImageRaw(const RenderGraphImageHandle resourceHandle);
 		WeakPtr<RHI::StorageBuffer> GetBufferRaw(const RenderGraphBufferHandle resourceHandle);
@@ -248,6 +251,7 @@ namespace Volt
 		void RegisterExternalResource(WeakPtr<RHI::RHIResource> resource, RenderGraphResourceHandle handle);
 
 		void InsertBarriersIntoCommandBuffer(const CompiledRenderGraphPass::PassBarriers& passBarriers, const RefPtr<RHI::CommandBuffer>& commandBuffer);
+		void InsertStandaloneMarkersIntoCommandBuffer(const uint32_t passIndex, const RefPtr<RHI::CommandBuffer> commandBuffer);
 
 		Vector<Image2DExtractionInfo> m_imageExtractions;
 		Vector<BufferExtractionInfo> m_bufferExtractions;
@@ -270,8 +274,8 @@ namespace Volt
 			RHI::ImageViewType viewType;
 		};
 
-		Vector<ResourceHandle> m_registeredBufferResources;
-		Vector<RegisteredImageView> m_registeredImageResources;
+		ThreadSafeVector<ResourceHandle> m_registeredBufferResources;
+		ThreadSafeVector<RegisteredImageView> m_registeredImageResources;
 
 		uint32_t m_passIndex = 0;
 		uint32_t m_resourceIndex = 0;
@@ -286,7 +290,8 @@ namespace Volt
 #endif
 
 		TransientResourceSystem m_transientResourceSystem;
-		RenderContext m_renderContext;
+
+		SharedRenderContext m_sharedRenderContext;
 
 		bool m_currentlyInBuilder = false;
 		bool m_hasBeenCompiled = false;

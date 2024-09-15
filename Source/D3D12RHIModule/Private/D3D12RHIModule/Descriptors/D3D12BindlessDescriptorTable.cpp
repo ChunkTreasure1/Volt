@@ -271,26 +271,18 @@ namespace Volt::RHI
 		m_activeSamplerDescriptorCopies.clear();
 	}
 
-	void D3D12BindlessDescriptorTable::SetOffsetIndexAndStride(const uint32_t offsetIndex, const uint32_t stride)
-	{
-		m_offsetIndex = offsetIndex;
-		m_offsetStride = stride;
-	}
-
-	void D3D12BindlessDescriptorTable::SetConstantsBuffer(WeakPtr<UniformBuffer> constantsBuffer)
-	{
-		m_constantsBuffer = constantsBuffer;
-	}
-
-	void D3D12BindlessDescriptorTable::Bind(CommandBuffer& commandBuffer)
+	void D3D12BindlessDescriptorTable::Bind(CommandBuffer& commandBuffer, WeakPtr<UniformBuffer> constantsBuffer, const uint32_t offsetIndex, const uint32_t stride)
 	{
 		ID3D12GraphicsCommandList* cmdList = commandBuffer.GetHandle<ID3D12GraphicsCommandList*>();
 		ID3D12DescriptorHeap* heaps[2] = { m_mainHeap->GetHeap().Get(), m_samplerHeap->GetHeap().Get() };
 	
 		cmdList->SetDescriptorHeaps(2, heaps);
+
+		m_offsetIndex = offsetIndex;
+		m_offsetStride = stride;
 	}
 
-	void D3D12BindlessDescriptorTable::SetRootParameters(CommandBuffer& commandBuffer)
+	void D3D12BindlessDescriptorTable::SetRootParameters(CommandBuffer& commandBuffer, WeakPtr<UniformBuffer> constantsBuffer)
 	{
 		D3D12CommandBuffer& d3d12CommandBuffer = commandBuffer.AsRef<D3D12CommandBuffer>();
 		ID3D12GraphicsCommandList* cmdList = commandBuffer.GetHandle<ID3D12GraphicsCommandList*>();
@@ -310,7 +302,7 @@ namespace Volt::RHI
 
 		if (rgConstantsParamIndex != ~0u)
 		{
-			D3D12_GPU_VIRTUAL_ADDRESS bufferAddress = m_constantsBuffer->GetHandle<ID3D12Resource*>()->GetGPUVirtualAddress() + m_offsetStride * m_offsetIndex;
+			D3D12_GPU_VIRTUAL_ADDRESS bufferAddress = constantsBuffer->GetHandle<ID3D12Resource*>()->GetGPUVirtualAddress() + m_offsetStride * m_offsetIndex;
 
 			if (isGraphicsPipeline)
 			{

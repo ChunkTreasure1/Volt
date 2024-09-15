@@ -53,7 +53,7 @@ namespace Volt::RHI
 		m_bufferRegistry(1, framesInFlight), m_samplerRegistry(1, framesInFlight), m_framesInFlight(framesInFlight)
 	{
 		m_activeDescriptorWrites.reserve(100);
-		m_mainDescriptorSet.resize(framesInFlight, nullptr);
+		m_mainDescriptorSets.resize(framesInFlight, nullptr);
 
 		Invalidate();
 	}
@@ -403,18 +403,7 @@ namespace Volt::RHI
 		return GetCurrentMainDescriptorSet();
 	}
 
-	void VulkanBindlessDescriptorTable::SetOffsetIndexAndStride(const uint32_t offsetIndex, const uint32_t stride)
-	{
-		m_offsetIndex = offsetIndex;
-		m_offsetStride = stride;
-	}
-
-	void VulkanBindlessDescriptorTable::SetConstantsBuffer(WeakPtr<UniformBuffer> constantsBuffer)
-	{
-		m_constantsBuffer = constantsBuffer;
-	}
-
-	void VulkanBindlessDescriptorTable::Bind(CommandBuffer& commandBuffer)
+	void VulkanBindlessDescriptorTable::Bind(CommandBuffer& commandBuffer, WeakPtr<UniformBuffer> constantsBuffer, const uint32_t offsetIndex, const uint32_t stride)
 	{
 		VT_PROFILE_FUNCTION();
 		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer.AsRef<VulkanCommandBuffer>();
@@ -434,15 +423,15 @@ namespace Volt::RHI
 		}
 
 		const auto& deviceProperties = GraphicsContext::GetPhysicalDevice()->As<VulkanPhysicalGraphicsDevice>()->GetProperties();
-		const uint32_t alignedStride = Utility::Align(m_offsetStride, deviceProperties.limits.minUniformBufferOffsetAlignment);
+		const uint32_t alignedStride = Utility::Align(stride, deviceProperties.limits.minUniformBufferOffsetAlignment);
 
 		const bool hasConstantsSet = descriptorSetCount == 2;
-		const uint32_t offset = alignedStride * m_offsetIndex;
+		const uint32_t offset = alignedStride * offsetIndex;
 
 		std::array<VkDescriptorSet, 2> descriptorSets = { GetCurrentMainDescriptorSet(), hasConstantsSet ? GetOrAllocateConstantsSet() : nullptr };
 		if (hasConstantsSet)
 		{
-			WriteConstantsSet(descriptorSets[1]);
+			WriteConstantsSet(descriptorSets[1], constantsBuffer);
 		}
 
 		vkCmdBindDescriptorSets(vulkanCommandBuffer.GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), 0, descriptorSetCount, descriptorSets.data(), hasConstantsSet ? 1 : 0, &offset);
@@ -511,12 +500,13 @@ namespace Volt::RHI
 		allocInfo.descriptorSetCount = static_cast<uint32_t>(m_framesInFlight);
 		allocInfo.pSetLayouts = setLayouts.data();
 
-		VT_VK_CHECK(vkAllocateDescriptorSets(vkDevice, &allocInfo, m_mainDescriptorSet.data()));
+		VT_VK_CHECK(vkAllocateDescriptorSets(vkDevice, &allocInfo, m_mainDescriptorSets.data()));
 	}
 
 	VkDescriptorSet_T* VulkanBindlessDescriptorTable::GetOrAllocateConstantsSet()
 	{
 		VT_PROFILE_FUNCTION();
+		std::scoped_lock lock{ m_descriptorAllocationMutex };
 
 		if (!m_availiableConstantsSet.empty())
 		{
@@ -537,23 +527,26 @@ namespace Volt::RHI
 		VkDescriptorSet resultSet;
 
 		auto vkDevice = GraphicsContext::GetDevice()->GetHandle<VkDevice>();
-		VT_VK_CHECK(vkAllocateDescriptorSets(vkDevice, &allocInfo, &resultSet));
+
+		{
+			VT_VK_CHECK(vkAllocateDescriptorSets(vkDevice, &allocInfo, &resultSet));
+		}
 
 		return resultSet;
 	}
 
-	void VulkanBindlessDescriptorTable::WriteConstantsSet(VkDescriptorSet_T* dstSet)
+	void VulkanBindlessDescriptorTable::WriteConstantsSet(VkDescriptorSet_T* dstSet, WeakPtr<UniformBuffer> constantsBuffer)
 	{
 		VT_PROFILE_FUNCTION();
 
-		if (!m_constantsBuffer)
+		if (!constantsBuffer)
 		{
 			return;
 		}
 
 		VkDescriptorBufferInfo bufferInfo{};
-		bufferInfo.buffer = m_constantsBuffer->GetHandle<VkBuffer>();
-		bufferInfo.range = m_constantsBuffer->GetSize();
+		bufferInfo.buffer = constantsBuffer->GetHandle<VkBuffer>();
+		bufferInfo.range = constantsBuffer->GetSize();
 		bufferInfo.offset = 0;
 
 		VkWriteDescriptorSet descriptorWrite{};
@@ -572,6 +565,6 @@ namespace Volt::RHI
 
 	VkDescriptorSet_T* VulkanBindlessDescriptorTable::GetCurrentMainDescriptorSet() const
 	{
-		return m_mainDescriptorSet.at(m_frameIndex);
+		return m_mainDescriptorSets.at(m_frameIndex);
 	}
 }

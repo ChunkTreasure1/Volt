@@ -61,7 +61,8 @@ namespace Volt::RHI
 
 	const uint32_t VulkanUniformBuffer::GetSize() const
 	{
-		return m_size;
+		const auto& deviceProperties = GraphicsContext::GetPhysicalDevice()->As<VulkanPhysicalGraphicsDevice>()->GetProperties();
+		return Utility::Align(m_size, deviceProperties.limits.minUniformBufferOffsetAlignment);
 	}
 
 	void VulkanUniformBuffer::SetData(const void* data, const uint32_t size)
@@ -78,21 +79,19 @@ namespace Volt::RHI
 
 	void VulkanUniformBuffer::SetName(std::string_view name)
 	{
-		m_name = std::string(name);
-
-		if (!Volt::RHI::vkSetDebugUtilsObjectNameEXT)
+		if (Volt::RHI::vkSetDebugUtilsObjectNameEXT)
 		{
-			return;
+			VkDebugUtilsObjectNameInfoEXT nameInfo{};
+			nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+			nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
+			nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkBuffer>();
+			nameInfo.pObjectName = name.data();
+
+			auto device = GraphicsContext::GetDevice();
+			Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 		}
 
-		VkDebugUtilsObjectNameInfoEXT nameInfo{};
-		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
-		nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkBuffer>();
-		nameInfo.pObjectName = name.data();
-
-		auto device = GraphicsContext::GetDevice();
-		Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
+		m_name = std::string(name);
 	}
 
 	std::string_view VulkanUniformBuffer::GetName() const

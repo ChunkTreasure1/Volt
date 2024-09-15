@@ -8,7 +8,7 @@ namespace Volt::RHI
 	class VTRHI_API PhysicalGraphicsDevice : public RHIInterface
 	{
 	public:
-		VT_DELETE_COMMON_OPERATORS(PhysicalGraphicsDevice);
+		VT_DELETE_COPY_MOVE(PhysicalGraphicsDevice);
 		~PhysicalGraphicsDevice() override = default;
 
 		[[nodiscard]] virtual const DeviceVendor GetDeviceVendor() const = 0;

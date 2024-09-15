@@ -8,6 +8,7 @@
 #include "RenderCore/RenderGraph/Resources/RenderGraphTextureResource.h"
 #include "RenderCore/RenderGraph/GPUReadbackBuffer.h"
 #include "RenderCore/RenderGraph/GPUReadbackImage.h"
+#include "RenderCore/RenderGraph/RenderContext.h"
 
 #include "RenderCore/Resources/BindlessResourcesManager.h"
 
@@ -130,7 +131,7 @@ namespace Volt
 	}
 
 	RenderGraph::RenderGraph(RefPtr<RHI::CommandBuffer> commandBuffer)
-		: m_commandBuffer(commandBuffer), m_renderContext(commandBuffer)
+		: m_commandBuffer(commandBuffer)
 	{
 		InitializeRuntimeShaderValidator();
 	}
@@ -582,12 +583,12 @@ namespace Volt
 
 	void RenderGraph::ExecuteImmediate()
 	{
-		ExecuteInternal(false);
+		ExecuteInternal(true, false);
 	}
 
 	void RenderGraph::ExecuteImmediateAndWait()
 	{
-		ExecuteInternal(true);
+		ExecuteInternal(true, true);
 	}
 
 	RenderGraphImageHandle RenderGraph::AddExternalImage(RefPtr<RHI::Image> image)
@@ -676,59 +677,136 @@ namespace Volt
 		return resourceHandle;
 	}
 
-	void RenderGraph::ExecuteInternal(bool waitForCompletion)
+	void RenderGraph::ExecuteInternal(bool waitForCompletedExecution, bool waitForSync)
 	{
 		VT_PROFILE_FUNCTION();
 
-		AllocateConstantsBuffer();
-		m_renderContext.SetPerPassConstantsBuffer(m_perPassConstantsBuffer);
-		m_renderContext.SetRenderGraphConstantsBuffer(m_renderGraphConstantsBuffer);
-		m_renderContext.SetRenderGraphInstance(this);
-
-		m_commandBuffer->Begin();
-
-		for (const auto& passNode : m_passNodes)
+		struct PassExecutionRange
 		{
-			auto& compiledPass = m_compiledPasses.at(passNode->index);
+			uint16_t first;
+			uint16_t last;
+		};
 
-			if (passNode->IsCulled())
+		constexpr size_t MAX_PASSES_PER_JOB = 20;
+
+		AllocateConstantsBuffer();
+		
+		m_sharedRenderContext.SetPerPassConstantsBuffer(m_perPassConstantsBuffer);
+		m_sharedRenderContext.SetRenderGraphConstantsBuffer(m_renderGraphConstantsBuffer);
+
+		Vector<PassExecutionRange> executionRanges;
+
+		// Setup execution ranges
+		{
+			const size_t jobCount = m_passNodes.size() / MAX_PASSES_PER_JOB;
+			const size_t passRemainder = m_passNodes.size() - jobCount * MAX_PASSES_PER_JOB;
+
+			executionRanges.resize_uninitialized(jobCount + ((passRemainder > 0) ? 1 : 0));
+
+			for (size_t i = 0; i < jobCount; i++)
 			{
-				InsertStandaloneMarkers(passNode->index);
-				InsertBarriersIntoCommandBuffer(compiledPass.postPassBarriers, m_commandBuffer);
-				continue;
+				const uint16_t rangeOffset = static_cast<uint16_t>(i * MAX_PASSES_PER_JOB);
+				executionRanges[i] = { rangeOffset, static_cast<uint16_t>(rangeOffset + MAX_PASSES_PER_JOB) };
 			}
 
-			m_commandBuffer->BeginMarker(passNode->name, { 1.f, 1.f, 1.f, 1.f });
-
-			InsertBarriersIntoCommandBuffer(compiledPass.prePassBarriers, m_commandBuffer);
-
+			if (passRemainder > 0)
 			{
-				VT_PROFILE_SCOPE(passNode->name.data());
-				m_renderContext.SetCurrentPass(passNode);
-
-				passNode->Execute(*this, m_renderContext);
-			}
-
-			InsertBarriersIntoCommandBuffer(compiledPass.postPassBarriers, m_commandBuffer);
-
-			m_commandBuffer->EndMarker();
-
-			InsertStandaloneMarkers(passNode->index);
-
-			for (const auto& resourceHandle : compiledPass.surrenderableResources)
-			{
-				const auto resource = m_resourceNodes.at(resourceHandle.Get());
-				m_transientResourceSystem.SurrenderResource(resourceHandle, resource->hash);
+				const uint16_t rangeOffset = static_cast<uint16_t>((executionRanges.size() - 1) * MAX_PASSES_PER_JOB);
+				executionRanges.back() = { rangeOffset, static_cast<uint16_t>(rangeOffset + passRemainder) };
 			}
 		}
 
-		m_renderContext.UploadConstantsData();
+		const bool executeLocally = m_passNodes.size() <= MAX_PASSES_PER_JOB;
+		const bool allowMultithreadedExecution = false;
 
-		m_commandBuffer->End();
+		Vector<RefPtr<RHI::CommandBuffer>> secondaryCommandBuffers;
+		secondaryCommandBuffers.resize(executionRanges.size());
 
+		auto executeRangeFunc = [this](RefPtr<RHI::CommandBuffer> rangeCmdBuffer, uint16_t first, uint16_t last)
+		{
+			rangeCmdBuffer->Begin();
+
+			for (uint16_t index = first; index < last; index++)
+			{
+				const auto& passNode = m_passNodes.at(index);
+				auto& compiledPass = m_compiledPasses.at(passNode->index);
+
+				if (passNode->IsCulled())
+				{
+					//InsertStandaloneMarkersIntoCommandBuffer(passNode->index, rangeCmdBuffer);
+					InsertBarriersIntoCommandBuffer(compiledPass.postPassBarriers, rangeCmdBuffer);
+					continue;
+				}
+
+				rangeCmdBuffer->BeginMarker(passNode->name, { 1.f, 1.f, 1.f, 1.f });
+
+				InsertBarriersIntoCommandBuffer(compiledPass.prePassBarriers, rangeCmdBuffer);
+
+				{
+					VT_PROFILE_SCOPE(passNode->name.data());
+					RenderContext renderContext(*this, *passNode, m_sharedRenderContext, rangeCmdBuffer);
+					passNode->Execute(*this, renderContext);
+					renderContext.EndContext();
+				}
+
+				InsertBarriersIntoCommandBuffer(compiledPass.postPassBarriers, rangeCmdBuffer);
+
+				rangeCmdBuffer->EndMarker();
+
+				//InsertStandaloneMarkersIntoCommandBuffer(passNode->index, rangeCmdBuffer);
+
+				for (const auto& resourceHandle : compiledPass.surrenderableResources)
+				{
+					const auto resource = m_resourceNodes.at(resourceHandle.Get());
+					m_transientResourceSystem.SurrenderResource(resourceHandle, resource->hash);
+				}
+			}
+
+			rangeCmdBuffer->End();
+		};
+
+		m_sharedRenderContext.BeginContext();
+
+		Vector<std::future<void>> rangeFutures;
+
+		for (uint32_t rangeIndex = 0; const auto& [first, last] : executionRanges)
+		{
+			// If the pass count only creates one job, we will execute it on this thread instead.
+			RefPtr<RHI::CommandBuffer> rangeCmdBuffer = executeLocally ? m_commandBuffer : m_commandBuffer->CreateSecondaryCommandBuffer();
+			secondaryCommandBuffers[rangeIndex] = rangeCmdBuffer;
+
+			if (executeLocally || !allowMultithreadedExecution)
+			{
+				executeRangeFunc(rangeCmdBuffer, first, last);
+			}
+			else
+			{
+				rangeFutures.emplace_back(JobSystem::SubmitTask([&executeRangeFunc, rangeCmdBuffer, first, last]()
+				{
+					executeRangeFunc(rangeCmdBuffer, first, last);
+				}));
+			}
+
+			rangeIndex++;
+		}
+
+		for (auto& future : rangeFutures)
+		{
+			future.wait();
+		}
+
+		m_sharedRenderContext.EndContext();
 		BindlessResourcesManager::Get().PrepareForRender();
 
-		if (waitForCompletion)
+		// Execute the secondary command buffers generated by the jobs in the main command buffer.
+		if (!executeLocally)
+		{
+			m_commandBuffer->Begin();
+			m_commandBuffer->ExecuteSecondaryCommandBuffers(secondaryCommandBuffers);
+			m_commandBuffer->End();
+		}
+
+		if (waitForSync)
 		{
 			m_commandBuffer->ExecuteAndWait();
 		}
@@ -745,11 +823,11 @@ namespace Volt
 		DestroyResources();
 	}
 
-	void RenderGraph::InsertStandaloneMarkers(const uint32_t passIndex)
+	void RenderGraph::InsertStandaloneMarkersIntoCommandBuffer(const uint32_t passIndex, const RefPtr<RHI::CommandBuffer> commandBuffer)
 	{
 		for (const auto& marker : m_standaloneMarkers.at(passIndex))
 		{
-			marker(m_commandBuffer);
+			marker(commandBuffer);
 		}
 	}
 

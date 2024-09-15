@@ -114,6 +114,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
+		std::scoped_lock lock{ s_instance->m_computeCacheMutex };
 		const size_t hash = Utility::GetComputeShaderHash(name);
 
 		if (s_instance->m_computePipelineCache.contains(hash))
@@ -135,6 +136,7 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 		VT_ENSURE(pipelineInfo.shader);
 
+		std::scoped_lock lock{ s_instance->m_renderCacheMutex };
 		const size_t hash = Utility::GetRenderPipelineHash(pipelineInfo);
 		
 		if (s_instance->m_renderPipelineCache.contains(hash))

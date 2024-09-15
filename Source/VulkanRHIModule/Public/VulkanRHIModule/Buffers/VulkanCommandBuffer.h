@@ -18,6 +18,7 @@ namespace Volt::RHI
 	{
 	public:
 		VulkanCommandBuffer(QueueType queueType);
+		VulkanCommandBuffer(const CommandBuffer* parentCommandBuffer);
 		~VulkanCommandBuffer() override;
 
 		void Begin() override;
@@ -55,7 +56,7 @@ namespace Volt::RHI
 		void BindIndexBuffer(WeakPtr<StorageBuffer> indexBuffer) override;
 
 		void BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable) override;
-		void BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable) override;
+		void BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable, WeakPtr<UniformBuffer> constantsBuffer, const uint32_t offsetIndex, const uint32_t stride) override;
 
 		void BeginRendering(const RenderingInfo& renderingInfo) override;
 		void EndRendering() override;
@@ -83,7 +84,12 @@ namespace Volt::RHI
 		void UploadTextureData(WeakPtr<Image> dstImage, const ImageCopyData& copyData) override;
 
 		const QueueType GetQueueType() const override;
+		const CommandBufferLevel GetCommandBufferLevel() const override;
 		const WeakPtr<Fence> GetFence() const override;
+
+		RefPtr<CommandBuffer> CreateSecondaryCommandBuffer() const override;
+		void ExecuteSecondaryCommandBuffer(RefPtr<CommandBuffer> commandBuffer) const override;
+		void ExecuteSecondaryCommandBuffers(Vector<RefPtr<CommandBuffer>> commandBuffers) const override;
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -100,6 +106,9 @@ namespace Volt::RHI
 
 		void CreateQueryPools();
 		void FetchTimestampResults();
+
+		void BeginPrimaryInternal();
+		void BeginSecondaryInternal();
 
 		VkPipelineLayout_T* GetCurrentPipelineLayout();
 
@@ -129,5 +138,9 @@ namespace Volt::RHI
 		// Internal state
 		WeakPtr<RenderPipeline> m_currentRenderPipeline;
 		WeakPtr<ComputePipeline> m_currentComputePipeline;
+
+		// Secondary command buffer
+		CommandBufferLevel m_commandBufferLevel = CommandBufferLevel::Primary;
+		const CommandBuffer* m_parentCommandBuffer;
 	};
 }

@@ -54,7 +54,7 @@ namespace Volt::RHI
 		void BindIndexBuffer(WeakPtr<StorageBuffer> indexBuffer) override;
 
 		void BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable) override;
-		void BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable) override;
+		void BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable, WeakPtr<UniformBuffer> constantsBuffer, const uint32_t offsetIndex, const uint32_t stride) override;
 
 		void BeginRendering(const RenderingInfo& renderingInfo) override;
 		void EndRendering() override;
@@ -81,10 +81,15 @@ namespace Volt::RHI
 
 		void UploadTextureData(WeakPtr<Image> dstImage, const ImageCopyData& copyData) override;
 
+		RefPtr<Semaphore> GetSemaphore() const { return m_commandListData.fence; }
+
 		const QueueType GetQueueType() const override;
+		const CommandBufferLevel GetCommandBufferLevel() const override;
 		const WeakPtr<Fence> GetFence() const override;
 
-		RefPtr<Semaphore> GetSemaphore() const { return m_commandListData.fence; }
+		RefPtr<CommandBuffer> CreateSecondaryCommandBuffer() const override;
+		void ExecuteSecondaryCommandBuffer(RefPtr<CommandBuffer> commandBuffer) const override;
+		void ExecuteSecondaryCommandBuffers(Vector<RefPtr<CommandBuffer>> commandBuffers) const override;
 
 	protected:
 		void* GetHandleImpl() const override;

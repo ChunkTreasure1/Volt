@@ -662,12 +662,12 @@ namespace Volt::RHI
 		descriptorTable->AsRef<D3D12DescriptorTable>().SetRootParameters(*this);
 	}
 
-	void D3D12CommandBuffer::BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable)
+	void D3D12CommandBuffer::BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable, WeakPtr<UniformBuffer> constantsBuffer, const uint32_t offsetIndex, const uint32_t stride)
 	{
 		VT_PROFILE_FUNCTION();
-		descriptorTable->AsRef<D3D12BindlessDescriptorTable>().Bind(*this);
+		descriptorTable->AsRef<D3D12BindlessDescriptorTable>().Bind(*this, constantsBuffer, offsetIndex, stride);
 		BindPipelineInternal();
-		descriptorTable->AsRef<D3D12BindlessDescriptorTable>().SetRootParameters(*this);
+		descriptorTable->AsRef<D3D12BindlessDescriptorTable>().SetRootParameters(*this, constantsBuffer);
 	}
 
 	void D3D12CommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
@@ -1042,8 +1042,22 @@ namespace Volt::RHI
 	{
 		return m_queueType;
 	}
+	const CommandBufferLevel D3D12CommandBuffer::GetCommandBufferLevel() const
+	{
+		return CommandBufferLevel();
+	}
 	const WeakPtr<Fence> D3D12CommandBuffer::GetFence() const
 	{
 		return WeakPtr<Fence>();
+	}
+	RefPtr<CommandBuffer> D3D12CommandBuffer::CreateSecondaryCommandBuffer() const
+	{
+		return RefPtr<CommandBuffer>();
+	}
+	void D3D12CommandBuffer::ExecuteSecondaryCommandBuffer(RefPtr<CommandBuffer> commandBuffer) const
+	{
+	}
+	void D3D12CommandBuffer::ExecuteSecondaryCommandBuffers(Vector<RefPtr<CommandBuffer>> commandBuffers) const
+	{
 	}
 }

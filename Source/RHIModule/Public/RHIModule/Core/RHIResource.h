@@ -12,7 +12,7 @@ namespace Volt::RHI
 	{
 	public:
 		~RHIResource() override = default;
-		VT_DELETE_COMMON_OPERATORS(RHIResource);
+		VT_DELETE_COPY_MOVE(RHIResource);
 
 		virtual constexpr ResourceType GetType() const = 0;
 		virtual void SetName(std::string_view name) = 0;
