@@ -5,27 +5,27 @@
 
 namespace Volt
 {
-	void AudioListenerComponent::OnCreate(AudioListenerComponent& component, entt::entity id)
+	void AudioListenerComponent::OnCreate(AudioEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
+		auto& component = entity.GetComponent<AudioListenerComponent>();
 
 		component.m_id = entity.GetID();
 		Amp::WwiseAudioManager::RegisterListener(static_cast<uint32_t>(entity.GetID()), std::to_string(static_cast<uint32_t>(entity.GetID())).c_str(), component.isDefault);
 	}
 
-	void AudioSourceComponent::OnCreate(AudioSourceComponent& component, entt::entity id)
+	void AudioSourceComponent::OnCreate(AudioEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
+		auto& component = entity.GetComponent<AudioSourceComponent>();
 
 		component.m_id = entity.GetID();
 		Amp::WwiseAudioManager::CreateAudioObject(static_cast<uint32_t>(entity.GetID()), "SpawnedObj");

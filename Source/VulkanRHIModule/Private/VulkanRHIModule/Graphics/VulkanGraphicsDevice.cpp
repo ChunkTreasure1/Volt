@@ -25,6 +25,7 @@ namespace Volt::RHI
 		VkPhysicalDeviceDescriptorBufferFeaturesEXT descriptorBufferFeaturesEXT;
 		VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeaturesEXT;
 		VkDeviceDiagnosticsConfigCreateInfoNV aftermathDiagInfo{};
+		VkPhysicalDeviceRobustness2FeaturesEXT deviceRobustness2FeaturesEXT{};
 	};
 
 	static EnabledFeatures s_enabledFeatures{};
@@ -96,6 +97,17 @@ namespace Volt::RHI
 				chainEntryPoint = &s_enabledFeatures.meshShaderFeaturesEXT;
 			}
 
+			if (physicalDevice->IsExtensionAvailiable(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME))
+			{
+				s_enabledFeatures.deviceRobustness2FeaturesEXT.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
+				s_enabledFeatures.deviceRobustness2FeaturesEXT.pNext = chainEntryPoint;
+				s_enabledFeatures.deviceRobustness2FeaturesEXT.nullDescriptor = VK_TRUE;
+				s_enabledFeatures.deviceRobustness2FeaturesEXT.robustBufferAccess2 = VK_TRUE;
+				s_enabledFeatures.deviceRobustness2FeaturesEXT.robustImageAccess2 = VK_TRUE;
+			
+				chainEntryPoint = &s_enabledFeatures.deviceRobustness2FeaturesEXT;
+			}
+
 #ifdef VT_ENABLE_NV_AFTERMATH
 			s_enabledFeatures.aftermathDiagInfo.sType = VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV;
 			s_enabledFeatures.aftermathDiagInfo.pNext = chainEntryPoint;
@@ -120,6 +132,11 @@ namespace Volt::RHI
 			s_enabledFeatures.physicalDeviceFeatures.features.wideLines = VK_TRUE;
 			s_enabledFeatures.physicalDeviceFeatures.features.independentBlend = VK_TRUE;
 			s_enabledFeatures.physicalDeviceFeatures.features.shaderImageGatherExtended = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.robustBufferAccess = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.shaderSampledImageArrayDynamicIndexing = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.shaderStorageBufferArrayDynamicIndexing = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.shaderStorageImageArrayDynamicIndexing = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.shaderUniformBufferArrayDynamicIndexing = VK_TRUE;
 
 			s_enabledFeatures.physicalDeviceFeatures.features.shaderInt16 = VK_TRUE; // #TODO_Ivar: does not work on older cards
 		}
@@ -136,6 +153,11 @@ namespace Volt::RHI
 			if (physicalDevice->IsExtensionAvailiable(VK_EXT_MESH_SHADER_EXTENSION_NAME))
 			{
 				enabledExtensions.emplace_back(VK_EXT_MESH_SHADER_EXTENSION_NAME);
+			}
+
+			if (physicalDevice->IsExtensionAvailiable(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME))
+			{
+				enabledExtensions.emplace_back(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME);
 			}
 
 #ifdef VT_ENABLE_NV_AFTERMATH

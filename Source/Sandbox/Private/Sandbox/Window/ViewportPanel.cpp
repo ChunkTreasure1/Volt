@@ -745,7 +745,7 @@ void ViewportPanel::CheckDragDrop()
 
 		m_createdEntity = newEntity;
 
-		Volt::MeshComponent::OnMemberChanged(meshComp, newEntity);
+		Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(newEntity.GetHandle(), newEntity.GetScene()->GetRegistry()));
 
 		m_editorScene->InvalidateRenderScene();
 	}

@@ -14,6 +14,11 @@ namespace Volt
 	
 	struct MeshComponent
 	{
+		using MeshEntity = ECS::Access
+			::Write<MeshComponent>
+			::Read<IDComponent>
+			::As<ECS::Type::Entity>;
+
 		AssetHandle handle = Asset::Null();
 		Vector<AssetHandle> materials;
 
@@ -35,12 +40,12 @@ namespace Volt
 
 		REGISTER_COMPONENT(MeshComponent);
 
-		static void OnMemberChanged(MeshComponent& data, entt::entity entity);
-		static void OnComponentCopied(MeshComponent& data, entt::entity entity);
-		static void OnComponentDeserialized(MeshComponent& data, entt::entity entity);
+		static void OnMemberChanged(MeshEntity entity);
+		static void OnComponentCopied(MeshEntity entity);
+		static void OnComponentDeserialized(MeshEntity entity);
 
 	private:
-		static void OnDestroy(MeshComponent& component, entt::entity entity);
+		static void OnDestroy(MeshEntity entity);
 
 		AssetHandle m_oldHandle = Asset::Null();
 		Vector<AssetHandle> m_oldMaterials;
@@ -69,7 +74,11 @@ namespace Volt
 		REGISTER_COMPONENT(CameraComponent);
 
 	private:
-		static void OnCreate(CameraComponent& component, entt::entity id);
+		using CameraEntity = ECS::Access
+			::Write<CameraComponent>
+			::As<ECS::Type::Entity>;
+
+		static void OnCreate(CameraEntity entity);
 	};
 
 	struct AnimatedCharacterComponent
@@ -167,7 +176,13 @@ namespace Volt
 		REGISTER_COMPONENT(MotionWeaveComponent);
 
 	private:
-		static void OnStart(MotionWeaveComponent& component, entt::entity id);
+		using WeaveEntity = ECS::Access
+			::Write<MotionWeaveComponent>
+			::Read<MeshComponent>
+			::Read<IDComponent>
+			::As<ECS::Type::Entity>;
+
+		static void OnStart(WeaveEntity entity);
 	};
 
 	struct VertexPaintedComponent

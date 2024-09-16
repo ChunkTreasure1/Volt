@@ -5,6 +5,7 @@
 #include "RHIModule/Images/ImageView.h"
 
 #include "RHIModule/Descriptors/BindlessDescriptorTable.h"
+#include "RHIModule/Descriptors/DescriptorTable.h"
 
 #include <CoreUtilities/Pointers/WeakPtr.h>
 #include <CoreUtilities/Containers/StackVector.h>
@@ -20,8 +21,6 @@ namespace Volt::RHI
 	class VertexBuffer;
 	class IndexBuffer;
 
-	class DescriptorTable;
-
 	class Image;
 	class StorageBuffer;
 	class Allocation;
@@ -30,10 +29,16 @@ namespace Volt::RHI
 	class Event;
 	class Fence;
 
+	enum class CommandBufferLevel
+	{
+		Primary,
+		Secondary
+	};
+
 	class VTRHI_API CommandBuffer : public RHIInterface
 	{
 	public:
-		VT_DELETE_COMMON_OPERATORS(CommandBuffer);
+		VT_DELETE_COPY_MOVE(CommandBuffer);
 		~CommandBuffer() override = default;
 
 		virtual void Begin() = 0;
@@ -71,7 +76,7 @@ namespace Volt::RHI
 		virtual void BindIndexBuffer(WeakPtr<StorageBuffer> indexBuffer) = 0;
 
 		virtual void BindDescriptorTable(WeakPtr<DescriptorTable> descriptorTable) = 0;
-		virtual void BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable) = 0;
+		virtual void BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable, WeakPtr<UniformBuffer> constantsBuffer, const uint32_t offsetIndex, const uint32_t stride) = 0;
 
 		virtual void BeginRendering(const RenderingInfo& renderingInfo) = 0;
 		virtual void EndRendering() = 0;
@@ -99,7 +104,12 @@ namespace Volt::RHI
 		virtual void UploadTextureData(WeakPtr<Image> dstImage, const ImageCopyData& copyData) = 0;
 
 		virtual const QueueType GetQueueType() const = 0;
+		virtual const CommandBufferLevel GetCommandBufferLevel() const = 0;
 		virtual const WeakPtr<Fence> GetFence() const = 0;
+
+		virtual RefPtr<CommandBuffer> CreateSecondaryCommandBuffer() const = 0;
+		virtual void ExecuteSecondaryCommandBuffer(RefPtr<CommandBuffer> commandBuffer) const = 0;
+		virtual void ExecuteSecondaryCommandBuffers(Vector<RefPtr<CommandBuffer>> commandBuffers) const = 0;
 
 		static RefPtr<CommandBuffer> Create(QueueType queueType);
 		static RefPtr<CommandBuffer> Create();

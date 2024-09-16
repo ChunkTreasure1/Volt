@@ -59,7 +59,7 @@ namespace Volt
 	{
 		s_data->executionQueue.emplace([rg = std::move(renderGraph)]() mutable
 		{
-			rg.ExecuteInternal(false);
+			rg.ExecuteInternal(true, false);
 		});
 
 		s_data->executeVariable.notify_one();
@@ -108,9 +108,6 @@ namespace Volt
 			{
 				break;
 			}
-
-			// #TODO_Ivar: This really shouldn't be here
-			RHI::GraphicsContext::GetDevice()->GetDeviceQueue(RHI::QueueType::Graphics)->WaitForQueue();
 
 			std::function<void()> executeFunction{};
 			while (s_data->executionQueue.try_pop(executeFunction))

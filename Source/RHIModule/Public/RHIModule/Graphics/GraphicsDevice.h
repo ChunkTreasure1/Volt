@@ -14,7 +14,7 @@ namespace Volt::RHI
 	class VTRHI_API GraphicsDevice : public RHIInterface
 	{
 	public:
-		VT_DELETE_COMMON_OPERATORS(GraphicsDevice);
+		VT_DELETE_COPY_MOVE(GraphicsDevice);
 		~GraphicsDevice() override = default;
 
 		virtual RefPtr<DeviceQueue> GetDeviceQueue(QueueType queueType) const = 0;

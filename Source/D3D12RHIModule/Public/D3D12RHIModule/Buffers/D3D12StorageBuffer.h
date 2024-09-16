@@ -28,6 +28,7 @@ namespace Volt::RHI
 
 		inline constexpr ResourceType GetType() const override { return ResourceType::StorageBuffer; }
 		void SetName(std::string_view name) override;
+		std::string_view GetName() const override;
 		const uint64_t GetDeviceAddress() const override;
 		const uint64_t GetByteSize() const override;
 

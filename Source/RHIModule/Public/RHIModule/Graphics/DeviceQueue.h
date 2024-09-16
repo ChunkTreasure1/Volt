@@ -20,7 +20,7 @@ namespace Volt::RHI
 	class VTRHI_API DeviceQueue : public RHIInterface
 	{
 	public:
-		VT_DELETE_COMMON_OPERATORS(DeviceQueue);
+		VT_DELETE_COPY_MOVE(DeviceQueue);
 
 		virtual void WaitForQueue() = 0;
 		virtual void Execute(const DeviceQueueExecuteInfo& executeInfo) = 0;

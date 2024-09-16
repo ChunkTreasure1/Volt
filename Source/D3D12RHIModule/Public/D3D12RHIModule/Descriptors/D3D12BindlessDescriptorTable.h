@@ -35,11 +35,8 @@ namespace Volt::RHI
 		void Update() override;
 		void PrepareForRender() override;
 
-		void SetOffsetIndexAndStride(const uint32_t offsetIndex, const uint32_t stride) override;
-		void SetConstantsBuffer(WeakPtr<UniformBuffer> constantsBuffer) override;
-		
-		void Bind(CommandBuffer& commandBuffer) override;
-		void SetRootParameters(CommandBuffer& commandBuffer);
+		void Bind(CommandBuffer& commandBuffer, WeakPtr<UniformBuffer> constantsBuffer, const uint32_t offsetIndex, const uint32_t stride) override;
+		void SetRootParameters(CommandBuffer& commandBuffer, WeakPtr<UniformBuffer> constantsBuffer);
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -64,6 +61,5 @@ namespace Volt::RHI
 
 		uint32_t m_offsetIndex = 0;
 		uint32_t m_offsetStride = 0;
-		WeakPtr<UniformBuffer> m_constantsBuffer;
 	};
 }

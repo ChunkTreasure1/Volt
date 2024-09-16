@@ -80,6 +80,7 @@ namespace Volt
 		ResourceHandle GetUniformBuffer(const RenderGraphUniformBufferHandle resourceHandle) const;
 
 	private:
+		friend class RenderContext3;
 		friend class RenderContext;
 
 		void ValidateResourceAccess(const RenderGraphResourceHandle resourceHandle) const;

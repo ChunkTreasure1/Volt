@@ -689,7 +689,7 @@ namespace Volt
 			for (auto& entity : storage)
 			{
 				const IComponentTypeDesc* compTypeDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
-				compTypeDesc->OnStart(storage.get(entity), entity);
+				compTypeDesc->OnStart(m_registry, entity);
 			}
 		}
 	}
@@ -717,7 +717,7 @@ namespace Volt
 			for (auto& entity : storage)
 			{
 				const IComponentTypeDesc* compTypeDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
-				compTypeDesc->OnStop(storage.get(entity), entity);
+				compTypeDesc->OnStop(m_registry, entity);
 			}
 		}
 	}

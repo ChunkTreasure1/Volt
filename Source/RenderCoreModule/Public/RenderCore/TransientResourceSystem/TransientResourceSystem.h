@@ -3,6 +3,7 @@
 #include "RenderCore/RenderGraph/Resources/RenderGraphResourceHandle.h"
 
 #include <CoreUtilities/Pointers/WeakPtr.h>
+#include <CoreUtilities/Containers/ThreadSafeMap.h>
 
 namespace Volt
 {
@@ -22,6 +23,11 @@ namespace Volt
 	public:
 		TransientResourceSystem();
 		~TransientResourceSystem();
+
+		TransientResourceSystem(const TransientResourceSystem& other);
+		TransientResourceSystem(TransientResourceSystem&& other);
+		TransientResourceSystem& operator=(const TransientResourceSystem& other);
+		TransientResourceSystem& operator=(TransientResourceSystem&& other);
 
 		WeakPtr<RHI::Image> AquireImage(RenderGraphImageHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
 		WeakPtr<RHI::StorageBuffer> AquireBuffer(RenderGraphBufferHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
@@ -43,7 +49,10 @@ namespace Volt
 			bool isOriginal = false;
 		};
 
-		std::unordered_map<RenderGraphResourceHandle, ResourceInfo> m_allocatedResources;
-		std::unordered_map<size_t, Vector<RenderGraphResourceHandle>> m_surrenderedResources;
+		vt::map<RenderGraphResourceHandle, ResourceInfo> m_allocatedResources;
+		mutable std::mutex m_allocatedResourcesMutex;
+
+		vt::map<size_t, Vector<RenderGraphResourceHandle>> m_surrenderedResources;
+		mutable std::mutex m_surrenderedResourcesMutex;
 	};
 }

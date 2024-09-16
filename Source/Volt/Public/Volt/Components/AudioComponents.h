@@ -1,12 +1,15 @@
 #pragma once
-#include <AssetSystem/Asset.h>
-#include <AssetSystem/AssetManager.h>
+
 #include "Volt/Asset/Mesh/Mesh.h"
 
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
 
 #include <EntitySystem/ComponentRegistry.h>
+#include <EntitySystem/Scripting/ECSAccessBuilder.h>
+
+#include <AssetSystem/Asset.h>
+#include <AssetSystem/AssetManager.h>
 
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 
@@ -32,7 +35,12 @@ namespace Volt
 		REGISTER_COMPONENT(AudioListenerComponent);
 
 	private:
-		static void OnCreate(AudioListenerComponent& component, entt::entity id);
+		using AudioEntity = ECS::Access
+			::Write<AudioListenerComponent>
+			::Read<IDComponent>
+			::As<ECS::Type::Entity>;
+
+		static void OnCreate(AudioEntity entity);
 
 		EntityID m_id = Entity::NullID();
 	};
@@ -107,7 +115,12 @@ namespace Volt
 		REGISTER_COMPONENT(AudioSourceComponent);
 
 	private:
-		static void OnCreate(AudioSourceComponent& component, entt::entity id);
+		using AudioEntity = ECS::Access
+			::Write<AudioSourceComponent>
+			::Read<IDComponent>
+			::As<ECS::Type::Entity>;
+
+		static void OnCreate(AudioEntity entity);
 
 		EntityID m_id = Entity::NullID();
 	};

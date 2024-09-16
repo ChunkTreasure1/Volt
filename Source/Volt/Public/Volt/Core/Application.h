@@ -70,7 +70,24 @@ namespace Volt
 		class RHIProxy;
 	}
 
-	class Application : public EventListener
+	class Application;
+
+	class ApplicationEventListener : public EventListener
+	{
+	public:
+		ApplicationEventListener(Application& application);
+
+	private:
+		bool OnAppUpdateEvent(class AppUpdateEvent& e);
+		bool OnWindowCloseEvent(class WindowCloseEvent& e);
+		bool OnWindowResizeEvent(class WindowResizeEvent& e);
+		bool OnViewportResizeEvent(class ViewportResizeEvent& e);
+		bool OnKeyPressedEvent(class KeyPressedEvent& e);
+
+		Application& m_application;
+	};
+
+	class Application
 	{
 	public:
 		Application(const ApplicationInfo& info = ApplicationInfo());
@@ -95,9 +112,10 @@ namespace Volt
 		SteamImplementation& GetSteam() { return *m_steamImplementation; }
 
 	private:
+		friend class ApplicationEventListener;
+
 		void MainUpdate();
 		void CreateGraphicsContext();
-		void RegisterEventListeners();
 
 		bool OnAppUpdateEvent(class AppUpdateEvent& e);
 		bool OnWindowCloseEvent(class WindowCloseEvent& e);
@@ -128,6 +146,8 @@ namespace Volt
 		Scope<PluginRegistry> m_pluginRegistry;
 		Scope<PluginSystem> m_pluginSystem;
 		Scope<EventSystem> m_eventSystem;
+
+		Scope<ApplicationEventListener> m_eventListener;
 
 		RefPtr<RHI::ImGuiImplementation> m_imguiImplementation;
 		RefPtr<RHI::GraphicsContext> m_graphicsContext;

@@ -24,7 +24,7 @@ namespace Volt
 
 		if (!outExternallyLoaded)
 		{
-			handle = VT_LOAD_LIBRARY(binaryFilepath.string().c_str());
+			//handle = VT_LOAD_LIBRARY(binaryFilepath.string().c_str());
 		}
 
 		if (!handle)

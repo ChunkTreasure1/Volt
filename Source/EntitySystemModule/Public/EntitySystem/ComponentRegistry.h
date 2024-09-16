@@ -147,9 +147,7 @@ namespace Volt
 	{
 		const auto* typeDesc = GetTypeDesc<T>();
 		const IComponentTypeDesc* compDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
-
-		void* compPtr = &registry.get<T>(entity);
-		compDesc->OnCreate(compPtr, entity);
+		compDesc->OnCreate(registry, entity);
 	}
 
 	template<typename T>
@@ -157,9 +155,7 @@ namespace Volt
 	{
 		const auto* typeDesc = GetTypeDesc<T>();
 		const IComponentTypeDesc* compDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
-
-		void* compPtr = &registry.get<T>(entity);
-		compDesc->OnDestroy(compPtr, entity);
+		compDesc->OnDestroy(registry, entity);
 	}
 }
 

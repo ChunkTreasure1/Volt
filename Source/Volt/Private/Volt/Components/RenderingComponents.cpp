@@ -16,34 +16,36 @@
 
 namespace Volt
 {
-	void MeshComponent::OnDestroy(MeshComponent& component, entt::entity entity)
+	void MeshComponent::OnDestroy(MeshEntity entity)
 	{
+		auto& component = entity.GetComponent<MeshComponent>();
+
 		for (const auto& renderId : component.renderObjectIds)
 		{
 			SceneManager::GetActiveScene()->GetRenderScene()->Unregister(renderId);
 		}
 	}
 
-	void MeshComponent::OnMemberChanged(MeshComponent& data, entt::entity entityId)
+	void MeshComponent::OnMemberChanged(MeshEntity entity)
 	{
-		Entity entity{ entityId, SceneManager::GetActiveScene() };
+		auto& component = entity.GetComponent<MeshComponent>();
 
-		auto scene = entity.GetScene();
+		auto scene = SceneManager::GetActiveScene();
 		auto renderScene = scene->GetRenderScene();
 
-		if (data.handle != data.m_oldHandle)
+		if (component.handle != component.m_oldHandle)
 		{
-			if (data.m_oldHandle != Asset::Null())
+			if (component.m_oldHandle != Asset::Null())
 			{
-				for (const auto& uuid : data.renderObjectIds)
+				for (const auto& uuid : component.renderObjectIds)
 				{
 					renderScene->Unregister(uuid);
 				}
 			}
 
-			data.renderObjectIds.clear();
+			component.renderObjectIds.clear();
 
-			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(data.handle);
+			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(component.handle);
 			if (mesh && mesh->IsValid())
 			{
 				const auto& idComp = entity.GetComponent<IDComponent>();
@@ -57,25 +59,25 @@ namespace Volt
 					}
 
 					auto uuid = renderScene->Register(idComp.id, mesh, material, static_cast<uint32_t>(i));
-					data.renderObjectIds.emplace_back(uuid);
+					component.renderObjectIds.emplace_back(uuid);
 				}
 
-				data.materials.clear();
+				component.materials.clear();
 
 				for (const auto& material : materialTable)
 				{
-					data.materials.emplace_back(material);
+					component.materials.emplace_back(material);
 				}
 			}
 
-			data.m_oldHandle = data.handle;
-			data.m_oldMaterials = data.materials;
+			component.m_oldHandle = component.handle;
+			component.m_oldMaterials = component.materials;
 		}
 		else
 		{ 
-			for (uint32_t index = 0; const auto& materialHandle : data.materials)
+			for (uint32_t index = 0; const auto& materialHandle : component.materials)
 			{
-				if (materialHandle == data.m_oldMaterials.at(index))
+				if (materialHandle == component.m_oldMaterials.at(index))
 				{
 					continue;
 				}
@@ -87,7 +89,7 @@ namespace Volt
 				}
 
 				// Find meshes using material and reregister them
-				Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(data.handle);
+				Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(component.handle);
 				if (mesh && mesh->IsValid())
 				{
 					for (uint32_t subMeshIndex = 0; const auto& subMesh : mesh->GetSubMeshes())
@@ -97,10 +99,10 @@ namespace Volt
 							continue;
 						}
 
-						auto id = data.renderObjectIds.at(subMeshIndex);
+						auto id = component.renderObjectIds.at(subMeshIndex);
 						renderScene->Unregister(id);
 
-						data.renderObjectIds.at(subMeshIndex) = renderScene->Register(entity.GetID(), mesh, material, subMeshIndex);
+						component.renderObjectIds.at(subMeshIndex) = renderScene->Register(entity.GetID(), mesh, material, subMeshIndex);
 						subMeshIndex++;
 					}
 				}
@@ -110,24 +112,24 @@ namespace Volt
 		}
 	}
 
-	void MeshComponent::OnComponentCopied(MeshComponent& data, entt::entity entityId)
+	void MeshComponent::OnComponentCopied(MeshEntity entity)
 	{
-		Entity entity{ entityId, SceneManager::GetActiveScene() };
-
-		auto scene = entity.GetScene();
+		auto scene = SceneManager::GetActiveScene();
 		auto renderScene = scene->GetRenderScene();
 
-		for (const auto& uuid : data.renderObjectIds)
+		auto& component = entity.GetComponent<MeshComponent>();
+
+		for (const auto& uuid : component.renderObjectIds)
 		{
 			renderScene->Unregister(uuid);
 		}
 
-		if (data.handle == Asset::Null())
+		if (component.handle == Asset::Null())
 		{
 			return;
 		}
 
-		Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(data.handle);
+		Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(component.handle);
 		if (!mesh)
 		{
 			return;
@@ -146,50 +148,51 @@ namespace Volt
 				mat = Renderer::GetDefaultResources().defaultMaterial;
 			}
 
-			if (static_cast<uint32_t>(data.materials.size()) > materialIndex)
+			if (static_cast<uint32_t>(component.materials.size()) > materialIndex)
 			{
-				if (data.materials.at(materialIndex) != mat->handle)
+				if (component.materials.at(materialIndex) != mat->handle)
 				{
-					Ref<Material> tempMat = AssetManager::QueueAsset<Material>(data.materials.at(materialIndex));
+					Ref<Material> tempMat = AssetManager::QueueAsset<Material>(component.materials.at(materialIndex));
 					mat = tempMat;
 				}
 			}
 
 			auto uuid = renderScene->Register(entity.GetID(), mesh, mat, static_cast<uint32_t>(i));
-			data.renderObjectIds.emplace_back(uuid);
+			component.renderObjectIds.emplace_back(uuid);
 		}
 
-		data.m_oldHandle = data.handle;
-		data.m_oldMaterials = data.materials;
+		component.m_oldHandle = component.handle;
+		component.m_oldMaterials = component.materials;
 	}
 
-	void MeshComponent::OnComponentDeserialized(MeshComponent& data, entt::entity entityId)
+	void MeshComponent::OnComponentDeserialized(MeshEntity entity)
 	{
-		data.m_oldHandle = data.handle;
-		data.m_oldMaterials = data.materials;
+		auto& component = entity.GetComponent<MeshComponent>();
+
+		component.m_oldHandle = component.handle;
+		component.m_oldMaterials = component.materials;
 	}
 
-	void CameraComponent::OnCreate(CameraComponent& component, entt::entity id)
+	void CameraComponent::OnCreate(CameraEntity entity)
 	{
+		auto& component = entity.GetComponent<CameraComponent>();
 		component.camera = CreateRef<Camera>(component.fieldOfView, 1.f, 16.f / 9.f, component.nearPlane, component.farPlane);
 	}
 
-	void MotionWeaveComponent::OnStart(MotionWeaveComponent& component, entt::entity id)
+	void MotionWeaveComponent::OnStart(WeaveEntity entity)
 	{
+		const auto& meshComponent = entity.GetComponent<MeshComponent>();
+		auto& weaveComponent = entity.GetComponent<MotionWeaveComponent>();
+
 		auto scene = SceneManager::GetActiveScene();
-		Entity entity{ id, scene };
 
-		if (!entity.HasComponent<MeshComponent>())
-		{
-			return;
-		}
+		auto sceneEntity = scene->GetSceneEntityFromScriptingEntity(entity);
 
-		component.MotionWeaver = MotionWeaver::Create(component.motionWeaveDatabase);
+		weaveComponent.MotionWeaver = MotionWeaver::Create(weaveComponent.motionWeaveDatabase);
 
-		Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(entity.GetComponent<MeshComponent>().handle);
+		Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshComponent.handle);
 		if (mesh && mesh->IsValid())
 		{
-			const auto& idComp = entity.GetComponent<IDComponent>();
 			const auto& materialTable = mesh->GetMaterialTable();
 
 			for (size_t i = 0; i < mesh->GetSubMeshes().size(); i++)
@@ -199,8 +202,8 @@ namespace Volt
 				{
 				}
 
-				auto uuid = scene->GetRenderScene()->Register(idComp.id, component.MotionWeaver, mesh, material, static_cast<uint32_t>(i));
-				component.renderObjectIds.emplace_back(uuid);
+				auto uuid = scene->GetRenderScene()->Register(entity.GetID(), weaveComponent.MotionWeaver, mesh, material, static_cast<uint32_t>(i));
+				weaveComponent.renderObjectIds.emplace_back(uuid);
 			}
 		}
 	}

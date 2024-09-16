@@ -27,7 +27,7 @@ void RenderingTestingLayer::OnAttach()
 {
 	RegisterListener<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(RenderingTestingLayer::OnRenderEvent));
 
-	m_renderingTests.emplace_back(CreateScope<SwapchainClearColorTest>());
+	//m_renderingTests.emplace_back(CreateScope<SwapchainClearColorTest>());
 	//m_renderingTests.emplace_back(CreateScope<ComputeWriteToBufferTest>());
 	//m_renderingTests.emplace_back(CreateScope<ComputeWriteToBufferTest>());
 	//m_renderingTests.emplace_back(CreateScope<ClearBufferToValueTest>());
@@ -40,7 +40,7 @@ void RenderingTestingLayer::OnAttach()
 	//m_renderingTests.emplace_back(CreateScope<RG_DispatchComputeShaderTest>());
 	//m_renderingTests.emplace_back(CreateScope<RG_DrawMeshShaderTriangleTest>());
 	//m_renderingTests.emplace_back(CreateScope<RG_DrawMeshShaderMeshTest>());
-	//m_renderingTests.emplace_back(CreateScope<RG_DrawMeshShaderMultipleMeshesTest>());
+	m_renderingTests.emplace_back(CreateScope<RG_DrawMeshShaderMultipleMeshesTest>());
 	//m_renderingTests.emplace_back(CreateScope<RG_SimpleComputeShaderTest>());
 }
 
