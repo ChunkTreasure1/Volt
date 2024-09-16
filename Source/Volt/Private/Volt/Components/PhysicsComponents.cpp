@@ -9,83 +9,85 @@
 
 namespace Volt
 {
-	void RigidbodyComponent::OnCreate(RigidbodyComponent& component, entt::entity id)
+	void RigidbodyComponent::OnCreate(PhysicsEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
-		Physics::CreateActor(entity);
+		auto sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		Physics::CreateActor(sceneEntity);
 	}
 
-	void RigidbodyComponent::OnDestroy(RigidbodyComponent& component, entt::entity id)
+	void RigidbodyComponent::OnDestroy(PhysicsEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
-		auto actor = Physics::GetScene()->GetActor(entity);
+		auto sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		auto actor = Physics::GetScene()->GetActor(sceneEntity);
 		if (actor)
 		{
 			Physics::GetScene()->RemoveActor(actor);
 		}
 	}
 
-	void CharacterControllerComponent::OnCreate(CharacterControllerComponent& component, entt::entity id)
+	void CharacterControllerComponent::OnCreate(PhysicsEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
-		Physics::CreateControllerActor(entity);
+		Entity sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		Physics::CreateControllerActor(sceneEntity);
 	}
 
-	void CharacterControllerComponent::OnDestroy(CharacterControllerComponent& component, entt::entity id)
+	void CharacterControllerComponent::OnDestroy(PhysicsEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
-		auto actor = Physics::GetScene()->GetControllerActor(entity);
+		Entity sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		auto actor = Physics::GetScene()->GetControllerActor(sceneEntity);
 		if (actor)
 		{
 			Physics::GetScene()->RemoveControllerActor(actor);
 		}
 	}
 
-	void BoxColliderComponent::OnCreate(BoxColliderComponent& component, entt::entity id)
+	void BoxColliderComponent::OnCreate(PhysicsEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
-		auto actor = Physics::GetScene()->GetActor(entity);
+		auto& component = entity.GetComponent<BoxColliderComponent>();
+
+		Entity sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		auto actor = Physics::GetScene()->GetActor(sceneEntity);
 
 		if (actor && !component.added)
 		{
-			actor->AddCollider(component, entity);
+			actor->AddCollider(component, sceneEntity);
 		}
 	}
 
-	void BoxColliderComponent::OnDestroy(BoxColliderComponent& component, entt::entity id)
+	void BoxColliderComponent::OnDestroy(PhysicsEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
-		auto actor = Physics::GetScene()->GetActor(entity);
+		Entity sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		auto actor = Physics::GetScene()->GetActor(sceneEntity);
 
 		if (actor)
 		{
@@ -93,31 +95,33 @@ namespace Volt
 		}
 	}
 
-	void SphereColliderComponent::OnCreate(SphereColliderComponent& component, entt::entity id)
+	void SphereColliderComponent::OnCreate(PhysicsEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
-		auto actor = Physics::GetScene()->GetActor(entity);
+		auto& component = entity.GetComponent<SphereColliderComponent>();
+
+		Entity sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		auto actor = Physics::GetScene()->GetActor(sceneEntity);
 
 		if (actor && !component.added)
 		{
-			actor->AddCollider(component, entity);
+			actor->AddCollider(component, sceneEntity);
 		}
 	}
 
-	void SphereColliderComponent::OnDestroy(SphereColliderComponent& component, entt::entity id)
+	void SphereColliderComponent::OnDestroy(PhysicsEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
-		auto actor = Physics::GetScene()->GetActor(entity);
+		Entity sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		auto actor = Physics::GetScene()->GetActor(sceneEntity);
 
 		if (actor)
 		{
@@ -125,31 +129,33 @@ namespace Volt
 		}
 	}
 
-	void CapsuleColliderComponent::OnCreate(CapsuleColliderComponent& component, entt::entity id)
+	void CapsuleColliderComponent::OnCreate(PhysicsEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
-		auto actor = Physics::GetScene()->GetActor(entity);
+		auto& component = entity.GetComponent<CapsuleColliderComponent>();
+
+		Entity sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		auto actor = Physics::GetScene()->GetActor(sceneEntity);
 
 		if (actor && !component.added)
 		{
-			actor->AddCollider(component, entity);
+			actor->AddCollider(component, sceneEntity);
 		}
 	}
 
-	void CapsuleColliderComponent::OnDestroy(CapsuleColliderComponent& component, entt::entity id)
+	void CapsuleColliderComponent::OnDestroy(PhysicsEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
-		auto actor = Physics::GetScene()->GetActor(entity);
+		Entity sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		auto actor = Physics::GetScene()->GetActor(sceneEntity);
 
 		if (actor)
 		{
@@ -157,31 +163,35 @@ namespace Volt
 		}
 	}
 
-	void MeshColliderComponent::OnCreate(MeshColliderComponent& component, entt::entity id)
+	void MeshColliderComponent::OnCreate(PhysicsEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
-		auto actor = Physics::GetScene()->GetActor(entity);
+		auto& component = entity.GetComponent<MeshColliderComponent>();
+
+		Entity sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		auto actor = Physics::GetScene()->GetActor(sceneEntity);
 
 		if (actor && !component.added)
 		{
-			actor->AddCollider(component, entity);
+			actor->AddCollider(component, sceneEntity);
 		}
 	}
 
-	void MeshColliderComponent::OnDestroy(MeshColliderComponent& component, entt::entity id)
+	void MeshColliderComponent::OnDestroy(PhysicsEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
 		{
 			return;
 		}
 
-		Entity entity{ id, SceneManager::GetActiveScene() };
-		auto actor = Physics::GetScene()->GetActor(entity);
+		auto& component = entity.GetComponent<MeshColliderComponent>();
+
+		Entity sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		auto actor = Physics::GetScene()->GetActor(sceneEntity);
 
 		if (actor)
 		{

@@ -224,7 +224,7 @@ namespace Volt
 		myControllerData = myEntity.GetComponent<CharacterControllerComponent>();
 		if (myEntity.HasComponent<CapsuleColliderComponent>())
 		{
-			auto& capsuleCollider = myEntity.GetComponent<CapsuleColliderComponent>();
+			const auto& capsuleCollider = myEntity.GetComponent<CapsuleColliderComponent>();
 			const float radiusScale = glm::max(myEntity.GetScale().x, myEntity.GetScale().z);
 
 			physx::PxCapsuleControllerDesc desc{};

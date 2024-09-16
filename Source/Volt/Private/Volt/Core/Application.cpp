@@ -4,7 +4,7 @@
 #include <AssetSystem/AssetManager.h>
 
 #include <InputModule/Input.h>
-#include <InputModule/KeyCodes.h>
+#include <InputModule/InputCodes.h>
 
 #include "Volt/Core/Layer/Layer.h"
 #include "Volt/Core/DynamicLibraryManager.h"
@@ -59,6 +59,41 @@
 
 namespace Volt
 {
+	ApplicationEventListener::ApplicationEventListener(Application& application)
+		: m_application(application)
+	{ 
+		RegisterListener<AppUpdateEvent>(VT_BIND_EVENT_FN(ApplicationEventListener::OnAppUpdateEvent));
+		RegisterListener<WindowCloseEvent>(VT_BIND_EVENT_FN(ApplicationEventListener::OnWindowCloseEvent));
+		RegisterListener<WindowResizeEvent>(VT_BIND_EVENT_FN(ApplicationEventListener::OnWindowResizeEvent));
+		RegisterListener<ViewportResizeEvent>(VT_BIND_EVENT_FN(ApplicationEventListener::OnViewportResizeEvent));
+		RegisterListener<KeyPressedEvent>(VT_BIND_EVENT_FN(ApplicationEventListener::OnKeyPressedEvent));
+	}
+
+	bool ApplicationEventListener::OnAppUpdateEvent(AppUpdateEvent& e)
+	{
+		return m_application.OnAppUpdateEvent(e);
+	}
+
+	bool ApplicationEventListener::OnWindowCloseEvent(WindowCloseEvent& e)
+	{
+		return m_application.OnWindowCloseEvent(e);
+	}
+
+	bool ApplicationEventListener::OnWindowResizeEvent(WindowResizeEvent& e)
+	{
+		return m_application.OnWindowResizeEvent(e);
+	}
+
+	bool ApplicationEventListener::OnViewportResizeEvent(ViewportResizeEvent& e)
+	{
+		return m_application.OnViewportResizeEvent(e);
+	}
+
+	bool ApplicationEventListener::OnKeyPressedEvent(KeyPressedEvent& e)
+	{
+		return m_application.OnKeyPressedEvent(e);
+	}
+
 	Application::Application(const ApplicationInfo& info)
 		: m_frameTimer(100), m_info(info)
 	{
@@ -179,11 +214,12 @@ namespace Volt
 		}
 
 		m_pluginSystem->InitializePlugins();
-		RegisterEventListeners();
+		m_eventListener = CreateScope<ApplicationEventListener>(*this);
 	}
 
 	Application::~Application()
 	{
+		m_eventListener = nullptr;
 		m_pluginSystem->ShutdownPlugins();
 
 		m_navigationSystem = nullptr;
@@ -291,10 +327,15 @@ namespace Volt
 			AppImGuiUpdateEvent imguiEvent{};
 			EventSystem::DispatchEvent(imguiEvent);
 
+			// #TODO_Ivar: HACK! Will keep this here for now. We need to make sure that the scene renderer output image is ready. 
+			RenderGraphExecutionThread::WaitForFinishedExecution();
 			m_imguiImplementation->End();
 		}
+		else
+		{
+			RenderGraphExecutionThread::WaitForFinishedExecution();
+		}
 
-		RenderGraphExecutionThread::WaitForFinishedExecution();
 		Renderer::EndOfFrameUpdate();
 
 		{
@@ -337,15 +378,6 @@ namespace Volt
 		}
 
 		m_graphicsContext = RHI::GraphicsContext::Create(cinfo);
-	}
-
-	void Application::RegisterEventListeners()
-	{
-		RegisterListener<AppUpdateEvent>(VT_BIND_EVENT_FN(Application::OnAppUpdateEvent));
-		RegisterListener<WindowCloseEvent>(VT_BIND_EVENT_FN(Application::OnWindowCloseEvent));
-		RegisterListener<WindowResizeEvent>(VT_BIND_EVENT_FN(Application::OnWindowResizeEvent));
-		RegisterListener<ViewportResizeEvent>(VT_BIND_EVENT_FN(Application::OnViewportResizeEvent));
-		RegisterListener<KeyPressedEvent>(VT_BIND_EVENT_FN(Application::OnKeyPressedEvent));
 	}
 
 	bool Application::OnAppUpdateEvent(AppUpdateEvent&)

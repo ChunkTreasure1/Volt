@@ -258,6 +258,12 @@ namespace Volt::RHI
 		Invalidate();
 	}
 
+	VulkanCommandBuffer::VulkanCommandBuffer(const CommandBuffer* parentCommandBuffer)
+		: m_queueType(parentCommandBuffer->GetQueueType()), m_commandBufferLevel(CommandBufferLevel::Secondary), m_parentCommandBuffer(parentCommandBuffer)
+	{
+		Invalidate();
+	}
+
 	VulkanCommandBuffer::~VulkanCommandBuffer()
 	{
 		Release(m_fence);
@@ -283,11 +289,8 @@ namespace Volt::RHI
 
 		// Begin command buffer
 		{
-			VkCommandBufferBeginInfo beginInfo{};
-			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-			VT_VK_CHECK(vkBeginCommandBuffer(m_commandBufferData.commandBuffer, &beginInfo));
+			if (m_commandBufferLevel == CommandBufferLevel::Primary) BeginPrimaryInternal();
+			else													 BeginSecondaryInternal();
 		}
 
 		if (m_hasTimestampSupport)
@@ -319,6 +322,7 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::Execute()
 	{
 		VT_PROFILE_FUNCTION();
+		VT_ENSURE(m_commandBufferLevel == CommandBufferLevel::Primary);
 
 		auto device = GraphicsContext::GetDevice();
 		DeviceQueueExecuteInfo execInfo{};
@@ -331,6 +335,7 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::Flush(RefPtr<Fence> fence)
 	{
 		VT_PROFILE_FUNCTION();
+		VT_ENSURE(m_commandBufferLevel == CommandBufferLevel::Primary);
 
 		// End the current command buffer
 		End();
@@ -357,6 +362,7 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::ExecuteAndWait()
 	{
 		VT_PROFILE_FUNCTION();
+		VT_ENSURE(m_commandBufferLevel == CommandBufferLevel::Primary);
 
 		auto device = GraphicsContext::GetDevice();
 
@@ -619,10 +625,10 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanCommandBuffer::BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable)
+	void VulkanCommandBuffer::BindDescriptorTable(WeakPtr<BindlessDescriptorTable> descriptorTable, WeakPtr<UniformBuffer> constantsBuffer, const uint32_t offsetIndex, const uint32_t stride)
 	{
 		VT_PROFILE_FUNCTION();
-		descriptorTable->AsRef<VulkanBindlessDescriptorTable>().Bind(*this);
+		descriptorTable->AsRef<VulkanBindlessDescriptorTable>().Bind(*this, constantsBuffer, offsetIndex, stride);
 	}
 
 	void VulkanCommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
@@ -1154,9 +1160,46 @@ namespace Volt::RHI
 		return m_queueType;
 	}
 
+	const CommandBufferLevel VulkanCommandBuffer::GetCommandBufferLevel() const
+	{
+		return m_commandBufferLevel;
+	}
+
 	const WeakPtr<Fence> VulkanCommandBuffer::GetFence() const
 	{
 		return m_fence;
+	}
+
+	RefPtr<CommandBuffer> VulkanCommandBuffer::CreateSecondaryCommandBuffer() const
+	{
+		VT_PROFILE_FUNCTION();
+		VT_ENSURE(m_commandBufferLevel == CommandBufferLevel::Primary);
+		return RefPtr<VulkanCommandBuffer>::Create(this);
+	}
+
+	void VulkanCommandBuffer::ExecuteSecondaryCommandBuffer(RefPtr<CommandBuffer> commandBuffer) const
+	{
+		VT_ENSURE(m_commandBufferLevel == CommandBufferLevel::Primary);
+		VT_ENSURE(commandBuffer->GetCommandBufferLevel() == CommandBufferLevel::Secondary);
+
+		VkCommandBuffer cmdBuffer = commandBuffer->GetHandle<VkCommandBuffer>();
+		vkCmdExecuteCommands(m_commandBufferData.commandBuffer, 1, &cmdBuffer);
+	}
+
+	void VulkanCommandBuffer::ExecuteSecondaryCommandBuffers(Vector<RefPtr<CommandBuffer>> commandBuffers) const
+	{
+		VT_ENSURE(m_commandBufferLevel == CommandBufferLevel::Primary);
+
+		Vector<VkCommandBuffer> vkCommandBuffers;
+		vkCommandBuffers.reserve(commandBuffers.size());
+
+		for (const auto& cmdBuffer : commandBuffers)
+		{
+			VT_ENSURE(cmdBuffer->GetCommandBufferLevel() == CommandBufferLevel::Secondary);
+			vkCommandBuffers.emplace_back(cmdBuffer->GetHandle<VkCommandBuffer>());
+		}
+
+		vkCmdExecuteCommands(m_commandBufferData.commandBuffer, static_cast<uint32_t>(vkCommandBuffers.size()), vkCommandBuffers.data());
 	}
 
 	void* VulkanCommandBuffer::GetHandleImpl() const
@@ -1202,7 +1245,7 @@ namespace Volt::RHI
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = m_commandBufferData.commandPool;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.level = m_commandBufferLevel == CommandBufferLevel::Primary ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY;
 		allocInfo.commandBufferCount = 1;
 
 		VT_VK_CHECK(vkAllocateCommandBuffers(device->GetHandle<VkDevice>(), &allocInfo, &m_commandBufferData.commandBuffer));
@@ -1229,10 +1272,14 @@ namespace Volt::RHI
 		}
 
 		VkFence fencePtr = waitFence->GetHandle<VkFence>();
-		RHIProxy::GetInstance().DestroyResource([fence = fencePtr, commandPool = m_commandBufferData.commandPool, timestampPool = m_timestampQueryPool]()
+		RHIProxy::GetInstance().DestroyResource([fence = fencePtr, commandPool = m_commandBufferData.commandPool, timestampPool = m_timestampQueryPool, level = m_commandBufferLevel]()
 		{
 			auto device = GraphicsContext::GetDevice();
-			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &fence, VK_TRUE, UINT64_MAX));
+		
+			if (level == CommandBufferLevel::Primary)
+			{
+				VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &fence, VK_TRUE, UINT64_MAX));
+			}
 
 			vkDestroyCommandPool(device->GetHandle<VkDevice>(), commandPool, nullptr);
 			vkDestroyQueryPool(device->GetHandle<VkDevice>(), timestampPool, nullptr);
@@ -1289,6 +1336,42 @@ namespace Volt::RHI
 			const float nsTime = endTime > startTime ? (endTime - startTime) * GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().GetProperties().limits.timestampPeriod : 0.f;
 			m_executionTimes[i / 2] = nsTime * 0.000001f; // Convert to ms
 		}
+	}
+
+	void VulkanCommandBuffer::BeginPrimaryInternal()
+	{
+		VT_PROFILE_FUNCTION();
+
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.pNext = nullptr;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		beginInfo.pInheritanceInfo = nullptr;
+
+		VT_VK_CHECK(vkBeginCommandBuffer(m_commandBufferData.commandBuffer, &beginInfo));
+	}
+
+	void VulkanCommandBuffer::BeginSecondaryInternal()
+	{
+		VT_PROFILE_FUNCTION();
+
+		VkCommandBufferInheritanceInfo inheritanceInfo{};
+		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+		inheritanceInfo.pNext = nullptr;
+		inheritanceInfo.renderPass = nullptr;
+		inheritanceInfo.subpass = 0;
+		inheritanceInfo.framebuffer = nullptr;
+		inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+		inheritanceInfo.queryFlags = 0;
+		inheritanceInfo.pipelineStatistics = 0;
+
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.pNext = nullptr;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		beginInfo.pInheritanceInfo = &inheritanceInfo;
+
+		VT_VK_CHECK(vkBeginCommandBuffer(m_commandBufferData.commandBuffer, &beginInfo));
 	}
 
 	VkPipelineLayout_T* VulkanCommandBuffer::GetCurrentPipelineLayout()

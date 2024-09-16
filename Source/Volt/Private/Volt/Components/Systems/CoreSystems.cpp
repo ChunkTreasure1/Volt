@@ -6,6 +6,7 @@
 
 #include "Volt/Animation/MotionWeaver.h"
 
+#include <EntitySystem/Scripting/CommonComponent.h>
 #include <EntitySystem/Scripting/ECSBuilder.h>
 #include <EntitySystem/Scripting/ECSSystemRegistry.h>
 

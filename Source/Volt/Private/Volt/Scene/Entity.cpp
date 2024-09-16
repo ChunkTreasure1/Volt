@@ -617,7 +617,7 @@ namespace Volt
 			}
 		}
 
-		compDesc->OnComponentCopied(&dstData[offset], dstEntity);
+		compDesc->OnComponentCopied(dstEntity.GetScene()->GetRegistry(), dstEntity.GetHandle());
 	}
 
 	void Entity::UpdatePhysicsTranslation(bool updateThis)

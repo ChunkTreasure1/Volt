@@ -48,19 +48,24 @@ namespace Volt::RHI
 
 	void VulkanVertexBuffer::SetName(std::string_view name)
 	{
-		if (!Volt::RHI::vkSetDebugUtilsObjectNameEXT)
+		if (Volt::RHI::vkSetDebugUtilsObjectNameEXT)
 		{
-			return;
+			VkDebugUtilsObjectNameInfoEXT nameInfo{};
+			nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+			nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
+			nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkBuffer>();
+			nameInfo.pObjectName = name.data();
+
+			auto device = GraphicsContext::GetDevice();
+			Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 		}
 
-		VkDebugUtilsObjectNameInfoEXT nameInfo{};
-		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
-		nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkBuffer>();
-		nameInfo.pObjectName = name.data();
+		m_name = std::string(name);
+	}
 
-		auto device = GraphicsContext::GetDevice();
-		Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
+	std::string_view VulkanVertexBuffer::GetName() const
+	{
+		return m_name;
 	}
 
 	const uint64_t VulkanVertexBuffer::GetDeviceAddress() const

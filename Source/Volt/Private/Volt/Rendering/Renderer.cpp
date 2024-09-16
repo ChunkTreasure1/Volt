@@ -66,7 +66,7 @@ namespace Volt
 			defaultResources.Clear();
 			samplers.clear();
 
-#ifndef VT_DIST
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
 			shaderValidator = nullptr;
 #endif
 			shaderCache = nullptr;
@@ -85,7 +85,7 @@ namespace Volt
 		Scope<ShaderMap> shaderMap;
 		Scope<BindlessResourcesManager> bindlessResourcesManager;
 
-#ifndef VT_DIST
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
 		Scope<ShaderRuntimeValidator> shaderValidator;
 #endif
 
@@ -107,7 +107,7 @@ namespace Volt
 			RHI::ShaderCompilerCreateInfo shaderCompilerInfo{};
 			shaderCompilerInfo.flags = RHI::ShaderCompilerFlags::WarningsAsErrors;
 
-#ifndef VT_DIST
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
 			shaderCompilerInfo.flags |= RHI::ShaderCompilerFlags::EnableShaderValidator;
 #endif
 
@@ -141,7 +141,7 @@ namespace Volt
 
 		RenderGraphExecutionThread::Initialize(RenderGraphExecutionThread::ExecutionMode::Multithreaded);
 
-#ifndef VT_DIST
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
 		s_rendererData->shaderValidator = CreateScope<ShaderRuntimeValidator>();
 #endif
 
@@ -424,7 +424,7 @@ namespace Volt
 		return result;
 	}
 
-#ifndef VT_DIST
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
 	ShaderRuntimeValidator& Renderer::GetRuntimeShaderValidator()
 	{
 		return *s_rendererData->shaderValidator;
@@ -437,7 +437,7 @@ namespace Volt
 
 	void Renderer::EndOfFrameUpdate()
 	{
-#ifndef VT_DIST
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
 		//s_rendererData->shaderValidator->ReadbackErrorBuffer();
 
 		const auto& frameErrors = s_rendererData->shaderValidator->GetValidationErrors();
@@ -535,7 +535,7 @@ namespace Volt
 		});
 
 		renderGraph.Compile();
-		renderGraph.ExecuteImmediate();
+		renderGraph.ExecuteImmediateAndWait();
 	}
 
 	static Vector<std::filesystem::path> FindShaderIncludes(const std::filesystem::path& filePath)

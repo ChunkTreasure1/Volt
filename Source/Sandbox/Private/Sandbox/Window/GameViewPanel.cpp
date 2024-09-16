@@ -13,7 +13,7 @@
 #include <Volt/Asset/Prefab.h>
 
 #include <InputModule/Input.h>
-#include <InputModule/KeyCodes.h>
+#include <InputModule/InputCodes.h>
 #include <InputModule/MouseButtonCodes.h>
 
 #include <Volt/Rendering/SceneRenderer.h>
@@ -101,14 +101,14 @@ bool GameViewPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 {
 	switch (e.GetMouseButton())
 	{
-		case VT_MOUSE_BUTTON_RIGHT:
+		case Volt::InputCode::Mouse_RB:
 			if (IsHovered())
 			{
 				ImGui::SetWindowFocus("Game Viewport");
 			}
 			break;
 
-		case VT_MOUSE_BUTTON_LEFT:
+		case Volt::InputCode::Mouse_LB:
 		{
 			if (IsHovered() && m_sceneState == SceneState::Play)
 			{
@@ -123,7 +123,7 @@ bool GameViewPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 
 bool GameViewPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	if (!IsHovered() || Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
+	if (!IsHovered() || Volt::Input::IsButtonDown(Volt::InputCode::Mouse_RB) || ImGui::IsAnyItemActive())
 	{
 		return false;
 	}

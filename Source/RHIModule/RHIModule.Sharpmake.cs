@@ -27,8 +27,8 @@ namespace VoltSharpmake
 
             conf.IncludePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "imgui-notify"));
 
-            conf.Defines.Add("VT_ENABLE_NV_AFTERMATH");
-            conf.ExportDefines.Add("VT_ENABLE_NV_AFTERMATH");
+            //conf.Defines.Add("VT_ENABLE_NV_AFTERMATH");
+            //conf.ExportDefines.Add("VT_ENABLE_NV_AFTERMATH");
         }
     }
 }

@@ -21,7 +21,36 @@ namespace Volt
 	
 	TransientResourceSystem::~TransientResourceSystem()
 	{
+		std::scoped_lock lock{ m_allocatedResourcesMutex };
 		m_allocatedResources.clear(); 
+	}
+
+	TransientResourceSystem::TransientResourceSystem(const TransientResourceSystem& other)
+	{
+		m_allocatedResources = other.m_allocatedResources;
+		m_surrenderedResources = other.m_surrenderedResources;
+	}
+
+	TransientResourceSystem::TransientResourceSystem(TransientResourceSystem&& other)
+	{
+		m_allocatedResources = std::move(other.m_allocatedResources);
+		m_surrenderedResources = std::move(other.m_surrenderedResources);
+	}
+
+	TransientResourceSystem& TransientResourceSystem::operator=(const TransientResourceSystem& other)
+	{
+		m_allocatedResources = other.m_allocatedResources;
+		m_surrenderedResources = other.m_surrenderedResources;
+
+		return *this;
+	}
+
+	TransientResourceSystem& TransientResourceSystem::operator=(TransientResourceSystem&& other)
+	{
+		m_allocatedResources = std::move(other.m_allocatedResources);
+		m_surrenderedResources = std::move(other.m_surrenderedResources);
+
+		return *this;
 	}
 
 	WeakPtr<RHI::Image> TransientResourceSystem::AquireImage(RenderGraphImageHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
@@ -43,6 +72,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
+		std::scoped_lock lock{ m_allocatedResourcesMutex };
 		if (m_allocatedResources.contains(resourceHandle))
 		{
 			return m_allocatedResources.at(resourceHandle).resource.As<RHI::Image>();
@@ -100,6 +130,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
+		std::scoped_lock lock{ m_allocatedResourcesMutex };
 		if (m_allocatedResources.contains(resourceHandle))
 		{
 			return m_allocatedResources.at(resourceHandle).resource.As<RHI::StorageBuffer>();
@@ -136,6 +167,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
+		std::scoped_lock lock{ m_allocatedResourcesMutex };
 		if (m_allocatedResources.contains(resourceHandle))
 		{
 			return m_allocatedResources.at(resourceHandle).resource;
@@ -154,6 +186,7 @@ namespace Volt
 
 	void TransientResourceSystem::SurrenderResource(RenderGraphResourceHandle originalResource, size_t hash)
 	{
+		std::scoped_lock lock{ m_surrenderedResourcesMutex };
 		m_surrenderedResources[hash].emplace_back(originalResource);
 	}
 
@@ -163,11 +196,13 @@ namespace Volt
 		info.resource = resource;
 		info.isOriginal = true;
 
+		std::scoped_lock lock{ m_allocatedResourcesMutex };
 		m_allocatedResources[resourceHandle] = info;
 	}
 
 	const uint64_t TransientResourceSystem::GetTotalAllocatedSize() const
 	{
+		std::scoped_lock lock{ m_allocatedResourcesMutex };
 		uint64_t result = 0;
 
 		for (const auto& [handle, info] : m_allocatedResources)

@@ -25,9 +25,6 @@ namespace VoltSharpmake
 
             conf.AddPublicDependency<wwise>(target);
             conf.AddPublicDependency<fmod>(target);
-
-
-            conf.Defines.Add("PX_PHYSX_STATIC_LIB");
         }
     }
 }

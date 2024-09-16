@@ -146,6 +146,9 @@ namespace Volt
 		template<typename... T, typename F>
 		void ForEachWithComponents(const F& func);
 
+		template<typename EntityType>
+		Entity GetSceneEntityFromScriptingEntity(EntityType scriptingEntity);
+
 		const Vector<Entity> GetAllEntities() const;
 		const Vector<Entity> GetAllEditedEntities() const;
 		const Vector<EntityID> GetAllRemovedEntities() const;
@@ -255,5 +258,11 @@ namespace Volt
 	{
 		auto view = m_registry.view<T...>();
 		view.each(func);
+	}
+
+	template<typename EntityType>
+	inline Entity Scene::GetSceneEntityFromScriptingEntity(EntityType scriptingEntity)
+	{
+		return Entity{ scriptingEntity.GetHandle(), this };
 	}
 }

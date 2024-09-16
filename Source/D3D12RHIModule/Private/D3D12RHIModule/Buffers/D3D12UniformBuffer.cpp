@@ -69,6 +69,7 @@ namespace Volt::RHI
 
 	void D3D12UniformBuffer::SetName(std::string_view name)
 	{
+		m_name = std::string(name);
 		if (!m_allocation)
 		{
 			return;
@@ -76,6 +77,11 @@ namespace Volt::RHI
 
 		std::wstring str = Utility::ToWString(name);
 		m_allocation->GetResourceHandle<ID3D12Resource*>()->SetName(str.c_str());
+	}
+
+	std::string_view D3D12UniformBuffer::GetName() const
+	{
+		return m_name;
 	}
 
 	const uint64_t D3D12UniformBuffer::GetDeviceAddress() const

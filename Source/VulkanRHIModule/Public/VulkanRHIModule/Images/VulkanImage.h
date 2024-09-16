@@ -1,7 +1,7 @@
 #pragma once
 
 #include <RHIModule/Images/Image.h>
-#include <CoreUtilities/Containers/Map.h>
+#include <CoreUtilities/Containers/ThreadSafeMap.h>
 
 struct VkImage_T;
 
@@ -37,6 +37,7 @@ namespace Volt::RHI
 
 		VT_INLINE ResourceType GetType() const override { return m_specification.imageType; }
 		void SetName(std::string_view name) override;
+		std::string_view GetName() const override;
 		const uint64_t GetDeviceAddress() const override;
 		const uint64_t GetByteSize() const override;
 
@@ -65,7 +66,10 @@ namespace Volt::RHI
 
 		ImageAspect m_imageAspect = ImageAspect::None;
 
-		vt::map<int32_t, vt::map<int32_t, RefPtr<ImageView>>> m_imageViews; // Layer -> Mip -> View
+		vt::map<int32_t, ThreadSafeMap<int32_t, RefPtr<ImageView>>> m_imageViews;
 		vt::map<int32_t, RefPtr<ImageView>> m_arrayImageViews;
+	
+		std::mutex m_imageViewsMutex;
+		std::mutex m_arrayImageViewsMutex;
 	};
 }

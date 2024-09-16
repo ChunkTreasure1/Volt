@@ -3,6 +3,8 @@
 #include "Volt/Physics/PhysicsEnums.h"
 #include "Volt/Asset/AssetTypes.h"
 
+#include <EntitySystem/Scripting/ECSAccessBuilder.h>
+
 #include <AssetSystem/Asset.h>
 
 #include <glm/glm.hpp>
@@ -52,8 +54,12 @@ namespace Volt
 		REGISTER_COMPONENT(CharacterControllerComponent);
 
 	private:
-		static void OnCreate(CharacterControllerComponent& component, entt::entity id);
-		static void OnDestroy(CharacterControllerComponent& component, entt::entity id);
+		using PhysicsEntity = ECS::Access
+			::Read<CharacterControllerComponent>
+			::As<ECS::Type::Entity>;
+
+		static void OnCreate(PhysicsEntity entity);
+		static void OnDestroy(PhysicsEntity entity);
 	};
 
 	struct RigidbodyComponent
@@ -96,8 +102,12 @@ namespace Volt
 		REGISTER_COMPONENT(RigidbodyComponent);
 
 	private:
-		static void OnCreate(RigidbodyComponent& component, entt::entity id);
-		static void OnDestroy(RigidbodyComponent& component, entt::entity id);
+		using PhysicsEntity = ECS::Access
+			::Read<RigidbodyComponent>
+			::As<ECS::Type::Entity>;
+
+		static void OnCreate(PhysicsEntity entity);
+		static void OnDestroy(PhysicsEntity entity);
 	};
 
 	struct BoxColliderComponent
@@ -129,8 +139,12 @@ namespace Volt
 		REGISTER_COMPONENT(BoxColliderComponent);
 
 	private:
-		static void OnCreate(BoxColliderComponent& component, entt::entity id);
-		static void OnDestroy(BoxColliderComponent& component, entt::entity id);
+		using PhysicsEntity = ECS::Access
+			::Write<BoxColliderComponent>
+			::As<ECS::Type::Entity>;
+
+		static void OnCreate(PhysicsEntity entity);
+		static void OnDestroy(PhysicsEntity entity);
 	};
 
 	struct SphereColliderComponent
@@ -162,8 +176,12 @@ namespace Volt
 		REGISTER_COMPONENT(SphereColliderComponent);
 	
 	private:
-		static void OnCreate(SphereColliderComponent& component, entt::entity id);
-		static void OnDestroy(SphereColliderComponent& component, entt::entity id);
+		using PhysicsEntity = ECS::Access
+			::Write<SphereColliderComponent>
+			::As<ECS::Type::Entity>;
+
+		static void OnCreate(PhysicsEntity entity);
+		static void OnDestroy(PhysicsEntity entity);
 	};
 
 	struct CapsuleColliderComponent
@@ -197,8 +215,12 @@ namespace Volt
 		REGISTER_COMPONENT(CapsuleColliderComponent);
 
 	private:
-		static void OnCreate(CapsuleColliderComponent& component, entt::entity id);
-		static void OnDestroy(CapsuleColliderComponent& component, entt::entity id);
+		using PhysicsEntity = ECS::Access
+			::Write<CapsuleColliderComponent>
+			::As<ECS::Type::Entity>;
+
+		static void OnCreate(PhysicsEntity entity);
+		static void OnDestroy(PhysicsEntity entity);
 	};
 
 	struct MeshColliderComponent
@@ -232,7 +254,11 @@ namespace Volt
 		REGISTER_COMPONENT(MeshColliderComponent);
 
 	private:
-		static void OnCreate(MeshColliderComponent& component, entt::entity id);
-		static void OnDestroy(MeshColliderComponent& component, entt::entity id);
+		using PhysicsEntity = ECS::Access
+			::Write<MeshColliderComponent>
+			::As<ECS::Type::Entity>;
+
+		static void OnCreate(PhysicsEntity entity);
+		static void OnDestroy(PhysicsEntity entity);
 	};
 }

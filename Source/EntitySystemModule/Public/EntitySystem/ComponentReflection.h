@@ -145,13 +145,13 @@ namespace Volt
 		[[nodiscard]] virtual ComponentMember* FindMemberByName(std::string_view name) = 0;
 		[[nodiscard]] virtual const ComponentMember* FindMemberByName(std::string_view name) const = 0;
 		
-		virtual void OnCreate(void* objectPtr, entt::entity entity) const = 0;
-		virtual void OnDestroy(void* objectPtr, entt::entity entity) const = 0;
-		virtual void OnStart(void* objectPtr, entt::entity entity) const = 0;
-		virtual void OnStop(void* objectPtr, entt::entity entity) const = 0;
-		virtual void OnMemberChanged(void* objectPtr, entt::entity entity) const = 0;
-		virtual void OnComponentCopied(void* objectPtr, entt::entity entity) const = 0;
-		virtual void OnComponentDeserialized(void* objectPtr, entt::entity entity) const = 0;
+		virtual void OnCreate(entt::registry& registry, entt::entity entity) const = 0;
+		virtual void OnDestroy(entt::registry& registry, entt::entity entity) const = 0;
+		virtual void OnStart(entt::registry& registry, entt::entity entity) const = 0;
+		virtual void OnStop(entt::registry& registry, entt::entity entity) const = 0;
+		virtual void OnMemberChanged(entt::registry& registry, entt::entity entity) const = 0;
+		virtual void OnComponentCopied(entt::registry& registry, entt::entity entity) const = 0;
+		virtual void OnComponentDeserialized(entt::registry& registry, entt::entity entity) const = 0;
 	};
 
 	class IEnumTypeDesc : public CommonTypeDesc<ValueType::Enum>
@@ -317,13 +317,13 @@ namespace Volt
 		[[nodiscard]] inline const Vector<ComponentMember>& GetMembers() const override { return m_members; }
 		[[nodiscard]] inline const bool IsHidden() const override { return m_isHidden; }
 
-		void OnCreate(void* objectPtr, entt::entity entity) const override;
-		void OnDestroy(void* objectPtr, entt::entity entity) const override;
-		void OnStart(void* objectPtr, entt::entity entity) const override;
-		void OnStop(void* objectPtr, entt::entity entity) const override;
-		void OnMemberChanged(void* objectPtr, entt::entity entity) const override;
-		void OnComponentCopied(void* objectPtr, entt::entity entity) const override;
-		void OnComponentDeserialized(void* objectPtr, entt::entity entity) const override;
+		void OnCreate(entt::registry& registry, entt::entity entity) const override;
+		void OnDestroy(entt::registry& registry, entt::entity entity) const override;
+		void OnStart(entt::registry& registry, entt::entity entity) const override;
+		void OnStop(entt::registry& registry, entt::entity entity) const override;
+		void OnMemberChanged(entt::registry& registry, entt::entity entity) const override;
+		void OnComponentCopied(entt::registry& registry, entt::entity entity) const override;
+		void OnComponentDeserialized(entt::registry& registry, entt::entity entity) const override;
 
 		[[nodiscard]] ComponentMember* FindMemberByOffset(const ptrdiff_t offset) override;
 		[[nodiscard]] ComponentMember* FindMemberByName(std::string_view name) override;
@@ -357,7 +357,7 @@ namespace Volt
 			const bool hasMemberWithName = FindMemberByName(name) != nullptr;
 			VT_ASSERT_MSG(!hasMemberWithName, "Member with name has already been registered!");
 			if (hasMemberWithName)
-			{
+			{    
 				return *nullMember;
 			}
 
@@ -379,39 +379,74 @@ namespace Volt
 			return m_members.back();
 		}
 
-		void SetOnCreateCallback(std::function<void(T&, entt::entity)>&& func)
+		template<typename EntityType>
+		void SetOnCreateCallback(void(*func)(EntityType))
 		{
-			m_onCreateCallback = std::move(func);
+			m_onCreateCallback = [func](entt::entity entityId, entt::registry& registry) 
+			{
+				auto entity = EntityType(entityId, registry);
+				func(entity);
+			};
 		}
 
-		void SetOnDestroyCallback(std::function<void(T&, entt::entity)>&& func)
+		template<typename EntityType>
+		void SetOnDestroyCallback(void(*func)(EntityType))
 		{
-			m_onDestroyCallback = std::move(func);
+			m_onDestroyCallback = [func](entt::entity entityId, entt::registry& registry)
+			{
+				auto entity = EntityType(entityId, registry);
+				func(entity);
+			};
 		}
 
-		void SetOnStartCallback(std::function<void(T&, entt::entity)>&& func)
+		template<typename EntityType>
+		void SetOnStartCallback(void(*func)(EntityType))
 		{
-			m_onStartCallback = std::move(func);
+			m_onStartCallback = [func](entt::entity entityId, entt::registry& registry)
+			{
+				auto entity = EntityType(entityId, registry);
+				func(entity);
+			};
 		}
 
-		void SetOnStopCallback(std::function<void(T&, entt::entity)>&& func)
+		template<typename EntityType>
+		void SetOnStopCallback(void(*func)(EntityType))
 		{
-			m_onStopCallback = std::move(func);
+			m_onStopCallback = [func](entt::entity entityId, entt::registry& registry)
+			{
+				auto entity = EntityType(entityId, registry);
+				func(entity);
+			};
 		}
 
-		void SetOnMemberChangedCallback(std::function<void(T&, entt::entity)>&& func)
+		template<typename EntityType>
+		void SetOnMemberChangedCallback(void(*func)(EntityType))
 		{
-			m_onMemberChangedCallback = std::move(func);
+			m_onMemberChangedCallback = [func](entt::entity entityId, entt::registry& registry)
+			{
+				auto entity = EntityType(entityId, registry);
+				func(entity);
+			};
 		}
 
-		void SetOnComponentCopiedCallback(std::function<void(T&, entt::entity)>&& func)
+		template<typename EntityType>
+		void SetOnComponentCopiedCallback(void(*func)(EntityType))
 		{
-			m_onComponentCopiedCallback = std::move(func);
+			m_onMemberChangedCallback = [func](entt::entity entityId, entt::registry& registry)
+			{
+				auto entity = EntityType(entityId, registry);
+				func(entity);
+			};
 		}
 
-		void SetOnComponentDeserializedCallback(std::function<void(T&, entt::entity)>&& func)
+		template<typename EntityType>
+		void SetOnComponentDeserializedCallback(void(*func)(EntityType))
 		{
-			m_onComponentDeserializedCallback = std::move(func);
+			m_onComponentDeserializedCallback = [func](entt::entity entityId, entt::registry& registry)
+			{
+				auto entity = EntityType(entityId, registry);
+				func(entity);
+			};
 		}
 
 	private:
@@ -422,13 +457,14 @@ namespace Volt
 		std::string m_componentDescription;
 
 		bool m_isHidden = false;
-		std::function<void(T& component, entt::entity entity)> m_onCreateCallback;
-		std::function<void(T& component, entt::entity entity)> m_onDestroyCallback;
-		std::function<void(T& component, entt::entity entity)> m_onStartCallback;
-		std::function<void(T& component, entt::entity entity)> m_onStopCallback;
-		std::function<void(T& component, entt::entity entity)> m_onMemberChangedCallback;
-		std::function<void(T& component, entt::entity entity)> m_onComponentCopiedCallback;
-		std::function<void(T& component, entt::entity entity)> m_onComponentDeserializedCallback;
+
+		std::function<void(entt::entity, entt::registry&)> m_onCreateCallback;
+		std::function<void(entt::entity, entt::registry&)> m_onDestroyCallback;
+		std::function<void(entt::entity, entt::registry&)> m_onStartCallback;
+		std::function<void(entt::entity, entt::registry&)> m_onStopCallback;
+		std::function<void(entt::entity, entt::registry&)> m_onMemberChangedCallback;
+		std::function<void(entt::entity, entt::registry&)> m_onComponentCopiedCallback;
+		std::function<void(entt::entity, entt::registry&)> m_onComponentDeserializedCallback;
 	};
 
 	template<Enum T>
@@ -478,65 +514,65 @@ namespace Volt
 	}
 
 	template<typename T>
-	inline void ComponentTypeDesc<T>::OnCreate(void* objectPtr, entt::entity entity) const
+	inline void ComponentTypeDesc<T>::OnCreate(entt::registry& registry, entt::entity entity) const
 	{
 		if (m_onCreateCallback)
 		{
-			m_onCreateCallback(*reinterpret_cast<T*>(objectPtr), entity);
+			m_onCreateCallback(entity, registry);
 		}
 	}
 
 	template<typename T>
-	inline void ComponentTypeDesc<T>::OnDestroy(void* objectPtr, entt::entity entity) const
+	inline void ComponentTypeDesc<T>::OnDestroy(entt::registry& registry, entt::entity entity) const
 	{
 		if (m_onDestroyCallback)
 		{
-			m_onDestroyCallback(*reinterpret_cast<T*>(objectPtr), entity);
+			m_onDestroyCallback(entity, registry);
 		}
 	}
 
 	template<typename T>
-	inline void ComponentTypeDesc<T>::OnStart(void* objectPtr, entt::entity entity) const
+	inline void ComponentTypeDesc<T>::OnStart(entt::registry& registry, entt::entity entity) const
 	{
 		if (m_onStartCallback)
 		{
-			m_onStartCallback(*reinterpret_cast<T*>(objectPtr), entity);
+			m_onStartCallback(entity, registry);
 		}
 	}
 
 	template<typename T>
-	inline void ComponentTypeDesc<T>::OnStop(void* objectPtr, entt::entity entity) const
+	inline void ComponentTypeDesc<T>::OnStop(entt::registry& registry, entt::entity entity) const
 	{
 		if (m_onStopCallback)
 		{
-			m_onStopCallback(*reinterpret_cast<T*>(objectPtr), entity);
+			m_onStopCallback(entity, registry);
 		}
 	}
 
 	template<typename T>
-	inline void ComponentTypeDesc<T>::OnMemberChanged(void* objectPtr, entt::entity entity) const
+	inline void ComponentTypeDesc<T>::OnMemberChanged(entt::registry& registry, entt::entity entity) const
 	{
 		if (m_onMemberChangedCallback)
 		{
-			m_onMemberChangedCallback(*reinterpret_cast<T*>(objectPtr), entity);
+			m_onMemberChangedCallback(entity, registry);
 		}
 	}
 
 	template<typename T>
-	inline void ComponentTypeDesc<T>::OnComponentCopied(void* objectPtr, entt::entity entity) const
+	inline void ComponentTypeDesc<T>::OnComponentCopied(entt::registry& registry, entt::entity entity) const
 	{
 		if (m_onComponentCopiedCallback)
 		{
-			m_onComponentCopiedCallback(*reinterpret_cast<T*>(objectPtr), entity);
+			m_onComponentCopiedCallback(entity, registry);
 		}
 	}
 
 	template<typename T>
-	inline void ComponentTypeDesc<T>::OnComponentDeserialized(void* objectPtr, entt::entity entity) const
+	inline void ComponentTypeDesc<T>::OnComponentDeserialized(entt::registry& registry, entt::entity entity) const
 	{
 		if (m_onComponentDeserializedCallback)
 		{
-			m_onComponentDeserializedCallback(*reinterpret_cast<T*>(objectPtr), entity);
+			m_onComponentDeserializedCallback(entity, registry);
 		}
 	}
 

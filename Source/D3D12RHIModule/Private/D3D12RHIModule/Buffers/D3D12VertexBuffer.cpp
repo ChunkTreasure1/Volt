@@ -50,8 +50,14 @@ namespace Volt::RHI
 
 	void D3D12VertexBuffer::SetName(std::string_view name)
 	{
+		m_name = std::string(name);
 		std::wstring wName = Utility::ToWString(name);
 		m_allocation->GetResourceHandle<ID3D12Resource*>()->SetName(wName.c_str());
+	}
+
+	std::string_view D3D12VertexBuffer::GetName() const
+	{
+		return m_name;
 	}
 
 	const uint64_t D3D12VertexBuffer::GetDeviceAddress() const

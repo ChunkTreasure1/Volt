@@ -8,7 +8,7 @@
 #include <Volt/GameUI/UIScene.h>
 #include <Volt/GameUI/UIComponents.h>
 #include <Volt/GameUI/UIWidget.h>
-#include <InputModule/KeyCodes.h>
+#include <InputModule/InputCodes.h>
 
 #include <Volt/Rendering/UISceneRenderer.h>
 
@@ -101,7 +101,7 @@ bool GameUIEditorPanel::OnMouseScrollEvent(Volt::MouseScrolledEvent& e)
 
 bool GameUIEditorPanel::OnMouseButtonPressedEvent(Volt::MouseButtonPressedEvent& e)
 {
-	if (m_viewportHovered && e.GetMouseButton() == VT_MOUSE_BUTTON_MIDDLE)
+	if (m_viewportHovered && e.GetMouseButton() == Volt::InputCode::Mouse_MB)
 	{
 		m_middleMouseDown = true;
 	}
@@ -111,7 +111,7 @@ bool GameUIEditorPanel::OnMouseButtonPressedEvent(Volt::MouseButtonPressedEvent&
 
 bool GameUIEditorPanel::OnMouseButtonReleasedEvent(Volt::MouseButtonReleasedEvent& e)
 {
-	if (e.GetMouseButton() == VT_MOUSE_BUTTON_MIDDLE)
+	if (e.GetMouseButton() == Volt::InputCode::Mouse_MB)
 	{
 		m_middleMouseDown = false;
 		m_previousMousePosition = 0.f;
@@ -297,8 +297,8 @@ void GameUIEditorPanel::HandleSelection()
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int32_t)viewportSize.x && mouseY < (int32_t)viewportSize.y)
 		{
 			uint32_t pixelData = m_uiSceneRenderer->GetIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX), static_cast<uint32_t>(mouseY), 0u);
-			const bool multiSelect = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);
-			const bool deselect = Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL);
+			const bool multiSelect = Volt::Input::IsButtonDown(Volt::InputCode::LeftShift);
+			const bool deselect = Volt::Input::IsButtonDown(Volt::InputCode::LeftControl);
 
 			if (!multiSelect && !deselect)
 			{

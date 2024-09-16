@@ -13,7 +13,7 @@
 #include <Volt/Components/LightComponents.h>
 
 #include <InputModule/Input.h>
-#include <InputModule/KeyCodes.h>
+#include <InputModule/InputCodes.h>
 #include <InputModule/MouseButtonCodes.h>
 
 #include <Volt/Utility/UIUtility.h>

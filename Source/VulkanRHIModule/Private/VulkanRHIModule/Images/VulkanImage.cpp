@@ -35,7 +35,8 @@ namespace Volt::RHI
 		GraphicsContext::GetResourceStateTracker()->AddResource(this, BarrierStage::None, BarrierAccess::None, ImageLayout::Undefined);
 
 		InvalidateSwapchainImage(specification);
-		SetName(std::format("Swapchain Image {}", specification.imageIndex));
+		m_specification.debugName = std::format("Swapchain Image {}", specification.imageIndex);
+		SetName(m_specification.debugName);
 	}
 
 	VulkanImage::~VulkanImage()
@@ -248,6 +249,7 @@ namespace Volt::RHI
 
 	RefPtr<ImageView> VulkanImage::GetView(const int32_t mip, const int32_t layer)
 	{
+		std::scoped_lock lock{ m_imageViewsMutex };
 		if (m_imageViews.contains(layer))
 		{
 			if (m_imageViews.at(layer).contains(mip))
@@ -320,6 +322,7 @@ namespace Volt::RHI
 
 	RefPtr<ImageView> VulkanImage::GetArrayView(const int32_t mip)
 	{
+		std::scoped_lock lock{ m_arrayImageViewsMutex };
 		if (m_arrayImageViews.contains(mip))
 		{
 			return m_arrayImageViews.at(mip);
@@ -359,28 +362,33 @@ namespace Volt::RHI
 
 	void VulkanImage::SetName(std::string_view name)
 	{
-		if (!Volt::RHI::vkSetDebugUtilsObjectNameEXT)
+		if (Volt::RHI::vkSetDebugUtilsObjectNameEXT)
 		{
-			return;
+			VkDebugUtilsObjectNameInfoEXT nameInfo{};
+			nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+			nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
+
+			if (m_isSwapchainImage)
+			{
+				nameInfo.objectHandle = (uint64_t)m_swapchainImageData.image;
+			}
+			else
+			{
+				nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkImage>();
+			}
+
+			nameInfo.pObjectName = name.data();
+
+			auto device = GraphicsContext::GetDevice();
+			Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 		}
 
-		VkDebugUtilsObjectNameInfoEXT nameInfo{};
-		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-		nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
+		m_specification.debugName = std::string(name);
+	}
 
-		if (m_isSwapchainImage)
-		{
-			nameInfo.objectHandle = (uint64_t)m_swapchainImageData.image;
-		}
-		else
-		{
-			nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkImage>();
-		}
-
-		nameInfo.pObjectName = name.data();
-
-		auto device = GraphicsContext::GetDevice();
-		Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
+	std::string_view VulkanImage::GetName() const
+	{
+		return m_specification.debugName;
 	}
 
 	const uint64_t VulkanImage::GetDeviceAddress() const

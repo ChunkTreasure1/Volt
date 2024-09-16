@@ -1,7 +1,8 @@
 #pragma once
 
-#include "RenderCore/RenderGraph/RenderGraphCommon.h"
 #include "RenderCore/RenderGraph/Resources/RenderGraphResourceHandle.h"
+#include "RenderCore/RenderGraph/RenderGraphCommon.h"
+#include "RenderCore/Config.h"
 
 #include <RHIModule/Descriptors/ResourceHandle.h>
 #include <RHIModule/Core/RHICommon.h>
@@ -12,8 +13,8 @@
 #include <RHIModule/Buffers/CommandBuffer.h>
 #include <RHIModule/Synchronization/Fence.h>
 
-#include <CoreUtilities/Profiling/Profiling.h>
-#include <CoreUtilities/StringHash.h>	
+#include <CoreUtilities/StringHash.h>
+#include <CoreUtilities/Containers/Map.h>
 
 #include <glm/glm.hpp>
 #include <half/half.hpp>
@@ -26,21 +27,13 @@ namespace Volt
 		class StorageBuffer;
 		class VertexBuffer;
 
-		class DescriptorTable;
-
 		class BufferView;
 		class ImageView;
-
-		class Image2D;
-		class BufferViewSet;
 	}
 
-	struct RenderingInfo
-	{
-		RHI::Rect2D scissor{};
-		RHI::Viewport viewport{};
-		RHI::RenderingInfo renderingInfo{};
-	};
+	class RenderGraph;
+	class SharedRenderContext;
+	struct RenderGraphPassNodeBase;
 
 	template<typename T>
 	inline static constexpr RHI::ShaderUniformType TryGetTypeFromType()
@@ -144,8 +137,12 @@ namespace Volt
 		return resultType;
 	}
 
-	struct RenderGraphPassNodeBase;
-	class RenderGraph;
+	struct RenderingInfo
+	{
+		RHI::Rect2D scissor{};
+		RHI::Viewport viewport{};
+		RHI::RenderingInfo renderingInfo{};
+	};
 
 	class VTRC_API RenderContext
 	{
@@ -157,8 +154,9 @@ namespace Volt
 			uint32_t constantsOffset;
 		};
 
-		RenderContext(RefPtr<RHI::CommandBuffer> commandBuffer);
-		~RenderContext();
+		RenderContext(RenderGraph& renderGraph, RenderGraphPassNodeBase& currentPassNode, SharedRenderContext& sharedContext, RefPtr<RHI::CommandBuffer> commandBuffer);
+
+		void EndContext();
 
 		void BeginMarker(std::string_view markerName, const glm::vec4& markerColor = 1.f);
 		void EndMarker();
@@ -182,7 +180,7 @@ namespace Volt
 
 		void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ);
 		void DispatchIndirect(RenderGraphBufferHandle commandsBuffer, const size_t offset);
-		
+
 		void DrawIndirectCount(RenderGraphBufferHandle commandsBuffer, const size_t offset, RenderGraphBufferHandle countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
 		void DrawIndexedIndirect(RenderGraphBufferHandle commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride);
 		void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance);
@@ -221,47 +219,35 @@ namespace Volt
 
 		struct BoundPipelineData
 		{
-			std::unordered_map<StringHash, bool> uniformHasBeenSetMap;
+			vt::map<StringHash, bool> uniformHasBeenSetMap;
 		};
 
 		void BindDescriptorTableIfRequired();
 
-		void SetPerPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer);
-		void SetRenderGraphConstantsBuffer(WeakPtr<RHI::UniformBuffer> constantsBuffer);
-
-		void SetCurrentPass(Weak<RenderGraphPassNodeBase> currentPassNode);
-		void SetRenderGraphInstance(RenderGraph* renderGraph);
-		void UploadConstantsData();
-
 		void Flush(RefPtr<RHI::Fence> fence);
-
 		void CopyImage(RenderGraphImageHandle src, RenderGraphImageHandle dst, const uint32_t width, const uint32_t height, const uint32_t depth);
 
 		// Validation
 		void InitializeCurrentPipelineConstantsValidation();
 		void ValidateCurrentPipelineConstants();
 
+		// Internal state
 		const RHI::ShaderRenderGraphConstantsData& GetRenderGraphConstantsData();
 
-		// Internal state
 		bool m_descriptorTableIsBound = false; // This needs to be checked in every call that uses resources
+
+		RenderGraph& m_renderGraph;
+		RenderGraphPassNodeBase& m_currentPassNode;
+		SharedRenderContext& m_sharedContext;
+
+		RefPtr<RHI::CommandBuffer> m_commandBuffer;
 
 		WeakPtr<RHI::RenderPipeline> m_currentRenderPipeline;
 		WeakPtr<RHI::ComputePipeline> m_currentComputePipeline;
 
-		WeakPtr<RHI::StorageBuffer> m_perPassConstantsBuffer;
-		WeakPtr<RHI::UniformBuffer> m_renderGraphConstantsBuffer;
+		uint8_t m_passConstantsData[RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE];
 
-		uint32_t m_currentPassIndex = 0;
-		Weak<RenderGraphPassNodeBase> m_currentPassNode;
-		RenderGraph* m_renderGraph = nullptr;
-
-		RefPtr<RHI::CommandBuffer> m_commandBuffer;
-
-		// #TODO_Ivar: Should be changed
-		Vector<uint8_t> m_perPassConstantsBufferData;
-
-#ifdef VT_DEBUG
+#ifdef VT_ENABLE_RENDERGRAPH_VALIDATION
 		BoundPipelineData m_boundPipelineData;
 #endif
 	};
@@ -270,8 +256,6 @@ namespace Volt
 	inline void RenderContext::SetConstant(const StringHash& name, const T& data)
 	{
 		VT_PROFILE_FUNCTION();
-
-		// #TODO_Ivar: Add validation
 		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
 
 		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
@@ -279,39 +263,37 @@ namespace Volt
 
 		const auto& uniform = constantsData.uniforms.at(name);
 
-#ifdef VT_DEBUG
+#ifdef VT_ENABLE_RENDERGRAPH_VALIDATION
 		VT_ENSURE(uniform.type == TryGetTypeFromType<T>());
 		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
 #endif
 
-		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(T));
+		memcpy_s(&m_passConstantsData[uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE - uniform.offset, &data, sizeof(T));
 	}
 
 	template<typename F>
 	inline void RenderContext::SetConstant(const StringHash& name, const Vector<F>& data)
 	{
 		VT_PROFILE_FUNCTION();
-
 		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
-		
+
 		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
 		VT_ENSURE(constantsData.uniforms.contains(name));
 
 		const auto& uniform = constantsData.uniforms.at(name);
 
-#ifdef VT_DEBUG
+#ifdef VT_ENABLE_RENDERGRAPH_VALIDATION
 		VT_ENSURE(uniform.type == TryGetTypeFromType<F>());
 		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
 #endif
 
-		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, data.data(), data.size() * sizeof(F));
+		memcpy_s(&m_passConstantsData[uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE - uniform.offset, data.data(), data.size() * sizeof(F));
 	}
 
 	template<typename F, size_t COUNT>
 	inline void RenderContext::SetConstant(const StringHash& name, const std::array<F, COUNT>& data)
 	{
 		VT_PROFILE_FUNCTION();
-
 		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
 
 		const RHI::ShaderRenderGraphConstantsData& constantsData = GetRenderGraphConstantsData();
@@ -319,11 +301,11 @@ namespace Volt
 
 		const auto& uniform = constantsData.uniforms.at(name);
 
-#ifdef VT_DEBUG
+#ifdef VT_ENABLE_RENDERGRAPH_VALIDATION
 		VT_ENSURE(uniform.type == TryGetTypeFromType<F>());
 		m_boundPipelineData.uniformHasBeenSetMap[name] = true;
 #endif
 
-		memcpy_s(&m_perPassConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, data.data(), COUNT * sizeof(F));
+		memcpy_s(&m_passConstantsData[uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE - uniform.offset, data.data(), COUNT * sizeof(F));
 	}
 }

@@ -13,7 +13,7 @@ namespace Volt::RHI
 	class VTRHI_API Swapchain : public RHIInterface
 	{
 	public:
-		VT_DELETE_COMMON_OPERATORS(Swapchain);
+		VT_DELETE_COPY_MOVE(Swapchain);
 		~Swapchain() override = default;
 
 		virtual void BeginFrame() = 0;

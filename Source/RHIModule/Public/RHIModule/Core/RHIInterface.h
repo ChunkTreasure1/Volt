@@ -11,7 +11,7 @@ namespace Volt::RHI
 	{
 	public:
 		virtual ~RHIInterface() = default;
-		VT_DELETE_COMMON_OPERATORS(RHIInterface);
+		VT_DELETE_COPY_MOVE(RHIInterface);
 
 		template<typename T>
 		constexpr T GetHandle() const

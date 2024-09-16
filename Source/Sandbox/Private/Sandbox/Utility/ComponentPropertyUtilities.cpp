@@ -190,8 +190,7 @@ bool ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, Volt::Enti
 
 	if (edited)
 	{
-		uint8_t* offsetPtr = ((uint8_t*)data) + offset;
-		componentType->OnMemberChanged(offsetPtr, entity);
+		componentType->OnMemberChanged(scene->GetRegistry(), entity.GetHandle());
 
 		EditorUtils::MarkEntityAsEdited(entity);
 	}

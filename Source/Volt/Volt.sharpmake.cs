@@ -53,5 +53,19 @@ namespace VoltSharpmake
             conf.IncludePrivatePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "tiny_gltf"));
             conf.IncludePrivatePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "tinyddsloader"));
         }
-    }
+
+		public override void ConfigureRelease(Configuration conf, CommonTarget target)
+		{
+			base.ConfigureRelease(conf, target);
+
+			conf.AdditionalCompilerOptions.Add("/bigobj");
+		}
+
+		public override void ConfigureDist(Configuration conf, CommonTarget target)
+		{
+			base.ConfigureDist(conf, target);
+
+			conf.AdditionalCompilerOptions.Add("/bigobj");
+		}
+	}
 }

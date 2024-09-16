@@ -90,7 +90,7 @@ public:
 	VT_NODISCARD constexpr value_type& back();
 	VT_NODISCARD constexpr const value_type& back() const;
 
-	constexpr void push_back(const T& value);
+	constexpr void push_back(const value_type& value);
 	constexpr value_type& push_back();
 	constexpr void push_back(value_type&& value);
 	constexpr void pop_back();
@@ -568,7 +568,7 @@ inline constexpr const Vector<T>::value_type& Vector<T>::back() const
 }
 
 template<typename T>
-inline constexpr void Vector<T>::push_back(const T& value)
+inline constexpr void Vector<T>::push_back(const value_type& value)
 {
 	if (m_ptrEnd < m_ptrCapacity)
 	{

@@ -17,7 +17,7 @@
 
 #define BIT(X) (1 << (X))
 
-#define VT_DELETE_COMMON_OPERATORS(X) X(const X&) = delete; X& operator=(const X&) = delete; X(X&&) = delete; X& operator=(X&&) = delete
+#define VT_DELETE_COPY_MOVE(X) X(const X&) = delete; X& operator=(const X&) = delete; X(X&&) = delete; X& operator=(X&&) = delete
 #define VT_BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
 //////////////////////////
 

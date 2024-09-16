@@ -12,7 +12,7 @@
 #include <Volt/Core/Application.h>
 #include <Volt/Project/ProjectManager.h>
 
-#include <InputModule/KeyCodes.h>
+#include <InputModule/InputCodes.h>
 
 #include <LogModule/Log.h>
 

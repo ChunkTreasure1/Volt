@@ -1,6 +1,8 @@
 #pragma once
 
-#include "InputModule/Config.h"
+#include "InputModule/InputModuleConfig.h"
+
+#include "InputModule/InputCodes.h"
 
 #include <EventSystem/Event.h>
 
@@ -9,16 +11,17 @@ namespace Volt
 	class INPUTMODULE_API KeyEvent : public Event
 	{
 	public:
-		inline int32_t GetKeyCode() const { return m_keyCode; }
+		inline InputCode GetKeyCode() const { return m_keyCode; }
 
 		EVENT_CLASS(KeyEvent, "{F57124D9-554B-4A8F-9788-79641498BF1C}"_guid);
 	protected:
 		KeyEvent(int32_t keyCode)
-			: m_keyCode(keyCode)
+			
 		{
+			m_keyCode = GLFWKeyCodeToInputCode(keyCode);
 		}
 
-		int m_keyCode;
+		InputCode m_keyCode;
 	};
 
 	class INPUTMODULE_API KeyPressedEvent : public KeyEvent
