@@ -51,7 +51,7 @@
 #include <WindowModule/Events/WindowEvents.h>
 
 #include <InputModule/Input.h>
-#include <InputModule/KeyCodes.h>
+#include <InputModule/InputCodes.h>
 #include <InputModule/Events/KeyboardEvents.h>
 #include <InputModule/Events/MouseEvents.h>
 
@@ -385,7 +385,7 @@ bool AssetBrowserPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
 	switch (e.GetKeyCode())
 	{
-		case VT_KEY_DELETE:
+		case Volt::InputCode::Delete:
 		{
 			if (IsFocused() && mySelectionManager->IsAnySelected())
 			{
@@ -401,7 +401,7 @@ bool AssetBrowserPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 
 bool AssetBrowserPanel::OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent& e)
 {
-	if (e.GetMouseButton() == VT_MOUSE_BUTTON_LEFT)
+	if (e.GetMouseButton() == Volt::InputCode::Mouse_LB)
 	{
 		if (ImGui::IsWindowHovered() && GlobalEditorStates::isDragging)
 		{

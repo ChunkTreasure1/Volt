@@ -1,6 +1,8 @@
 #pragma once
 
-#include "InputModule/Config.h"
+#include "InputModuleConfig.h"
+
+#include "InputCodes.h"
 
 #include <EventSystem/EventListener.h>
 
@@ -31,24 +33,17 @@ namespace Volt
 
 		Input(const Input&) = delete;
 		Input& operator=(const Input&) = delete;
-		
-		static bool IsKeyPressed(int keyCode);
-		static Vector<int> GetAllKeyPressed();
-		static bool IsKeyReleased(int keyCode);
-		static bool IsMouseButtonPressed(int button);
-		static bool IsMouseButtonReleased(int button);
 
-		static bool IsKeyDown(int keyCode);
-		static bool IsKeyUp(int keyCode);
-		static bool IsMouseButtonDown(int button);
-		static bool IsMouseButtonUp(int button);
+		static Vector<int> GetAllPressedButtons();
+
+		static bool IsButtonDown(InputCode keyCode);
+		static bool IsButtonUp(InputCode keyCode);
+
 		static void SetMousePosition(float x, float y);
 		static glm::vec2 GetMousePosition();
 
 		static float GetMouseX();
 		static float GetMouseY();
-
-		static float GetScrollOffset();
 
 		static void ShowCursor(bool state);
 		static void DisableInput(bool state);
@@ -70,7 +65,8 @@ namespace Volt
 		glm::vec2 m_mousePos;
 		glm::vec2 m_viewportMousePos;
 		bool m_disableInput;
-		float m_scrollOffset;
-		std::array<KeyState, 349> m_keyStates;
+
+		//we use unknown here because it is at the end of the enum
+		std::array<KeyState, static_cast<size_t>(InputCode::Unknown)> m_keyStates;
 	};
 }

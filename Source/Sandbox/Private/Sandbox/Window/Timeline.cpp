@@ -5,7 +5,7 @@
 #include "Volt/Asset/Importers/AssetImporter.h"
 #include "Volt/Utility/UIUtility.h"
 #include <InputModule/Input.h>
-#include <InputModule/KeyCodes.h>
+#include <InputModule/InputCodes.h>
 
 #include "Volt/Rendering/Camera/Camera.h"
 
@@ -239,12 +239,12 @@ void Timeline::SortTrack(Volt::Track& track)
 
 bool Timeline::CameraQuickshotKeyframe(Volt::KeyPressedEvent& e)
 {
-	if (!Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL))
+	if (!Volt::Input::IsButtonDown(Volt::InputCode::LeftControl))
 	{
 		return false;
 	}
 
-	if (e.GetKeyCode() != VT_KEY_Q) { return false; }
+	if (e.GetKeyCode() != Volt::InputCode::Q) { return false; }
 
 	if (mySelectedTrack == nullptr)
 	{

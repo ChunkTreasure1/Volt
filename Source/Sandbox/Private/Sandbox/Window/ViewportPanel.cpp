@@ -24,7 +24,7 @@
 #include <Volt/Asset/Prefab.h>
 
 #include <InputModule/Input.h>
-#include <InputModule/KeyCodes.h>
+#include <InputModule/InputCodes.h>
 #include <InputModule/MouseButtonCodes.h>
 
 #include <Volt/Rendering/SceneRenderer.h>
@@ -111,8 +111,8 @@ void ViewportPanel::UpdateMainContent()
 		if (SelectionManager::IsAnySelected())
 		{
 			averageTransform = CalculateAverageTransform();
-			bool snap = Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL);
-			const bool duplicate = Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT);
+			bool snap = Volt::Input::IsButtonDown(Volt::InputCode::LeftControl);
+			const bool duplicate = Volt::Input::IsButtonDown(Volt::InputCode::LeftAlt);
 
 			float snapValue = 0.5f;
 			if (m_gizmoOperation == ImGuizmo::ROTATE)
@@ -206,20 +206,20 @@ void ViewportPanel::UpdateMainContent()
 
 		m_editorCameraController->SetControllable(IsHovered() && !isUsing);
 	}
-	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver() && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT))
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver() && !Volt::Input::IsButtonDown(Volt::InputCode::LeftAlt))
 	{
 		m_beganClick = true;
 		HandleSingleSelect();
 	}
 
-	if (m_beganClick && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL) && !Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT))
+	if (m_beganClick && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !Volt::Input::IsButtonDown(Volt::InputCode::LeftControl) && !Volt::Input::IsButtonDown(Volt::InputCode::LeftShift))
 	{
 		m_startDragPos = ImGui::GetMousePos();
 		m_isDragging = true;
 		m_beganClick = false;
 	}
 
-	if (m_isDragging && Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT))
+	if (m_isDragging && Volt::Input::IsButtonDown(Volt::InputCode::LeftAlt))
 	{
 		m_isDragging = false;
 	}
@@ -472,7 +472,7 @@ bool ViewportPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 {
 	switch (e.GetMouseButton())
 	{
-		case VT_MOUSE_BUTTON_RIGHT:
+		case Volt::InputCode::Mouse_RB:
 		{
 			if (IsHovered())
 			{
@@ -487,34 +487,34 @@ bool ViewportPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 
 bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	if (!IsHovered() || Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
+	if (!IsHovered() || Volt::Input::IsButtonDown(Volt::InputCode::Mouse_RB) || ImGui::IsAnyItemActive())
 	{
 		return false;
 	}
 
-	const bool ctrlPressed = Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL);
+	const bool ctrlPressed = Volt::Input::IsButtonDown(Volt::InputCode::LeftControl);
 
 	switch (e.GetKeyCode())
 	{
-		case VT_KEY_W:
+		case Volt::InputCode::W:
 		{
 			m_gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
 			break;
 		}
 
-		case VT_KEY_E:
+		case Volt::InputCode::E:
 		{
 			m_gizmoOperation = ImGuizmo::OPERATION::ROTATE;
 			break;
 		}
 
-		case VT_KEY_R:
+		case Volt::InputCode::R:
 		{
 			m_gizmoOperation = ImGuizmo::OPERATION::SCALE;
 			break;
 		}
 
-		case VT_KEY_G:
+		case Volt::InputCode::G:
 		{
 			if (!ctrlPressed)
 			{
@@ -524,7 +524,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			break;
 		}
 
-		case VT_KEY_END:
+		case Volt::InputCode::End:
 		{
 			// NOT WORKING YET
 			break;
@@ -603,8 +603,8 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			//break;
 		}
 
-		case VT_KEY_BACKSPACE:
-		case VT_KEY_DELETE:
+		case Volt::InputCode::Backspace:
+		case Volt::InputCode::Delete:
 		{
 			Vector<Volt::Entity> entitiesToRemove;
 
@@ -645,7 +645,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			break;
 		}
 
-		case VT_KEY_P:
+		case Volt::InputCode::P:
 		{
 			auto& settings = UserSettingsManager::GetSettings().sceneSettings;
 			if (!settings.showGizmos)
@@ -666,7 +666,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 
 bool ViewportPanel::OnMouseReleased(Volt::MouseButtonReleasedEvent& e)
 {
-	if (e.GetMouseButton() == VT_MOUSE_BUTTON_LEFT && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT) && GlobalEditorStates::dragStartedInAssetBrowser)
+	if (e.GetMouseButton() == Volt::InputCode::Mouse_LB && !Volt::Input::IsButtonDown(Volt::InputCode::LeftAlt) && GlobalEditorStates::dragStartedInAssetBrowser)
 	{
 		if (IsHovered())
 		{
@@ -881,8 +881,8 @@ void ViewportPanel::HandleSingleSelect()
 		}
 
 		uint32_t pixelData = m_sceneRenderer->GetObjectIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX * renderScale), static_cast<uint32_t>(mouseY * renderScale), 0u);
-		const bool multiSelect = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);
-		const bool deselect = Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL);
+		const bool multiSelect = Volt::Input::IsButtonDown(Volt::InputCode::LeftShift);
+		const bool deselect = Volt::Input::IsButtonDown(Volt::InputCode::LeftControl);
 
 		if (!multiSelect && !deselect)
 		{

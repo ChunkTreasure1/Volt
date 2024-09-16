@@ -8,7 +8,7 @@
 #include "Events/WindowEvents.h"
 
 #include <InputModule/Events/KeyboardEvents.h>
-#include <InputModule/Events/MouseEvents.h>
+#include <InputModule/Events/MouseEvents.h>  
 
 #include <EventSystem/EventSystem.h>
 
@@ -179,7 +179,7 @@ namespace Volt
 					break;
 				}
 			}
-		});
+		});		
 
 		glfwSetCharCallback(m_window, [](GLFWwindow* window, uint32_t key)
 		{

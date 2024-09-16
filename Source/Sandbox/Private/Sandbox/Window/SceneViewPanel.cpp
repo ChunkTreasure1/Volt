@@ -11,7 +11,7 @@
 
 #include <Volt/Asset/Prefab.h>
 #include <InputModule/Input.h>
-#include <InputModule/KeyCodes.h>
+#include <InputModule/InputCodes.h>
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/Mesh/Mesh.h>
 
@@ -489,8 +489,8 @@ bool SceneViewPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 
 	switch (e.GetKeyCode())
 	{
-		case VT_KEY_BACKSPACE:
-		case VT_KEY_DELETE:
+		case Volt::InputCode::Backspace:
+		case Volt::InputCode::Delete:
 		{
 			Vector<Volt::Entity> entitiesToRemove;
 
@@ -754,7 +754,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 	{
 		if (!wasRowRightClicked)
 		{
-			if (!Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL) && !Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT))
+			if (!Volt::Input::IsButtonDown(Volt::InputCode::LeftControl) && !Volt::Input::IsButtonDown(Volt::InputCode::LeftShift))
 			{
 				SelectionManager::DeselectAll();
 				SelectionManager::Select(entity.GetID());
@@ -762,7 +762,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 				SelectionManager::GetFirstSelectedRow() = rowIndex;
 				SelectionManager::GetLastSelectedRow() = -1;
 			}
-			else if (Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT) && SelectionManager::GetSelectedCount() > 0)
+			else if (Volt::Input::IsButtonDown(Volt::InputCode::LeftShift) && SelectionManager::GetSelectedCount() > 0)
 			{
 				if (rowIndex < SelectionManager::GetFirstSelectedRow())
 				{
