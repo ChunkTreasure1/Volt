@@ -3,7 +3,11 @@
 
 #include "Circuit/Window/CircuitWindow.h"
 
-#include "Circuit/Input/CircuitInput.h"
+#include "Circuit/Widgets/SliderWidget.h"
+
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Events/WindowEvents.h>
+#include <WindowModule/Window.h>
 
 namespace Circuit
 {
@@ -17,42 +21,58 @@ namespace Circuit
 		return *s_Instance.get();
 	}
 
-	void CircuitManager::Initialize(std::function<void(const TellEvent&)> eventCallback)
+	void CircuitManager::Initialize()
 	{
 		s_Instance = std::make_unique<CircuitManager>();
 		s_Instance->Init();
-		s_Instance->m_tellEventCallback = eventCallback;
 	}
 
 	void CircuitManager::Init()
 	{
-		CircuitInput::Initialize(
-			[this](Circuit::InputEvent& inputEvent)-> bool
-		{
-			for (auto& pair : m_windows)
-			{
-				pair.second->OnInputEvent(inputEvent);
-			}
+		RegisterEventListeners();
 
-			return false;
-		});
+		RegisterWindow(Volt::WindowManager::Get().GetMainWindowHandle());
+
+		m_windows[Volt::WindowManager::Get().GetMainWindowHandle()]->SetWidget(
+			CreateWidget(Circuit::SliderWidget)
+		.X(100)
+		.Y(100)
+		.Max(100)
+		.Min(0)
+		.Value(50.f)
+		);
+	}
+
+	void CircuitManager::RegisterEventListeners()
+	{
+		RegisterListener<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(CircuitManager::OnRenderEvent));
+	}
+
+	bool CircuitManager::OnRenderEvent(Volt::WindowRenderEvent& e)
+	{
+		for (auto& [windowHandle, window] : m_windows)
+		{
+			window->OnRender();
+		}
+
+		return false;
+	}
+
+	void CircuitManager::RegisterWindow(Volt::WindowHandle handle)
+	{
+		m_windows.emplace(handle, CreateScope<CircuitWindow>(handle));
 	}
 
 	void CircuitManager::Update()
 	{
 	}
 
-	CircuitWindow& CircuitManager::OpenWindow(OpenWindowParams& params)
-	{
-		//const size_t startWindowCount = m_windows.size();
-		//BroadcastTellEvent(OpenWindowTellEvent(params));
-		//assert(m_windows.size() == (startWindowCount + 1) && "Failed to open window.");
+	//CircuitWindow& CircuitManager::OpenWindow(OpenWindowParams& params)
+	//{
+	//	//const size_t startWindowCount = m_windows.size();
+	//	//BroadcastTellEvent(OpenWindowTellEvent(params));
+	//	//assert(m_windows.size() == (startWindowCount + 1) && "Failed to open window.");
 
-		return *((--m_windows.end())->second);
-	}
-
-	CIRCUIT_API const std::map<Volt::WindowHandle, std::unique_ptr<CircuitWindow>>& CircuitManager::GetWindows()
-	{
-		return m_windows;
-	}
+	//	return *((--m_windows.end())->second);
+	//}
 }

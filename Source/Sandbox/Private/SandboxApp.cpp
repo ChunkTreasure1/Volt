@@ -39,9 +39,10 @@ Volt::Application* Volt::CreateApplication(const std::filesystem::path& appPath)
 	info.projectPath = appPath;
 	info.useVSync = false;
 	info.enableSteam = false;
-	info.enableImGui = true;
+	info.enableImGui = false;
 	info.UseTitlebar = true;
 	info.UseCustomTitlebar = true;
+	info.isRuntime = false;
 	SandboxApp* app;
 	Create(app, info);
 

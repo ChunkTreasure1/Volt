@@ -94,8 +94,6 @@
 
 #include "Circuit/CircuitManager.h"
 
-#include "Circuit/Input/CircuitInput.h"
-
 Sandbox::Sandbox()
 {
 	VT_ASSERT_MSG(!s_instance, "Sandbox already exists!");
@@ -118,19 +116,19 @@ void Sandbox::OnAttach()
 		EditorResources::Initialize();
 	}
 
-	Circuit::CircuitManager::Initialize(std::bind(&Sandbox::HandleCircuitTellEvents, this, std::placeholders::_1));
-	Circuit::OpenWindowParams params;
-	params.title = "Test Circuit Window";
-	params.startWidth = 600;
-	params.startHeight = 400;
-	Circuit::CircuitWindow& window = Circuit::CircuitManager::Get().OpenWindow(params);
+	Circuit::CircuitManager::Initialize();
+	//Circuit::OpenWindowParams params;
+	//params.title = "Test Circuit Window";
+	//params.startWidth = 600;
+	//params.startHeight = 400;
+	//Circuit::CircuitWindow& window = Circuit::CircuitManager::Get().OpenWindow(params);
 
-	window.SetWidget(CreateWidget(Circuit::SliderWidget)
-		.X(100)
-		.Y(100)
-		.Max(100)
-		.Min(0)
-		.Value(50.f));
+	//window.SetWidget(CreateWidget(Circuit::SliderWidget)
+	//	.X(100)
+	//	.Y(100)
+	//	.Max(100)
+	//	.Min(0)
+	//	.Value(50.f));
 
 	EditorResources::Initialize();
 	VersionControl::Initialize(VersionControlSystem::Perforce);
@@ -163,14 +161,14 @@ void Sandbox::OnAttach()
 		NewScene();
 	}
 
-	RegisterPanels();
+	//RegisterPanels();
 
 	m_fileWatcher = CreateRef<FileWatcher>();
 	CreateWatches();
 
 	ImGuizmo::AllowAxisFlip(false);
 
-	InitializeModals();
+	//InitializeModals();
 
 	//constexpr int64_t discordAppId = 1108502963447681106;
 
@@ -488,219 +486,38 @@ bool Sandbox::LoadScene(Volt::OnSceneTransitionEvent& e)
 
 void Sandbox::HandleCircuitTellEvents(const Circuit::TellEvent& e)
 {
-	//switch (e.GetType())
-	//{
-	//	case Circuit::CircuitTellEventType::OpenWindow:
-	//	{
-	//		const Circuit::OpenWindowTellEvent& openWindowEvent = reinterpret_cast<const Circuit::OpenWindowTellEvent&>(e);
-
-	//		Volt::WindowProperties windowProperties;
-	//		windowProperties.Title = openWindowEvent.GetParams().title;
-	//		windowProperties.VSync = false;
-
-	//		windowProperties.Width = openWindowEvent.GetParams().startWidth;
-	//		windowProperties.Height = openWindowEvent.GetParams().startHeight;
-
-	//		windowProperties.UseTitlebar = true;
-	//		windowProperties.UseCustomTitlebar = true;
-
-	//		Volt::WindowHandle handle = Volt::WindowManager::Get().CreateNewWindow(windowProperties);
-	//		Volt::Window& window = Volt::WindowManager::Get().GetWindow(handle);
-	//		window.SetEventCallback(VT_BIND_EVENT_FN(Sandbox::HandleCircuitWindowEventCallback));
-
-
-	//		Circuit::WindowOpenedListenEvent ev(handle);
-	//		Circuit::CircuitManager::Get().BroadcastListenEvent(ev);
-
-	//		m_circuitRenderers.push_back(CreateScope<CircuitRenderer>(handle));
-
-	//		break;
-	//	}
-	//	default:
-	//		VT_LOG(Error, "Unhandled Circuit Event!");
-	//		break;
-	//}
-}
-
-void Sandbox::HandleCircuitWindowEventCallback(Volt::Event& e)
-{
-	/*Volt::EventDispatcher dispatcher(e);
-
-	dispatcher.Dispatch<Volt::KeyPressedEvent>([](Volt::KeyPressedEvent& e)
+	/*switch (e.GetType())
 	{
-		Circuit::CircuitInput::Get().OnKeyPressed(VoltKeyCodeToCircuitKeyCode(e.GetKeyCode()));
-		return false;
-	});
+		case Circuit::CircuitTellEventType::OpenWindow:
+		{
+			const Circuit::OpenWindowTellEvent& openWindowEvent = reinterpret_cast<const Circuit::OpenWindowTellEvent&>(e);
 
-	dispatcher.Dispatch<Volt::KeyReleasedEvent>([](Volt::KeyReleasedEvent& e)
-	{
-		Circuit::CircuitInput::Get().OnKeyReleased(VoltKeyCodeToCircuitKeyCode(e.GetKeyCode()));
-		return false;
-	});
+			Volt::WindowProperties windowProperties;
+			windowProperties.Title = openWindowEvent.GetParams().title;
+			windowProperties.VSync = false;
 
-	dispatcher.Dispatch<Volt::MouseButtonPressedEvent>([](Volt::MouseButtonPressedEvent& e)
-	{
-		Circuit::CircuitInput::Get().OnKeyPressed(VoltMouseCodeToCircuitKeyCode(e.GetMouseButton()));
-		return false;
-	});
+			windowProperties.Width = openWindowEvent.GetParams().startWidth;
+			windowProperties.Height = openWindowEvent.GetParams().startHeight;
 
-	dispatcher.Dispatch<Volt::MouseButtonReleasedEvent>([](Volt::MouseButtonReleasedEvent& e)
-	{
-		Circuit::CircuitInput::Get().OnKeyReleased(VoltMouseCodeToCircuitKeyCode(e.GetMouseButton()));
-		return false;
-	});
+			windowProperties.UseTitlebar = true;
+			windowProperties.UseCustomTitlebar = true;
 
-	dispatcher.Dispatch<Volt::MouseMovedEvent>([](Volt::MouseMovedEvent& e)
-	{
-		Circuit::CircuitInput::Get().OnMouseMoved(e.GetX(), e.GetY());
-		return false;
-	});
+			Volt::WindowHandle handle = Volt::WindowManager::Get().CreateNewWindow(windowProperties);
+			Volt::Window& window = Volt::WindowManager::Get().GetWindow(handle);
+			window.SetEventCallback(VT_BIND_EVENT_FN(Sandbox::HandleCircuitWindowEventCallback));
 
-	VT_LOG(Info,"Window Event: {0}", e.ToString());*/
-}
 
-Circuit::KeyCode Sandbox::VoltKeyCodeToCircuitKeyCode(uint32_t keyCode)
-{
-	switch (keyCode)
-	{
-		case VT_KEY_SPACE: return Circuit::KeyCode::Spacebar;
-		case VT_KEY_APOSTROPHE: return Circuit::KeyCode::Apostrophe;
-		case VT_KEY_COMMA: return Circuit::KeyCode::Comma;
-		case VT_KEY_MINUS: return Circuit::KeyCode::Minus;
-		case VT_KEY_PERIOD: return Circuit::KeyCode::Period;
-		case VT_KEY_SLASH: return Circuit::KeyCode::Slash;
-		case VT_KEY_0: return Circuit::KeyCode::Key_0;
-		case VT_KEY_1: return Circuit::KeyCode::Key_1;
-		case VT_KEY_2: return Circuit::KeyCode::Key_2;
-		case VT_KEY_3: return Circuit::KeyCode::Key_3;
-		case VT_KEY_4: return Circuit::KeyCode::Key_4;
-		case VT_KEY_5: return Circuit::KeyCode::Key_5;
-		case VT_KEY_6: return Circuit::KeyCode::Key_6;
-		case VT_KEY_7: return Circuit::KeyCode::Key_7;
-		case VT_KEY_8: return Circuit::KeyCode::Key_8;
-		case VT_KEY_9: return Circuit::KeyCode::Key_9;
-		case VT_KEY_SEMICOLON: return Circuit::KeyCode::Semicolon;
-		case VT_KEY_EQUAL: return Circuit::KeyCode::Equal;
-		case VT_KEY_A: return Circuit::KeyCode::A;
-		case VT_KEY_B: return Circuit::KeyCode::B;
-		case VT_KEY_C: return Circuit::KeyCode::C;
-		case VT_KEY_D: return Circuit::KeyCode::D;
-		case VT_KEY_E: return Circuit::KeyCode::E;
-		case VT_KEY_F: return Circuit::KeyCode::F;
-		case VT_KEY_G: return Circuit::KeyCode::G;
-		case VT_KEY_H: return Circuit::KeyCode::H;
-		case VT_KEY_I: return Circuit::KeyCode::I;
-		case VT_KEY_J: return Circuit::KeyCode::J;
-		case VT_KEY_K: return Circuit::KeyCode::K;
-		case VT_KEY_L: return Circuit::KeyCode::L;
-		case VT_KEY_M: return Circuit::KeyCode::M;
-		case VT_KEY_N: return Circuit::KeyCode::N;
-		case VT_KEY_O: return Circuit::KeyCode::O;
-		case VT_KEY_P: return Circuit::KeyCode::P;
-		case VT_KEY_Q: return Circuit::KeyCode::Q;
-		case VT_KEY_R: return Circuit::KeyCode::R;
-		case VT_KEY_S: return Circuit::KeyCode::S;
-		case VT_KEY_T: return Circuit::KeyCode::T;
-		case VT_KEY_U: return Circuit::KeyCode::U;
-		case VT_KEY_V: return Circuit::KeyCode::V;
-		case VT_KEY_W: return Circuit::KeyCode::W;
-		case VT_KEY_X: return Circuit::KeyCode::X;
-		case VT_KEY_Y: return Circuit::KeyCode::Y;
-		case VT_KEY_Z: return Circuit::KeyCode::Z;
-		case VT_KEY_LEFT_BRACKET: return Circuit::KeyCode::LeftBracket;
-		case VT_KEY_BACKSLASH: return Circuit::KeyCode::Backslash;
-		case VT_KEY_RIGHT_BRACKET: return Circuit::KeyCode::RightBracket;
-		case VT_KEY_GRAVE_ACCENT: return Circuit::KeyCode::GraveAccent;
-		case VT_KEY_WORLD_1: return Circuit::KeyCode::World_1;
-		case VT_KEY_WORLD_2: return Circuit::KeyCode::World_2;
-		case VT_KEY_ESCAPE: return Circuit::KeyCode::Esc;
-		case VT_KEY_ENTER: return Circuit::KeyCode::Return;
-		case VT_KEY_TAB: return Circuit::KeyCode::Tab;
-		case VT_KEY_BACKSPACE: return Circuit::KeyCode::Backspace;
-		case VT_KEY_INSERT: return Circuit::KeyCode::Insert;
-		case VT_KEY_DELETE: return Circuit::KeyCode::Delete;
-		case VT_KEY_RIGHT: return Circuit::KeyCode::RightArrow;
-		case VT_KEY_LEFT: return Circuit::KeyCode::LeftArrow;
-		case VT_KEY_DOWN: return Circuit::KeyCode::DownArrow;
-		case VT_KEY_UP: return Circuit::KeyCode::UpArrow;
-		case VT_KEY_PAGE_UP: return Circuit::KeyCode::PageUp;
-		case VT_KEY_PAGE_DOWN: return Circuit::KeyCode::PageDown;
-		case VT_KEY_HOME: return Circuit::KeyCode::Home;
-		case VT_KEY_END: return Circuit::KeyCode::End;
-		case VT_KEY_CAPS_LOCK: return Circuit::KeyCode::CapsLock;
-		case VT_KEY_SCROLL_LOCK: return Circuit::KeyCode::ScrollLock;
-		case VT_KEY_NUM_LOCK: return Circuit::KeyCode::NumLock;
-		case VT_KEY_PRINT_SCREEN: return Circuit::KeyCode::PrintScreen;
-		case VT_KEY_PAUSE: return Circuit::KeyCode::Pause;
-		case VT_KEY_F1: return Circuit::KeyCode::F1;
-		case VT_KEY_F2: return Circuit::KeyCode::F2;
-		case VT_KEY_F3: return Circuit::KeyCode::F3;
-		case VT_KEY_F4: return Circuit::KeyCode::F4;
-		case VT_KEY_F5: return Circuit::KeyCode::F5;
-		case VT_KEY_F6: return Circuit::KeyCode::F6;
-		case VT_KEY_F7: return Circuit::KeyCode::F7;
-		case VT_KEY_F8: return Circuit::KeyCode::F8;
-		case VT_KEY_F9: return Circuit::KeyCode::F9;
-		case VT_KEY_F10: return Circuit::KeyCode::F10;
-		case VT_KEY_F11: return Circuit::KeyCode::F11;
-		case VT_KEY_F12: return Circuit::KeyCode::F12;
-		case VT_KEY_F13: return Circuit::KeyCode::F13;
-		case VT_KEY_F14: return Circuit::KeyCode::F14;
-		case VT_KEY_F15: return Circuit::KeyCode::F15;
-		case VT_KEY_F16: return Circuit::KeyCode::F16;
-		case VT_KEY_F17: return Circuit::KeyCode::F17;
-		case VT_KEY_F18: return Circuit::KeyCode::F18;
-		case VT_KEY_F19: return Circuit::KeyCode::F19;
-		case VT_KEY_F20: return Circuit::KeyCode::F20;
-		case VT_KEY_F21: return Circuit::KeyCode::F21;
-		case VT_KEY_F22: return Circuit::KeyCode::F22;
-		case VT_KEY_F23: return Circuit::KeyCode::F23;
-		case VT_KEY_F24: return Circuit::KeyCode::F24;
-		case VT_KEY_KP_0: return Circuit::KeyCode::Numpad_0;
-		case VT_KEY_KP_1: return Circuit::KeyCode::Numpad_1;
-		case VT_KEY_KP_2: return Circuit::KeyCode::Numpad_2;
-		case VT_KEY_KP_3: return Circuit::KeyCode::Numpad_3;
-		case VT_KEY_KP_4: return Circuit::KeyCode::Numpad_4;
-		case VT_KEY_KP_5: return Circuit::KeyCode::Numpad_5;
-		case VT_KEY_KP_6: return Circuit::KeyCode::Numpad_6;
-		case VT_KEY_KP_7: return Circuit::KeyCode::Numpad_7;
-		case VT_KEY_KP_8: return Circuit::KeyCode::Numpad_8;
-		case VT_KEY_KP_9: return Circuit::KeyCode::Numpad_9;
-		case VT_KEY_KP_DECIMAL: return Circuit::KeyCode::Decimal;
-		case VT_KEY_KP_DIVIDE: return Circuit::KeyCode::Divide;
-		case VT_KEY_KP_MULTIPLY: return Circuit::KeyCode::Multiply;
-		case VT_KEY_KP_SUBTRACT: return Circuit::KeyCode::Subtract;
-		case VT_KEY_KP_ADD: return Circuit::KeyCode::Add;
-		case VT_KEY_KP_ENTER: return Circuit::KeyCode::Enter;
-		case VT_KEY_KP_EQUAL: return Circuit::KeyCode::Equal;
-		case VT_KEY_LEFT_SHIFT: return Circuit::KeyCode::LeftShift;
-		case VT_KEY_LEFT_CONTROL: return Circuit::KeyCode::LeftControl;
-		case VT_KEY_LEFT_ALT: return Circuit::KeyCode::LeftAlt;
-		case VT_KEY_LEFT_SUPER: return Circuit::KeyCode::LeftSuper;
-		case VT_KEY_RIGHT_SHIFT: return Circuit::KeyCode::RightShift;
-		case VT_KEY_RIGHT_CONTROL: return Circuit::KeyCode::RightControl;
-		case VT_KEY_RIGHT_ALT: return Circuit::KeyCode::RightAlt;
-		case VT_KEY_RIGHT_SUPER: return Circuit::KeyCode::RightSuper;
-		case VT_KEY_MENU: return Circuit::KeyCode::Menu;
-		default: return Circuit::KeyCode::Unknown;
-	}
-}
+			Circuit::WindowOpenedListenEvent ev(handle);
+			Circuit::CircuitManager::Get().BroadcastListenEvent(ev);
 
-Circuit::KeyCode Sandbox::VoltMouseCodeToCircuitKeyCode(uint32_t keyCode)
-{
-	switch (keyCode)
-	{
-		case VT_MOUSE_BUTTON_1: return Circuit::KeyCode::Mouse_LB;
-		case VT_MOUSE_BUTTON_2: return Circuit::KeyCode::Mouse_RB;
-		case VT_MOUSE_BUTTON_3: return Circuit::KeyCode::Mouse_MB;
-		case VT_MOUSE_BUTTON_4: return Circuit::KeyCode::Mouse_X1;
-		case VT_MOUSE_BUTTON_5: return Circuit::KeyCode::Mouse_X2;
-		case VT_MOUSE_BUTTON_6: return Circuit::KeyCode::Mouse_X3;
-		case VT_MOUSE_BUTTON_7: return Circuit::KeyCode::Mouse_X4;
-		case VT_MOUSE_BUTTON_8: return Circuit::KeyCode::Mouse_X5;
-	}
+			m_circuitRenderers.push_back(CreateScope<CircuitRenderer>(handle));
 
-	return Circuit::KeyCode::A;
+			break;
+		}
+		default:
+			VT_LOG(Error, "Unhandled Circuit Event!");
+			break;
+	}*/
 }
 
 bool Sandbox::CheckForUpdateNavMesh(Volt::Entity entity)
@@ -830,7 +647,7 @@ void Sandbox::RegisterEventListeners()
 	auto isInitializedPred = [this]() { return m_isInitialized; };
 
 	RegisterListener<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnUpdateEvent), isInitializedPred);
-	RegisterListener<Volt::AppImGuiUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnImGuiUpdateEvent), isInitializedPred);
+	//RegisterListener<Volt::AppImGuiUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnImGuiUpdateEvent), isInitializedPred);
 	RegisterListener<Volt::WindowRenderEvent>(VT_BIND_EVENT_FN(Sandbox::OnRenderEvent), isInitializedPred);
 	RegisterListener<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(Sandbox::OnKeyPressedEvent), isInitializedPred);
 	RegisterListener<Volt::ViewportResizeEvent>(VT_BIND_EVENT_FN(Sandbox::OnViewportResizeEvent), isInitializedPred);
@@ -850,10 +667,10 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 
 	EditorCommandStack::GetInstance().Update(100);
 
-	auto mousePos = Volt::Input::GetMousePosition();
-	Volt::Input::SetViewportMousePosition(m_gameViewPanel->GetViewportLocalPosition(mousePos));
+	//auto mousePos = Volt::Input::GetMousePosition();
+	//Volt::Input::SetViewportMousePosition(m_gameViewPanel->GetViewportLocalPosition(mousePos));
 
-	switch (m_sceneState)
+	/*switch (m_sceneState)
 	{
 		case SceneState::Edit:
 			m_runtimeScene->UpdateEditor(e.GetTimestep());
@@ -869,24 +686,24 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		case SceneState::Simulating:
 			m_runtimeScene->UpdateSimulation(e.GetTimestep());
 			break;
-	}
+	}*/
 
-	SelectionManager::Update(m_runtimeScene);
+	//SelectionManager::Update(m_runtimeScene);
 
-	if (m_shouldResetLayout)
+	/*if (m_shouldResetLayout)
 	{
 		ImGui::LoadIniSettingsFromDisk("Editor/imgui.ini");
 		m_shouldResetLayout = false;
-	}
+	}*/
 
-	if (m_buildStarted)
+	/*if (m_buildStarted)
 	{
 		if (!GameBuilder::IsBuilding())
 		{
 			UI::Notify(NotificationType::Success, "Build Finished!", std::format("Build finished successfully in {0} seconds!", GameBuilder::GetCurrentBuildTime()));
 			m_buildStarted = false;
 		}
-	}
+	}*/
 
 	VT_PROFILE_SCOPE("File watcher");
 
@@ -902,8 +719,6 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	}
 
 	m_fileChangeQueue.clear();
-
-	Circuit::CircuitManager::Get().Update();
 
 	return false;
 }
@@ -1013,10 +828,10 @@ bool Sandbox::OnRenderEvent(Volt::WindowRenderEvent& e)
 {
 	VT_PROFILE_FUNCTION();
 
-	for (Scope<CircuitRenderer>& renderer : m_circuitRenderers)
-	{
-		renderer->OnRender();
-	}
+	//for (Scope<CircuitRenderer>& renderer : m_circuitRenderers)
+	//{
+	//	renderer->OnRender();
+	//}
 
 	/*for (auto& circuitWindowPair : Circuit::CircuitManager::Get().GetWindows())
 	{
@@ -1030,7 +845,7 @@ bool Sandbox::OnRenderEvent(Volt::WindowRenderEvent& e)
 
 	//mySceneRenderer->ClearOutlineCommands();
 
-	RenderSelection(m_editorCameraController->GetCamera());
+	//RenderSelection(m_editorCameraController->GetCamera());
 	//RenderGizmos(myRuntimeScene, myEditorCameraController->GetCamera());
 
 	switch (m_sceneState)
@@ -1048,7 +863,7 @@ bool Sandbox::OnRenderEvent(Volt::WindowRenderEvent& e)
 		TransitionToNewScene();
 	}
 
-	RenderGameView();
+	//RenderGameView();
 
 	return false;
 }

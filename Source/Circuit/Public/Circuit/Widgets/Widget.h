@@ -6,7 +6,6 @@ class WidgetBuilder;
 namespace Circuit
 {
 	class CircuitPainter;
-	class InputEvent;
 	enum class RenderPrimitiveType
 	{
 		Rectangle,
@@ -27,8 +26,6 @@ namespace Circuit
 
 
 		 void BuildBaseArgs(const CircuitBaseArgs& baseArgs);
-
-		 virtual void OnInputEvent(InputEvent& inputEvent) {};
 
 		 virtual void OnPaint(CircuitPainter& painter);
 

@@ -25,7 +25,8 @@ namespace VoltSharpmake
 			conf.AddPublicDependency<RenderCoreModule>(target);
 			conf.AddPublicDependency<WindowModule>(target);
 			conf.AddPublicDependency<LogModule>(target);
-
+			conf.AddPublicDependency<EventSystemModule>(target);
+			conf.AddPublicDependency<InputModule>(target);
 		}
 	}
 }

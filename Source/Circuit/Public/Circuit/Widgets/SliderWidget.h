@@ -1,13 +1,23 @@
 #pragma once
 #include "Circuit/Widgets/Widget.h"
 
+#include <EventSystem/EventListener.h>
+
 class WidgetBuilder;
 
 template <typename T>
 class Observer;
+
+namespace Volt
+{
+	class MouseMovedEvent;
+	class MouseButtonPressedEvent;
+	class MouseButtonReleasedEvent;
+}
+
 namespace Circuit
 {
-	class CIRCUIT_API SliderWidget : public Widget
+	class CIRCUIT_API SliderWidget : public Widget, public Volt::EventListener
 	{
 	public:
 		SliderWidget();
@@ -24,8 +34,6 @@ namespace Circuit
 		void Build(const Arguments& args);
 
 		virtual void OnPaint(CircuitPainter& painter) override;
-		void OnInputEvent(InputEvent& inputEvent) override;
-
 
 		float GetValue() const;
 		void SetValue(float value);
@@ -38,6 +46,18 @@ namespace Circuit
 
 		float GetValueNormalized();
 	private:
+		void RegisterEventListeners();
+
+		bool OnMouseMoved(Volt::MouseMovedEvent& e);
+		bool OnMouseButtonPressed(Volt::MouseButtonPressedEvent& e);
+		bool OnMouseButtonReleased(Volt::MouseButtonReleasedEvent& e);
+
+		bool IsMouseInsideRect();
+
+		void SetValueAccordingToMousePos();
+
+		bool m_dragging;
+
 		float m_Value;
 		//unsigned int m_OnValueChangeHandle;
 		float m_MinValue;

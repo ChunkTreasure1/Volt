@@ -26,25 +26,29 @@ namespace Volt
 	class RenderGraphBlackboard;
 	class Window;
 }
-class CIRCUIT_API CircuitRenderer
+
+namespace Circuit
 {
-public:
-	CircuitRenderer(Volt::WindowHandle& windowHandle);
-	~CircuitRenderer() = default;
+	class CIRCUIT_API CircuitRenderer
+	{
+	public:
+		CircuitRenderer(CircuitWindow& targetCircuitWindow);
+		~CircuitRenderer() = default;
 
-	void OnRender();
+		void OnRender();
 
-private:
-	CircuitOutputData& AddCircuitPrimitivesPass(Volt::RenderGraph& renderGraph, Volt::RenderGraphBlackboard& blackboard);
+	private:
+		CircuitOutputData& AddCircuitPrimitivesPass(Volt::RenderGraph& renderGraph, Volt::RenderGraphBlackboard& blackboard);
 
-	Circuit::CircuitWindow& m_targetCircuitWindow;
-	Volt::Window& m_targetWindow;
+		Circuit::CircuitWindow& m_targetCircuitWindow;
+		Volt::Window& m_targetWindow;
 
-	uint32_t m_width;
-	uint32_t m_height;
+		uint32_t m_width;
+		uint32_t m_height;
 
-	RefPtr<Volt::RHI::Image> m_outputImage;
-	RefPtr<Volt::RHI::CommandBuffer> m_commandBuffer;
+		RefPtr<Volt::RHI::Image> m_outputImage;
+		RefPtr<Volt::RHI::CommandBuffer> m_commandBuffer;
 
-	std::atomic<uint64_t> m_frameTotalGPUAllocation;
-};
+		std::atomic<uint64_t> m_frameTotalGPUAllocation;
+	};
+}

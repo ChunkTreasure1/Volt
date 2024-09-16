@@ -2,22 +2,28 @@
 #include "Window/CircuitWindow.h"
 #include "Circuit/CircuitPainter.h"
 
+#include "Circuit/Rendering/CircuitRenderer.h"
+
+#include <WindowModule/WindowManager.h>
+#include <WindowModule/Window.h>
+
 namespace Circuit
 {
-	CircuitWindow::CircuitWindow(Volt::WindowHandle windowHandle, const OpenWindowParams& params)
+	CircuitWindow::CircuitWindow(Volt::WindowHandle windowHandle)
 		: m_windowHandle(windowHandle)
 	{
-		m_title = params.title;
-		m_windowSize = { params.startWidth, params.startHeight };
+		m_renderer = CreateRef<CircuitRenderer>(*this);
 	}
 
 	Volt::WindowHandle CircuitWindow::GetWindowHandle() const
 	{
 		return m_windowHandle;
 	}
-	const glm::u16vec2& CircuitWindow::GetWindowSize() const
+	
+	glm::u16vec2 CircuitWindow::GetWindowSize() const
 	{
-		return m_windowSize;
+		Volt::Window& window = Volt::WindowManager::Get().GetWindow(m_windowHandle);
+		return { window.GetWidth(), window.GetHeight() };
 	}
 	void CircuitWindow::Resize(const glm::vec2& size)
 	{
@@ -30,12 +36,14 @@ namespace Circuit
 		m_widget->OnPaint(painter);
 		return painter.GetCommands();
 	}
-	void CircuitWindow::OnInputEvent(InputEvent& inputEvent)
-	{
-		m_widget->OnInputEvent(inputEvent);
-	}
+
 	void CircuitWindow::SetWidget(std::unique_ptr<Widget> widget)
 	{
 		m_widget = std::move(widget);
+	}
+
+	void CircuitWindow::OnRender()
+	{
+		m_renderer->OnRender();
 	}
 }

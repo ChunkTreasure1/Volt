@@ -214,7 +214,9 @@ namespace Volt
 
 		glfwSetCursorPosCallback(m_window, [](GLFWwindow* window, double xPos, double yPos)
 		{
-			MouseMovedEvent event((float)xPos, (float)yPos);
+			int32_t x, y;
+			glfwGetWindowPos(window, &x, &y);
+			MouseMovedEvent event((float)xPos + x, (float)yPos + y);
 			EventSystem::DispatchEvent(event);
 		});
 

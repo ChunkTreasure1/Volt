@@ -152,8 +152,6 @@ private:
 	void CreateMovedWatch();
 	/////////////////////////
 
-	std::vector<Scope<CircuitRenderer>> m_circuitRenderers;
-
 	BuildInfo m_buildInfo;
 
 	Ref<EditorCameraController> m_editorCameraController;
