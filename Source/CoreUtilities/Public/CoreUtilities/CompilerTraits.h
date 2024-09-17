@@ -72,3 +72,10 @@ inline void VTBaseUnused(const volatile T& x) { (void)x; }
 #else
 	#error "Not defined!"
 #endif
+
+// Barrier
+#ifdef VT_PLATFORM_WINDOWS
+	#define VT_COMPILER_BARRIER() _ReadWriteBarrier()
+#else
+	#error "Not defined!"
+#endif

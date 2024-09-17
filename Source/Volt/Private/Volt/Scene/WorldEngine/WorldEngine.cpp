@@ -145,7 +145,7 @@ namespace Volt
 			return;
 		}
 
-		JobSystem::SubmitTask([cellId, this]() 
+		JobSystem::CreateAndRunJob([cellId, this]() 
 		{
 			auto& cell = GetCellFromID(cellId);
 

@@ -9,13 +9,12 @@
 
 namespace Volt::Algo
 {
-	Vector<std::future<void>> ForEachParallelLockable(std::function<void(uint32_t threadIdx, uint32_t elementIdx)>&& func, uint32_t iterationCount)
+	void ForEachParallelLocking(std::function<void(uint32_t threadIdx, uint32_t elementIdx)>&& func, uint32_t iterationCount)
 	{
-		const uint32_t threadCount = std::min(iterationCount, JobSystem::GetThreadCount());
+		const uint32_t threadCount = std::min(iterationCount, std::thread::hardware_concurrency());
 		const uint32_t perThreadIterationCount = iterationCount / threadCount;
 
-		Vector<std::future<void>> futures;
-		futures.reserve(threadCount);
+		TaskGraph taskGraph{};
 
 		uint32_t iterOffset = 0;
 		for (uint32_t i = 0; i < threadCount; i++)
@@ -26,25 +25,25 @@ namespace Volt::Algo
 				currThreadIterationCount = iterationCount - i * perThreadIterationCount;
 			}
 
-			futures.emplace_back(JobSystem::SubmitTask([currThreadIterationCount, func, iterOffset, i]() 
+			taskGraph.AddTask([currThreadIterationCount, func, iterOffset, i]()
 			{
 				for (uint32_t iter = 0; iter < currThreadIterationCount; iter++)
 				{
 					func(i, iter + iterOffset);
 				}
-			}));
+			});
 
 			iterOffset += currThreadIterationCount;
 		}
-		
-		return futures;
+	
+		taskGraph.ExecuteAndWait();
 	}
 
 	void ForEachParallel(std::function<void(uint32_t, uint32_t)>&& func, uint32_t iterationCount)
 	{
 		VT_ASSERT_MSG(iterationCount > 0, "Iteration count must be greater than zero!");
 
-		const uint32_t threadCount = std::min(iterationCount, JobSystem::GetThreadCount());
+		const uint32_t threadCount = std::min(iterationCount, std::thread::hardware_concurrency());
 		const uint32_t perThreadIterationCount = iterationCount / threadCount;
 
 		uint32_t iterOffset = 0;
@@ -56,7 +55,7 @@ namespace Volt::Algo
 				currThreadIterationCount = iterationCount - i * perThreadIterationCount;
 			}
 
-			JobSystem::SubmitTask([currThreadIterationCount, func, iterOffset, i]()
+			JobSystem::CreateAndRunJob([currThreadIterationCount, func, iterOffset, i]()
 			{
 				for (uint32_t iter = 0; iter < currThreadIterationCount; iter++)
 				{
@@ -72,7 +71,7 @@ namespace Volt::Algo
 	{
 		VT_ASSERT_MSG(iterationCount > 0, "Iteration count must be greater than zero!");
 
-		const uint32_t threadCount = std::min(iterationCount, JobSystem::GetThreadCount());
+		const uint32_t threadCount = std::min(iterationCount, std::thread::hardware_concurrency());
 	
 		return threadCount;
 	}

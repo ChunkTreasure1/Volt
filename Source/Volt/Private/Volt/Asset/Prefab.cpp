@@ -7,9 +7,9 @@
 
 #include "Volt/Scene/Scene.h"
 
-#include "Volt/Utility/Random.h"
-
 #include <AssetSystem/AssetManager.h>
+
+#include <CoreUtilities/Random.h>
 
 namespace Volt
 {

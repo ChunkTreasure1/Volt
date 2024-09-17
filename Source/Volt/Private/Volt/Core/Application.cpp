@@ -56,6 +56,9 @@
 #include <EntitySystem/Scripting/ECSBuilder.h>
 
 #include <CoreUtilities/TypeTraits/TypeId.h>
+#include <CoreUtilities/ThreadUtilities.h>
+
+#include <JobSystem/JobQueue.h>
 
 namespace Volt
 {
@@ -107,7 +110,7 @@ namespace Volt
 
 		m_input = CreateScope<Input>();
 
-		m_jobSystem = CreateScope<JobSystem>();
+		m_jobSystem2 = CreateScope<JobSystem>();
 		m_dynamicLibraryManager = CreateScope<DynamicLibraryManager>();
 		m_pluginRegistry = CreateScope<PluginRegistry>();
 		m_pluginSystem = CreateScope<PluginSystem>(*m_pluginRegistry);
@@ -253,7 +256,7 @@ namespace Volt
 		m_pluginSystem->UnloadPlugins();
 		m_pluginSystem = nullptr;
 		m_pluginRegistry = nullptr;
-		m_jobSystem = nullptr;
+		m_jobSystem2 = nullptr;
 		m_input = nullptr;
 		m_log = nullptr;
 		m_eventSystem = nullptr;
@@ -283,6 +286,11 @@ namespace Volt
 	void Application::PopLayer(Layer* layer)
 	{
 		m_layerStack.PopLayer(layer);
+	}
+
+	void Application::InitializeMainThread()
+	{
+		Thread::AssignThreadToCore(Thread::GetCurrentThreadHandle(), 0);
 	}
 
 	void Application::MainUpdate()

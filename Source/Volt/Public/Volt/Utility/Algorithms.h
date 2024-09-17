@@ -2,10 +2,11 @@
 
 #include <functional>
 
+#include <JobSystem/TaskGraph.h>
 
 namespace Volt::Algo
 {
-	extern [[nodiscard]] Vector<std::future<void>> ForEachParallelLockable(std::function<void(uint32_t threadIdx, uint32_t elementIdx)>&& func, uint32_t iterationCount);
+	extern void ForEachParallelLocking(std::function<void(uint32_t threadIdx, uint32_t elementIdx)>&& func, uint32_t iterationCount);
 	extern void ForEachParallel(std::function<void(uint32_t, uint32_t)>&& func, uint32_t iterationCount);
 	extern [[nodiscard]] uint32_t GetThreadCountFromIterationCount(uint32_t iterationCount);
 

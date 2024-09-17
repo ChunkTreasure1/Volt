@@ -22,7 +22,6 @@ namespace Amp
 }
 
 class Log;
-class JobSystem;
 
 namespace Volt
 {
@@ -114,6 +113,7 @@ namespace Volt
 	private:
 		friend class ApplicationEventListener;
 
+		void InitializeMainThread();
 		void MainUpdate();
 		void CreateGraphicsContext();
 
@@ -141,7 +141,7 @@ namespace Volt
 
 		Scope<Log> m_log;
 		Scope<Input> m_input;
-		Scope<JobSystem> m_jobSystem;
+		Scope<JobSystem> m_jobSystem2;
 		Scope<DynamicLibraryManager> m_dynamicLibraryManager;
 		Scope<PluginRegistry> m_pluginRegistry;
 		Scope<PluginSystem> m_pluginSystem;

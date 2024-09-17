@@ -9,6 +9,8 @@
 
 #include "Volt/SDF/SDFGenerator.h"
 
+#include <JobSystem/JobSystem.h>
+
 #include <RHIModule/Buffers/VertexBuffer.h>
 #include <RHIModule/Buffers/IndexBuffer.h>
 #include <RHIModule/Buffers/StorageBuffer.h>
@@ -141,7 +143,7 @@ namespace Volt
 		Vector<Vector<uint32_t>> perThreadMeshletData(threadCount);
 		Vector<Vector<Meshlet>> perThreadMeshlets(threadCount);
 
-		auto fu = Algo::ForEachParallelLockable([&](uint32_t threadIdx, uint32_t elementIdx)
+		Algo::ForEachParallelLocking([&](uint32_t threadIdx, uint32_t elementIdx)
 		{
 			auto& meshletData = perThreadMeshletData.at(threadIdx);
 			auto& meshlets = perThreadMeshlets.at(threadIdx);
@@ -205,22 +207,17 @@ namespace Volt
 
 		}, subMeshCount);
 
-		for (const auto& f : fu)
-		{
-			f.wait();
-		}
-
 		const auto meshletPrefixSums = Algo::ElementCountPrefixSum(perThreadMeshlets);
 		const auto indexPrefixSums = Algo::ElementCountPrefixSum(perThreadMeshletData);
 
-		auto fu2 = Algo::ForEachParallelLockable([&](uint32_t threadIdx, uint32_t elementIdx)
+		Algo::ForEachParallelLocking([&](uint32_t threadIdx, uint32_t elementIdx)
 		{
 			auto& subMesh = m_subMeshes.at(elementIdx);
 			subMesh.meshletStartOffset += meshletPrefixSums.at(threadIdx);
 
 		}, subMeshCount);
 
-		auto fu3 = Algo::ForEachParallelLockable([&](uint32_t threadIdx, uint32_t elementIdx)
+		Algo::ForEachParallelLocking([&](uint32_t threadIdx, uint32_t elementIdx)
 		{
 			for (auto& meshlet : perThreadMeshlets.at(elementIdx))
 			{
@@ -228,16 +225,6 @@ namespace Volt
 			}
 
 		}, static_cast<uint32_t>(perThreadMeshlets.size()));
-
-		for (const auto& f : fu2)
-		{
-			f.wait();
-		}
-
-		for (const auto& f : fu3)
-		{
-			f.wait();
-		}
 
 		for (size_t i = 0; i < perThreadMeshlets.size(); i++)
 		{

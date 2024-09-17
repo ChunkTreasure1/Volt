@@ -81,7 +81,7 @@ namespace Volt
 	void RenderGraphExecutionThread::InitializeThread()
 	{
 		s_data->executionThread = CreateScope<std::thread>(&RenderGraphExecutionThread::RT_ExecuteGraphs);
-		SetThreadName(s_data->executionThread->native_handle(), "RenderGraphExecutionThread");
+		Thread::SetThreadName(s_data->executionThread->native_handle(), "RenderGraphExecutionThread");
 	}
 
 	void RenderGraphExecutionThread::ShutdownThread()

@@ -22,6 +22,8 @@
 #include <CoreUtilities/FileIO/YAMLMemoryStreamWriter.h>
 #include <CoreUtilities/FileIO/YAMLMemoryStreamReader.h>
 
+#include <JobSystem/JobSystem.h>
+
 namespace Volt
 {
 	template<typename T>
@@ -438,7 +440,7 @@ namespace Volt
 		Vector<Ref<Scene>> dummyScenes{};
 		dummyScenes.resize(threadCount);
 
-		auto futures = Algo::ForEachParallelLockable([&dummyScenes, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
+		Algo::ForEachParallelLocking([&dummyScenes, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
 		{
 			if (!dummyScenes[threadIdx])
 			{
@@ -474,11 +476,6 @@ namespace Volt
 			DeserializeEntity(dummyScenes[threadIdx], metadata, yamlStreamReader);
 		},
 		static_cast<uint32_t>(entityPaths.size()));
-
-		for (auto& f : futures)
-		{
-			f.wait();
-		}
 
 		for (const auto& dummyScene : dummyScenes)
 		{
@@ -603,7 +600,7 @@ namespace Volt
 		Vector<std::unordered_map<WorldCellID, Vector<EntityID>>> threadCellEntities{};
 		threadCellEntities.resize(Algo::GetThreadCountFromIterationCount(iterationCount));
 
-		auto futures = Algo::ForEachParallelLockable([&threadCellEntities, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
+		Algo::ForEachParallelLocking([&threadCellEntities, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
 		{
 			const auto& path = entityPaths.at(i);
 
@@ -651,11 +648,6 @@ namespace Volt
 			threadCellEntities[threadIdx][cellId].push_back(entityId);
 		},
 		iterationCount);
-
-		for (auto& f : futures)
-		{
-			f.wait();
-		}
 
 		auto& worldEngine = scene->m_worldEngine;
 		for (const auto& tCellEntities : threadCellEntities)

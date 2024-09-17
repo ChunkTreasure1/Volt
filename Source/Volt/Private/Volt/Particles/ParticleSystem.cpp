@@ -1,30 +1,31 @@
 #include "vtpch.h"
 #include "Volt/Particles/ParticleSystem.h"
 
-#include <glm/glm.hpp>
+#include "Volt/Core/Application.h"
+
 #include "Volt/Scene/Entity.h"
 #include "Volt/Scene/Scene.h"
 
+#include "Volt/Asset/ParticlePreset.h"
+#include "Volt/Rendering/Texture/Texture2D.h"
+
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 #include "Volt/Utility/FileSystem.h"
-#include "Volt/Utility/Random.h"
 
 #include "Volt/Components/RenderingComponents.h"
 #include "Volt/Components/CoreComponents.h"
 
-#include <Volt/Core/Base.h>
 #include <AssetSystem/AssetManager.h>
 #include <AssetSystem/Asset.h>
-#include "Volt/Asset/ParticlePreset.h"
-#include "Volt/Rendering/Texture/Texture2D.h"
+
+#include <JobSystem/TaskGraph.h>
+
+#include <CoreUtilities/Random.h>
+
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 #include <filesystem>
 #include <random>
-
-#include "Volt/Core/Application.h"
-
-#include <JobSystem/JobSystem.h>
 
 void Volt::ParticleSystem::Update(entt::registry& registry, Weak<Scene> scene, const float deltaTime)
 {
@@ -87,9 +88,11 @@ void Volt::ParticleSystem::Update(entt::registry& registry, Weak<Scene> scene, c
 	Vector<std::future<void>> futures{};
 	std::mutex emittersToRemoveMutex;
 
+	TaskGraph taskGraph{};
+
 	for (auto& [id, particleStorage] : m_particleStorage)
 	{
-		futures.emplace_back(JobSystem::SubmitTask([&]() 
+		taskGraph.AddTask([&]() 
 		{
 			VT_PROFILE_SCOPE("Update particle system");
 
@@ -129,13 +132,10 @@ void Volt::ParticleSystem::Update(entt::registry& registry, Weak<Scene> scene, c
 					emittersToRemove.emplace_back(id);
 				}
 			}
-		}));
+		});
 	}
 
-	for (auto& future : futures)
-	{
-		future.wait();
-	}
+	taskGraph.ExecuteAndWait();
 
 	for (const auto& emitter : emittersToRemove)
 	{
@@ -160,20 +160,20 @@ void Volt::ParticleSystem::SendParticles(ParticleEmitterComponent& particleEmitt
 			// #mmax: make different starting patterns <func>
 			if (e->sphereSpawnOnEdge)
 			{
-				dir = glm::normalize(glm::vec3{ Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius) });
+				dir = glm::normalize(glm::vec3{ Random::Float(-radius, radius), Random::Float(-radius, radius), Random::Float(-radius, radius) });
 				p.position = aEntityPos + dir * radius;
 			}
 			else
 			{
-				dir = glm::normalize(glm::vec3{ Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius) });
-				p.position = aEntityPos + dir * Volt::Random::Float(0, radius);
+				dir = glm::normalize(glm::vec3{ Random::Float(-radius, radius), Random::Float(-radius, radius), Random::Float(-radius, radius) });
+				p.position = aEntityPos + dir * Random::Float(0, radius);
 			}
 		}
 
 		p.dead = false;
 		p.direction = dir;
 
-		p.lifeTime = Volt::Random::Float(e->minLifeTime, (e->minLifeTime >= e->maxLifeTime) ? e->minLifeTime : e->maxLifeTime);
+		p.lifeTime = Random::Float(e->minLifeTime, (e->minLifeTime >= e->maxLifeTime) ? e->minLifeTime : e->maxLifeTime);
 		p.totalLifeTime = p.lifeTime;
 
 		p.colors = e->colors;
@@ -182,7 +182,7 @@ void Volt::ParticleSystem::SendParticles(ParticleEmitterComponent& particleEmitt
 
 		p.sizes = e->sizes;
 		p.size = e->sizes[0];
-		p.rotation = { Volt::Random::Float(0, 6.28318531f),Volt::Random::Float(0, 6.28318531f),Volt::Random::Float(0, 6.28318531f) };
+		p.rotation = { Random::Float(0, 6.28318531f), Random::Float(0, 6.28318531f), Random::Float(0, 6.28318531f) };
 
 		p.velocity = e->startVelocity;
 		p.startVelocity = p.velocity;

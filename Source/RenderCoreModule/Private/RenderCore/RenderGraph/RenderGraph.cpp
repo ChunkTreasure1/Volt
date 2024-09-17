@@ -21,6 +21,7 @@
 #include <RHIModule/Utility/ResourceUtility.h>
 #include <RHIModule/Synchronization/Fence.h>
 
+#include <JobSystem/TaskGraph.h>
 #include <JobSystem/JobSystem.h>
 
 #include <CoreUtilities/EnumUtils.h>
@@ -767,7 +768,7 @@ namespace Volt
 
 		m_sharedRenderContext.BeginContext();
 
-		Vector<std::future<void>> rangeFutures;
+		TaskGraph taskGraph{};
 
 		for (uint32_t rangeIndex = 0; const auto& [first, last] : executionRanges)
 		{
@@ -781,18 +782,18 @@ namespace Volt
 			}
 			else
 			{
-				rangeFutures.emplace_back(JobSystem::SubmitTask([&executeRangeFunc, rangeCmdBuffer, first, last]()
+				taskGraph.AddTask([&executeRangeFunc, rangeCmdBuffer, first, last]()
 				{
 					executeRangeFunc(rangeCmdBuffer, first, last);
-				}));
+				});
 			}
 
 			rangeIndex++;
 		}
 
-		for (auto& future : rangeFutures)
+		if (allowMultithreadedExecution)
 		{
-			future.wait();
+			taskGraph.ExecuteAndWait();
 		}
 
 		m_sharedRenderContext.EndContext();
@@ -1397,7 +1398,7 @@ namespace Volt
 			context.CopyBuffer(sourceBuffer, dstBufferHandle, size);
 			context.Flush(fence);
 
-			JobSystem::SubmitTask([fence, readbackBuffer]() 
+			JobSystem::CreateAndRunJob([fence, readbackBuffer]() 
 			{
 				fence->WaitUntilSignaled();
 				readbackBuffer->m_isReady = true;
@@ -1432,7 +1433,7 @@ namespace Volt
 			context.CopyImage(sourceImage, dstImageHandle, width, height, depth);
 			context.Flush(fence);
 
-			JobSystem::SubmitTask([fence, readbackImage]()
+			JobSystem::CreateAndRunJob([fence, readbackImage]()
 			{
 				fence->WaitUntilSignaled();
 				readbackImage->m_isReady = true;

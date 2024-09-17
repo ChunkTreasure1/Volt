@@ -8,6 +8,8 @@
 
 #include <JobSystem/JobSystem.h>
 
+#include <JobSystem/TaskGraph.h>
+
 #include <CoreUtilities/Time/ScopedTimer.h>
 #include <CoreUtilities/ThreadUtilities.h>
 #include <CoreUtilities/FileSystem.h>
@@ -186,28 +188,25 @@ namespace Volt
 		const auto projectAssetFiles = GetProjectAssetFiles();
 		const auto engineAssetFiles = GetEngineAssetFiles();
 
-		Vector<std::future<void>> futures;
+		TaskGraph taskGraph{};
 
 		for (auto file : engineAssetFiles)
 		{
-			futures.emplace_back(JobSystem::SubmitTask([this, file]()
+			taskGraph.AddTask([this, file]() 
 			{
 				DeserializeAssetMetadata(file);
-			}));
+			});
 		}
 
 		for (auto file : projectAssetFiles)
 		{
-			futures.emplace_back(JobSystem::SubmitTask([this, file]()
+			taskGraph.AddTask([this, file]()
 			{
 				DeserializeAssetMetadata(GetFilesystemPath(file));
-			}));
+			});
 		}
 
-		for (auto& f : futures)
-		{
-			f.wait();
-		}
+		taskGraph.ExecuteAndWait();
 
 		for (const auto& [handle, metadata] : m_assetRegistry)
 		{
@@ -1121,7 +1120,7 @@ namespace Volt
 
 		// If not, queue
 		{
-			JobSystem::SubmitTask([this, metadata](AssetHandle handle)
+			JobSystem::CreateAndRunJob([this, metadata, handle = assetHandle]()
 			{
 				Ref<Asset> asset;
 				{
@@ -1162,7 +1161,7 @@ namespace Volt
 				m_dependencyGraph->OnAssetChanged(handle, AssetChangedState::Updated);
 				QueueAssetChanged(asset->handle, AssetChangedState::Updated);
 
-			}, assetHandle);
+			});
 
 #ifndef VT_DIST
 			VT_LOGC(Trace, LogAssetSystem, "Queued asset {0} for loading!", metadata.filePath);

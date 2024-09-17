@@ -3,13 +3,14 @@
 #include "Window/VisonPanel.h"
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Utility/Random.h>
 #include <Volt/Core/Application.h>
 #include <Volt/Components/PhysicsComponents.h>
 #include <Volt/Vision/VisionTrigger.h>
 #include <Volt/Vision/Vision.h>
 
 #include <Volt/Rendering/Camera/Camera.h>
+
+#include <CoreUtilities/Random.h>
 
 VisionPanel::VisionPanel(Ref<Volt::Scene>& aScene, EditorCameraController* aEditorCamera)
 	:EditorWindow("Vision", true), myCurrentScene(aScene), myEditorCamera(aEditorCamera)

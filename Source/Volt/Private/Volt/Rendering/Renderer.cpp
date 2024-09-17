@@ -14,6 +14,8 @@
 
 #include <AssetSystem/AssetManager.h>
 
+#include <JobSystem/TaskGraph.h>
+
 #include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
 #include <RenderCore/RenderGraph/RenderGraph.h>
 #include <RenderCore/RenderGraph/RenderContextUtils.h>
@@ -640,8 +642,7 @@ namespace Volt
 			}
 		}
 
-		Vector<std::future<void>> shaderFutures;
-		std::mutex shaderMapMutex;
+		TaskGraph taskGraph{};
 
 		for (const auto& searchPath : searchPaths)
 		{
@@ -661,7 +662,7 @@ namespace Volt
 					AssetManager::AddDependencyToAsset(defHandle, AssetManager::GetAssetHandleFromFilePath(sourceEntry.filePath));
 				}
 
-				shaderFutures.emplace_back(JobSystem::SubmitTask([&, def = shaderDef]() 
+				taskGraph.AddTask([&, def = shaderDef]()
 				{
 					RHI::ShaderSpecification specification;
 					specification.name = def->GetName();
@@ -670,18 +671,12 @@ namespace Volt
 					specification.forceCompile = false;
 
 					RefPtr<RHI::Shader> shader = RHI::Shader::Create(specification);
-					{
-						std::scoped_lock lock{ shaderMapMutex };
-						ShaderMap::RegisterShader(std::string(def->GetName()), shader);
-					}
-				}));
+					ShaderMap::RegisterShader(std::string(def->GetName()), shader);
+				});
 			}
 		}
 
-		for (const auto& future : shaderFutures)
-		{
-			future.wait();
-		}
+		taskGraph.ExecuteAndWait();
 
 		VT_LOGC(Info, LogRender, "Shader import finished in {} seconds!", timer.GetTime<Time::Seconds>());
 	}

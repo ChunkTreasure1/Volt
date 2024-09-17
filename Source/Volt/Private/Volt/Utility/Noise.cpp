@@ -1,7 +1,8 @@
 #include "vtpch.h"
 #include "Volt/Utility/Noise.h"
 #include "Volt/Utility/FastNoise.h"
-#include "Volt/Utility/Random.h"
+
+#include <CoreUtilities/Random.h>
 
 #include <random>
 
@@ -77,7 +78,7 @@ namespace Volt
 
 	float Noise::GetRandomSeed()
 	{
-		return Volt::Random::Float(1, 10000);
+		return Random::Float(1, 10000);
 	}
 
 	void Noise::SetFrequency(const float frequency)

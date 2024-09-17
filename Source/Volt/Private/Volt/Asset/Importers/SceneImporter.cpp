@@ -21,6 +21,7 @@
 #include <AssetSystem/AssetManager.h>
 
 #include <CoreUtilities/FileSystem.h>
+#include <JobSystem/JobSystem.h>
 
 namespace Volt
 {
@@ -396,7 +397,7 @@ namespace Volt
 		Vector<Ref<Scene>> dummyScenes{};
 		dummyScenes.resize(iterationCount);
 
-		auto futures = Algo::ForEachParallelLockable([&dummyScenes, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
+		Algo::ForEachParallelLocking([&dummyScenes, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
 		{
 			Ref<Scene> dummyScene = CreateRef<Scene>();
 			dummyScenes[threadIdx] = dummyScene;
@@ -412,11 +413,6 @@ namespace Volt
 			DeserializeEntity(dummyScene, metadata, streamReader);
 		},
 		static_cast<uint32_t>(entityPaths.size()));
-
-		for (auto& f : futures)
-		{
-			f.wait();
-		}
 
 		for (const auto& dummyScene : dummyScenes)
 		{
@@ -482,7 +478,7 @@ namespace Volt
 		Vector<std::unordered_map<WorldCellID, Vector<EntityID>>> threadCellEntities{};
 		threadCellEntities.resize(Algo::GetThreadCountFromIterationCount(iterationCount));
 
-		auto futures = Algo::ForEachParallelLockable([&threadCellEntities, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
+		Algo::ForEachParallelLocking([&threadCellEntities, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
 		{
 			const auto& path = entityPaths.at(i);
 
@@ -512,11 +508,6 @@ namespace Volt
 			threadCellEntities[threadIdx][cellId].push_back(entityId);
 		},
 		iterationCount);
-
-		for (auto& f : futures)
-		{
-			f.wait();
-		}
 
 		auto& worldEngine = scene->m_worldEngine;
 		for (const auto& tCellEntities : threadCellEntities)
@@ -980,7 +971,7 @@ namespace Volt
 		Vector<Ref<Scene>> dummyScenes{};
 		dummyScenes.resize(iterationCount);
 
-		auto futures = Algo::ForEachParallelLockable([&dummyScenes, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
+		Algo::ForEachParallelLocking([&dummyScenes, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
 		{
 			Ref<Scene> dummyScene = CreateRef<Scene>();
 			dummyScenes[threadIdx] = dummyScene;
@@ -996,11 +987,6 @@ namespace Volt
 			DeserializeEntity(dummyScene, metadata, streamReader);
 		},
 		static_cast<uint32_t>(entityPaths.size()));
-
-		for (auto& f : futures)
-		{
-			f.wait();
-		}
 
 		for (const auto& dummyScene : dummyScenes)
 		{

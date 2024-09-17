@@ -1,37 +1,49 @@
 #include "cupch.h"
-#include "CoreUtilities/ThreadUtilities.h"
 
+#ifdef VT_PLATFORM_WINDOWS
+
+#include "CoreUtilities/VoltAssert.h"
+#include "CoreUtilities/ThreadUtilities.h"
 #include "CoreUtilities/Platform/Windows/VoltWindows.h"
 
-const DWORD MS_VC_EXCEPTION = 0x406D1388;
-#pragma pack(push,8)  
-typedef struct tagTHREADNAME_INFO
-{
-	DWORD dwType; // Must be 0x1000.  
-	LPCSTR szName; // Pointer to name (in user addr space).  
-	DWORD dwThreadID; // Thread ID (-1=caller thread).  
-	DWORD dwFlags; // Reserved for future use, must be zero.  
-} THREADNAME_INFO;
-#pragma pack(pop)  
+#include "CoreUtilities/StringUtility.h"
 
-#pragma warning(push)  
-#pragma warning(disable : 4311 4302)
-void SetThreadName(std::thread::native_handle_type dwThreadID, const char* threadName)
+namespace Thread
 {
-	THREADNAME_INFO info;
-	info.dwType = 0x1000;
-	info.szName = threadName;
-	info.dwThreadID = GetThreadId(static_cast<HANDLE>(dwThreadID));
-	info.dwFlags = 0;
-#pragma warning(push)  
-#pragma warning(disable: 6320 6322)  
-	__try
+	void SetThreadName(std::thread::native_handle_type dwThreadID, std::string_view threadName)
 	{
-		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+		std::wstring wThreadName = Utility::ToWString(threadName);
+		HRESULT hr = SetThreadDescription(dwThreadID, wThreadName.c_str());
+		VT_UNUSED(hr);
+		VT_ASSERT(SUCCEEDED(hr));
 	}
-	__except (EXCEPTION_EXECUTE_HANDLER)
+	
+	void SetThreadPriority(std::thread::native_handle_type threadHandle, ThreadPriority priority)
 	{
+		int32_t threadPriority = 0;
+		switch (priority)
+		{
+			case ThreadPriority::High: threadPriority = THREAD_PRIORITY_HIGHEST; break;
+			case ThreadPriority::Medium: threadPriority = THREAD_PRIORITY_NORMAL; break;
+			case ThreadPriority::Low: threadPriority = THREAD_PRIORITY_LOWEST; break;
+		}
+
+		BOOL priorityResult = ::SetThreadPriority(threadHandle, threadPriority);
+		VT_UNUSED(priorityResult);
+		VT_ASSERT(priorityResult);
 	}
-#pragma warning(pop)  
+
+	void AssignThreadToCore(std::thread::native_handle_type threadHandle, uint64_t affinityMask)
+	{
+		DWORD_PTR result = SetThreadAffinityMask(threadHandle, affinityMask);
+		VT_UNUSED(result);
+		VT_ASSERT(result > 0);
+	}
+
+	std::thread::native_handle_type GetCurrentThreadHandle()
+	{
+		HANDLE threadHandle = ::GetCurrentThread();
+		return reinterpret_cast<std::thread::native_handle_type>(threadHandle);
+	}
 }
-#pragma warning(pop)  
+#endif
