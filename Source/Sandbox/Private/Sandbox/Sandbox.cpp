@@ -62,7 +62,7 @@
 #include <Volt/Scene/SceneManager.h>
 
 #include <InputModule/Input.h>
-#include <InputModule/KeyCodes.h>
+#include <InputModule/InputCodes.h>
 
 #include <Volt/Rendering/Camera/Camera.h>
 
@@ -795,12 +795,12 @@ bool Sandbox::OnRenderEvent(Volt::WindowRenderEvent& e)
 
 bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	const bool ctrlPressed = Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL);
-	const bool shiftPressed = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);
+	const bool ctrlPressed = Volt::Input::IsButtonDown(Volt::InputCode::LeftControl);
+	const bool shiftPressed = Volt::Input::IsButtonDown(Volt::InputCode::LeftShift);
 
 	switch (e.GetKeyCode())
 	{
-		case VT_KEY_Z:
+		case Volt::InputCode::Z:
 		{
 			if (ctrlPressed && shiftPressed)
 			{
@@ -813,7 +813,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			break;
 		}
 
-		case VT_KEY_Y:
+		case Volt::InputCode::Y:
 		{
 			if (ctrlPressed)
 			{
@@ -822,7 +822,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			break;
 		}
 
-		case VT_KEY_S:
+		case Volt::InputCode::S:
 		{
 			if (ctrlPressed && !shiftPressed)
 			{
@@ -836,7 +836,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			break;
 		}
 
-		case VT_KEY_O:
+		case Volt::InputCode::O:
 		{
 			if (ctrlPressed)
 			{
@@ -853,7 +853,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			break;
 		}
 
-		case VT_KEY_N:
+		case Volt::InputCode::N:
 		{
 			if (ctrlPressed)
 			{
@@ -863,7 +863,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			break;
 		}
 
-		case VT_KEY_F:
+		case Volt::InputCode::F:
 		{
 			if (SelectionManager::IsAnySelected())
 			{
@@ -883,7 +883,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			break;
 		}
 
-		case VT_KEY_SPACE:
+		case Volt::InputCode::Spacebar :
 		{
 			if (ctrlPressed)
 			{
@@ -906,7 +906,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			break;
 		}
 
-		case VT_KEY_ESCAPE:
+		case Volt::InputCode::Esc:
 		{
 			if (m_sceneState == SceneState::Play)
 			{
@@ -916,7 +916,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			break;
 		}
 
-		case VT_KEY_G:
+		case Volt::InputCode::G:
 		{
 			if (ctrlPressed && m_sceneState != SceneState::Play)
 			{

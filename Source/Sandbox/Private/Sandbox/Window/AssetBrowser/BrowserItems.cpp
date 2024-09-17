@@ -7,7 +7,7 @@
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Utility/UIUtility.h>
-#include <InputModule/KeyCodes.h>
+#include <InputModule/InputCodes.h>
 
 namespace AssetBrowser
 {
@@ -178,7 +178,7 @@ namespace AssetBrowser
 				const bool mouseDown = mySelectionManager->IsAnySelected() ? ImGui::IsMouseReleased(ImGuiMouseButton_Left) : ImGui::IsMouseClicked(ImGuiMouseButton_Left);
 				if (mouseDown && hovered)
 				{
-					if (!Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL))
+					if (!Volt::Input::IsButtonDown(Volt::InputCode::LeftControl))
 					{
 						mySelectionManager->DeselectAll();
 					}

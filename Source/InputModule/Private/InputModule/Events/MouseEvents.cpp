@@ -14,14 +14,14 @@ namespace Volt
 	std::string MouseButtonPressedEvent::ToString() const
 	{
 		std::stringstream ss;
-		ss << "MouseButtonPressedEvent: " << GetMouseButton();
+		ss << "MouseButtonPressedEvent: " << Volt::ToString(GetMouseButton());
 		return ss.str();
 	}
 
 	std::string MouseButtonReleasedEvent::ToString() const
 	{
 		std::stringstream ss;
-		ss << "MouseButtonReleasedEvent: " << GetMouseButton();
+		ss << "MouseButtonReleasedEvent: " << Volt::ToString(GetMouseButton());
 		return ss.str();
 	}
 }

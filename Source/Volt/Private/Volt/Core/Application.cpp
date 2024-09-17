@@ -4,7 +4,7 @@
 #include <AssetSystem/AssetManager.h>
 
 #include <InputModule/Input.h>
-#include <InputModule/KeyCodes.h>
+#include <InputModule/InputCodes.h>
 
 #include "Volt/Core/Layer/Layer.h"
 #include "Volt/Core/DynamicLibraryManager.h"

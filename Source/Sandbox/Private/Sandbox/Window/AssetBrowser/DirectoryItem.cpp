@@ -9,9 +9,10 @@
 #include "Sandbox/VersionControl/VersionControl.h"
 
 #include <Volt/Utility/UIUtility.h>
-#include <InputModule/KeyCodes.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Project/ProjectManager.h>
+
+#include <InputModule/InputCodes.h>
 
 namespace AssetBrowser
 {

@@ -21,7 +21,7 @@ namespace VoltSharpmake
             conf.PrecompHeader = "inputpch.h";
             conf.PrecompSource = "inputpch.cpp";
 
-            conf.AddPrivateDependency<EventSystemModule>(target);
+            conf.AddPublicDependency<EventSystemModule>(target);
         }
     }
 }
