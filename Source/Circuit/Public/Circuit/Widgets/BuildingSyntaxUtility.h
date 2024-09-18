@@ -39,6 +39,7 @@ struct CircuitDeclare
 	{
 		m_Widget->BuildBaseArgs(args);
 		m_Widget->Build(args);
+		m_Widget->CalculateBounds();
 		return m_Widget;
 	}
 	std::unique_ptr<WidgetType> m_Widget;

@@ -1,6 +1,8 @@
 #pragma once
 #include "Circuit/Widgets/BuildingSyntaxUtility.h"
 #include "Circuit/Config.h"
+
+#include <CoreUtilities/Math/2DShapes/Rect.h>
 class WidgetBuilder;
 
 namespace Circuit
@@ -29,6 +31,9 @@ namespace Circuit
 
 		 virtual void OnPaint(CircuitPainter& painter);
 
+		 virtual void CalculateBounds();
+		 virtual Volt::Rect GetBounds();
+
 		 void RequestRebuild();
 
 		 const std::vector<std::shared_ptr<Widget>>& GetChildren() const { return m_Children; }
@@ -41,7 +46,11 @@ namespace Circuit
 
 		bool m_IsRenderPrimitive = false;
 		RenderPrimitiveType m_RenderPrimitiveType;
+
+
 	private:
+		Volt::Rect m_bounds;
+
 		std::vector<std::shared_ptr<Widget>> m_Children;
 
 

@@ -3,10 +3,6 @@
 
 #include <EventSystem/EventListener.h>
 
-class WidgetBuilder;
-
-template <typename T>
-class Observer;
 
 namespace Volt
 {
@@ -51,8 +47,6 @@ namespace Circuit
 		bool OnMouseMoved(Volt::MouseMovedEvent& e);
 		bool OnMouseButtonPressed(Volt::MouseButtonPressedEvent& e);
 		bool OnMouseButtonReleased(Volt::MouseButtonReleasedEvent& e);
-
-		bool IsMouseInsideRect();
 
 		void SetValueAccordingToMousePos();
 

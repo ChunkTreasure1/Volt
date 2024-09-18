@@ -121,7 +121,7 @@ namespace Circuit
 			return false;
 		}
 
-		if (IsMouseInsideRect())
+		if (GetBounds().IsPointInside(Volt::Input::GetMousePosition()))
 		{
 			m_dragging = true;
 			SetValueAccordingToMousePos();
@@ -144,28 +144,16 @@ namespace Circuit
 		return false;
 	}
 
-	bool SliderWidget::IsMouseInsideRect()
-	{
-		glm::vec2 mousePos = Volt::Input::GetMousePosition();
-		glm::vec2 windowPos = {Volt::WindowManager::Get().GetMainWindow().GetPosition().first, Volt::WindowManager::Get().GetMainWindow().GetPosition().second};
-		glm::vec2 topLeft = {GetX() + windowPos.x, GetY() + windowPos.y};
-		glm::vec2 bottomRight = { topLeft.x + s_sliderWidth, topLeft.y + s_sliderHeight};
-
-		return (mousePos.x >= topLeft.x && mousePos.x <= bottomRight.x &&
-		mousePos.y >= topLeft.y && mousePos.y <= bottomRight.y);
-	}
 	void SliderWidget::SetValueAccordingToMousePos()
 	{
-		glm::vec2 mousePos = Volt::Input::GetMousePosition();
-		glm::vec2 windowPos = { Volt::WindowManager::Get().GetMainWindow().GetPosition().first, Volt::WindowManager::Get().GetMainWindow().GetPosition().second };
-		glm::vec2 topLeft = { GetX() + windowPos.x, GetY() + windowPos.y };
-		glm::vec2 bottomRight = { topLeft.x + s_sliderWidth, topLeft.y + s_sliderHeight };
+		const glm::vec2 mousePos = Volt::Input::GetMousePosition();
+		float clamped = GetBounds().ClampInsideX(mousePos.x);
 
-		// Clamp the mouse position within the slider bounds
-		float clampedMouseX = glm::clamp(mousePos.x, topLeft.x, bottomRight.x);
+		const glm::vec2 topLeft = GetBounds().GetPosition();
+		const glm::vec2 bottomRight = GetBounds().GetBottomRight();
 
 		// Calculate the normalized value (0 to 1)
-		float valueNormalized = (clampedMouseX - topLeft.x) / (bottomRight.x - topLeft.x);
+		float valueNormalized = (clamped - topLeft.x) / (bottomRight.x - topLeft.x);
 
 		SetValue(m_MinValue + valueNormalized * (m_MaxValue - m_MinValue));
 	}
