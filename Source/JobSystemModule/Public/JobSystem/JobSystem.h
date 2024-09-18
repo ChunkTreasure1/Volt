@@ -2,6 +2,7 @@
 
 #include "JobSystem/Job.h"
 #include "JobSystem/JobQueue.h"
+#include "JobSystem/JobQueueLocking.h"
 #include "JobSystem/JobAllocator.h"
 
 #include <CoreUtilities/Containers/Vector.h>
@@ -41,7 +42,8 @@ namespace Volt
 			uint32_t workerCount = 0;
 
 			Vector<JobGroup> jobGroups;
-			Vector<JobQueue> jobQueues;
+			//Vector<JobQueue> jobQueues;
+			Vector<JobQueueLocking> jobQueues;
 		};
 
 		struct AllocatedJob

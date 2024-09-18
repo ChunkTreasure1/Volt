@@ -20,6 +20,7 @@ namespace Volt
 		JobAllocator();
 
 		AllocatedJob AllocateJob();
+		void FreeJob(JobID id);
 		void FreeJob(Job* job);
 		Job* GetJobFromID(JobID id);
 
@@ -27,7 +28,11 @@ namespace Volt
 		inline static constexpr uint32_t MAX_JOB_COUNT = 8096;
 		
 		std::atomic_uint32_t m_jobAllocationIndex = 0;
+		std::atomic_uint32_t m_currentTailIndex = 0;
 
 		Vector<Job> m_jobAllocator;
+
+		std::mutex m_freeJobsMutex;
+		Vector<JobID> m_freeJobs;
 	};
 }

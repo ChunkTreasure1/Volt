@@ -49,10 +49,7 @@ namespace Volt
 	{
 		VT_ENSURE(s_instance);
 		VT_ENSURE_MSG(jobId != INVALID_JOB_ID, "The job id must be a valid job ID!");
-
-		Job* job = s_instance->m_allocator.GetJobFromID(jobId);
-		job->unfinishedJobs = 0;
-		s_instance->m_allocator.FreeJob(job);
+		s_instance->m_allocator.FreeJob(jobId);
 	}
 
 	void JobSystem::WaitForJob(JobID jobId)
@@ -190,6 +187,8 @@ namespace Volt
 			{
 				FinishJob(m_allocator.GetJobFromID(job->parentJob));
 			}
+
+			m_allocator.FreeJob(job);
 		}
 	}
 
