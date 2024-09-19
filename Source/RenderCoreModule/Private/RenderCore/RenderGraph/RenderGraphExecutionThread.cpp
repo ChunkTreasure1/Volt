@@ -57,6 +57,8 @@ namespace Volt
 
 	void RenderGraphExecutionThread::ExecuteRenderGraph(RenderGraph&& renderGraph)
 	{
+		VT_PROFILE_FUNCTION();
+
 		s_data->executionQueue.emplace([rg = std::move(renderGraph)]() mutable
 		{
 			rg.ExecuteInternal(true, false);
@@ -67,6 +69,8 @@ namespace Volt
 
 	void RenderGraphExecutionThread::WaitForFinishedExecution()
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (s_data->executionMode == RenderGraphExecutionThread::ExecutionMode::Multithreaded)
 		{
 			std::unique_lock lock{ s_data->mutex };
@@ -95,8 +99,6 @@ namespace Volt
 
 	void RenderGraphExecutionThread::RT_ExecuteGraphs()
 	{
-		VT_PROFILE_THREAD("RenderGraphExecutionThread");
-
 		while (s_data->isRunning)
 		{
 			VT_PROFILE_SCOPE("Execute Graph");
@@ -120,6 +122,7 @@ namespace Volt
 			s_data->waitForExecutionVariable.notify_one();
 		}
 	}
+
 	void RenderGraphExecutionThread::ExecuteGraphs()
 	{
 		std::function<void()> executeFunction{};
