@@ -4,6 +4,7 @@
 #include "Circuit/Window/CircuitWindow.h"
 
 #include "Circuit/Widgets/SliderWidget.h"
+#include "Circuit/Widgets/TextWidget.h"
 
 #include <WindowModule/WindowManager.h>
 #include <WindowModule/Events/WindowEvents.h>
@@ -34,13 +35,28 @@ namespace Circuit
 		RegisterWindow(Volt::WindowManager::Get().GetMainWindowHandle());
 
 		m_windows[Volt::WindowManager::Get().GetMainWindowHandle()]->SetWidget(
-			CreateWidget(Circuit::SliderWidget)
+			CreateWidget(Circuit::TextWidget)
 		.X(100)
 		.Y(100)
-		.Max(100)
-		.Min(0)
-		.Value(50.f)
+		.Text("Hej Ivar!")
 		);
+
+
+		//CreateWidget(Circuit::SliderWidget)
+		//	.Max(100)
+		//	.Min(0)
+		//	.Value(50.f);
+
+
+		//CreateWidget(Circuit::SliderWidget)
+		//	.Max(this, &SliderWidget::GetMaxValue)
+		//	.Min(this, &SliderWidget::GetMinValue)
+		//	.Value(this, &SliderWidget::GetValue);
+
+		//.Value_lambda([]() 
+		//	{
+		//	return 100.f;
+		//	})
 	}
 
 	void CircuitManager::RegisterEventListeners()
