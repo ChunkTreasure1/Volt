@@ -18,5 +18,5 @@ void Circuit::TextWidget::Build(const Arguments& args)
 
 void Circuit::TextWidget::OnPaint(CircuitPainter& painter)
 {
-	painter.AddRect(100, 100, 100, 30, CircuitColor(0xffffffff));
+	painter.AddRect(GetX(), GetY(), 100, 30, CircuitColor(0xffffffff));
 }

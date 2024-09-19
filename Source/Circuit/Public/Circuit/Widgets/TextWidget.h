@@ -1,8 +1,6 @@
 #pragma once
 #include "Circuit/Widgets/Widget.h"
 
-#include <EventSystem/EventListener.h>
-
 #include <string>
 
 namespace Circuit
