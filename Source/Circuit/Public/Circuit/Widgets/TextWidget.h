@@ -1,7 +1,12 @@
 #pragma once
 #include "Circuit/Widgets/Widget.h"
 
-#include <string>
+#include <Volt-Assets/Assets/Font.h>
+
+namespace Volt
+{
+	class Font;
+}
 
 namespace Circuit
 {
@@ -22,5 +27,7 @@ namespace Circuit
 		virtual void OnPaint(CircuitPainter& painter) override;
 	private:
 		std::string m_text;
+	
+		Ref<Volt::Font> m_font;
 	};
 }

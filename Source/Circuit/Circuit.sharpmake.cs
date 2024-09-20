@@ -27,6 +27,11 @@ namespace VoltSharpmake
 			conf.AddPublicDependency<LogModule>(target);
 			conf.AddPublicDependency<EventSystemModule>(target);
 			conf.AddPublicDependency<InputModule>(target);
+			conf.AddPublicDependency<VoltAssets>(target);
+
+			// #TODO_Ivar: These should not be here
+			conf.AddPublicDependency<msdfgen>(target);
+			conf.AddPublicDependency<msdf_atlas_gen>(target);
 		}
 	}
 }

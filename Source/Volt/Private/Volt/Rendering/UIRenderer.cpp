@@ -3,14 +3,14 @@
 
 #include "Volt/Core/Application.h"
 
-#include "Volt/Asset/Text/Font.h"
-#include "Volt/Asset/Text/MSDFData.h"
-
 #include "Volt/Rendering/Texture/Texture2D.h"
 
 #include "Volt/Rendering/Vertex.h"
 
 #include "Volt/Utility/StringUtility.h"
+
+#include <Volt-Assets/Assets/Font.h>
+#include <Volt-Assets/Assets/MSDFData.h>
 
 #include <RHIModule/Buffers/IndexBuffer.h>
 #include <RHIModule/Buffers/VertexBuffer.h>
@@ -281,8 +281,8 @@ namespace Volt
 
 		//auto& textData = s_uiRendererData->textData;
 
-		std::u32string utf32string = ::Utility::To_UTF32(text);
-		Ref<Texture2D> fontAtlas = font->GetAtlas();
+		std::u32string utf32string = ::Utility::ToUTF32(text);
+		RefPtr<RHI::Image> fontAtlas = font->GetAtlas();
 
 		if (!fontAtlas)
 		{

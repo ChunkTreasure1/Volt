@@ -715,7 +715,12 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 
 	if (!m_fileChangeQueue.empty())
 	{
-		EditorLibrary::Get<AssetBrowserPanel>()->Reload();
+		auto panel = EditorLibrary::Get<AssetBrowserPanel>();
+
+		if (panel)
+		{
+			panel->Reload();
+		}
 	}
 
 	m_fileChangeQueue.clear();

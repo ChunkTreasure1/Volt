@@ -12,6 +12,7 @@ namespace UIPrimitiveType
 {
     static const uint CIRCLE = 0;
     static const uint RECTANGLE = 1;
+    static const uint TEXT_CHARACTER = 2;
 }
 
 struct UICommand
@@ -20,14 +21,22 @@ struct UICommand
     uint primitiveGroup;
     float rotation;
     float scale;
+
     float2 radiusHalfSize;
     float2 pixelPos;
+
     uint color;
+    vt::Tex2D<float4> texture;
+    float2 padding;    
+
+    float4 minMaxUV;
+    float4 minMaxPx;
 };
 
 struct Constants
 {
     vt::UniformTypedBuffer<UICommand> commands;
+    vt::TextureSampler linearSampler;
     uint commandCount;
     uint2 renderSize;
 };
@@ -103,6 +112,19 @@ float4 BlendColors(float4 colorA, float4 colorB)
     return result;
 }
 
+float ScreenPxRange(float2 msdfSize, float2 screenSize)
+{
+    const float pxRange = 2.f;
+    float2 unitRange = pxRange / msdfSize;
+    
+    return max(0.5f * dot(unitRange, screenSize), 1.f);
+}
+
+float SDF_TextMedian(float r, float g, float b)
+{
+    return max(min(r, g), min(max(r, g), b));
+}
+
 Output main(FullscreenTriangleVertex input)
 {
     const Constants constants = GetConstants<Constants>();
@@ -171,6 +193,40 @@ Output main(FullscreenTriangleVertex input)
                 {
                     const float strength = 0.5f;
                     output.color = BlendColors(output.color, float4(0.f, 0.f, 0.f, lerp(1.f, 0.f, t) * strength));
+                }
+
+                break;
+            }
+
+            case UIPrimitiveType::TEXT_CHARACTER:
+            {
+                if (pixelPos.x < command.minMaxPx.x || pixelPos.x > command.minMaxPx.z || pixelPos.y < command.minMaxPx.w || pixelPos.y > command.minMaxPx.y)
+                {
+                    break;
+                }
+
+                // Calculate UV within character quad
+                const float xPercent = (pixelPos.x - command.minMaxPx.x) / (command.minMaxPx.z - command.minMaxPx.x);
+                const float yPercent = (pixelPos.y - command.minMaxPx.y) / (command.minMaxPx.w - command.minMaxPx.y);
+                
+                const float2 textTexUv = float2(lerp(command.minMaxUV.x, command.minMaxUV.z, xPercent), lerp(command.minMaxUV.y, command.minMaxUV.w, yPercent));
+                
+                // Sample UV
+                const float3 msd = command.texture.Sample(constants.linearSampler, textTexUv).rgb;
+                
+                uint2 msdfSize;
+                command.texture.GetDimensions(msdfSize.x, msdfSize.y);
+                
+                float4 bgColor = float4(color.xyz, 0.f);
+                float4 fgColor = color;
+                
+                float sd = SDF_TextMedian(msd.x, msd.y, msd.z);
+                float screenPxDistance = ScreenPxRange((float2)msdfSize, (float2)constants.renderSize) * (sd - 0.5f);
+                float opacity = clamp(screenPxDistance + 0.5f, 0.f, 1.f);    
+                
+                if (opacity > 0.f)
+                {
+                    output.color = BlendColors(output.color, float4(lerp(bgColor.rgb, fgColor.rgb, opacity), opacity));
                 }
 
                 break;

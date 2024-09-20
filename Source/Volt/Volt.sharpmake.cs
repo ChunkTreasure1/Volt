@@ -31,10 +31,10 @@ namespace VoltSharpmake
             conf.AddPublicDependency<RenderCoreModule>(target);
             conf.AddPublicDependency<WindowModule>(target);
             conf.AddPublicDependency<InputModule>(target);
+			conf.AddPublicDependency<VoltAssets>(target);
 
             conf.AddPublicDependency<VulkanRHIModule>(target);
             conf.AddPublicDependency<D3D12RHIModule>(target);
-
 
             conf.AddPublicDependency<NavigationModule>(target);
             conf.AddPublicDependency<MosaicModule>(target);

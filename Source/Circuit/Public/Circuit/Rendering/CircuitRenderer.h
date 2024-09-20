@@ -6,7 +6,7 @@
 #include <CoreUtilities/Core.h>
 #include <CoreUtilities/Pointers/RefPtr.h>
 
-#include <RHIModule/Buffers/CommandBuffer.h>
+#include <RHIModule/Buffers/CommandBufferSet.h>
 
 namespace Circuit
 {
@@ -19,7 +19,6 @@ namespace Volt
 	namespace RHI
 	{
 		class Image;
-		class CommandBuffer;
 	}
 
 	class RenderGraph;
@@ -33,7 +32,7 @@ namespace Circuit
 	{
 	public:
 		CircuitRenderer(CircuitWindow& targetCircuitWindow);
-		~CircuitRenderer() = default;
+		~CircuitRenderer();
 
 		void OnRender();
 
@@ -47,7 +46,9 @@ namespace Circuit
 		uint32_t m_height;
 
 		RefPtr<Volt::RHI::Image> m_outputImage;
-		RefPtr<Volt::RHI::CommandBuffer> m_commandBuffer;
+		RefPtr<Volt::RHI::SamplerState> m_linearSampler;
+		Volt::RHI::CommandBufferSet m_commandBufferSet;
+		Volt::ResourceHandle m_linearSamplerResourceHandle;
 
 		std::atomic<uint64_t> m_frameTotalGPUAllocation;
 	};
