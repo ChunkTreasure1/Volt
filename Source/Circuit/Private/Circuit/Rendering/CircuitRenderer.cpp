@@ -10,11 +10,13 @@
 #include <RenderCore/RenderGraph/Resources/RenderGraphBufferResource.h>
 #include <RenderCore/RenderGraph/Resources/RenderGraphTextureResource.h>
 #include <RenderCore/RenderGraph/RenderContextUtils.h>
+#include <RenderCore/Resources/BindlessResourcesManager.h>
 
 #include <RHIModule/Buffers/CommandBuffer.h>
 #include <RHIModule/Graphics/GraphicsContext.h>
 #include <RHIModule/Graphics/GraphicsDevice.h>
 #include <RHIModule/Graphics/DeviceQueue.h>
+#include <RHIModule/Images/SamplerState.h>
 
 #include <CoreUtilities/Profiling/Profiling.h>
 
@@ -28,15 +30,30 @@
 
 #include <RenderCore/Shader/ShaderMap.h>
 
+using namespace Volt;
+
 namespace Circuit
 {
 	Circuit::CircuitRenderer::CircuitRenderer(CircuitWindow& targetCircuitWindow)
-		: m_targetCircuitWindow(targetCircuitWindow), m_targetWindow(Volt::WindowManager::Get().GetWindow(targetCircuitWindow.GetWindowHandle()))
+		: m_targetCircuitWindow(targetCircuitWindow), m_targetWindow(Volt::WindowManager::Get().GetWindow(targetCircuitWindow.GetWindowHandle())),
+		m_commandBufferSet(m_targetWindow.GetSwapchain().GetFramesInFlight())
 	{
 		m_width = 0;
 		m_height = 0;
 
-		m_commandBuffer = Volt::RHI::CommandBuffer::Create();
+		RHI::SamplerStateCreateInfo samplerInfo{};
+		samplerInfo.minFilter = RHI::TextureFilter::Linear;
+		samplerInfo.magFilter = RHI::TextureFilter::Linear;
+		samplerInfo.mipFilter = RHI::TextureFilter::Linear;
+		samplerInfo.wrapMode = RHI::TextureWrap::Clamp;
+
+		m_linearSampler = RHI::SamplerState::Create(samplerInfo);
+		m_linearSamplerResourceHandle = BindlessResourcesManager::Get().RegisterSamplerState(m_linearSampler);
+	}
+
+	CircuitRenderer::~CircuitRenderer()
+	{
+		BindlessResourcesManager::Get().UnregisterSamplerState(m_linearSamplerResourceHandle);
 	}
 
 	void CircuitRenderer::OnRender()
@@ -60,7 +77,7 @@ namespace Circuit
 			m_height = swapchainHeight;
 		}
 
-		Volt::RenderGraph renderGraph{ m_commandBuffer };
+		Volt::RenderGraph renderGraph{ m_commandBufferSet.IncrementAndGetCommandBuffer() };
 		Volt::RenderGraphBlackboard rgBlackboard{};
 
 		CircuitOutputData& outData = AddCircuitPrimitivesPass(renderGraph, rgBlackboard);
@@ -89,7 +106,7 @@ namespace Circuit
 		const size_t commandsCount = cmds.size();
 		if (commandsCount > 0)
 		{
-			auto desc = Volt::RGUtils::CreateBufferDescGPU<Circuit::CircuitDrawCommand>(1, "UI Commands");
+			auto desc = Volt::RGUtils::CreateBufferDescGPU<Circuit::CircuitDrawCommand>(cmds.size(), "UI Commands");
 			uiCommandsBufferHandle = renderGraph.CreateBuffer(desc);
 			renderGraph.AddStagedBufferUpload(uiCommandsBufferHandle, cmds.data(), sizeof(Circuit::CircuitDrawCommand) * cmds.size(), "UI Commands");
 		}
@@ -121,6 +138,7 @@ namespace Circuit
 			Volt::RCUtils::DrawFullscreenTriangle(context, pipeline, [&](Volt::RenderContext& context)
 			{
 				context.SetConstant("commands"_sh, data.uiCommandsBufferHandle);
+				context.SetConstant("linearSampler"_sh, m_linearSamplerResourceHandle);
 				context.SetConstant("commandCount"_sh, static_cast<uint32_t>(commandsCount));
 				context.SetConstant("renderSize"_sh, glm::uvec2{ swapchainWidth, swapchainHeight });
 			});

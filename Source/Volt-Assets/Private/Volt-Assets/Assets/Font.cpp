@@ -1,19 +1,16 @@
-#include "vtpch.h"
-#include "Volt/Asset/Text/Font.h"
+#include "vtapch.h"
 
-#include "Volt/Asset/Text/MSDFData.h"
+#include "Volt-Assets/Assets/Font.h"
+#include "Volt-Assets/Assets/MSDFData.h"
+
+#include <RenderCore/Resources/BindlessResourcesManager.h>
+
+#include <RHIModule/Images/ImageView.h>
+
 #include <AssetSystem/AssetManager.h>
+#include <LogModule/Log.h>
 
-#include "Volt/Core/Base.h"
-#include <CoreUtilities/Buffer/Buffer.h>
-#include "Volt/Project/ProjectManager.h"
-
-#include "Volt/Rendering/Texture/Texture2D.h"
-
-#include "Volt/Core/Application.h"
-
-#include "Volt/Utility/FileSystem.h"
-#include "Volt/Utility/StringUtility.h"
+#include <CoreUtilities/FileSystem.h>
 
 namespace Volt
 {
@@ -23,7 +20,7 @@ namespace Volt
 	{
 		const std::filesystem::path GetAndCreateCacheFolder()
 		{
-			const std::filesystem::path cachePath = ProjectManager::GetAssetsDirectory() / "Cache" / "Fonts";
+			const std::filesystem::path cachePath = "Engine/Cache/Fonts";
 			if (!std::filesystem::exists(cachePath))
 			{
 				std::filesystem::create_directories(cachePath);
@@ -42,7 +39,6 @@ namespace Volt
 	constexpr float DEFAULT_MITER_LIMIT = 1.f;
 	constexpr uint64_t LCG_MULTIPLIER = 6364136223846793005ull;
 	constexpr uint64_t LCG_INCREMENT = 1442695040888963407ull;
-	constexpr uint32_t THREADS = 8;
 
 	struct FontInput
 	{
@@ -72,15 +68,22 @@ namespace Volt
 	};
 
 	template<typename T, typename S, int32_t N, msdf_atlas::GeneratorFunction<S, N> GEN_FN>
-	static Ref<Texture2D> CreateAndCacheAtlas(const std::string& aFontName, float, const Vector<msdf_atlas::GlyphGeometry>& aGlyphs, const msdf_atlas::FontGeometry&, const Configuration& aConfig)
+	static RefPtr<RHI::Image> CreateAndCacheAtlas(const std::string& aFontName, float, const std::vector<msdf_atlas::GlyphGeometry>& aGlyphs, const msdf_atlas::FontGeometry&, const Configuration& aConfig)
 	{
 		msdf_atlas::ImmediateAtlasGenerator<S, N, GEN_FN, msdf_atlas::BitmapAtlasStorage<T, N>> generator(aConfig.width, aConfig.height);
 		generator.setAttributes(aConfig.generatorAttribs);
-		generator.setThreadCount(THREADS);
+		generator.setThreadCount(std::thread::hardware_concurrency());
 		generator.generate(aGlyphs.data(), (int32_t)aGlyphs.size());
 
 		auto bitmap = (msdfgen::BitmapConstRef<T, N>)generator.atlasStorage();
-		Ref<Texture2D> texture = Texture2D::Create(RHI::PixelFormat::R32G32B32A32_SFLOAT, bitmap.width, bitmap.height, bitmap.pixels);
+
+		RHI::ImageSpecification imageSpec{};
+		imageSpec.format = RHI::PixelFormat::R32G32B32A32_SFLOAT;
+		imageSpec.usage = RHI::ImageUsage::Texture;
+		imageSpec.width = bitmap.width;
+		imageSpec.height = bitmap.height;
+
+		RefPtr<RHI::Image> image = RHI::Image::Create(imageSpec, bitmap.pixels);
 
 		// Cache
 		{
@@ -98,17 +101,21 @@ namespace Volt
 			buffer.Release();
 		}
 
-		return texture;
+		return image;
 	}
 
 	Font::~Font()
 	{
-		delete myMSDFData;
+		if (m_atlas)
+		{
+			BindlessResourcesManager::Get().UnregisterImageView(m_atlasResourceHandle, RHI::ImageViewType::View2D);
+		}
+		delete m_msdfData;
 	}
 
 	void Font::Initialize(const std::filesystem::path& filePath)
 	{
-		myMSDFData = new MSDFData();
+		m_msdfData = new MSDFData();
 
 		FontInput fontInput = {};
 		Configuration config = {};
@@ -141,57 +148,57 @@ namespace Volt
 		{
 		public:
 			FontHolder()
-				: myFreeTypeHandle(msdfgen::initializeFreetype())
+				: m_freeTypeHandle(msdfgen::initializeFreetype())
 			{
 			}
 
 			~FontHolder()
 			{
-				if (myFreeTypeHandle)
+				if (m_freeTypeHandle)
 				{
-					if (myFontHandle)
+					if (m_fontHandle)
 					{
-						msdfgen::destroyFont(myFontHandle);
+						msdfgen::destroyFont(m_fontHandle);
 					}
 
-					msdfgen::deinitializeFreetype(myFreeTypeHandle);
+					msdfgen::deinitializeFreetype(m_freeTypeHandle);
 				}
 			}
 
 			bool Load(const std::string& fontFilename)
 			{
-				if (myFreeTypeHandle && !fontFilename.empty())
+				if (m_freeTypeHandle && !fontFilename.empty())
 				{
-					if (myFontFilename == fontFilename)
+					if (m_fontFilename == fontFilename)
 					{
 						return true;
 					}
 
-					if (myFontHandle)
+					if (m_fontHandle)
 					{
-						msdfgen::destroyFont(myFontHandle);
+						msdfgen::destroyFont(m_fontHandle);
 					}
 
-					if (myFontHandle = msdfgen::loadFont(myFreeTypeHandle, fontFilename.c_str()); myFontHandle != nullptr)
+					if (m_fontHandle = msdfgen::loadFont(m_freeTypeHandle, fontFilename.c_str()); m_fontHandle != nullptr)
 					{
-						myFontFilename = fontFilename;
+						m_fontFilename = fontFilename;
 						return true;
 					}
 
-					myFontFilename = "";
+					m_fontFilename = "";
 				}
 				return false;
 			}
 
 			operator msdfgen::FontHandle* () const
 			{
-				return myFontHandle;
+				return m_fontHandle;
 			}
 
 		private:
-			msdfgen::FreetypeHandle* myFreeTypeHandle = nullptr;
-			msdfgen::FontHandle* myFontHandle = nullptr;
-			std::string myFontFilename;
+			msdfgen::FreetypeHandle* m_freeTypeHandle = nullptr;
+			msdfgen::FontHandle* m_fontHandle = nullptr;
+			std::string m_fontFilename;
 		} font;
 
 		bool success = font.Load(fontInput.filename);
@@ -226,33 +233,32 @@ namespace Volt
 		}
 
 		// Load glyphs
-		std::vector<msdf_atlas::GlyphGeometry> tempGlyphs(myMSDFData->glyphs.begin(), myMSDFData->glyphs.end());
-		myMSDFData->fontGeometry = msdf_atlas::FontGeometry(&tempGlyphs);
-		myMSDFData->glyphs = Vector<msdf_atlas::GlyphGeometry>(tempGlyphs.begin(), tempGlyphs.end());
+		m_msdfData->fontGeometry = msdf_atlas::FontGeometry(&m_msdfData->glyphs);
+
 
 		int32_t glyphsLoaded = -1;
 
 		switch (fontInput.glyphType)
 		{
-		case msdf_atlas::GlyphIdentifierType::GLYPH_INDEX:
-		{
-			glyphsLoaded = myMSDFData->fontGeometry.loadGlyphset(font, (double)fontInput.scale, charset);
-			break;
-		}
+			case msdf_atlas::GlyphIdentifierType::GLYPH_INDEX:
+			{
+				glyphsLoaded = m_msdfData->fontGeometry.loadGlyphset(font, (double)fontInput.scale, charset);
+				break;
+			}
 
-		case msdf_atlas::GlyphIdentifierType::UNICODE_CODEPOINT:
-		{
-			glyphsLoaded = myMSDFData->fontGeometry.loadCharset(font, (double)fontInput.scale, charset);
-			anyCodepointsAvailable |= glyphsLoaded > 0;
-			break;
-		}
+			case msdf_atlas::GlyphIdentifierType::UNICODE_CODEPOINT:
+			{
+				glyphsLoaded = m_msdfData->fontGeometry.loadCharset(font, (double)fontInput.scale, charset);
+				anyCodepointsAvailable |= glyphsLoaded > 0;
+				break;
+			}
 		}
 
 		VT_ASSERT_MSG(glyphsLoaded >= 0, "Unable to load glyphs!");
 
 		if (!fontInput.fontName.empty())
 		{
-			myMSDFData->fontGeometry.setName(fontInput.fontName.c_str());
+			m_msdfData->fontGeometry.setName(fontInput.fontName.c_str());
 		}
 
 		// Determine atlas dimensions, scale and range
@@ -283,7 +289,7 @@ namespace Volt
 		atlasPacker.setPixelRange(pxRange);
 		atlasPacker.setMiterLimit((double)config.miterLimit);
 
-		if (int32_t remaining = atlasPacker.pack(myMSDFData->glyphs.data(), (int32_t)myMSDFData->glyphs.size()))
+		if (int32_t remaining = atlasPacker.pack(m_msdfData->glyphs.data(), (int32_t)m_msdfData->glyphs.size()))
 		{
 			if (remaining < 0)
 			{
@@ -291,7 +297,7 @@ namespace Volt
 			}
 			else
 			{
-				VT_LOG(Error, "Could not fit {0} out of {1} glyphs in atlas!", remaining, (int32_t)myMSDFData->glyphs.size());
+				VT_LOG(Error, "Could not fit {0} out of {1} glyphs in atlas!", remaining, (int32_t)m_msdfData->glyphs.size());
 				VT_ASSERT_MSG(false, "Invalid number");
 			}
 		}
@@ -307,17 +313,17 @@ namespace Volt
 		{
 			if (config.expensiveColoring)
 			{
-				msdf_atlas::Workload([&glyphs = myMSDFData->glyphs, &config](int i, int) -> bool
-					{
-						uint64_t glyphSeed = (LCG_MULTIPLIER * (config.coloringSeed ^ i) + LCG_INCREMENT) * !!config.coloringSeed;
-						glyphs[i].edgeColoring(config.edgeColoring, config.angleThreshold, glyphSeed);
-						return true;
-					}, (int)myMSDFData->glyphs.size()).finish(THREADS);
+				msdf_atlas::Workload([&glyphs = m_msdfData->glyphs, &config](int i, int) -> bool
+				{
+					uint64_t glyphSeed = (LCG_MULTIPLIER * (config.coloringSeed ^ i) + LCG_INCREMENT) * !!config.coloringSeed;
+					glyphs[i].edgeColoring(config.edgeColoring, config.angleThreshold, glyphSeed);
+					return true;
+				}, (int)m_msdfData->glyphs.size()).finish(std::thread::hardware_concurrency());
 			}
 			else
 			{
 				uint64_t glyphSeed = config.coloringSeed;
-				for (msdf_atlas::GlyphGeometry& glyph : myMSDFData->glyphs)
+				for (msdf_atlas::GlyphGeometry& glyph : m_msdfData->glyphs)
 				{
 					glyphSeed += LCG_MULTIPLIER;
 					glyph.edgeColoring(config.edgeColoring, (double)config.angleThreshold, glyphSeed);
@@ -328,7 +334,7 @@ namespace Volt
 		std::string fontName = AssetManager::GetMetadataFromHandle(handle).filePath.stem().string(); // #TODO_Ivar: change font constructor
 		const std::filesystem::path cachePath = Utility::GetCachePath(fontName);
 
-		Ref<Texture2D> texture;
+		RefPtr<RHI::Image> image;
 
 		if (FileSystem::Exists(cachePath))
 		{
@@ -336,8 +342,14 @@ namespace Volt
 			if (data.IsValid())
 			{
 				Font::FontHeader header = *data.As<Font::FontHeader>();
-				texture = Texture2D::Create(RHI::PixelFormat::R32G32B32A32_SFLOAT, header.width, header.height, data.As<void*>(sizeof(Font::FontHeader)));
 
+				RHI::ImageSpecification imageSpec{};
+				imageSpec.format = RHI::PixelFormat::R32G32B32A32_SFLOAT;
+				imageSpec.usage = RHI::ImageUsage::Texture;
+				imageSpec.width = header.width;
+				imageSpec.height = header.height;
+
+				image = RHI::Image::Create(imageSpec, data.As<void*>(sizeof(Font::FontHeader)));
 				data.Release();
 			}
 		}
@@ -346,37 +358,38 @@ namespace Volt
 			bool floatingPointFormat = true;
 			switch (config.imageType)
 			{
-			case msdf_atlas::ImageType::MSDF:
-			{
-				if (floatingPointFormat)
+				case msdf_atlas::ImageType::MSDF:
 				{
-					texture = CreateAndCacheAtlas<float, float, 3, msdf_atlas::msdfGenerator>(fontName, (float)config.emSize, myMSDFData->glyphs, myMSDFData->fontGeometry, config);
-				}
-				else
-				{
-					texture = CreateAndCacheAtlas<uint8_t, float, 3, msdf_atlas::msdfGenerator>(fontName, (float)config.emSize, myMSDFData->glyphs, myMSDFData->fontGeometry, config);
+					if (floatingPointFormat)
+					{
+						image = CreateAndCacheAtlas<float, float, 3, msdf_atlas::msdfGenerator>(fontName, (float)config.emSize, m_msdfData->glyphs, m_msdfData->fontGeometry, config);
+					}
+					else
+					{
+						image = CreateAndCacheAtlas<uint8_t, float, 3, msdf_atlas::msdfGenerator>(fontName, (float)config.emSize, m_msdfData->glyphs, m_msdfData->fontGeometry, config);
+					}
+
+					break;
 				}
 
-				break;
-			}
-
-			case msdf_atlas::ImageType::MTSDF:
-			{
-				if (floatingPointFormat)
+				case msdf_atlas::ImageType::MTSDF:
 				{
-					texture = CreateAndCacheAtlas<float, float, 4, msdf_atlas::mtsdfGenerator>(fontName, (float)config.emSize, myMSDFData->glyphs, myMSDFData->fontGeometry, config);
-				}
-				else
-				{
-					texture = CreateAndCacheAtlas<uint8_t, float, 4, msdf_atlas::mtsdfGenerator>(fontName, (float)config.emSize, myMSDFData->glyphs, myMSDFData->fontGeometry, config);
-				}
+					if (floatingPointFormat)
+					{
+						image = CreateAndCacheAtlas<float, float, 4, msdf_atlas::mtsdfGenerator>(fontName, (float)config.emSize, m_msdfData->glyphs, m_msdfData->fontGeometry, config);
+					}
+					else
+					{
+						image = CreateAndCacheAtlas<uint8_t, float, 4, msdf_atlas::mtsdfGenerator>(fontName, (float)config.emSize, m_msdfData->glyphs, m_msdfData->fontGeometry, config);
+					}
 
-				break;
-			}
+					break;
+				}
 			}
 
 		}
-		myAtlas = texture;
+		m_atlas = image;
+		m_atlasResourceHandle = BindlessResourcesManager::Get().RegisterImageView(image->GetView());
 	}
 
 	static bool NextLine(int32_t aIndex, const Vector<int32_t>& aLines)
@@ -394,7 +407,7 @@ namespace Volt
 
 	float Font::GetStringWidth(const std::string& string, const glm::vec2& scale, float maxWidth)
 	{
-		std::u32string utf32string = ::Utility::To_UTF32(string);
+		std::u32string utf32string = ::Utility::ToUTF32(string);
 
 		auto& fontGeom = GetMSDFData()->fontGeometry;
 		const auto& metrics = fontGeom.getMetrics();
@@ -504,7 +517,7 @@ namespace Volt
 			double advance = glyph->getAdvance();
 			fontGeom.getAdvance(advance, character, utf32string[i + 1]);
 
-			const auto transformedPosition = transform * glm::vec4{ float(fsScale* advance), 0.f, 0.f, 1.f };
+			const auto transformedPosition = transform * glm::vec4{ float(fsScale * advance), 0.f, 0.f, 1.f };
 			widths.back() += transformedPosition.x;
 		}
 
@@ -517,10 +530,10 @@ namespace Volt
 
 		return (float)maxStringWidth;
 	}
-	
+
 	float Font::GetStringHeight(const std::string& string, const glm::vec2& scale, float maxWidth)
 	{
-		std::u32string utf32string = ::Utility::To_UTF32(string);
+		std::u32string utf32string = ::Utility::ToUTF32(string);
 
 		auto& fontGeom = GetMSDFData()->fontGeometry;
 		const auto& metrics = fontGeom.getMetrics();

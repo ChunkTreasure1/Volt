@@ -110,6 +110,9 @@ namespace AssetTypes \
 #define VT_DECLARE_ASSET_TYPE(typeName, typeGuid) \
 	VT_DECLARE_ASSET_TYPE_IMPL(typeName, false, (Vector<std::string>{}), typeGuid)
 
+#define VT_DECLARE_ASSET_TYPE_EXPORT(typeName, typeGuid, exportKeyword) \
+	VT_DECLARE_ASSET_TYPE_EXPORT_IMPL(typeName, false, (Vector<std::string>{}), typeGuid, exportKeyword)
+
 #define VT_DECLARE_ASSET_SOURCE_TYPE(typeName, extensions, typeGuid) \
 	VT_DECLARE_ASSET_TYPE_IMPL(typeName, true, extensions, typeGuid)
 

@@ -3,6 +3,8 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Asset/Rendering/MaterialTable.h"
 
+#include <Volt-Assets/AssetTypes.h>
+
 #include <EntitySystem/ComponentRegistry.h>
 #include <AssetSystem/Asset.h>
 

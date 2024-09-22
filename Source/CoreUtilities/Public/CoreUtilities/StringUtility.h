@@ -125,7 +125,7 @@ namespace Utility
 	}
 
 	// From https://stackoverflow.com/questions/31302506/stdu32string-conversion-to-from-stdstring-and-stdu16string
-	inline std::u32string To_UTF32(const std::string& s)
+	inline std::u32string ToUTF32(const std::string& s)
 	{
 		std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
 		return conv.from_bytes(s);

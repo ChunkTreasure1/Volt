@@ -2,7 +2,6 @@
 #include "Volt/Asset/Importers/AssetImporter.h"
 
 #include "Volt/Asset/Importers/TextureImporter.h"
-#include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
 
 #include "Volt/Animation/BlendSpace.h"
@@ -377,18 +376,20 @@ namespace Volt
 
 	bool FontImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		asset = CreateRef<Font>();
-		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
+		//asset = CreateRef<Font>();
+		//const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
-		if (!std::filesystem::exists(filePath))
-		{
-			VT_LOG(Error, "File {0} not found!", metadata.filePath);
-			asset->SetFlag(AssetFlag::Missing, true);
-			return false;
-		}
+		//if (!std::filesystem::exists(filePath))
+		//{
+		//	VT_LOG(Error, "File {0} not found!", metadata.filePath);
+		//	asset->SetFlag(AssetFlag::Missing, true);
+		//	return false;
+		//}
 
-		asset = CreateRef<Font>();
-		std::reinterpret_pointer_cast<Font>(asset)->Initialize(filePath);
+		//asset = CreateRef<Font>();
+		//std::reinterpret_pointer_cast<Font>(asset)->Initialize(filePath);
+		//return true;
+
 		return true;
 	}
 

@@ -1,13 +1,14 @@
 #pragma once
 
-#include "Volt/Asset/AssetTypes.h"
+#include "Volt-Assets/Assets/Font.h"
+#include "Volt-Assets/Config.h"
 
 #include <AssetSystem/Serialization/AssetSerializer.h>
 #include <AssetSystem/AssetSerializerRegistry.h>
 
 namespace Volt
 {
-	class FontSerializer : public AssetSerializer
+	class VTASSETS_API FontSerializer : public AssetSerializer
 	{
 	public:
 		void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;

@@ -942,7 +942,8 @@ namespace Volt
 		const auto& metadata = GetMetadataFromFilePath(filePath);
 		if (!metadata.IsValid())
 		{
-			return 0;
+			VT_LOGC(Error, LogAssetSystem, "Asset with filepath {} is not registered!", filePath.string());
+			return Asset::Null();
 		}
 
 		return metadata.handle;
