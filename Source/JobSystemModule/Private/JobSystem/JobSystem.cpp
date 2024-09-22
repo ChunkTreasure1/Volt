@@ -24,7 +24,12 @@ namespace Volt
 	JobID JobSystem::CreateJob(const std::function<void()>& task)
 	{
 		VT_ENSURE(s_instance);
-		auto [jobPtr, jobId] = s_instance->AllocateJobInternal(task);
+		return CreateJob(ExecutionPolicy::WorkerThread, task);
+	}
+
+	JobID JobSystem::CreateJob(ExecutionPolicy executionPolicy, const std::function<void()>& task)
+	{
+		auto [jobPtr, jobId] = s_instance->AllocateJobInternal(executionPolicy, task);
 		return jobId;
 	}
 
@@ -38,10 +43,15 @@ namespace Volt
 
 	JobID JobSystem::CreateJobAsChild(JobID parentJob, const std::function<void()>& task)
 	{
+		return CreateJobAsChild(ExecutionPolicy::WorkerThread, parentJob, task);
+	}
+
+	JobID JobSystem::CreateJobAsChild(ExecutionPolicy executionPolicy, JobID parentJob, const std::function<void()>& task)
+	{
 		VT_ENSURE(s_instance);
 		VT_ENSURE_MSG(parentJob != INVALID_JOB_ID, "The parent job must be a valid job ID!");
 
-		auto [jobPtr, jobId] = s_instance->AllocateJobInternal(task, parentJob);
+		auto [jobPtr, jobId] = s_instance->AllocateJobInternal(executionPolicy, task, parentJob);
 		return jobId;
 	}
 
@@ -58,6 +68,10 @@ namespace Volt
 		VT_ENSURE_MSG(jobId != INVALID_JOB_ID, "The job id must be a valid job ID!");
 
 		Job* job = s_instance->m_allocator.GetJobFromID(jobId);
+		if (!job)
+		{
+			return;
+		}
 
 		while (!s_instance->HasCompletedJob(job))
 		{
@@ -71,11 +85,35 @@ namespace Volt
 
 	void JobSystem::RunJob(JobID jobId)
 	{
-		auto& internalState = s_instance->m_internalState;
+		VT_ENSURE(s_instance);
+		VT_ENSURE_MSG(jobId != INVALID_JOB_ID, "The job id must be a valid job ID!");
 
-		const uint32_t nextQueueToPush = internalState.nextQueueToPush.fetch_add(1) % internalState.workerCount;
-		internalState.jobQueues.at(nextQueueToPush).Push(s_instance->m_allocator.GetJobFromID(jobId));
-		internalState.wakeCondition.notify_one();
+		auto& internalState = s_instance->m_internalState;
+		Job* jobPtr = s_instance->m_allocator.GetJobFromID(jobId);
+
+		if (jobPtr->executionPolicy == ExecutionPolicy::WorkerThread)
+		{
+			const uint32_t nextQueueToPush = internalState.nextQueueToPush.fetch_add(1) % internalState.workerCount;
+			internalState.jobQueues.at(nextQueueToPush).Push(jobPtr);
+			internalState.wakeCondition.notify_one();
+		}
+		else if (jobPtr->executionPolicy == ExecutionPolicy::MainThread)
+		{
+			internalState.mainThreadQueue.Push(jobPtr);
+		}
+	}
+
+	void JobSystem::ExecuteMainThreadJobs()
+	{
+		auto& internalState = m_internalState;
+		
+		Job* jobPtr = internalState.mainThreadQueue.Pop();
+		while (jobPtr)
+		{
+			jobPtr->func();
+			FinishJob(jobPtr, m_mainThreadAllocator);
+			jobPtr = internalState.mainThreadQueue.Pop();
+		}
 	}
 
 	void JobSystem::Initialize()
@@ -111,15 +149,17 @@ namespace Volt
 		}
 	}
 
-	JobSystem::AllocatedJob JobSystem::AllocateJobInternal(const std::function<void()>& task, JobID parentJob)
+	JobSystem::AllocatedJob JobSystem::AllocateJobInternal(ExecutionPolicy executionPolicy, const std::function<void()>& task, JobID parentJob)
 	{
-		auto [newJob, jobId] = m_allocator.AllocateJob();
+		auto& allocator = executionPolicy == ExecutionPolicy::WorkerThread ? m_allocator : m_mainThreadAllocator;
+
+		auto [newJob, jobId] = allocator.AllocateJob();
 		newJob->unfinishedJobs = 1;
 		newJob->func = task;
 
 		if (parentJob != INVALID_JOB_ID)
 		{
-			Job* parentJobPtr = m_allocator.GetJobFromID(parentJob);
+			Job* parentJobPtr = allocator.GetJobFromID(parentJob);
 			Atomic::InterlockedIncrement(&parentJobPtr->unfinishedJobs);
 			newJob->parentJob = parentJob;
 		}
@@ -127,7 +167,6 @@ namespace Volt
 		return { newJob, jobId };
 	}
 
-	VT_OPTIMIZE_OFF
 	Job* JobSystem::TryGetJob(uint32_t workerId)
 	{
 		auto& workerQueue = m_internalState.jobQueues.at(workerId);
@@ -175,20 +214,20 @@ namespace Volt
 	void JobSystem::ExecuteJob(Job* job)
 	{
 		job->func();
-		FinishJob(job);
+		FinishJob(job, m_allocator);
 	}
 
-	void JobSystem::FinishJob(Job* job)
+	void JobSystem::FinishJob(Job* job, JobAllocator& allocator)
 	{
 		const long unfinishedJobs = Atomic::InterlockedDecrement(&job->unfinishedJobs);
 		if (unfinishedJobs == 0)
 		{
 			if (job->parentJob != INVALID_JOB_ID)
 			{
-				FinishJob(m_allocator.GetJobFromID(job->parentJob));
+				FinishJob(allocator.GetJobFromID(job->parentJob), allocator);
 			}
 
-			m_allocator.FreeJob(job);
+			allocator.FreeJob(job);
 		}
 	}
 

@@ -8,6 +8,8 @@
 
 #include "Volt/Utility/Version.h"
 
+#include <AssetSystem/SourceAssetManager.h>
+
 #include <EventSystem/EventListener.h>
 #include <WindowModule/WindowMode.h>
 #include <JobSystem/JobSystem.h>
@@ -141,7 +143,7 @@ namespace Volt
 
 		Scope<Log> m_log;
 		Scope<Input> m_input;
-		Scope<JobSystem> m_jobSystem2;
+		Scope<JobSystem> m_jobSystem;
 		Scope<DynamicLibraryManager> m_dynamicLibraryManager;
 		Scope<PluginRegistry> m_pluginRegistry;
 		Scope<PluginSystem> m_pluginSystem;
@@ -153,7 +155,8 @@ namespace Volt
 		RefPtr<RHI::GraphicsContext> m_graphicsContext;
 		RefPtr<RHI::RHIProxy> m_rhiProxy;
 
-		Scope<AssetManager> m_assetmanager;
+		Scope<AssetManager> m_assetManager;
+		Scope<SourceAssetManager> m_sourceAssetManager;
 		Scope<AI::NavigationSystem> m_navigationSystem;
 
 		Scope<SteamImplementation> m_steamImplementation;

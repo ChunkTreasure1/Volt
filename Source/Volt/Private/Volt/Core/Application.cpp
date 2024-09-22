@@ -110,7 +110,7 @@ namespace Volt
 
 		m_input = CreateScope<Input>();
 
-		m_jobSystem2 = CreateScope<JobSystem>();
+		m_jobSystem = CreateScope<JobSystem>();
 		m_dynamicLibraryManager = CreateScope<DynamicLibraryManager>();
 		m_pluginRegistry = CreateScope<PluginRegistry>();
 		m_pluginSystem = CreateScope<PluginSystem>(*m_pluginRegistry);
@@ -155,7 +155,8 @@ namespace Volt
 		TextureImporter::Initialize();
 		
 		Renderer::PreInitialize();
-		m_assetmanager = CreateScope<AssetManager>(ProjectManager::GetRootDirectory(), ProjectManager::GetAssetsDirectory(), ProjectManager::GetEngineDirectory());
+		m_assetManager = CreateScope<AssetManager>(ProjectManager::GetRootDirectory(), ProjectManager::GetAssetsDirectory(), ProjectManager::GetEngineDirectory());
+		m_sourceAssetManager = CreateScope<SourceAssetManager>();
 		Renderer::Initialize();
 
 		//UIRenderer::Initialize();
@@ -239,7 +240,7 @@ namespace Volt
 
 		Amp::WWiseEngine::Get().TermWwise();
 
-		m_assetmanager = nullptr;
+		m_assetManager = nullptr;
 
 		Renderer::Shutdown();
 
@@ -256,7 +257,7 @@ namespace Volt
 		m_pluginSystem->UnloadPlugins();
 		m_pluginSystem = nullptr;
 		m_pluginRegistry = nullptr;
-		m_jobSystem2 = nullptr;
+		m_jobSystem = nullptr;
 		m_input = nullptr;
 		m_log = nullptr;
 		m_eventSystem = nullptr;
@@ -324,6 +325,11 @@ namespace Volt
 		{
 			VT_PROFILE_SCOPE("Application::UpdateAudio");
 			Amp::WWiseEngine::Get().Update();
+		}
+
+		{
+			VT_PROFILE_SCOPE("Application::RunMainThreadJobs");
+			m_jobSystem->ExecuteMainThreadJobs();
 		}
 
 		if (m_info.enableImGui)

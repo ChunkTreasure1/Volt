@@ -20,7 +20,7 @@ private:
 
 extern VTAS_API AssetSerializerRegistry g_assetSerializerRegistry;
 
-VT_INLINE AssetSerializerRegistry& GetAssetSerializerRegistry()
+VT_NODISCARD VT_INLINE AssetSerializerRegistry& GetAssetSerializerRegistry()
 {
 	return g_assetSerializerRegistry;
 }

@@ -49,6 +49,7 @@ namespace VoltSharpmake
             conf.AddPrivateDependency<Steam>(target);
             conf.AddPrivateDependency<libacc>(target);
             conf.AddPrivateDependency<METIS>(target);
+			conf.AddPrivateDependency<FbxSDK>(target);
 
             conf.IncludePrivatePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "tiny_gltf"));
             conf.IncludePrivatePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "tinyddsloader"));

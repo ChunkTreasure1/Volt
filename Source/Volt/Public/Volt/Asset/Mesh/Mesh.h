@@ -124,6 +124,7 @@ namespace Volt
 		friend class MeshExporterUtilities;
 		friend class VTMeshImporter;
 		friend class GLTFImporter;
+		friend class FbxSourceImporter;
 
 		VertexMaterialData GetMaterialDataFromVertex(const Vertex& vertex);
 

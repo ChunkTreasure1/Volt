@@ -22,13 +22,17 @@ namespace Volt
 		~JobSystem();
 
 		static JobID CreateJob(const std::function<void()>& task);
+		static JobID CreateJob(ExecutionPolicy executionPolicy, const std::function<void()>& task);
 		static JobID CreateAndRunJob(const std::function<void()>& task);
 		static JobID CreateJobAsChild(JobID parentJob, const std::function<void()>& task);
+		static JobID CreateJobAsChild(ExecutionPolicy executionPolicy, JobID parentJob, const std::function<void()>& task);
 
 		static void DestroyJob(JobID jobId);
 
 		static void WaitForJob(JobID jobId);
 		static void RunJob(JobID jobId);
+
+		void ExecuteMainThreadJobs();
 
 	private:
 		struct InternalState
@@ -44,6 +48,7 @@ namespace Volt
 			Vector<JobGroup> jobGroups;
 			//Vector<JobQueue> jobQueues;
 			Vector<JobQueueLocking> jobQueues;
+			JobQueueLocking mainThreadQueue;
 		};
 
 		struct AllocatedJob
@@ -57,12 +62,12 @@ namespace Volt
 		void Initialize();
 		void Shutdown();
 
-		AllocatedJob AllocateJobInternal(const std::function<void()>& task, JobID parentJob = INVALID_JOB_ID);
+		AllocatedJob AllocateJobInternal(ExecutionPolicy executionPolicy, const std::function<void()>& task, JobID parentJob = INVALID_JOB_ID);
 
 		Job* TryGetJob(uint32_t workerId);
 		void SpawnWorker(uint32_t workerId);
 		void ExecuteJob(Job* job);
-		void FinishJob(Job* job);
+		void FinishJob(Job* job, JobAllocator& allocator);
 
 		bool HasCompletedJob(Job* job);
 
@@ -70,6 +75,7 @@ namespace Volt
 
 		InternalState m_internalState;
 		JobAllocator m_allocator;
+		JobAllocator m_mainThreadAllocator;
 		Vector<std::thread> m_workerThreads;
 	};
 }
