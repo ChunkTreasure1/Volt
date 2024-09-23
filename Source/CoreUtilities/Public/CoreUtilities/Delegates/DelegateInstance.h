@@ -3,8 +3,6 @@
 #include "CoreUtilities/Delegates/DelegateHandle.h"
 #include "CoreUtilities/GUIDUtilities.h"
 
-#include "CoreUtilities/Templates/RemoveReference.h"
-
 #include <tuple>
 
 namespace Volt
@@ -46,7 +44,7 @@ namespace Volt
 	template <typename ReturnType, typename... ParamTypes, typename FunctorType, typename... VarTypes>
 	class FunctorDelegateInstance<ReturnType(ParamTypes...), FunctorType, VarTypes...> : public DelegateInstance<ReturnType(ParamTypes...), VarTypes...>
 	{
-		static_assert(std::is_same_v<FunctorType, typename RemoveReference<FunctorType>::Type>, "FunctorType cannot be a reference");
+		static_assert(std::is_same_v<FunctorType, typename std::remove_reference_t<FunctorType>>, "FunctorType cannot be a reference");
 
 		using Base = DelegateInstance<ReturnType(ParamTypes...), VarTypes...>;
 	public:

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "CoreUtilities/Templates/RemoveReference.h"
 #include "CoreUtilities/Delegates/DelegateInstance.h"
 
 namespace Volt
