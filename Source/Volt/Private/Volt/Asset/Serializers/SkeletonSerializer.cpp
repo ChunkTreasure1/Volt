@@ -10,7 +10,7 @@ namespace Volt
 	{
 		std::string name;
 		Vector<Skeleton::Joint> joints;
-		std::unordered_map<std::string, size_t> jointNameToIndex;
+		vt::map<std::string, size_t> jointNameToIndex;
 		Vector<Skeleton::JointAttachment> jointAttachments;
 		Vector<glm::mat4> inverseBindPose;
 		Vector<Animation::TRS> restPose;

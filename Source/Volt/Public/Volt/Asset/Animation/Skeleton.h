@@ -5,6 +5,8 @@
 #include <AssetSystem/Asset.h>
 #include <AssetSystem/AssetFactory.h>
 
+#include <CoreUtilities/Containers/Map.h>
+
 #include <glm/glm.hpp>
 
 namespace Volt
@@ -88,6 +90,7 @@ namespace Volt
 
 	private:
 		friend class FbxImporter;
+		friend class FbxSourceImporter;
 		friend class SkeletonImporter;
 		friend class SkeletonSerializer;
 
@@ -96,7 +99,7 @@ namespace Volt
 		Vector<Animation::TRS> m_restPose;
 		Vector<glm::mat4> m_inverseBindPose;
 
-		std::unordered_map<std::string, size_t> m_jointNameToIndex;
+		vt::map<std::string, size_t> m_jointNameToIndex;
 
 		std::string m_name = "Skeleton";
 	};

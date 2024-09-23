@@ -3,6 +3,7 @@
 #include "CoreUtilities/FileIO/StreamCommon.h"
 #include "CoreUtilities/Buffer/Buffer.h"
 #include "CoreUtilities/Containers/Vector.h"
+#include "CoreUtilities/Containers/Map.h"
 
 #include <fstream>
 
@@ -45,6 +46,9 @@ public:
 
 	template<typename Key, typename Value>
 	void Read(std::unordered_map<Key, Value>& data);
+
+	template<typename Key, typename Value>
+	void Read(vt::map<Key, Value>& data);
 
 	void Read(void* data);
 
@@ -258,6 +262,53 @@ inline void BinaryStreamReader::Read(std::unordered_map<Key, Value>& data)
 			Key::Deserialize(*this, key);
 		}
 		 
+		Value value{};
+
+		if constexpr (std::is_trivial_v<Value>)
+		{
+			TypeHeader valueTypeHeader{};
+			valueTypeHeader.totalTypeSize = sizeof(Value);
+
+			ReadData(&value, valueTypeHeader, valueTypeHeader);
+		}
+		else if constexpr (std::is_same<Value, std::string>::value)
+		{
+			Read(value);
+		}
+		else
+		{
+			Value::Deserialize(*this, value);
+		}
+
+		data[key] = value;
+	}
+}
+
+template<typename Key, typename Value>
+inline void BinaryStreamReader::Read(vt::map<Key, Value>& data)
+{
+	TypeHeader serializedTypeHeader = ReadTypeHeader();
+
+	const size_t elementCount = serializedTypeHeader.totalTypeSize;
+
+	for (size_t i = 0; i < elementCount; i++)
+	{
+		Key key{};
+
+		if constexpr (std::is_trivial_v<Key>)
+		{
+			TypeHeader keyTypeHeader{};
+			ReadData(&key, keyTypeHeader, keyTypeHeader);
+		}
+		else if constexpr (std::is_same<Key, std::string>::value)
+		{
+			Read(key);
+		}
+		else
+		{
+			Key::Deserialize(*this, key);
+		}
+
 		Value value{};
 
 		if constexpr (std::is_trivial_v<Value>)

@@ -100,7 +100,7 @@ namespace Volt
 		{
 			for (auto&& curr : registry.storage())
 			{
-				if (auto& storage = curr.second; curr.second.type().index() == entt::type_id<T>().index())
+				if (auto& storage = curr.second; curr.second.type().name() == entt::type_id<T>().name())
 				{
 					return storage.get(entity);
 				}

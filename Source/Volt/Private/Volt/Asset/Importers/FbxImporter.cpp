@@ -124,8 +124,8 @@ namespace Volt
 					ufbx_transform transform = ufbx_evaluate_transform(stack->anim, node, time);
 
 					auto& trs = dstAnimation.m_frames.at(i).localTRS.at(jntIndex);
-					trs.position = Utility::GetVec(transform.translation);
-					trs.position.x = -trs.position.x;
+					trs.translation = Utility::GetVec(transform.translation);
+					trs.translation.x = -trs.translation.x;
 
 					trs.rotation = Utility::GetQuat(transform.rotation);
 					trs.rotation.y = -trs.rotation.y;
@@ -460,7 +460,7 @@ namespace Volt
 			glm::quat rotation;
 			::Math::Decompose(localPose, translation, rotation, scale);
 		
-			skeleton.m_restPose[i].position = translation;
+			skeleton.m_restPose[i].translation = translation;
 			skeleton.m_restPose[i].rotation = rotation;
 			skeleton.m_restPose[i].scale = scale;
 		}

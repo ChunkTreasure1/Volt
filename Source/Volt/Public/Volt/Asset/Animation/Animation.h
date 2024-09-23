@@ -18,20 +18,20 @@ namespace Volt
 	public:
 		struct TRS
 		{
-			glm::vec3 position = { 0.f };
+			glm::vec3 translation = { 0.f };
 			glm::quat rotation = { 1.f, 0.f, 0.f, 0.f };
 			glm::vec3 scale = { 1.f };
 
 			static void Serialize(BinaryStreamWriter& streamWriter, const TRS& data)
 			{
-				streamWriter.Write(data.position);
+				streamWriter.Write(data.translation);
 				streamWriter.Write(data.rotation);
 				streamWriter.Write(data.scale);
 			}
 
 			static void Deserialize(BinaryStreamReader& streamReader, TRS& outData)
 			{
-				streamReader.Read(outData.position);
+				streamReader.Read(outData.translation);
 				streamReader.Read(outData.rotation);
 				streamReader.Read(outData.scale);
 			}
@@ -109,6 +109,7 @@ namespace Volt
 		static const PoseData GetFrameDataFromAnimation(Animation& animation, const float aNormalizedTime);
 
 		friend class FbxImporter;
+		friend class FbxSourceImporter;
 		friend class AnimationImporter;
 		friend class AnimationSerializer;
 

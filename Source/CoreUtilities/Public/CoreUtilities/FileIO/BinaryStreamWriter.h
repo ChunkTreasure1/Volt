@@ -4,6 +4,8 @@
 #include "CoreUtilities/Buffer/Buffer.h"
 #include "CoreUtilities/Containers/Vector.h"
 
+#include "CoreUtilities/Containers/Map.h"
+
 #include <array>
 #include <string>
 #include <map>
@@ -47,6 +49,9 @@ public:
 
 	template<typename Key, typename Value>
 	size_t Write(const std::unordered_map<Key, Value>& data);
+
+	template<typename Key, typename Value>
+	size_t Write(const vt::map<Key, Value>& data);
 
 	size_t Write(const void* data, const size_t size);
 
@@ -262,6 +267,46 @@ inline size_t BinaryStreamWriter::Write(const std::map<Key, Value>& data)
 
 template<typename Key, typename Value>
 inline size_t BinaryStreamWriter::Write(const std::unordered_map<Key, Value>& data)
+{
+	TypeHeader header{};
+	header.totalTypeSize = static_cast<uint32_t>(data.size());
+
+	WriteData(&header, sizeof(header));
+
+	for (const auto& [key, value] : data)
+	{
+		if constexpr (std::is_trivial_v<Key>)
+		{
+			WriteData(&key, sizeof(Key));
+		}
+		else if constexpr (std::is_same<Key, std::string>::value)
+		{
+			Write(key);
+		}
+		else
+		{
+			Key::Serialize(*this, key);
+		}
+
+		if constexpr (std::is_trivial_v<Value>)
+		{
+			WriteData(&value, sizeof(Value));
+		}
+		else if constexpr (std::is_same<Value, std::string>::value)
+		{
+			Write(value);
+		}
+		else
+		{
+			Value::Serialize(*this, value);
+		}
+	}
+
+	return m_data.size();
+}
+
+template<typename Key, typename Value>
+inline size_t BinaryStreamWriter::Write(const vt::map<Key, Value>& data)
 {
 	TypeHeader header{};
 	header.totalTypeSize = static_cast<uint32_t>(data.size());

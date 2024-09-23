@@ -76,7 +76,7 @@ namespace Volt
 			streamReader.ForEach("restPose", [&]()
 			{
 				auto& trs = skeleton->m_restPose.emplace_back();
-				trs.position = streamReader.ReadAtKey("position", glm::vec3{ 0.f });
+				trs.translation = streamReader.ReadAtKey("position", glm::vec3{ 0.f });
 				trs.rotation = streamReader.ReadAtKey("rotation", glm::quat{});
 				trs.scale = streamReader.ReadAtKey("scale", glm::vec3{ 1.f });
 			});
@@ -133,7 +133,7 @@ namespace Volt
 		for (const auto& restPose : skeleton->m_restPose)
 		{
 			streamWriter.BeginMap();
-			streamWriter.SetKey("position", restPose.position);
+			streamWriter.SetKey("position", restPose.translation);
 			streamWriter.SetKey("rotation", restPose.rotation);
 			streamWriter.SetKey("scale", restPose.scale);
 			streamWriter.EndMap();

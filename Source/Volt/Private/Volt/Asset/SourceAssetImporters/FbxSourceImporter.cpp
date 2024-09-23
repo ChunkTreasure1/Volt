@@ -3,6 +3,7 @@
 #include "Volt/Asset/SourceAssetImporters/FbxSourceImporter.h"
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Rendering/Material.h"
+#include "Volt/Asset/Animation/Skeleton.h"
 
 #include "Volt/Rendering/Mesh/MeshCommon.h"
 
@@ -27,6 +28,58 @@ namespace Volt
 		{
 			return { v[0], v[1] };
 		}
+
+		glm::mat4 ToMatrix(const FbxAMatrix& aMatrix)
+		{
+			glm::mat4 result;
+			for (uint32_t i = 0; i < 4; i++)
+			{
+				FbxVector4 column = aMatrix.GetColumn(i);
+				result[i] = glm::vec4((float)column[0], (float)column[1], (float)column[2], (float)column[3]);
+			}
+
+			return result;
+		}
+
+		glm::quat ToQuat(const fbxsdk::FbxQuaternion& aQuat)
+		{
+			glm::quat result;
+
+			result.x = static_cast<float>(aQuat[0]);
+			result.y = static_cast<float>(aQuat[1]);
+			result.z = static_cast<float>(aQuat[2]);
+			result.w = static_cast<float>(aQuat[3]);
+
+			return result;
+		}
+
+		uint32_t GetFramesPerSecond(FbxTime::EMode aMode)
+		{
+			switch (aMode)
+			{
+				case FbxTime::eDefaultMode: return 0;
+				case FbxTime::eFrames120: return 120;
+				case FbxTime::eFrames100: return 100;
+				case FbxTime::eFrames60: return 60;
+				case FbxTime::eFrames50: return 50;
+				case FbxTime::eFrames48: return 48;
+				case FbxTime::eFrames30: return 30;
+				case FbxTime::eFrames30Drop: return 30;
+				case FbxTime::eNTSCDropFrame: return 30;
+				case FbxTime::eNTSCFullFrame: return 30;
+				case FbxTime::ePAL: return 24;
+				case FbxTime::eFrames24: return 24;
+				case FbxTime::eFrames1000: return 1000;
+				case FbxTime::eFilmFullFrame: return 0;
+				case FbxTime::eCustom: return 0;
+				case FbxTime::eFrames96: return 96;
+				case FbxTime::eFrames72: return 72;
+				case FbxTime::eFrames59dot94: return 60;
+				case FbxTime::eFrames119dot88: return 120;
+			}
+
+			return 0;
+		}
 	}
 
 	struct FbxSDKDeleter
@@ -45,6 +98,44 @@ namespace Volt
 		glm::vec3 normal;
 		glm::vec3 tangent;
 		glm::vec2 texCoords;
+
+		glm::uvec4 influences;
+		glm::vec4 weights;
+	};
+
+	struct FbxRestPose
+	{
+		glm::vec3 translation;
+		glm::vec3 scale;
+		glm::quat rotation;
+	};
+
+	struct FbxJoint
+	{
+		glm::mat4 inverseBindPose;
+		FbxRestPose restPose;
+
+		std::string name;
+		std::string namespaceName;
+		int32_t parentIndex;
+	};
+
+	struct FbxSkeletonContainer
+	{
+		Vector<FbxJoint> joints;
+
+		VT_INLINE int32_t GetJointIndexFromName(const std::string& name) const
+		{
+			for (size_t i = 0; i < joints.size(); i++)
+			{
+				if (joints[i].name == name)
+				{
+					return static_cast<int32_t>(i);
+				}
+			}
+
+			return -1;
+		}
 	};
 
 	namespace ElementType
@@ -533,7 +624,7 @@ namespace Volt
 		}
 	}
 
-	inline void CreateNonIndexedMesh(const FbxMesh& fbxMesh, Vector<FbxVertex>& outVertices)
+	void FbxSourceImporter::CreateNonIndexedMesh(const fbxsdk::FbxMesh& fbxMesh, Vector<FbxVertex>& outVertices, const JointVertexLinkMap* jointVertexLinks) const
 	{
 		VT_ENSURE(outVertices.empty());
 
@@ -644,6 +735,19 @@ namespace Volt
 				const FbxLayerElementUV* const inputTexCoords = layer0->GetUVSets().GetFirst();
 				outVertices[i].texCoords = FbxUtility::ToVec2(inputTexCoords->GetDirectArray().GetAt(fatIndices[i].elements[ElementType::UV]));
 			}
+
+			if (jointVertexLinks)
+			{
+				auto [begin, end] = jointVertexLinks->equal_range(static_cast<uint32_t>(i));
+			
+				int32_t index = 0;
+				for (auto it = begin; it != end && index < 4; ++it)
+				{
+					auto jointLink = it->second;
+					outVertices[i].influences[index] = jointLink.jointIndex;
+					outVertices[i].weights[index] = jointLink.weight;
+				}
+			}
 		}
 
 		// Set default tex coords
@@ -662,6 +766,53 @@ namespace Volt
 		{
 			outVertices[i + 2].material = outVertices[i + 1].material = outVertices[i].material;
 		}
+	}
+
+	Ref<Animation> FbxSourceImporter::CreateAnimationFromFbxAnimation(fbxsdk::FbxScene* fbxScene, const FbxSkeletonContainer& fbxSkeleton, const fbxsdk::FbxString& animStackName, const MeshSourceImportConfig& importConfig, const SourceAssetUserImportData& userData) const
+	{
+		const auto timeMode = fbxScene->GetGlobalSettings().GetTimeMode();
+		FbxTakeInfo* fbxTake = fbxScene->GetTakeInfo(animStackName);
+		if (!fbxTake)
+		{
+			userData.OnWarning(std::format("The FBX anim stack {} does not contain any takes", animStackName.Buffer()));
+			return nullptr;
+		}
+		
+		const FbxTime start = fbxTake->mLocalTimeSpan.GetStart();
+		const FbxTime stop = fbxTake->mLocalTimeSpan.GetStop();
+
+		const auto startFrame = start.GetFrameCount(timeMode);
+		const auto endFrame = stop.GetFrameCount(timeMode);
+
+		const FbxLongLong animationLength = endFrame - startFrame + 1;
+
+		Ref<Animation> voltAnimation = AssetManager::CreateAsset<Animation>(importConfig.destinationDirectory, importConfig.destinationFilename + "_" + std::string(animStackName.Buffer()));
+		voltAnimation->m_framesPerSecond = FbxUtility::GetFramesPerSecond(timeMode);
+		voltAnimation->m_duration = static_cast<float>(animationLength) / static_cast<float>(voltAnimation->m_framesPerSecond);
+		voltAnimation->m_frames.resize(animationLength);
+
+		uint32_t localFrameCounter = 0;
+		for (FbxLongLong t = startFrame; t <= endFrame; t++)
+		{
+			FbxTime time;
+			time.SetFrame(t, timeMode);
+
+			voltAnimation->m_frames[localFrameCounter].localTRS.resize_uninitialized(fbxSkeleton.joints.size());
+
+			for (size_t j = 0; j < fbxSkeleton.joints.size(); j++)
+			{
+				FbxNode* jointNode = fbxScene->FindNodeByName(fbxSkeleton.joints[j].namespaceName.c_str());
+				const FbxAMatrix localTransform = jointNode->EvaluateLocalTransform(time);
+
+				voltAnimation->m_frames[localFrameCounter].localTRS[j].translation = FbxUtility::ToVec3(localTransform.GetT());
+				voltAnimation->m_frames[localFrameCounter].localTRS[j].scale = FbxUtility::ToVec3(localTransform.GetS());
+				voltAnimation->m_frames[localFrameCounter].localTRS[j].rotation = FbxUtility::ToQuat(localTransform.GetQ());
+			}
+
+			localFrameCounter++;
+		}
+
+		return voltAnimation;
 	}
 
 	inline Vector<Ref<Material>> CreateSceneMaterials(FbxScene* fbxScene, const MeshSourceImportConfig& importConfig)
@@ -745,6 +896,68 @@ namespace Volt
 		}
 	}
 
+	inline std::string GetJointName(const std::string& name)
+	{
+		if (const size_t pos = name.find_last_of(':'); pos != std::string::npos)
+		{
+			return name.substr(pos + 1);
+		}
+		return name;
+	}
+
+	inline FbxSkeletonContainer CreateFbxSkeleton(FbxScene* fbxScene)
+	{
+		Vector<fbxsdk::FbxNode*> skeletonNodes;
+		Vector<fbxsdk::FbxNode*> parentNodes;
+
+		auto findParentSkeletonNode = [](FbxNode* node) -> FbxNode*
+		{
+			FbxNode* parentNode = node->GetParent();
+
+			while (parentNode)
+			{
+				if (parentNode->GetNodeAttribute() && parentNode->GetNodeAttribute()->GetAttributeType() && parentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eSkeleton)
+				{
+					return parentNode;
+				}
+
+				parentNode = parentNode->GetParent();
+			}
+
+			return nullptr;
+		};
+
+		auto fetcher = [&](fbxsdk::FbxSkeleton* skeleton, FbxNode* node)
+		{
+			FbxNode* parentNode = findParentSkeletonNode(node);
+
+			parentNodes.emplace_back(parentNode);
+			skeletonNodes.emplace_back(node);
+		};
+
+		VisitNodeAttributesOfType<FbxSkeleton>(fbxScene, fetcher);
+
+		vt::map<FbxNode*, int32_t> nodeToSkeletonIndexMap;
+
+		for (size_t i = 0; i < skeletonNodes.size(); i++)
+		{
+			nodeToSkeletonIndexMap[skeletonNodes[i]] = static_cast<int32_t>(i);
+		}
+
+		FbxSkeletonContainer skeleton{};
+		skeleton.joints.resize(skeletonNodes.size());
+
+		for (size_t i = 0; i < skeletonNodes.size(); i++)
+		{
+			auto& joint = skeleton.joints[i];
+			joint.name = GetJointName(skeletonNodes[i]->GetName());
+			joint.namespaceName = skeletonNodes[i]->GetName();
+			joint.parentIndex = i == 0 ? -1 : nodeToSkeletonIndexMap.at(parentNodes[i]);
+		}
+
+		return skeleton;
+	}
+
 	// From: https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
 	inline bool AlmostEqual(float lhs, float rhs)
 	{
@@ -781,7 +994,7 @@ namespace Volt
 			AlmostEqual(lhs.texCoords, rhs.texCoords);
 	}
 
-	void FbxSourceImporter::CreateSubMeshFromVertexRange(Ref<Mesh> destinationMesh, const FbxVertex* vertices, size_t indexCount, const std::string& name)
+	void FbxSourceImporter::CreateSubMeshFromVertexRange(Ref<Mesh> destinationMesh, const FbxVertex* vertices, size_t indexCount, const std::string& name) const
 	{
 		constexpr uint32_t MaxUInt = std::numeric_limits<uint32_t>::max();
 
@@ -836,10 +1049,10 @@ namespace Volt
 		destinationMesh->m_vertexContainer.Append(vertexContainer, uniqueVertices.size());
 	}
 
-	void FbxSourceImporter::CreateVoltMeshFromFbxMesh(const fbxsdk::FbxMesh& fbxMesh, Ref<Mesh> destinationMesh, const Vector<Ref<Material>>& materials)
+	void FbxSourceImporter::CreateVoltMeshFromFbxMesh(const fbxsdk::FbxMesh& fbxMesh, Ref<Mesh> destinationMesh, const Vector<Ref<Material>>& materials, const JointVertexLinkMap* jointVertexLinks) const
 	{
 		Vector<FbxVertex> vertices;
-		CreateNonIndexedMesh(fbxMesh, vertices);
+		CreateNonIndexedMesh(fbxMesh, vertices, jointVertexLinks);
 		TranslateNodeToSceneMaterials(fbxMesh.GetNode(), materials, vertices);
 
 		// Sort vertices by material
@@ -876,7 +1089,112 @@ namespace Volt
 		}
 	}
 
-	Vector<Ref<Asset>> FbxSourceImporter::ImportAsStaticMesh(fbxsdk::FbxScene* fbxScene, const MeshSourceImportConfig& importConfig)
+	void FbxSourceImporter::CreateVoltSkeletonFromFbxSkeleton(const FbxSkeletonContainer& fbxSkeleton, Ref<Skeleton> destinationSkeleton) const
+	{
+		const size_t jointCount = fbxSkeleton.joints.size();
+
+		destinationSkeleton->m_jointNameToIndex.reserve(jointCount);
+		destinationSkeleton->m_inverseBindPose.resize_uninitialized(jointCount);
+		destinationSkeleton->m_joints.resize(jointCount);
+		destinationSkeleton->m_restPose.resize_uninitialized(jointCount);
+
+		for (size_t i = 0; i < jointCount; i++)
+		{
+			const auto& fbxJoint = fbxSkeleton.joints[i];
+
+			destinationSkeleton->m_jointNameToIndex[fbxJoint.name] = i;
+			destinationSkeleton->m_inverseBindPose[i] = fbxJoint.inverseBindPose;
+
+			auto& restPose = destinationSkeleton->m_restPose[i];
+			restPose.translation = fbxJoint.restPose.translation;
+			restPose.scale = fbxJoint.restPose.scale;
+			restPose.rotation = fbxJoint.restPose.rotation;
+
+			destinationSkeleton->m_joints[i].name = fbxJoint.name;
+			destinationSkeleton->m_joints[i].parentIndex = fbxJoint.parentIndex;
+		}
+	}
+
+	void FbxSourceImporter::FindJointVertexLinksAndSetupSkeleton(const fbxsdk::FbxMesh& fbxMesh, FbxSkeletonContainer& inOutSkeleton, JointVertexLinkMap& outVertexLinks) const
+	{
+		Vector<FbxAMatrix> bindPoses;
+		bindPoses.resize(inOutSkeleton.joints.size());
+
+		FbxNode* fbxNode = fbxMesh.GetNode();
+
+		const FbxVector4 fbxTranslation = fbxNode->GetGeometricTranslation(FbxNode::eSourcePivot);
+		const FbxVector4 fbxRotation = fbxNode->GetGeometricRotation(FbxNode::eSourcePivot);
+		const FbxVector4 fbxScale = fbxNode->GetGeometricScaling(FbxNode::eSourcePivot);
+		const FbxAMatrix rootTransform = FbxAMatrix(fbxTranslation, fbxRotation, fbxScale);
+
+		for (int32_t deformerIndex = 0; deformerIndex < fbxMesh.GetDeformerCount(FbxDeformer::eSkin); deformerIndex++)
+		{
+			FbxSkin* fbxSkin = FbxCast<FbxSkin>(fbxMesh.GetDeformer(deformerIndex, FbxDeformer::eSkin));
+			if (!fbxSkin)
+			{
+				continue;
+			}
+
+			int32_t clusterCount = fbxSkin->GetClusterCount();
+			for (int32_t clusterIndex = 0; clusterIndex < clusterCount; clusterIndex++)
+			{
+				FbxCluster* fbxCluster = fbxSkin->GetCluster(clusterIndex);
+				const std::string jointName = GetJointName(fbxCluster->GetLink()->GetName());
+				const int32_t jointIndex = inOutSkeleton.GetJointIndexFromName(jointName);
+
+				// Could not find joint in skeleton
+				if (jointIndex == -1)
+				{
+					continue;
+				}
+
+				// Get skin binding matrices
+				FbxAMatrix transform;
+				FbxAMatrix linkTransform;
+				FbxAMatrix inverseBindPose;
+
+				fbxCluster->GetTransformMatrix(transform);
+				fbxCluster->GetTransformLinkMatrix(linkTransform);
+
+				inverseBindPose = linkTransform.Inverse() * transform * rootTransform;
+				inverseBindPose = inverseBindPose.Transpose();
+
+				FbxAMatrix bindPose = inverseBindPose.Inverse();
+
+				bindPoses[jointIndex] = bindPose;
+				inOutSkeleton.joints[jointIndex].inverseBindPose = FbxUtility::ToMatrix(inverseBindPose);
+
+				// Setup vertex binding info
+				int32_t indexCount = fbxCluster->GetControlPointIndicesCount();
+				for (int32_t index = 0; index < indexCount; index++)
+				{
+					int32_t controlPoint = fbxCluster->GetControlPointIndices()[index];
+					float weight = static_cast<float>(fbxCluster->GetControlPointWeights()[index]);
+
+					outVertexLinks.insert({ static_cast<uint32_t>(controlPoint), { static_cast<uint32_t>(jointIndex), weight } });
+				}
+			}
+		}
+
+		for (size_t i = 0; i < inOutSkeleton.joints.size(); i++)
+		{
+			auto& joint = inOutSkeleton.joints[i];
+
+			FbxAMatrix parentTransform;
+			if (joint.parentIndex >= 0)
+			{
+				parentTransform = bindPoses[joint.parentIndex];
+			}
+
+			const FbxAMatrix localPose = parentTransform.Inverse() * bindPoses[i];
+
+			joint.restPose.translation = FbxUtility::ToVec3(localPose.GetT());
+			joint.restPose.rotation = FbxUtility::ToQuat(localPose.GetQ());
+			joint.restPose.scale = FbxUtility::ToVec3(localPose.GetS());
+		}
+	}
+
+	Vector<Ref<Asset>> FbxSourceImporter::ImportAsStaticMesh(fbxsdk::FbxScene* fbxScene, const MeshSourceImportConfig& importConfig, const SourceAssetUserImportData& userData) const
 	{
 		Vector<FbxMesh*> fbxMeshes;
 		auto fetcher = [&](FbxMesh* mesh, FbxNode* node)
@@ -886,12 +1204,18 @@ namespace Volt
 
 		VisitNodeAttributesOfType<FbxMesh>(fbxScene, fetcher);
 
+		if (fbxMeshes.empty())
+		{
+			userData.OnError("The import process failed: File does not contain any meshes!");
+			return {};
+		}
+
 		Vector<Ref<Material>> materials = CreateSceneMaterials(fbxScene, importConfig);
 		Ref<Mesh> voltMesh = AssetManager::CreateAsset<Mesh>(importConfig.destinationDirectory, importConfig.destinationFilename);
 
 		for (auto* fbxMesh : fbxMeshes)
 		{
-			CreateVoltMeshFromFbxMesh(*fbxMesh, voltMesh, materials);
+			CreateVoltMeshFromFbxMesh(*fbxMesh, voltMesh, materials, nullptr);
 		}
 
 		for (uint32_t i = 0; i < static_cast<uint32_t>(materials.size()); i++)
@@ -907,6 +1231,114 @@ namespace Volt
 		for (auto& material : materials)
 		{
 			result.emplace_back(material);
+		}
+
+		return result;
+	}
+
+	Vector<Ref<Asset>> FbxSourceImporter::ImportAsSkeletalMesh(fbxsdk::FbxScene* fbxScene, const MeshSourceImportConfig& importConfig, const SourceAssetUserImportData& userData) const
+	{
+		Vector<FbxMesh*> fbxMeshes;
+		auto fetcher = [&](FbxMesh* mesh, FbxNode* node)
+		{
+			fbxMeshes.emplace_back(mesh);
+		};
+
+		VisitNodeAttributesOfType<FbxMesh>(fbxScene, fetcher);
+
+		if (fbxMeshes.empty())
+		{
+			userData.OnError("The import process failed: File does not contain any meshes!");
+			return {};
+		}
+
+		FbxSkeletonContainer fbxSkeleton = CreateFbxSkeleton(fbxScene);
+		if (fbxSkeleton.joints.empty())
+		{
+			userData.OnError("The import process failed: File does not contain a skeleton definition!");
+			return {};
+		}
+
+		JointVertexLinkMap jointVertexLinkMap{};
+
+		// Create mesh
+		Vector<Ref<Material>> materials = CreateSceneMaterials(fbxScene, importConfig);
+		Ref<Mesh> voltMesh = AssetManager::CreateAsset<Mesh>(importConfig.destinationDirectory, importConfig.destinationFilename);
+
+		for (auto* fbxMesh : fbxMeshes)
+		{
+			FindJointVertexLinksAndSetupSkeleton(*fbxMesh, fbxSkeleton, jointVertexLinkMap);
+			CreateVoltMeshFromFbxMesh(*fbxMesh, voltMesh, materials, &jointVertexLinkMap);
+		}
+
+		for (uint32_t i = 0; i < static_cast<uint32_t>(materials.size()); i++)
+		{
+			voltMesh->m_materialTable.SetMaterial(materials[i]->handle, i);
+		}
+
+		voltMesh->Construct();
+
+		// Create skeleton
+		Ref<Skeleton> voltSkeleton = AssetManager::CreateAsset<Skeleton>(importConfig.destinationDirectory, importConfig.destinationFilename + "_Skeleton");
+		CreateVoltSkeletonFromFbxSkeleton(fbxSkeleton, voltSkeleton);
+
+		Vector<Ref<Asset>> animations;
+
+		if (importConfig.importAnimationIfSkeletalMesh)
+		{
+			FbxArray<FbxString*> animStackNames;
+			fbxScene->FillAnimStackNameArray(animStackNames);
+
+			if (animStackNames.Size() != 0)
+			{
+				animations = ImportAsAnimation(fbxScene, importConfig, userData);
+			}
+		}
+
+		Vector<Ref<Asset>> result;
+		result.emplace_back(voltMesh);
+		result.emplace_back(voltSkeleton);
+		
+		for (auto& material : materials)
+		{
+			result.emplace_back(material);
+		}
+
+		for (auto& anim : animations)
+		{
+			result.emplace_back(anim);
+		}
+
+		return result;
+	}
+
+	Vector<Ref<Asset>> FbxSourceImporter::ImportAsAnimation(fbxsdk::FbxScene* fbxScene, const MeshSourceImportConfig& importConfig, const SourceAssetUserImportData& userData) const
+	{
+		FbxSkeletonContainer fbxSkeleton = CreateFbxSkeleton(fbxScene);
+		if (fbxSkeleton.joints.empty())
+		{
+			userData.OnError("The import process failed: File does not contain a skeleton definition!");
+			return {};
+		}
+
+		FbxArray<FbxString*> animStackNames;
+		fbxScene->FillAnimStackNameArray(animStackNames);
+
+		if (animStackNames.Size() == 0)
+		{
+			userData.OnError("The import process failed: File does not contain any animation stacks!");
+			return {};
+		}
+
+		Vector<Ref<Asset>> result;
+
+		for (int32_t i = 0; i < animStackNames.Size(); i++)
+		{
+			auto importedAnim = CreateAnimationFromFbxAnimation(fbxScene, fbxSkeleton, *animStackNames[i], importConfig, userData);
+			if (importedAnim)
+			{
+				result.emplace_back(importedAnim);
+			}
 		}
 
 		return result;
@@ -1011,17 +1443,19 @@ namespace Volt
 		{
 			case MeshSourceImportType::StaticMesh:
 			{
-				result = ImportAsStaticMesh(fbxScene.get(), importConfig);
+				result = ImportAsStaticMesh(fbxScene.get(), importConfig, userData);
 				break;
 			}
 
 			case MeshSourceImportType::SkeletalMesh:
 			{
+				result = ImportAsSkeletalMesh(fbxScene.get(), importConfig, userData);
 				break;
 			}
 
 			case MeshSourceImportType::Animation:
 			{
+				result = ImportAsAnimation(fbxScene.get(), importConfig, userData);
 				break;
 			}
 		}
