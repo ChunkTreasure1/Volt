@@ -5,10 +5,15 @@
 
 #include "Circuit/Widgets/SliderWidget.h"
 #include "Circuit/Widgets/TextWidget.h"
+#include "Circuit/Widgets/ButtonWidget.h"
 
 #include <WindowModule/WindowManager.h>
 #include <WindowModule/Events/WindowEvents.h>
 #include <WindowModule/Window.h>
+
+#include <CoreUtilities/Delegates/Delegate.h>
+
+#include <LogModule/Log.h>
 
 namespace Circuit
 {
@@ -38,8 +43,29 @@ namespace Circuit
 			CreateWidget(Circuit::TextWidget)
 		.X(100)
 		.Y(100)
-		.Text("Hej Ivar!")
+			.Text("This is some text!")
 		);
+
+		int32_t capturedLocalInt = 10;
+		int32_t copiedLocalInt = 5;
+		Volt::Delegate<int32_t(float)> testLambdaDelegate = Volt::Delegate<int32_t(float)>::CreateLambda([&capturedLocalInt, copied = copiedLocalInt, this](float aParam)
+		{
+			VT_LOG(Warning, "I WAS CALLED FROM A LAMBDA DELEGATE!!! capturedLocalInt: {0}, copiedLocalInt: {1}, FloatParameter: {2}, WindowCount from this: {3}", capturedLocalInt, copied, aParam, m_windows.size());
+
+			return capturedLocalInt * copied;
+		});
+		int32_t lambdaResult = testLambdaDelegate.Execute(52.5f);
+		VT_LOG(Warning, "Result from lambda delegate: {0}", lambdaResult);
+
+		Volt::Delegate<int32_t(float)> testStaticDelegate = Volt::Delegate<int32_t(float)>::CreateStatic(&CircuitManager::TestingStaticDelegates);
+		int32_t staticResult = testStaticDelegate.Execute(52.5f);
+		VT_LOG(Warning, "Result from static delegate: {0}", staticResult);
+
+		Volt::Delegate<int32_t(float)> testRawDelegate = Volt::Delegate<int32_t(float)>::CreateRaw(this, &CircuitManager::TestingRawDelegates);
+		int32_t rawResult = testRawDelegate.Execute(52.5f);
+		VT_LOG(Warning, "Result from Raw delegate: {0}", rawResult);
+
+
 
 
 		//CreateWidget(Circuit::SliderWidget)
@@ -77,6 +103,20 @@ namespace Circuit
 	void CircuitManager::RegisterWindow(Volt::WindowHandle handle)
 	{
 		m_windows.emplace(handle, CreateScope<CircuitWindow>(handle));
+	}
+
+	int32_t CircuitManager::TestingStaticDelegates(float aParameter)
+	{
+		VT_LOG(Warning, "I WAS CALLED FROM A STATIC DELEGATE!!! FloatParameter: {0}", aParameter);
+
+		return static_cast<int32_t>(aParameter * 2);
+	}
+
+	int32_t CircuitManager::TestingRawDelegates(float aParameter)
+	{
+		VT_LOG(Warning, "I WAS CALLED FROM A RAW DELEGATE!!! FloatParameter: {0}, WindowCount: {1}", aParameter, m_windows.size());
+
+		return static_cast<int32_t>(aParameter / 2);
 	}
 
 	void CircuitManager::Update()

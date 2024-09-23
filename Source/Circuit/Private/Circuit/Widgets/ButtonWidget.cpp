@@ -1,5 +1,5 @@
 #include "circuitpch.h"
-#include "ButtonWidget.h"
+#include "Widgets/ButtonWidget.h"
 
 #include "CircuitPainter.h"
 

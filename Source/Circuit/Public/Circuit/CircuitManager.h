@@ -42,6 +42,9 @@ namespace Circuit
 
 		void RegisterWindow(Volt::WindowHandle handle);
 
+		static int32_t TestingStaticDelegates(float aParameter);
+		int32_t TestingRawDelegates(float aParameter);
+
 	private:
 		std::map<Volt::WindowHandle, Scope<CircuitWindow>> m_windows;
 	};

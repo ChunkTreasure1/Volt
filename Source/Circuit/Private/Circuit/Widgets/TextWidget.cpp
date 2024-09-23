@@ -22,6 +22,6 @@ void Circuit::TextWidget::Build(const Arguments& args)
 
 void Circuit::TextWidget::OnPaint(CircuitPainter& painter)
 {
-	painter.AddRect(GetX(), GetY(), 100, 30, CircuitColor(0xffffffff));
-	painter.AddText(GetX(), GetY(), "Test!", m_font, 100.f, CircuitColor(100, 100, 50), 45.f);
+	//painter.AddRect(GetX(), GetY(), 100, 30, CircuitColor(0xffffffff));
+	painter.AddText(GetX(), GetY(), m_text, m_font, 100.f, CircuitColor(100, 100, 50), 45.f);
 }
