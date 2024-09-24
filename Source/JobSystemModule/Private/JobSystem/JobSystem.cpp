@@ -118,8 +118,8 @@ namespace Volt
 
 	void JobSystem::Initialize()
 	{
-		// Initialize num cores - 1 threads.
-		const uint32_t hardwareConcurrency = std::thread::hardware_concurrency() - 1;
+		// Initialize num cores - 2 threads.
+		const uint32_t hardwareConcurrency = std::thread::hardware_concurrency() - 2;
 		m_internalState.workerCount = hardwareConcurrency;
 		m_internalState.jobQueues.resize(m_internalState.workerCount);
 		m_internalState.jobGroups.resize(MAX_JOB_GROUP_COUNT);
@@ -128,7 +128,7 @@ namespace Volt
 		{
 			auto& worker = m_workerThreads.emplace_back(std::bind(&JobSystem::SpawnWorker, this, i));
 
-			const uint64_t core = i + 1;
+			const uint64_t core = i + 2;
 			Thread::AssignThreadToCore(worker.native_handle(), 1ull << core);
 			Thread::SetThreadPriority(worker.native_handle(), ThreadPriority::High);
 

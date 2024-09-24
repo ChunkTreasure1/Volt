@@ -7,6 +7,20 @@
 
 namespace Volt
 {
+	inline std::filesystem::path GetNonExistingFilePath(const std::filesystem::path& directory, const std::string& fileName)
+	{
+		std::filesystem::path filePath = AssetManager::GetFilesystemPath(directory / (fileName + ".vtasset"));
+		uint32_t counter = 0;
+
+		while (std::filesystem::exists(filePath))
+		{
+			filePath = AssetManager::GetFilesystemPath(directory / (fileName + "_" + std::to_string(counter) + ".vtasset"));
+			counter++;
+		}
+
+		return AssetManager::GetRelativePath(filePath);
+	}
+
 	SourceAssetManager::SourceAssetManager()
 	{
 		VT_ENSURE(s_instance == nullptr);
@@ -39,7 +53,9 @@ namespace Volt
 
 			for (const auto asset : result)
 			{
-				AssetManager::SaveAsset(asset);
+				std::filesystem::path filePath = AssetManager::GetFilePathFromAssetHandle(asset->handle);
+				filePath = GetNonExistingFilePath(filePath.parent_path(), filePath.filename().string());
+				AssetManager::SaveAssetAs(asset, filePath);
 			}
 
 			resultPromise->SetValue(result);

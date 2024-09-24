@@ -4,6 +4,7 @@
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 #include "Sandbox/UISystems/ModalSystem.h"
 #include "Sandbox/Modals/MeshImportModal.h"
+#include "Sandbox/Modals/TextureImportModal.h"
 #include "Sandbox/Sandbox.h"
 
 #include <Volt/Asset/Prefab.h>
@@ -150,14 +151,6 @@ namespace AssetBrowser
 					auto& modal = ModalSystem::GetModal<MeshImportModal>(Sandbox::Get().GetMeshImportModalID());
 					modal.SetImportMeshes({ item->path });
 					modal.Open();
-
-					//item->meshImportData = {};
-					//item->meshImportData.destination = item->path.parent_path().string() + "\\" + item->path.stem().string() + ".vtasset";
-					//item->meshToImportData.handle = item->handle;
-					//item->meshToImportData.path = item->path;
-					//item->meshToImportData.type = AssetType::MeshSource;
-
-					//UI::OpenModal("Import Mesh##assetBrowser");
 				}
 			};
 
@@ -205,15 +198,9 @@ namespace AssetBrowser
 			{
 				if (ImGui::MenuItem("Import"))
 				{
-					Ref<Volt::TextureSource> importedTexture = Volt::AssetManager::GetAsset<Volt::TextureSource>(item->handle);
-					if (!importedTexture || !importedTexture->IsValid())
-					{
-						return;
-					}
-
-					Ref<Volt::Texture2D> newTexture = Volt::AssetManager::CreateAsset<Volt::Texture2D>(item->path.parent_path(), item->path.stem().string());
-					newTexture->SetImage(importedTexture->GetImage());
-					Volt::AssetManager::SaveAsset(newTexture);
+					auto& modal = ModalSystem::GetModal<TextureImportModal>(Sandbox::Get().GetTextureImportModalID());
+					modal.SetImportTextures({ item->path });
+					modal.Open();
 				}
 			};
 

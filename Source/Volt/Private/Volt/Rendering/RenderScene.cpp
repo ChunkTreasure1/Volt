@@ -146,16 +146,6 @@ namespace Volt
 		m_primitiveDrawData = BuildPrimitiveDrawData();
 		m_sdfPrimitiveDrawData = BuildSDFPrimitiveDrawData();
 
-		m_currentBoneCount = 0;
-		for (const auto& animatedObject : m_animatedRenderObjects)
-		{
-			auto& primitiveDrawData = m_primitiveDrawData.at(m_primitiveIndexFromRenderObjectID.at(animatedObject));
-			primitiveDrawData.boneOffset = m_currentBoneCount;
-
-			const auto& renderObject = GetRenderObjectFromID(animatedObject);
-			m_currentBoneCount += static_cast<uint32_t>(renderObject.motionWeaver->GetSkeleton()->GetJointCount());
-		}
-
 		UploadGPUMeshes(m_gpuMeshes);
 		UploadGPUMeshSDFs(m_gpuSDFMeshes);
 		UploadPrimitiveDrawData(m_primitiveDrawData);
@@ -172,14 +162,27 @@ namespace Volt
 		UpdateInvalidPrimitiveData(renderGraph);
 
 		// Temporary animation sampling
-		m_animationBufferStorage.resize(m_currentBoneCount);
+		m_currentBoneCount = 0;
 		for (const auto& animatedObject : m_animatedRenderObjects)
 		{
-			const auto& primitiveDrawData = m_primitiveDrawData.at(m_primitiveIndexFromRenderObjectID.at(animatedObject));
-			const auto& renderObject = GetRenderObjectFromID(animatedObject);
+			auto& primitiveDrawData = m_primitiveDrawData.at(m_primitiveIndexFromRenderObjectID.at(animatedObject));
+			primitiveDrawData.boneOffset = m_currentBoneCount;
 
-			const auto sample = renderObject.motionWeaver->Sample();
-			memcpy_s(m_animationBufferStorage.data() + primitiveDrawData.boneOffset, sizeof(glm::mat4) * sample.size(), sample.data(), sizeof(glm::mat4) * sample.size());
+			const auto& renderObject = GetRenderObjectFromID(animatedObject);
+			m_currentBoneCount += static_cast<uint32_t>(renderObject.motionWeaver->GetSkeleton()->GetJointCount());
+		}
+
+		m_animationBufferStorage.resize(m_currentBoneCount);
+		if (m_currentBoneCount > 0)
+		{
+			for (const auto& animatedObject : m_animatedRenderObjects)
+			{
+				const auto& primitiveDrawData = m_primitiveDrawData.at(m_primitiveIndexFromRenderObjectID.at(animatedObject));
+				const auto& renderObject = GetRenderObjectFromID(animatedObject);
+
+				const auto sample = renderObject.motionWeaver->Sample();
+				memcpy_s(m_animationBufferStorage.data() + primitiveDrawData.boneOffset, sizeof(glm::mat4) * sample.size(), sample.data(), sizeof(glm::mat4) * sample.size());
+			}
 		}
 
 		if (m_currentBoneCount > 0)
@@ -261,6 +264,10 @@ namespace Volt
 
 		TryAddMaterial(material);
 		TryAddMesh(mesh);
+
+		BuildSinglePrimitiveDrawData(m_primitiveDrawData.emplace_back(), newObj);
+		m_primitiveIndexFromRenderObjectID[newObj.id] = static_cast<uint32_t>(m_primitiveDrawData.size() - 1);
+
 		InvalidateRenderObject(newId);
 
 		return newId;

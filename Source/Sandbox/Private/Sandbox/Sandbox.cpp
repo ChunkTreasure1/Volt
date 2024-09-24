@@ -42,6 +42,7 @@
 #include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include "Sandbox/Modals/MeshImportModal.h"
+#include "Sandbox/Modals/TextureImportModal.h"
 
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorLibrary.h"
@@ -273,6 +274,9 @@ void Sandbox::InitializeModals()
 {
 	auto& meshModal = ModalSystem::AddModal<MeshImportModal>("Import Mesh##sandbox");
 	m_meshImportModal = meshModal.GetID();
+
+	auto& textureModal = ModalSystem::AddModal<TextureImportModal>("Import Texture##sandbox");
+	m_textureImportModal = textureModal.GetID();
 }
 
 void Sandbox::OnDetach()

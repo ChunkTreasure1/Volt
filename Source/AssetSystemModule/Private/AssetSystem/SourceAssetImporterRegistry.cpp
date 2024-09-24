@@ -7,6 +7,12 @@ bool SourceAssetImporterRegistry::RegisterImporter(const Vector<std::string>& as
 {
 	for (const auto& ext : assignedExtensions)
 	{
+		// #TODO_Ivar: Should remove once there are no static libs left.
+		if (m_importers.contains(ext))
+		{
+			continue;
+		}
+
 		VT_ENSURE(!m_importers.contains(ext));
 		m_importers[ext] = importer;
 	}

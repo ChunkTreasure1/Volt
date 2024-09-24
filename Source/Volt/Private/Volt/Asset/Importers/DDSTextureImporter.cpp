@@ -10,7 +10,7 @@
 #include <RHIModule/Memory/Allocation.h>
 #include <RHIModule/Utility/ResourceUtility.h>
 
-#define TINYDDSLOADER_IMPLEMENTATION
+//#define TINYDDSLOADER_IMPLEMENTATION
 #include <tinyddsloader.h>
 
 namespace tdl = tinyddsloader;

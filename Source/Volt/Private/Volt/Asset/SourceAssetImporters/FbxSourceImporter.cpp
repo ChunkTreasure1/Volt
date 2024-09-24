@@ -1,6 +1,7 @@
 #include "vtpch.h"
 
 #include "Volt/Asset/SourceAssetImporters/FbxSourceImporter.h"
+#include "Volt/Asset/SourceAssetImporters/FbxUtility.h"
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Rendering/Material.h"
 #include "Volt/Asset/Animation/Skeleton.h"
@@ -17,345 +18,21 @@ using namespace fbxsdk;
 
 namespace Volt
 {
-	namespace FbxUtility
-	{
-		glm::vec3 ToVec3(const FbxVector4& v)
-		{
-			return { v[0], v[1], v[2] };
-		}
-
-		glm::vec2 ToVec2(const FbxVector2& v)
-		{
-			return { v[0], v[1] };
-		}
-
-		glm::mat4 ToMatrix(const FbxAMatrix& aMatrix)
-		{
-			glm::mat4 result;
-			for (uint32_t i = 0; i < 4; i++)
-			{
-				FbxVector4 column = aMatrix.GetColumn(i);
-				result[i] = glm::vec4((float)column[0], (float)column[1], (float)column[2], (float)column[3]);
-			}
-
-			return result;
-		}
-
-		glm::quat ToQuat(const fbxsdk::FbxQuaternion& aQuat)
-		{
-			glm::quat result;
-
-			result.x = static_cast<float>(aQuat[0]);
-			result.y = static_cast<float>(aQuat[1]);
-			result.z = static_cast<float>(aQuat[2]);
-			result.w = static_cast<float>(aQuat[3]);
-
-			return result;
-		}
-
-		uint32_t GetFramesPerSecond(FbxTime::EMode aMode)
-		{
-			switch (aMode)
-			{
-				case FbxTime::eDefaultMode: return 0;
-				case FbxTime::eFrames120: return 120;
-				case FbxTime::eFrames100: return 100;
-				case FbxTime::eFrames60: return 60;
-				case FbxTime::eFrames50: return 50;
-				case FbxTime::eFrames48: return 48;
-				case FbxTime::eFrames30: return 30;
-				case FbxTime::eFrames30Drop: return 30;
-				case FbxTime::eNTSCDropFrame: return 30;
-				case FbxTime::eNTSCFullFrame: return 30;
-				case FbxTime::ePAL: return 24;
-				case FbxTime::eFrames24: return 24;
-				case FbxTime::eFrames1000: return 1000;
-				case FbxTime::eFilmFullFrame: return 0;
-				case FbxTime::eCustom: return 0;
-				case FbxTime::eFrames96: return 96;
-				case FbxTime::eFrames72: return 72;
-				case FbxTime::eFrames59dot94: return 60;
-				case FbxTime::eFrames119dot88: return 120;
-			}
-
-			return 0;
-		}
-	}
-
-	struct FbxSDKDeleter
-	{
-		template<typename T>
-		void operator()(T* object) const
-		{
-			object->Destroy();
-		}
-	};
-
-	struct FbxVertex
-	{
-		int32_t material;
-		glm::vec3 position;
-		glm::vec3 normal;
-		glm::vec3 tangent;
-		glm::vec2 texCoords;
-
-		glm::uvec4 influences;
-		glm::vec4 weights;
-	};
-
-	struct FbxRestPose
-	{
-		glm::vec3 translation;
-		glm::vec3 scale;
-		glm::quat rotation;
-	};
-
-	struct FbxJoint
-	{
-		glm::mat4 inverseBindPose;
-		FbxRestPose restPose;
-
-		std::string name;
-		std::string namespaceName;
-		int32_t parentIndex;
-	};
-
-	struct FbxSkeletonContainer
-	{
-		Vector<FbxJoint> joints;
-
-		VT_INLINE int32_t GetJointIndexFromName(const std::string& name) const
-		{
-			for (size_t i = 0; i < joints.size(); i++)
-			{
-				if (joints[i].name == name)
-				{
-					return static_cast<int32_t>(i);
-				}
-			}
-
-			return -1;
-		}
-	};
-
-	namespace ElementType
-	{
-		constexpr uint32_t Material = 0;
-		constexpr uint32_t Position = 1;
-		constexpr uint32_t Normal = 2;
-		constexpr uint32_t UV = 3;
-		constexpr uint32_t Tangent = 4;
-		constexpr uint32_t Count = 5;
-	}
-
-	struct FatIndex
-	{
-		int32_t elements[ElementType::Count];
-
-		FatIndex()
-		{
-			for (int i = 0; i < ElementType::Count; i++)
-			{
-				elements[i] = -1;
-			}
-		}
-	};
-
 	using FbxScenePtr = std::unique_ptr<FbxScene, FbxSDKDeleter>;
 	using FbxManagerPtr = std::unique_ptr<FbxManager, FbxSDKDeleter>;
 	using FbxIOSettingsPtr = std::unique_ptr<FbxIOSettings, FbxSDKDeleter>;
 	using FbxImporterPtr = std::unique_ptr<fbxsdk::FbxImporter, FbxSDKDeleter>;
 
-	inline void SetupIOSettings(FbxIOSettings& ioSettings, const MeshSourceImportConfig& importConfig, const std::filesystem::path& filepath)
-	{
-		if (!importConfig.password.empty())
-		{
-			ioSettings.SetStringProp(IMP_FBX_PASSWORD, importConfig.password.c_str());
-			ioSettings.SetBoolProp(IMP_FBX_PASSWORD_ENABLE, true);
-		}
-
-		// General
-		ioSettings.SetBoolProp(IMP_PRESETS, true);
-		ioSettings.SetBoolProp(IMP_STATISTICS, true);
-		ioSettings.SetBoolProp(IMP_GEOMETRY, true);
-		ioSettings.SetBoolProp(IMP_ANIMATION, true);
-		ioSettings.SetBoolProp(IMP_LIGHT, false);
-		ioSettings.SetBoolProp(IMP_ENVIRONMENT, false);
-		ioSettings.SetBoolProp(IMP_CAMERA, false);
-		ioSettings.SetBoolProp(IMP_VIEW_CUBE, false);
-		ioSettings.SetBoolProp(IMP_ZOOMEXTENTS, false);
-		ioSettings.SetBoolProp(IMP_GLOBAL_AMBIENT_COLOR, false);
-		ioSettings.SetBoolProp(IMP_META_DATA, false);
-		ioSettings.SetBoolProp(IMP_REMOVEBADPOLYSFROMMESH, false);
-
-		// FBX
-		ioSettings.SetBoolProp(IMP_FBX_TEMPLATE, true);
-		ioSettings.SetBoolProp(IMP_FBX_PIVOT, true);
-		ioSettings.SetBoolProp(IMP_FBX_GLOBAL_SETTINGS, true);
-		ioSettings.SetBoolProp(IMP_FBX_CHARACTER, false);
-		ioSettings.SetBoolProp(IMP_FBX_CONSTRAINT, false);
-		ioSettings.SetBoolProp(IMP_FBX_MERGE_LAYER_AND_TIMEWARP, false);
-		ioSettings.SetBoolProp(IMP_FBX_GOBO, false);
-		ioSettings.SetBoolProp(IMP_FBX_SHAPE, false);
-		ioSettings.SetBoolProp(IMP_FBX_LINK, false);
-		ioSettings.SetBoolProp(IMP_FBX_MATERIAL, true);
-		ioSettings.SetBoolProp(IMP_FBX_TEXTURE, true);
-		ioSettings.SetBoolProp(IMP_FBX_MODEL, true);
-		ioSettings.SetBoolProp(IMP_FBX_ANIMATION, true);
-		ioSettings.SetBoolProp(IMP_FBX_EXTRACT_EMBEDDED_DATA, true);
-
-		ioSettings.SetStringProp(IMP_EXTRACT_FOLDER, filepath.parent_path().string().c_str());
-
-		// 3DS
-		ioSettings.SetBoolProp(IMP_3DS_REFERENCENODE, false);
-		ioSettings.SetBoolProp(IMP_3DS_TEXTURE, true);
-		ioSettings.SetBoolProp(IMP_3DS_MATERIAL, true);
-		ioSettings.SetBoolProp(IMP_3DS_ANIMATION, false);
-		ioSettings.SetBoolProp(IMP_3DS_MESH, true);
-		ioSettings.SetBoolProp(IMP_3DS_LIGHT, false);
-		ioSettings.SetBoolProp(IMP_3DS_CAMERA, false);
-		ioSettings.SetBoolProp(IMP_3DS_AMBIENT_LIGHT, false);
-		ioSettings.SetBoolProp(IMP_3DS_RESCALING, true);
-		ioSettings.SetBoolProp(IMP_3DS_FILTER, false);
-		ioSettings.SetBoolProp(IMP_3DS_SMOOTHGROUP, false);
-
-		// OBJ
-		ioSettings.SetBoolProp(IMP_OBJ_REFERENCE_NODE, false);
-
-		// DXF
-		ioSettings.SetBoolProp(IMP_DXF_WELD_VERTICES, false);
-		ioSettings.SetBoolProp(IMP_DXF_OBJECT_DERIVATION, false);
-		ioSettings.SetBoolProp(IMP_DXF_REFERENCE_NODE, false);
-	}
-
-	inline std::string GetFbxNodePath(FbxNode* node)
-	{
-		constexpr std::string_view rootName = "<root>";
-
-		std::string result;
-		if (node != nullptr && node->GetParent() != nullptr)
-		{
-			result = rootName;
-		}
-
-		while (node != nullptr && node->GetParent() != nullptr)
-		{
-			std::string nodeDesc;
-
-			const char* const nodeName = node->GetName();
-			if (nodeName && nodeName[0])
-			{
-				nodeDesc = nodeName;
-			}
-			else
-			{
-				int nodeIndex = -1;
-				const FbxNode* const parentNode = node->GetParent();
-				if (parentNode)
-				{
-					const int childCount = parentNode->GetChildCount();
-					for (int i = 0; i < childCount; i++)
-					{
-						if (parentNode->GetChild(i) == node)
-						{
-							nodeIndex = i;
-							break;
-						}
-					}
-				}
-
-				if (nodeIndex >= 0)
-				{
-					nodeDesc = std::format("<node at index {}>", nodeIndex);
-				}
-				else
-				{
-					nodeDesc = "<anonymous node>";
-				}
-			}
-
-			if (result.empty())
-			{
-				result.swap(nodeDesc);
-			}
-			else
-			{
-				result = nodeDesc + "/" + result;
-			}
-
-			node = node->GetParent();
-		}
-
-		if (result.empty())
-		{
-			result = "<null>";
-		}
-
-		return result;
-	}
-
-	template<typename Functor>
-	inline void VisitNodes(FbxScene* scene, Functor& functor)
-	{
-		auto visitor = [&](FbxNode* parent, FbxNode* node, auto visitor) -> bool
-		{
-			if (node)
-			{
-				const int childCount = node->GetChildCount();
-				functor(parent, node);
-
-				for (int i = 0; i < childCount; i++)
-				{
-					visitor(node, node->GetChild(i), visitor);
-				}
-			}
-
-			return false;
-		};
-
-		visitor(nullptr, scene->GetRootNode(), visitor);
-	}
-
-	template<typename Attribute, typename Functor>
-	inline void VisitNodeAttributesOfType(FbxScene* scene, Functor& functor, bool primaryAttribsOnly = false)
-	{
-		auto selector = [&](FbxNodeAttribute* attrib, FbxNode* node)
-		{
-			if (attrib && attrib->Is<Attribute>())
-			{
-				functor(static_cast<Attribute*>(attrib), node);
-			}
-
-			return true;
-		};
-
-		auto visitor = [&](FbxNode* parent, FbxNode* node)
-		{
-			if (primaryAttribsOnly)
-			{
-				selector(node->GetNodeAttribute(), node);
-			}
-			else
-			{
-				const int attribCount = node->GetNodeAttributeCount();
-				for (int i = 0; i < attribCount; i++)
-				{
-					selector(node->GetNodeAttributeByIndex(i), node);
-				}
-			}
-
-			return true;
-		};
-
-		VisitNodes(scene, visitor);
-	}
-
 	inline void PostProccessFbxScene(FbxScene* fbxScene, const MeshSourceImportConfig& importConfig, const SourceAssetUserImportData& userData)
 	{
+		VT_PROFILE_FUNCTION();
+
 		FbxGeometryConverter converter(fbxScene->GetFbxManager());
 
 		if (importConfig.removeDegeneratePolygons)
 		{
+			VT_PROFILE_SCOPE("Remove degenerate polygons");
+
 			FbxArray<FbxNode*> removedFromNodes;
 			converter.RemoveBadPolygonsFromMeshes(fbxScene, &removedFromNodes);
 
@@ -369,6 +46,8 @@ namespace Volt
 
 		if (importConfig.triangulate)
 		{
+			VT_PROFILE_SCOPE("Triangulate");
+
 			Vector<FbxGeometry*> geomToTriangulate;
 			auto findGeomToTriangulate = [&](FbxGeometry* geometry, FbxNode* node)
 			{
@@ -418,6 +97,8 @@ namespace Volt
 
 		if (importConfig.generateNormalsMode != GenerateNormalsMode::Never)
 		{
+			VT_PROFILE_SCOPE("Generate normals");
+
 			Vector<FbxMesh*> geomToGenerate;
 			const bool overwrite = (importConfig.generateNormalsMode == GenerateNormalsMode::OverwriteSmooth) || (importConfig.generateNormalsMode == GenerateNormalsMode::OverwriteHard);
 
@@ -470,6 +151,8 @@ namespace Volt
 
 		if (importConfig.generateTangents)
 		{
+			VT_PROFILE_SCOPE("Generate tangents");
+
 			Vector<FbxMesh*> meshesToGenerate;
 			auto generator = [&](FbxMesh* mesh, FbxNode* node)
 			{
@@ -510,6 +193,8 @@ namespace Volt
 
 		if (importConfig.convertScene)
 		{
+			VT_PROFILE_SCOPE("Convert scene");
+
 			fbxsdk::FbxAxisSystem axisSystem(fbxsdk::FbxAxisSystem::DirectX);
 			axisSystem.DeepConvertScene(fbxScene);
 		}
@@ -517,6 +202,8 @@ namespace Volt
 
 	inline void SetElementIndices(Vector<FatIndex>& fatIndices, int32_t elementType, const FbxLayerElement* layerElement, const FbxLayerElementArrayTemplate<int32_t>& indexArray, const FbxMesh& mesh)
 	{
+		VT_PROFILE_FUNCTION();
+
 		const int32_t indexCount = static_cast<int32_t>(fatIndices.size());
 
 		if (layerElement->GetMappingMode() == FbxLayerElement::eByControlPoint)
@@ -605,6 +292,8 @@ namespace Volt
 
 	inline void TriangulateMesh(const FbxMesh& fbxMesh, const Vector<FatIndex>& input, Vector<FatIndex>& output)
 	{
+		VT_PROFILE_FUNCTION();
+
 		const int32_t faceCount = fbxMesh.GetPolygonCount();
 		int32_t t0 = 0;
 
@@ -624,8 +313,149 @@ namespace Volt
 		}
 	}
 
+	inline Vector<Ref<Material>> CreateSceneMaterials(FbxScene* fbxScene, const MeshSourceImportConfig& importConfig)
+	{
+		VT_PROFILE_FUNCTION();
+
+		FbxArray<FbxSurfaceMaterial*> sceneMaterials;
+		fbxScene->FillMaterialArray(sceneMaterials);
+
+		Vector<Ref<Material>> result;
+
+		for (int32_t i = 0; i < sceneMaterials.Size(); i++)
+		{
+			FbxSurfaceMaterial* fbxMaterial = sceneMaterials[i];
+			const char* const name = fbxMaterial->GetName();
+
+			auto it = std::find_if(result.begin(), result.end(), [name](const auto mat)
+			{
+				return mat->GetName() == name;
+			});
+
+			if (it != result.end())
+			{
+				VT_LOGC(Warning, LogFbxSourceImporter, "Ignoring material with duplicated name '{}'!", name);
+				continue;
+			}
+
+			Ref<Material> material = AssetManager::CreateAsset<Material>(importConfig.destinationDirectory, name);
+			result.emplace_back(material);
+		}
+
+		// Create a dummy material
+		if (result.empty())
+		{
+			Ref<Material> material = AssetManager::CreateAsset<Material>(importConfig.destinationDirectory, importConfig.destinationFilename + "_DummyMat");
+			result.emplace_back(material);
+		}
+
+		return result;
+	}
+
+	inline void TranslateNodeToSceneMaterials(const FbxNode* fbxNode, const Vector<Ref<Material>>& materials, Vector<FbxVertex>& vertices)
+	{
+		VT_PROFILE_FUNCTION();
+
+		const int32_t nodeMaterialCount = fbxNode->GetMaterialCount();
+
+		Vector<int32_t> materialMap(nodeMaterialCount, -1);
+
+		for (size_t i = 0; i < vertices.size(); i++)
+		{
+			int32_t materialIndex = 0;
+			if (vertices[i].material >= 0 && vertices[i].material < nodeMaterialCount)
+			{
+				if (materialMap[vertices[i].material] < 0)
+				{
+					const FbxSurfaceMaterial* const fbxMaterial = fbxNode->GetMaterial(vertices[i].material);
+					if (fbxMaterial)
+					{
+						int32_t j = 0;
+						while (j < static_cast<int32_t>(materials.size()))
+						{
+							if (fbxMaterial->GetName() == materials[j]->GetName())
+							{
+								break;
+							}
+
+							j++;
+						}
+
+						VT_ENSURE(j < materials.size());
+						materialMap[vertices[i].material] = j;
+
+					}
+					else
+					{
+						materialMap[vertices[i].material] = 0;
+					}
+				}
+
+				materialIndex = materialMap[vertices[i].material];
+			}
+
+			vertices[i].material = materialIndex;
+		}
+	}
+
+	inline FbxSkeletonContainer CreateFbxSkeleton(FbxScene* fbxScene)
+	{
+		VT_PROFILE_FUNCTION();
+
+		Vector<fbxsdk::FbxNode*> skeletonNodes;
+		Vector<fbxsdk::FbxNode*> parentNodes;
+
+		auto findParentSkeletonNode = [](FbxNode* node) -> FbxNode*
+		{
+			FbxNode* parentNode = node->GetParent();
+
+			while (parentNode)
+			{
+				if (parentNode->GetNodeAttribute() && parentNode->GetNodeAttribute()->GetAttributeType() && parentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eSkeleton)
+				{
+					return parentNode;
+				}
+
+				parentNode = parentNode->GetParent();
+			}
+
+			return nullptr;
+		};
+
+		auto fetcher = [&](fbxsdk::FbxSkeleton* skeleton, FbxNode* node)
+		{
+			FbxNode* parentNode = findParentSkeletonNode(node);
+
+			parentNodes.emplace_back(parentNode);
+			skeletonNodes.emplace_back(node);
+		};
+
+		VisitNodeAttributesOfType<FbxSkeleton>(fbxScene, fetcher);
+
+		vt::map<FbxNode*, int32_t> nodeToSkeletonIndexMap;
+
+		for (size_t i = 0; i < skeletonNodes.size(); i++)
+		{
+			nodeToSkeletonIndexMap[skeletonNodes[i]] = static_cast<int32_t>(i);
+		}
+
+		FbxSkeletonContainer skeleton{};
+		skeleton.joints.resize(skeletonNodes.size());
+
+		for (size_t i = 0; i < skeletonNodes.size(); i++)
+		{
+			auto& joint = skeleton.joints[i];
+			joint.name = GetJointName(skeletonNodes[i]->GetName());
+			joint.namespaceName = skeletonNodes[i]->GetName();
+			joint.parentIndex = i == 0 ? -1 : nodeToSkeletonIndexMap.at(parentNodes[i]);
+		}
+
+		return skeleton;
+	}
+
 	void FbxSourceImporter::CreateNonIndexedMesh(const fbxsdk::FbxMesh& fbxMesh, Vector<FbxVertex>& outVertices, const JointVertexLinkMap* jointVertexLinks) const
 	{
+		VT_PROFILE_FUNCTION();
 		VT_ENSURE(outVertices.empty());
 
 		const int32_t indexCount = fbxMesh.GetPolygonVertexCount();
@@ -770,6 +600,8 @@ namespace Volt
 
 	Ref<Animation> FbxSourceImporter::CreateAnimationFromFbxAnimation(fbxsdk::FbxScene* fbxScene, const FbxSkeletonContainer& fbxSkeleton, const fbxsdk::FbxString& animStackName, const MeshSourceImportConfig& importConfig, const SourceAssetUserImportData& userData) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		const auto timeMode = fbxScene->GetGlobalSettings().GetTimeMode();
 		FbxTakeInfo* fbxTake = fbxScene->GetTakeInfo(animStackName);
 		if (!fbxTake)
@@ -815,187 +647,10 @@ namespace Volt
 		return voltAnimation;
 	}
 
-	inline Vector<Ref<Material>> CreateSceneMaterials(FbxScene* fbxScene, const MeshSourceImportConfig& importConfig)
-	{
-		FbxArray<FbxSurfaceMaterial*> sceneMaterials;
-		fbxScene->FillMaterialArray(sceneMaterials);
-
-		Vector<Ref<Material>> result;
-
-		for (int32_t i = 0; i < sceneMaterials.Size(); i++)
-		{
-			FbxSurfaceMaterial* fbxMaterial = sceneMaterials[i];
-			const char* const name = fbxMaterial->GetName();
-
-			auto it = std::find_if(result.begin(), result.end(), [name](const auto mat) 
-			{
-				return mat->GetName() == name;
-			});
-
-			if (it != result.end())
-			{
-				VT_LOGC(Warning, LogFbxSourceImporter, "Ignoring material with duplicated name '{}'!", name);
-				continue;
-			}
-
-			Ref<Material> material = AssetManager::CreateAsset<Material>(importConfig.destinationDirectory, name);
-			result.emplace_back(material);
-		}
-
-		// Create a dummy material
-		if (result.empty())
-		{
-			Ref<Material> material = AssetManager::CreateAsset<Material>(importConfig.destinationDirectory, importConfig.destinationFilename + "_DummyMat");
-			result.emplace_back(material);
-		}
-
-		return result;
-	}
-
-	inline void TranslateNodeToSceneMaterials(const FbxNode* fbxNode, const Vector<Ref<Material>>& materials, Vector<FbxVertex>& vertices)
-	{
-		const int32_t nodeMaterialCount = fbxNode->GetMaterialCount();
-
-		Vector<int32_t> materialMap(nodeMaterialCount, -1);
-
-		for (size_t i = 0; i < vertices.size(); i++)
-		{
-			int32_t materialIndex = 0;
-			if (vertices[i].material >= 0 && vertices[i].material < nodeMaterialCount)
-			{
-				if (materialMap[vertices[i].material] < 0)
-				{
-					const FbxSurfaceMaterial* const fbxMaterial = fbxNode->GetMaterial(vertices[i].material);
-					if (fbxMaterial)
-					{
-						int32_t j = 0;
-						while (j < static_cast<int32_t>(materials.size()))
-						{
-							if (fbxMaterial->GetName() == materials[j]->GetName())
-							{
-								break;
-							}
-
-							j++;
-						}
-
-						VT_ENSURE(j < materials.size());
-						materialMap[vertices[i].material] = j;
-
-					}
-					else
-					{
-						materialMap[vertices[i].material] = 0;
-					}
-				}
-
-				materialIndex = materialMap[vertices[i].material];
-			}
-
-			vertices[i].material = materialIndex;
-		}
-	}
-
-	inline std::string GetJointName(const std::string& name)
-	{
-		if (const size_t pos = name.find_last_of(':'); pos != std::string::npos)
-		{
-			return name.substr(pos + 1);
-		}
-		return name;
-	}
-
-	inline FbxSkeletonContainer CreateFbxSkeleton(FbxScene* fbxScene)
-	{
-		Vector<fbxsdk::FbxNode*> skeletonNodes;
-		Vector<fbxsdk::FbxNode*> parentNodes;
-
-		auto findParentSkeletonNode = [](FbxNode* node) -> FbxNode*
-		{
-			FbxNode* parentNode = node->GetParent();
-
-			while (parentNode)
-			{
-				if (parentNode->GetNodeAttribute() && parentNode->GetNodeAttribute()->GetAttributeType() && parentNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eSkeleton)
-				{
-					return parentNode;
-				}
-
-				parentNode = parentNode->GetParent();
-			}
-
-			return nullptr;
-		};
-
-		auto fetcher = [&](fbxsdk::FbxSkeleton* skeleton, FbxNode* node)
-		{
-			FbxNode* parentNode = findParentSkeletonNode(node);
-
-			parentNodes.emplace_back(parentNode);
-			skeletonNodes.emplace_back(node);
-		};
-
-		VisitNodeAttributesOfType<FbxSkeleton>(fbxScene, fetcher);
-
-		vt::map<FbxNode*, int32_t> nodeToSkeletonIndexMap;
-
-		for (size_t i = 0; i < skeletonNodes.size(); i++)
-		{
-			nodeToSkeletonIndexMap[skeletonNodes[i]] = static_cast<int32_t>(i);
-		}
-
-		FbxSkeletonContainer skeleton{};
-		skeleton.joints.resize(skeletonNodes.size());
-
-		for (size_t i = 0; i < skeletonNodes.size(); i++)
-		{
-			auto& joint = skeleton.joints[i];
-			joint.name = GetJointName(skeletonNodes[i]->GetName());
-			joint.namespaceName = skeletonNodes[i]->GetName();
-			joint.parentIndex = i == 0 ? -1 : nodeToSkeletonIndexMap.at(parentNodes[i]);
-		}
-
-		return skeleton;
-	}
-
-	// From: https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
-	inline bool AlmostEqual(float lhs, float rhs)
-	{
-		const float diff = fabs(lhs - rhs);
-		lhs = fabs(lhs);
-		rhs = fabs(rhs);
-
-		float largest = (rhs > lhs) ? rhs : lhs;
-		return (diff <= largest * FLT_EPSILON);
-	}
-
-	inline bool AlmostEqual(const glm::vec3& lhs, const glm::vec3& rhs)
-	{
-		return
-			AlmostEqual(lhs.x, rhs.x) &&
-			AlmostEqual(lhs.y, rhs.y) &&
-			AlmostEqual(lhs.z, rhs.z);
-	}
-
-	inline bool AlmostEqual(const glm::vec2& lhs, const glm::vec2& rhs)
-	{
-		return
-			AlmostEqual(lhs.x, rhs.x) &&
-			AlmostEqual(lhs.y, rhs.y);
-	}
-
-	inline bool AlmostEqual(const FbxVertex& lhs, const FbxVertex& rhs)
-	{
-		return
-			lhs.material == rhs.material &&
-			AlmostEqual(lhs.position, rhs.position) &&
-			AlmostEqual(lhs.normal, rhs.normal) &&
-			AlmostEqual(lhs.tangent, rhs.tangent) &&
-			AlmostEqual(lhs.texCoords, rhs.texCoords);
-	}
-
 	void FbxSourceImporter::CreateSubMeshFromVertexRange(Ref<Mesh> destinationMesh, const FbxVertex* vertices, size_t indexCount, const std::string& name) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		constexpr uint32_t MaxUInt = std::numeric_limits<uint32_t>::max();
 
 		Vector<uint32_t> indices(indexCount, MaxUInt);
@@ -1035,6 +690,13 @@ namespace Volt
 				materialData.texCoords.x = static_cast<half_float::half>(uniqueVertices[i].texCoords.x);
 				materialData.texCoords.y = static_cast<half_float::half>(uniqueVertices[i].texCoords.y);
 			}
+
+			// Setup anim data
+			{
+				auto& animData = vertexContainer.animationData[i];
+				animData.influences = uniqueVertices[i].influences;
+				animData.weights = uniqueVertices[i].weights;
+			}
 		}
 
 		auto& subMesh = destinationMesh->m_subMeshes.emplace_back();
@@ -1051,6 +713,8 @@ namespace Volt
 
 	void FbxSourceImporter::CreateVoltMeshFromFbxMesh(const fbxsdk::FbxMesh& fbxMesh, Ref<Mesh> destinationMesh, const Vector<Ref<Material>>& materials, const JointVertexLinkMap* jointVertexLinks) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		Vector<FbxVertex> vertices;
 		CreateNonIndexedMesh(fbxMesh, vertices, jointVertexLinks);
 		TranslateNodeToSceneMaterials(fbxMesh.GetNode(), materials, vertices);
@@ -1091,6 +755,8 @@ namespace Volt
 
 	void FbxSourceImporter::CreateVoltSkeletonFromFbxSkeleton(const FbxSkeletonContainer& fbxSkeleton, Ref<Skeleton> destinationSkeleton) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		const size_t jointCount = fbxSkeleton.joints.size();
 
 		destinationSkeleton->m_jointNameToIndex.reserve(jointCount);
@@ -1117,6 +783,8 @@ namespace Volt
 
 	void FbxSourceImporter::FindJointVertexLinksAndSetupSkeleton(const fbxsdk::FbxMesh& fbxMesh, FbxSkeletonContainer& inOutSkeleton, JointVertexLinkMap& outVertexLinks) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		Vector<FbxAMatrix> bindPoses;
 		bindPoses.resize(inOutSkeleton.joints.size());
 
@@ -1196,6 +864,8 @@ namespace Volt
 
 	Vector<Ref<Asset>> FbxSourceImporter::ImportAsStaticMesh(fbxsdk::FbxScene* fbxScene, const MeshSourceImportConfig& importConfig, const SourceAssetUserImportData& userData) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		Vector<FbxMesh*> fbxMeshes;
 		auto fetcher = [&](FbxMesh* mesh, FbxNode* node)
 		{
@@ -1238,6 +908,8 @@ namespace Volt
 
 	Vector<Ref<Asset>> FbxSourceImporter::ImportAsSkeletalMesh(fbxsdk::FbxScene* fbxScene, const MeshSourceImportConfig& importConfig, const SourceAssetUserImportData& userData) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		Vector<FbxMesh*> fbxMeshes;
 		auto fetcher = [&](FbxMesh* mesh, FbxNode* node)
 		{
@@ -1314,6 +986,8 @@ namespace Volt
 
 	Vector<Ref<Asset>> FbxSourceImporter::ImportAsAnimation(fbxsdk::FbxScene* fbxScene, const MeshSourceImportConfig& importConfig, const SourceAssetUserImportData& userData) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		FbxSkeletonContainer fbxSkeleton = CreateFbxSkeleton(fbxScene);
 		if (fbxSkeleton.joints.empty())
 		{
@@ -1346,6 +1020,7 @@ namespace Volt
 
 	Vector<Ref<Asset>> FbxSourceImporter::ImportInternal(const std::filesystem::path& filepath, const void* config, const SourceAssetUserImportData& userData)
 	{
+		VT_PROFILE_FUNCTION();
 		const MeshSourceImportConfig& importConfig = *reinterpret_cast<const MeshSourceImportConfig*>(config);
 
 		FbxManagerPtr fbxManager(FbxManager::Create());

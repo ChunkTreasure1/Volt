@@ -7,14 +7,13 @@
 
 #include <CoreUtilities/Containers/Vector.h>
 
-class MeshImportModal : public Modal
+class MeshImportModal final : public Modal
 {
 public:
 	MeshImportModal(const std::string& strId);
 	~MeshImportModal() override = default;
 
 	void SetImportMeshes(const Vector<std::filesystem::path>& filePaths);
-	void Clear();
 
 protected:
 	void DrawModalContent() override;
@@ -51,6 +50,7 @@ private:
 	void GetInformationOfCurrentMesh();
 
 	void Import(const std::filesystem::path& importPath);
+	void Clear();
 
 	ImportType m_currentImportType = ImportType::StaticMesh;
 	ImportOptions m_importOptions{};

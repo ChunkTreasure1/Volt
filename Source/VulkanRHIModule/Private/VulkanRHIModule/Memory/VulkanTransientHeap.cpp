@@ -4,6 +4,7 @@
 #include "VulkanRHIModule/Graphics/VulkanPhysicalGraphicsDevice.h"
 #include "VulkanRHIModule/Common/VulkanHelpers.h"
 #include "VulkanRHIModule/Memory/VulkanAllocation.h"
+#include "VulkanRHIModule/Common/VulkanFunctions.h"
 
 #include <RHIModule/Graphics/GraphicsContext.h>
 #include <RHIModule/Graphics/GraphicsDevice.h>
@@ -404,6 +405,19 @@ namespace Volt::RHI
 			VkDeviceMemory tempHandle = nullptr;
 			vkAllocateMemory(device->GetHandle<VkDevice>(), &allocInfo, nullptr, &tempHandle);
 
+			if (RHI::vkSetDebugUtilsObjectNameEXT)
+			{
+				VkDebugUtilsObjectNameInfoEXT nameInfo{};
+				nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+				nameInfo.objectType = VK_OBJECT_TYPE_DEVICE_MEMORY;
+				nameInfo.objectHandle = (uint64_t)tempHandle;
+				
+				std::string name = std::format("Transient Buffer Heap Page {}", i);
+				nameInfo.pObjectName = name.data();
+
+				RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
+			}
+
 			m_pageAllocations[i].handle = tempHandle;
 		}
 	}
@@ -483,6 +497,19 @@ namespace Volt::RHI
 			VkDeviceMemory tempHandle = nullptr;
 			vkAllocateMemory(device->GetHandle<VkDevice>(), &allocInfo, nullptr, &tempHandle);
 		
+			if (RHI::vkSetDebugUtilsObjectNameEXT)
+			{
+				VkDebugUtilsObjectNameInfoEXT nameInfo{};
+				nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+				nameInfo.objectType = VK_OBJECT_TYPE_DEVICE_MEMORY;
+				nameInfo.objectHandle = (uint64_t)tempHandle;
+
+				std::string name = std::format("Transient Image Heap Page {}", i);
+				nameInfo.pObjectName = name.data();
+
+				RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
+			}
+
 			m_pageAllocations[i].handle = tempHandle;
 		}
 	}

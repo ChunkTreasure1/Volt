@@ -17,6 +17,14 @@ namespace Utility
 		return newStr;
 	}
 
+	inline std::string ToUpper(const std::string& str)
+	{
+		std::string newStr(str);
+		std::transform(str.begin(), str.end(), newStr.begin(), [](unsigned char c) { return (uint8_t)std::toupper((int32_t)c); });
+
+		return newStr;
+	}
+
 	inline std::string RemoveTrailingZeroes(const std::string& string)
 	{
 		std::string newStr = string;

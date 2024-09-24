@@ -45,4 +45,13 @@ namespace Volt
 		bool triangulate = true;
 		bool generateTangents = true;
 	};
+
+	struct TextureSourceImportConfig
+	{
+		std::filesystem::path destinationDirectory;
+		std::string destinationFilename;
+
+		bool importMipMaps = true;
+		bool generateMipMaps = true;
+	};
 }

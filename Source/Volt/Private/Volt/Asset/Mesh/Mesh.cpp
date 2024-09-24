@@ -149,6 +149,7 @@ namespace Volt
 			auto& meshlets = perThreadMeshlets.at(threadIdx);
 
 			auto& subMesh = m_subMeshes.at(elementIdx);
+			subMesh.GenerateHash();
 
 			const uint32_t* indicesPtr = &m_indices.at(subMesh.indexStartOffset);
 			const glm::vec3* vertexPositionsPtr = &m_vertexContainer.positions.at(subMesh.vertexStartOffset);

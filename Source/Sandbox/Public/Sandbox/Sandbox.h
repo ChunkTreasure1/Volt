@@ -73,6 +73,7 @@ public:
 	VT_NODISCARD VT_INLINE const SceneState GetSceneState() const { return m_sceneState; }
 	
 	VT_NODISCARD VT_INLINE UUID64 GetMeshImportModalID() const { return m_meshImportModal; }
+	VT_NODISCARD VT_INLINE UUID64 GetTextureImportModalID() const { return m_textureImportModal; }
 
 	void NewScene();
 	void OpenScene();
@@ -153,6 +154,7 @@ private:
 
 	///// Modals /////
 	UUID64 m_meshImportModal;
+	UUID64 m_textureImportModal;
 	//////////////////
 
 	Ref<Volt::Scene> m_runtimeScene;
