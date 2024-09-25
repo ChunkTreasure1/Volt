@@ -1,7 +1,6 @@
 #include "vtpch.h"
 #include "Volt/Asset/Importers/AssetImporter.h"
 
-#include "Volt/Asset/Importers/TextureImporter.h"
 #include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
 
@@ -31,12 +30,6 @@ namespace Volt
 		{
 			VT_LOG(Error, "File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
-			return false;
-		}
-
-		if (!TextureImporter::ImportTexture(filePath, *texture))
-		{
-			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 

@@ -23,7 +23,6 @@
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
 #include <Volt/Asset/Animation/MotionWeaveDatabase.h>
-#include <Volt/Asset/Importers/MeshTypeImporter.h>
 #include <Volt/Asset/ParticlePreset.h>
 
 #include <Volt/Animation/BlendSpace.h>
@@ -79,12 +78,12 @@ AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string
 	{
 		{
 			AssetDirectoryProcessor processor{ mySelectionManager, m_assetMask };
-			myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = processor.ProcessDirectories(Volt::ProjectManager::GetAssetsDirectory(), myMeshImportData, myMeshToImport);
+			myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = processor.ProcessDirectories(Volt::ProjectManager::GetAssetsDirectory(), myMeshToImport);
 		}
 
 		{
 			AssetDirectoryProcessor processor{ mySelectionManager, m_assetMask };
-			myDirectories[FileSystem::GetEnginePath()] = processor.ProcessDirectories(FileSystem::GetEnginePath(), myMeshImportData, myMeshToImport);
+			myDirectories[FileSystem::GetEnginePath()] = processor.ProcessDirectories(FileSystem::GetEnginePath(), myMeshToImport);
 		}
 
 		myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsDirectory()].get();
@@ -246,76 +245,10 @@ void AssetBrowserPanel::UpdateMainContent()
 		ImGui::EndTable();
 	}
 
-	if (!myDragDroppedMeshes.empty() && !myIsImporting)
-	{
-		if (myDragDroppedMeshes.size() > 1)
-		{
-			myMeshImportData.destination = Volt::AssetManager::GetRelativePath(myCurrentDirectory->path);
-			UI::OpenModal("Import Batch##assetBrowser");
-		}
-		else
-		{
-			const auto path = myDragDroppedMeshes.back();
-			myDragDroppedMeshes.pop_back();
-
-			AssetData assetData;
-			assetData.handle = Volt::AssetManager::Get().GetOrAddAssetToRegistry(path, AssetTypes::MeshSource);
-			assetData.path = path;
-			assetData.type = AssetTypes::MeshSource;
-
-			myMeshImportData = {};
-			myMeshToImport = assetData;
-			myMeshImportData.destination = myMeshToImport.path.parent_path().string() + "\\" + myMeshToImport.path.stem().string() + ".vtasset";
-
-			UI::OpenModal("Import Mesh##assetBrowser");
-		}
-
-		myIsImporting = true;
-	}
-
-	if (!myDragDroppedTextures.empty())
-	{
-		for (const auto& path : myDragDroppedTextures)
-		{
-			if (path.extension().string() == ".dds")
-			{
-				continue;
-			}
-
-			EditorUtils::ImportTexture(path);
-		}
-
-		myDragDroppedTextures.clear();
-	}
-
 	if (myShouldDeleteSelected)
 	{
 		UI::OpenModal("Delete Selected Files?");
 		myShouldDeleteSelected = false;
-	}
-
-	ImportState importState = EditorUtils::MeshImportModal("Import Mesh##assetBrowser", myMeshImportData, myMeshToImport.path);
-	if (importState == ImportState::Imported)
-	{
-		Reload();
-		myIsImporting = false;
-	}
-	else if (importState == ImportState::Discard)
-	{
-		myIsImporting = false;
-	}
-
-	importState = EditorUtils::MeshBatchImportModal("Import Batch##assetBrowser", myMeshImportData, myDragDroppedMeshes);
-	if (importState == ImportState::Imported)
-	{
-		Reload();
-		myDragDroppedMeshes.clear();
-		myIsImporting = false;
-	}
-	else if (importState == ImportState::Discard)
-	{
-		myDragDroppedMeshes.clear();
-		myIsImporting = false;
 	}
 
 	if (EditorUtils::NewCharacterModal("New Character##assetBrowser", myNewAnimatedCharacter, myNewCharacterData))
@@ -805,10 +738,6 @@ void AssetBrowserPanel::RenderView(Vector<Ref<AssetBrowser::DirectoryItem>>& dir
 			break;
 		}
 
-		MeshImportData data;
-		auto meshes = AssetBrowser::AssetBrowserUtilities::GetMeshesExport();
-		EditorUtils::MeshExportModal(std::format("Mesh Export##assetBrowser{0}", std::to_string(asset->handle)), myCurrentDirectory->path, data, meshes);
-
 		if (UI::BeginModal(std::format("Reimport Animation##assetBrowser{0}", std::to_string(asset->handle))))
 		{
 			if (UI::BeginProperties())
@@ -820,7 +749,6 @@ void AssetBrowserPanel::RenderView(Vector<Ref<AssetBrowser::DirectoryItem>>& dir
 
 			if (ImGui::Button("Reimport"))
 			{
-				EditorUtils::ReimportSourceMesh(asset->handle, Volt::AssetManager::GetAsset<Volt::Skeleton>(myAnimationReimportTargetSkeleton));
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -1041,7 +969,7 @@ void AssetBrowserPanel::Reload()
 	if (!Volt::ProjectManager::GetProject().isDeprecated)
 	{
 		AssetDirectoryProcessor processor{ mySelectionManager, m_assetMask };
-		myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = processor.ProcessDirectories(Volt::ProjectManager::GetAssetsDirectory(), myMeshImportData, myMeshToImport);
+		myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = processor.ProcessDirectories(Volt::ProjectManager::GetAssetsDirectory(), myMeshToImport);
 	}
 
 	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsDirectory()].get();

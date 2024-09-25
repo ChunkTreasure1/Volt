@@ -15,7 +15,7 @@ namespace AssetBrowser
 	class AssetItem : public Item
 	{
 	public:
-		AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, MeshImportData& meshImportData, AssetData& meshToImportData);
+		AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, AssetData& meshToImportData);
 		~AssetItem() override = default;
 		bool Render() override;
 
@@ -24,7 +24,6 @@ namespace AssetBrowser
 
 		RefPtr<Volt::RHI::Image> previewImage;
 
-		MeshImportData& meshImportData;
 		AssetData& meshToImportData;
 
 	protected:

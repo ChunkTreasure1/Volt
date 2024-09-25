@@ -24,8 +24,8 @@
 
 namespace AssetBrowser
 {
-	AssetItem::AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, MeshImportData& aMeshImportData, AssetData& aMeshToImportData)
-		: Item(selectionManager, path), meshImportData(aMeshImportData), meshToImportData(aMeshToImportData)
+	AssetItem::AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, AssetData& aMeshToImportData)
+		: Item(selectionManager, path), meshToImportData(aMeshToImportData)
 	{
 		type = Volt::AssetManager::GetAssetTypeFromPath(path);
 		if (type == AssetTypes::None)

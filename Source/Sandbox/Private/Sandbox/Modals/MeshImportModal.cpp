@@ -13,7 +13,6 @@
 #include <Volt/Asset/Rendering/Material.h>
 #include <Volt/Asset/Animation/Skeleton.h>
 
-#include <Volt/Asset/Importers/MeshTypeImporter.h>
 #include <Volt/Asset/SourceAssetImporters/FbxSourceImporter.h>
 
 #include <imgui.h>
@@ -32,7 +31,7 @@ void MeshImportModal::Clear()
 {
 	m_currentImportType = ImportType::StaticMesh;
 	m_importOptions = {};
-	m_fbxFileInformation = {};
+	//m_fbxFileInformation = {};
 	m_importFilePaths.clear();
 }
 
@@ -112,11 +111,11 @@ void MeshImportModal::DrawModalContent()
 	{
 		if (UI::BeginProperties("fbxInformation"))
 		{
-			UI::PropertyInfoString("File Version", m_fbxFileInformation.fileVersion);
-			UI::PropertyInfoString("File Creator", m_fbxFileInformation.fileCreator);
-			UI::PropertyInfoString("File Creator Application", m_fbxFileInformation.fileCreatorApplication);
-			UI::PropertyInfoString("File Units", m_fbxFileInformation.fileUnits);
-			UI::PropertyInfoString("File Axis Direction", m_fbxFileInformation.fileAxisDirection);
+			//UI::PropertyInfoString("File Version", m_fbxFileInformation.fileVersion);
+			//UI::PropertyInfoString("File Creator", m_fbxFileInformation.fileCreator);
+			//UI::PropertyInfoString("File Creator Application", m_fbxFileInformation.fileCreatorApplication);
+			//UI::PropertyInfoString("File Units", m_fbxFileInformation.fileUnits);
+			//UI::PropertyInfoString("File Axis Direction", m_fbxFileInformation.fileAxisDirection);
 			UI::EndProperties();
 		}
 	}
@@ -172,29 +171,29 @@ void MeshImportModal::OnClose()
 
 void MeshImportModal::GetInformationOfCurrentMesh()
 {
-	const auto firstFilePath = m_importFilePaths.front();
-	const auto fbxInfo = Volt::FbxUtilities::GetFbxInformation(Volt::ProjectManager::GetProjectDirectory() / firstFilePath);
-
-	m_fbxFileInformation = fbxInfo;
-
-	if (fbxInfo.hasMesh && !fbxInfo.hasSkeleton && !fbxInfo.hasAnimation)
-	{
-		m_currentImportType = ImportType::StaticMesh;
-	}
-	else if (fbxInfo.hasMesh && fbxInfo.hasSkeleton)
-	{
-		m_currentImportType = ImportType::SkeletalMesh;
-		m_importOptions.isSkeletalMesh = true;
-	}
-	else if (!fbxInfo.hasMesh && fbxInfo.hasAnimation)
-	{
-		m_currentImportType = ImportType::Animation;
-	}
-	else
-	{
-		m_currentImportType = ImportType::SkeletalMesh;
-		m_importOptions.isSkeletalMesh = true;
-	}
+	//const auto firstFilePath = m_importFilePaths.front();
+	//const auto fbxInfo = Volt::FbxUtilities::GetFbxInformation(Volt::ProjectManager::GetProjectDirectory() / firstFilePath);
+	//
+	//m_fbxFileInformation = fbxInfo;
+	//
+	//if (fbxInfo.hasMesh && !fbxInfo.hasSkeleton && !fbxInfo.hasAnimation)
+	//{
+	//	m_currentImportType = ImportType::StaticMesh;
+	//}
+	//else if (fbxInfo.hasMesh && fbxInfo.hasSkeleton)
+	//{
+	//	m_currentImportType = ImportType::SkeletalMesh;
+	//	m_importOptions.isSkeletalMesh = true;
+	//}
+	//else if (!fbxInfo.hasMesh && fbxInfo.hasAnimation)
+	//{
+	//	m_currentImportType = ImportType::Animation;
+	//}
+	//else
+	//{
+	//	m_currentImportType = ImportType::SkeletalMesh;
+	//	m_importOptions.isSkeletalMesh = true;
+	//}
 }
 
 void MeshImportModal::Import(const std::filesystem::path& importPath)

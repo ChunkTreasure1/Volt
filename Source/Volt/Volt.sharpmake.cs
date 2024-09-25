@@ -43,7 +43,6 @@ namespace VoltSharpmake
             conf.AddPublicDependency<PhysX>(target);
             conf.AddPrivateDependency<meshoptimizer>(target);
             conf.AddPublicDependency<stb_image>(target);
-            conf.AddPrivateDependency<ufbx>(target);
             conf.AddPrivateDependency<msdfgen>(target);
             conf.AddPrivateDependency<msdf_atlas_gen>(target);
             conf.AddPrivateDependency<Steam>(target);

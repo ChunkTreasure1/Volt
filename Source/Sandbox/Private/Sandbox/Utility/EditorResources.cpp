@@ -1,15 +1,16 @@
 #include "sbpch.h"
 #include "Utility/EditorResources.h"
 
-#include <Volt/Asset/Importers/TextureImporter.h>
-#include <Volt/Asset/Importers/MeshTypeImporter.h>
-#include <AssetSystem/AssetManager.h>
-
 #include <Volt/Asset/Mesh/Mesh.h>
 
 #include <Volt/Rendering/Renderer.h>
 #include <Volt/Rendering/ShapeLibrary.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
+
+#include <Volt/Asset/SourceAssetImporters/ImportConfigs.h>
+
+#include <AssetSystem/AssetManager.h>
+#include <AssetSystem/SourceAssetManager.h>
 
 void EditorResources::Initialize()
 {
@@ -141,10 +142,23 @@ Ref<Volt::Mesh> EditorResources::GetEditorMesh(EditorMesh mesh)
 
 Ref<Volt::Texture2D> EditorResources::TryLoadIcon(const std::filesystem::path& path)
 {
-	Ref<Volt::Texture2D> texture = CreateRef<Volt::Texture2D>();
-	Volt::TextureImporter::ImportTexture(path, *texture);
+	Volt::TextureSourceImportConfig importConfig{};
+	importConfig.createAsMemoryAsset = true;
+	importConfig.generateMipMaps = true;
+	importConfig.importMipMaps = true;
 
-	if (!texture->IsValid())
+	Volt::JobFuture<Vector<Ref<Volt::Asset>>> result = Volt::SourceAssetManager::ImportSourceAsset(path, importConfig);
+
+	Vector<Ref<Volt::Asset>> resultAssets = result.Get();
+
+	Ref<Volt::Texture2D> texture;
+
+	if (!resultAssets.empty())
+	{
+		texture = std::reinterpret_pointer_cast<Volt::Texture2D>(resultAssets.front());
+	}
+
+	if (!texture || !texture->IsValid())
 	{
 		texture = Volt::Renderer::GetDefaultResources().whiteTexture;
 	}

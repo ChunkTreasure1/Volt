@@ -1,10 +1,12 @@
 #include "sbpch.h"
 #include "Sandbox/Utility/AnimatedIcon.h"
 
-#include <Volt/Rendering/Texture/Texture2D.h>
-#include <Volt/Asset/Importers/TextureImporter.h>
+#include <Volt/Asset/SourceAssetImporters/ImportConfigs.h>
 
+#include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Events/ApplicationEvents.h>
+
+#include <AssetSystem/SourceAssetManager.h>
 
 #include <EventSystem/Event.h>
 
@@ -26,8 +28,19 @@ AnimatedIcon::AnimatedIcon(const std::filesystem::path& firstFrame, uint32_t fra
 	{
 		const std::filesystem::path path = dirPath / (filename + std::to_string(frame) + firstFrame.extension().string());
 		
-		m_textures.emplace_back() = CreateRef<Volt::Texture2D>();
-		Volt::TextureImporter::ImportTexture(path, *m_textures.back());
+		Volt::TextureSourceImportConfig importConfig{};
+		importConfig.createAsMemoryAsset = true;
+		importConfig.generateMipMaps = true;
+		importConfig.importMipMaps = true;
+
+		Volt::JobFuture<Vector<Ref<Volt::Asset>>> result = Volt::SourceAssetManager::ImportSourceAsset(path, importConfig);
+	
+		Vector<Ref<Volt::Asset>> resultAssets = result.Get();
+
+		if (!resultAssets.empty())
+		{
+			m_textures.emplace_back(std::reinterpret_pointer_cast<Volt::Texture2D>(resultAssets.front()));
+		}
 	}
 
 	VT_ASSERT_MSG(!m_textures.empty(), "No frames found!");

@@ -342,6 +342,11 @@ namespace Volt
 			asset->assetName = metadata.filePath.stem().string();
 		}
 
+		if (metadata.isMemoryAsset)
+		{
+			return;
+		}
+
 		{
 #ifndef VT_DIST
 			ScopedTimer timer{};
@@ -383,6 +388,11 @@ namespace Volt
 		{
 			ReadLock lock{ instance.m_assetRegistryMutex };
 			metadata = GetMetadataFromHandle(asset->handle);
+		}
+
+		if (metadata.isMemoryAsset)
+		{
+			return;
 		}
 
 		{

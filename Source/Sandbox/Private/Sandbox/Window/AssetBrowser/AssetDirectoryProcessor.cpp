@@ -12,7 +12,7 @@ AssetDirectoryProcessor::AssetDirectoryProcessor(Weak<AssetBrowser::SelectionMan
 	: m_selectionManager(selectionManager), m_assetMask(assetMask)
 {}
 
-Ref<AssetBrowser::DirectoryItem> AssetDirectoryProcessor::ProcessDirectories(const std::filesystem::path& path, MeshImportData& meshImportData, AssetData& meshToImportData)
+Ref<AssetBrowser::DirectoryItem> AssetDirectoryProcessor::ProcessDirectories(const std::filesystem::path& path, AssetData& meshToImportData)
 {
 	struct AssetEntryData
 	{
@@ -75,7 +75,7 @@ Ref<AssetBrowser::DirectoryItem> AssetDirectoryProcessor::ProcessDirectories(con
 				if (m_assetMask.empty() || m_assetMask.contains(type))
 				{
 					auto relPath = Volt::AssetManager::GetRelativePath(entry.path);
-					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(m_selectionManager.Get(), relPath, meshImportData, meshToImportData);
+					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(m_selectionManager.Get(), relPath, meshToImportData);
 					const auto parentPath = Volt::AssetManager::GetRelativePath(entry.path.parent_path());
 					directoryItems[parentPath]->assets.emplace_back(assetItem);
 				}

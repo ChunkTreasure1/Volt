@@ -1,6 +1,5 @@
 #include "vtpch.h"
 #include "Volt/Asset/Importers/VTNavMeshImporter.h"
-#include "Volt/Asset/Importers/VTMeshImporter.h"
 
 #include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Mesh/MeshCompiler.h"

@@ -24,9 +24,6 @@
 #include "Volt/Utility/Noise.h"
 #include "Volt/Utility/UIUtility.h"
 
-#include "Volt/Asset/Importers/MeshTypeImporter.h"
-#include "Volt/Asset/Importers/TextureImporter.h"
-
 #include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
 
 #include <RHIModule/ImGui/ImGuiImplementation.h>
@@ -151,9 +148,6 @@ namespace Volt
 
 		FileSystem::Initialize();
 		
-		MeshTypeImporter::Initialize();
-		TextureImporter::Initialize();
-		
 		Renderer::PreInitialize();
 		m_assetManager = CreateScope<AssetManager>(ProjectManager::GetRootDirectory(), ProjectManager::GetAssetsDirectory(), ProjectManager::GetEngineDirectory());
 		m_sourceAssetManager = CreateScope<SourceAssetManager>();
@@ -243,9 +237,6 @@ namespace Volt
 		m_assetManager = nullptr;
 
 		Renderer::Shutdown();
-
-		TextureImporter::Shutdown();
-		MeshTypeImporter::Shutdown();
 
 		FileSystem::Shutdown();
 		WindowManager::Shutdown();

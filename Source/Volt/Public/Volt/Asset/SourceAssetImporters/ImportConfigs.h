@@ -53,5 +53,6 @@ namespace Volt
 
 		bool importMipMaps = true;
 		bool generateMipMaps = true;
+		bool createAsMemoryAsset = false;
 	};
 }

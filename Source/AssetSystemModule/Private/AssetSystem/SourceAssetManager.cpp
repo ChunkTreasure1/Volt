@@ -54,7 +54,7 @@ namespace Volt
 			for (const auto asset : result)
 			{
 				std::filesystem::path filePath = AssetManager::GetFilePathFromAssetHandle(asset->handle);
-				filePath = GetNonExistingFilePath(filePath.parent_path(), filePath.filename().string());
+				filePath = GetNonExistingFilePath(filePath.parent_path(), filePath.stem().string());
 				AssetManager::SaveAssetAs(asset, filePath);
 			}
 

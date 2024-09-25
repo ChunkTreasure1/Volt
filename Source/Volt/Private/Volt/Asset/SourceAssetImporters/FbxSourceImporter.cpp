@@ -23,11 +23,35 @@ namespace Volt
 	using FbxIOSettingsPtr = std::unique_ptr<FbxIOSettings, FbxSDKDeleter>;
 	using FbxImporterPtr = std::unique_ptr<fbxsdk::FbxImporter, FbxSDKDeleter>;
 
+	using VertexDuplicateAccelerationMap = vt::map<size_t, uint32_t>; // Vertex hash to index
+
 	inline void PostProccessFbxScene(FbxScene* fbxScene, const MeshSourceImportConfig& importConfig, const SourceAssetUserImportData& userData)
 	{
 		VT_PROFILE_FUNCTION();
 
 		FbxGeometryConverter converter(fbxScene->GetFbxManager());
+
+		if (importConfig.convertScene)
+		{
+			if (fbxScene->GetGlobalSettings().GetSystemUnit() != FbxSystemUnit::cm)
+			{
+				constexpr FbxSystemUnit::ConversionOptions sysUnitConversion =
+				{
+					false,
+					true,
+					true,
+					true,
+					true,
+					true
+				};
+
+				FbxSystemUnit::m.ConvertScene(fbxScene, sysUnitConversion);
+				if (fbxScene->GetGlobalSettings().GetSystemUnit() != FbxSystemUnit::cm)
+				{
+					userData.OnWarning("Failed to convert FBX scene to cm:s. The imported assets may not have the correct scaling.");
+				}
+			}
+		}
 
 		if (importConfig.removeDegeneratePolygons)
 		{
@@ -86,7 +110,13 @@ namespace Volt
 						}
 					}
 
-					const bool result = converter.Triangulate(fbxGeom, true) != nullptr;
+					// If the legacy (faster) triangulation method failed, try the new one
+					bool result = converter.Triangulate(fbxGeom, true, true) != nullptr;
+					if (!result)
+					{
+						result = converter.Triangulate(fbxGeom, true, false) != nullptr;
+					}
+
 					if (!result)
 					{
 						userData.OnWarning(std::format("Failed to triangulate {}!", geomName));
@@ -373,7 +403,11 @@ namespace Volt
 						int32_t j = 0;
 						while (j < static_cast<int32_t>(materials.size()))
 						{
-							if (fbxMaterial->GetName() == materials[j]->GetName())
+							// Required because ':' is not allowed in asset names
+							std::string fbxMatName = fbxMaterial->GetName();
+							fbxMatName.erase(std::remove_if(fbxMatName.begin(), fbxMatName.end(), [](char c) { return c == ':'; }), fbxMatName.end());
+
+							if (fbxMatName == materials[j]->GetName())
 							{
 								break;
 							}
@@ -474,6 +508,7 @@ namespace Volt
 				for (int32_t j = 0; j < fbxMesh.GetPolygonSize(i); j++)
 				{
 					fatIndices[cursor].elements[ElementType::Position] = fbxMesh.GetPolygonVertex(i, j);
+					fatIndices[cursor].elements[ElementType::AnimationData] = fbxMesh.GetPolygonVertex(i, j);
 					cursor++;
 				}
 			}
@@ -568,10 +603,11 @@ namespace Volt
 
 			if (jointVertexLinks)
 			{
-				auto [begin, end] = jointVertexLinks->equal_range(static_cast<uint32_t>(i));
+				const int32_t animDataIndex = fatIndices[i].elements[ElementType::AnimationData];
+				auto [begin, end] = jointVertexLinks->equal_range(static_cast<uint32_t>(animDataIndex));
 			
 				int32_t index = 0;
-				for (auto it = begin; it != end && index < 4; ++it)
+				for (auto it = begin; it != end && index < 4; ++it, ++index)
 				{
 					auto jointLink = it->second;
 					outVertices[i].influences[index] = jointLink.jointIndex;
@@ -651,25 +687,35 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		constexpr uint32_t MaxUInt = std::numeric_limits<uint32_t>::max();
-
-		Vector<uint32_t> indices(indexCount, MaxUInt);
+		Vector<uint32_t> indices;
 		Vector<FbxVertex> uniqueVertices;
 		uniqueVertices.reserve(indexCount);
+		indices.reserve(indexCount);
 
-		for (int32_t i = 0; i < indexCount; i++)
+		VertexDuplicateAccelerationMap duplicateVerticesMap;
+		duplicateVerticesMap.reserve(indexCount);
+
+		uint32_t indexCounter = 0;
+		for (size_t i = 0; i < indexCount; i++)
 		{
-			if (i > 0 && AlmostEqual(vertices[i], vertices[i - 1]))
+			const size_t hash = vertices[i].GetHash();
+
+			if (!duplicateVerticesMap.contains(hash))
 			{
-				VT_ENSURE(indices[i - 1] < MaxUInt);
-				indices[i] = indices[i - 1];
+				uniqueVertices.push_back(vertices[i]);
+				indices.push_back(indexCounter);
+			
+				duplicateVerticesMap[hash] = indexCounter;
+				indexCounter++;
 			}
 			else
 			{
-				uniqueVertices.push_back(vertices[i]);
-				indices[i] = static_cast<uint32_t>(uniqueVertices.size() - 1);
+				indices.push_back(duplicateVerticesMap.at(hash));
 			}
 		}
+
+		uniqueVertices.shrink_to_fit();
+		indices.shrink_to_fit();
 
 		VertexContainer vertexContainer{};
 		vertexContainer.Resize(uniqueVertices.size());
@@ -825,11 +871,10 @@ namespace Volt
 				fbxCluster->GetTransformLinkMatrix(linkTransform);
 
 				inverseBindPose = linkTransform.Inverse() * transform * rootTransform;
-				inverseBindPose = inverseBindPose.Transpose();
 
-				FbxAMatrix bindPose = inverseBindPose.Inverse();
+				bindPoses[jointIndex] = inverseBindPose.Inverse();
 
-				bindPoses[jointIndex] = bindPose;
+				inverseBindPose.Transpose();
 				inOutSkeleton.joints[jointIndex].inverseBindPose = FbxUtility::ToMatrix(inverseBindPose);
 
 				// Setup vertex binding info

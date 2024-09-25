@@ -107,7 +107,6 @@ private:
 
 	///// Mesh import data //////
 	AssetData myMeshToImport;
-	MeshImportData myMeshImportData;
 	std::set<AssetType> m_assetMask;
 	
 	Vector<std::filesystem::path> myDragDroppedMeshes;

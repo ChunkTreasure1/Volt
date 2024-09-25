@@ -12,7 +12,6 @@
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>
-#include <Volt/Asset/Importers/MeshTypeImporter.h>
 #include <Volt/Asset/TextureSource.h>
 
 #include <Volt/Components/RenderingComponents.h>
@@ -161,11 +160,6 @@ namespace AssetBrowser
 					SetMeshExport(item);
 					UI::OpenModal(std::format("Mesh Export##assetBrowser{0}", std::to_string(item->handle)));
 				}
-
-				if (ImGui::MenuItem("Reimport"))
-				{
-					EditorUtils::ReimportSourceMesh(item->handle);
-				}
 			};
 
 			renderFunctions[AssetTypes::Animation] = [](AssetItem* item)
@@ -179,10 +173,6 @@ namespace AssetBrowser
 
 			renderFunctions[AssetTypes::Skeleton] = [](AssetItem* item)
 			{
-				if (ImGui::MenuItem("Reimport"))
-				{
-					EditorUtils::ReimportSourceMesh(item->handle);
-				}
 			};
 
 			renderFunctions[AssetTypes::Prefab] = [](AssetItem* item)

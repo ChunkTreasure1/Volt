@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CoreUtilities/Math/Hash.h>
+
 #include <glm/glm.hpp>
 #include <fbxsdk.h>
 
@@ -20,10 +22,15 @@ namespace Volt
 		glm::mat4 ToMatrix(const FbxAMatrix& aMatrix)
 		{
 			glm::mat4 result;
-			for (uint32_t i = 0; i < 4; i++)
+
+			for (int i = 0; i < 4; i++)
 			{
-				FbxVector4 column = aMatrix.GetColumn(i);
-				result[i] = glm::vec4((float)column[0], (float)column[1], (float)column[2], (float)column[3]);
+				// The FBX Matrix might need a Transpose!
+				fbxsdk::FbxVector4 row = aMatrix.GetRow(i);
+				result[i][0] = static_cast<float>(row[0]);
+				result[i][1] = static_cast<float>(row[1]);
+				result[i][2] = static_cast<float>(row[2]);
+				result[i][3] = static_cast<float>(row[3]);
 			}
 
 			return result;
@@ -89,6 +96,39 @@ namespace Volt
 
 		glm::uvec4 influences;
 		glm::vec4 weights;
+
+		inline size_t GetHash() const
+		{
+			size_t result = 0;
+
+			result = std::hash<int32_t>()(material);
+			result = Math::HashCombine(result, std::hash<float>()(position.x));
+			result = Math::HashCombine(result, std::hash<float>()(position.y));
+			result = Math::HashCombine(result, std::hash<float>()(position.z));
+
+			result = Math::HashCombine(result, std::hash<float>()(normal.x));
+			result = Math::HashCombine(result, std::hash<float>()(normal.y));
+			result = Math::HashCombine(result, std::hash<float>()(normal.z));
+
+			result = Math::HashCombine(result, std::hash<float>()(tangent.x));
+			result = Math::HashCombine(result, std::hash<float>()(tangent.y));
+			result = Math::HashCombine(result, std::hash<float>()(tangent.z));
+
+			result = Math::HashCombine(result, std::hash<float>()(texCoords.x));
+			result = Math::HashCombine(result, std::hash<float>()(texCoords.y));
+
+			result = Math::HashCombine(result, std::hash<uint32_t>()(influences.x));
+			result = Math::HashCombine(result, std::hash<uint32_t>()(influences.y));
+			result = Math::HashCombine(result, std::hash<uint32_t>()(influences.z));
+			result = Math::HashCombine(result, std::hash<uint32_t>()(influences.w));
+
+			result = Math::HashCombine(result, std::hash<float>()(weights.x));
+			result = Math::HashCombine(result, std::hash<float>()(weights.y));
+			result = Math::HashCombine(result, std::hash<float>()(weights.z));
+			result = Math::HashCombine(result, std::hash<float>()(weights.w));
+
+			return result;
+		}
 	};
 
 	struct FbxRestPose
@@ -100,7 +140,7 @@ namespace Volt
 
 	struct FbxJoint
 	{
-		glm::mat4 inverseBindPose;
+		glm::mat4 inverseBindPose = glm::identity<glm::mat4>();
 		FbxRestPose restPose;
 
 		std::string name;
@@ -133,7 +173,8 @@ namespace Volt
 		constexpr uint32_t Normal = 2;
 		constexpr uint32_t UV = 3;
 		constexpr uint32_t Tangent = 4;
-		constexpr uint32_t Count = 5;
+		constexpr uint32_t AnimationData = 5;
+		constexpr uint32_t Count = 6;
 	}
 
 	struct FatIndex
@@ -224,6 +265,15 @@ namespace Volt
 			AlmostEqual(lhs.z, rhs.z);
 	}
 
+	inline bool AlmostEqual(const glm::vec4& lhs, const glm::vec4& rhs)
+	{
+		return
+			AlmostEqual(lhs.x, rhs.x) &&
+			AlmostEqual(lhs.y, rhs.y) &&
+			AlmostEqual(lhs.z, rhs.z) &&
+			AlmostEqual(lhs.w, rhs.w);
+	}
+
 	inline bool AlmostEqual(const glm::vec2& lhs, const glm::vec2& rhs)
 	{
 		return
@@ -235,6 +285,8 @@ namespace Volt
 	{
 		return
 			lhs.material == rhs.material &&
+			lhs.influences == rhs.influences &&
+			AlmostEqual(lhs.weights, rhs.weights) &&
 			AlmostEqual(lhs.position, rhs.position) &&
 			AlmostEqual(lhs.normal, rhs.normal) &&
 			AlmostEqual(lhs.tangent, rhs.tangent) &&
