@@ -53,7 +53,7 @@ namespace Volt
 		}
 	};
 
-	struct SourceAssetFileInfo
+	struct SourceAssetFileInformation
 	{
 		std::string fileVersion;
 		std::string fileCreator;
@@ -62,13 +62,15 @@ namespace Volt
 		std::string fileAxisDirection;
 
 		bool hasSkeleton;
-		bool hasMes;
+		bool hasMesh;
 		bool hasAnimation;
 	};
 
 	class VTAS_API SourceAssetImporter
 	{
 	public:
+		virtual SourceAssetFileInformation GetSourceFileInformation(const std::filesystem::path& filepath) const = 0;
+
 		template<typename ConfigType>
 		Vector<Ref<Asset>> Import(const std::filesystem::path& filepath, const ConfigType& config, const SourceAssetUserImportData& userData = {})
 		{
@@ -76,6 +78,6 @@ namespace Volt
 		}
 
 	protected:
-		virtual Vector<Ref<Asset>> ImportInternal(const std::filesystem::path& filepath, const void* config, const SourceAssetUserImportData& userData) = 0;
+		virtual Vector<Ref<Asset>> ImportInternal(const std::filesystem::path& filepath, const void* config, const SourceAssetUserImportData& userData) const = 0;
 	};
 }

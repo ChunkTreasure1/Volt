@@ -70,7 +70,7 @@ namespace Volt
 		return result;
 	}
 
-	Vector<Ref<Asset>> GLTFSourceImporter::ImportInternal(const std::filesystem::path& filepath, const void* config, const SourceAssetUserImportData& userData)
+	Vector<Ref<Asset>> GLTFSourceImporter::ImportInternal(const std::filesystem::path& filepath, const void* config, const SourceAssetUserImportData& userData) const
 	{
 		VT_PROFILE_FUNCTION();
 		const MeshSourceImportConfig& importConfig = *reinterpret_cast<const MeshSourceImportConfig*>(config);
@@ -130,6 +130,12 @@ namespace Volt
 		}
 
 		return result;
+	}
+
+	SourceAssetFileInformation GLTFSourceImporter::GetSourceFileInformation(const std::filesystem::path& filepath) const
+	{
+		VT_ENSURE(false);
+		return SourceAssetFileInformation();
 	}
 
 	template<typename T>
@@ -274,7 +280,7 @@ namespace Volt
 		}
 	}
 
-	Vector<Ref<Asset>> GLTFSourceImporter::ImportAsStaticMesh(tinygltf::Model& gltfModel, const MeshSourceImportConfig importConfig, const SourceAssetUserImportData& userData)
+	Vector<Ref<Asset>> GLTFSourceImporter::ImportAsStaticMesh(tinygltf::Model& gltfModel, const MeshSourceImportConfig importConfig, const SourceAssetUserImportData& userData) const
 	{
 		Vector<GLTFNodeIndex> gltfMeshNodes = GetSceneMeshNodes(gltfModel);
 		if (gltfMeshNodes.empty())

@@ -14,7 +14,9 @@ class VTAS_API SourceAssetImporterRegistry
 {
 public:
 	bool RegisterImporter(const Vector<std::string>& assignedExtensions, Ref<Volt::SourceAssetImporter> importer);
+	bool ImporterForExtensionExists(const std::string& extension) const;
 	Volt::SourceAssetImporter& GetImporterForExtension(const std::string& extension) const;
+	
 
 private:
 	vt::map<std::string, Ref<Volt::SourceAssetImporter>> m_importers;

@@ -246,51 +246,80 @@ namespace Volt
 		VisitNodes(scene, visitor);
 	}
 
-	// From: https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
-	inline bool AlmostEqual(float lhs, float rhs)
+	inline std::string GetStringFromSystemUnit(const fbxsdk::FbxSystemUnit& unit)
 	{
-		const float diff = fabs(lhs - rhs);
-		lhs = fabs(lhs);
-		rhs = fabs(rhs);
+		if (unit == fbxsdk::FbxSystemUnit::mm)
+		{
+			return "Millimeter";
+		}
+		else if (unit == fbxsdk::FbxSystemUnit::cm)
+		{
+			return "Centimeter";
+		}
+		else if (unit == fbxsdk::FbxSystemUnit::dm)
+		{
+			return "Decimeter";
+		}
+		else if (unit == fbxsdk::FbxSystemUnit::m)
+		{
+			return "Meter";
+		}
+		else if (unit == fbxsdk::FbxSystemUnit::km)
+		{
+			return "Kilometer";
+		}
+		else if (unit == fbxsdk::FbxSystemUnit::Inch)
+		{
+			return "Inch";
+		}
+		else if (unit == fbxsdk::FbxSystemUnit::Foot)
+		{
+			return "Foot";
+		}
+		else if (unit == fbxsdk::FbxSystemUnit::Mile)
+		{
+			return "Mile";
+		}
+		else if (unit == fbxsdk::FbxSystemUnit::Yard)
+		{
+			return "Yard";
+		}
 
-		float largest = (rhs > lhs) ? rhs : lhs;
-		return (diff <= largest * FLT_EPSILON);
+		return "NULL";
 	}
 
-	inline bool AlmostEqual(const glm::vec3& lhs, const glm::vec3& rhs)
+	inline std::string GetStringFromAxisSystem(const fbxsdk::FbxAxisSystem& axisSystem)
 	{
-		return
-			AlmostEqual(lhs.x, rhs.x) &&
-			AlmostEqual(lhs.y, rhs.y) &&
-			AlmostEqual(lhs.z, rhs.z);
-	}
+		if (axisSystem == fbxsdk::FbxAxisSystem::eDirectX)
+		{
+			return "Direct X";
+		}
+		else if (axisSystem == fbxsdk::FbxAxisSystem::eOpenGL)
+		{
+			return "OpenGL";
+		}
+		else if (axisSystem == fbxsdk::FbxAxisSystem::eMayaZUp)
+		{
+			return "MayaZUp";
+		}
+		else if (axisSystem == fbxsdk::FbxAxisSystem::eMayaYUp)
+		{
+			return "MayaYUp";
+		}
+		else if (axisSystem == fbxsdk::FbxAxisSystem::eMax)
+		{
+			return "3DS Max";
+		}
+		else if (axisSystem == fbxsdk::FbxAxisSystem::eMotionBuilder)
+		{
+			return "MotionBuilder";
+		}
+		else if (axisSystem == fbxsdk::FbxAxisSystem::eLightwave)
+		{
+			return "Lightwave";
+		}
 
-	inline bool AlmostEqual(const glm::vec4& lhs, const glm::vec4& rhs)
-	{
-		return
-			AlmostEqual(lhs.x, rhs.x) &&
-			AlmostEqual(lhs.y, rhs.y) &&
-			AlmostEqual(lhs.z, rhs.z) &&
-			AlmostEqual(lhs.w, rhs.w);
-	}
-
-	inline bool AlmostEqual(const glm::vec2& lhs, const glm::vec2& rhs)
-	{
-		return
-			AlmostEqual(lhs.x, rhs.x) &&
-			AlmostEqual(lhs.y, rhs.y);
-	}
-
-	inline bool AlmostEqual(const FbxVertex& lhs, const FbxVertex& rhs)
-	{
-		return
-			lhs.material == rhs.material &&
-			lhs.influences == rhs.influences &&
-			AlmostEqual(lhs.weights, rhs.weights) &&
-			AlmostEqual(lhs.position, rhs.position) &&
-			AlmostEqual(lhs.normal, rhs.normal) &&
-			AlmostEqual(lhs.tangent, rhs.tangent) &&
-			AlmostEqual(lhs.texCoords, rhs.texCoords);
+		return "NULL";
 	}
 
 	inline std::string GetJointName(const std::string& name)

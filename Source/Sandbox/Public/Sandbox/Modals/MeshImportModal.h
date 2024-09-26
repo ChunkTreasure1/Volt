@@ -3,6 +3,7 @@
 #include "Sandbox/Modals/Modal.h"
 
 #include <AssetSystem/Asset.h>
+#include <AssetSystem/SourceAssetImporter.h>
 
 #include <CoreUtilities/Containers/Vector.h>
 
@@ -53,7 +54,7 @@ private:
 
 	ImportType m_currentImportType = ImportType::StaticMesh;
 	ImportOptions m_importOptions{};
-	//Volt::FbxInformation m_fbxFileInformation;
+	Volt::SourceAssetFileInformation m_fileInformation;
 
 	Vector<std::filesystem::path> m_importFilePaths;
 };

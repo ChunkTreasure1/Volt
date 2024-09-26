@@ -1063,7 +1063,7 @@ namespace Volt
 		return result;
 	}
 
-	Vector<Ref<Asset>> FbxSourceImporter::ImportInternal(const std::filesystem::path& filepath, const void* config, const SourceAssetUserImportData& userData)
+	Vector<Ref<Asset>> FbxSourceImporter::ImportInternal(const std::filesystem::path& filepath, const void* config, const SourceAssetUserImportData& userData) const
 	{
 		VT_PROFILE_FUNCTION();
 		const MeshSourceImportConfig& importConfig = *reinterpret_cast<const MeshSourceImportConfig*>(config);
@@ -1179,6 +1179,95 @@ namespace Volt
 				break;
 			}
 		}
+
+		return result;
+	}
+
+	SourceAssetFileInformation FbxSourceImporter::GetSourceFileInformation(const std::filesystem::path& filepath) const
+	{
+		VT_PROFILE_FUNCTION();
+
+		FbxManagerPtr fbxManager(FbxManager::Create());
+		if (!fbxManager)
+		{
+			return {};
+		}
+
+		FbxIOSettingsPtr fbxIOSettings(FbxIOSettings::Create(fbxManager.get(), "FBX I/O settings"));
+		if (!fbxIOSettings)
+		{
+			return {};
+		}
+
+		SetupIOSettings(*fbxIOSettings, {}, filepath);
+		fbxManager->SetIOSettings(fbxIOSettings.get());
+
+		FbxImporterPtr fbxImporter(fbxsdk::FbxImporter::Create(fbxManager.get(), "FBX importer"));
+		if (!fbxImporter)
+		{
+			return {};
+		}
+
+		// Setup progress..
+
+		if (!fbxImporter->Initialize(filepath.string().c_str(), -1, fbxIOSettings.get()))
+		{
+			return {};
+		}
+
+		FbxScenePtr fbxScene(FbxScene::Create(fbxManager.get(), filepath.string().c_str()));
+		if (!fbxScene)
+		{
+			return {};
+		}
+
+		if (!fbxImporter->Import(fbxScene.get()))
+		{
+			return {};
+		}
+
+		SourceAssetFileInformation result{};
+
+		const auto headerInfo = fbxImporter->GetFileHeaderInfo();
+
+		result.fileCreator = headerInfo->mCreator;
+		result.fileUnits = GetStringFromSystemUnit(fbxScene->GetGlobalSettings().GetSystemUnit());
+		result.fileAxisDirection = GetStringFromAxisSystem(fbxScene->GetGlobalSettings().GetAxisSystem());
+
+		std::string versionString = std::to_string(headerInfo->mFileVersion);
+		versionString.insert(versionString.begin() + 1, '.');
+		versionString.insert(versionString.begin() + 3, '.');
+		versionString.insert(versionString.begin() + 5, '.');
+
+		result.fileVersion = versionString;
+
+		// Find all mesh nodes
+		{
+			Vector<FbxMesh*> fbxMeshes;
+			auto fetcher = [&](FbxMesh* mesh, FbxNode* node)
+			{
+				fbxMeshes.emplace_back(mesh);
+			};
+
+			VisitNodeAttributesOfType<FbxMesh>(fbxScene.get(), fetcher);
+		
+			result.hasMesh = !fbxMeshes.empty();
+		}
+
+		// Find all skeleton nodes
+		{
+			Vector<FbxSkeleton*> fbxSkeletons;
+			auto fetcher = [&](fbxsdk::FbxSkeleton* skeleton, FbxNode* node)
+			{
+				fbxSkeletons.emplace_back(skeleton);
+			};
+
+			VisitNodeAttributesOfType<FbxSkeleton>(fbxScene.get(), fetcher);
+
+			result.hasSkeleton = !fbxSkeletons.empty();
+		}
+
+		result.hasAnimation = result.hasSkeleton && fbxImporter->GetAnimStackCount() > 0;
 
 		return result;
 	}

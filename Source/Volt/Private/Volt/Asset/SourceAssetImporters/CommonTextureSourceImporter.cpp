@@ -15,7 +15,7 @@ VT_DEFINE_LOG_CATEGORY(LogCommonTextureSourceImporter);
 
 namespace Volt
 {
-	Vector<Ref<Asset>> CommonTextureSourceImporter::ImportInternal(const std::filesystem::path& filepath, const void* config, const SourceAssetUserImportData& userData)
+	Vector<Ref<Asset>> CommonTextureSourceImporter::ImportInternal(const std::filesystem::path& filepath, const void* config, const SourceAssetUserImportData& userData) const
 	{
 		VT_PROFILE_FUNCTION();
 		const TextureSourceImportConfig& importConfig = *reinterpret_cast<const TextureSourceImportConfig*>(config);
@@ -88,5 +88,11 @@ namespace Volt
 		voltTexture->SetImage(image);
 
 		return { voltTexture };
+	}
+
+	SourceAssetFileInformation CommonTextureSourceImporter::GetSourceFileInformation(const std::filesystem::path& filepath) const
+	{
+		VT_ENSURE(false);
+		return SourceAssetFileInformation();
 	}
 }

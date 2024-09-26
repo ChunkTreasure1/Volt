@@ -20,6 +20,11 @@ bool SourceAssetImporterRegistry::RegisterImporter(const Vector<std::string>& as
 	return true;
 }
 
+bool SourceAssetImporterRegistry::ImporterForExtensionExists(const std::string& extension) const
+{
+	return m_importers.contains(extension);
+}
+
 Volt::SourceAssetImporter& SourceAssetImporterRegistry::GetImporterForExtension(const std::string& extension) const
 {
 	VT_ENSURE(m_importers.contains(extension));

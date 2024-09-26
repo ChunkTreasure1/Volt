@@ -8,6 +8,8 @@
 #include <CoreUtilities/Containers/Vector.h>
 #include <CoreUtilities/Containers/Queue.h>
 
+VT_DECLARE_LOG_CATEGORY(LogSourceAssetManager, LogVerbosity::Trace);
+
 namespace Volt
 {
 	class Asset;
@@ -49,6 +51,8 @@ namespace Volt
 
 			s_instance->ImportSourceAssetInternal(std::move(importFunc), importedCallback, filepath.extension().string());
 		}
+
+		static SourceAssetFileInformation GetSourceAssetFileInformation(const std::filesystem::path& filepath);
 
 	private:
 		using ImportJobFunc = std::function<Vector<Ref<Asset>>()>;

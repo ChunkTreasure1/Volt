@@ -71,7 +71,7 @@ namespace Volt
 		return RHI::PixelFormat::R8G8B8A8_UNORM;
 	}
 
-	Vector<Ref<Asset>> DDSTextureSourceImporter::ImportInternal(const std::filesystem::path& filepath, const void* config, const SourceAssetUserImportData& userData)
+	Vector<Ref<Asset>> DDSTextureSourceImporter::ImportInternal(const std::filesystem::path& filepath, const void* config, const SourceAssetUserImportData& userData) const
 	{
 		VT_PROFILE_FUNCTION();
 		const TextureSourceImportConfig& importConfig = *reinterpret_cast<const TextureSourceImportConfig*>(config);
@@ -186,5 +186,11 @@ namespace Volt
 		voltTexture->SetImage(image);
 
 		return { voltTexture };
+	}
+
+	SourceAssetFileInformation DDSTextureSourceImporter::GetSourceFileInformation(const std::filesystem::path& filepath) const
+	{
+		VT_ENSURE(false);
+		return SourceAssetFileInformation();
 	}
 }

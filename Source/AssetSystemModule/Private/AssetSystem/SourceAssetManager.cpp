@@ -5,6 +5,8 @@
 
 #include <CoreUtilities/ThreadUtilities.h>
 
+VT_DEFINE_LOG_CATEGORY(LogSourceAssetManager);
+
 namespace Volt
 {
 	inline std::filesystem::path GetNonExistingFilePath(const std::filesystem::path& directory, const std::string& fileName)
@@ -43,8 +45,13 @@ namespace Volt
 
 	JobFuture<Vector<Ref<Asset>>> SourceAssetManager::ImportSourceAssetInternal(ImportJobFunc&& importFunc, const std::string& extension)
 	{
-		auto resultPromise = CreateRef<JobPromise<Vector<Ref<Asset>>>>();
+		if (!GetSourceAssetImporterRegistry().ImporterForExtensionExists(extension))
+		{
+			VT_LOGC(Warning, LogSourceAssetManager, "Trying to import and asset but no importer for the extension {} exists!", extension);
+			return {};
+		}
 
+		auto resultPromise = CreateRef<JobPromise<Vector<Ref<Asset>>>>();
 		JobID importJobId = JobSystem::CreateJob([this, extension, importFunc, resultPromise]() 
 		{
 			VT_PROFILE_SCOPE("Import Asset Job");
@@ -78,6 +85,12 @@ namespace Volt
 
 	void SourceAssetManager::ImportSourceAssetInternal(ImportJobFunc&& importFunc, const ImportedCallbackFunc& importedCallback, const std::string& extension)
 	{
+		if (!GetSourceAssetImporterRegistry().ImporterForExtensionExists(extension))
+		{
+			VT_LOGC(Warning, LogSourceAssetManager, "Trying to import and asset but no importer for the extension {} exists!", extension);
+			return;
+		}
+
 		JobID importJobId = JobSystem::CreateJob([this, extension, importFunc, importedCallback]()
 		{
 			VT_PROFILE_SCOPE("Import Asset Job");
@@ -102,6 +115,21 @@ namespace Volt
 
 		m_importQueue[extension].Enqueue(std::move(importJob));
 		m_wakeCondition.notify_one();
+	}
+
+	SourceAssetFileInformation SourceAssetManager::GetSourceAssetFileInformation(const std::filesystem::path& filepath)
+	{
+		VT_ENSURE(s_instance);
+
+		const std::string extension = filepath.extension().string();
+
+		if (!GetSourceAssetImporterRegistry().ImporterForExtensionExists(extension))
+		{
+			VT_LOGC(Warning, LogSourceAssetManager, "Trying to get file information of asset but no importer for the extension {} exists!", extension);
+			return {};
+		}
+
+		return GetSourceAssetImporterRegistry().GetImporterForExtension(extension).GetSourceFileInformation(AssetManager::GetFilesystemPath(filepath));
 	}
 
 	void SourceAssetManager::RunAssetImportWorker()
