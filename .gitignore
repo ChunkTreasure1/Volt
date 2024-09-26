@@ -4,7 +4,7 @@
 .idea/
 bin/
 bin-int/
-Temp/
+Intermediate/
 
 Source/SharpmakeProject/obj
 Source/SharpmakeProject/output
@@ -16,6 +16,7 @@ Engine/Scripts/Intermediates
 Engine/Volt-ScriptCore/Scripts/Intermediates
 Engine/MonoDebugger.log
 Engine/Log
+Engine/Binaries
 
 Volt/ProjectTemplate/Intermediates/
 Volt/ProjectTemplate/Binaries
