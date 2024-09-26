@@ -76,6 +76,34 @@ namespace Volt
 		return resultPromise->GetFuture();
 	}
 
+	void SourceAssetManager::ImportSourceAssetInternal(ImportJobFunc&& importFunc, const ImportedCallbackFunc& importedCallback, const std::string& extension)
+	{
+		JobID importJobId = JobSystem::CreateJob([this, extension, importFunc, importedCallback]()
+		{
+			VT_PROFILE_SCOPE("Import Asset Job");
+
+			auto result = importFunc();
+
+			for (const auto asset : result)
+			{
+				std::filesystem::path filePath = AssetManager::GetFilePathFromAssetHandle(asset->handle);
+				filePath = GetNonExistingFilePath(filePath.parent_path(), filePath.stem().string());
+				AssetManager::SaveAssetAs(asset, filePath);
+			}
+
+			*m_isImporterInUseMap[extension] = false;
+			m_wakeCondition.notify_one();
+		
+			JobSystem::CreateAndRunJob(ExecutionPolicy::MainThread, importedCallback);
+		});
+
+		ImportJob importJob;
+		importJob.jobId = importJobId;
+
+		m_importQueue[extension].Enqueue(std::move(importJob));
+		m_wakeCondition.notify_one();
+	}
+
 	void SourceAssetManager::RunAssetImportWorker()
 	{
 		while (m_isRunning)

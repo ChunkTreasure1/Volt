@@ -14,6 +14,8 @@ namespace Volt
 	class VTAS_API SourceAssetManager
 	{
 	public:
+		using ImportedCallbackFunc = std::function<void()>;
+
 		SourceAssetManager();
 		~SourceAssetManager();
 
@@ -32,6 +34,22 @@ namespace Volt
 			return s_instance->ImportSourceAssetInternal(std::move(importFunc), filepath.extension().string());
 		}
 
+		template<typename ConfigType>
+		static void ImportSourceAsset(const std::filesystem::path& filepath, const ConfigType& config, const ImportedCallbackFunc& importedCallback, const SourceAssetUserImportData& userData = {})
+		{
+			VT_ENSURE(s_instance);
+			VT_ENSURE(importedCallback);
+
+			auto importFunc = [=]() -> Vector<Ref<Asset>>
+			{
+				const std::string extension = filepath.extension().string();
+				auto& importer = GetSourceAssetImporterRegistry().GetImporterForExtension(extension);
+				return importer.Import(AssetManager::GetFilesystemPath(filepath), config, userData);
+			};
+
+			s_instance->ImportSourceAssetInternal(std::move(importFunc), importedCallback, filepath.extension().string());
+		}
+
 	private:
 		using ImportJobFunc = std::function<Vector<Ref<Asset>>()>;
 
@@ -42,6 +60,8 @@ namespace Volt
 		};
 
 		JobFuture<Vector<Ref<Asset>>> ImportSourceAssetInternal(ImportJobFunc&& importFunc, const std::string& extension);
+		void ImportSourceAssetInternal(ImportJobFunc&& importFunc, const ImportedCallbackFunc& importedCallback, const std::string& extension);
+
 		void RunAssetImportWorker();
 
 		inline static SourceAssetManager* s_instance = nullptr;

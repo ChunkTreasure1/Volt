@@ -24,6 +24,7 @@ namespace Volt
 		static JobID CreateJob(const std::function<void()>& task);
 		static JobID CreateJob(ExecutionPolicy executionPolicy, const std::function<void()>& task);
 		static JobID CreateAndRunJob(const std::function<void()>& task);
+		static JobID CreateAndRunJob(ExecutionPolicy executionPolicy, const std::function<void()>& task);
 		static JobID CreateJobAsChild(JobID parentJob, const std::function<void()>& task);
 		static JobID CreateJobAsChild(ExecutionPolicy executionPolicy, JobID parentJob, const std::function<void()>& task);
 
@@ -75,7 +76,6 @@ namespace Volt
 
 		InternalState m_internalState;
 		JobAllocator m_allocator;
-		JobAllocator m_mainThreadAllocator;
 		Vector<std::thread> m_workerThreads;
 	};
 }

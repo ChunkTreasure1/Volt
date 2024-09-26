@@ -35,7 +35,12 @@ namespace Volt
 
 	JobID JobSystem::CreateAndRunJob(const std::function<void()>& task)
 	{
-		JobID jobId = CreateJob(task);
+		return CreateAndRunJob(ExecutionPolicy::WorkerThread, task);
+	}
+
+	JobID JobSystem::CreateAndRunJob(ExecutionPolicy executionPolicy, const std::function<void()>& task)
+	{
+		JobID jobId = CreateJob(executionPolicy, task);
 		RunJob(jobId);
 
 		return jobId;
@@ -111,7 +116,7 @@ namespace Volt
 		while (jobPtr)
 		{
 			jobPtr->func();
-			FinishJob(jobPtr, m_mainThreadAllocator);
+			FinishJob(jobPtr, m_allocator);
 			jobPtr = internalState.mainThreadQueue.Pop();
 		}
 	}
@@ -151,15 +156,13 @@ namespace Volt
 
 	JobSystem::AllocatedJob JobSystem::AllocateJobInternal(ExecutionPolicy executionPolicy, const std::function<void()>& task, JobID parentJob)
 	{
-		auto& allocator = executionPolicy == ExecutionPolicy::WorkerThread ? m_allocator : m_mainThreadAllocator;
-
-		auto [newJob, jobId] = allocator.AllocateJob();
+		auto [newJob, jobId] = m_allocator.AllocateJob();
 		newJob->unfinishedJobs = 1;
 		newJob->func = task;
 
 		if (parentJob != INVALID_JOB_ID)
 		{
-			Job* parentJobPtr = allocator.GetJobFromID(parentJob);
+			Job* parentJobPtr = m_allocator.GetJobFromID(parentJob);
 			Atomic::InterlockedIncrement(&parentJobPtr->unfinishedJobs);
 			newJob->parentJob = parentJob;
 		}

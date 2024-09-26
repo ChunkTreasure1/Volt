@@ -74,7 +74,17 @@ namespace Volt
 
 		RefPtr<RHI::Image> image = RHI::Image::Create(specification, data);
 
-		Ref<Texture2D> voltTexture = AssetManager::CreateAsset<Texture2D>(importConfig.destinationDirectory, importConfig.destinationFilename);
+		Ref<Texture2D> voltTexture;
+
+		if (importConfig.createAsMemoryAsset)
+		{
+			voltTexture = AssetManager::CreateMemoryAsset<Texture2D>(importConfig.destinationFilename);
+		}
+		else
+		{
+			voltTexture = AssetManager::CreateAsset<Texture2D>(importConfig.destinationDirectory, importConfig.destinationFilename);
+		}
+
 		voltTexture->SetImage(image);
 
 		return { voltTexture };
