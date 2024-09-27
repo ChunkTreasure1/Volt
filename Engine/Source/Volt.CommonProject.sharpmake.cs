@@ -286,9 +286,9 @@ namespace VoltSharpmake
 
             conf.Options.Add(new Sharpmake.Options.Vc.Compiler.DisableSpecificWarnings("4005", "4100", "4201", "4251", "4275", "4505"));
             conf.Options.Add(new Sharpmake.Options.Vc.Linker.DisableSpecificWarnings("4006", "4099"));   
-            conf.Options.Add(new Sharpmake.Options.Vc.Linker.DisableSpecificWarnings("4098", "4217"));   
-        }
-    }
+            conf.Options.Add(new Sharpmake.Options.Vc.Linker.DisableSpecificWarnings("4098", "4217"));
+		}
+	}
 
     public abstract class CommonVoltExeProject : CommonVoltProject
     {
@@ -336,11 +336,9 @@ namespace VoltSharpmake
                 conf.EventPostBuild.Add(@"copy /Y " + "\"" + conf.TargetPath + "\\" + Name + ".dll\"" + " \"" + pluginDir + "\"");
             }
 
-            string UpperProjectName = Name.ToUpper();
-
             conf.Defines.Add("VT_PLUGIN_BUILD_DLL");
         }
-    }
+	}
 
     public abstract class CommonVoltDllProject : CommonVoltProject
     {

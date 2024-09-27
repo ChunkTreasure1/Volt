@@ -2,6 +2,7 @@
 #include "Volt/Core/DynamicLibraryManager.h"
 
 #include <CoreUtilities/DynamicLibraryHelpers.h>
+#include <CoreUtilities/StringUtility.h>
 
 namespace Volt
 {
@@ -22,30 +23,34 @@ namespace Volt
 		DLLHandle handle = VT_GET_MODULE_HANDLE(binaryFilepath.string().c_str());
 		outExternallyLoaded = handle != nullptr;
 
+		const std::string cleanFilePath = ::Utility::ReplaceCharacter(binaryFilepath.string(), '/', '\\');
+
 		if (!outExternallyLoaded)
 		{
-			//handle = VT_LOAD_LIBRARY(binaryFilepath.string().c_str());
+			handle = VT_LOAD_LIBRARY(cleanFilePath.c_str());
 		}
 
 		if (!handle)
 		{
-			VT_LOGC(Error, LogApplication, "Unable to load DLL {}!", binaryFilepath.string());
+			VT_LOGC(Error, LogApplication, "Unable to load DLL {}!", cleanFilePath);
 			return nullptr;
 		}
 
-		m_loadedDynamicLibraries[binaryFilepath] = handle;
+		m_loadedDynamicLibraries[cleanFilePath] = handle;
 		return handle;
 	}
 
 	bool DynamicLibraryManager::UnloadDynamicLibrary(const std::filesystem::path& binaryFilepath)
 	{
-		if (!m_loadedDynamicLibraries.contains(binaryFilepath))
+		const std::string cleanFilePath = ::Utility::ReplaceCharacter(binaryFilepath.string(), '/', '\\');
+
+		if (!m_loadedDynamicLibraries.contains(cleanFilePath))
 		{
 			return false;
 		}
 
-		VT_FREE_LIBRARY(m_loadedDynamicLibraries.at(binaryFilepath));
-		m_loadedDynamicLibraries.erase(binaryFilepath);
+		VT_FREE_LIBRARY(m_loadedDynamicLibraries.at(cleanFilePath));
+		m_loadedDynamicLibraries.erase(cleanFilePath);
 	
 		return true;
 	}

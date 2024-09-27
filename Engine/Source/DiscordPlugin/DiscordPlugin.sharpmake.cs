@@ -15,7 +15,7 @@ namespace VoltSharpmake
         {
             base.ConfigureAll(conf, target);
 
-            conf.SolutionFolder = "Plugins";
+            conf.SolutionFolder = "Plugins"; 
 
             conf.AddPublicDependency<LogModule>(target);
             conf.AddPublicDependency<RHIModule>(target);
@@ -24,7 +24,6 @@ namespace VoltSharpmake
             conf.AddPublicDependency<Volt>(target);
 
             conf.AddPublicDependency<DiscordSDK>(target);
-
         }
     }
 }

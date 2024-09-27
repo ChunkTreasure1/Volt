@@ -65,15 +65,12 @@ namespace VoltSharpmake
                 "Version.lib"
                 );
 
-            //we have to add the d3d12 to the exe folder
-            string d3d12FolderPath = Path.Combine(Globals.EngineDirectory, "D3D12");
+            // This copy should probably be moved to the D3D12RHIModule script.
+            string d3d12FolderPath = Path.Combine(Globals.ThirdPartyDirectory, "d3d12", "Binaries");
             conf.EventPostBuild.Add(@"copy /Y " + "\"" + d3d12FolderPath + "\\D3D12Core.dll\"" + " \"" + conf.TargetPath + "\"");
             conf.EventPostBuild.Add(@"copy /Y " + "\"" + d3d12FolderPath + "\\D3D12Core.pdb\"" + " \"" + conf.TargetPath + "\"");
             conf.EventPostBuild.Add(@"copy /Y " + "\"" + d3d12FolderPath + "\\d3d12SDKLayers.dll\"" + " \"" + conf.TargetPath + "\"");
             conf.EventPostBuild.Add(@"copy /Y " + "\"" + d3d12FolderPath + "\\d3d12SDKLayers.pdb\"" + " \"" + conf.TargetPath + "\"");
-            //conf.EventPostBuild.Add(@"copy /Y " + "\"" + Globals.EngineDirectory + "\\dxcompiler.dll\"" + " \"" + conf.TargetPath + "\"");
-
-            //Console.WriteLine(@"copy /Y " + "\"" + Globals.EngineDirectory + "\\dxcompiler.dll\"" + " \"" + conf.TargetPath + "\"");
         }
 
         public override void ConfigureMSVC(Configuration conf, CommonTarget target)
