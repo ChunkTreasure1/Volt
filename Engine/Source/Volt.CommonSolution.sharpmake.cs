@@ -17,7 +17,7 @@ namespace VoltSharpmake
         {
             conf.SolutionFileName = "[solution.Name]";
             conf.PlatformName = "[target.SolutionPlatformName]";
-            conf.SolutionPath = Path.Combine(Globals.RootDirectory, "../../");
+			conf.SolutionPath = Globals.SolutionPath;
         }
     }
 }

@@ -52,7 +52,7 @@ Project/Generated
 !SideProjects/VoltVSTools/VoltVSTools.sln
 !SideProjects/VoltVSTools/VoltVSTools/VoltVSTools.csproj
 
-Scripts/data/__pycache__
+__pycache__
 Sharpmake/
 
 Volt/Volt/vendor/efsw/lib

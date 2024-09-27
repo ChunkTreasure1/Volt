@@ -38,14 +38,15 @@ namespace VoltSharpmake
             if (target.DevEnv != DevEnv.xcode)
                 conf.ProjectFileName += "_[target.DevEnv]";
 
-            conf.IntermediatePath = Path.Combine(Globals.TmpDirectory, @"obj\[target.DirectoryName]\[project.Name]");
+            conf.IntermediatePath = Path.Combine(Globals.EngineTempDirectory, @"obj\[target.DirectoryName]\[project.Name]");
 
             // intentionally put all of the project outputs in their own directory
-            conf.TargetPath = Util.SimplifyPath(Path.Combine(Globals.OutputDirectory, @"[target.DirectoryName]\[project.Name]"));
+            conf.TargetPath = Util.SimplifyPath(Path.Combine(Globals.EngineOutputDirectory, @"[target.DirectoryName]\[project.Name]"));
 
-            conf.TargetLibraryPath = Path.Combine(Globals.OutputDirectory, @"[target.DirectoryName]\[project.Name]");
+            conf.TargetLibraryPath = Path.Combine(Globals.EngineOutputDirectory, @"[target.DirectoryName]\[project.Name]");
 
             conf.Output = Configuration.OutputType.Lib; // defaults to creating static libs
+			conf.IsExcludedFromBuild = !Globals.ShouldBuildEngine;
 
             conf.Options.Add(Options.Vc.Compiler.CppLanguageStandard.CPP20);
             conf.Options.Add(Options.Vc.Compiler.Exceptions.Enable);
@@ -319,6 +320,8 @@ namespace VoltSharpmake
 
     public abstract class CommonVoltPluginProject : CommonVoltProject
     {
+		protected bool ShouldCopyOnBuild = true;
+
         protected CommonVoltPluginProject() : base()
         { }
 
@@ -328,9 +331,9 @@ namespace VoltSharpmake
 
             conf.Output = Configuration.OutputType.Dll;
 
-            if (target.Platform == Platform.win64)
+            if (target.Platform == Platform.win64 && ShouldCopyOnBuild)
             {
-                string pluginDir = Globals.EngineDirectory + "\\Plugins\\" + Name;
+                string pluginDir = Globals.PluginsDirectory + "\\" + Name;
                 conf.EventPostBuild.Add(@"mkdir " + "\"" + pluginDir + "\"");
                 conf.EventPostBuild.Add(@"copy /Y " + "\"" + SourceRootPath + "\\" + Name + ".vtconfig\"" + " \"" + pluginDir + "\"");
                 conf.EventPostBuild.Add(@"copy /Y " + "\"" + conf.TargetPath + "\\" + Name + ".dll\"" + " \"" + pluginDir + "\"");

@@ -14,73 +14,22 @@ using Sharpmake;
 
 namespace VoltSharpmake
 {
-	public static class Globals
-    {
-        // branch root path relative to current sharpmake file location
-        public const string RelativeRootPath = @"..\Source";
-        public static string RootDirectory;
-        
-        public const string RelativeThirdPartyPath = @"..\Source\ThirdParty";
-        public static string ThirdPartyDirectory;
-
-        public const string RelativeEnginePath = @"..\";
-        public static string EngineDirectory;
-
-        public static string RelativeVtProjectPath = @"..\..\Project\Project.vtproj";
-        public static string VtProjectDirectory;
-		public static bool ProjectFilepathUpdated = false;
-
-        public const string RelativeSharpmakePath = @"..\..\Sharpmake";
-        public static string SharpmakeDirectory;
-
-        public static string TmpDirectory { get { return Path.Combine(RootDirectory, "../Intermediate"); } }
-        public static string OutputDirectory { get { return Path.Combine(TmpDirectory, "bin"); } }
-
-		public static string BinariesDirectory { get { return Path.Combine(RootDirectory, "../Binaries"); } }
-
-		[CommandLine.Option("project",
-		@"Specify the project to link with the solution: ex: /project('filepath/to/project')")]
-		public static void CommandLineProject(string projectArg)
-		{
-			if (projectArg != "")
-			{
-				RelativeVtProjectPath = projectArg;
-				Environment.SetEnvironmentVariable("VOLT_PROJECT", projectArg);
-				ProjectFilepathUpdated = true;
-			}
-			else
-			{
-				string voltProjPath = Environment.GetEnvironmentVariable("VOLT_PROJECT");
-				if (voltProjPath != null)
-				{
-					if (voltProjPath != "")
-					{
-						RelativeVtProjectPath = voltProjPath;
-					}
-				}
-			}
-		}
-	}
-
 	public static class Main
     {
-        private static void ConfigureRootDirectory()
+        private static void ConfigureGlobals()
         {
             FileInfo fileInfo = Util.GetCurrentSharpmakeFileInfo();
 
-            string rootDirectory = Path.Combine(fileInfo.DirectoryName, Globals.RelativeRootPath);
-            Globals.RootDirectory = Util.SimplifyPath(rootDirectory);
+            Globals.RootDirectory = Util.SimplifyPath(fileInfo.DirectoryName);
+            Globals.ThirdPartyDirectory = Util.SimplifyPath(Path.Combine(Globals.RootDirectory, "ThirdParty"));
+			Globals.SolutionPath = Path.Combine(Globals.RootDirectory, "../../");
+			Globals.EngineDirectory = Util.SimplifyPath(Path.Combine(Globals.RootDirectory, "../"));
+			Globals.PluginsDirectory = Util.SimplifyPath(Path.Combine(Globals.EngineDirectory, "Plugins"));
+            Globals.OutputRootDirectory = Globals.RootDirectory;
 
-            string thirdPartyDirectory = Path.Combine(fileInfo.DirectoryName, Globals.RelativeThirdPartyPath);
-            Globals.ThirdPartyDirectory = Util.SimplifyPath(thirdPartyDirectory);
+            Globals.VtProjectDirectory = Path.Combine(Globals.RootDirectory, "../Project.vtproj");
 
-            string engineDirectory = Path.Combine(fileInfo.DirectoryName, Globals.RelativeEnginePath);
-            Globals.EngineDirectory = Util.SimplifyPath(engineDirectory);
-
-            string vtDirectory = Path.Combine(fileInfo.DirectoryName, Globals.RelativeVtProjectPath);
-            Globals.VtProjectDirectory = Util.SimplifyPath(vtDirectory);
-
-            string sharpmakeDirectory = Path.Combine(fileInfo.DirectoryName, Globals.RelativeSharpmakePath);
+            string sharpmakeDirectory = Path.Combine(Globals.RootDirectory, "../../Sharpmake");
             Globals.SharpmakeDirectory = Util.SimplifyPath(sharpmakeDirectory);
         }
 
@@ -116,13 +65,13 @@ namespace VoltSharpmake
         {
 			CommandLine.ExecuteOnType(typeof(VoltSharpmake.Globals));
 
-			ConfigureRootDirectory();
+			ConfigureGlobals();
             ConfigureAutoCleanup();
 			HandleProjectFilepathUpdate();
 
             KitsRootPaths.SetKitsRoot10ToHighestInstalledVersion(DevEnv.vs2022);
 
-            foreach (Type solutionType in Assembly.GetExecutingAssembly().GetTypes().Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(CommonSolution))))
+			foreach (Type solutionType in Assembly.GetExecutingAssembly().GetTypes().Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(CommonSolution))))
                 arguments.Generate(solutionType);
         }
     }
