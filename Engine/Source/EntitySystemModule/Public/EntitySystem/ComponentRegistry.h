@@ -17,6 +17,8 @@ namespace Volt
 		template<typename T>
 		const bool RegisterEnum();
 
+		void ClearRegistry();
+		
 		const ICommonTypeDesc* GetTypeDescFromName(std::string_view name);
 		const ICommonTypeDesc* GetTypeDescFromGUID(const VoltGUID& guid);
 		std::string_view GetTypeNameFromGUID(const VoltGUID& guid);

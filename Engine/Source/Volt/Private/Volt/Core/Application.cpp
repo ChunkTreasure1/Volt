@@ -51,6 +51,7 @@
 
 #include <EntitySystem/Scripting/ECSAccessBuilder.h>
 #include <EntitySystem/Scripting/ECSBuilder.h>
+#include <EntitySystem/Scripting/ECSSystemRegistry.h>
 
 #include <CoreUtilities/TypeTraits/TypeId.h>
 #include <CoreUtilities/ThreadUtilities.h>
@@ -219,6 +220,11 @@ namespace Volt
 	{
 		m_eventListener = nullptr;
 		m_pluginSystem->ShutdownPlugins();
+
+		// #TODO_Ivar: We probably don't want to clear the registry like this.
+		// We probably would want the systems to unregister themselves somehow. Same with components.
+		GetECSSystemRegistry().ClearRegistry();
+		GetComponentRegistry().ClearRegistry();
 
 		m_navigationSystem = nullptr;
 		m_layerStack.Clear();

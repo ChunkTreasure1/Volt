@@ -16,3 +16,8 @@ void ECSSystemRegistry::Build(ECSBuilder& builder)
 		module(builder);
 	}
 }
+
+void ECSSystemRegistry::ClearRegistry()
+{
+	m_registeredModules.clear();
+}

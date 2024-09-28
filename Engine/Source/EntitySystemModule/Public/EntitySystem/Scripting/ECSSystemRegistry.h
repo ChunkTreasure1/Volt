@@ -14,6 +14,8 @@ class VTES_API ECSSystemRegistry
 public:
 	bool RegisterECSModule(std::function<void(ECSBuilder& builder)> func);
 	void Build(ECSBuilder& builder);
+	
+	void ClearRegistry();
 
 private:
 	Vector<std::function<void(ECSBuilder& builder)>> m_registeredModules;

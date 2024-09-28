@@ -5,6 +5,14 @@ Volt::ComponentRegistry g_componentRegistry;
 
 namespace Volt
 {
+	void ComponentRegistry::ClearRegistry()
+	{
+		m_componentHelperFunctions.clear();
+		m_typeRegistry.clear();
+		m_typeNameToGUIDMap.clear();
+		m_guidToTypeNameMap.clear();
+	}
+
 	const ICommonTypeDesc* Volt::ComponentRegistry::GetTypeDescFromName(std::string_view name)
 	{
 		if (!m_typeNameToGUIDMap.contains(name))
