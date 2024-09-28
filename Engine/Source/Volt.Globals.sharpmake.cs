@@ -15,41 +15,20 @@ namespace VoltSharpmake
 		public static string EngineDirectory;
 		public static string SharpmakeDirectory;
 		public static string PluginsDirectory;
+		public static string ProjectTargetDirectory;
 
-		public static string RelativeVtProjectPath = @"..\..\Project\Project.vtproj";
+		public static string RelativeVtProjectPath = @"..\..\Project\";
 		public static string VtProjectDirectory;
+		public static string VtProjectFilePath;
 		public static bool ProjectFilepathUpdated = false;
 		public static bool ShouldBuildEngine = true;
 
 		public static string EngineTempDirectory { get { return Path.Combine(RootDirectory, "../Intermediate"); } }
 		public static string EngineOutputDirectory { get { return Path.Combine(EngineTempDirectory, "bin"); } }
 		
-		public static string TempDirectory { get { return Path.Combine(OutputRootDirectory, "../Intermediate"); } }
-		public static string OutputDirectory { get { return Path.Combine(TempDirectory, "bin"); } }
+		public static string GameTempDirectory { get { return Path.Combine(GameRootDirectory, "../Intermediate"); } }
+		public static string GameOutputDirectory { get { return Path.Combine(GameTempDirectory, "bin"); } }
 
-		public static string BinariesDirectory { get { return Path.Combine(OutputRootDirectory, "../Binaries"); } }
-
-		[CommandLine.Option("project",
-		@"Specify the project to link with the solution: ex: /project('filepath/to/project')")]
-		public static void CommandLineProject(string projectArg)
-		{
-			if (projectArg != "")
-			{
-				RelativeVtProjectPath = projectArg;
-				Environment.SetEnvironmentVariable("VOLT_PROJECT", projectArg);
-				ProjectFilepathUpdated = true;
-			}
-			else
-			{
-				string voltProjPath = Environment.GetEnvironmentVariable("VOLT_PROJECT");
-				if (voltProjPath != null)
-				{
-					if (voltProjPath != "")
-					{
-						RelativeVtProjectPath = voltProjPath;
-					}
-				}
-			}
-		}
+		public static string BinariesDirectory { get { return Path.Combine(RootDirectory, "../Binaries"); } }
 	}
 }

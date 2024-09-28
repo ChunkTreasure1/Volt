@@ -11,6 +11,8 @@
 void GamePlugin::Initialize()
 {
 	VT_LOG(Trace, "Hello from GamePlugin!");
+	VT_LOG(Trace, "Hello from GamePlugin Again!");
+	VT_LOG(Trace, "Hello from GamePlugin Again Again!");
 }
 
 void GamePlugin::Shutdown()

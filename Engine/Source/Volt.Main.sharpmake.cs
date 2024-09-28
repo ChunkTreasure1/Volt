@@ -11,32 +11,74 @@ using Sharpmake;
 [module: Sharpmake.Include("*/*.sharpmake.cs")]
 [module: Sharpmake.Include("ThirdParty/*/*.sharpmake.cs")]
 [module: Sharpmake.Include("ThirdParty/*/*/*.sharpmake.cs")]
+[module: Sharpmake.Include("%VOLT_PROJECT%/Source/Game/*.sharpmake.cs")]
 
 namespace VoltSharpmake
 {
+	public static class CommandLineArgs
+	{
+		[CommandLine.Option("project", @"Specify the project to link with the solution: ex: /project('filepath/to/project')")]
+		public static void CommandLineProject(string projectArg)
+		{
+			if (File.Exists(projectArg))
+			{
+				projectArg = Path.GetDirectoryName(projectArg);
+			}
+
+			if (projectArg != "")
+			{
+				Globals.RelativeVtProjectPath = projectArg;
+				Environment.SetEnvironmentVariable("VOLT_PROJECT", projectArg);
+				Globals.ProjectFilepathUpdated = true;
+			}
+			else
+			{
+				string voltProjPath = Environment.GetEnvironmentVariable("VOLT_PROJECT");
+				if (voltProjPath != null)
+				{
+					if (voltProjPath != "")
+					{
+						Globals.RelativeVtProjectPath = voltProjPath;
+					}
+				}
+			}
+		}
+	}
+
 	public static class Main
     {
         private static void ConfigureGlobals()
         {
             FileInfo fileInfo = Util.GetCurrentSharpmakeFileInfo();
 
-            Globals.RootDirectory = Util.SimplifyPath(fileInfo.DirectoryName);
+			string voltProjPath = Environment.GetEnvironmentVariable("VOLT_PROJECT");
+			if (voltProjPath != null)
+			{
+				if (voltProjPath != "")
+				{
+					Globals.RelativeVtProjectPath = voltProjPath;
+				}
+			}
+
+			Globals.RootDirectory = Util.SimplifyPath(fileInfo.DirectoryName);
             Globals.ThirdPartyDirectory = Util.SimplifyPath(Path.Combine(Globals.RootDirectory, "ThirdParty"));
 			Globals.SolutionPath = Path.Combine(Globals.RootDirectory, "../../");
 			Globals.EngineDirectory = Util.SimplifyPath(Path.Combine(Globals.RootDirectory, "../"));
 			Globals.PluginsDirectory = Util.SimplifyPath(Path.Combine(Globals.EngineDirectory, "Plugins"));
             Globals.OutputRootDirectory = Globals.RootDirectory;
 
-            Globals.VtProjectDirectory = Path.Combine(Globals.RootDirectory, "../Project.vtproj");
+            Globals.VtProjectDirectory = Path.Combine(Globals.RootDirectory, Globals.RelativeVtProjectPath);
+			Globals.VtProjectFilePath = Path.Combine(Globals.VtProjectDirectory, "Project.vtproj");
+			Globals.GameRootDirectory = Util.SimplifyPath(Path.Combine(Globals.VtProjectDirectory, "Source"));
 
-            string sharpmakeDirectory = Path.Combine(Globals.RootDirectory, "../../Sharpmake");
+			string sharpmakeDirectory = Path.Combine(Globals.RootDirectory, "../../Sharpmake");
             Globals.SharpmakeDirectory = Util.SimplifyPath(sharpmakeDirectory);
-        }
+		}
 
         private static void ConfigureAutoCleanup()
         {
             Util.FilesAutoCleanupActive = true;
-            Util.FilesAutoCleanupDBPath = Path.Combine(Globals.TmpDirectory, "sharpmake");
+            Util.FilesAutoCleanupDBPath = Path.Combine(Globals.EngineTempDirectory, "sharpmake");
 
             if (!Directory.Exists(Util.FilesAutoCleanupDBPath))
                 Directory.CreateDirectory(Util.FilesAutoCleanupDBPath);
@@ -63,7 +105,7 @@ namespace VoltSharpmake
         [Sharpmake.Main]
         public static void SharpmakeMain(Sharpmake.Arguments arguments)
         {
-			CommandLine.ExecuteOnType(typeof(VoltSharpmake.Globals));
+			CommandLine.ExecuteOnType(typeof(VoltSharpmake.CommandLineArgs));
 
 			ConfigureGlobals();
             ConfigureAutoCleanup();
@@ -73,6 +115,6 @@ namespace VoltSharpmake
 
 			foreach (Type solutionType in Assembly.GetExecutingAssembly().GetTypes().Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(CommonSolution))))
                 arguments.Generate(solutionType);
-        }
-    }
+		}
+	}
 }

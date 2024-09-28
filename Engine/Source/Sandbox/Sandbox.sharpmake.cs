@@ -24,7 +24,7 @@ namespace VoltSharpmake
             conf.VcxprojUserFile = new Configuration.VcxprojUserFileSettings
             {
                 LocalDebuggerWorkingDirectory = Globals.EngineDirectory,
-                LocalDebuggerCommandArguments = Globals.VtProjectDirectory
+                LocalDebuggerCommandArguments = Globals.VtProjectFilePath
             };
 
             conf.AddPublicDependency<Volt>(target);

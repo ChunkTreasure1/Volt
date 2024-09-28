@@ -35,6 +35,7 @@ namespace VoltSharpmake
             Globals.SharpmakeDirectory = Util.SimplifyPath(Path.Combine(fileInfo.DirectoryName, "Sharpmake"));
             Globals.VtProjectDirectory = Util.SimplifyPath(Path.Combine(fileInfo.DirectoryName, "../"));
             Globals.OutputRootDirectory = Globals.GameRootDirectory;
+            Globals.ProjectTargetDirectory = Util.SimplifyPath(Path.Combine(Globals.TempDirectory, "projects"));
             Globals.ShouldBuildEngine = false;
         }
 

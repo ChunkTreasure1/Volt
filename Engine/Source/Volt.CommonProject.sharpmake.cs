@@ -39,11 +39,14 @@ namespace VoltSharpmake
                 conf.ProjectFileName += "_[target.DevEnv]";
 
             conf.IntermediatePath = Path.Combine(Globals.EngineTempDirectory, @"obj\[target.DirectoryName]\[project.Name]");
+			conf.TargetPath = Util.SimplifyPath(Path.Combine(Globals.EngineOutputDirectory, @"[target.DirectoryName]\[project.Name]"));
 
-            // intentionally put all of the project outputs in their own directory
-            conf.TargetPath = Util.SimplifyPath(Path.Combine(Globals.EngineOutputDirectory, @"[target.DirectoryName]\[project.Name]"));
+			if (Globals.ProjectTargetDirectory != null)
+			{
+				conf.ProjectPath = Globals.ProjectTargetDirectory;
+			}
 
-            conf.TargetLibraryPath = Path.Combine(Globals.EngineOutputDirectory, @"[target.DirectoryName]\[project.Name]");
+			conf.TargetLibraryPath = Path.Combine(Globals.EngineOutputDirectory, @"[target.DirectoryName]\[project.Name]");
 
             conf.Output = Configuration.OutputType.Lib; // defaults to creating static libs
 			conf.IsExcludedFromBuild = !Globals.ShouldBuildEngine;
