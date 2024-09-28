@@ -6,8 +6,9 @@ bin/
 bin-int/
 Intermediate/
 
-Source/SharpmakeProject/obj
-Source/SharpmakeProject/output
+Engine/Source/SharpmakeProject/obj
+Engine/Source/SharpmakeProject/bin
+Engine/Source/SharpmakeProject/output
 Source/Properties
 
 Engine/User

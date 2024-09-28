@@ -13,6 +13,3 @@ call Sharpmake.Application.exe /sources('../Engine/Source/Volt.Main.sharpmake.cs
 
 REM Return to the original directory
 popd
-
-REM Pause to view any messages
-PAUSE
