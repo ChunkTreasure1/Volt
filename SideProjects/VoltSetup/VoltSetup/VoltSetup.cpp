@@ -133,7 +133,7 @@ int main()
 		SetEnvVariable("VOLT_PATH", std::filesystem::current_path().parent_path().string());
 	}
 
-	const std::string sandboxLaunchCommand = std::filesystem::current_path().parent_path().string() + "\\Sandbox.exe %1";
+	const std::string sandboxLaunchCommand = std::filesystem::current_path().parent_path().string() + "Binaries\\Sandbox.exe %1";
 
 	SetRegistryValue(R"(Software\Classes\.vtproj)", "Volt.Sandbox");
 	SetRegistryValue(R"(Software\Classes\.vtproj\Content Type)", "text/plain");
