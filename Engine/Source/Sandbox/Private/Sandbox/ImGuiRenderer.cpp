@@ -654,8 +654,10 @@ void Sandbox::DrawMenuBar()
 			{
 				bool open = editor->IsOpen();
 
-				if (ImGui::MenuItem(editor->GetTitle().c_str(), "", open))
+				if (ImGui::MenuItem(editor->GetTitle().c_str(), ""))
 				{
+					open = !open;
+
 					if (open)
 					{
 						editor->Open();

@@ -26,6 +26,8 @@
 
 namespace Volt
 {
+	static constexpr const char* ENTITY_FILE_EXTENSION = ".vtent";
+
 	template<typename T>
 	void RegisterSerializationFunction(std::unordered_map<TypeTraits::TypeIndex, std::function<void(YAMLMemoryStreamWriter&, const uint8_t*, const size_t)>>& outTypes)
 	{
@@ -410,7 +412,7 @@ namespace Volt
 
 		for (const auto& it : std::filesystem::directory_iterator(layersFolderPath))
 		{
-			if (!it.is_directory() && it.path().extension().string() == ".vtasset")
+			if (!it.is_directory() && it.path().extension().string() == ENTITY_FILE_EXTENSION)
 			{
 				entityPaths.emplace_back(it.path());
 			}
@@ -532,7 +534,7 @@ namespace Volt
 			Algo::ForEachParallel([entitiesDirectoryPath, entities, metadata, scene, this](uint32_t threadIdx, uint32_t i) 
 			{
 				Entity entity = entities.at(i);
-				const auto entityPath = entitiesDirectoryPath / (entity.ToString() + ".vtasset");
+				const auto entityPath = entitiesDirectoryPath / (entity.ToString() + ENTITY_FILE_EXTENSION);
 
 				YAMLMemoryStreamWriter streamWriter{};
 				SerializeEntity(entity, metadata, scene, streamWriter);
@@ -557,7 +559,7 @@ namespace Volt
 			{
 				EntityID id = removedEntities.at(i);
 
-				const std::filesystem::path entityFilePath = entitiesDirectoryPath / (std::to_string(id) + ".vtasset");
+				const std::filesystem::path entityFilePath = entitiesDirectoryPath / (std::to_string(id) + ENTITY_FILE_EXTENSION);
 				if (std::filesystem::exists(entityFilePath))
 				{
 					FileSystem::MoveToRecycleBin(entityFilePath);
@@ -584,7 +586,7 @@ namespace Volt
 
 		for (const auto& it : std::filesystem::directory_iterator(layersFolderPath))
 		{
-			if (!it.is_directory() && it.path().extension().string() == ".vtasset")
+			if (!it.is_directory() && it.path().extension().string() == ENTITY_FILE_EXTENSION)
 			{
 				entityPaths.emplace_back(it.path());
 			}
