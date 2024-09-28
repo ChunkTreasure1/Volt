@@ -10,6 +10,10 @@ def GenerateProjects(filename):
         if (filename is not None and filename != ""):
                 escaped_filename = filename.replace('\\', '\\\\')
                 
+                if (not os.path.isdir(filename)):
+                        filename = os.path.dirname(filename)
+
+                subprocess.call(['setx', 'VOLT_PROJECT', filename])
                 subprocess.call(['GenerateProjects.bat', '/project(\'' + escaped_filename + '\')'])
         else:
                 subprocess.call(['GenerateProjects.bat'])

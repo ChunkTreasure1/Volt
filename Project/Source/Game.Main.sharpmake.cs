@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using Sharpmake;
 
 [module: Sharpmake.Include("%VOLT_PATH%/Source/Volt.CommonProject.sharpmake.cs")]
@@ -23,6 +24,7 @@ namespace VoltSharpmake
         private static void ConfigureGlobals()
         {
             string absoluteEngineRootPath = Environment.GetEnvironmentVariable("VOLT_PATH");
+            Debug.Assert(absoluteEngineRootPath != null);
 
             FileInfo fileInfo = Util.GetCurrentSharpmakeFileInfo();
 
@@ -34,15 +36,16 @@ namespace VoltSharpmake
             Globals.PluginsDirectory = Util.SimplifyPath(Path.Combine(Globals.EngineDirectory, "Plugins"));
             Globals.SharpmakeDirectory = Util.SimplifyPath(Path.Combine(fileInfo.DirectoryName, "Sharpmake"));
             Globals.VtProjectDirectory = Util.SimplifyPath(Path.Combine(fileInfo.DirectoryName, "../"));
+            Globals.VtProjectFilePath = Path.Combine(Globals.VtProjectDirectory, "Project.vtproj");
             Globals.OutputRootDirectory = Globals.GameRootDirectory;
-            Globals.ProjectTargetDirectory = Util.SimplifyPath(Path.Combine(Globals.TempDirectory, "projects"));
+            Globals.ProjectTargetDirectory = Util.SimplifyPath(Path.Combine(Globals.GameTempDirectory, "projects"));
             Globals.ShouldBuildEngine = false;
         }
 
         private static void ConfigureAutoCleanup()
         {
             Util.FilesAutoCleanupActive = true;
-            Util.FilesAutoCleanupDBPath = Path.Combine(Globals.TempDirectory, "sharpmake");
+            Util.FilesAutoCleanupDBPath = Path.Combine(Globals.GameTempDirectory, "sharpmake");
 
             if (!Directory.Exists(Util.FilesAutoCleanupDBPath))
                 Directory.CreateDirectory(Util.FilesAutoCleanupDBPath);
