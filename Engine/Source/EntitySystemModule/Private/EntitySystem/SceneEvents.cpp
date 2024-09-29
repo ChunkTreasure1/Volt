@@ -3,22 +3,22 @@
 
 namespace Volt
 {
-	OnSceneRuntimeStartEvent::OnSceneRuntimeStartEvent(Weak<EntityScene> scene)
+	OnSceneRuntimeStartEvent::OnSceneRuntimeStartEvent(EntityScene& scene)
 		: m_scene(scene)
 	{
 	}
 
-	Weak<EntityScene> OnSceneRuntimeStartEvent::GetScene()
+	EntityScene& OnSceneRuntimeStartEvent::GetScene()
 	{
 		return m_scene;
 	}
 
-	OnSceneRuntimeEndEvent::OnSceneRuntimeEndEvent(Weak<EntityScene> scene)
+	OnSceneRuntimeEndEvent::OnSceneRuntimeEndEvent(EntityScene& scene)
 		: m_scene(scene)
 	{
 	}
 	
-	Weak<EntityScene> OnSceneRuntimeEndEvent::GetScene()
+	EntityScene& OnSceneRuntimeEndEvent::GetScene()
 	{
 		return m_scene;
 	}

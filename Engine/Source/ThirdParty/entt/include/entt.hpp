@@ -35938,6 +35938,18 @@ public:
         return vars;
     }
 
+	// VOLT_BEGIN_SOURCE_MODIFICATION: entt-add-user-data
+	void set_user_data(void* inUserData)
+	{
+		userData = inUserData;
+	}
+
+	void* get_user_data()
+	{
+		return userData;
+	}
+	// VOLT_END_SOURCE_MODIFICATION
+
 private:
     context vars;
     entity_type free_list;
@@ -35945,6 +35957,10 @@ private:
     // std::shared_ptr because of its type erased allocator which is useful here
     dense_map<id_type, std::shared_ptr<base_type>, identity, std::equal_to<id_type>, typename alloc_traits::template rebind_alloc<std::pair<const id_type, std::shared_ptr<base_type>>>> pools;
     std::vector<group_data, typename alloc_traits::template rebind_alloc<group_data>> groups;
+
+	// VOLT_BEGIN_SOURCE_MODIFICATION: entt-add-user-data
+	void* userData = nullptr;
+	// VOLT_END_SOURCE_MODIFICATION
 };
 
 } // namespace entt

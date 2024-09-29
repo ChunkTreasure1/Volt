@@ -9,7 +9,7 @@ class ECSBuilder;
 
 namespace Volt
 {
-	class VTES_API EntityScene : public std::enable_shared_from_this<EntityScene>
+	class VTES_API EntityScene
 	{
 	public:
 		EntityScene();

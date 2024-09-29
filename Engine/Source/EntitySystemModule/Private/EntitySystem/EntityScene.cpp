@@ -31,7 +31,7 @@ namespace Volt
 		m_isPlaying = true;
 		ComponentOnStart();
 		
-		OnSceneRuntimeStartEvent startEvent(shared_from_this());
+		OnSceneRuntimeStartEvent startEvent(*this);
 		EventSystem::DispatchEvent(startEvent);
 	}
 
@@ -39,7 +39,7 @@ namespace Volt
 	{
 		ComponentOnStop();
 
-		OnSceneRuntimeEndEvent endEvent(shared_from_this());
+		OnSceneRuntimeEndEvent endEvent(*this);
 		EventSystem::DispatchEvent(endEvent);
 
 		m_isPlaying = false;
@@ -308,6 +308,7 @@ namespace Volt
 	void EntityScene::Initialize()
 	{
 		m_ecsBuilder = CreateScope<ECSBuilder>();
+		m_registry.set_user_data(this);
 
 		ComponentRegistry::Helpers::SetupComponentCallbacks(m_registry);
 		GetECSSystemRegistry().Build(*m_ecsBuilder);
