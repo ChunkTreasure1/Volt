@@ -876,6 +876,22 @@ namespace Volt
 		return false;
 	}
 
+	bool AssetManager::IsMemoryAsset(AssetHandle handle)
+	{
+		if (handle == Asset::Null())
+		{
+			return false;
+		}
+
+		ReadLock lock{ s_instance->m_assetRegistryMutex };
+		if (!s_instance->m_assetRegistry.contains(handle))
+		{
+			return false;
+		}
+
+		return s_instance->m_assetRegistry.at(handle).isMemoryAsset;
+	}
+
 	Ref<Asset> AssetManager::GetAssetRaw(AssetHandle assetHandle)
 	{
 		if (assetHandle == Asset::Null())

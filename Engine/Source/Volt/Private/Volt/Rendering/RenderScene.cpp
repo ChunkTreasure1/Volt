@@ -542,7 +542,7 @@ namespace Volt
 
 	void RenderScene::BuildSinglePrimitiveDrawData(PrimitiveDrawData& primitiveDrawData, const RenderObject& renderObject)
 	{
-		Entity entity = m_scene->GetEntityFromUUID(renderObject.entity);
+		Entity entity = m_scene->GetEntityFromID(renderObject.entity);
 		if (!entity)
 		{
 			return;
@@ -581,7 +581,7 @@ namespace Volt
 
 	void RenderScene::BuildSingleSDFPrimitiveDrawData(SDFPrimitiveDrawData& primtiveDrawData, const RenderObject& renderObject)
 	{
-		Entity entity = m_scene->GetEntityFromUUID(renderObject.entity);
+		Entity entity = m_scene->GetEntityFromID(renderObject.entity);
 		if (!entity)
 		{
 			return;

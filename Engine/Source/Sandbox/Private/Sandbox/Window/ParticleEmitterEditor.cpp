@@ -130,7 +130,7 @@ bool ParticleEmitterEditor::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	{
 		return false;
 	}
-	myPreviewScene->GetParticleSystem().Update(myPreviewScene->GetRegistry(), myPreviewScene, e.GetTimestep());
+	//myPreviewScene->GetParticleSystem().Update(myPreviewScene->GetRegistry(), myPreviewScene, e.GetTimestep());
 	UpdateEmitter(e.GetTimestep());
 	return false;
 }

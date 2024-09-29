@@ -1,18 +1,18 @@
 #pragma once
 
-#include "Sandbox/Window/AssetBrowser/AssetCommon.h"
 #include "Sandbox/Utility/AssetBrowserPopup.h"
 
 #include <AssetSystem/Asset.h>
-#include <Volt/Utility/UIUtility.h>
 
 #include <filesystem>
-#include <format>
 
 namespace Volt
 {
 	class AnimationGraphAsset;
+	class AnimatedCharacter;
+	class Texture2D;
 	class Mesh;
+	class Entity;
 }
 
 struct NewCharacterData

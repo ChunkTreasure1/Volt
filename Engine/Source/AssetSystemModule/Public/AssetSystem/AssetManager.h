@@ -74,6 +74,7 @@ namespace Volt
 		static bool IsLoaded(AssetHandle handle);
 
 		static bool IsEngineAsset(const std::filesystem::path& path);
+		static bool IsMemoryAsset(AssetHandle handle);
 		static bool ExistsInRegistry(AssetHandle handle);
 		static bool ExistsInRegistry(const std::filesystem::path& path);
 

@@ -9,6 +9,7 @@
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Components/LightComponents.h>
+#include <Volt/Scene/Scene.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/PremadeCommands.h>
@@ -190,7 +191,8 @@ bool ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, Volt::Enti
 
 	if (edited)
 	{
-		componentType->OnMemberChanged(scene->GetRegistry(), entity.GetHandle());
+		Volt::EntityHelper entityHelper = scene->GetEntityHelperFromEntityID(entity.GetID());
+		componentType->OnMemberChanged(entityHelper);
 
 		EditorUtils::MarkEntityAsEdited(entity);
 	}

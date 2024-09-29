@@ -154,7 +154,7 @@ void VisionPanel::UpdateCameraProperties()
 	{
 		if (UI::PropertyEntity("Follow", myCurrentScene, visionCamComp.followId, "Camera follows this entity"))
 		{
-			Volt::Entity followEnt = myCurrentScene->GetEntityFromUUID(visionCamComp.followId);
+			Volt::Entity followEnt = myCurrentScene->GetEntityFromID(visionCamComp.followId);
 
 			visionCamComp.offset = myVisionCams[mySelectedCamera].GetPosition() - followEnt.GetPosition();
 		}
@@ -425,13 +425,13 @@ void VisionPanel::UpdateSelectedCamera()
 
 	if (visionCamComp.followId != Volt::Entity::NullID())
 	{
-		Volt::Entity target = myCurrentScene->GetEntityFromUUID(visionCamComp.followId);
+		Volt::Entity target = myCurrentScene->GetEntityFromID(visionCamComp.followId);
 		selectedEnt.SetPosition(target.GetPosition() + visionCamComp.offset);
 	}
 
 	if (visionCamComp.lookAtId != Volt::Entity::NullID())
 	{
-		Volt::Entity lookAtEnt = myCurrentScene->GetEntityFromUUID(visionCamComp.lookAtId);
+		Volt::Entity lookAtEnt = myCurrentScene->GetEntityFromID(visionCamComp.lookAtId);
 		glm::vec3 lookAtPos = lookAtEnt.GetPosition();
 
 		selectedEnt.SetLocalRotation(glm::quatLookAtLH(glm::normalize(lookAtPos - selectedEnt.GetPosition()), { 0,1,0 }));

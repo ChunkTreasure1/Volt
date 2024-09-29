@@ -46,7 +46,7 @@ void Volt::TimelinePlayer::StartTimeline(const TimelinePreset timelinePreset, Sc
 	myEntityStartValues.resize(timelinePreset.myTracks.size(), StartValue());
 	for (size_t i = 0; i < timelinePreset.myTracks.size(); i++)
 	{
-		Entity ent = scene->GetEntityFromUUID(timelinePreset.myTracks[i].targetEntity);
+		Entity ent = scene->GetEntityFromID(timelinePreset.myTracks[i].targetEntity);
 
 		if (ent)
 		{
@@ -71,7 +71,7 @@ void Volt::TimelinePlayer::StopTimeline()
 
 	for (size_t i = 0; i < myTimelinePreset.myTracks.size(); i++)
 	{
-		Entity ent = myCurrentScene->GetEntityFromUUID(myTimelinePreset.myTracks[i].targetEntity);
+		Entity ent = myCurrentScene->GetEntityFromID(myTimelinePreset.myTracks[i].targetEntity);
 
 		if (ent)
 		{
@@ -95,7 +95,7 @@ void Volt::TimelinePlayer::PlayTimeline(const float& deltaTime, Scene* scene)
 
 			if (track.keyframes.empty() || track.targetEntity == Entity::NullID() || myCurrentKeyAndTime[trackIndex].first == track.keyframes.size() - 1) { continue; }
 
-			Entity trackEntity = scene->GetEntityFromUUID(track.targetEntity);
+			Entity trackEntity = scene->GetEntityFromID(track.targetEntity);
 
 			if (myCurrentPlaybackTime <= track.keyframes.at(0).time)
 			{
@@ -208,7 +208,7 @@ void Volt::TimelinePlayer::GetPreviewOnTime(TimelinePreset& timelinePreset, cons
 
 		if (&selectedTrack == &timelinePreset.myTracks[trackIndex] || track.keyframes.empty() || track.targetEntity == Entity::NullID()) { continue; }
 
-		Entity trackEntity = scene->GetEntityFromUUID(track.targetEntity);
+		Entity trackEntity = scene->GetEntityFromID(track.targetEntity);
 
 		if (timeStamp <= track.keyframes.at(0).time)
 		{

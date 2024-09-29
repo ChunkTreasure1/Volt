@@ -55,11 +55,11 @@ namespace Volt
 	{
 		SetMaterial(nullptr); // #TODO: Implement actual materials
 
-		Scene::TQS transform;
+		TQS transform;
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldTQS(entity);
+			transform = entity.GetScene()->GetEntityWorldTQS(entity);
 		}
 
 		component.added = true;
@@ -82,11 +82,11 @@ namespace Volt
 
 	void BoxColliderShape::SetHalfSize(const glm::vec3& halfSize)
 	{
-		Scene::TQS transform;
+		TQS transform;
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
-			transform = myEntity.GetScene()->GetWorldTQS(myEntity);
+			transform = myEntity.GetScene()->GetEntityWorldTQS(myEntity);
 		}
 
 		const glm::vec3 colliderSize = transform.scale * halfSize;
@@ -132,11 +132,11 @@ namespace Volt
 
 		SetMaterial(nullptr); // #TODO: Implement actual materials
 
-		Scene::TQS transform;
+		TQS transform;
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldTQS(entity);
+			transform = entity.GetScene()->GetEntityWorldTQS(entity);
 		}
 
 		const float maxScale = glm::max(transform.scale.x, glm::max(transform.scale.y, transform.scale.z));
@@ -158,11 +158,11 @@ namespace Volt
 
 	void SphereColliderShape::SetRadius(float radius)
 	{
-		Scene::TQS transform;
+		TQS transform;
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
-			transform = myEntity.GetScene()->GetWorldTQS(myEntity);
+			transform = myEntity.GetScene()->GetEntityWorldTQS(myEntity);
 		}
 
 		const float maxScale = glm::max(transform.scale.x, glm::max(transform.scale.y, transform.scale.z));
@@ -209,11 +209,11 @@ namespace Volt
 
 		SetMaterial(nullptr); // #TODO: Implement actual materials
 
-		Scene::TQS transform;
+		TQS transform;
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldTQS(entity);
+			transform = entity.GetScene()->GetEntityWorldTQS(entity);
 		}
 
 		const float radiusScale = glm::max(transform.scale.x, transform.scale.z);
@@ -238,11 +238,11 @@ namespace Volt
 
 	void CapsuleColliderShape::SetHeight(float height)
 	{
-		Scene::TQS transform;
+		TQS transform;
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
-			transform = myEntity.GetScene()->GetWorldTQS(myEntity);
+			transform = myEntity.GetScene()->GetEntityWorldTQS(myEntity);
 		}
 
 		const float heightScale = transform.scale.y;
@@ -258,11 +258,11 @@ namespace Volt
 
 	void CapsuleColliderShape::SetRadius(float radius)
 	{
-		Scene::TQS transform;
+		TQS transform;
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
-			transform = myEntity.GetScene()->GetWorldTQS(myEntity);
+			transform = myEntity.GetScene()->GetEntityWorldTQS(myEntity);
 		}
 
 		const float radiusScale = glm::max(transform.scale.x, transform.scale.z);
@@ -313,11 +313,11 @@ namespace Volt
 		Ref<PhysicsMaterial> material = AssetManager::GetAsset<PhysicsMaterial>(component.material);
 		SetMaterial(material);
 
-		Scene::TQS transform;
+		TQS transform;
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldTQS(entity);
+			transform = entity.GetScene()->GetEntityWorldTQS(entity);
 		}
 
 		const std::string colliderName = AssetManager::Get().GetFilePathFromAssetHandle(component.colliderMesh).stem().string() + std::to_string(component.colliderMesh) + "Convex";
@@ -425,11 +425,11 @@ namespace Volt
 		Ref<PhysicsMaterial> material = AssetManager::GetAsset<PhysicsMaterial>(component.material);
 		SetMaterial(material);
 
-		Scene::TQS transform;
+		TQS transform;
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldTQS(entity);
+			transform = entity.GetScene()->GetEntityWorldTQS(entity);
 		}
 
 		const std::string colliderName = AssetManager::Get().GetFilePathFromAssetHandle(component.colliderMesh).stem().string() + std::to_string(component.colliderMesh) + "Triangle";

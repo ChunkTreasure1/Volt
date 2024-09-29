@@ -32,7 +32,7 @@ void Volt::VisionCameraComponent::Init(Entity& camEntity)
 
 		if (damping > 0)
 		{
-			Volt::Entity target = camEntity.GetScene()->GetEntityFromUUID(followId);
+			Volt::Entity target = camEntity.GetScene()->GetEntityFromID(followId);
 
 			if (target)
 			{
@@ -71,7 +71,7 @@ void Volt::VisionCameraComponent::FreeController(Entity& camEntity, float aDelta
 {
 	if (followId != Entity::NullID())
 	{
-		Volt::Entity followEnt = camEntity.GetScene()->GetEntityFromUUID(followId);
+		Volt::Entity followEnt = camEntity.GetScene()->GetEntityFromID(followId);
 
 		if (followEnt)
 		{
@@ -95,7 +95,7 @@ void Volt::VisionCameraComponent::FreeController(Entity& camEntity, float aDelta
 
 	if (lookAtId != Entity::NullID())
 	{
-		Entity lookAtEnt = camEntity.GetScene()->GetEntityFromUUID(lookAtId);
+		Entity lookAtEnt = camEntity.GetScene()->GetEntityFromID(lookAtId);
 
 		if (lookAtEnt)
 		{
@@ -107,7 +107,7 @@ void Volt::VisionCameraComponent::FreeController(Entity& camEntity, float aDelta
 
 void Volt::VisionCameraComponent::FPSController(Entity& camEntity, float aDeltaTime)
 {
-	Volt::Entity target = camEntity.GetScene()->GetEntityFromUUID(followId);
+	Volt::Entity target = camEntity.GetScene()->GetEntityFromID(followId);
 
 	if (!target) { return; }
 
@@ -144,7 +144,7 @@ void Volt::VisionCameraComponent::TPSController(Entity& camEntity, float aDeltaT
 
 	myRotation.x = glm::clamp(myRotation.x, -1.35f, 1.35f);
 
-	Volt::Entity target = camEntity.GetScene()->GetEntityFromUUID(followId);
+	Volt::Entity target = camEntity.GetScene()->GetEntityFromID(followId);
 
 	if (target)
 	{
@@ -157,7 +157,7 @@ void Volt::VisionCameraComponent::TPSController(Entity& camEntity, float aDeltaT
 		const glm::vec3 dir = camEntity.GetPosition() - focalTargetPoint;
 		glm::vec3 position = { 0 };
 
-		Volt::Entity rayFocalPointEnt = camEntity.GetScene()->GetEntityFromUUID(collisionRayPoint);
+		Volt::Entity rayFocalPointEnt = camEntity.GetScene()->GetEntityFromID(collisionRayPoint);
 
 		if (isColliding)
 		{

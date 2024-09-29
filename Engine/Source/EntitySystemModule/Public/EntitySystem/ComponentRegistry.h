@@ -144,20 +144,21 @@ namespace Volt
 		return true;
 	}
 
+	// #TODO_Ivar: Find solution for this
 	template<typename T>
 	inline void ComponentRegistry::OnConstructComponent(entt::registry& registry, entt::entity entity)
 	{
-		const auto* typeDesc = GetTypeDesc<T>();
-		const IComponentTypeDesc* compDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
-		compDesc->OnCreate(registry, entity);
+		//const auto* typeDesc = GetTypeDesc<T>();
+		//const IComponentTypeDesc* compDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
+		//compDesc->OnCreate(registry, entity);
 	}
 
 	template<typename T>
 	inline void ComponentRegistry::OnDestructComponent(entt::registry& registry, entt::entity entity)
 	{
-		const auto* typeDesc = GetTypeDesc<T>();
-		const IComponentTypeDesc* compDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
-		compDesc->OnDestroy(registry, entity);
+		//const auto* typeDesc = GetTypeDesc<T>();
+		//const IComponentTypeDesc* compDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
+		//compDesc->OnDestroy(registry, entity);
 	}
 }
 

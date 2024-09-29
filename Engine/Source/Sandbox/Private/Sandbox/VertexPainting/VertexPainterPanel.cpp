@@ -75,7 +75,7 @@ bool VertexPainterPanel::BrushUpdate()
 		glm::vec3 intersectionPoint;
 		for (auto wireId : SelectionManager::GetSelectedEntities())
 		{
-			Volt::Entity currentEntity = ex_scene->GetEntityFromUUID(wireId);
+			Volt::Entity currentEntity = ex_scene->GetEntityFromID(wireId);
 			if (!currentEntity.HasComponent<Volt::MeshComponent>()) continue;
 
 			auto meshComponent = currentEntity.GetComponent<Volt::MeshComponent>();
@@ -183,7 +183,7 @@ void VertexPainterPanel::PanelDraw()
 		{
 			for (const auto& _entId : SelectionManager::GetSelectedEntities())
 			{
-				auto ent = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(_entId);
+				auto ent = Volt::SceneManager::GetActiveScene()->GetEntityFromID(_entId);
 				if (!AddPainted(ent)) continue;
 				for (auto& vertex : ent.GetComponent<Volt::VertexPaintedComponent>().vertexColors)
 				{
@@ -214,7 +214,7 @@ void VertexPainterPanel::PanelDraw()
 			// Remove painted component
 			for (const auto& _entId : SelectionManager::GetSelectedEntities())
 			{
-				auto ent = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(_entId);
+				auto ent = Volt::SceneManager::GetActiveScene()->GetEntityFromID(_entId);
 				if (!ent.HasComponent<Volt::VertexPaintedComponent>()) continue;
 				ent.RemoveComponent<Volt::VertexPaintedComponent>();
 			}
@@ -336,7 +336,7 @@ void VertexPainterPanel::PanelDraw()
 		{
 			for (auto entId : SelectionManager::GetSelectedEntities())
 			{
-				Volt::Entity entity = ex_scene->GetEntityFromUUID(entId);
+				Volt::Entity entity = ex_scene->GetEntityFromID(entId);
 				if (!entity.HasComponent<Volt::MeshComponent>()) continue;
 				//auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
 				//meshComp.material = m_materialSettings.singleMat;
@@ -371,7 +371,7 @@ void VertexPainterPanel::BillboardDraw()
 {
 	for (auto id : SelectionManager::GetSelectedEntities())
 	{
-		auto paintedEnt = ex_scene->GetEntityFromUUID(id);
+		auto paintedEnt = ex_scene->GetEntityFromID(id);
 		if (paintedEnt.HasComponent<Volt::MeshComponent>())
 		{
 			auto meshComp = paintedEnt.GetComponent<Volt::MeshComponent>();
@@ -538,7 +538,7 @@ void VertexPainterPanel::Paint(float color)
 	if (m_settings.isSelecting) return;
 	for (auto id : SelectionManager::GetSelectedEntities())
 	{
-		auto paintedEnt = ex_scene->GetEntityFromUUID(id);
+		auto paintedEnt = ex_scene->GetEntityFromID(id);
 		if (!paintedEnt.HasComponent<Volt::MeshComponent>()) continue;
 
 		auto meshComp = paintedEnt.GetComponent<Volt::MeshComponent>();
@@ -606,7 +606,7 @@ void VertexPainterPanel::SetView(bool in_viewVertexColors)
 	{
 		for (auto entId : SelectionManager::GetSelectedEntities())
 		{
-			Volt::Entity entity = ex_scene->GetEntityFromUUID(entId);
+			Volt::Entity entity = ex_scene->GetEntityFromID(entId);
 			if (!entity.HasComponent<Volt::MeshComponent>()) continue;
 			//auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
 
@@ -621,7 +621,7 @@ void VertexPainterPanel::SetView(bool in_viewVertexColors)
 	}
 	for (auto _pair : m_originalMaterials)
 	{
-		Volt::Entity entity = ex_scene->GetEntityFromUUID(_pair.first);
+		Volt::Entity entity = ex_scene->GetEntityFromID(_pair.first);
 		if (!entity.HasComponent<Volt::MeshComponent>()) continue;
 		//auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
 		//meshComp.material = _pair.second;

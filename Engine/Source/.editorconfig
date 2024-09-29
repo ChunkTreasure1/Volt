@@ -74,6 +74,8 @@ cpp_space_around_assignment_operator = insert
 cpp_space_pointer_reference_alignment = left
 cpp_space_around_ternary_operator = insert
 cpp_wrap_preserve_blocks = one_liners
+cpp_include_cleanup_remove_unused_error_tag_type = dimmed
+cpp_include_cleanup_add_missing_error_tag_type = suggestion
 
 # C# files
 [*.cs]

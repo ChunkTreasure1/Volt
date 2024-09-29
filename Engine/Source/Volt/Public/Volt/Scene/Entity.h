@@ -49,22 +49,20 @@ namespace Volt
 		const std::string& GetTag() const;
 		const std::string ToString() const;
 
-		const uint32_t GetLayerID() const;
+		glm::mat4 GetTransform() const;
+		glm::mat4 GetLocalTransform() const;
 
-		const glm::mat4 GetTransform() const;
-		const glm::mat4 GetLocalTransform() const;
+		glm::vec3 GetForward() const;
+		glm::vec3 GetRight() const;
+		glm::vec3 GetUp() const;
 
-		const glm::vec3 GetForward() const;
-		const glm::vec3 GetRight() const;
-		const glm::vec3 GetUp() const;
+		glm::vec3 GetLocalForward() const;
+		glm::vec3 GetLocalRight() const;
+		glm::vec3 GetLocalUp() const;
 
-		const glm::vec3 GetLocalForward() const;
-		const glm::vec3 GetLocalRight() const;
-		const glm::vec3 GetLocalUp() const;
-
-		const glm::vec3 GetPosition() const;
-		const glm::quat GetRotation() const;
-		const glm::vec3 GetScale() const;
+		glm::vec3 GetPosition() const;
+		glm::quat GetRotation() const;
+		glm::vec3 GetScale() const;
 
 		const glm::vec3& GetLocalPosition() const;
 		const glm::quat& GetLocalRotation() const;
@@ -90,19 +88,19 @@ namespace Volt
 
 		Ref<PhysicsActor> GetPhysicsActor() const;
 
-		const Entity GetParent() const;
-		const Vector<Entity> GetChildren() const;
-		const bool HasParent() const;
+		Entity GetParent() const;
+		Vector<Entity> GetChildren() const;
+		bool HasParent() const;
 
 		void SetVisible(bool state);
 		void SetLocked(bool state);
 
-		const bool IsVisible() const;
-		const bool IsLocked() const;
+		bool IsVisible() const;
+		bool IsLocked() const;
 
-		const bool IsValid() const;
-		const EntityID GetID() const;
-		const entt::entity GetHandle() const { return m_handle; }
+		bool IsValid() const;
+		EntityID GetID() const;
+		entt::entity GetHandle() const { return m_handle; }
 
 		template<typename T> T& GetComponent();
 		template<typename T> const T& GetComponent() const;
@@ -111,7 +109,7 @@ namespace Volt
 		template<typename T> void RemoveComponent();
 
 		void RemoveComponent(const VoltGUID& guid);
-		const bool HasComponent(std::string_view componentName) const;
+		bool HasComponent(std::string_view componentName) const;
 
 		Entity& operator=(const Entity& entity);
 

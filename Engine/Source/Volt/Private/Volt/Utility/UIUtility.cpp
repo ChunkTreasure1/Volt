@@ -1567,7 +1567,7 @@ bool UI::PropertyEntity(const std::string& text, Weak<Volt::Scene> scene, Volt::
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	Volt::Entity entity = scene->GetEntityFromUUID(value);
+	Volt::Entity entity = scene->GetEntityFromID(value);
 
 	std::string entityName;
 	if (entity)
@@ -1603,7 +1603,7 @@ bool UI::PropertyEntity(Weak<Volt::Scene> scene, Volt::EntityID& value, const fl
 	SimpleToolTip(toolTip);
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	Volt::Entity entity = scene->GetEntityFromUUID(value);
+	Volt::Entity entity = scene->GetEntityFromID(value);
 
 	std::string entityName;
 	if (entity)

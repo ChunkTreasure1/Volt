@@ -101,7 +101,7 @@ void Timeline::SaveAsset()
 
 void Timeline::PlaySequence()
 {
-	myCurrentScene->GetTimelinePlayer().Update(myDeltaTime, myCurrentScene.get());
+	//myCurrentScene->GetTimelinePlayer().Update(myDeltaTime, myCurrentScene.get());
 
 	const float pixelPerSecond = myTimelineSize.x / (myTimelinePreset->maxLength / 30);
 	const float markerPixelStep = (pixelPerSecond * myDeltaTime);
@@ -120,14 +120,14 @@ void Timeline::OnPlay()
 {
 	myMPoint3.x = myTimelinePos.x;
 	myPlayingSequence = true;
-	myCurrentScene->GetTimelinePlayer().StartTimeline(*myTimelinePreset, myCurrentScene.get());
+	//myCurrentScene->GetTimelinePlayer().StartTimeline(*myTimelinePreset, myCurrentScene.get());
 }
 
 void Timeline::OnStop()
 {
 	myPlayingSequence = false;
-	myCurrentScene->GetTimelinePlayer().OnRuntimeEnd(myCurrentScene.get());
-	myCurrentScene->GetTimelinePlayer().StopTimeline();
+	//myCurrentScene->GetTimelinePlayer().OnRuntimeEnd(myCurrentScene.get());
+	//myCurrentScene->GetTimelinePlayer().StopTimeline();
 }
 
 void Timeline::HandleTimelineInfo()
@@ -170,8 +170,6 @@ void Timeline::HandleTimelineInfo()
 
 void Timeline::HandleTrackContent()
 {
-	auto style = ImGui::GetStyle();
-
 	for (int32_t i = 0; i < static_cast<int32_t>(myTimelinePreset->myTracks.size()); i++)
 	{
 		if (myTimelinePreset->myTracks[i].trackType == Volt::TrackType::T_Animation)
@@ -294,7 +292,7 @@ void Timeline::AddKeyframe()
 	Volt::Keyframe newKeyframe;
 	newKeyframe.frame = GetFrameFromPos(myMPoint3);
 
-	Volt::Entity targetEnt = myCurrentScene->GetEntityFromUUID(mySelectedTrack->targetEntity);
+	Volt::Entity targetEnt = myCurrentScene->GetEntityFromID(mySelectedTrack->targetEntity);
 	newKeyframe.position = targetEnt.GetPosition();
 	newKeyframe.rotation = targetEnt.GetRotation();
 
@@ -316,7 +314,7 @@ void Timeline::AddClip(Volt::EntityID entityId)
 		return;
 	}
 
-	Volt::Entity cameraEnt = myCurrentScene->GetEntityFromUUID(entityId);
+	Volt::Entity cameraEnt = myCurrentScene->GetEntityFromID(entityId);
 	if (!cameraEnt.HasComponent<Volt::VisionCameraComponent>())
 	{
 		UI::Notify(NotificationType::Error, "Timeline", "Entity needs to be a Vision Camera");
@@ -335,10 +333,10 @@ void Timeline::AddClip(Volt::EntityID entityId)
 
 void Timeline::PreviewTimeline()
 {
-	const float markerTimePercentage = (myMPoint3.x - myTimelinePos.x) / myTimelineSize.x;
-	const float timeStamp = (myTimelinePreset->maxLength / 30) * markerTimePercentage;
+	//const float markerTimePercentage = (myMPoint3.x - myTimelinePos.x) / myTimelineSize.x;
+	//const float timeStamp = (myTimelinePreset->maxLength / 30) * markerTimePercentage;
 
-	myCurrentScene->GetTimelinePlayer().GetPreviewOnTime(*myTimelinePreset, timeStamp, *mySelectedTrack, myCurrentScene.get());
+	//myCurrentScene->GetTimelinePlayer().GetPreviewOnTime(*myTimelinePreset, timeStamp, *mySelectedTrack, myCurrentScene.get());
 }
 
 void Timeline::DrawEntityTracks(ImDrawList& drawlist, int trackIndex)
@@ -399,7 +397,7 @@ void Timeline::DrawEntityTracks(ImDrawList& drawlist, int trackIndex)
 void Timeline::DrawKeyframesOnTrack(int trackIndex)
 {
 	auto drawlist = ImGui::GetWindowDrawList();
-	auto style = ImGui::GetStyle();
+	auto& style = ImGui::GetStyle();
 
 	if (!myTimelinePreset->myTracks.empty())
 	{
@@ -409,7 +407,7 @@ void Timeline::DrawKeyframesOnTrack(int trackIndex)
 
 		for (size_t keyIndex = 0; keyIndex < myTimelinePreset->myTracks[trackIndex].keyframes.size(); keyIndex++)
 		{
-			auto keyframe = myTimelinePreset->myTracks[trackIndex].keyframes[keyIndex];
+			auto& keyframe = myTimelinePreset->myTracks[trackIndex].keyframes[keyIndex];
 
 			const float startDrawHeight = myTimelinePos.y + myTimelineSize.y;
 			const ImVec2 trackMinPos = ImVec2(myTimelinePos.x, startDrawHeight + (style.FramePadding.y + ((myIndividualTrackSize.y + style.ItemSpacing.y) * trackIndex)));
@@ -465,7 +463,7 @@ void Timeline::DrawKeyframesOnTrack(int trackIndex)
 void Timeline::DrawClipsOnTrack(int trackIndex)
 {
 	auto drawlist = ImGui::GetWindowDrawList();
-	auto style = ImGui::GetStyle();
+	auto& style = ImGui::GetStyle();
 
 	if (!myTimelinePreset->myTracks.empty())
 	{
@@ -495,7 +493,7 @@ void Timeline::DrawClipsOnTrack(int trackIndex)
 				drawlist->AddRectFilledMultiColor(ImVec2(trackXStartPos, trackMinPos.y), ImVec2(trackXEndPos, trackMinPos.y + myIndividualTrackSize.y), IM_COL32(150, 150, 150, 255), IM_COL32(150, 150, 150, 255), IM_COL32(100, 100, 100, 255), IM_COL32(100, 100, 100, 255));
 			}
 
-			Volt::Entity camEnt = myCurrentScene->GetEntityFromUUID(currClip.activeCamera);
+			Volt::Entity camEnt = myCurrentScene->GetEntityFromID(currClip.activeCamera);
 			std::string entName;
 			if (camEnt)
 			{

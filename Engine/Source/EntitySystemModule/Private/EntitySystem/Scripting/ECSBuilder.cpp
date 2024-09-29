@@ -78,10 +78,12 @@ void ECSGameLoopContainer::Compile()
 		}
 	}
 
+#ifdef VT_DEBUG
 	for (auto& [id, degree] : inDegree)
 	{
 		VT_ENSURE(degree == 0);
 	}
+#endif
 
 	m_executionBuckets = executionBuckets;
 }
@@ -91,7 +93,7 @@ ECSGameLoopContainer& ECSBuilder::GetGameLoop(GameLoop gameLoopType)
 	return m_gameLoops[gameLoopType];
 }
 
-void ECSGameLoopContainer::Execute(entt::registry& registry, float deltaTime)
+void ECSGameLoopContainer::Execute(Volt::EntityScene& scene, float deltaTime)
 {
 	VT_PROFILE_FUNCTION();
 
@@ -99,7 +101,7 @@ void ECSGameLoopContainer::Execute(entt::registry& registry, float deltaTime)
 	{
 		for (const auto& id : ids)
 		{
-			m_registeredSystems[id].Execute(registry, deltaTime);
+			m_registeredSystems[id].Execute(scene, deltaTime);
 		}
 	}
 }
@@ -113,9 +115,9 @@ ECSSystem::~ECSSystem()
 {
 }
 
-void ECSSystem::Execute(entt::registry& registry, float deltaTime)
+void ECSSystem::Execute(Volt::EntityScene& scene, float deltaTime)
 {
-	m_systemFunc(registry, deltaTime);
+	m_systemFunc(scene, deltaTime);
 }
 
 void ECSExecutionOrder::ExecuteAfter(ECSSystem& otherSystem)

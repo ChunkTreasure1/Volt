@@ -488,10 +488,11 @@ namespace Volt
 
 			for (const auto& entity : dummyScene->GetAllEntities())
 			{
-				Entity realEntity = scene->CreateEntityWithUUID(entity.GetID());
+				Entity realEntity = scene->CreateEntityWithID(entity.GetID());
 				Entity::Copy(entity, realEntity, Volt::EntityCopyFlags::None);
 
 				scene->GetWorldEngineMutable().OnEntityMoved(realEntity);
+				scene->InvalidateEntityTransform(realEntity.GetID());
 			}
 		}
 
@@ -666,7 +667,7 @@ namespace Volt
 		static std::mutex createEntityMutex;
 		std::scoped_lock lock{ createEntityMutex };
 
-		return scene->CreateEntityWithUUID(entityId);
+		return scene->CreateEntityWithID(entityId);
 	}
 	
 	void SceneSerializer::SerializeClass(const uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLMemoryStreamWriter& streamWriter, bool isSubComponent) const
@@ -829,7 +830,7 @@ namespace Volt
 			}
 		});
 
-		compDesc->OnComponentDeserialized(dstEntity.GetScene()->GetRegistry(), dstEntity.GetHandle());
+		compDesc->OnComponentDeserialized(dstEntity.GetScene()->GetEntityHelperFromEntityID(dstEntity.GetID()));
 	}
 
 	void SceneSerializer::DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, Entity dstEntity, YAMLMemoryStreamReader& streamReader) const

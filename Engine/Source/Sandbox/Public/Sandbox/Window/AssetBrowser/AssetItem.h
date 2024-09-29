@@ -10,6 +10,8 @@ namespace Volt::RHI
 	class Image2D;
 }
 
+struct AssetData;
+
 namespace AssetBrowser
 {
 	class AssetItem : public Item

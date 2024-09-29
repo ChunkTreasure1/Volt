@@ -5,21 +5,15 @@
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/Theme.h"
 
-#include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
 
-#include <Volt/Asset/Rendering/Material.h>
-#include <Volt/Asset/Mesh/MeshSource.h>
 #include <Volt/Project/ProjectManager.h>
 
 #include <Volt/Utility/UIUtility.h>
 
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Asset/Mesh/Mesh.h>
-
-#include <stb/stb_image.h>
-#include <stb/stb_image_write.h>
 
 bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHandle, AssetType wantedType)
 {

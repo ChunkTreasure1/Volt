@@ -126,7 +126,7 @@ void CharacterEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 
 	for (const auto& attachmentEntity : myJointAttachmentEntities)
 	{
-		myScene->RemoveEntity(attachmentEntity);
+		myScene->DestroyEntity(attachmentEntity);
 	}
 	myJointAttachmentEntities.clear();
 

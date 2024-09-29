@@ -3,7 +3,6 @@
 
 #include "Volt/Components/CoreComponents.h"
 #include "Volt/Components/PhysicsComponents.h"
-#include "Volt/Components/RenderingComponents.h"
 
 #include "Volt/Scene/Scene.h"
 
@@ -27,7 +26,7 @@ namespace Volt
 			return Entity::Null();
 		}
 
-		auto rootEntity = m_prefabScene->GetEntityFromUUID(m_rootEntityId);
+		auto rootEntity = m_prefabScene->GetEntityFromID(m_rootEntityId);
 		if (!rootEntity)
 		{
 			VT_LOG(Error, "[Prefab] Root Entity is not a valid entity!");
@@ -89,7 +88,7 @@ namespace Volt
 			}
 		}
 
-		UpdatePrefabVersion(m_prefabScene->GetEntityFromUUID(m_rootEntityId), m_version);
+		UpdatePrefabVersion(m_prefabScene->GetEntityFromID(m_rootEntityId), m_version);
 
 		return updateSucceded;
 	}
@@ -101,7 +100,7 @@ namespace Volt
 
 	void Prefab::CopyPrefabEntity(Entity dstEntity, EntityID srcPrefabEntityId, const EntityCopyFlags copyFlags) const
 	{
-		Entity prefabEntity = m_prefabScene->GetEntityFromUUID(srcPrefabEntityId);
+		Entity prefabEntity = m_prefabScene->GetEntityFromID(srcPrefabEntityId);
 		if (!prefabEntity)
 		{
 			return;
@@ -126,7 +125,7 @@ namespace Volt
 
 		const EntityID prefabEntityId = entity.GetComponent<PrefabComponent>().prefabEntity;
 
-		Entity prefabEntity = m_prefabScene->GetEntityFromUUID(prefabEntityId);
+		Entity prefabEntity = m_prefabScene->GetEntityFromID(prefabEntityId);
 		const bool isValid = prefabEntity.IsValid();
 		return isValid;
 	}
@@ -170,12 +169,12 @@ namespace Volt
 
 	const Entity Prefab::GetRootEntity() const
 	{
-		return m_prefabScene->GetEntityFromUUID(m_rootEntityId);
+		return m_prefabScene->GetEntityFromID(m_rootEntityId);
 	}
 
 	void Prefab::InitializeComponents(Entity entity)
 	{
-		Entity prefabEntity = m_prefabScene->GetEntityFromUUID(entity.GetComponent<PrefabComponent>().prefabEntity);
+		Entity prefabEntity = m_prefabScene->GetEntityFromID(entity.GetComponent<PrefabComponent>().prefabEntity);
 
 		if (prefabEntity.HasComponent<RigidbodyComponent>())
 		{
@@ -207,7 +206,6 @@ namespace Volt
 			}
 
 			auto& commonComponent = entity.GetComponent<CommonComponent>();
-			commonComponent.layerId = entity.GetScene()->GetActiveLayer();
 			commonComponent.randomValue = Random::Float(0.f, 1.f);
 			commonComponent.timeSinceCreation = 0.f;
 		}
@@ -229,7 +227,7 @@ namespace Volt
 		m_rootEntityId = srcRootEntity.GetID();
 
 		AddEntityToPrefabRecursive(srcRootEntity, Entity::Null());
-		Entity rootPrefabEntity = m_prefabScene->GetEntityFromUUID(m_rootEntityId);
+		Entity rootPrefabEntity = m_prefabScene->GetEntityFromID(m_rootEntityId);
 		rootPrefabEntity.GetComponent<RelationshipComponent>().parent = Entity::NullID();
 
 		rootPrefabEntity.SetPosition({ 0.f });
@@ -239,7 +237,7 @@ namespace Volt
 	void Prefab::AddEntityToPrefabRecursive(Entity srcEntity, Entity parentPrefabEntity)
 	{
 		EntityID newEntityId = srcEntity.GetID();
-		auto newEntity = m_prefabScene->CreateEntityWithUUID(newEntityId);
+		auto newEntity = m_prefabScene->CreateEntityWithID(newEntityId);
 
 		// If this entity already has a prefab component, it probably is another prefab. Add it as a reference
 		if (srcEntity.HasComponent<PrefabComponent>())
@@ -284,7 +282,7 @@ namespace Volt
 		Vector<EntityID> entitiesToRemove;
 		Vector<Entity> srcHeirarchy = FlattenEntityHeirarchy(srcEntity);
 
-		Entity srcPrefabEntity = m_prefabScene->GetEntityFromUUID(srcEntity.GetComponent<PrefabComponent>().prefabEntity);
+		Entity srcPrefabEntity = m_prefabScene->GetEntityFromID(srcEntity.GetComponent<PrefabComponent>().prefabEntity);
 
 		m_prefabScene->ForEachWithComponents<const PrefabComponent, const IDComponent>([&](const entt::entity id, const PrefabComponent& prefabComp, const IDComponent& idComponent)
 		{
@@ -318,13 +316,13 @@ namespace Volt
 				m_prefabReferencesMap.erase(id);
 			}
 
-			auto entity = m_prefabScene->GetEntityFromUUID(id);
+			auto entity = m_prefabScene->GetEntityFromID(id);
 			if (!entity)
 			{
 				continue;
 			}
 
-			m_prefabScene->RemoveEntity(entity);
+			m_prefabScene->DestroyEntity(entity);
 		}
 	}
 
@@ -377,7 +375,7 @@ namespace Volt
 
 			if (srcEntity.HasParent() && srcEntity.GetParent().HasComponent<PrefabComponent>())
 			{
-				prefabParent = m_prefabScene->GetEntityFromUUID(srcEntity.GetParent().GetComponent<PrefabComponent>().prefabEntity);
+				prefabParent = m_prefabScene->GetEntityFromID(srcEntity.GetParent().GetComponent<PrefabComponent>().prefabEntity);
 			}
 
 			AddEntityToPrefabRecursive(srcEntity, prefabParent);
@@ -391,7 +389,7 @@ namespace Volt
 		}
 
 		const EntityID prefabEntityId = forcedPrefabEntity != Entity::NullID() ? forcedPrefabEntity : srcPrefabComp.prefabEntity;
-		Entity targetEntity = m_prefabScene->GetEntityFromUUID(prefabEntityId);
+		Entity targetEntity = m_prefabScene->GetEntityFromID(prefabEntityId);
 		if (!targetEntity)
 		{
 			VT_LOG(Warning, "[Prefab]: Trying to update an invalid entity in prefab!");
@@ -434,10 +432,10 @@ namespace Volt
 			return;
 		}
 
-		Entity prefabEntity = m_prefabScene->GetEntityFromUUID(prefabEntityId);
+		Entity prefabEntity = m_prefabScene->GetEntityFromID(prefabEntityId);
 		if (!prefabEntity)
 		{
-			sceneEntity.GetScene()->RemoveEntity(sceneEntity);
+			sceneEntity.GetScene()->DestroyEntity(sceneEntity);
 			return;
 		}
 
@@ -515,7 +513,7 @@ namespace Volt
 
 		result.emplace_back(entity);
 
-		for (auto child : entity.GetChildren())
+		for (const auto& child : entity.GetChildren())
 		{
 			auto childResult = FlattenEntityHeirarchy(child);
 

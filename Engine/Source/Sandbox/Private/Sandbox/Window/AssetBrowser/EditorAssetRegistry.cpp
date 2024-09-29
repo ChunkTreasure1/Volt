@@ -137,17 +137,10 @@ std::unordered_map<AssetType, EditorAssetData> EditorAssetRegistry::myAssetData 
 			{
 				auto asset = Volt::AssetManager::GetAsset<Volt::Scene>(aAssetHandle);
 				const auto& stats = asset->GetStatistics();
-				const auto& layers = asset->GetLayers();
 				Vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("Entity Count", Utility::ToStringWithThousandSeparator(stats.entityCount)),
-					std::make_pair("Layer Count", std::to_string(layers.size())),
 				};
-				for (int i = 0; i < layers.size(); ++i)
-				{
-				data.push_back(std::make_pair("Layer " + std::to_string(i), layers[i].name));
-
-				}
 
 				return data;
 			})

@@ -31,7 +31,7 @@ void Sandbox::RenderSelection(Ref<Volt::Camera> camera)
 
 	for (const auto& id : SelectionManager::GetSelectedEntities())
 	{
-		Volt::Entity entity = m_runtimeScene->GetEntityFromUUID(id);
+		Volt::Entity entity = m_runtimeScene->GetEntityFromID(id);
 		if (!entity)
 		{
 			continue;
@@ -346,7 +346,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 			for (const auto& id : SelectionManager::GetSelectedEntities())
 			{
-				Volt::Entity entity = m_runtimeScene->GetEntityFromUUID(id);
+				Volt::Entity entity = m_runtimeScene->GetEntityFromID(id);
 
 				if (entity.HasComponent<Volt::BoxColliderComponent>())
 				{

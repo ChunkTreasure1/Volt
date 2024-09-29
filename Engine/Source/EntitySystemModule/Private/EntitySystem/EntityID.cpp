@@ -26,4 +26,9 @@ namespace Volt
 	{
 		streamReader.Read(outData.m_uuid);
 	}
+
+	EntityID EntityID::Null()
+	{
+		return EntityID(0);
+	}
 }

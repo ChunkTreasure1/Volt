@@ -122,6 +122,9 @@ public:
 	constexpr reverse_iterator erase(const_reverse_iterator first, const_reverse_iterator last);
 	constexpr reverse_iterator erase_unsorted(const_reverse_iterator position);
 
+	template<typename PredicateFunctor>
+	constexpr void erase_with_predicate(PredicateFunctor functor);
+
 	constexpr void clear() noexcept;
 
 protected:
@@ -833,6 +836,19 @@ template<typename T>
 inline constexpr Vector<T>::reverse_iterator Vector<T>::erase_unsorted(const_reverse_iterator position)
 {
 	return reverse_iterator(erase_unsorted((++position).base()));
+}
+
+template<typename T>
+template<typename PredicateFunctor>
+inline constexpr void Vector<T>::erase_with_predicate(PredicateFunctor functor)
+{
+	for (auto it = rbegin(); it != rend(); --it)
+	{
+		if (functor(*it))
+		{
+			erase(it);
+		}
+	}
 }
 
 template<typename T>

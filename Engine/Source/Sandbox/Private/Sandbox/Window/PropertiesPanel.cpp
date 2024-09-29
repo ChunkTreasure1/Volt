@@ -44,7 +44,7 @@ void PropertiesPanel::UpdateMainContent()
 	}
 
 	const bool singleSelected = !(SelectionManager::GetSelectedCount() > 1);
-	auto firstEntity = myCurrentScene->GetEntityFromUUID(SelectionManager::GetSelectedEntities().front());
+	auto firstEntity = myCurrentScene->GetEntityFromID(SelectionManager::GetSelectedEntities().front());
 	const auto& entities = SelectionManager::GetSelectedEntities();
 
 	if (singleSelected)
@@ -72,7 +72,7 @@ void PropertiesPanel::UpdateMainContent()
 
 		for (auto& id : SelectionManager::GetSelectedEntities())
 		{
-			Volt::Entity entity = myCurrentScene->GetEntityFromUUID(id);
+			Volt::Entity entity = myCurrentScene->GetEntityFromID(id);
 
 			if (entity.HasComponent<Volt::TagComponent>())
 			{
@@ -99,7 +99,7 @@ void PropertiesPanel::UpdateMainContent()
 		{
 			for (auto& id : SelectionManager::GetSelectedEntities())
 			{
-				Volt::Entity entity = myCurrentScene->GetEntityFromUUID(id);
+				Volt::Entity entity = myCurrentScene->GetEntityFromID(id);
 
 				if (entity.HasComponent<Volt::TagComponent>())
 				{
@@ -117,7 +117,7 @@ void PropertiesPanel::UpdateMainContent()
 		if (UI::BeginProperties("Transform"))
 		{
 			auto& entityId = SelectionManager::GetSelectedEntities().front();
-			Volt::Entity entity = myCurrentScene->GetEntityFromUUID(entityId);
+			Volt::Entity entity = myCurrentScene->GetEntityFromID(entityId);
 
 			if (entity.HasComponent<Volt::TransformComponent>())
 			{
@@ -138,7 +138,7 @@ void PropertiesPanel::UpdateMainContent()
 
 					for (auto& entId : entities)
 					{
-						Volt::Entity ent = myCurrentScene->GetEntityFromUUID(entId);
+						Volt::Entity ent = myCurrentScene->GetEntityFromID(entId);
 						ent.SetLocalPosition(transform.position);
 						myCurrentScene->InvalidateEntityTransform(entId);
 
@@ -163,7 +163,7 @@ void PropertiesPanel::UpdateMainContent()
 
 					for (auto& entId : entities)
 					{
-						Volt::Entity ent = myCurrentScene->GetEntityFromUUID(entId);
+						Volt::Entity ent = myCurrentScene->GetEntityFromID(entId);
 						ent.SetLocalRotation(transform.rotation);
 						myCurrentScene->InvalidateEntityTransform(entId);
 
@@ -184,7 +184,7 @@ void PropertiesPanel::UpdateMainContent()
 
 					for (auto& entId : entities)
 					{
-						Volt::Entity ent = myCurrentScene->GetEntityFromUUID(entId);
+						Volt::Entity ent = myCurrentScene->GetEntityFromID(entId);
 						ent.SetLocalScale(transform.scale);
 						myCurrentScene->InvalidateEntityTransform(entId);
 
@@ -207,7 +207,7 @@ void PropertiesPanel::UpdateMainContent()
 	if (singleSelected)
 	{
 		const auto id = SelectionManager::GetSelectedEntities().front();
-		Volt::Entity entity = myCurrentScene->GetEntityFromUUID(id);
+		Volt::Entity entity = myCurrentScene->GetEntityFromID(id);
 
 		ComponentPropertyUtility::DrawComponents(myCurrentScene, entity);
 	}
@@ -282,7 +282,7 @@ void PropertiesPanel::AddComponentPopup()
 				const auto compGuid = nameToGUIDMap.at(label);
 				std::string_view componentTypeName = GetComponentRegistry().GetTypeNameFromGUID(compGuid);
 
-				Volt::Entity frontEntity = myCurrentScene->GetEntityFromUUID(SelectionManager::GetSelectedEntities().front());
+				Volt::Entity frontEntity = myCurrentScene->GetEntityFromID(SelectionManager::GetSelectedEntities().front());
 				if (!frontEntity.HasComponent(componentTypeName))
 				{
 					UI::ShiftCursor(4.f, 0.f);
@@ -291,7 +291,7 @@ void PropertiesPanel::AddComponentPopup()
 					{
 						for (auto& ent : SelectionManager::GetSelectedEntities())
 						{
-							auto entity = myCurrentScene->GetEntityFromUUID(ent);
+							auto entity = myCurrentScene->GetEntityFromID(ent);
 
 							if (!Volt::ComponentRegistry::Helpers::HasComponentWithGUID(compGuid, myCurrentScene->GetRegistry(), entity))
 							{

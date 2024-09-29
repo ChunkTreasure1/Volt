@@ -157,7 +157,7 @@ void ViewportPanel::UpdateMainContent()
 			{
 				for (const auto& entId : SelectionManager::GetSelectedEntities())
 				{
-					auto entity = m_editorScene->GetEntityFromUUID(entId);
+					auto entity = m_editorScene->GetEntityFromID(entId);
 					EditorUtils::MarkEntityAndChildrenAsEdited(entity);
 				}
 			}
@@ -169,7 +169,7 @@ void ViewportPanel::UpdateMainContent()
 			{
 				for (auto ent : SelectionManager::GetSelectedEntities())
 				{
-					if (Sandbox::Get().CheckForUpdateNavMesh(m_editorScene->GetEntityFromUUID(ent)))
+					if (Sandbox::Get().CheckForUpdateNavMesh(m_editorScene->GetEntityFromID(ent)))
 					{
 						Sandbox::Get().BakeNavMesh();
 						break;
@@ -611,7 +611,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			auto selection = SelectionManager::GetSelectedEntities();
 			for (const auto& selectedEntity : selection)
 			{
-				Volt::Entity tempEnt = m_editorScene->GetEntityFromUUID(selectedEntity);
+				Volt::Entity tempEnt = m_editorScene->GetEntityFromID(selectedEntity);
 				entitiesToRemove.push_back(tempEnt);
 
 				SelectionManager::Deselect(tempEnt.GetID());
@@ -634,7 +634,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 				{
 					shouldUpdateNavMesh = true;
 				}
-				m_editorScene->RemoveEntity(entity);
+				m_editorScene->DestroyEntity(entity);
 			}
 
 			if (shouldUpdateNavMesh)
@@ -706,7 +706,7 @@ void ViewportPanel::CheckDragDrop()
 	{
 		if (m_createdAssetOnDrag && m_createdEntity)
 		{
-			m_editorScene->RemoveEntity(m_createdEntity);
+			m_editorScene->DestroyEntity(m_createdEntity);
 			m_createdAssetOnDrag = false;
 		}
 
@@ -745,7 +745,7 @@ void ViewportPanel::CheckDragDrop()
 
 		m_createdEntity = newEntity;
 
-		Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(newEntity.GetHandle(), newEntity.GetScene()->GetRegistry()));
+		Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(newEntity.GetScene()->GetEntityHelperFromEntityID(newEntity.GetID())));
 
 		m_editorScene->InvalidateRenderScene();
 	}
@@ -850,8 +850,8 @@ void ViewportPanel::DuplicateSelection()
 			continue;
 		}
 
-		auto duplicatedEntity = Volt::Entity::Duplicate(m_editorScene->GetEntityFromUUID(ent));
-		duplicatedEntity.SetTag(EditorUtils::GetDuplicatedNameFromEntity(m_editorScene->GetEntityFromUUID(ent)));
+		auto duplicatedEntity = Volt::Entity::Duplicate(m_editorScene->GetEntityFromID(ent));
+		duplicatedEntity.SetTag(EditorUtils::GetDuplicatedNameFromEntity(m_editorScene->GetEntityFromID(ent)));
 
 		duplicated.emplace_back(duplicatedEntity);
 	}
@@ -889,7 +889,7 @@ void ViewportPanel::HandleSingleSelect()
 			SelectionManager::DeselectAll();
 		}
 
-		Volt::Entity entity = m_editorScene->GetEntityFromUUID(pixelData);
+		Volt::Entity entity = m_editorScene->GetEntityFromID(pixelData);
 
 		if (entity.IsValid())
 		{
@@ -955,7 +955,7 @@ void ViewportPanel::HandleMultiSelect()
 void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 {
 	auto firstEntityId = SelectionManager::GetSelectedEntities().front();
-	Volt::Entity entity = m_editorScene->GetEntityFromUUID(firstEntityId);
+	Volt::Entity entity = m_editorScene->GetEntityFromID(firstEntityId);
 
 	if (!entity.HasComponent<Volt::RelationshipComponent>() || !entity.HasComponent<Volt::TransformComponent>())
 	{
@@ -984,7 +984,7 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 
 	glm::mat4 averageTransform = avgTransform;
 
-	Volt::Entity parent = m_editorScene->GetEntityFromUUID(relationshipComp.parent);
+	Volt::Entity parent = m_editorScene->GetEntityFromID(relationshipComp.parent);
 	if (parent)
 	{
 		auto pTransform = parent.GetTransform();
@@ -1008,7 +1008,7 @@ void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 
 	for (const auto& entId : SelectionManager::GetSelectedEntities())
 	{
-		Volt::Entity entity = m_editorScene->GetEntityFromUUID(entId);
+		Volt::Entity entity = m_editorScene->GetEntityFromID(entId);
 
 		if (SelectionManager::IsAnyParentSelected(entId, m_editorScene))
 		{
@@ -1032,7 +1032,7 @@ void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 
 		if (relationshipComp.parent != Volt::Entity::NullID())
 		{
-			Volt::Entity parent = m_editorScene->GetEntityFromUUID(relationshipComp.parent);
+			Volt::Entity parent = m_editorScene->GetEntityFromID(relationshipComp.parent);
 			auto pTransform = parent.GetTransform();
 
 			entDeltaTransform = glm::inverse(pTransform) * entDeltaTransform;
@@ -1186,9 +1186,9 @@ glm::mat4 ViewportPanel::CalculateAverageTransform()
 
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
-		const auto trs = m_editorScene->GetWorldTQS(m_editorScene->GetEntityFromUUID(ent));
+		const auto trs = m_editorScene->GetEntityWorldTQS(m_editorScene->GetEntityFromID(ent));
 
-		avgTranslation += trs.position;
+		avgTranslation += trs.translation;
 		avgRotation = trs.rotation;
 		avgScale += trs.scale;
 	}

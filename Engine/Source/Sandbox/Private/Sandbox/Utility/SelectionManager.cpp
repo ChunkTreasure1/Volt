@@ -79,7 +79,7 @@ void SelectionManager::Update(Ref<Volt::Scene> scene)
 
 bool SelectionManager::IsAnyParentSelected(Volt::EntityID id, Ref<Volt::Scene> scene)
 {
-	Volt::Entity entity = scene->GetEntityFromUUID(id);
+	Volt::Entity entity = scene->GetEntityFromID(id);
 
 	if (entity.GetParent())
 	{

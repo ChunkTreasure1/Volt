@@ -52,7 +52,7 @@ void Volt::Vision::Initialize()
 void Volt::Vision::Reset()
 {
 	myVTCams.clear();
-	myScene->RemoveEntity(myTransitionCamera);
+	myScene->DestroyEntity(myTransitionCamera);
 	myActiveCamera = Volt::Entity::Null();
 }
 
@@ -344,7 +344,7 @@ void Volt::Vision::SetActiveCamera(const Volt::Entity aCamEntity)
 
 void Volt::Vision::SetActiveCamera(const EntityID aEntityID, const float& aBlendTime, eBlendType blendType)
 {
-	Volt::Entity camEnt = myScene->GetEntityFromUUID(aEntityID);
+	Volt::Entity camEnt = myScene->GetEntityFromID(aEntityID);
 
 
 	if (camEnt)
@@ -371,7 +371,7 @@ void Volt::Vision::SetActiveCamera(const EntityID aEntityID, const float& aBlend
 
 void Volt::Vision::SetActiveCamera(const EntityID aEntityID)
 {
-	Volt::Entity ent = myScene->GetEntityFromUUID(aEntityID);
+	Volt::Entity ent = myScene->GetEntityFromID(aEntityID);
 
 	if (ent)
 	{

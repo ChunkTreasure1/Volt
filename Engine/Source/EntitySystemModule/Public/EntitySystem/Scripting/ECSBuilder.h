@@ -12,6 +12,11 @@ enum class GameLoop
 	Fixed
 };
 
+namespace Volt
+{
+	class EntityScene;
+}
+
 class ECSSystem;
 
 class VTES_API ECSExecutionOrder
@@ -27,7 +32,7 @@ private:
 	Vector<UUID64> m_executeAfter;
 };
 
-using ECSSystemFunc = std::function<void(entt::registry& registry, float deltaTime)>;
+using ECSSystemFunc = std::function<void(Volt::EntityScene& registry, float deltaTime)>;
 
 class VTES_API ECSSystem
 {
@@ -36,7 +41,7 @@ public:
 	ECSSystem(UUID64 id, ECSSystemFunc&& func);
 	~ECSSystem();
 
-	void Execute(entt::registry& registry, float deltaTime);
+	void Execute(Volt::EntityScene& scene, float deltaTime);
 
 	VT_NODISCARD VT_INLINE ECSExecutionOrder& Order() { return m_executionOrder; }
 	VT_NODISCARD VT_INLINE UUID64 GetID() const { return m_id; }
@@ -53,7 +58,7 @@ class ECSGameLoopContainer
 public:
 	ECSGameLoopContainer() = default;
 
-	void VTES_API Execute(entt::registry& registry, float deltaTime);
+	void VTES_API Execute(Volt::EntityScene& scene, float deltaTime);
 	void VTES_API Compile();
 
 	template<typename Ret, typename... Args>
@@ -75,14 +80,14 @@ public:
 
 		UUID64 id{};
 
-		auto systemFunc = [func](entt::registry& registry, float deltaTime)
+		auto systemFunc = [func](Volt::EntityScene& scene, float deltaTime)
 		{
-			auto view = GetRegistryView<ComponentTuple>(registry);
+			auto view = GetRegistryView<ComponentTuple>(scene.GetRegistry());
 			auto deltaTimeTuple = std::tuple{ deltaTime };
 
 			for (const auto& entity : view)
 			{
-				auto arguments = GetSystemArgument<ArgumentTypes>(registry, view, entity);
+				auto arguments = GetSystemArgument<ArgumentTypes>(scene, view, entity);
 				auto finalArguments = std::tuple_cat(arguments, deltaTimeTuple);
 				std::apply(func, finalArguments);
 			}
@@ -117,30 +122,30 @@ private:
 	}
 
 	template<typename T, typename EntityView>
-	static auto GetArgumentOfType(entt::registry& registry, EntityView& mainView, entt::entity entityId)
+	static auto GetArgumentOfType(Volt::EntityScene& scene, EntityView& mainView, entt::entity entityId)
 	{
 		if constexpr (T::ConstructType == ECS::Type::Entity)
 		{
-			return T(entityId, registry);
+			return T(scene.GetEntityHelperFromEntityHandle(entityId));
 		}
 		else if constexpr (T::ConstructType == ECS::Type::Query)
 		{
 			using ComponentTuple = typename T::ComponentViewTuple;
-			return T(GetRegistryView<ComponentTuple>(registry), registry);
+			return T(GetRegistryView<ComponentTuple>(scene.GetRegistry()), scene.GetRegistry());
 		}
 	}
 
 	template<typename Tuple, std::size_t... Indices, typename EntityView>
-	static auto GetSystemArgumentImpl(std::index_sequence<Indices...>, entt::registry& registry, EntityView& mainView, entt::entity entityId)
+	static auto GetSystemArgumentImpl(std::index_sequence<Indices...>, Volt::EntityScene& scene, EntityView& mainView, entt::entity entityId)
 	{
-		return std::tuple{ GetArgumentOfType<std::tuple_element_t<Indices, Tuple>>(registry, mainView, entityId)... };
+		return std::tuple{ GetArgumentOfType<std::tuple_element_t<Indices, Tuple>>(scene, mainView, entityId)... };
 	}
 
 	template<typename Tuple, typename EntityView>
-	static auto GetSystemArgument(entt::registry& registry, EntityView& mainView, entt::entity entityId)
+	static auto GetSystemArgument(Volt::EntityScene& scene, EntityView& mainView, entt::entity entityId)
 	{
 		constexpr std::size_t tupleSize = std::tuple_size_v<Tuple> - 1;
-		return GetSystemArgumentImpl<Tuple>(std::make_index_sequence<tupleSize>{}, registry, mainView, entityId);
+		return GetSystemArgumentImpl<Tuple>(std::make_index_sequence<tupleSize>{}, scene, mainView, entityId);
 	}
 
 	vt::map<UUID64, ECSSystem> m_registeredSystems;

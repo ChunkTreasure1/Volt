@@ -1090,7 +1090,7 @@ AssetBrowser::DirectoryItem* AssetBrowserPanel::FindDirectoryWithPathRecursivly(
 
 void AssetBrowserPanel::CreatePrefabAndSetupEntities(Volt::EntityID id)
 {
-	Volt::Entity entity = myEditorScene->GetEntityFromUUID(id);
+	Volt::Entity entity = myEditorScene->GetEntityFromID(id);
 
 	if (entity.HasComponent<Volt::PrefabComponent>())
 	{
@@ -1112,7 +1112,7 @@ void AssetBrowserPanel::CreatePrefabAndSetupEntities(Volt::EntityID id)
 
 void AssetBrowserPanel::SetupEntityAsPrefab(Volt::EntityID id, Volt::AssetHandle prefabId)
 {
-	Volt::Entity entity = myEditorScene->GetEntityFromUUID(id);
+	Volt::Entity entity = myEditorScene->GetEntityFromID(id);
 
 	if (!entity.HasComponent<Volt::PrefabComponent>())
 	{

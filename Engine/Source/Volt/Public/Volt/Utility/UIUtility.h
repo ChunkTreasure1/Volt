@@ -115,10 +115,10 @@ public:
 		ImGuiCol_ myColor;
 	};
 
-	class ScopedColorPrediacate
+	class ScopedColorPredicate
 	{
 	public:
-		ScopedColorPrediacate(bool predicate, ImGuiCol_ color, const glm::vec4& newColor)
+		ScopedColorPredicate(bool predicate, ImGuiCol_ color, const glm::vec4& newColor)
 			: myColor(color), myPredicate(predicate)
 		{
 			if (!myPredicate)
@@ -131,7 +131,7 @@ public:
 			colors[color] = ImVec4{ newColor.x, newColor.y, newColor.z, newColor.w };
 		}
 
-		~ScopedColorPrediacate()
+		~ScopedColorPredicate()
 		{
 			if (!myPredicate)
 			{

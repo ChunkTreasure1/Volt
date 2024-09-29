@@ -28,8 +28,7 @@ namespace Volt
 
 	const std::string& Entity::GetTag() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TagComponent>(m_handle) && "Entity must have tag component!");
 		return registry.get<TagComponent>(m_handle).tag;
@@ -40,106 +39,87 @@ namespace Volt
 		return std::to_string(static_cast<uint32_t>(GetComponent<IDComponent>().id));
 	}
 
-	const uint32_t Entity::GetLayerID() const
-	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
-
-		assert(registry.any_of<CommonComponent>(m_handle) && "Entity must have common component!");
-		return registry.get<CommonComponent>(m_handle).layerId;
-	}
-
 	void Entity::SetTag(std::string_view tag)
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TagComponent>(m_handle) && "Entity must have tag component!");
 		registry.get<TagComponent>(m_handle).tag = tag;
 	}
 
-	const glm::mat4 Entity::GetTransform() const
+	glm::mat4 Entity::GetTransform() const
 	{
-		auto scenePtr = GetScene();
-		return scenePtr->GetWorldTransform(*this);
+		return m_scene->GetWorldTransform(*this);
 	}
 
-	const glm::mat4 Entity::GetLocalTransform() const
+	glm::mat4 Entity::GetLocalTransform() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TransformComponent>(m_handle) && "Entity must have transform component!");
 		return registry.get<TransformComponent>(m_handle).GetTransform();
 	}
 
-	const glm::vec3 Entity::GetForward() const
+	glm::vec3 Entity::GetForward() const
 	{
 		return glm::rotate(GetRotation(), glm::vec3{ 0.f, 0.f, 1.f });
 	}
 
-	const glm::vec3 Entity::GetRight() const
+	glm::vec3 Entity::GetRight() const
 	{
 		return glm::rotate(GetRotation(), glm::vec3{ 1.f, 0.f, 0.f });
 	}
 
-	const glm::vec3 Entity::GetUp() const
+	glm::vec3 Entity::GetUp() const
 	{
 		return glm::rotate(GetRotation(), glm::vec3{ 0.f, 1.f, 0.f });
 	}
 
-	const glm::vec3 Entity::GetLocalForward() const
+	glm::vec3 Entity::GetLocalForward() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TransformComponent>(m_handle) && "Entity must have transform component!");
 		return registry.get<TransformComponent>(m_handle).GetForward();
 	}
 
-	const glm::vec3 Entity::GetLocalRight() const
+	glm::vec3 Entity::GetLocalRight() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TransformComponent>(m_handle) && "Entity must have transform component!");
 		return registry.get<TransformComponent>(m_handle).GetRight();
 	}
 
-	const glm::vec3 Entity::GetLocalUp() const
+	glm::vec3 Entity::GetLocalUp() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TransformComponent>(m_handle) && "Entity must have transform component!");
 		return registry.get<TransformComponent>(m_handle).GetUp();
 	}
 
-	const glm::vec3 Entity::GetPosition() const
+	glm::vec3 Entity::GetPosition() const
 	{
-		auto scenePtr = GetScene();
-		const auto tqs = scenePtr->GetWorldTQS(*this);
-		return tqs.position;
+		const auto tqs = m_scene->GetEntityWorldTQS(*this);
+		return tqs.translation;
 	}
 
-	const glm::quat Entity::GetRotation() const
+	glm::quat Entity::GetRotation() const
 	{
-		auto scenePtr = GetScene();
-		const auto tqs = scenePtr->GetWorldTQS(*this);
+		const auto tqs = m_scene->GetEntityWorldTQS(*this);
 		return tqs.rotation;
 	}
 
-	const glm::vec3 Entity::GetScale() const
+	glm::vec3 Entity::GetScale() const
 	{
-		auto scenePtr = GetScene();
-		const auto tqs = scenePtr->GetWorldTQS(*this);
+		const auto tqs = m_scene->GetEntityWorldTQS(*this);
 		return tqs.scale;
 	}
 
 	const glm::vec3& Entity::GetLocalPosition() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TransformComponent>(m_handle) && "Entity must have transform component!");
 		return registry.get<TransformComponent>(m_handle).position;
@@ -147,8 +127,7 @@ namespace Volt
 
 	const glm::quat& Entity::GetLocalRotation() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TransformComponent>(m_handle) && "Entity must have transform component!");
 		return registry.get<TransformComponent>(m_handle).rotation;
@@ -156,8 +135,7 @@ namespace Volt
 
 	const glm::vec3& Entity::GetLocalScale() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TransformComponent>(m_handle) && "Entity must have transform component!");
 		return registry.get<TransformComponent>(m_handle).scale;
@@ -166,14 +144,14 @@ namespace Volt
 	void Entity::SetPosition(const glm::vec3& position, bool updatePhysics)
 	{
 		Entity parent = GetParent();
-		Scene::TQS parentTransform{};
+		TQS parentTransform{};
 
 		if (parent)
 		{
-			parentTransform = m_scene->GetWorldTQS(parent);
+			parentTransform = m_scene->GetEntityWorldTQS(parent);
 		}
 
-		const glm::vec3 translatedPoint = position - parentTransform.position;
+		const glm::vec3 translatedPoint = position - parentTransform.translation;
 		const glm::vec3 invertedScale = 1.f / parentTransform.scale;
 		const glm::vec3 rotatedPoint = glm::conjugate(parentTransform.rotation) * translatedPoint;
 
@@ -184,11 +162,11 @@ namespace Volt
 	void Entity::SetRotation(const glm::quat& rotation, bool updatePhysics)
 	{
 		Entity parent = GetParent();
-		Scene::TQS parentTransform{};
+		TQS parentTransform{};
 
 		if (parent)
 		{
-			parentTransform = m_scene->GetWorldTQS(parent);
+			parentTransform = m_scene->GetEntityWorldTQS(parent);
 		}
 
 		const glm::quat localRotation = glm::conjugate(parentTransform.rotation) * rotation;
@@ -198,11 +176,11 @@ namespace Volt
 	void Entity::SetScale(const glm::vec3& scale)
 	{
 		Entity parent = GetParent();
-		Scene::TQS parentTransform{};
+		TQS parentTransform{};
 
 		if (parent)
 		{
-			parentTransform = m_scene->GetWorldTQS(parent);
+			parentTransform = m_scene->GetEntityWorldTQS(parent);
 		}
 
 		const glm::vec3 inverseScale = 1.f / parentTransform.scale;
@@ -213,55 +191,49 @@ namespace Volt
 
 	void Entity::SetLocalPosition(const glm::vec3& position, bool updatePhysics)
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TransformComponent>(m_handle) && "Entity must have transform component!");
 		registry.get<TransformComponent>(m_handle).position = position;
 
 		UpdatePhysicsTranslation(updatePhysics);
-		scenePtr->InvalidateEntityTransform(GetID());
+		m_scene->InvalidateEntityTransform(GetID());
 	}
 
 	void Entity::SetLocalRotation(const glm::quat& rotation, bool updatePhysics)
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TransformComponent>(m_handle) && "Entity must have transform component!");
 		registry.get<TransformComponent>(m_handle).rotation = rotation;
 
 		UpdatePhysicsRotation(updatePhysics);
-		scenePtr->InvalidateEntityTransform(GetID());
+		m_scene->InvalidateEntityTransform(GetID());
 	}
 
 	void Entity::SetLocalScale(const glm::vec3& scale)
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TransformComponent>(m_handle) && "Entity must have transform component!");
 		registry.get<TransformComponent>(m_handle).scale = scale;
 
-		scenePtr->InvalidateEntityTransform(GetID());
+		m_scene->InvalidateEntityTransform(GetID());
 	}
 
 	void Entity::SetParent(Entity parentEntity)
 	{
-		auto scenePtr = GetScene();
-		scenePtr->ParentEntity(parentEntity, *this);
+		m_scene->ParentEntity(parentEntity, *this);
 	}
 
 	void Entity::AddChild(Entity childEntity)
 	{
-		auto scenePtr = GetScene();
-		scenePtr->ParentEntity(*this, childEntity);
+		m_scene->ParentEntity(*this, childEntity);
 	}
 
 	void Entity::ClearParent()
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<RelationshipComponent>(m_handle) && "Entity must have relationship component!");
 
@@ -273,8 +245,7 @@ namespace Volt
 
 	void Entity::ClearChildren()
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<RelationshipComponent>(m_handle) && "Entity must have relationship component!");
 
@@ -282,7 +253,7 @@ namespace Volt
 
 		for (auto& childId : children)
 		{
-			auto child = scenePtr->GetEntityFromUUID(childId);
+			auto child = m_scene->GetEntityFromID(childId);
 
 			if (child.GetParent().GetID() == GetID())
 			{
@@ -295,15 +266,14 @@ namespace Volt
 
 	void Entity::RemoveChild(Entity entity)
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<RelationshipComponent>(m_handle) && "Entity must have relationship component!");
 
 		auto& relComp = registry.get<RelationshipComponent>(m_handle);
 		for (uint32_t index = 0; auto & childId : relComp.children)
 		{
-			auto childEnt = scenePtr->GetEntityFromUUID(childId);
+			auto childEnt = m_scene->GetEntityFromID(childId);
 
 			if (childEnt.GetID() == entity.GetID())
 			{
@@ -327,10 +297,9 @@ namespace Volt
 		return Physics::GetScene()->GetActor(*this);
 	}
 
-	const Entity Entity::GetParent() const
+	Entity Entity::GetParent() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<RelationshipComponent>(m_handle) && "Entity must have relationship component!");
 
@@ -340,13 +309,12 @@ namespace Volt
 			return Null();
 		}
 
-		return scenePtr->GetEntityFromUUID(relComp.parent);
+		return m_scene->GetEntityFromID(relComp.parent);
 	}
 
-	const Vector<Entity> Entity::GetChildren() const
+	Vector<Entity> Entity::GetChildren() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		if (!registry.any_of<RelationshipComponent>(m_handle))
 		{
@@ -360,7 +328,7 @@ namespace Volt
 		Vector<Entity> result{};
 		for (const auto& id : children)
 		{
-			auto entity = m_scene->GetEntityFromUUID(id);
+			auto entity = m_scene->GetEntityFromID(id);
 			if (entity != Entity::Null())
 			{
 				result.emplace_back(entity);
@@ -370,10 +338,9 @@ namespace Volt
 		return result;
 	}
 
-	const bool Entity::HasParent() const
+	bool Entity::HasParent() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		if (!registry.any_of<RelationshipComponent>(m_handle))
 		{
@@ -383,7 +350,7 @@ namespace Volt
 		assert(registry.any_of<RelationshipComponent>(m_handle) && "Entity must have relationship component!");
 
 		auto& relComp = registry.get<RelationshipComponent>(m_handle);
-		auto parentEntity = scenePtr->GetEntityFromUUID(relComp.parent);
+		auto parentEntity = m_scene->GetEntityFromID(relComp.parent);
 
 		return parentEntity.IsValid();
 	}
@@ -393,12 +360,11 @@ namespace Volt
 		ComponentRegistry::Helpers::RemoveComponentWithGUID(guid, m_scene->GetRegistry(), m_handle);
 	}
 
-	const bool Entity::HasComponent(std::string_view componentName) const
+	bool Entity::HasComponent(std::string_view componentName) const
 	{
 		const std::string lowerCompName = ::Utility::ToLower(std::string(componentName));
 
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		for (auto&& curr : registry.storage())
 		{
@@ -452,36 +418,33 @@ namespace Volt
 		}
 	}
 
-	const bool Entity::IsVisible() const
+	bool Entity::IsVisible() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TransformComponent>(m_handle) && "Entity must have transform component!");
 		return registry.get<TransformComponent>(m_handle).visible;
 	}
 
-	const bool Entity::IsLocked() const
+	bool Entity::IsLocked() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		assert(registry.any_of<TransformComponent>(m_handle) && "Entity must have transform component!");
 		return registry.get<TransformComponent>(m_handle).locked;
 	}
 
-	const bool Entity::IsValid() const
+	bool Entity::IsValid() const
 	{
 		if (!m_scene || m_handle == entt::null)
 		{
 			return false;
 		}
 
-		auto scenePtr = m_scene;
-		return scenePtr->GetRegistry().valid(m_handle);
+		return m_scene->GetRegistry().valid(m_handle);
 	}
 
-	const EntityID Entity::GetID() const
+	EntityID Entity::GetID() const
 	{
 		VT_ASSERT_MSG(HasComponent<IDComponent>(), "Entity must have IDComponent!");
 		return GetComponent<IDComponent>().id;
@@ -617,7 +580,7 @@ namespace Volt
 			}
 		}
 
-		compDesc->OnComponentCopied(dstEntity.GetScene()->GetRegistry(), dstEntity.GetHandle());
+		compDesc->OnComponentCopied(dstEntity.GetScene()->GetEntityHelperFromEntityID(dstEntity.GetID()));
 	}
 
 	void Entity::UpdatePhysicsTranslation(bool updateThis)

@@ -162,7 +162,7 @@ struct MultiGizmoCommand : EditorCommand
 
 		for (const auto& [id, oldComp] : myPreviousTransforms)
 		{
-			Volt::Entity entity = scenePtr->GetEntityFromUUID(id);
+			Volt::Entity entity = scenePtr->GetEntityFromID(id);
 			Volt::TransformComponent transformComponent = entity.GetComponent<Volt::TransformComponent>();
 
 			currentTransforms.emplace_back(id, transformComponent);
@@ -187,7 +187,7 @@ struct MultiGizmoCommand : EditorCommand
 
 		for (const auto& [id, oldComp] : myPreviousTransforms)
 		{
-			Volt::Entity entity = scenePtr->GetEntityFromUUID(id);
+			Volt::Entity entity = scenePtr->GetEntityFromID(id);
 			Volt::TransformComponent transformComponent = entity.GetComponent<Volt::TransformComponent>();
 
 			currentTransforms.emplace_back(id, transformComponent);
@@ -243,7 +243,7 @@ struct ObjectStateCommand : EditorCommand
 
 			for (int i = 0; i < myEntities.size(); i++)
 			{
-				myEntities[i].GetScene()->RemoveEntity(myEntities[i]);
+				myEntities[i].GetScene()->DestroyEntity(myEntities[i]);
 			}
 		}
 		else if (myAction == ObjectStateAction::Delete)
@@ -270,7 +270,7 @@ struct ObjectStateCommand : EditorCommand
 
 			for (int i = 0; i < myEntities.size(); i++)
 			{
-				myEntities[i].GetScene()->RemoveEntity(myEntities[i]);
+				myEntities[i].GetScene()->DestroyEntity(myEntities[i]);
 			}
 		}
 		else if (myAction == ObjectStateAction::Delete)

@@ -116,235 +116,14 @@ void SceneViewPanel::UpdateMainContent()
 				RebuildEntityDrawList();
 			}
 
-			std::unordered_map<uint32_t, Vector<Volt::EntityID>> layerEntityLists;
-			for (const auto& entId : m_entityDrawList)
-			{
-				Volt::Entity entity = m_scene->GetEntityFromUUID(entId);
-
-				if (!entity.HasComponent<Volt::CommonComponent>())
-				{
-					continue;
-				}
-				const auto& dataComp = entity.GetComponent<Volt::CommonComponent>();
-				layerEntityLists[dataComp.layerId].emplace_back(entId);
-			}
-
 			// Draw Entities
 			{
 				VT_PROFILE_SCOPE("Draw Entities");
-				uint32_t layerToRemove = 0;
 
-				for (auto& layer : m_scene->GetLayersMutable())
+				for (const auto& id : m_entityDrawList)
 				{
-					ImGui::TableNextRow(0, 17.f);
-					ImGui::TableNextColumn();
-
-					Utility::SetRowColor(EditorTheme::SceneLayerBackground);
-
-					ImGuiTreeNodeFlags treeFlags = 0;
-					treeFlags |= ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
-
-					static bool wasRenaming = false;
-					bool isOpen = false;
-
-					{
-						ImGui::PushStyleColor(ImGuiCol_Header, ImVec4{ 0.f, 0.f, 0.f, 0.f });
-						ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4{ 0.f, 0.f, 0.f, 0.f });
-						ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4{ 0.f, 0.f, 0.f, 0.f });
-
-						UI::ScopedColorPrediacate highlightText{ layer.id == m_scene->GetActiveLayer(), ImGuiCol_Text, EditorTheme::HighlightedText };
-						const std::string treeNodeId = (m_isRenamingLayer && m_renamingLayer == layer.id) ? "##renamingLayer" : VT_ICON_FA_LAYER_GROUP + std::string(" ") + layer.name;
-						isOpen = ImGui::TreeNodeEx(treeNodeId.c_str(), treeFlags);
-
-						ImGui::PopStyleColor(3);
-					}
-
-					if (m_isRenamingLayer && m_renamingLayer == layer.id)
-					{
-						ImGui::SameLine();
-
-						ImGui::PushItemWidth(ImGui::GetColumnWidth());
-						const std::string renameId = "###renameId";
-						if (ImGui::InputTextString(renameId.c_str(), &layer.name, ImGuiInputTextFlags_EnterReturnsTrue))
-						{
-							m_isRenamingLayer = false;
-						}
-						ImGui::PopItemWidth();
-
-						if (m_isRenamingLayer != wasRenaming)
-						{
-							const ImGuiID widgetId = ImGui::GetCurrentWindow()->GetID(renameId.c_str());
-							ImGui::SetFocusID(widgetId, ImGui::GetCurrentWindow());
-							ImGui::SetKeyboardFocusHere(-1);
-						}
-
-						if (!ImGui::IsItemFocused())
-						{
-							m_isRenamingLayer = false;
-						}
-
-						if (!ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-						{
-							m_isRenamingLayer = false;
-						}
-
-						wasRenaming = true;
-					}
-					else
-					{
-						wasRenaming = false;
-					}
-
-					const std::string layerMenuId = "rightClickLayer" + std::to_string(layer.id);
-					if (ImGui::BeginPopupContextItem(layerMenuId.c_str(), ImGuiPopupFlags_MouseButtonRight))
-					{
-						const std::string setAsActiveId = "Set As Active##" + std::to_string(layer.id);
-						if (ImGui::MenuItem(setAsActiveId.c_str()))
-						{
-							m_scene->SetActiveLayer(layer.id);
-						}
-
-						const std::string renameId = VT_ICON_FA_PEN " Rename##" + std::to_string(layer.id);
-						if (ImGui::MenuItem(renameId.c_str()))
-						{
-							m_isRenamingLayer = true;
-							m_renamingLayer = layer.id;
-						}
-
-						const std::string removeId = VT_ICON_FA_MINUS " Remove##" + std::to_string(layer.id);
-						if (layer.id != 0 && ImGui::MenuItem(removeId.c_str()))
-						{
-							layerToRemove = layer.id;
-						}
-
-						const std::string checkoutId = "Checkout##" + std::to_string(layer.id);
-						if (ImGui::MenuItem(checkoutId.c_str()))
-						{
-							const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(m_scene->handle);
-
-							if (!metadata.filePath.empty())
-							{
-								std::filesystem::path layerPath = metadata.filePath.parent_path() / "Layers" / ("layer_" + std::to_string(layer.id) + ".vtlayer");
-								const auto path = Volt::ProjectManager::GetRootDirectory() / layerPath;
-
-								if (FileSystem::Exists(path))
-								{
-									VersionControl::Edit(path);
-								}
-							}
-
-						}
-
-						ImGui::EndPopup();
-					}
-
-					if (ImGui::BeginDragDropTarget())
-					{
-						const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("scene_entity_hierarchy");
-
-						// If there is a payload, assume it's all the selected entities
-						if (payload)
-						{
-							const size_t count = payload->DataSize / sizeof(Volt::EntityID);
-							Vector<Ref<ParentChildData>> undoData;
-
-							for (size_t i = 0; i < count; i++)
-							{
-								Volt::EntityID id = *(((Volt::EntityID*)payload->Data) + i);
-								//Volt::Entity parent(entity, myScene.get());
-								Volt::Entity entity = m_scene->GetEntityFromUUID(id);
-
-								//Ref<ParentChildData> data = CreateRef<ParentChildData>();
-								//data->myParent = parent;
-								//data->myChild = child;
-								//undoData.push_back(data);
-
-								EditorUtils::MarkEntityAsEdited(entity);
-								m_scene->MoveToLayer(entity, layer.id);
-							}
-
-							//Ref<ParentingCommand> command = CreateRef<ParentingCommand>(undoData, ParentingAction::Parent);
-							//EditorCommandStack::PushUndo(command);
-						}
-
-						ImGui::EndDragDropTarget();
-					}
-
-					ImGui::TableNextColumn();
-
-					// Modifiers
-					{
-						const float imageSize = 21.f;
-						UI::ShiftCursor(0.f, 2.f);
-
-						Ref<Volt::Texture2D> visibleIcon = layer.visible ? EditorResources::GetEditorIcon(EditorIcon::Visible) : EditorResources::GetEditorIcon(EditorIcon::Hidden);
-						std::string visibleId = "##visible" + std::to_string(layer.id);
-						if (UI::ImageButton(visibleId, UI::GetTextureID(visibleIcon), { imageSize, imageSize }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
-						{
-							const auto newVal = !layer.visible;
-							layer.visible = newVal;
-
-							for (auto entity : m_scene->GetAllEntities())
-							{
-								if (entity.GetParent())
-								{
-									continue;
-								}
-
-								if (entity.GetLayerID() != layer.id)
-								{
-									continue;
-								}
-
-								entity.SetVisible(newVal);
-								EditorUtils::MarkEntityAsEdited(entity);
-							}
-						}
-
-						ImGui::SameLine();
-
-						Ref<Volt::Texture2D> lockedIcon = layer.locked ? EditorResources::GetEditorIcon(EditorIcon::Locked) : EditorResources::GetEditorIcon(EditorIcon::Unlocked);
-						std::string lockedId = "##locked" + std::to_string(layer.id);
-						if (UI::ImageButton(lockedId, UI::GetTextureID(lockedIcon), { imageSize, imageSize }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
-						{
-							const auto newVal = !layer.locked;
-							layer.locked = newVal;
-
-							for (auto entity : m_scene->GetAllEntities())
-							{
-								if (entity.GetParent())
-								{
-									continue;
-								}
-
-								if (entity.GetLayerID() != layer.id)
-								{
-									continue;
-								}
-
-								entity.SetLocked(newVal);
-								EditorUtils::MarkEntityAsEdited(entity);
-							}
-						}
-					}
-
-					ImGui::TableNextColumn();
-
-					if (isOpen)
-					{
-						for (const auto& id : layerEntityLists[layer.id])
-						{
-							Volt::Entity entity = m_scene->GetEntityFromUUID(id);
-							DrawEntity(entity, m_searchQuery);
-						}
-
-						ImGui::TreePop();
-					}
-				}
-
-				if (layerToRemove != 0)
-				{
-					m_scene->RemoveLayer(layerToRemove);
+					Volt::Entity entity = m_scene->GetEntityFromID(id);
+					DrawEntity(entity, m_searchQuery);
 				}
 			}
 			ImGui::EndTable();
@@ -378,7 +157,7 @@ void SceneViewPanel::UpdateMainContent()
 					for (size_t i = 0; i < count; i++)
 					{
 						Volt::EntityID id = *(((Volt::EntityID*)payload->Data) + i);
-						Volt::Entity child = m_scene->GetEntityFromUUID(id);
+						Volt::Entity child = m_scene->GetEntityFromID(id);
 
 						Ref<ParentChildData> data = CreateRef<ParentChildData>();
 						data->myParent = child.GetParent();
@@ -459,7 +238,7 @@ void SceneViewPanel::HighlightEntity(Volt::Entity entity)
 
 void RecursiveUnpackPrefab(Ref<Volt::Scene> scene, Volt::EntityID id)
 {
-	Volt::Entity entity = scene->GetEntityFromUUID(id);
+	Volt::Entity entity = scene->GetEntityFromID(id);
 	EditorUtils::MarkEntityAsEdited(entity);
 
 	if (entity.HasComponent<Volt::PrefabComponent>())
@@ -469,7 +248,7 @@ void RecursiveUnpackPrefab(Ref<Volt::Scene> scene, Volt::EntityID id)
 
 	for (auto& childId : entity.GetComponent<Volt::RelationshipComponent>().children)
 	{
-		Volt::Entity child = scene->GetEntityFromUUID(childId);
+		Volt::Entity child = scene->GetEntityFromID(childId);
 
 		if (child.HasComponent<Volt::PrefabComponent>())
 		{
@@ -497,7 +276,7 @@ bool SceneViewPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			auto selection = SelectionManager::GetSelectedEntities();
 			for (const auto& selectedEntity : selection)
 			{
-				Volt::Entity tempEnt = m_scene->GetEntityFromUUID(selectedEntity);
+				Volt::Entity tempEnt = m_scene->GetEntityFromID(selectedEntity);
 				entitiesToRemove.push_back(tempEnt);
 
 				SelectionManager::Deselect(tempEnt.GetID());
@@ -515,7 +294,7 @@ bool SceneViewPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 				{
 					shouldUpdateNavMesh = true;
 				}
-				m_scene->RemoveEntity(i);
+				m_scene->DestroyEntity(i);
 			}
 
 			if (shouldUpdateNavMesh)
@@ -543,7 +322,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 	{
 		auto& relComp = entity.GetComponent<Volt::RelationshipComponent>();
 
-		parent = m_scene->GetEntityFromUUID(relComp.parent);
+		parent = m_scene->GetEntityFromID(relComp.parent);
 		children = relComp.children;
 	}
 
@@ -813,7 +592,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 					break;
 				}
 
-				Volt::Entity ent = m_scene->GetEntityFromUUID(id);
+				Volt::Entity ent = m_scene->GetEntityFromID(id);
 				ImGui::TextUnformatted(ent.GetTag().c_str());
 				i++;
 			}
@@ -837,7 +616,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 			{
 				Volt::EntityID id = *(((Volt::EntityID*)payload->Data) + i);
 				Volt::Entity newParent = entity;
-				Volt::Entity child = m_scene->GetEntityFromUUID(id);
+				Volt::Entity child = m_scene->GetEntityFromID(id);
 
 				Ref<ParentChildData> data = CreateRef<ParentChildData>();
 				data->myParent = newParent;
@@ -937,7 +716,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 		auto selection = SelectionManager::GetSelectedEntities();
 		for (const auto& selectedEntity : selection)
 		{
-			Volt::Entity tempEnt = m_scene->GetEntityFromUUID(selectedEntity);
+			Volt::Entity tempEnt = m_scene->GetEntityFromID(selectedEntity);
 			entitiesToRemove.push_back(tempEnt);
 
 			SelectionManager::Deselect(tempEnt.GetID());
@@ -948,7 +727,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 
 		for (const auto& i : entitiesToRemove)
 		{
-			m_scene->RemoveEntity(i);
+			m_scene->DestroyEntity(i);
 		}
 	}
 
@@ -1000,7 +779,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 				{
 					for (const auto& e : SelectionManager::GetSelectedEntities())
 					{
-						recursiveSetVisible(m_scene->GetEntityFromUUID(e), newVal, recursiveSetVisible);
+						recursiveSetVisible(m_scene->GetEntityFromID(e), newVal, recursiveSetVisible);
 					}
 				}
 			}
@@ -1020,7 +799,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 				{
 					for (const auto& e : SelectionManager::GetSelectedEntities())
 					{
-						Volt::Entity tempEnt = m_scene->GetEntityFromUUID(e);
+						Volt::Entity tempEnt = m_scene->GetEntityFromID(e);
 
 						auto& eTransformComponent = tempEnt.GetComponent<Volt::TransformComponent>();
 						eTransformComponent.locked = newVal;
@@ -1037,7 +816,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 	{
 		for (const auto& child : children)
 		{
-			auto childEnt = m_scene->GetEntityFromUUID(child);
+			auto childEnt = m_scene->GetEntityFromID(child);
 			if (!childEnt)
 			{
 				// #TODO_Ivar: Maybe display invalid entity somehow?
@@ -1257,11 +1036,6 @@ void SceneViewPanel::DrawMainRightClickPopup()
 {
 	if (UI::BeginPopup("MainRightClickMenu", ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 	{
-		if (ImGui::MenuItem(VT_ICON_FA_PLUS " Create New Layer"))
-		{
-			m_scene->AddLayer("New Layer");
-		}
-
 		if (ImGui::MenuItem(VT_ICON_FA_PLUS " Create Empty Entity"))
 		{
 			auto ent = m_scene->CreateEntity();
@@ -1281,7 +1055,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
 					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtasset");
-					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(ent.GetHandle(), m_scene->GetRegistry()));
+					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(m_scene->GetEntityHelperFromEntityID(ent.GetID())));
 
 					ent.SetTag("New Cube");
 
@@ -1296,7 +1070,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
 					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Capsule.vtasset");
-					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(ent.GetHandle(), m_scene->GetRegistry()));
+					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(m_scene->GetEntityHelperFromEntityID(ent.GetID())));
 
 					ent.SetTag("New Capsule");
 
@@ -1311,7 +1085,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
 					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cone.vtasset");
-					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(ent.GetHandle(), m_scene->GetRegistry()));
+					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(m_scene->GetEntityHelperFromEntityID(ent.GetID())));
 
 					ent.SetTag("New Cone");
 
@@ -1326,7 +1100,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
 					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cylinder.vtasset");
-					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(ent.GetHandle(), m_scene->GetRegistry()));
+					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(m_scene->GetEntityHelperFromEntityID(ent.GetID())));
 
 					ent.SetTag("New Cylinder");
 
@@ -1341,7 +1115,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
 					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtasset");
-					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(ent.GetHandle(), m_scene->GetRegistry()));
+					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(m_scene->GetEntityHelperFromEntityID(ent.GetID())));
 					ent.SetTag("New Sphere");
 
 					m_scene->InvalidateRenderScene();
@@ -1355,7 +1129,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					auto ent = m_scene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
 					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Plane.vtasset");
-					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(ent.GetHandle(), m_scene->GetRegistry()));
+					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(m_scene->GetEntityHelperFromEntityID(ent.GetID())));
 
 					ent.SetTag("New Plane");
 

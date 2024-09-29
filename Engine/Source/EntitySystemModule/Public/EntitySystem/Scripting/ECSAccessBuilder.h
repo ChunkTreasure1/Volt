@@ -2,6 +2,7 @@
 
 #include "EntitySystem/Scripting/CoreComponents.h"
 #include "EntitySystem/EntityID.h"
+#include "EntitySystem/EntityHelper.h"
 
 #include <entt.hpp>
 
@@ -130,9 +131,10 @@ namespace ECS
 
 		inline static constexpr Type ConstructType = ::ECS::Type::Entity;
 
-		ConstructComponents(entt::entity entityId, entt::registry& registry)
-			: m_entityId(entityId), m_registry(registry)
+		ConstructComponents(const Volt::EntityHelper& entityHelper)
+			: m_entityHelper(entityHelper)
 		{
+			VT_ENSURE(m_entityHelper);
 		}
 
 		template<typename Comp>
@@ -142,14 +144,14 @@ namespace ECS
 
 			if constexpr (ComponentTraits::IsValid)
 			{
-				return m_registry.get<Comp>(m_entityId);
+				return m_entityHelper.GetComponent<Comp>();
 			}
 			else
 			{
 				using WriteIfExistsTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Comp>>, ComponentTupleWriteIfExists>;
 
 				static_assert(WriteIfExistsTraits::IsValid);
-				return m_registry.get<Comp>(m_entityId);
+				return m_entityHelper.GetComponent<Comp>();
 			}
 		}
 
@@ -160,7 +162,7 @@ namespace ECS
 
 			if constexpr (ComponentTraits::IsValid)
 			{
-				return m_registry.get<Comp>(m_entityId);
+				return m_entityHelper.GetComponent<Comp>();
 			}
 			else
 			{
@@ -168,26 +170,26 @@ namespace ECS
 				using WriteIfExistsTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Comp>>, ComponentTupleWriteIfExists>;
 
 				static_assert(ReadIfExistsTraits::IsValid && WriteIfExistsTraits::IsValid);
-				return m_registry.get<Comp>(m_entityId);
+				return m_entityHelper.GetComponent<Comp>();
 			}
 		}
 
 		template<typename Comp, typename... Args>
 		Comp& AddComponent(Args&&... args)
 		{
-			m_registry.emplace<Comp>(m_entityId, std::forward<Args>(args)...);
+			m_entityHelper.AddComponent<Comp>(std::forward<Args>(args)...);
 		}
 
 		template<typename Comp>
 		bool HasComponent()
 		{
-			return m_registry.any_of<Comp>(m_entityId);
+			return m_entityHelper.HasComponent<Comp>();
 		}
 
 		template<typename Comp>
 		void RemoveComponent()
 		{
-			return m_registry.remove<Comp>(m_entityId);
+			return m_entityHelper.RemoveComponent<Comp>();
 		}
 
 		Volt::EntityID GetID() const
@@ -195,14 +197,13 @@ namespace ECS
 			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::IDComponent>>, ComponentTupleRaw>;
 			static_assert(ComponentTraits::IsValid);
 
-			return m_registry.get<Volt::IDComponent>(m_entityId).id;
+			return m_entityHelper.GetID();
 		}
 
-		VT_NODISCARD VT_INLINE entt::entity GetHandle() const { return m_entityId; }
+		VT_NODISCARD VT_INLINE entt::entity GetHandle() const { return m_entityHelper.GetHandle(); }
 
 	private:
-		entt::entity m_entityId;
-		entt::registry& m_registry;
+		Volt::EntityHelper m_entityHelper;
 	};
 
 	template<typename T>

@@ -349,7 +349,7 @@ namespace Volt
 					return;
 				}
 
-				auto entity = m_scene->GetEntityFromUUID(idComp.id);
+				auto entity = m_scene->GetEntityFromID(idComp.id);
 				const glm::vec3 dir = glm::rotate(entity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
 
 				data.color = dirLightComp.color;
@@ -404,7 +404,7 @@ namespace Volt
 					return;
 				}
 
-				auto entity = m_scene->GetEntityFromUUID(idComp.id);
+				auto entity = m_scene->GetEntityFromID(idComp.id);
 
 				auto& data = pointLights.emplace_back();
 				data.position = entity.GetPosition();
@@ -434,7 +434,7 @@ namespace Volt
 					return;
 				}
 
-				auto entity = m_scene->GetEntityFromUUID(idComp.id);
+				auto entity = m_scene->GetEntityFromID(idComp.id);
 
 				auto& data = spotLights.emplace_back();
 				data.position = entity.GetPosition();

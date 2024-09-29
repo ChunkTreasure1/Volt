@@ -26,6 +26,8 @@ namespace Volt
 
 		VT_NODISCARD VT_INLINE const uint32_t Get() const { return m_uuid; }
 
+		static EntityID Null();
+
 	private:
 		uint32_t m_uuid;
 	};
