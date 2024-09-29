@@ -35,6 +35,14 @@ namespace Volt
 		VT_NODISCARD const glm::quat& GetLocalRotation() const;
 		VT_NODISCARD const glm::vec3& GetLocalScale() const;
 
+		VT_NODISCARD glm::vec3 GetForward() const;
+		VT_NODISCARD glm::vec3 GetRight() const;
+		VT_NODISCARD glm::vec3 GetUp() const;
+
+		VT_NODISCARD glm::vec3 GetLocalForward() const;
+		VT_NODISCARD glm::vec3 GetLocalRight() const;
+		VT_NODISCARD glm::vec3 GetLocalUp() const;
+
 		VT_NODISCARD const std::string& GetTag() const;
 
 		VT_NODISCARD bool HasParent() const;

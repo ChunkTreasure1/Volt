@@ -59,7 +59,7 @@ namespace Volt
 		bool m_isPlaying = false;
 
 		Scope<ECSBuilder> m_ecsBuilder;
-		EntityRegistry2 m_entityRegistry;
+		EntityRegistry m_entityRegistry;
 		mutable EntityTransformCache m_transformCache;
 	};
 }

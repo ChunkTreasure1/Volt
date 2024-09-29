@@ -15,15 +15,8 @@ const bool YAMLMemoryStreamReader::ReadBuffer(const Buffer& buffer)
 
 	memcpy_s(tempStr.data(), tempStr.size(), buffer.As<void>(), buffer.GetSize());
 
-	try
-	{
-		m_rootNode = YAML::Load(tempStr);
-		m_currentNode = m_rootNode;
-	}
-	catch (std::exception&)
-	{
-		return false;
-	}
+	m_rootNode = YAML::Load(tempStr);
+	m_currentNode = m_rootNode;
 
 	return true;
 }

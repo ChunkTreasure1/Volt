@@ -38,6 +38,7 @@ namespace Volt
 			reflect.SetOnComponentCopiedCallback(&MeshComponent::OnComponentCopied);
 			reflect.SetOnComponentDeserializedCallback(&MeshComponent::OnComponentDeserialized);
 			reflect.SetOnDestroyCallback(&MeshComponent::OnDestroy);
+			reflect.SetOnTransformChangedCallback(&MeshComponent::OnTransformChanged);
 		}
 
 		REGISTER_COMPONENT(MeshComponent);
@@ -45,6 +46,7 @@ namespace Volt
 		static void OnMemberChanged(MeshEntity entity);
 		static void OnComponentCopied(MeshEntity entity);
 		static void OnComponentDeserialized(MeshEntity entity);
+		static void OnTransformChanged(MeshEntity entity);
 
 	private:
 		static void OnDestroy(MeshEntity entity);

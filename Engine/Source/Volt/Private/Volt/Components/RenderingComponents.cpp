@@ -173,6 +173,19 @@ namespace Volt
 		component.m_oldMaterials = component.materials;
 	}
 
+	void MeshComponent::OnTransformChanged(MeshEntity entity)
+	{
+		auto scene = SceneManager::GetActiveScene();
+		auto renderScene = scene->GetRenderScene();
+
+		auto& meshComponent = entity.GetComponent<MeshComponent>();
+
+		for (const auto& renderObjId : meshComponent.renderObjectIds)
+		{
+			renderScene->InvalidateRenderObject(renderObjId);
+		}
+	}
+
 	void CameraComponent::OnCreate(CameraEntity entity)
 	{
 		auto& component = entity.GetComponent<CameraComponent>();

@@ -10,7 +10,7 @@ namespace Volt
 {
 	class EntityHelper;
 
-	class EntityRegistry2
+	class EntityRegistry
 	{
 	public:
 		void MarkEntityAsEdited(const EntityHelper& entity);

@@ -3,6 +3,8 @@
 #include "Config.h"
 #include "ComponentReflection.h"
 
+#include "EntitySystem/EntityHelper.h"
+
 #include <unordered_map>
 #include <entt.hpp>
 

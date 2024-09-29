@@ -249,16 +249,6 @@ namespace Volt
 			{
 				m_worldEngine.OnEntityMoved(currentEntity);
 			}
-
-			// #TODO_Ivar: Should not be called from here.
-			if (currentEntity.HasComponent<MeshComponent>())
-			{
-				const auto& renderObjectsComp = currentEntity.GetComponent<MeshComponent>();
-				for (const auto& renderObjId : renderObjectsComp.renderObjectIds)
-				{
-					m_renderScene->InvalidateRenderObject(renderObjId);
-				}
-			}
 		}
 	}
 

@@ -5,18 +5,18 @@
 
 namespace Volt
 {
-	void EntityRegistry2::MarkEntityAsEdited(const EntityHelper& entity)
+	void EntityRegistry::MarkEntityAsEdited(const EntityHelper& entity)
 	{
 		m_editedEntities.emplace(entity.GetID());
 	}
 
-	void EntityRegistry2::ClearEditedEntities()
+	void EntityRegistry::ClearEditedEntities()
 	{
 		m_editedEntities.clear();
 		m_removedEntities.clear();
 	}
 
-	void EntityRegistry2::AddEntity(const EntityHelper& entity)
+	void EntityRegistry::AddEntity(const EntityHelper& entity)
 	{
 		if (m_entityMap.contains(entity.GetID()) || m_handleMap.contains(entity.GetHandle()))
 		{
@@ -27,7 +27,7 @@ namespace Volt
 		m_handleMap.emplace(entity.GetHandle(), entity.GetID());
 	}
 
-	void EntityRegistry2::RemoveEntity(const EntityHelper& entity)
+	void EntityRegistry::RemoveEntity(const EntityHelper& entity)
 	{
 		if (m_entityMap.contains(entity.GetID()))
 		{
@@ -47,7 +47,7 @@ namespace Volt
 		m_removedEntities.emplace(entity.GetID());
 	}
 
-	EntityID EntityRegistry2::GetUUIDFromHandle(entt::entity handle) const
+	EntityID EntityRegistry::GetUUIDFromHandle(entt::entity handle) const
 	{
 		if (!m_handleMap.contains(handle))
 		{
@@ -57,7 +57,7 @@ namespace Volt
 		return m_handleMap.at(handle);
 	}
 
-	entt::entity EntityRegistry2::GetHandleFromID(EntityID uuid) const
+	entt::entity EntityRegistry::GetHandleFromID(EntityID uuid) const
 	{
 		if (!m_entityMap.contains(uuid))
 		{
@@ -67,12 +67,12 @@ namespace Volt
 		return m_entityMap.at(uuid);
 	}
 
-	bool EntityRegistry2::Contains(EntityID uuid) const
+	bool EntityRegistry::Contains(EntityID uuid) const
 	{
 		return m_entityMap.contains(uuid);
 	}
 
-	bool EntityRegistry2::Contains(entt::entity handle) const
+	bool EntityRegistry::Contains(entt::entity handle) const
 	{
 		return m_handleMap.contains(handle);
 	}

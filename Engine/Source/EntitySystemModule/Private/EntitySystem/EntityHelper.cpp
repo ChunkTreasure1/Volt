@@ -113,6 +113,54 @@ namespace Volt
 		m_sceneReference->InvalidateEntityTransform(GetID());
 	}
 
+	glm::vec3 EntityHelper::GetForward() const
+	{
+		VT_ENSURE(IsValid());
+
+		return glm::rotate(GetRotation(), glm::vec3{ 0.f, 0.f, 1.f });
+	}
+
+	glm::vec3 EntityHelper::GetRight() const
+	{
+		VT_ENSURE(IsValid());
+
+		return glm::rotate(GetRotation(), glm::vec3{ 1.f, 0.f, 0.f });
+	}
+
+	glm::vec3 EntityHelper::GetUp() const
+	{
+		VT_ENSURE(IsValid());
+
+		return glm::rotate(GetRotation(), glm::vec3{ 0.f, 1.f, 0.f });
+	}
+
+	glm::vec3 EntityHelper::GetLocalForward() const
+	{
+		VT_ENSURE(IsValid());
+
+		auto& registry = m_sceneReference->GetRegistry();
+		VT_ENSURE(registry.any_of<TransformComponent>(m_handle));
+		return registry.get<TransformComponent>(m_handle).GetForward();
+	}
+
+	glm::vec3 EntityHelper::GetLocalRight() const
+	{
+		VT_ENSURE(IsValid());
+
+		auto& registry = m_sceneReference->GetRegistry();
+		VT_ENSURE(registry.any_of<TransformComponent>(m_handle));
+		return registry.get<TransformComponent>(m_handle).GetRight();
+	}
+
+	glm::vec3 EntityHelper::GetLocalUp() const
+	{
+		VT_ENSURE(IsValid());
+
+		auto& registry = m_sceneReference->GetRegistry();
+		VT_ENSURE(registry.any_of<TransformComponent>(m_handle));
+		return registry.get<TransformComponent>(m_handle).GetUp();
+	}
+
 	void EntityHelper::SetTag(const std::string& tag)
 	{
 		VT_ENSURE(IsValid());

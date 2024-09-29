@@ -18,15 +18,8 @@ const bool YAMLFileStreamReader::OpenFile(const std::filesystem::path& filePath)
 	strStream << file.rdbuf();
 	file.close();
 
-	try
-	{
-		m_rootNode = YAML::Load(strStream.str());
-		m_currentNode = m_rootNode;
-	}
-	catch (std::exception&)
-	{
-		return false;
-	}
+	m_rootNode = YAML::Load(strStream.str());
+	m_currentNode = m_rootNode;
 
 	return true;
 }

@@ -276,6 +276,48 @@ namespace ECS
 			return m_entityHelper.GetLocalScale();
 		}
 
+		VT_NODISCARD glm::vec3 GetForward() const
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			return m_entityHelper.GetForward();
+		}
+
+		VT_NODISCARD glm::vec3 GetRight() const
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			return m_entityHelper.GetRight();
+		}
+
+		VT_NODISCARD glm::vec3 GetUp() const
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			return m_entityHelper.GetUp();
+		}
+
+		VT_NODISCARD glm::vec3 GetLocalForward() const
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			return m_entityHelper.GetLocalForward();
+		}
+
+		VT_NODISCARD glm::vec3 GetLocalRight() const
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			return m_entityHelper.GetLocalRight();
+		}
+
+		VT_NODISCARD glm::vec3 GetLocalUp() const
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			return m_entityHelper.GetLocalUp();
+		}
+
 		Volt::EntityID GetID() const
 		{
 			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::IDComponent>>, ComponentTupleRaw>;

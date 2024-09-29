@@ -33,9 +33,9 @@ public:
 
 	constexpr ~Vector();
 
-	constexpr Vector<T>& operator=(const Vector<T>& other);
-	constexpr Vector<T>& operator=(std::initializer_list<T> initList);
-	constexpr Vector<T>& operator=(Vector<T>&& other);
+	constexpr Vector<T>& operator=(const Vector<T>& other) noexcept;
+	constexpr Vector<T>& operator=(std::initializer_list<T> initList) noexcept;
+	constexpr Vector<T>& operator=(Vector<T>&& other) noexcept;
 
 	constexpr void swap(Vector<T>& other);
 
@@ -255,7 +255,7 @@ inline constexpr Vector<T>::~Vector()
 }
 
 template<typename T>
-inline constexpr Vector<T>& Vector<T>::operator=(const Vector<T>& rhs)
+inline constexpr Vector<T>& Vector<T>::operator=(const Vector<T>& rhs) noexcept
 {
 	if (this != &rhs)
 	{
@@ -266,7 +266,7 @@ inline constexpr Vector<T>& Vector<T>::operator=(const Vector<T>& rhs)
 }
 
 template<typename T>
-inline constexpr Vector<T>& Vector<T>::operator=(std::initializer_list<T> initList)
+inline constexpr Vector<T>& Vector<T>::operator=(std::initializer_list<T> initList) noexcept
 {
 	typedef typename std::initializer_list<value_type>::iterator InputIterator;
 	typedef typename std::iterator_traits<InputIterator>::iterator_category IC;
@@ -275,7 +275,7 @@ inline constexpr Vector<T>& Vector<T>::operator=(std::initializer_list<T> initLi
 }
 
 template<typename T>
-inline constexpr Vector<T>& Vector<T>::operator=(Vector<T>&& other)
+inline constexpr Vector<T>& Vector<T>::operator=(Vector<T>&& other) noexcept
 {
 	if (this != &other)
 	{

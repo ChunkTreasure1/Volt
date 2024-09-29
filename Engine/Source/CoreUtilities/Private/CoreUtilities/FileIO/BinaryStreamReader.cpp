@@ -170,6 +170,8 @@ bool BinaryStreamReader::Decompress(size_t compressedDataOffset)
 			{
 				case Z_NEED_DICT:
 					zLibResult = Z_DATA_ERROR;
+					VT_FALLTHROUGH;
+
 				case Z_DATA_ERROR:
 				case Z_MEM_ERROR:
 				{

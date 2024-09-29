@@ -232,6 +232,31 @@ namespace Volt
 
 			m_transformCache.InvalidateTransform(currentId);
 
+			// Call on transform changed on all components on entity
+			for (auto&& curr : m_registry.storage())
+			{
+				auto& storage = curr.second;
+				std::string_view typeName = storage.type().name();
+
+				const ICommonTypeDesc* typeDesc = GetComponentRegistry().GetTypeDescFromName(typeName);
+				if (!typeDesc)
+				{
+					continue;
+				}
+
+				if (typeDesc->GetValueType() != ValueType::Component)
+				{
+					continue;
+				}
+
+				const IComponentTypeDesc* compTypeDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
+
+				if (storage.contains(entityHelper.GetHandle()))
+				{
+					compTypeDesc->OnTransformChanged(entityHelper);
+				}
+			}
+
 			for (const auto& child : relationshipComponent.children)
 			{
 				entityStack.push_back(child);

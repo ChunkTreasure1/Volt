@@ -154,6 +154,7 @@ namespace Volt
 		virtual void OnMemberChanged(const EntityHelper& entityHelper) const = 0;
 		virtual void OnComponentCopied(const EntityHelper& entityHelper) const = 0;
 		virtual void OnComponentDeserialized(const EntityHelper& entityHelper) const = 0;
+		virtual void OnTransformChanged(const EntityHelper& entityHelper) const = 0;
 	};
 
 	class IEnumTypeDesc : public CommonTypeDesc<ValueType::Enum>
@@ -328,6 +329,7 @@ namespace Volt
 		void OnMemberChanged(const EntityHelper& entityHelper) const override;
 		void OnComponentCopied(const EntityHelper& entityHelper) const override;
 		void OnComponentDeserialized(const EntityHelper& entityHelper) const override;
+		void OnTransformChanged(const EntityHelper& entityHelper) const override;
 
 		[[nodiscard]] ComponentMember* FindMemberByOffset(const ptrdiff_t offset) override;
 		[[nodiscard]] ComponentMember* FindMemberByName(std::string_view name) override;
@@ -453,6 +455,16 @@ namespace Volt
 			};
 		}
 
+		template<typename EntityType>
+		void SetOnTransformChangedCallback(void(*func)(EntityType))
+		{
+			m_onTransformChangedCallback = [func](const EntityHelper& entityHelper)
+			{
+				auto entity = EntityType(entityHelper);
+				func(entity);
+			};
+		}
+
 	private:
 		Vector<ComponentMember> m_members;
 
@@ -469,6 +481,7 @@ namespace Volt
 		ComponentCallbackFunc m_onMemberChangedCallback;
 		ComponentCallbackFunc m_onComponentCopiedCallback;
 		ComponentCallbackFunc m_onComponentDeserializedCallback;
+		ComponentCallbackFunc m_onTransformChangedCallback;
 	};
 
 	template<Enum T>
@@ -577,6 +590,15 @@ namespace Volt
 		if (m_onComponentDeserializedCallback)
 		{
 			m_onComponentDeserializedCallback(entityHelper);
+		}
+	}
+
+	template<typename T>
+	inline void ComponentTypeDesc<T>::OnTransformChanged(const EntityHelper& entityHelper) const
+	{
+		if (m_onTransformChangedCallback)
+		{
+			m_onTransformChangedCallback(entityHelper);
 		}
 	}
 

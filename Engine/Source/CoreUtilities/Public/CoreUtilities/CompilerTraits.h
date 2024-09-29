@@ -19,6 +19,9 @@
 // No discard
 #define VT_NODISCARD [[nodiscard]]
 
+// Fallthrough
+#define VT_FALLTHROUGH [[fallthrough]]
+
 #if defined(_MSC_VER)
 #define VT_DISABLE_WARNING(w) \
 	__pragma(warning(push)) \

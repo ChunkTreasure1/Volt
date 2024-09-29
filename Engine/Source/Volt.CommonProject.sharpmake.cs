@@ -52,7 +52,7 @@ namespace VoltSharpmake
 			conf.IsExcludedFromBuild = !Globals.ShouldBuildEngine;
 
             conf.Options.Add(Options.Vc.Compiler.CppLanguageStandard.CPP20);
-            conf.Options.Add(Options.Vc.Compiler.Exceptions.Enable);
+            conf.Options.Add(Options.Vc.Compiler.Exceptions.Disable);
             conf.Options.Add(Options.Vc.Compiler.RTTI.Disable);
             conf.Options.Add(Options.Vc.Compiler.FloatingPointModel.Precise);
 
@@ -266,7 +266,7 @@ namespace VoltSharpmake
             conf.Options.Add(Options.Vc.General.ExternalWarningLevel.Level0);
             conf.Options.Add(Options.Vc.General.TreatAngleIncludeAsExternal.Enable);
 
-            if (this.GetType() != typeof(CoreUtilities))
+			if (this.GetType() != typeof(CoreUtilities))
             {
                 conf.AddPublicDependency<CoreUtilities>(target);
             }
@@ -291,6 +291,11 @@ namespace VoltSharpmake
             conf.Options.Add(new Sharpmake.Options.Vc.Compiler.DisableSpecificWarnings("4005", "4100", "4201", "4251", "4275", "4505"));
             conf.Options.Add(new Sharpmake.Options.Vc.Linker.DisableSpecificWarnings("4006", "4099"));   
             conf.Options.Add(new Sharpmake.Options.Vc.Linker.DisableSpecificWarnings("4098", "4217"));
+		}
+
+		public override void ConfigureMSVC(Configuration conf, CommonTarget target)
+		{
+			base.ConfigureMSVC(conf, target);
 		}
 	}
 
