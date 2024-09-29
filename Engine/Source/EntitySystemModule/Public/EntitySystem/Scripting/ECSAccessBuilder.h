@@ -192,6 +192,90 @@ namespace ECS
 			return m_entityHelper.RemoveComponent<Comp>();
 		}
 
+		void SetPosition(const glm::vec3& position)
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			m_entityHelper.SetPosition(position);
+		}
+
+		void SetRotation(const glm::quat& rotation)
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			m_entityHelper.SetRotation(rotation);
+		}
+
+		void SetScale(const glm::vec3& scale)
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			m_entityHelper.SetScale(scale);
+		}
+
+		void SetLocalPosition(const glm::vec3& position)
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			m_entityHelper.SetLocalPosition(position);
+		}
+
+		void SetLocalRotation(const glm::quat& rotation)
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			m_entityHelper.SetLocalRotation(rotation);
+		}
+
+		void SetLocalScale(const glm::vec3& scale)
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			m_entityHelper.SetLocalScale(scale);
+		}
+
+		VT_NODISCARD glm::vec3 GetPosition() const 
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			return m_entityHelper.GetPosition();
+		}
+
+		VT_NODISCARD glm::quat GetRotation() const
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			return m_entityHelper.GetRotation();
+		}
+
+		VT_NODISCARD glm::vec3 GetScale() const
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			return m_entityHelper.GetScale();
+		}
+
+		VT_NODISCARD glm::vec3 GetLocalPosition() const
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			return m_entityHelper.GetLocalPosition();
+		}
+
+		VT_NODISCARD glm::quat GetLocalRotation() const
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			return m_entityHelper.GetLocalRotation();
+		}
+
+		VT_NODISCARD glm::vec3 GetLocalScale() const
+		{
+			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::TransformComponent>>, ComponentTupleRaw>;
+			static_assert(ComponentTraits::IsValid);
+			return m_entityHelper.GetLocalScale();
+		}
+
 		Volt::EntityID GetID() const
 		{
 			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::IDComponent>>, ComponentTupleRaw>;
