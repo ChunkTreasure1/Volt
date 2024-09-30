@@ -13,11 +13,6 @@ namespace Volt
 		void onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs) override;
 		void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) override;
 		void onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count) override;
-
-		void RunEvents();
-
-	private:
-		Vector<std::function<void()>> myFrameEvents;
 	};
 
 	class CharacterControllerContactListener : public physx::PxQueryFilterCallback

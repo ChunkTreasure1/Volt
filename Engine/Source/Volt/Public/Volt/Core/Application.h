@@ -4,8 +4,6 @@
 #include "Volt/Core/Layer/LayerStack.h"
 #include "Volt/Core/MultiTimer.h"
 
-#include "Volt/Core/Layer/LayerStack.h"
-
 #include "Volt/Utility/Version.h"
 
 #include <AssetSystem/SourceAssetManager.h>
@@ -13,6 +11,8 @@
 #include <EventSystem/EventListener.h>
 #include <WindowModule/WindowMode.h>
 #include <JobSystem/JobSystem.h>
+
+#include <EntitySystem/Scripting/ScriptingEngine.h>
 
 #include <string>
 
@@ -148,6 +148,7 @@ namespace Volt
 		Scope<PluginRegistry> m_pluginRegistry;
 		Scope<PluginSystem> m_pluginSystem;
 		Scope<EventSystem> m_eventSystem;
+		Scope<ScriptingEngine> m_scriptingEngine;
 
 		Scope<ApplicationEventListener> m_eventListener;
 

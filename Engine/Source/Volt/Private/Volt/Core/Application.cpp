@@ -4,7 +4,6 @@
 #include <AssetSystem/AssetManager.h>
 
 #include <InputModule/Input.h>
-#include <InputModule/InputCodes.h>
 
 #include "Volt/Core/Layer/Layer.h"
 #include "Volt/Core/DynamicLibraryManager.h"
@@ -19,7 +18,6 @@
 #include "Volt/PluginSystem/PluginSystem.h"
 
 #include "Volt/Physics/Physics.h"
-#include "Volt/Utility/FileSystem.h"
 
 #include "Volt/Utility/Noise.h"
 #include "Volt/Utility/UIUtility.h"
@@ -32,8 +30,6 @@
 #include <VulkanRHIModule/VulkanRHIProxy.h>
 #include <D3D12RHIModule/D3D12RHIProxy.h>
 
-#include <Amp/AudioManager/AudioManager.h>
-#include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 #include <Amp/WWiseEngine/WWiseEngine.h>
 #include <Navigation/Core/NavigationSystem.h>
 
@@ -49,14 +45,19 @@
 
 #include <EventSystem/EventSystem.h>
 
-#include <EntitySystem/Scripting/ECSAccessBuilder.h>
-#include <EntitySystem/Scripting/ECSBuilder.h>
-#include <EntitySystem/Scripting/ECSSystemRegistry.h>
-
-#include <CoreUtilities/TypeTraits/TypeId.h>
 #include <CoreUtilities/ThreadUtilities.h>
 
-#include <JobSystem/JobQueue.h>
+#include <EntitySystem/Scripting/ECSEventDispatcher.h>
+#include <Volt/Physics/PhysicsEvents.h>
+
+using TestEntity = ECS::Access
+	::Write<Volt::TransformComponent>
+	::As<ECS::Type::Entity>;
+
+void SystemCallback(Volt::OnCollisionEnterEvent& event)
+{
+
+}
 
 namespace Volt
 {
@@ -212,6 +213,8 @@ namespace Volt
 			m_steamImplementation = SteamImplementation::Create();
 		}
 
+		m_scriptingEngine = CreateScope<ScriptingEngine>();
+
 		m_pluginSystem->InitializePlugins();
 		m_eventListener = CreateScope<ApplicationEventListener>(*this);
 	}
@@ -221,10 +224,7 @@ namespace Volt
 		m_eventListener = nullptr;
 		m_pluginSystem->ShutdownPlugins();
 
-		// #TODO_Ivar: We probably don't want to clear the registry like this.
-		// We probably would want the systems to unregister themselves somehow. Same with components.
-		GetECSSystemRegistry().ClearRegistry();
-		GetComponentRegistry().ClearRegistry();
+		m_scriptingEngine = nullptr;
 
 		m_navigationSystem = nullptr;
 		m_layerStack.Clear();

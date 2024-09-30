@@ -3,8 +3,9 @@
 
 #include "Volt/Physics/PhysicsActor.h"
 #include "Volt/Physics/PhysicsLayer.h"
+#include "Volt/Physics/PhysicsEvents.h"
 
-#include "Volt/Components/CoreComponents.h"
+#include <EventSystem/EventSystem.h>
 
 namespace Volt
 {
@@ -25,8 +26,6 @@ namespace Volt
 		PX_UNUSED(actors);
 		PX_UNUSED(count);
 	}
-
-	// #TODO_Ivar: These callbacks needs to be setup with the new system.
 
 	void ContactListener::onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32)
 	{
@@ -51,6 +50,11 @@ namespace Volt
 				return;
 			}
 
+			EntityHelper helperA = entityA.GetScene()->GetEntityHelperFromEntityID(entityA.GetID());
+			EntityHelper helperB = entityB.GetScene()->GetEntityHelperFromEntityID(entityB.GetID());
+
+			OnCollisionEnterEvent enterEvent(helperA, helperB);
+			EventSystem::DispatchEvent<OnCollisionEnterEvent>(enterEvent);
 		}
 		else if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_LOST_TOUCH)
 		{
@@ -62,6 +66,11 @@ namespace Volt
 				return;
 			}
 
+			EntityHelper helperA = entityA.GetScene()->GetEntityHelperFromEntityID(entityA.GetID());
+			EntityHelper helperB = entityB.GetScene()->GetEntityHelperFromEntityID(entityB.GetID());
+
+			OnCollisionExitEvent exitEvent(helperA, helperB);
+			EventSystem::DispatchEvent<OnCollisionExitEvent>(exitEvent);
 		}
 	}
 
@@ -97,6 +106,11 @@ namespace Volt
 					return;
 				}
 
+				EntityHelper triggerHelper = triggerEntity.GetScene()->GetEntityHelperFromEntityID(triggerEntity.GetID());
+				EntityHelper otherHelper = otherEntity.GetScene()->GetEntityHelperFromEntityID(otherEntity.GetID());
+
+				OnTriggerEnterEvent enterEvent(triggerHelper, otherHelper);
+				EventSystem::DispatchEvent<OnTriggerEnterEvent>(enterEvent);
 			}
 			else if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 			{
@@ -108,6 +122,11 @@ namespace Volt
 					return;
 				}
 
+				EntityHelper triggerHelper = triggerEntity.GetScene()->GetEntityHelperFromEntityID(triggerEntity.GetID());
+				EntityHelper otherHelper = otherEntity.GetScene()->GetEntityHelperFromEntityID(otherEntity.GetID());
+
+				OnTriggerExitEvent exitEvent(triggerHelper, otherHelper);
+				EventSystem::DispatchEvent<OnTriggerExitEvent>(exitEvent);
 			}
 		}
 	}
@@ -117,16 +136,6 @@ namespace Volt
 		PX_UNUSED(bodyBuffer);
 		PX_UNUSED(poseBuffer);
 		PX_UNUSED(count);
-	}
-
-	void ContactListener::RunEvents()
-	{
-		for (const auto& e : myFrameEvents)
-		{
-			e();
-		}
-
-		myFrameEvents.clear();
 	}
 
 	physx::PxQueryHitType::Enum CharacterControllerContactListener::preFilter(const physx::PxFilterData& filterData, const physx::PxShape* shape, const physx::PxRigidActor*, physx::PxHitFlags&)

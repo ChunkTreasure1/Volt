@@ -103,7 +103,6 @@ namespace Volt
 		}
 
 		myFunctionQueue.clear();
-		myContactListener.RunEvents();
 	}
 
 	Ref<PhysicsActor> PhysicsScene::GetActor(Entity entity)
