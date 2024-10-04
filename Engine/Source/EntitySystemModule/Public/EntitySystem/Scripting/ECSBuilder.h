@@ -1,6 +1,9 @@
 #pragma once
 
 #include "EntitySystem/Scripting/ECSSystem.h"
+#include "EntitySystem/Scripting/ScriptingEngine.h"
+
+#include <EventSystem/Event.h>
 
 #include <CoreUtilities/Containers/Map.h>
 #include <CoreUtilities/UUID.h>
@@ -36,15 +39,23 @@ private:
 	Vector<Vector<UUID64>> m_executionBuckets;
 };
 
+class ScriptingEngine;
 class VTES_API ECSBuilder
 {
 public:
-	ECSBuilder() = default;
+	ECSBuilder(ScriptingEngine& scriptingEngine);
 
 	void Compile();
 
 	ECSGameLoopContainer& GetGameLoop(GameLoop gameLoopType);
 
+	template<Volt::IsEvent T, typename... Filters, typename F>
+	void RegisterListenerSystem(const F& func)
+	{
+		m_scriptingEngine.GetEventDispatcher().template RegisterListenerSystem<T, Filters...>(func);
+	}
+
 private:
 	std::unordered_map<GameLoop, ECSGameLoopContainer> m_gameLoops;
+	ScriptingEngine& m_scriptingEngine; 
 };

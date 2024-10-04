@@ -111,7 +111,7 @@ namespace Volt
 	void JobSystem::ExecuteMainThreadJobs()
 	{
 		auto& internalState = m_internalState;
-		
+
 		Job* jobPtr = internalState.mainThreadQueue.Pop();
 		while (jobPtr)
 		{
@@ -159,6 +159,7 @@ namespace Volt
 		auto [newJob, jobId] = m_allocator.AllocateJob();
 		newJob->unfinishedJobs = 1;
 		newJob->func = task;
+		newJob->executionPolicy = executionPolicy;
 
 		if (parentJob != INVALID_JOB_ID)
 		{
@@ -182,7 +183,7 @@ namespace Volt
 			while (currentQueue != workerId)
 			{
 				auto& stealingQueue = m_internalState.jobQueues.at(currentQueue);
-				Job* stolenJob = stealingQueue.Pop();
+				Job* stolenJob = stealingQueue.Steal();
 				if (stolenJob)
 				{
 					return stolenJob;
@@ -201,7 +202,7 @@ namespace Volt
 		{
 			Job* job = TryGetJob(workerId);
 			const bool foundWork = job != nullptr;
-			
+
 			if (foundWork)
 			{
 				ExecuteJob(job);

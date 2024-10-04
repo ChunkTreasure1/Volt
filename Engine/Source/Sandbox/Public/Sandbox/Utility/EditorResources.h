@@ -86,7 +86,7 @@ public:
 	static Ref<Volt::Mesh> GetEditorMesh(EditorMesh mesh);
 
 private:
-	static Ref<Volt::Texture2D> TryLoadIcon(const std::filesystem::path& path);
+	static void TryLoadIcon(const std::filesystem::path& path, Ref<Volt::Texture2D>* outTexture);
 	static Ref<Volt::Mesh> TryLoadMesh(const std::filesystem::path& path);
 
 	inline static std::unordered_map<AssetType, Ref<Volt::Texture2D>> m_assetIcons;

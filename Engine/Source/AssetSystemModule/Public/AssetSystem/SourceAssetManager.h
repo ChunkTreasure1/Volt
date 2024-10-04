@@ -1,14 +1,16 @@
 #pragma once
 
+#include "AssetSystem/Config.h"
+
 #include "AssetSystem/SourceAssetImporterRegistry.h"
 #include "AssetSystem/SourceAssetImporter.h"
 #include "AssetSystem/AssetManager.h"
 
 #include <JobSystem/JobPromise.h>
 #include <CoreUtilities/Containers/Vector.h>
-#include <CoreUtilities/Containers/Queue.h>
+#include <CoreUtilities/Containers/ThreadSafeQueue.h>
 
-VT_DECLARE_LOG_CATEGORY(LogSourceAssetManager, LogVerbosity::Trace);
+VT_DECLARE_LOG_CATEGORY_EXPORT(VTAS_API, LogSourceAssetManager, LogVerbosity::Trace);
 
 namespace Volt
 {
@@ -16,7 +18,7 @@ namespace Volt
 	class VTAS_API SourceAssetManager
 	{
 	public:
-		using ImportedCallbackFunc = std::function<void()>;
+		using ImportedCallbackFunc = std::function<void(Vector<Ref<Asset>>)>;
 
 		SourceAssetManager();
 		~SourceAssetManager();
@@ -25,6 +27,7 @@ namespace Volt
 		static JobFuture<Vector<Ref<Asset>>> ImportSourceAsset(const std::filesystem::path& filepath, const ConfigType& config, const SourceAssetUserImportData& userData = {})
 		{
 			VT_ENSURE(s_instance);
+			VT_ENSURE(!filepath.empty());
 
 			auto importFunc = [=]() -> Vector<Ref<Asset>>
 			{
@@ -33,7 +36,7 @@ namespace Volt
 				return importer.Import(AssetManager::GetFilesystemPath(filepath), config, userData);
 			};
 
-			return s_instance->ImportSourceAssetInternal(std::move(importFunc), filepath.extension().string());
+			return s_instance->ImportSourceAssetInternal(std::move(importFunc), filepath);
 		}
 
 		template<typename ConfigType>
@@ -41,6 +44,7 @@ namespace Volt
 		{
 			VT_ENSURE(s_instance);
 			VT_ENSURE(importedCallback);
+			VT_ENSURE(!filepath.empty());
 
 			auto importFunc = [=]() -> Vector<Ref<Asset>>
 			{
@@ -49,7 +53,7 @@ namespace Volt
 				return importer.Import(AssetManager::GetFilesystemPath(filepath), config, userData);
 			};
 
-			s_instance->ImportSourceAssetInternal(std::move(importFunc), importedCallback, filepath.extension().string());
+			s_instance->ImportSourceAssetInternal(std::move(importFunc), importedCallback, filepath);
 		}
 
 		static SourceAssetFileInformation GetSourceAssetFileInformation(const std::filesystem::path& filepath);
@@ -61,11 +65,14 @@ namespace Volt
 		{
 			JobID jobId;
 			Ref<JobPromise<Vector<Ref<Asset>>>> resultPromise;
+		
+			std::string debugString;
 		};
 
-		JobFuture<Vector<Ref<Asset>>> ImportSourceAssetInternal(ImportJobFunc&& importFunc, const std::string& extension);
-		void ImportSourceAssetInternal(ImportJobFunc&& importFunc, const ImportedCallbackFunc& importedCallback, const std::string& extension);
+		JobFuture<Vector<Ref<Asset>>> ImportSourceAssetInternal(ImportJobFunc&& importFunc, const std::filesystem::path& filepath);
+		void ImportSourceAssetInternal(ImportJobFunc&& importFunc, const ImportedCallbackFunc& importedCallback, const std::filesystem::path& filepath);
 
+		ThreadSafeQueue<ImportJob>& GetOrCreateQueue(const std::string& extension);
 		void RunAssetImportWorker();
 
 		inline static SourceAssetManager* s_instance = nullptr;
@@ -76,6 +83,6 @@ namespace Volt
 		Scope<std::thread> m_assetImporterWorkerThread;
 
 		vt::map<std::string, Scope<std::atomic_bool>> m_isImporterInUseMap;
-		vt::map<std::string, Queue<ImportJob>> m_importQueue;
+		vt::map<std::string, Scope<ThreadSafeQueue<ImportJob>>> m_importQueues;
 	};
 }

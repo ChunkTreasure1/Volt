@@ -39,8 +39,8 @@ namespace Volt
 		Ref<PhysicsControllerActor> CreateControllerActor(Entity entity);
 		void RemoveControllerActor(Ref<PhysicsControllerActor> controllerActor);
 
-		inline const glm::vec3 GetGravity() const { return PhysXUtilities::FromPhysXVector(myPhysXScene->getGravity()); }
-		inline void SetGravity(const glm::vec3& gravity) { myPhysXScene->setGravity(PhysXUtilities::ToPhysXVector(gravity)); }
+		inline const glm::vec3 GetGravity() const { return PhysXUtilities::FromPhysXVector(m_physXScene->getGravity()); }
+		inline void SetGravity(const glm::vec3& gravity) { m_physXScene->setGravity(PhysXUtilities::ToPhysXVector(gravity)); }
 
 		bool Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit);
 		bool Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit, uint32_t layerMask);
@@ -52,7 +52,7 @@ namespace Volt
 		bool OverlapCapsule(const glm::vec3& origin, float radius, float halfHeight, Vector<Entity>& buffer, uint32_t layerMask = 0);
 		bool OverlapSphere(const glm::vec3& origin, float radius, Vector<Entity>& buffer, uint32_t layerMask = 0);
 
-		inline const bool IsValid() const { return myPhysXScene != nullptr; }
+		inline const bool IsValid() const { return m_physXScene != nullptr; }
 
 	private:
 		friend class Physics;
@@ -65,27 +65,27 @@ namespace Volt
 		void Destroy();
 		bool OverlapGeometry(const glm::vec3& origin, const physx::PxGeometry& geometry, std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS>& buffer, uint32_t& count, const physx::PxQueryFilterData& filterData);
 
-		physx::PxScene* myPhysXScene = nullptr;
-		physx::PxControllerManager* myControllerManager = nullptr;
+		physx::PxScene* m_physXScene = nullptr;
+		physx::PxControllerManager* m_controllerManager = nullptr;
 
-		Vector<Ref<PhysicsActor>> myPhysicsActors;
-		Vector<Ref<PhysicsControllerActor>> myControllerActors;
+		Vector<Ref<PhysicsActor>> m_physicsActors;
+		Vector<Ref<PhysicsControllerActor>> m_controllerActors;
 
 		std::unordered_map<entt::entity, Ref<PhysicsActor>> m_physicsActorFromEntityIDMap;
 		std::unordered_map<entt::entity, Ref<PhysicsControllerActor>> m_physicsControllerActorFromEntityIDMap;
 
-		Vector<std::function<void()>> myFunctionQueue;
+		Vector<std::function<void()>> m_functionQueue;
 
-		Scene* myEntityScene;
+		Scene* m_entityScene;
 
-		float mySubStepSize = 0.f;
-		float myAccumulator = 0.f;
-		uint32_t myNumSubSteps = 0;
-		const uint32_t myMaxSubSteps = 8;
+		float m_subStepSize = 0.f;
+		float m_accumulator = 0.f;
+		uint32_t m_numSubSteps = 0;
+		const uint32_t m_maxSubSteps = 8;
 
-		float myUpdateAccumulator = 0.f;
-		bool myInSimulation = false;
+		float m_updateAccumulator = 0.f;
+		bool m_inSimulation = false;
 
-		inline static ContactListener myContactListener;
+		inline static ContactListener m_contactListener;
 	};
 }

@@ -49,6 +49,7 @@ namespace Volt
 			reflect.AddMember(&CharacterControllerComponent::hasGravity, "hasGravity", "Has Gravity", "", true);
 			reflect.SetOnCreateCallback(&CharacterControllerComponent::OnCreate);
 			reflect.SetOnDestroyCallback(&CharacterControllerComponent::OnDestroy);
+			reflect.SetOnTransformChangedCallback(&CharacterControllerComponent::OnTransformChanged);
 		}
 
 		REGISTER_COMPONENT(CharacterControllerComponent);
@@ -58,8 +59,14 @@ namespace Volt
 			::Read<CharacterControllerComponent>
 			::As<ECS::Type::Entity>;
 
+		using PhysicsTransformEntity = ECS::Access
+			::Read<TransformComponent>
+			::With<CharacterControllerComponent>
+			::As<ECS::Type::Entity>;
+
 		static void OnCreate(PhysicsEntity entity);
 		static void OnDestroy(PhysicsEntity entity);
+		static void OnTransformChanged(PhysicsTransformEntity entity);
 	};
 
 	struct RigidbodyComponent
@@ -97,6 +104,7 @@ namespace Volt
 			reflect.AddMember(&RigidbodyComponent::isKinematic, "isKinematic", "Is Kinematic", "", false);
 			reflect.SetOnCreateCallback(&RigidbodyComponent::OnCreate);
 			reflect.SetOnDestroyCallback(&RigidbodyComponent::OnDestroy);
+			reflect.SetOnTransformChangedCallback(&RigidbodyComponent::OnTransformChanged);
 		}
 
 		REGISTER_COMPONENT(RigidbodyComponent);
@@ -106,8 +114,14 @@ namespace Volt
 			::Read<RigidbodyComponent>
 			::As<ECS::Type::Entity>;
 
+		using PhysicsTransformEntity = ECS::Access
+			::Read<TransformComponent>
+			::With<RigidbodyComponent>
+			::As<ECS::Type::Entity>;
+
 		static void OnCreate(PhysicsEntity entity);
 		static void OnDestroy(PhysicsEntity entity);
+		static void OnTransformChanged(PhysicsTransformEntity entity);
 	};
 
 	struct BoxColliderComponent

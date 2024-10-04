@@ -17,7 +17,7 @@ namespace Volt
 	void JobQueueLocking::Push(Job* job)
 	{
 		std::scoped_lock lock{ *m_mutex };
-		m_jobQueue[m_bottom] = job;
+		m_jobQueue[m_bottom & MASK] = job;
 		++m_bottom;
 	}
 	
@@ -32,7 +32,7 @@ namespace Volt
 		}
 
 		--m_bottom;
-		return m_jobQueue[m_bottom];
+		return m_jobQueue[m_bottom & MASK];
 	}
 	
 	Job* JobQueueLocking::Steal()
@@ -45,7 +45,7 @@ namespace Volt
 			return nullptr;
 		}
 
-		Job* job = m_jobQueue[m_top];
+		Job* job = m_jobQueue[m_top & MASK];
 		++m_top;
 		return job;
 	}

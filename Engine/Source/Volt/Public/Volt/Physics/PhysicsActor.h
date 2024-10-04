@@ -6,10 +6,6 @@
 #include "Volt/Physics/PhysicsEnums.h"
 #include "Volt/Physics/PhysicsActorBase.h"
 
-
-#include <PhysX/PxPhysics.h>
-#include <PhysX/PxFiltering.h>
-
 namespace Volt
 {
 	class ColliderShape;
@@ -56,14 +52,14 @@ namespace Volt
 		void WakeUp();
 		void PutToSleep();
 
-		inline physx::PxRigidActor& GetActor() const { return *myRigidActor; }
-		inline const RigidbodyComponent& GetRigidbodyData() const { return myRigidBodyData; }
+		inline physx::PxRigidActor& GetActor() const { return *m_rigidActor; }
+		inline const RigidbodyComponent& GetRigidbodyData() const { return m_rigidBodyData; }
 
-		inline const bool IsDynamic() const { return myRigidBodyData.bodyType == BodyType::Dynamic; }
-		inline bool IsKinematic() const { return IsDynamic() && myRigidBodyData.isKinematic; }
+		inline const bool IsDynamic() const { return m_rigidBodyData.bodyType == BodyType::Dynamic; }
+		inline bool IsKinematic() const { return IsDynamic() && m_rigidBodyData.isKinematic; }
 
-		inline const bool IsLockFlagSet(ActorLockFlag flag) const { return (uint32_t)flag & myLockFlags; }
-		inline const uint32_t GetLockFlags() const { return myLockFlags; }
+		inline const bool IsLockFlagSet(ActorLockFlag flag) const { return (uint32_t)flag & m_lockFlags; }
+		inline const uint32_t GetLockFlags() const { return m_lockFlags; }
 		inline const bool IsAllRotationLocked() const { return IsLockFlagSet(ActorLockFlag::RotationX) && IsLockFlagSet(ActorLockFlag::RotationY) && IsLockFlagSet(ActorLockFlag::RotationZ); }
 
 		void AddCollider(BoxColliderComponent& collider, Entity entity);
@@ -84,13 +80,13 @@ namespace Volt
 
 		void CreateRigidActor();
 
-		bool myToBeRemoved = false;
+		bool m_toBeRemoved = false;
 
-		RigidbodyComponent myRigidBodyData;
+		RigidbodyComponent m_rigidBodyData;
 
-		uint32_t myLockFlags = 0;
-		physx::PxRigidActor* myRigidActor;
+		uint32_t m_lockFlags = 0;
+		physx::PxRigidActor* m_rigidActor;
 
-		Vector<Ref<ColliderShape>> myColliders;
+		Vector<Ref<ColliderShape>> m_colliders;
 	};
 }

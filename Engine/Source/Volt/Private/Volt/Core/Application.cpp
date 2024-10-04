@@ -213,7 +213,7 @@ namespace Volt
 			m_steamImplementation = SteamImplementation::Create();
 		}
 
-		m_scriptingEngine = CreateScope<ScriptingEngine>();
+		m_scriptingSystem = CreateScope<ScriptingSystem>();
 
 		m_pluginSystem->InitializePlugins();
 		m_eventListener = CreateScope<ApplicationEventListener>(*this);
@@ -224,7 +224,7 @@ namespace Volt
 		m_eventListener = nullptr;
 		m_pluginSystem->ShutdownPlugins();
 
-		m_scriptingEngine = nullptr;
+		m_scriptingSystem = nullptr;
 
 		m_navigationSystem = nullptr;
 		m_layerStack.Clear();

@@ -339,12 +339,13 @@ namespace Volt
 		{
 			ReadLock lock{ instance.m_assetRegistryMutex };
 			metadata = GetMetadataFromHandle(asset->handle);
-			asset->assetName = metadata.filePath.stem().string();
-		}
 
-		if (metadata.isMemoryAsset)
-		{
-			return;
+			if (metadata.isMemoryAsset)
+			{
+				return;
+			}
+
+			asset->assetName = metadata.filePath.stem().string();
 		}
 
 		{

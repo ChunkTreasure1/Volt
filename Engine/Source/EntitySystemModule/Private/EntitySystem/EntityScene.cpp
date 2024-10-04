@@ -8,6 +8,7 @@
 #include "EntitySystem/Scripting/CommonComponent.h"
 #include "EntitySystem/Scripting/ECSSystemRegistry.h"
 #include "EntitySystem/Scripting/ECSBuilder.h"
+#include "EntitySystem/Scripting/ScriptingEngine.h"
 
 #include <EventSystem/EventSystem.h>
 
@@ -24,6 +25,8 @@ namespace Volt
 
 	EntityScene::~EntityScene()
 	{
+		m_ecsBuilder = nullptr;
+		m_scriptingEngine = nullptr;
 	}
 
 	void EntityScene::OnRuntimeStart()
@@ -332,7 +335,8 @@ namespace Volt
 
 	void EntityScene::Initialize()
 	{
-		m_ecsBuilder = CreateScope<ECSBuilder>();
+		m_scriptingEngine = CreateScope<ScriptingEngine>();
+		m_ecsBuilder = CreateScope<ECSBuilder>(*m_scriptingEngine);
 		m_registry.set_user_data(this);
 
 		ComponentRegistry::Helpers::SetupComponentCallbacks(m_registry);

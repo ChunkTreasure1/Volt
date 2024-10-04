@@ -57,5 +57,8 @@ void operator delete[](void* p, size_t size) noexcept
 
 void Allocator::CheckAllocations()
 {
-	VT_ASSERT_MSG(s_totalAllocation == 0, "Memory leak!");
+	if (s_totalAllocation > 0)
+	{
+		printf("Memory leak of size %d detected!", static_cast<int32_t>(s_totalAllocation));
+	}
 }

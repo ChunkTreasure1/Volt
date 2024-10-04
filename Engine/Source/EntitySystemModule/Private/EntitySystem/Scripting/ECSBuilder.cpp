@@ -3,6 +3,11 @@
 
 #include <queue>
 
+ECSBuilder::ECSBuilder(ScriptingEngine& scriptingEngine)
+	: m_scriptingEngine(scriptingEngine)
+{
+}
+
 void ECSBuilder::Compile()
 {
 	for (auto& [type, loop] : m_gameLoops)

@@ -5,3 +5,8 @@
 ECSEventDispatcher::ECSEventDispatcher()
 {
 }
+
+void ECSEventDispatcher::Clear()
+{
+	m_registeredListeners.clear();
+}

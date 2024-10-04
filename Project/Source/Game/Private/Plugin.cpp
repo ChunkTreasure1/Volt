@@ -5,6 +5,11 @@
 #include <EntitySystem/Scripting/ECSAccessBuilder.h>
 #include <EntitySystem/Scripting/ECSBuilder.h>
 #include <EntitySystem/Scripting/ECSSystemRegistry.h>
+#include <EntitySystem/Scripting/ECSEventDispatcher.h>
+
+#include <EntitySystem/Scripting/ScriptingEngine.h>
+
+#include <Volt/Physics/PhysicsEvents.h>
 
 #include <InputModule/Input.h>
 
@@ -47,9 +52,18 @@ void PlayerSystem(PlayerEntity entity, float deltaTime)
 	}
 }
 
+void OnPlayerCollisionEnterEvent(Volt::OnCollisionEnterEvent& enterEvent)
+{
+	VT_ENSURE(enterEvent.GetEntityA().HasComponent<PlayerComponent>() || enterEvent.GetEntityB().HasComponent<PlayerComponent>());
+
+	VT_LOG(Trace, "Player Collision!");
+}
+
 void RegisterModule(ECSBuilder& builder)
 {
 	builder.GetGameLoop(GameLoop::Variable).RegisterSystem(PlayerSystem);
+
+	builder.RegisterListenerSystem<Volt::OnCollisionEnterEvent, PlayerEntity>(OnPlayerCollisionEnterEvent);
 }
 
 VT_REGISTER_ECS_MODULE(RegisterModule);

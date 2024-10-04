@@ -40,10 +40,10 @@ AssetBrowserPopup::State AssetBrowserPopup::Update()
 		if (ImGui::BeginChild("##scrolling", ImGui::GetContentRegionAvail())) //#TODO_Ivar: Optimize!
 		{
 			Vector<Volt::AssetHandle> items = Volt::AssetManager::GetAllAssetsOfType(myWantedType);
-			items.erase(std::remove_if(items.begin(), items.end(), [](Volt::AssetHandle handle)
-			{
-				return Volt::AssetManager::IsMemoryAsset(handle);
-			}));
+			//items.erase(std::remove_if(items.begin(), items.end(), [](Volt::AssetHandle handle)
+			//{
+			//	return Volt::AssetManager::IsMemoryAsset(handle);
+			//}));
 			
 			state = RenderView(items);
 			ImGui::EndChild();

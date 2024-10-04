@@ -22,7 +22,7 @@ namespace Volt
 		// #TODO_Ivar: Switch to not using std::function as std::function is very large.
 		JobFunc func;
 		JobID parentJob = INVALID_JOB_ID;
-		long unfinishedJobs = 0;
+		volatile long unfinishedJobs = 0;
 		ExecutionPolicy executionPolicy = ExecutionPolicy::WorkerThread;
 
 		char alignmentPadding[TARGET_SIZE - sizeof(func) - sizeof(parentJob) - sizeof(unfinishedJobs) - sizeof(executionPolicy)];

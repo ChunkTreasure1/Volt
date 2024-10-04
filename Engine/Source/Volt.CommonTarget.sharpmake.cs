@@ -59,9 +59,9 @@ namespace VoltSharpmake
             {
                 var nameParts = new List<string>
                 {
-                    Compiler.ToString(),
-                    Optimization.ToString()
-                };
+                    Optimization.ToString(),
+					Compiler.ToString()
+				};
                 return string.Join(" ", nameParts);
             }
         }

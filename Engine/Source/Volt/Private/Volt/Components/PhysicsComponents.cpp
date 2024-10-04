@@ -35,6 +35,22 @@ namespace Volt
 		}
 	}
 
+	void RigidbodyComponent::OnTransformChanged(PhysicsTransformEntity entity)
+	{
+		if (!SceneManager::IsPlaying())
+		{
+			return;
+		}
+
+		auto sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		auto actor = Physics::GetScene()->GetActor(sceneEntity);
+		if (actor)
+		{
+			actor->SetPosition(entity.GetPosition(), true, false);
+			actor->SetRotation(entity.GetRotation(), true, false);
+		}
+	}
+
 	void CharacterControllerComponent::OnCreate(PhysicsEntity entity)
 	{
 		if (!SceneManager::IsPlaying())
@@ -58,6 +74,21 @@ namespace Volt
 		if (actor)
 		{
 			Physics::GetScene()->RemoveControllerActor(actor);
+		}
+	}
+
+	void CharacterControllerComponent::OnTransformChanged(PhysicsTransformEntity entity)
+	{
+		if (!SceneManager::IsPlaying())
+		{
+			return;
+		}
+
+		Entity sceneEntity = SceneManager::GetActiveScene()->GetSceneEntityFromScriptingEntity(entity);
+		auto actor = Physics::GetScene()->GetControllerActor(sceneEntity);
+		if (actor)
+		{
+			actor->SetFootPosition(entity.GetPosition());
 		}
 	}
 

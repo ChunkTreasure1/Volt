@@ -297,6 +297,11 @@ namespace Volt
 		return false;
 	}
 
+	bool EntityHelper::HasComponent(const VoltGUID& componentGUID) const
+	{
+		return ComponentRegistry::Helpers::HasComponentWithGUID(componentGUID, m_sceneReference->GetRegistry(), m_handle);
+	}
+
 	EntityHelper EntityHelper::Null()
 	{
 		return {};

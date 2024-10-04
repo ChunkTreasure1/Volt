@@ -12,10 +12,8 @@ public:
 	ScriptingEngine();
 	~ScriptingEngine();
 
-	static ECSEventDispatcher& GetEventDispatcher() { return *s_instance->m_ecsEventDispatcher; }
+	ECSEventDispatcher& GetEventDispatcher() { return *m_ecsEventDispatcher; }
 
 private:
-	inline static ScriptingEngine* s_instance = nullptr;
-
 	Scope<ECSEventDispatcher> m_ecsEventDispatcher;
 };

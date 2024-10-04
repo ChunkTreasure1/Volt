@@ -12,7 +12,7 @@
 #include <WindowModule/WindowMode.h>
 #include <JobSystem/JobSystem.h>
 
-#include <EntitySystem/Scripting/ScriptingEngine.h>
+#include <EntitySystem/Scripting/ScriptingSystem.h>
 
 #include <string>
 
@@ -148,7 +148,7 @@ namespace Volt
 		Scope<PluginRegistry> m_pluginRegistry;
 		Scope<PluginSystem> m_pluginSystem;
 		Scope<EventSystem> m_eventSystem;
-		Scope<ScriptingEngine> m_scriptingEngine;
+		Scope<ScriptingSystem> m_scriptingSystem;
 
 		Scope<ApplicationEventListener> m_eventListener;
 

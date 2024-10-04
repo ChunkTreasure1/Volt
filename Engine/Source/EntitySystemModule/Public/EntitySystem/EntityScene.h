@@ -6,6 +6,7 @@
 #include <entt.hpp>
 
 class ECSBuilder;
+class ScriptingEngine;
 
 namespace Volt
 {
@@ -59,6 +60,7 @@ namespace Volt
 		bool m_isPlaying = false;
 
 		Scope<ECSBuilder> m_ecsBuilder;
+		Scope<ScriptingEngine> m_scriptingEngine;
 		EntityRegistry m_entityRegistry;
 		mutable EntityTransformCache m_transformCache;
 	};

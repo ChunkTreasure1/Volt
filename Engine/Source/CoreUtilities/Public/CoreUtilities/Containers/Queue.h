@@ -23,18 +23,6 @@ public:
 		++m_size;
 	}
 
-	VT_INLINE void Enqueue(T&& value)
-	{
-		if (m_size == m_capacity)
-		{
-			Grow(m_size + 1);
-		}
-
-		m_buffer[m_tail] = std::move(value);
-		m_tail = (m_tail + 1) % m_capacity;
-		++m_size;
-	}
-
 	VT_INLINE bool Dequeue(T& result)
 	{
 		if (m_size == 0)
@@ -42,7 +30,7 @@ public:
 			return false;
 		}
 
-		result = std::move(m_buffer[m_head]);
+		result = m_buffer[m_head];
 		m_head = (m_head + 1) % m_capacity;
 		--m_size;
 		return true;
@@ -56,6 +44,14 @@ public:
 	VT_INLINE size_t Size() const
 	{
 		return m_size;
+	}
+
+	VT_INLINE void Clear()
+	{
+		m_buffer.clear();
+		m_head = 0;
+		m_tail = 0;
+		m_size = 0;
 	}
 
 private:

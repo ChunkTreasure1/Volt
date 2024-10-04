@@ -15,7 +15,7 @@ namespace Volt
 	PhysicsActor::PhysicsActor(Entity entity)
 		: PhysicsActorBase(entity)
 	{
-		myRigidBodyData = myEntity.GetComponent<RigidbodyComponent>();
+		m_rigidBodyData = myEntity.GetComponent<RigidbodyComponent>();
 		CreateRigidActor();
 	}
 
@@ -31,7 +31,7 @@ namespace Volt
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setLinearDamping(drag);
@@ -45,7 +45,7 @@ namespace Volt
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setAngularDamping(drag);
@@ -53,7 +53,7 @@ namespace Volt
 
 	void PhysicsActor::SetGravityDisabled(bool disabled) const
 	{
-		myRigidActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, disabled);
+		m_rigidActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, disabled);
 	}
 
 	void PhysicsActor::SetMass(float mass)
@@ -63,9 +63,9 @@ namespace Volt
 			VT_LOG(Warning, "Static PhysicsActor can't have mass!");
 			return;
 		}
-		myRigidBodyData.mass = mass;
+		m_rigidBodyData.mass = mass;
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		physx::PxRigidBodyExt::setMassAndUpdateInertia(*actor, mass);
@@ -78,9 +78,9 @@ namespace Volt
 			VT_LOG(Warning, "Static PhysicsActor can't be kinematic!");
 			return;
 		}
-		myRigidBodyData.isKinematic = isKinematic;
+		m_rigidBodyData.isKinematic = isKinematic;
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, isKinematic);
@@ -88,10 +88,10 @@ namespace Volt
 
 	void PhysicsActor::SetSimulationData(uint32_t layerId)
 	{
-		const auto data = PhysXUtilities::CreateFilterDataFromLayer(layerId, (CollisionDetectionType)myRigidBodyData.collisionType);
+		const auto data = PhysXUtilities::CreateFilterDataFromLayer(layerId, (CollisionDetectionType)m_rigidBodyData.collisionType);
 		myFilterData = data;
 
-		for (auto& collider : myColliders)
+		for (auto& collider : m_colliders)
 		{
 			collider->SetFilterData(myFilterData);
 		}
@@ -107,7 +107,7 @@ namespace Volt
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 		actor->setKinematicTarget(PhysXUtilities::ToPhysXTransform(position, rotation));
 	}
@@ -120,7 +120,7 @@ namespace Volt
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setLinearVelocity(PhysXUtilities::ToPhysXVector(velocity));
@@ -134,7 +134,7 @@ namespace Volt
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setAngularVelocity(PhysXUtilities::ToPhysXVector(velocity));
@@ -148,7 +148,7 @@ namespace Volt
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setMaxLinearVelocity(velocity);
@@ -162,7 +162,7 @@ namespace Volt
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		actor->setMaxAngularVelocity(velocity);
@@ -170,7 +170,7 @@ namespace Volt
 
 	const float PhysicsActor::GetMass() const
 	{
-		return !IsDynamic() ? myRigidBodyData.mass : myRigidActor->is<physx::PxRigidDynamic>()->getMass();
+		return !IsDynamic() ? m_rigidBodyData.mass : m_rigidActor->is<physx::PxRigidDynamic>()->getMass();
 	}
 
 	const glm::vec3 PhysicsActor::GetLinearVelocity() const
@@ -181,7 +181,7 @@ namespace Volt
 			return glm::vec3(0.f);
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return PhysXUtilities::FromPhysXVector(actor->getLinearVelocity());
@@ -195,7 +195,7 @@ namespace Volt
 			return glm::vec3(0.f);
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return PhysXUtilities::FromPhysXVector(actor->getAngularVelocity());
@@ -209,7 +209,7 @@ namespace Volt
 			return 0.f;
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return actor->getMaxLinearVelocity();
@@ -223,7 +223,7 @@ namespace Volt
 			return 0.f;
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 
 		return actor->getMaxAngularVelocity();
@@ -237,7 +237,7 @@ namespace Volt
 			return glm::vec3(0.0f, 0.0f, 0.0f);
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 		physx::PxTransform target;
 		actor->getKinematicTarget(target);
@@ -252,7 +252,7 @@ namespace Volt
 			return glm::vec3(0.0f, 0.0f, 0.0f);
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 		physx::PxTransform target;
 		actor->getKinematicTarget(target);
@@ -261,12 +261,12 @@ namespace Volt
 
 	void PhysicsActor::SetPosition(const glm::vec3& position, bool autoWake, bool synchronize)
 	{
-		physx::PxTransform transform = myRigidActor->getGlobalPose();
+		physx::PxTransform transform = m_rigidActor->getGlobalPose();
 		transform.p = PhysXUtilities::ToPhysXVector(position);
 
-		myRigidActor->setGlobalPose(transform);
+		m_rigidActor->setGlobalPose(transform);
 
-		if (myRigidBodyData.bodyType == BodyType::Static && synchronize)
+		if (m_rigidBodyData.bodyType == BodyType::Static && synchronize)
 		{
 			SynchronizeTransform();
 		}
@@ -279,12 +279,12 @@ namespace Volt
 
 	void PhysicsActor::SetRotation(const glm::quat& rotation, bool autoWake, bool synchronize)
 	{
-		physx::PxTransform transform = myRigidActor->getGlobalPose();
+		physx::PxTransform transform = m_rigidActor->getGlobalPose();
 		transform.q = PhysXUtilities::ToPhysXQuat(rotation);
 
-		myRigidActor->setGlobalPose(transform);
+		m_rigidActor->setGlobalPose(transform);
 
-		if (myRigidBodyData.bodyType == BodyType::Static && synchronize)
+		if (m_rigidBodyData.bodyType == BodyType::Static && synchronize)
 		{
 			SynchronizeTransform();
 		}
@@ -297,7 +297,7 @@ namespace Volt
 
 	Ref<ColliderShape> PhysicsActor::GetColliderOfType(ColliderType aType) const
 	{
-		for (const auto& coll : myColliders)
+		for (const auto& coll : m_colliders)
 		{
 			if (coll->GetType() == aType)
 			{
@@ -315,7 +315,7 @@ namespace Volt
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 		actor->addForce(PhysXUtilities::ToPhysXVector(aForce), (physx::PxForceMode::Enum)aForceMode);
 	}
@@ -328,7 +328,7 @@ namespace Volt
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
+		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
 		actor->addTorque(PhysXUtilities::ToPhysXVector(torque), (physx::PxForceMode::Enum)aForceMode);
 	}
@@ -337,7 +337,7 @@ namespace Volt
 	{
 		if (IsDynamic())
 		{
-			myRigidActor->is<physx::PxRigidDynamic>()->wakeUp();
+			m_rigidActor->is<physx::PxRigidDynamic>()->wakeUp();
 		}
 	}
 
@@ -345,49 +345,49 @@ namespace Volt
 	{
 		if (IsDynamic())
 		{
-			myRigidActor->is<physx::PxRigidDynamic>()->putToSleep();
+			m_rigidActor->is<physx::PxRigidDynamic>()->putToSleep();
 		}
 	}
 
 	void PhysicsActor::AddCollider(BoxColliderComponent& collider, Entity entity)
 	{
-		myColliders.emplace_back(CreateRef<BoxColliderShape>(collider, *this, entity));
+		m_colliders.emplace_back(CreateRef<BoxColliderShape>(collider, *this, entity));
 	}
 
 	void PhysicsActor::AddCollider(SphereColliderComponent& collider, Entity entity)
 	{
-		myColliders.emplace_back(CreateRef<SphereColliderShape>(collider, *this, entity));
+		m_colliders.emplace_back(CreateRef<SphereColliderShape>(collider, *this, entity));
 	}
 
 	void PhysicsActor::AddCollider(CapsuleColliderComponent& collider, Entity entity)
 	{
-		myColliders.emplace_back(CreateRef<CapsuleColliderShape>(collider, *this, entity));
+		m_colliders.emplace_back(CreateRef<CapsuleColliderShape>(collider, *this, entity));
 	}
 
 	void PhysicsActor::AddCollider(MeshColliderComponent& collider, Entity entity)
 	{
 		if (collider.isConvex)
 		{
-			myColliders.emplace_back(CreateRef<ConvexMeshShape>(collider, *this, entity));
+			m_colliders.emplace_back(CreateRef<ConvexMeshShape>(collider, *this, entity));
 		}
 		else
 		{
-			myColliders.emplace_back(CreateRef<TriangleMeshShape>(collider, *this, entity));
+			m_colliders.emplace_back(CreateRef<TriangleMeshShape>(collider, *this, entity));
 		}
 	}
 
 	void PhysicsActor::RemoveCollider(ColliderType type)
 	{
-		auto it = std::find_if(myColliders.begin(), myColliders.end(), [type](Ref<ColliderShape> coll)
+		auto it = std::find_if(m_colliders.begin(), m_colliders.end(), [type](Ref<ColliderShape> coll)
 		{
 			return coll->GetType() == type;
 		});
 
-		if (it != myColliders.end())
+		if (it != m_colliders.end())
 		{
-			(*it)->DetachFromActor(myRigidActor);
+			(*it)->DetachFromActor(m_rigidActor);
 			(*it)->Release();
-			myColliders.erase(it);
+			m_colliders.erase(it);
 		}
 	}
 
@@ -400,14 +400,14 @@ namespace Volt
 
 		if (value)
 		{
-			myLockFlags |= (uint32_t)flag;
+			m_lockFlags |= (uint32_t)flag;
 		}
 		else
 		{
-			myLockFlags &= ~(uint32_t)flag;
+			m_lockFlags &= ~(uint32_t)flag;
 		}
 
-		myRigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags(static_cast<physx::PxRigidDynamicLockFlags>(static_cast<uint8_t>(myLockFlags)));
+		m_rigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags(static_cast<physx::PxRigidDynamicLockFlags>(static_cast<uint8_t>(m_lockFlags)));
 
 		if (forceAwake)
 		{
@@ -417,11 +417,11 @@ namespace Volt
 
 	void PhysicsActor::SetLockFlags(uint32_t lockFlags)
 	{
-		myLockFlags = lockFlags;
+		m_lockFlags = lockFlags;
 
 		if (IsDynamic())
 		{
-			myRigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags(static_cast<physx::PxRigidDynamicLockFlags>(static_cast<uint8_t>(myLockFlags)));
+			m_rigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags(static_cast<physx::PxRigidDynamicLockFlags>(static_cast<uint8_t>(m_lockFlags)));
 		}
 	}
 
@@ -434,24 +434,24 @@ namespace Volt
 			transform = myEntity.GetTransform();
 		}
 
-		if (myRigidBodyData.bodyType == BodyType::Static)
+		if (m_rigidBodyData.bodyType == BodyType::Static)
 		{
-			myRigidActor = sdk.createRigidStatic(PhysXUtilities::ToPhysXTransform(transform));
+			m_rigidActor = sdk.createRigidStatic(PhysXUtilities::ToPhysXTransform(transform));
 		}
 		else
 		{
 			const PhysicsSettings& settings = Physics::GetSettings();
-			myRigidActor = sdk.createRigidDynamic(PhysXUtilities::ToPhysXTransform(transform));
+			m_rigidActor = sdk.createRigidDynamic(PhysXUtilities::ToPhysXTransform(transform));
 
-			SetLinearDrag(myRigidBodyData.linearDrag);
-			SetAngularDrag(myRigidBodyData.angularDrag);
-			SetKinematic(myRigidBodyData.isKinematic);
-			SetGravityDisabled(myRigidBodyData.disableGravity);
-			SetLockFlags(myRigidBodyData.lockFlags);
+			SetLinearDrag(m_rigidBodyData.linearDrag);
+			SetAngularDrag(m_rigidBodyData.angularDrag);
+			SetKinematic(m_rigidBodyData.isKinematic);
+			SetGravityDisabled(m_rigidBodyData.disableGravity);
+			SetLockFlags(m_rigidBodyData.lockFlags);
 
-			myRigidActor->is<physx::PxRigidDynamic>()->setSolverIterationCounts(settings.solverIterations, settings.solverVelocityIterations);
-			myRigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, myRigidBodyData.collisionType == CollisionDetectionType::Continuous);
-			myRigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, myRigidBodyData.collisionType == CollisionDetectionType::ContinuousSpeculative);
+			m_rigidActor->is<physx::PxRigidDynamic>()->setSolverIterationCounts(settings.solverIterations, settings.solverVelocityIterations);
+			m_rigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, m_rigidBodyData.collisionType == CollisionDetectionType::Continuous);
+			m_rigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, m_rigidBodyData.collisionType == CollisionDetectionType::ContinuousSpeculative);
 		}
 
 		if (myEntity.HasComponent<BoxColliderComponent>()) AddCollider(myEntity.GetComponent<BoxColliderComponent>(), myEntity);
@@ -459,23 +459,23 @@ namespace Volt
 		if (myEntity.HasComponent<CapsuleColliderComponent>()) AddCollider(myEntity.GetComponent<CapsuleColliderComponent>(), myEntity);
 		if (myEntity.HasComponent<MeshColliderComponent>()) AddCollider(myEntity.GetComponent<MeshColliderComponent>(), myEntity);
 
-		if (myRigidBodyData.bodyType == BodyType::Dynamic)
+		if (m_rigidBodyData.bodyType == BodyType::Dynamic)
 		{
-			SetMass(myRigidBodyData.mass);
+			SetMass(m_rigidBodyData.mass);
 		}
 
-		myRigidActor->userData = this;
+		m_rigidActor->userData = this;
 
 #ifndef VT_DIST
-		myRigidActor->setName(myEntity.GetTag().c_str());
+		m_rigidActor->setName(myEntity.GetTag().c_str());
 #endif
 
-		SetSimulationData(myRigidBodyData.layerId);
+		SetSimulationData(m_rigidBodyData.layerId);
 	}
 
 	void PhysicsActor::SynchronizeTransform()
 	{
-		if (myToBeRemoved)
+		if (m_toBeRemoved)
 		{ 
 			return;
 		}
@@ -485,7 +485,7 @@ namespace Volt
 			return; 
 		}
 
-		physx::PxTransform actorPose = myRigidActor->getGlobalPose();
+		physx::PxTransform actorPose = m_rigidActor->getGlobalPose();
 
 		myEntity.SetPosition(PhysXUtilities::FromPhysXVector(actorPose.p), false);
 

@@ -60,6 +60,7 @@ namespace Volt
 		template<typename T> void RemoveComponent();
 		void RemoveComponent(const VoltGUID& guid);
 		VT_NODISCARD bool HasComponent(std::string_view componentName) const;
+		VT_NODISCARD bool HasComponent(const VoltGUID& componentGUID) const;
 
 		VT_NODISCARD VT_INLINE explicit operator bool() const { return IsValid(); }
 

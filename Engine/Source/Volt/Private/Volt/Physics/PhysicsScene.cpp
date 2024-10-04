@@ -15,7 +15,7 @@
 namespace Volt
 {
 	PhysicsScene::PhysicsScene(const PhysicsSettings& physicsSettings, Scene* entityScene)
-		: mySubStepSize(physicsSettings.fixedTimestep), myEntityScene(entityScene)
+		: m_subStepSize(physicsSettings.fixedTimestep), m_entityScene(entityScene)
 	{
 		physx::PxSceneDesc sceneDesc{ PhysXInternal::GetPhysXSDK().getTolerancesScale() };
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
@@ -26,21 +26,21 @@ namespace Volt
 		sceneDesc.broadPhaseType = PhysXInternal::VoltToPhysXBroadphase(physicsSettings.broadphaseAlgorithm);
 		sceneDesc.cpuDispatcher = PhysXInternal::GetCPUDispatcher();
 		sceneDesc.filterShader = (physx::PxSimulationFilterShader)PhysXInternal::FilterShader;
-		sceneDesc.simulationEventCallback = &myContactListener;
+		sceneDesc.simulationEventCallback = &m_contactListener;
 		sceneDesc.frictionType = PhysXInternal::VoltToPhysXFrictionType(physicsSettings.frictionModel);
 
 		VT_ASSERT_MSG(sceneDesc.isValid(), "Physics scene not valid!");
 
-		myPhysXScene = PhysXInternal::GetPhysXSDK().createScene(sceneDesc);
-		VT_ASSERT_MSG(myPhysXScene, "PhysX scene not valid!");
+		m_physXScene = PhysXInternal::GetPhysXSDK().createScene(sceneDesc);
+		VT_ASSERT_MSG(m_physXScene, "PhysX scene not valid!");
 
-		myControllerManager = PxCreateControllerManager(*myPhysXScene);
-		myControllerManager->setTessellation(true, 100.f);
+		m_controllerManager = PxCreateControllerManager(*m_physXScene);
+		m_controllerManager->setTessellation(true, 100.f);
 
 #ifndef VT_DIST
 		if (!Application::Get().IsRuntime())
 		{
-			myPhysXScene->getScenePvdClient()->setScenePvdFlags(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS | physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES | physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS);
+			m_physXScene->getScenePvdClient()->setScenePvdFlags(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS | physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES | physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS);
 		}
 #endif
 
@@ -59,7 +59,7 @@ namespace Volt
 		if (advanced)
 		{
 			uint32_t activeActorCount = 0;
-			physx::PxActor** activeActors = myPhysXScene->getActiveActors(activeActorCount);
+			physx::PxActor** activeActors = m_physXScene->getActiveActors(activeActorCount);
 
 			for (uint32_t i = 0; i < activeActorCount; i++)
 			{
@@ -70,10 +70,10 @@ namespace Volt
 				}
 			}
 
-			myEntityScene->FixedUpdate(timeStep);
+			m_entityScene->FixedUpdate(timeStep);
 		}
 
-		if (myEntityScene->IsPlaying())
+		if (m_entityScene->IsPlaying())
 		{
 			if (advanced)
 			{
@@ -83,7 +83,7 @@ namespace Volt
 
 		{
 			VT_PROFILE_SCOPE("Update actors");
-			for (const auto& actor : myControllerActors)
+			for (const auto& actor : m_controllerActors)
 			{
 				actor->Update(timeStep);
 			}
@@ -91,18 +91,18 @@ namespace Volt
 
 		{
 			VT_PROFILE_SCOPE("Synchronize Transform");
-			for (const auto& actor : myControllerActors)
+			for (const auto& actor : m_controllerActors)
 			{
 				actor->SynchronizeTransform();
 			}
 		}
 
-		for (const auto& f : myFunctionQueue)
+		for (const auto& f : m_functionQueue)
 		{
 			f();
 		}
 
-		myFunctionQueue.clear();
+		m_functionQueue.clear();
 	}
 
 	Ref<PhysicsActor> PhysicsScene::GetActor(Entity entity)
@@ -148,20 +148,20 @@ namespace Volt
 	Ref<PhysicsActor> PhysicsScene::CreateActor(Entity entity)
 	{
 		Ref<PhysicsActor> actor = CreateRef<PhysicsActor>(entity);
-		myPhysicsActors.emplace_back(actor);
+		m_physicsActors.emplace_back(actor);
 
 		m_physicsActorFromEntityIDMap[entity.GetHandle()] = actor;
 
 		auto func = [&, addedEntity = entity]()
 		{
 			auto addedActor = GetActor(addedEntity);
-			myPhysXScene->addActor(*addedActor->myRigidActor);
+			m_physXScene->addActor(*addedActor->m_rigidActor);
 			addedActor->SetPosition(addedEntity.GetPosition());
 		};
 
-		if (myInSimulation)
+		if (m_inSimulation)
 		{
-			myFunctionQueue.emplace_back(func);
+			m_functionQueue.emplace_back(func);
 		}
 		else
 		{
@@ -173,24 +173,24 @@ namespace Volt
 
 	void PhysicsScene::RemoveActor(Ref<PhysicsActor> actor)
 	{
-		actor->myToBeRemoved = true;
+		actor->m_toBeRemoved = true;
 
 		auto func = [&, addedActor = actor]()
 		{
-			for (auto& collider : addedActor->myColliders)
+			for (auto& collider : addedActor->m_colliders)
 			{
-				collider->DetachFromActor(addedActor->myRigidActor);
+				collider->DetachFromActor(addedActor->m_rigidActor);
 				collider->Release();
 			}
 
-			myPhysXScene->removeActor(*addedActor->myRigidActor);
-			addedActor->myRigidActor->release();
-			addedActor->myRigidActor = nullptr;
+			m_physXScene->removeActor(*addedActor->m_rigidActor);
+			addedActor->m_rigidActor->release();
+			addedActor->m_rigidActor = nullptr;
 		};
 
-		if (myInSimulation)
+		if (m_inSimulation)
 		{
-			myFunctionQueue.emplace_back(func);
+			m_functionQueue.emplace_back(func);
 		}
 		else
 		{
@@ -199,14 +199,14 @@ namespace Volt
 
 		auto actorEntityHandle = actor->GetEntity().GetHandle();
 
-		auto it = std::find_if(myPhysicsActors.begin(), myPhysicsActors.end(), [actorEntityHandle](const Ref<PhysicsActor>& a)
+		auto it = std::find_if(m_physicsActors.begin(), m_physicsActors.end(), [actorEntityHandle](const Ref<PhysicsActor>& a)
 		{
 			return a->GetEntity().GetHandle() == actorEntityHandle;
 		});
 
-		if (it != myPhysicsActors.end())
+		if (it != m_physicsActors.end())
 		{
-			myPhysicsActors.erase(it);
+			m_physicsActors.erase(it);
 		}
 
 		if (m_physicsActorFromEntityIDMap.contains(actorEntityHandle))
@@ -218,19 +218,19 @@ namespace Volt
 	Ref<PhysicsControllerActor> PhysicsScene::CreateControllerActor(Entity entity)
 	{
 		Ref<PhysicsControllerActor> actor = CreateRef<PhysicsControllerActor>(entity);
-		myControllerActors.emplace_back(actor);
+		m_controllerActors.emplace_back(actor);
 		m_physicsControllerActorFromEntityIDMap[entity.GetHandle()] = actor;
 
 		auto func = [&, addedEntity = entity]()
 		{
 			auto controllerActor = GetControllerActor(addedEntity);
-			controllerActor->Create(myControllerManager);
+			controllerActor->Create(m_controllerManager);
 			controllerActor->SetPosition(entity.GetPosition());
 		};
 
-		if (myInSimulation)
+		if (m_inSimulation)
 		{
-			myFunctionQueue.emplace_back(func);
+			m_functionQueue.emplace_back(func);
 		}
 		else
 		{
@@ -244,14 +244,14 @@ namespace Volt
 	{
 		auto actorEntityHandle = controllerActor->GetEntity().GetHandle();
 
-		auto it = std::find_if(myControllerActors.begin(), myControllerActors.end(), [actorEntityHandle](const auto& lhs)
+		auto it = std::find_if(m_controllerActors.begin(), m_controllerActors.end(), [actorEntityHandle](const auto& lhs)
 		{
 			return lhs->GetEntity().GetHandle() == actorEntityHandle;
 		});
 
-		if (it != myControllerActors.end())
+		if (it != m_controllerActors.end())
 		{
-			myControllerActors.erase(it);
+			m_controllerActors.erase(it);
 		}
 
 		if (m_physicsControllerActorFromEntityIDMap.contains(actorEntityHandle))
@@ -264,7 +264,7 @@ namespace Volt
 	{
 		physx::PxRaycastBuffer hitInfo{};
 
-		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo);
+		bool result = m_physXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo);
 
 		if (result)
 		{
@@ -288,7 +288,7 @@ namespace Volt
 		qFilterData.data = data;
 
 		physx::PxRaycastBuffer hitInfo{};
-		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo, physx::PxHitFlag::eDEFAULT, qFilterData);
+		bool result = m_physXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo, physx::PxHitFlag::eDEFAULT, qFilterData);
 
 		if (result)
 		{
@@ -309,7 +309,7 @@ namespace Volt
 		glm::vec3 direction = destination - origin;
 		float distance = glm::distance(destination, origin);
 
-		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(glm::normalize(direction)), distance, hitInfo);
+		bool result = m_physXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(glm::normalize(direction)), distance, hitInfo);
 
 		if (result)
 		{
@@ -337,7 +337,7 @@ namespace Volt
 		physx::PxRaycastBuffer hitInfo{};
 		glm::vec3 direction = destination - origin;
 		float distance = glm::distance(destination, origin);
-		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(glm::normalize(direction)), distance, hitInfo, physx::PxHitFlag::eDEFAULT, qFilterData);
+		bool result = m_physXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(glm::normalize(direction)), distance, hitInfo, physx::PxHitFlag::eDEFAULT, qFilterData);
 
 		if (result)
 		{
@@ -472,7 +472,7 @@ namespace Volt
 		{
 			physx::PxBroadPhaseRegion region;
 			region.mBounds = regionBounds[i];
-			myPhysXScene->addBroadPhaseRegion(region);
+			m_physXScene->addBroadPhaseRegion(region);
 		}
 	}
 
@@ -482,56 +482,56 @@ namespace Volt
 
 		SubstepStrategy(timeStep);
 
-		for (uint32_t i = 0; i < myNumSubSteps; i++)
+		for (uint32_t i = 0; i < m_numSubSteps; i++)
 		{
-			myInSimulation = true;
-			myPhysXScene->simulate(mySubStepSize);
-			myPhysXScene->fetchResults(true);
+			m_inSimulation = true;
+			m_physXScene->simulate(m_subStepSize);
+			m_physXScene->fetchResults(true);
 		}
 
-		myInSimulation = false;
+		m_inSimulation = false;
 
-		return myNumSubSteps != 0;
+		return m_numSubSteps != 0;
 	}
 
 	void PhysicsScene::SubstepStrategy(float timeStep)
 	{
-		if (myAccumulator > mySubStepSize)
+		if (m_accumulator > m_subStepSize)
 		{
-			myAccumulator = 0.f;
+			m_accumulator = 0.f;
 		}
 
-		myAccumulator += timeStep;
-		if (myAccumulator < mySubStepSize)
+		m_accumulator += timeStep;
+		if (m_accumulator < m_subStepSize)
 		{
-			myNumSubSteps = 0;
+			m_numSubSteps = 0;
 			return;
 		}
 
-		myNumSubSteps = glm::min(static_cast<uint32_t>(myAccumulator / mySubStepSize), myMaxSubSteps);
-		myAccumulator -= (float)myNumSubSteps * mySubStepSize;
+		m_numSubSteps = glm::min(static_cast<uint32_t>(m_accumulator / m_subStepSize), m_maxSubSteps);
+		m_accumulator -= (float)m_numSubSteps * m_subStepSize;
 	}
 
 	void PhysicsScene::Destroy()
 	{
-		VT_ASSERT_MSG(myPhysXScene, "Trying to destroy invalid physics scene!");
+		VT_ASSERT_MSG(m_physXScene, "Trying to destroy invalid physics scene!");
 
-		myInSimulation = true;
-		for (int32_t i = (int32_t)myPhysicsActors.size() - 1; i >= 0; --i)
+		m_inSimulation = true;
+		for (int32_t i = (int32_t)m_physicsActors.size() - 1; i >= 0; --i)
 		{
-			RemoveActor(myPhysicsActors[i]);
+			RemoveActor(m_physicsActors[i]);
 		}
-		myPhysicsActors.clear();
+		m_physicsActors.clear();
 
-		for (const auto& f : myFunctionQueue)
+		for (const auto& f : m_functionQueue)
 		{
 			f();
 		}
 
-		myFunctionQueue.clear();
+		m_functionQueue.clear();
 
-		myPhysXScene->release();
-		myPhysXScene = nullptr;
+		m_physXScene->release();
+		m_physXScene = nullptr;
 	}
 
 	bool PhysicsScene::OverlapGeometry(const glm::vec3& origin, const physx::PxGeometry& geometry, std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS>& buffer, uint32_t& count, const physx::PxQueryFilterData& filterData)
@@ -539,7 +539,7 @@ namespace Volt
 		physx::PxOverlapBuffer buf(buffer.data(), MAX_OVERLAP_COLLIDERS);
 		physx::PxTransform pose = PhysXUtilities::ToPhysXTransform(glm::translate(glm::mat4(1.0f), origin));
 
-		bool result = myPhysXScene->overlap(geometry, pose, buf, filterData);
+		bool result = m_physXScene->overlap(geometry, pose, buf, filterData);
 		if (result)
 		{
 			memcpy(buffer.data(), buf.touches, buf.nbTouches * sizeof(physx::PxOverlapHit));
