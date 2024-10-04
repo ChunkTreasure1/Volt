@@ -32,9 +32,12 @@ namespace Circuit
 
 	void SliderWidget::Build(const Arguments& args)
 	{
-		m_MinValue = args._Min;
-		m_MaxValue = args._Max;
-		m_Value = args._Value;
+		m_minValue = args._MinValue;
+		m_maxValue = args._MaxValue;
+
+		m_value = args._Value;
+
+		m_onValueChanged = args._OnValueChanged;
 	}
 
 	void SliderWidget::OnPaint(CircuitPainter& painter)
@@ -62,39 +65,22 @@ namespace Circuit
 
 	float SliderWidget::GetValue() const
 	{
-		return m_Value;
-	}
-
-	void SliderWidget::SetValue(float value)
-	{
-		m_Value = value;
+		return m_value.Get();
 	}
 
 	float SliderWidget::GetMinValue() const
 	{
-		return m_MinValue;
+		return m_minValue;
 	}
-
-	void SliderWidget::SetMinValue(float value)
-	{
-		m_MinValue = value;
-	}
-
 
 	float SliderWidget::GetMaxValue() const
 	{
-		return m_MaxValue;
+		return m_maxValue;
 	}
-
-	void SliderWidget::SetMaxValue(float value)
-	{
-		m_MaxValue = value;
-	}
-
 
 	float SliderWidget::GetValueNormalized()
 	{
-		return (m_Value - m_MinValue) / (m_MaxValue - m_MinValue);
+		return (m_value.Get() - m_minValue) / (m_maxValue - m_minValue);
 	}
 
 	void SliderWidget::RegisterEventListeners()
@@ -155,6 +141,6 @@ namespace Circuit
 		// Calculate the normalized value (0 to 1)
 		float valueNormalized = (clamped - topLeft.x) / (bottomRight.x - topLeft.x);
 
-		SetValue(m_MinValue + valueNormalized * (m_MaxValue - m_MinValue));
+		m_onValueChanged.ExecuteIfBound(m_minValue + valueNormalized * (m_maxValue - m_minValue));
 	}
 }

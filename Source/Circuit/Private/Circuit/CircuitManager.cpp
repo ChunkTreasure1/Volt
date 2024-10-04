@@ -39,50 +39,19 @@ namespace Circuit
 
 		RegisterWindow(Volt::WindowManager::Get().GetMainWindowHandle());
 
+		static float sliderValue = 50.f;
 		m_windows[Volt::WindowManager::Get().GetMainWindowHandle()]->SetWidget(
-			CreateWidget(Circuit::TextWidget)
-		.X(100)
-		.Y(100)
-			.Text("This is some text!")
-		);
-
-		int32_t capturedLocalInt = 10;
-		int32_t copiedLocalInt = 5;
-		Volt::Delegate<int32_t(float)> testLambdaDelegate = Volt::Delegate<int32_t(float)>::CreateLambda([&capturedLocalInt, copied = copiedLocalInt, this](float aParam)
+			CreateWidget(SliderWidget)
+			.X(100)
+			.Y(100)
+			.MinValue(0)
+			.MaxValue(100)
+			.Value_Lambda([]() {return sliderValue; })
+			.OnValueChanged_Lambda([](float newValue) 
 		{
-			VT_LOG(Warning, "I WAS CALLED FROM A LAMBDA DELEGATE!!! capturedLocalInt: {0}, copiedLocalInt: {1}, FloatParameter: {2}, WindowCount from this: {3}", capturedLocalInt, copied, aParam, m_windows.size());
-
-			return capturedLocalInt * copied;
-		});
-		int32_t lambdaResult = testLambdaDelegate.Execute(52.5f);
-		VT_LOG(Warning, "Result from lambda delegate: {0}", lambdaResult);
-
-		Volt::Delegate<int32_t(float)> testStaticDelegate = Volt::Delegate<int32_t(float)>::CreateStatic(&CircuitManager::TestingStaticDelegates);
-		int32_t staticResult = testStaticDelegate.Execute(52.5f);
-		VT_LOG(Warning, "Result from static delegate: {0}", staticResult);
-
-		Volt::Delegate<int32_t(float)> testRawDelegate = Volt::Delegate<int32_t(float)>::CreateRaw(this, &CircuitManager::TestingRawDelegates);
-		int32_t rawResult = testRawDelegate.Execute(52.5f);
-		VT_LOG(Warning, "Result from Raw delegate: {0}", rawResult);
-
-
-
-
-		//CreateWidget(Circuit::SliderWidget)
-		//	.Max(100)
-		//	.Min(0)
-		//	.Value(50.f);
-
-
-		//CreateWidget(Circuit::SliderWidget)
-		//	.Max(this, &SliderWidget::GetMaxValue)
-		//	.Min(this, &SliderWidget::GetMinValue)
-		//	.Value(this, &SliderWidget::GetValue);
-
-		//.Value_lambda([]() 
-		//	{
-		//	return 100.f;
-		//	})
+			sliderValue = newValue; 
+		})
+		);
 	}
 
 	void CircuitManager::RegisterEventListeners()

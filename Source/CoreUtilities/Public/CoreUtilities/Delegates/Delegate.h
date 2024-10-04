@@ -2,8 +2,11 @@
 
 #include "CoreUtilities/Delegates/DelegateInstance.h"
 
+#include "CoreUtilities/Delegates/DelegateDeclarationHelpers.h"
+
 namespace Volt
 {
+
 	template<typename ReturnType, typename... ParamTypes>
 	class Delegate
 	{
@@ -11,33 +14,88 @@ namespace Volt
 	};
 
 	template<typename ReturnType, typename... ParamTypes>
-	class Delegate<ReturnType(ParamTypes...)>
+	class VTCOREUTIL_API Delegate<ReturnType(ParamTypes...)>
 	{
 		using FnType = ReturnType(ParamTypes...);
 
 		DelegateInstance<FnType>* m_delegateInstance = nullptr;
 
+	public:
+
+		typedef ReturnType DelegateReturnType;
+
+		template <typename... VarTypes> using FnPtr = ReturnType(*)(ParamTypes..., VarTypes...);
+		template <typename UserClass, typename... VarTypes> using MemberFnPtr = typename MemFnPtrType<false, UserClass, ReturnType(ParamTypes..., std::decay_t<VarTypes>...)>::Type;
+		template <typename UserClass, typename... VarTypes> using ConstMemberFnPtr = typename MemFnPtrType<true, UserClass, ReturnType(ParamTypes..., std::decay_t<VarTypes>...)>::Type;
 
 	public:
 		~Delegate()
 		{
 			Unbind();
 		}
+	public:
+		Delegate() = default;
+
+		Delegate(const Delegate& other)
+		{
+			if (other.m_delegateInstance)
+			{
+				m_delegateInstance = other.m_delegateInstance->CreateCopy();
+			}
+			else
+			{
+				m_delegateInstance = nullptr;
+			}
+		}
+
+		Delegate(Delegate&& other) noexcept
+			: m_delegateInstance(other.m_delegateInstance)
+		{
+			other.m_delegateInstance = nullptr;
+		}
+
+		Delegate<FnType>& operator=(const Delegate<FnType>& other)
+		{
+			if (this != &other)
+			{
+				delete m_delegateInstance;
+				if (other.m_delegateInstance)
+				{
+					m_delegateInstance = other.m_delegateInstance->CreateCopy();
+				}
+				else
+				{
+					m_delegateInstance = nullptr;
+				}
+			}
+			return *this;
+		}
+
+		Delegate< FnType>& operator=(Delegate<FnType>&& other) noexcept
+		{
+			if (this != &other)
+			{
+				delete m_delegateInstance;
+				m_delegateInstance = other.m_delegateInstance;
+				other.m_delegateInstance = nullptr;
+			}
+			return *this;
+		}
+
 	private:
 		template<typename DelegateInstanceType, typename... DelegateInstanceParams>
 		void CreateDelegateInstance(DelegateInstanceParams&&... params)
 		{
-			/*DelegateInstance<FnType>* delegateInstance = m_delegateInstance;
-			if (DelegateInstance)
+			if (m_delegateInstance)
 			{
-				DelegateInstance->~IDelegateInstance();
-			}*/
+				delete m_delegateInstance;
+				m_delegateInstance = nullptr;
+			}
 
 			m_delegateInstance = new DelegateInstanceType(std::forward<DelegateInstanceParams>(params)...);
 		}
-
 	public:
-		bool IsBound()
+		bool IsBound() const
 		{
 			return m_delegateInstance != nullptr && m_delegateInstance->IsSafeToExecute();
 		}
@@ -76,6 +134,32 @@ namespace Volt
 			return result;
 		}
 
+	public:
+		template<typename FunctorType, typename... LambdaParamTypes>
+		void BindLambda(FunctorType&& functor, LambdaParamTypes&&... params)
+		{
+			this->template CreateDelegateInstance<FunctorDelegateInstance<FnType, typename std::remove_reference<FunctorType>::type, std::decay_t<LambdaParamTypes>...>>(std::forward<FunctorType>(functor), std::forward<LambdaParamTypes>(params)...);
+		}
+
+		template< typename... StaticFnParamTypes>
+		void BindStatic(typename std::type_identity<ReturnType(*)(ParamTypes..., std::decay_t<StaticFnParamTypes>...)>::type func, StaticFnParamTypes&&... params)
+		{
+			this->template CreateDelegateInstance<StaticDelegateInstance<FnType, std::decay_t<StaticFnParamTypes>...>>(func, std::forward<StaticFnParamTypes>(params)...);
+		}
+
+		template <typename UserClass, typename... RawFnParamTypes>
+		void BindRaw(UserClass* userObject, typename MemFnPtrType<false, UserClass, ReturnType(ParamTypes..., std::decay_t<RawFnParamTypes>...)>::Type func, RawFnParamTypes&&... params)
+		{
+			static_assert(!std::is_const_v<UserClass>, "Attempting to bind a delegate with a const object pointer and non-const member function.");
+
+			this->template CreateDelegateInstance<RawFunctionDelegateInstance<false, UserClass, FnType, std::decay_t<RawFnParamTypes>...>>(userObject, func, std::forward<RawFnParamTypes>(params)...);
+		}
+
+		template <typename UserClass, typename... RawFnParamTypes>
+		void BindRaw(const UserClass* userObject, typename MemFnPtrType<true, UserClass, ReturnType(ParamTypes..., std::decay_t<RawFnParamTypes>...)>::Type func, RawFnParamTypes&&... params)
+		{
+			this->template CreateDelegateInstance<RawFunctionDelegateInstance<true, UserClass, FnType, std::decay_t<RawFnParamTypes>...>>(userObject, func, std::forward<RawFnParamTypes>(params)...);
+		}
 
 	public:
 		ReturnType Execute(ParamTypes... params) const
@@ -91,7 +175,7 @@ namespace Volt
 		>
 		bool ExecuteIfBound(ParamTypes... params) const
 		{
-			if (m_delegateInstance)
+			if (IsBound())
 			{
 				m_delegateInstance->Execute(std::forward<ParamTypes>(params)...);
 				return true;
@@ -101,8 +185,11 @@ namespace Volt
 
 		void Unbind()
 		{
-			delete m_delegateInstance;
-			m_delegateInstance = nullptr;
+			if (m_delegateInstance)
+			{
+				delete m_delegateInstance;
+				m_delegateInstance = nullptr;
+			}
 		}
 	};
 };

@@ -1,6 +1,8 @@
 #pragma once
 #include "Circuit/Widgets/Widget.h"
 
+#include <CoreUtilities/Delegates/Delegate.h>
+
 #include <EventSystem/EventListener.h>
 
 
@@ -11,6 +13,7 @@ namespace Volt
 	class MouseButtonReleasedEvent;
 }
 
+DECLARE_DELEGATE_OneParam(OnFloatValueChangedDelegate, float /*NewValue*/);
 namespace Circuit
 {
 	class CIRCUIT_API SliderWidget : public Widget, public Volt::EventListener
@@ -22,9 +25,13 @@ namespace Circuit
 		CIRCUIT_BEGIN_ARGS(SliderWidget)
 		{
 		};
-		CIRCUIT_ARGUMENT(float, Value);
-		CIRCUIT_ARGUMENT(float, Min);
-		CIRCUIT_ARGUMENT(float, Max);
+
+		CIRCUIT_ATTRIBUTE(float, Value);
+
+		CIRCUIT_ARGUMENT(float, MinValue);
+		CIRCUIT_ARGUMENT(float, MaxValue);
+
+		CIRCUIT_EVENT(OnFloatValueChangedDelegate, OnValueChanged)
 		CIRCUIT_END_ARGS();
 
 		void Build(const Arguments& args);
@@ -32,13 +39,10 @@ namespace Circuit
 		virtual void OnPaint(CircuitPainter& painter) override;
 
 		float GetValue() const;
-		void SetValue(float value);
 
 		float GetMinValue() const;
-		void SetMinValue(float value);
 
 		float GetMaxValue() const;
-		void SetMaxValue(float value);
 
 		float GetValueNormalized();
 	private:
@@ -52,10 +56,12 @@ namespace Circuit
 
 		bool m_dragging;
 
-		float m_Value;
-		//unsigned int m_OnValueChangeHandle;
-		float m_MinValue;
-		float m_MaxValue;
+		Volt::Attribute<float> m_value;
+
+		float m_minValue;
+		float m_maxValue;
+
+		OnFloatValueChangedDelegate m_onValueChanged;
 
 		static constexpr uint32_t s_sliderWidth = 200;
 		static constexpr uint32_t s_sliderHeight = 10;

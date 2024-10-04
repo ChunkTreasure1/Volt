@@ -34,6 +34,8 @@ namespace Volt
 		virtual bool IsSafeToExecute() const = 0;
 		virtual ReturnType Execute(ParamTypes...) const = 0;
 		virtual bool ExecuteIfSafe(ParamTypes...) const = 0;
+
+		virtual DelegateInstance<ReturnType(ParamTypes...)>* CreateCopy() const = 0;
 	protected:
 		std::tuple<ParamTypes...> m_paramTypes;
 
@@ -74,7 +76,10 @@ namespace Volt
 			return true;
 		}
 
-
+		DelegateInstance<ReturnType(ParamTypes...)>* CreateCopy() const override
+		{
+			return new FunctorDelegateInstance(*this);
+		}
 	private:
 		mutable std::remove_const_t<FunctorType> m_functor;
 	};
@@ -118,7 +123,10 @@ namespace Volt
 			return true;
 		}
 
-
+		DelegateInstance<ReturnType(ParamTypes...)>* CreateCopy() const override
+		{
+			return new StaticDelegateInstance(*this);
+		}
 	private:
 		FnPtr m_staticFunctionPtr;
 	};
@@ -178,7 +186,10 @@ namespace Volt
 			return true;
 		}
 
-
+		DelegateInstance<ReturnType(ParamTypes...)>* CreateCopy() const override
+		{
+			return new RawFunctionDelegateInstance(*this);
+		}
 	private:
 		UserClass* m_userObject;
 
