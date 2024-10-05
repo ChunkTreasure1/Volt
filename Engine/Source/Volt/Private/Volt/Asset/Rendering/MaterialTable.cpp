@@ -21,6 +21,6 @@ namespace Volt
 
 	bool MaterialTable::ContainsMaterialIndex(uint32_t index) const
 	{
-		return static_cast<size_t>(index) >= m_materials.size();
+		return static_cast<size_t>(index) < m_materials.size();
 	}
 }

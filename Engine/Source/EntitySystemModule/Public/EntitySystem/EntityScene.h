@@ -10,6 +10,8 @@ class ScriptingEngine;
 
 namespace Volt
 {
+	class RenderScene;
+
 	class VTES_API EntityScene
 	{
 	public:
@@ -47,6 +49,10 @@ namespace Volt
 		VT_NODISCARD VT_INLINE entt::registry& GetRegistry() { return m_registry; }
 		VT_NODISCARD VT_INLINE const entt::registry& GetRegistry() const { return m_registry; }
 
+		// #TODO_Ivar: Hack until we can figure out a proper structure
+		VT_NODISCARD VT_INLINE RenderScene* GetRenderScene() const { return m_renderScene; }
+		VT_INLINE void SetRenderScene(RenderScene* renderScene) { m_renderScene = renderScene; }
+
 	private:
 		friend class EntityHelper;
 
@@ -63,5 +69,7 @@ namespace Volt
 		Scope<ScriptingEngine> m_scriptingEngine;
 		EntityRegistry m_entityRegistry;
 		mutable EntityTransformCache m_transformCache;
+
+		RenderScene* m_renderScene;
 	};
 }

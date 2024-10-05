@@ -12,3 +12,13 @@ ScriptingEngine::~ScriptingEngine()
 {
 	m_ecsEventDispatcher = nullptr;
 }
+
+void ScriptingEngine::OnRuntimeStart()
+{
+	m_ecsEventDispatcher->OnRuntimeStart();
+}
+
+void ScriptingEngine::OnRuntimeEnd()
+{
+	m_ecsEventDispatcher->OnRuntimeEnd();
+}

@@ -11,6 +11,12 @@ class ECSEventDispatcher : public Volt::EventListener
 {
 public:
 	ECSEventDispatcher();
+	~ECSEventDispatcher() override;
+
+	void OnRuntimeStart();
+	void OnRuntimeEnd();
+
+	void Clear();
 
 	template<Volt::IsEvent T, typename... Filter, typename F>
 	void RegisterListenerSystem(const F& func)
@@ -23,6 +29,11 @@ public:
 		{
 			RegisterListener<T>([this, typeIndex](T& event) -> bool
 			{
+				if (!m_isInRuntime)
+				{
+					return false;
+				}
+
 				for (auto& listenerInfo : m_registeredListeners.at(typeIndex))
 				{
 					if constexpr (EventHasGetEntitiesFunc)
@@ -83,8 +94,6 @@ public:
 		m_registeredListeners[typeIndex].emplace_back(std::move(listenerInfo));
 	}
 
-	void Clear();
-
 private:
 	using EventFunc = std::function<void(void*)>;
 
@@ -103,4 +112,5 @@ private:
 	};
 
 	vt::map<TypeTraits::TypeIndex, Vector<ECSEventListenerInfo>> m_registeredListeners;
+	bool m_isInRuntime = false;
 };

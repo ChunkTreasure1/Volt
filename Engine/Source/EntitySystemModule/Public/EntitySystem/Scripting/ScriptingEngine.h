@@ -12,6 +12,9 @@ public:
 	ScriptingEngine();
 	~ScriptingEngine();
 
+	void OnRuntimeStart();
+	void OnRuntimeEnd();
+
 	ECSEventDispatcher& GetEventDispatcher() { return *m_ecsEventDispatcher; }
 
 private:

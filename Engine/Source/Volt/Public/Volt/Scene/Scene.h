@@ -58,7 +58,6 @@ namespace Volt
 
 		void MarkEntityAsEdited(const Entity& entity);
 		void ClearEditedEntities();
-		void InvalidateRenderScene();
 
 		VT_NODISCARD TQS GetEntityWorldTQS(const Entity& entity) const;
 

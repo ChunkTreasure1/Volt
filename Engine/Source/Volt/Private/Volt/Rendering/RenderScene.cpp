@@ -10,16 +10,11 @@
 #include "Volt/Rendering/GPUScene.h"
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/Utility/ScatteredBufferUpload.h"
-#include "Volt/Rendering/Camera/Camera.h"
 
 #include "Volt/Animation/MotionWeaver.h"
 #include "Volt/Asset/Animation/Skeleton.h"
 
-#include "Volt/Math/Math.h"
-#include "Volt/Utility/Algorithms.h"
-
 #include <RHIModule/Buffers/StorageBuffer.h>
-#include <RHIModule/Buffers/CommandBuffer.h>
 
 namespace Volt
 {
@@ -73,84 +68,6 @@ namespace Volt
 	{
 		AssetManager::UnregisterAssetChangedCallback(AssetTypes::Material, m_materialChangedCallbackID);
 		AssetManager::UnregisterAssetChangedCallback(AssetTypes::Mesh, m_meshChangedCallbackID);
-	}
-
-	void RenderScene::PrepareForUpdate()
-	{
-		VT_PROFILE_FUNCTION();
-
-		std::sort(std::execution::par, m_renderObjects.begin(), m_renderObjects.end(), [](const auto& lhs, const auto& rhs)
-		{
-			if (lhs.mesh.GetHash() < rhs.mesh.GetHash())
-			{
-				return true;
-			}
-
-			if (lhs.mesh.GetHash() > rhs.mesh.GetHash())
-			{
-				return false;
-			}
-
-			if (lhs.subMeshIndex < rhs.subMeshIndex)
-			{
-				return true;
-			}
-
-			if (lhs.subMeshIndex > rhs.subMeshIndex)
-			{
-				return false;
-			}
-
-			return false;
-		});
-
-		m_currentIndividualMeshCount = 0;
-		m_currentMeshletCount = 0;
-		m_individualMeshes.clear();
-		m_individualMaterials.clear();
-		m_materialIndexFromAssetHandle.clear();
-
-		m_invalidPrimitiveDataIndices.clear();
-		m_invalidMaterials.clear();
-
-		for (size_t i = 0; i < m_renderObjects.size(); i++)
-		{
-			const uint32_t materialIndex = GetMaterialIndex(m_renderObjects[i].material);
-			if (materialIndex == std::numeric_limits<uint32_t>::max())
-			{
-				m_individualMaterials.push_back(m_renderObjects[i].material);
-			}
-
-			if (i == 0)
-			{
-				m_currentIndividualMeshCount += static_cast<uint32_t>(m_renderObjects[i].mesh->GetSubMeshes().size());
-				m_individualMeshes.push_back(m_renderObjects[i].mesh);
-			}
-			else
-			{
-				if (m_renderObjects[i].mesh != m_renderObjects[i - 1].mesh)
-				{
-					m_currentIndividualMeshCount += static_cast<uint32_t>(m_renderObjects[i].mesh->GetSubMeshes().size());
-					m_individualMeshes.push_back(m_renderObjects[i].mesh);
-				}
-			}
-		}
-
-		if (m_renderObjects.empty())
-		{
-			return;
-		}
-
-		m_gpuMeshes = BuildGPUMeshes();
-		m_gpuSDFMeshes = BuildGPUMeshSDFs();
-		m_primitiveDrawData = BuildPrimitiveDrawData();
-		m_sdfPrimitiveDrawData = BuildSDFPrimitiveDrawData();
-
-		UploadGPUMeshes(m_gpuMeshes);
-		UploadGPUMeshSDFs(m_gpuSDFMeshes);
-		UploadPrimitiveDrawData(m_primitiveDrawData);
-		UploadSDFPrimitiveDrawData(m_sdfPrimitiveDrawData);
-		UploadGPUMaterials();
 	}
 
 	void RenderScene::Update(RenderGraph& renderGraph)

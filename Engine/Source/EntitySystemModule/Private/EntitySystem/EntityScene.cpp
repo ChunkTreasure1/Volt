@@ -32,6 +32,8 @@ namespace Volt
 	void EntityScene::OnRuntimeStart()
 	{
 		m_isPlaying = true;
+		m_scriptingEngine->OnRuntimeStart();
+
 		ComponentOnStart();
 		
 		OnSceneRuntimeStartEvent startEvent(*this);
@@ -45,6 +47,7 @@ namespace Volt
 		OnSceneRuntimeEndEvent endEvent(*this);
 		EventSystem::DispatchEvent(endEvent);
 
+		m_scriptingEngine->OnRuntimeEnd();
 		m_isPlaying = false;
 	}
 

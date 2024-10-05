@@ -318,7 +318,7 @@ namespace ECS
 			return m_entityHelper.GetLocalUp();
 		}
 
-		Volt::EntityID GetID() const
+		VT_NODISCARD Volt::EntityID GetID() const
 		{
 			using ComponentTraits = Utility::TypeIndex<std::remove_const_t<std::remove_reference_t<Volt::IDComponent>>, ComponentTupleRaw>;
 			static_assert(ComponentTraits::IsValid);
@@ -327,6 +327,10 @@ namespace ECS
 		}
 
 		VT_NODISCARD VT_INLINE entt::entity GetHandle() const { return m_entityHelper.GetHandle(); }
+		VT_NODISCARD Volt::RenderScene* GetRenderScene() const
+		{
+			return m_entityHelper.GetSceneReference()->GetRenderScene();
+		}
 
 	private:
 		Volt::EntityHelper m_entityHelper;

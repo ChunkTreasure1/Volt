@@ -12,8 +12,9 @@ namespace Volt
 {
 	class Camera;
 	class AnimationController;
+	class ScenePrimitiveData;
 	class MotionWeaver;
-	
+
 	struct MeshComponent
 	{
 		using MeshEntity = ECS::Access
@@ -23,8 +24,6 @@ namespace Volt
 
 		AssetHandle handle = Asset::Null();
 		Vector<AssetHandle> materials;
-
-		Vector<UUID64> renderObjectIds;
 
 		[[nodiscard]] inline const AssetHandle& GetHandle() const { return handle; }
 
@@ -36,23 +35,22 @@ namespace Volt
 			reflect.AddMember(&MeshComponent::materials, "materials", "Materials", "", Vector<AssetHandle>{}, AssetTypes::Material);
 			reflect.SetOnMemberChangedCallback(&MeshComponent::OnMemberChanged);
 			reflect.SetOnComponentCopiedCallback(&MeshComponent::OnComponentCopied);
-			reflect.SetOnComponentDeserializedCallback(&MeshComponent::OnComponentDeserialized);
 			reflect.SetOnDestroyCallback(&MeshComponent::OnDestroy);
+			reflect.SetOnCreateCallback(&MeshComponent::OnCreate);
 			reflect.SetOnTransformChangedCallback(&MeshComponent::OnTransformChanged);
 		}
 
 		REGISTER_COMPONENT(MeshComponent);
 
 		static void OnMemberChanged(MeshEntity entity);
-		static void OnComponentCopied(MeshEntity entity);
-		static void OnComponentDeserialized(MeshEntity entity);
-		static void OnTransformChanged(MeshEntity entity);
 
 	private:
+		static void OnCreate(MeshEntity entity);
 		static void OnDestroy(MeshEntity entity);
+		static void OnTransformChanged(MeshEntity entity);
+		static void OnComponentCopied(MeshEntity entity);
 
-		AssetHandle m_oldHandle = Asset::Null();
-		Vector<AssetHandle> m_oldMaterials;
+		ScenePrimitiveData* m_scenePrimitiveData = nullptr;
 	};
 
 	struct CameraComponent

@@ -6,6 +6,20 @@ ECSEventDispatcher::ECSEventDispatcher()
 {
 }
 
+ECSEventDispatcher::~ECSEventDispatcher()
+{
+}
+
+void ECSEventDispatcher::OnRuntimeStart()
+{
+	m_isInRuntime = true;
+}
+
+void ECSEventDispatcher::OnRuntimeEnd()
+{
+	m_isInRuntime = false;
+}
+
 void ECSEventDispatcher::Clear()
 {
 	m_registeredListeners.clear();

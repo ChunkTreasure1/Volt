@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "Volt/Scene/Scene.h"
 
-#include "Volt/Asset/Rendering/Material.h"
-
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Components/AudioComponents.h"
@@ -17,7 +15,6 @@
 #include "Volt/Math/Math.h"
 
 #include "Volt/Rendering/RenderScene.h"
-#include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/RendererStructs.h"
 #include "Volt/Rendering/Camera/Camera.h"
 
@@ -270,6 +267,7 @@ namespace Volt
 
 				auto& meshComp = ent.AddComponent<MeshComponent>();
 				meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtasset");
+				Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(ent.GetScene()->GetEntityHelperFromEntityID(ent.GetID())));
 			}
 
 			// Light
@@ -297,7 +295,6 @@ namespace Volt
 			}
 		}
 
-		newScene->InvalidateRenderScene();
 		newScene->m_sceneSettings.useWorldEngine = true;
 
 		return newScene;
@@ -323,8 +320,6 @@ namespace Volt
 			otherScene->InvalidateEntityTransform(entity.GetID());
 			otherScene->GetWorldEngineMutable().OnEntityMoved(entity);
 		});
-
-		otherScene->InvalidateRenderScene();
 	} 
 
 	void Scene::Clear()
@@ -365,6 +360,8 @@ namespace Volt
 	{
 		m_visionSystem = CreateRef<Vision>(this);
 		m_renderScene = CreateRef<RenderScene>(this);
+
+		m_entityScene.SetRenderScene(m_renderScene.get());
 
 		m_worldEngine.Reset(this, 16, 4);
 	}
@@ -486,57 +483,6 @@ namespace Volt
 		}
 
 		return entities;
-	}
-	
-	void Scene::InvalidateRenderScene()
-	{
-		auto& registry = m_entityScene.GetRegistry();
-
-		const auto& meshView = registry.view<MeshComponent, IDComponent>();
-		for (const auto& id : meshView)
-		{
-			auto& meshComp = registry.get<MeshComponent>(id);
-			auto& idComp = registry.get<IDComponent>(id);
-
-			for (const auto& uuid : meshComp.renderObjectIds)
-			{
-				m_renderScene->Unregister(uuid);
-			}
-
-			meshComp.renderObjectIds.clear();
-
-			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshComp.handle);
-			if (!mesh)
-			{
-				continue;
-			}
-
-			const auto& materialTable = mesh->GetMaterialTable();
-
-			for (size_t i = 0; i < mesh->GetSubMeshes().size(); i++)
-			{
-				const auto materialIndex = mesh->GetSubMeshes().at(i).materialIndex;
-
-				Ref<Material> mat = AssetManager::QueueAsset<Material>(materialTable.GetMaterial(materialIndex));
-				if (!mat)
-				{
-					VT_LOG(Warning, "[MeshComponent]: Mesh {} has an invalid material at index {}!", mesh->assetName, materialIndex);
-					mat = Renderer::GetDefaultResources().defaultMaterial;
-				}
-
-				if (static_cast<uint32_t>(meshComp.materials.size()) > materialIndex)
-				{
-					if (meshComp.materials.at(materialIndex) != mat->handle)
-					{
-						Ref<Material> tempMat = AssetManager::QueueAsset<Material>(meshComp.materials.at(materialIndex));
-						mat = tempMat;
-					}
-				}
-
-				auto uuid = m_renderScene->Register(idComp.id, mesh, mat, static_cast<uint32_t>(i));
-				meshComp.renderObjectIds.emplace_back(uuid);
-			}
-		}
 	}
 
 	TQS Scene::GetEntityWorldTQS(const Entity& entity) const

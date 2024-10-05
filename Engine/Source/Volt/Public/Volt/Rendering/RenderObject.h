@@ -11,9 +11,11 @@ namespace Volt
 	class Mesh;
 	class MotionWeaver;
 
+	using RenderObjectID = UUID64;
+
 	struct RenderObject
 	{
-		UUID64 id;
+		RenderObjectID id;
 		EntityID entity;
 	
 		Weak<Mesh> mesh;
@@ -30,6 +32,6 @@ namespace Volt
 	inline bool operator==(const RenderObject& lhs, const RenderObject& rhs) { return lhs.id == rhs.id; }
 	inline bool operator!=(const RenderObject& lhs, const RenderObject& rhs) { return !(lhs == rhs); }
 
-	inline bool operator==(const RenderObject& lhs, const UUID64& rhs) { return lhs.id == rhs; }
-	inline bool operator!=(const RenderObject& lhs, const UUID64& rhs) { return !(lhs == rhs); }
+	inline bool operator==(const RenderObject& lhs, const RenderObjectID& rhs) { return lhs.id == rhs; }
+	inline bool operator!=(const RenderObject& lhs, const RenderObjectID& rhs) { return !(lhs == rhs); }
 }

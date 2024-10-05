@@ -746,8 +746,6 @@ void ViewportPanel::CheckDragDrop()
 		m_createdEntity = newEntity;
 
 		Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(newEntity.GetScene()->GetEntityHelperFromEntityID(newEntity.GetID())));
-
-		m_editorScene->InvalidateRenderScene();
 	}
 	else if (type == AssetTypes::MeshSource)
 	{
@@ -774,6 +772,7 @@ void ViewportPanel::CheckDragDrop()
 			{
 				meshComp.handle = mesh->handle;
 			}
+			Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(newEntity.GetScene()->GetEntityHelperFromEntityID(newEntity.GetID())));
 		}
 		else
 		{
@@ -782,8 +781,6 @@ void ViewportPanel::CheckDragDrop()
 			ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).SetImportMeshes({ meshSourcePath });
 			ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).Open();
 		}
-
-		m_editorScene->InvalidateRenderScene();
 
 		newEntity.GetComponent<Volt::TagComponent>().tag = meshSourcePath.stem().string();
 		m_createdEntity = newEntity;

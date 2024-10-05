@@ -24,6 +24,8 @@ namespace Volt
 		Queued = BIT(2)
 	};
 
+	VT_SETUP_ENUM_CLASS_OPERATORS(AssetFlag);
+
 	struct AssetMetadata
 	{
 		inline const bool IsValid() const { return handle != 0; }
@@ -43,7 +45,7 @@ namespace Volt
 	public:
 		virtual ~Asset() = default;
 
-		inline bool IsValid() const { return ((assetFlags & (uint8_t)AssetFlag::Missing) | (assetFlags & (uint8_t)AssetFlag::Invalid) | (assetFlags & (uint8_t)AssetFlag::Queued)) == 0; }
+		VT_NODISCARD VT_INLINE bool IsValid() const { return ((assetFlags & AssetFlag::Missing) | (assetFlags & AssetFlag::Invalid) | (assetFlags & AssetFlag::Queued)) == AssetFlag::None; }
 
 		inline virtual bool operator==(const Asset& other)
 		{
@@ -55,26 +57,26 @@ namespace Volt
 			return !(*this == other);
 		}
 
-		inline bool IsFlagSet(AssetFlag flag) { return (assetFlags & (uint8_t)flag) != 0; }
-		inline void SetFlag(AssetFlag flag, bool state)
+		VT_NODISCARD VT_INLINE bool IsFlagSet(AssetFlag flag) { return (assetFlags & flag) != AssetFlag::None; }
+		VT_INLINE void SetFlag(AssetFlag flag, bool state)
 		{
 			if (state)
 			{
-				assetFlags |= (uint8_t)flag;
+				assetFlags |= flag;
 			}
 			else
 			{
-				assetFlags &= ~(uint8_t)flag;
+				assetFlags &= ~flag;
 			}
 		}
 
-		inline static const AssetHandle Null() { return AssetHandle(0); }
+		VT_NODISCARD VT_INLINE static const AssetHandle Null() { return AssetHandle(0); }
 
 		virtual AssetType GetType() { return AssetTypes::None; }
 		virtual uint32_t GetVersion() const { return 1; }
 		virtual void OnDependencyChanged(AssetHandle dependencyHandle, AssetChangedState state) {}
 
-		uint8_t assetFlags = (uint8_t)AssetFlag::None;
+		AssetFlag assetFlags = AssetFlag::None;
 		AssetHandle handle = {};
 		std::string assetName;
 	};

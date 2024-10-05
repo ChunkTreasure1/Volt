@@ -10,7 +10,7 @@ namespace Volt
 	{
 	public:
 		EventListener() = default;
-		~EventListener();
+		virtual ~EventListener();
 
 		VT_INLINE bool AreEventsBlocked() const { return m_eventsBlocked; }
 

@@ -66,6 +66,9 @@ namespace Volt
 
 		VT_NODISCARD static EntityHelper Null();
 
+		// #TODO_Ivar: Probably shouldn't expose this
+		VT_NODISCARD VT_INLINE EntityScene* GetSceneReference() const { return m_sceneReference; }
+
 	private:
 		EntityScene* m_sceneReference = nullptr;
 		entt::entity m_handle = entt::null;

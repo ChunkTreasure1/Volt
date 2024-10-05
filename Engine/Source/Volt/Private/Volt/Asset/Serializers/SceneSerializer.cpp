@@ -495,8 +495,6 @@ namespace Volt
 				scene->InvalidateEntityTransform(realEntity.GetID());
 			}
 		}
-
-		scene->InvalidateRenderScene();
 	}
 
 	void SceneSerializer::SerializeWorldEngine(const Ref<Scene>& scene, YAMLMemoryStreamWriter& streamWriter) const

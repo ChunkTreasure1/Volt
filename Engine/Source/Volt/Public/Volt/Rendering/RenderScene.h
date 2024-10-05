@@ -40,7 +40,6 @@ namespace Volt
 		RenderScene(Scene* sceneRef);
 		~RenderScene();
 
-		void PrepareForUpdate();
 		void Update(RenderGraph& renderGraph);
 
 		void SetValid();

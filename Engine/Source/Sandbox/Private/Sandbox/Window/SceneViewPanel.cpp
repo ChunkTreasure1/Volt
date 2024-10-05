@@ -1059,8 +1059,6 @@ void SceneViewPanel::DrawMainRightClickPopup()
 
 					ent.SetTag("New Cube");
 
-					m_scene->InvalidateRenderScene();
-
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetID());
 				}
@@ -1073,8 +1071,6 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(m_scene->GetEntityHelperFromEntityID(ent.GetID())));
 
 					ent.SetTag("New Capsule");
-
-					m_scene->InvalidateRenderScene();
 
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetID());
@@ -1089,8 +1085,6 @@ void SceneViewPanel::DrawMainRightClickPopup()
 
 					ent.SetTag("New Cone");
 
-					m_scene->InvalidateRenderScene();
-
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetID());
 				}
@@ -1104,8 +1098,6 @@ void SceneViewPanel::DrawMainRightClickPopup()
 
 					ent.SetTag("New Cylinder");
 
-					m_scene->InvalidateRenderScene();
-
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetID());
 				}
@@ -1117,8 +1109,6 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtasset");
 					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(m_scene->GetEntityHelperFromEntityID(ent.GetID())));
 					ent.SetTag("New Sphere");
-
-					m_scene->InvalidateRenderScene();
 
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetID());
@@ -1132,8 +1122,6 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					Volt::MeshComponent::OnMemberChanged(Volt::MeshComponent::MeshEntity(m_scene->GetEntityHelperFromEntityID(ent.GetID())));
 
 					ent.SetTag("New Plane");
-
-					m_scene->InvalidateRenderScene();
 
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetID());

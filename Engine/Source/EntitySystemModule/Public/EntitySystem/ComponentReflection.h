@@ -438,7 +438,7 @@ namespace Volt
 		template<typename EntityType>
 		void SetOnComponentCopiedCallback(void(*func)(EntityType))
 		{
-			m_onMemberChangedCallback = [func](const EntityHelper& entityHelper)
+			m_onComponentCopiedCallback = [func](const EntityHelper& entityHelper)
 			{
 				auto entity = EntityType(entityHelper);
 				func(entity);
