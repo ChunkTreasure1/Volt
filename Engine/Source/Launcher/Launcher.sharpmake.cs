@@ -32,7 +32,13 @@ namespace VoltSharpmake
 
             conf.AddPublicDependency<glm>(target);
 
-            conf.AdditionalDebuggerCommands = Path.Combine(Globals.VtProjectDirectory, @"Project.vtproj");
+			Type gameProjectType = Type.GetType("VoltSharpmake.Game");
+			if (gameProjectType != null)
+			{
+				conf.AddPrivateDependency(target, gameProjectType, DependencySetting.OnlyBuildOrder);
+			}
+
+			conf.AdditionalDebuggerCommands = Path.Combine(Globals.VtProjectDirectory, @"Project.vtproj");
 
         }
 

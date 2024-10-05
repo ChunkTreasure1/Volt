@@ -42,7 +42,13 @@ namespace VoltSharpmake
 
             conf.AddPrivateDependency<esfw>(target);
 
-            conf.IncludePaths.Add(
+			Type gameProjectType = Type.GetType("VoltSharpmake.Game");
+			if (gameProjectType != null)
+			{
+				conf.AddPrivateDependency(target, gameProjectType, DependencySetting.OnlyBuildOrder);
+			}
+
+			conf.IncludePaths.Add(
                 Path.Combine(Globals.ThirdPartyDirectory ,@"nlohmann/include"),
                 Path.Combine(Globals.ThirdPartyDirectory ,@"cpp-httplib/include")
                 );
