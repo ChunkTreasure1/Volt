@@ -32,6 +32,8 @@ namespace Volt
 		BindlessResourceRef<RHI::StorageBuffer> primitiveDrawDataBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> sdfPrimitiveDrawDataBuffer;
 		BindlessResourceRef<RHI::StorageBuffer> bonesBuffer;
+
+		BindlessResourceRef<RHI::StorageBuffer> validPrimitiveDrawDatasBuffer;
 	};
 
 	class RenderScene
@@ -42,8 +44,6 @@ namespace Volt
 
 		void Update(RenderGraph& renderGraph);
 
-		void SetValid();
-		void Invalidate();
 		void InvalidateRenderObject(UUID64 renderObject);
 
 		const UUID64 Register(EntityID entityId, Ref<Mesh> mesh, Ref<Material> material, uint32_t subMeshIndex);
@@ -51,7 +51,6 @@ namespace Volt
 
 		void Unregister(UUID64 id);
 
-		VT_INLINE VT_NODISCARD const bool IsInvalid() const { return m_isInvalid; }
 		VT_INLINE VT_NODISCARD const uint32_t GetRenderObjectCount() const { return static_cast<uint32_t>(m_renderObjects.size()); }
 		VT_INLINE VT_NODISCARD const uint32_t GetIndividualMeshCount() const { return m_currentIndividualMeshCount; }
 		VT_INLINE VT_NODISCARD const uint32_t GetIndividualMaterialCount() const { return static_cast<uint32_t>(m_individualMaterials.size()); }
@@ -91,15 +90,8 @@ namespace Volt
 		void UploadGPUMaterials();
 		void BuildGPUMaterial(Weak<Material> material, GPUMaterial& gpuMaterial);
 
-		Vector<GPUMesh> BuildGPUMeshes();
-		Vector<GPUMeshSDF> BuildGPUMeshSDFs();
-
-		Vector<PrimitiveDrawData> BuildPrimitiveDrawData();
 		void BuildSinglePrimitiveDrawData(PrimitiveDrawData& primitiveDrawData, const RenderObject& renderObject);
-
-		Vector<SDFPrimitiveDrawData> BuildSDFPrimitiveDrawData();
 		void BuildSingleSDFPrimitiveDrawData(SDFPrimitiveDrawData& primtiveDrawData, const RenderObject& renderObject);
-
 
 		void TryAddMesh(Ref<Mesh> mesh);
 		void TryAddMaterial(Ref<Material> material);
@@ -107,6 +99,7 @@ namespace Volt
 		void UpdateInvalidMaterials(RenderGraph& renderGraph);
 		void UpdateInvalidMeshes(RenderGraph& renderGraph);
 		void UpdateInvalidPrimitiveData(RenderGraph& renderGraph);
+		void CompactValidPrimitiveDrawDatas(RenderGraph& renderGraph);
 
 		struct InvalidMaterial
 		{
@@ -139,6 +132,9 @@ namespace Volt
 		Vector<InvalidPrimitiveData> m_invalidPrimitiveDataIndices;
 		Vector<InvalidPrimitiveData> m_invalidSDFPrimitiveDataIndices;
 
+		Vector<size_t> m_removedPrimitiveDataIndices;
+		Vector<size_t> m_freePrimitiveDataIndices;
+
 		Vector<InvalidMaterial> m_invalidMaterials;
 		Vector<InvalidMesh> m_invalidMeshes;
 
@@ -163,7 +159,5 @@ namespace Volt
 
 		UUID64 m_materialChangedCallbackID;
 		UUID64 m_meshChangedCallbackID;
-
-		bool m_isInvalid = false;
 	};
 }

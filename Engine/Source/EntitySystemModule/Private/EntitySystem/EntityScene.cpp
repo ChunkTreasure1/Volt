@@ -202,8 +202,8 @@ namespace Volt
 			relationshipComponent = helper.GetComponent<RelationshipComponent>();
 		}
 
-		m_entityRegistry.RemoveEntity(helper);
 		m_registry.destroy(helper.GetHandle());
+		m_entityRegistry.RemoveEntity(id, helper.GetHandle());
 	}
 
 	void EntityScene::MarkEntityAsEdited(const EntityHelper& entityHelper)

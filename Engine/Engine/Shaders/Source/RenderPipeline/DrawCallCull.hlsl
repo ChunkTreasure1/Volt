@@ -23,7 +23,6 @@ struct Constants
     float nearPlane;
     float farPlane;
 
-    uint drawCallCount;
     uint cullingType;
 };
 
@@ -32,12 +31,16 @@ void MainCS(uint dispatchThreadId : SV_DispatchThreadID)
 {
     const Constants constants = GetConstants<Constants>();
     
-    if (dispatchThreadId >= constants.drawCallCount)
+    const uint validPrimitiveDrawDataCount = constants.gpuScene.validPrimitiveDrawDatasBuffer.Load(0);
+
+    if (dispatchThreadId >= validPrimitiveDrawDataCount)
     {
         return;
     }
 
-    const PrimitiveDrawData drawData = constants.gpuScene.primitiveDrawDataBuffer.Load(dispatchThreadId);
+    // We must offset by one as the first element is the counter.
+    const uint primitiveDrawDataIndex = constants.gpuScene.validPrimitiveDrawDatasBuffer.Load(dispatchThreadId + 1);
+    const PrimitiveDrawData drawData = constants.gpuScene.primitiveDrawDataBuffer.Load(primitiveDrawDataIndex);
     const GPUMesh mesh = constants.gpuScene.meshesBuffer.Load(drawData.meshId);
 
     const float3 center = mul(constants.viewMatrix, float4(drawData.transform.GetWorldPosition(mesh.boundingSphere.center), 1.f)).xyz;
@@ -76,7 +79,7 @@ void MainCS(uint dispatchThreadId : SV_DispatchThreadID)
             for (uint i = 0; i < taskGroups; i++)
             {
                 MeshTaskCommand command;
-                command.drawId = dispatchThreadId;
+                command.drawId = primitiveDrawDataIndex;
                 command.taskCount = min(mesh.meshletCount - i * NUM_AS_THREADS, NUM_AS_THREADS);
                 command.meshletOffset = i * NUM_AS_THREADS;
                 

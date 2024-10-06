@@ -27,24 +27,24 @@ namespace Volt
 		m_handleMap.emplace(entity.GetHandle(), entity.GetID());
 	}
 
-	void EntityRegistry::RemoveEntity(const EntityHelper& entity)
+	void EntityRegistry::RemoveEntity(const EntityID& entityId, entt::entity entityHandle)
 	{
-		if (m_entityMap.contains(entity.GetID()))
+		if (m_entityMap.contains(entityId))
 		{
-			m_entityMap.erase(entity.GetID());
+			m_entityMap.erase(entityId);
 		}
 
-		if (m_handleMap.contains(entity.GetHandle()))
+		if (m_handleMap.contains(entityHandle))
 		{
-			m_handleMap.erase(entity.GetHandle());
+			m_handleMap.erase(entityHandle);
 		}
 
-		if (m_editedEntities.contains(entity.GetID()))
+		if (m_editedEntities.contains(entityId))
 		{
-			m_editedEntities.erase(entity.GetID());
+			m_editedEntities.erase(entityId);
 		}
 
-		m_removedEntities.emplace(entity.GetID());
+		m_removedEntities.emplace(entityId);
 	}
 
 	EntityID EntityRegistry::GetUUIDFromHandle(entt::entity handle) const

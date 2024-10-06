@@ -7,6 +7,13 @@
 
 #define MAX_LOD_COUNT 8
 
+namespace PrimitiveFlags
+{
+    static const uint None = 0;
+    static const uint Valid = 1 << 0;
+    static const uint Invalid = 1 << 1;
+}
+
 struct GPUMaterial
 {
     vt::Tex2D<float4> textures[16];
@@ -121,6 +128,8 @@ struct PrimitiveDrawData
     
     uint isAnimated;
     uint boneOffset;
+    uint flags;
+    uint2 padding;
 };
 
 struct SDFPrimitiveDrawData
@@ -139,4 +148,6 @@ struct GPUScene
     vt::UniformTypedBuffer<PrimitiveDrawData> primitiveDrawDataBuffer;
     vt::UniformTypedBuffer<SDFPrimitiveDrawData> sdfPrimitiveDrawDataBuffer;
     vt::UniformTypedBuffer<float4x4> bonesBuffer;
+
+    vt::UniformTypedBuffer<uint> validPrimitiveDrawDatasBuffer;
 };

@@ -56,6 +56,7 @@ namespace Volt
 		RenderGraphBufferHandle primitiveDrawDataBuffer;
 		RenderGraphBufferHandle sdfPrimitiveDrawDataBuffer;
 		RenderGraphBufferHandle bonesBuffer;
+		RenderGraphBufferHandle validPrimitiveDrawDatasBuffer;
 
 		static void SetupInputs(RenderGraph::Builder& builder, const GPUSceneData& data);
 		static void SetupConstants(RenderContext& context, const GPUSceneData& data);

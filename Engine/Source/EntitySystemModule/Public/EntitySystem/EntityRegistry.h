@@ -17,7 +17,7 @@ namespace Volt
 		void ClearEditedEntities();
 
 		void AddEntity(const EntityHelper& entity);
-		void RemoveEntity(const EntityHelper& entity);
+		void RemoveEntity(const EntityID& entityId, entt::entity entityHandle);
 
 		EntityID GetUUIDFromHandle(entt::entity handle) const;
 		entt::entity GetHandleFromID(EntityID uuid) const;

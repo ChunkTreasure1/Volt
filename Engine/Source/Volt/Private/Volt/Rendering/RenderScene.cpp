@@ -27,6 +27,7 @@ namespace Volt
 		m_buffers.primitiveDrawDataBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(5, sizeof(PrimitiveDrawData), "Primitive Draw Data", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 		m_buffers.sdfPrimitiveDrawDataBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(5, sizeof(SDFPrimitiveDrawData), "SDF Primitive Draw Data", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 		m_buffers.bonesBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(glm::mat4), "GPU Bones", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
+		m_buffers.validPrimitiveDrawDatasBuffer = BindlessResource<RHI::StorageBuffer>::CreateScope(1, sizeof(uint32_t), "Compacted Valid Primitive Draw Datas", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU);
 
 		// Setup invalid mesh
 		{
@@ -77,6 +78,7 @@ namespace Volt
 		UpdateInvalidMaterials(renderGraph);
 		UpdateInvalidMeshes(renderGraph);
 		UpdateInvalidPrimitiveData(renderGraph);
+		CompactValidPrimitiveDrawDatas(renderGraph);
 
 		// Temporary animation sampling
 		m_currentBoneCount = 0;
@@ -117,16 +119,6 @@ namespace Volt
 		}
 	}
 
-	void RenderScene::SetValid()
-	{
-		m_isInvalid = false;
-	}
-
-	void RenderScene::Invalidate()
-	{
-		m_isInvalid = true;
-	}
-
 	void RenderScene::InvalidateRenderObject(UUID64 renderObject)
 	{
 		if (m_primitiveIndexFromRenderObjectID.contains(renderObject))
@@ -142,8 +134,6 @@ namespace Volt
 
 	const UUID64 RenderScene::Register(EntityID entityId, Ref<Mesh> mesh, Ref<Material> material, uint32_t subMeshIndex)
 	{
-		m_isInvalid = true;
-
 		UUID64 newId = {};
 		auto& newObj = m_renderObjects.emplace_back();
 
@@ -156,8 +146,20 @@ namespace Volt
 		TryAddMaterial(material);
 		TryAddMesh(mesh);
 
-		BuildSinglePrimitiveDrawData(m_primitiveDrawData.emplace_back(), newObj);
-		m_primitiveIndexFromRenderObjectID[newObj.id] = static_cast<uint32_t>(m_primitiveDrawData.size() - 1);
+		constexpr size_t SizeMax = std::numeric_limits<size_t>::max();
+
+		size_t primitiveDrawDataIndex = SizeMax;
+
+		if (!m_freePrimitiveDataIndices.empty())
+		{
+			primitiveDrawDataIndex = m_freePrimitiveDataIndices.back();
+			m_freePrimitiveDataIndices.pop_back();
+		}
+
+		PrimitiveDrawData& primitiveDrawData = (primitiveDrawDataIndex != SizeMax) ? m_primitiveDrawData.at(primitiveDrawDataIndex) : m_primitiveDrawData.emplace_back();
+
+		BuildSinglePrimitiveDrawData(primitiveDrawData, newObj);
+		m_primitiveIndexFromRenderObjectID[newObj.id] = static_cast<uint32_t>((primitiveDrawDataIndex != SizeMax) ? primitiveDrawDataIndex : m_primitiveDrawData.size() - 1);
 
 		InvalidateRenderObject(newId);
 
@@ -166,8 +168,6 @@ namespace Volt
 
 	const UUID64 RenderScene::Register(EntityID entityId, Ref<MotionWeaver> motionWeaver, Ref<Mesh> mesh, Ref<Material> material, uint32_t subMeshIndex)
 	{
-		m_isInvalid = true;
-
 		UUID64 newId = {};
 		auto& newObj = m_renderObjects.emplace_back();
 		m_animatedRenderObjects.emplace_back(newId);
@@ -182,8 +182,20 @@ namespace Volt
 		TryAddMaterial(material);
 		TryAddMesh(mesh);
 
-		BuildSinglePrimitiveDrawData(m_primitiveDrawData.emplace_back(), newObj);
-		m_primitiveIndexFromRenderObjectID[newObj.id] = static_cast<uint32_t>(m_primitiveDrawData.size() - 1);
+		constexpr size_t SizeMax = std::numeric_limits<size_t>::max();
+
+		size_t primitiveDrawDataIndex = SizeMax;
+
+		if (!m_freePrimitiveDataIndices.empty())
+		{
+			primitiveDrawDataIndex = m_freePrimitiveDataIndices.back();
+			m_freePrimitiveDataIndices.pop_back();
+		}
+
+		PrimitiveDrawData& primitiveDrawData = (primitiveDrawDataIndex != SizeMax) ? m_primitiveDrawData.at(primitiveDrawDataIndex) : m_primitiveDrawData.emplace_back();
+
+		BuildSinglePrimitiveDrawData(primitiveDrawData, newObj);
+		m_primitiveIndexFromRenderObjectID[newObj.id] = static_cast<uint32_t>((primitiveDrawDataIndex != SizeMax) ? primitiveDrawDataIndex : m_primitiveDrawData.size() - 1);
 
 		InvalidateRenderObject(newId);
 
@@ -192,7 +204,15 @@ namespace Volt
 
 	void RenderScene::Unregister(UUID64 id)
 	{
-		m_isInvalid = true;
+		VT_ENSURE(m_primitiveIndexFromRenderObjectID.contains(id));
+
+		const size_t primitiveDataIndex = m_primitiveIndexFromRenderObjectID.at(id);
+
+		m_primitiveDrawData.at(primitiveDataIndex).flags = PrimitiveFlags::Invalid;
+		m_removedPrimitiveDataIndices.emplace_back(primitiveDataIndex);
+		m_freePrimitiveDataIndices.emplace_back(primitiveDataIndex);
+
+		m_primitiveIndexFromRenderObjectID.erase(id);
 
 		auto it = std::find_if(m_renderObjects.begin(), m_renderObjects.end(), [id](const auto& obj)
 		{
@@ -382,81 +402,6 @@ namespace Volt
 		}
 	}
 
-	Vector<GPUMesh> RenderScene::BuildGPUMeshes()
-	{
-		Vector<GPUMesh> result;
-		result.reserve(m_currentIndividualMeshCount);
-
-		// Setup invalid mesh
-		{
-			GPUMesh& mesh = result.emplace_back();
-			memset(&mesh, 0, sizeof(GPUMesh));
-		}
-
-		for (uint32_t currentIndex = 1; const auto & mesh : m_individualMeshes)
-		{
-			for (uint32_t subMeshIndex = 0; const auto & gpuMesh : mesh->GetGPUMeshes())
-			{
-				result.push_back(gpuMesh);
-
-				const size_t hash = Math::HashCombine(mesh.GetHash(), std::hash<uint32_t>()(subMeshIndex));
-				m_meshSubMeshToGPUMeshIndex[hash] = currentIndex;
-
-				const size_t assetHash = Math::HashCombine(mesh->handle, std::hash<uint32_t>()(subMeshIndex));
-				m_gpuMeshIndexFromMeshAssetHash[assetHash] = currentIndex;
-
-				currentIndex++;
-				subMeshIndex++;
-			}
-		}
-
-		return result;
-	}
-
-	Vector<GPUMeshSDF> RenderScene::BuildGPUMeshSDFs()
-	{
-		Vector<GPUMeshSDF> result;
-		result.reserve(m_currentIndividualMeshCount);
-
-		// Setup invalid mesh
-		{
-			GPUMeshSDF& mesh = result.emplace_back();
-			memset(&mesh, 0, sizeof(GPUMeshSDF));
-		}
-
-		for (uint32_t currentIndex = 1; const auto & mesh : m_individualMeshes)
-		{
-			for (uint32_t subMeshIndex = 0; const auto & gpuMeshSDF : mesh->GetGPUMeshSDFs())
-			{
-				result.emplace_back(gpuMeshSDF);
-
-				const size_t hash = Math::HashCombine(mesh.GetHash(), std::hash<uint32_t>()(subMeshIndex));
-				m_meshSubMeshToGPUMeshSDFIndex[hash] = currentIndex;
-
-				currentIndex++;
-				subMeshIndex++;
-			}
-		}
-
-		return result;
-	}
-
-	Vector<PrimitiveDrawData> RenderScene::BuildPrimitiveDrawData()
-	{
-		m_primitiveIndexFromRenderObjectID.clear();
-
-		Vector<PrimitiveDrawData> result;
-		result.reserve(m_renderObjects.size());
-
-		for (const auto& renderObject : m_renderObjects)
-		{
-			BuildSinglePrimitiveDrawData(result.emplace_back(), renderObject);
-			m_primitiveIndexFromRenderObjectID[renderObject.id] = static_cast<uint32_t>(result.size() - 1);
-		}
-
-		return result;
-	}
-
 	void RenderScene::BuildSinglePrimitiveDrawData(PrimitiveDrawData& primitiveDrawData, const RenderObject& renderObject)
 	{
 		Entity entity = m_scene->GetEntityFromID(renderObject.entity);
@@ -476,24 +421,9 @@ namespace Volt
 		primitiveDrawData.materialId = GetMaterialIndex(renderObject.material);
 		primitiveDrawData.meshletStartOffset = renderObject.meshletStartOffset;
 		primitiveDrawData.isAnimated = renderObject.IsAnimated();
+		primitiveDrawData.flags = PrimitiveFlags::Valid;
 
 		m_currentMeshletCount += m_gpuMeshes.at(meshId).meshletCount;
-	}
-
-	Vector<SDFPrimitiveDrawData> RenderScene::BuildSDFPrimitiveDrawData()
-	{
-		m_sdfPrimitiveIndexFromRenderObjectID.clear();
-
-		Vector<SDFPrimitiveDrawData> result;
-		result.reserve(m_renderObjects.size());
-
-		for (const auto& renderObject : m_renderObjects)
-		{
-			BuildSingleSDFPrimitiveDrawData(result.emplace_back(), renderObject);
-			m_sdfPrimitiveIndexFromRenderObjectID[renderObject.id] = static_cast<uint32_t>(result.size() - 1);
-		}
-
-		return result;
 	}
 
 	void RenderScene::BuildSingleSDFPrimitiveDrawData(SDFPrimitiveDrawData& primtiveDrawData, const RenderObject& renderObject)
@@ -563,7 +493,7 @@ namespace Volt
 		BuildGPUMaterial(material, gpuMaterial);
 
 		m_invalidMaterials.emplace_back(material, m_materialIndexFromAssetHandle[material->handle]);
-	}	
+	}
 
 	void RenderScene::UpdateInvalidMaterials(RenderGraph& renderGraph)
 	{
@@ -589,7 +519,7 @@ namespace Volt
 		{
 			ScatteredBufferUpload<GPUMaterial> bufferUpload{ m_invalidMaterials.size() };
 
-			for (const auto& invalidMaterial : m_invalidMaterials) 
+			for (const auto& invalidMaterial : m_invalidMaterials)
 			{
 				auto& data = bufferUpload.AddUploadItem(invalidMaterial.index);
 				BuildGPUMaterial(invalidMaterial.material, data);
@@ -641,9 +571,9 @@ namespace Volt
 			drawDataBuffer->MarkAsDirty();
 		}
 
-		if (!m_invalidPrimitiveDataIndices.empty())
+		if (!m_invalidPrimitiveDataIndices.empty() || !m_removedPrimitiveDataIndices.empty())
 		{
-			ScatteredBufferUpload<PrimitiveDrawData> bufferUpload{ m_invalidPrimitiveDataIndices.size() };
+			ScatteredBufferUpload<PrimitiveDrawData> bufferUpload{ m_invalidPrimitiveDataIndices.size() + m_removedPrimitiveDataIndices.size() };
 
 			for (const auto& invalidPrimitive : m_invalidPrimitiveDataIndices)
 			{
@@ -652,8 +582,15 @@ namespace Volt
 				BuildSinglePrimitiveDrawData(data, renderObject);
 			}
 
+			for (const auto& removedPrimitiveIndex : m_removedPrimitiveDataIndices)
+			{
+				auto& data = bufferUpload.AddUploadItem(removedPrimitiveIndex);
+				data.flags = PrimitiveFlags::Invalid;
+			}
+
 			bufferUpload.UploadTo(renderGraph, *drawDataBuffer);
 			m_invalidPrimitiveDataIndices.clear();
+			m_removedPrimitiveDataIndices.clear();
 		}
 
 		if (!m_invalidSDFPrimitiveDataIndices.empty())
@@ -670,5 +607,48 @@ namespace Volt
 			bufferUpload.UploadTo(renderGraph, *m_buffers.sdfPrimitiveDrawDataBuffer);
 			m_invalidSDFPrimitiveDataIndices.clear();
 		}
+	}
+
+	void RenderScene::CompactValidPrimitiveDrawDatas(RenderGraph& renderGraph)
+	{
+		// We need to make sure that the buffer is one larger than the count, because
+		// the first index is used for the count.
+		auto validPrimitiveDrawDataBuffer = m_buffers.validPrimitiveDrawDatasBuffer;
+		
+		const uint32_t primitiveDrawDataCount = m_buffers.primitiveDrawDataBuffer->GetResource()->GetCount();
+		
+		if (validPrimitiveDrawDataBuffer->GetResource()->GetCount() < primitiveDrawDataCount)
+		{
+			validPrimitiveDrawDataBuffer->GetResource()->ResizeWithCount(primitiveDrawDataCount);
+			validPrimitiveDrawDataBuffer->MarkAsDirty();
+		}
+
+		RenderGraphBufferHandle validPrimitiveDrawDataHandle = renderGraph.AddExternalBuffer(validPrimitiveDrawDataBuffer->GetResource());
+		RenderGraphBufferHandle primitiveDrawDataHandle = renderGraph.AddExternalBuffer(m_buffers.primitiveDrawDataBuffer->GetResource());
+
+		RGUtils::ClearBuffer(renderGraph, validPrimitiveDrawDataHandle, 0, "Clear Valid Primitive Draw Data Buffer");
+
+		renderGraph.AddPass("Compact Valid Primitive Draw Datas",
+		[&](RenderGraph::Builder& builder)
+		{
+			builder.WriteResource(validPrimitiveDrawDataHandle);
+			builder.ReadResource(primitiveDrawDataHandle);
+
+			builder.SetHasSideEffect();
+			builder.SetIsComputePass();
+		},
+		[=](RenderContext& context)
+		{
+			auto pipeline = ShaderMap::GetComputePipeline("CompactValidDrawCalls");
+
+			context.BindPipeline(pipeline);
+			context.SetConstant("validPrimitiveDrawData"_sh, validPrimitiveDrawDataHandle);
+			context.SetConstant("primitiveDrawData"_sh, primitiveDrawDataHandle);
+			context.SetConstant("primitiveDrawDataCount"_sh, primitiveDrawDataCount);
+
+			constexpr uint32_t workGroupCount = 64;
+
+			context.Dispatch(Math::DivideRoundUp(primitiveDrawDataCount, workGroupCount), 1, 1);
+		});
 	}
 }

@@ -73,7 +73,6 @@ namespace Volt
 			context.SetConstant("cullingFrustum"_sh, info.cullingFrustum);
 			context.SetConstant("nearPlane"_sh, info.nearPlane);
 			context.SetConstant("farPlane"_sh, info.farPlane);
-			context.SetConstant("drawCallCount"_sh, info.drawCommandCount);
 			context.SetConstant("cullingType"_sh, static_cast<uint32_t>(info.type));
 
 			GPUSceneData::SetupConstants(context, gpuSceneData);

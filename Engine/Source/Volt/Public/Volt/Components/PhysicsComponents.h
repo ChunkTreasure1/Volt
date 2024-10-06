@@ -7,8 +7,6 @@
 
 #include <AssetSystem/Asset.h>
 
-#include <glm/glm.hpp>
-
 namespace Volt
 {
 	struct CharacterControllerComponent

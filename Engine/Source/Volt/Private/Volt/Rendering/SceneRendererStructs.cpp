@@ -11,6 +11,7 @@ namespace Volt
 		builder.ReadResource(data.primitiveDrawDataBuffer);
 		builder.ReadResource(data.sdfPrimitiveDrawDataBuffer);
 		builder.ReadResource(data.bonesBuffer);
+		builder.ReadResource(data.validPrimitiveDrawDatasBuffer);
 	}
 
 	void GPUSceneData::SetupConstants(RenderContext& context, const GPUSceneData& data)
@@ -21,5 +22,6 @@ namespace Volt
 		context.SetConstant("gpuScene.primitiveDrawDataBuffer"_sh, data.primitiveDrawDataBuffer);
 		context.SetConstant("gpuScene.sdfPrimitiveDrawDataBuffer"_sh, data.sdfPrimitiveDrawDataBuffer);
 		context.SetConstant("gpuScene.bonesBuffer"_sh, data.bonesBuffer);
+		context.SetConstant("gpuScene.validPrimitiveDrawDatasBuffer"_sh, data.validPrimitiveDrawDatasBuffer);
 	}
 }

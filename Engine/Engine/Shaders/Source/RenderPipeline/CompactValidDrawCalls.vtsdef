@@ -1,0 +1,6 @@
+name: "CompactValidDrawCalls"
+internal: true
+sources:
+  - entryPoint: "MainCS"
+    shaderStage: "cs"
+    filePath: "Engine/Shaders/Source/RenderPipeline/CompactValidDrawCalls.hlsl"

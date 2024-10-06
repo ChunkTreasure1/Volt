@@ -107,11 +107,6 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		if (m_scene->GetRenderScene()->IsInvalid())
-		{
-			Invalidate();
-		}
-
 		if (m_shouldResize)
 		{
 			m_width = m_resizeWidth;
@@ -217,10 +212,6 @@ namespace Volt
 	void SceneRenderer::Invalidate()
 	{
 		VT_PROFILE_FUNCTION();
-
-		auto renderScene = m_scene->GetRenderScene();
-		//renderScene->PrepareForUpdate();
-		renderScene->SetValid();
 	}
 
 	void SceneRenderer::Enable()
@@ -477,6 +468,7 @@ namespace Volt
 			bufferData.primitiveDrawDataBuffer = renderGraph.AddExternalBuffer(gpuScene.primitiveDrawDataBuffer->GetResource());
 			bufferData.sdfPrimitiveDrawDataBuffer = renderGraph.AddExternalBuffer(gpuScene.sdfPrimitiveDrawDataBuffer->GetResource());
 			bufferData.bonesBuffer = renderGraph.AddExternalBuffer(gpuScene.bonesBuffer->GetResource());
+			bufferData.validPrimitiveDrawDatasBuffer = renderGraph.AddExternalBuffer(gpuScene.validPrimitiveDrawDatasBuffer->GetResource());
 		}
 
 		// Environment map

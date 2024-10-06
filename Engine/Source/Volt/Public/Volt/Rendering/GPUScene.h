@@ -7,6 +7,13 @@
 
 namespace Volt
 {
+	enum class PrimitiveFlags : uint32_t
+	{
+		None = 0,
+		Valid = BIT(0),
+		Invalid = BIT(1)
+	};
+
 	struct GPUMesh
 	{
 		inline static constexpr uint32_t MAX_LOD_COUNT = 8;
@@ -53,6 +60,8 @@ namespace Volt
 
 		uint32_t isAnimated;
 		uint32_t boneOffset;
+		PrimitiveFlags flags;
+		glm::uvec2 padding;
 	};
 
 	struct SDFPrimitiveDrawData
