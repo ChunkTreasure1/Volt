@@ -157,7 +157,6 @@ namespace Volt
 		}
 
 		m_entityRegistry.AddEntity(newHelper);
-		m_entityRegistry.MarkEntityAsEdited(newHelper);
 
 		InvalidateEntityTransform(newHelper.GetID());
 		SortScene();

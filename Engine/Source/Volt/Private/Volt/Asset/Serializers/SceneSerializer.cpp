@@ -491,7 +491,6 @@ namespace Volt
 				Entity realEntity = scene->CreateEntityWithID(entity.GetID());
 				Entity::Copy(entity, realEntity, Volt::EntityCopyFlags::None);
 
-				scene->GetWorldEngineMutable().OnEntityMoved(realEntity);
 				scene->InvalidateEntityTransform(realEntity.GetID());
 			}
 		}
