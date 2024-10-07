@@ -22,10 +22,11 @@ namespace Volt::RHI
 		VkPhysicalDeviceFeatures2 physicalDeviceFeatures;
 
 		// Extensions
-		VkPhysicalDeviceDescriptorBufferFeaturesEXT descriptorBufferFeaturesEXT;
-		VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeaturesEXT;
+		VkPhysicalDeviceDescriptorBufferFeaturesEXT descriptorBufferFeaturesEXT{};
+		VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeaturesEXT{};
 		VkDeviceDiagnosticsConfigCreateInfoNV aftermathDiagInfo{};
 		VkPhysicalDeviceRobustness2FeaturesEXT deviceRobustness2FeaturesEXT{};
+		VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT mutableDescriptorTypeFeaturesEXT{};
 	};
 
 	static EnabledFeatures s_enabledFeatures{};
@@ -108,6 +109,15 @@ namespace Volt::RHI
 				chainEntryPoint = &s_enabledFeatures.deviceRobustness2FeaturesEXT;
 			}
 
+			if (physicalDevice->IsExtensionAvailiable(VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME))
+			{
+				s_enabledFeatures.mutableDescriptorTypeFeaturesEXT.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT;
+				s_enabledFeatures.mutableDescriptorTypeFeaturesEXT.pNext = chainEntryPoint;
+				s_enabledFeatures.mutableDescriptorTypeFeaturesEXT.mutableDescriptorType = VK_TRUE;
+				
+				chainEntryPoint = &s_enabledFeatures.mutableDescriptorTypeFeaturesEXT;
+			}
+
 #ifdef VT_ENABLE_NV_AFTERMATH
 			s_enabledFeatures.aftermathDiagInfo.sType = VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV;
 			s_enabledFeatures.aftermathDiagInfo.pNext = chainEntryPoint;
@@ -182,6 +192,11 @@ namespace Volt::RHI
 			if (physicalDevice->IsExtensionAvailiable(VK_NV_SHADER_SUBGROUP_PARTITIONED_EXTENSION_NAME))
 			{
 				enabledExtensions.emplace_back(VK_NV_SHADER_SUBGROUP_PARTITIONED_EXTENSION_NAME);
+			}
+
+			if (physicalDevice->IsExtensionAvailiable(VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME))
+			{
+				enabledExtensions.emplace_back(VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
 			}
 
 			return enabledExtensions;

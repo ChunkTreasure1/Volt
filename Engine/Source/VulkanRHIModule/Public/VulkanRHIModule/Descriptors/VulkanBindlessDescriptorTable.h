@@ -47,6 +47,9 @@ namespace Volt::RHI
 		void Release();
 		void Invalidate();
 
+		void PrepareHeapForRender();
+		void PrepareDefaultForRender();
+
 		VkDescriptorSet_T* GetOrAllocateConstantsSet();
 		void WriteConstantsSet(VkDescriptorSet_T* dstSet, WeakPtr<UniformBuffer> constantsBuffer);
 
@@ -74,5 +77,9 @@ namespace Volt::RHI
 
 		uint64_t m_frameIndex = 0;
 		uint64_t m_framesInFlight = 0;
+
+		// VK_EXT_mutable_descriptor_type
+		ResourceRegistry m_heapRegistry;
+		bool m_useHeapRegistry = false;
 	};
 }

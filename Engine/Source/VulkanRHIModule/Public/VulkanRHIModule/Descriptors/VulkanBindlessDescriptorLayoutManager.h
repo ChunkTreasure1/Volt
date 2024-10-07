@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CoreUtilities/Containers/Vector.h>
+
 struct VkDescriptorSetLayout_T;
 struct VkDescriptorSet_T;
 
@@ -22,12 +24,17 @@ namespace Volt::RHI
 		inline static constexpr uint32_t RWTEXTURE2DARRAY_BINDING = 11;
 		inline static constexpr uint32_t TEXTURE2DARRAY_BINDING = 12;
 
+		inline static constexpr uint32_t CBV_SRV_UAV_BINDING = 0;
+		inline static constexpr uint32_t SAMPLERS_BINDING = 1;
+
 		static void CreateGlobalDescriptorLayout();
 		static void DestroyGlobalDescriptorLayout();
 
 		static std::array<VkDescriptorSetLayout_T*, 2> GetGlobalDescriptorSetLayouts();
 
 	private:
+		static bool TryCreateMutableDescriptorSetLayout(VkDescriptorSetLayout_T*& outDescriptorSetLayouts);
+		static void CreateMainDescriptorSet(VkDescriptorSetLayout_T*& outDescriptorSetLayout);
 
 		VulkanBindlessDescriptorLayoutManager() = delete;
 	};

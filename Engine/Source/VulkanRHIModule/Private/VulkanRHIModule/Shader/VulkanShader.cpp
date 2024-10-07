@@ -201,6 +201,12 @@ namespace Volt::RHI
 
 	void VulkanShader::CreateDescriptorSetLayouts()
 	{
+		// If this shader is created for use with the render graph, skip creating it's descriptor set layouts.
+		if (m_resources.renderGraphConstantsData.IsValid())
+		{
+			return;
+		}
+
 		struct DefaultValue
 		{
 			bool value = false;
