@@ -95,25 +95,30 @@ struct CircuitDeclare
 {
 	CircuitDeclare()
 	{
-		m_Widget = std::make_unique<WidgetType>();
+		VT_PROFILE_SCOPE("Construct Circuit Widget");
+		m_Widget = CreateRef<WidgetType>();
 	}
-	std::unique_ptr<WidgetType>& operator<<=(const typename WidgetType::Arguments::WidgetArgumentsType& args)
+	Ref<WidgetType> operator<<=(const typename WidgetType::Arguments::WidgetArgumentsType& args)
 	{
+		VT_PROFILE_SCOPE("Build Circuit Widget");
 		m_Widget->BuildBaseArgs(args);
 		m_Widget->Build(args);
 		m_Widget->CalculateBounds();
 		return m_Widget;
 	}
-	std::unique_ptr<WidgetType> m_Widget;
+	Ref<WidgetType> m_Widget;
 };
 
 /** Base class for named arguments. Provides settings necessary for all widgets. */
 struct CircuitBaseArgs
 {
-	CircuitBaseArgs() = default;
+	CircuitBaseArgs()
+		//: _X(0),
+		// _Y(0)
+	{};
 
-	CIRCUIT_ARGUMENT_VARIABLE(float, X);
-	CIRCUIT_ARGUMENT_VARIABLE(float, Y);
+	//CIRCUIT_ARGUMENT_VARIABLE(float, X);
+	//CIRCUIT_ARGUMENT_VARIABLE(float, Y);
 };
 
 
@@ -124,8 +129,8 @@ struct CircuitBaseArgsTemplate : public CircuitBaseArgs
 	using WidgetArgumentsType = InWidgetType::Arguments;
 	using WidgetType = InWidgetType;
 
-	CIRCUIT_ARGUMENT_FUNCTION(float, X);
-	CIRCUIT_ARGUMENT_FUNCTION(float, Y);
+	//CIRCUIT_ARGUMENT_FUNCTION(float, X);
+	//CIRCUIT_ARGUMENT_FUNCTION(float, Y);
 
 
 	/** Used by the named argument pattern as a safe way to 'return *this' for call-chaining purposes. */

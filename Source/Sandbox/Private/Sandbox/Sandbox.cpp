@@ -109,7 +109,7 @@ void Sandbox::OnAttach()
 {
 	RegisterEventListeners();
 
-	SelectionManager::Initialize();
+	//SelectionManager::Initialize();
 
 	if (!Volt::ProjectManager::GetProject().isDeprecated)
 	{
@@ -131,42 +131,42 @@ void Sandbox::OnAttach()
 	//	.Value(50.f));
 
 	EditorResources::Initialize();
-	VersionControl::Initialize(VersionControlSystem::Perforce);
+	//VersionControl::Initialize(VersionControlSystem::Perforce);
 
-	NodeEditorHelpers::Initialize();
-	IONodeGraphEditorHelpers::Initialize();
+	//NodeEditorHelpers::Initialize();
+	//IONodeGraphEditorHelpers::Initialize();
 
 	Volt::WindowManager::Get().GetMainWindow().Resize(300, 500);
 
-	m_editorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
+	//m_editorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
-	UserSettingsManager::LoadUserSettings();
-	const auto& userSettings = UserSettingsManager::GetSettings();
+	//UserSettingsManager::LoadUserSettings();
+	//const auto& userSettings = UserSettingsManager::GetSettings();
 
-	if (userSettings.sceneSettings.defaultOpenScene != Volt::Asset::Null())
-	{
-		OpenScene(userSettings.sceneSettings.defaultOpenScene);
-		if (m_runtimeScene)
-		{
-			auto& worldEngine = m_runtimeScene->GetWorldEngineMutable();
-			for (const auto& cell : worldEngine.GetCells())
-			{
-				worldEngine.BeginStreamingCell(cell.cellId);
-			}
-		}
-	}
+	//if (userSettings.sceneSettings.defaultOpenScene != Volt::Asset::Null())
+	//{
+	//	OpenScene(userSettings.sceneSettings.defaultOpenScene);
+	//	if (m_runtimeScene)
+	//	{
+	//		auto& worldEngine = m_runtimeScene->GetWorldEngineMutable();
+	//		for (const auto& cell : worldEngine.GetCells())
+	//		{
+	//			worldEngine.BeginStreamingCell(cell.cellId);
+	//		}
+	//	}
+	//}
 
-	if (!m_runtimeScene)
-	{
-		NewScene();
-	}
+	//if (!m_runtimeScene)
+	//{
+	//	NewScene();
+	//}
 
 	//RegisterPanels();
 
 	m_fileWatcher = CreateRef<FileWatcher>();
 	CreateWatches();
 
-	ImGuizmo::AllowAxisFlip(false);
+	//ImGuizmo::AllowAxisFlip(false);
 
 	//InitializeModals();
 
@@ -853,7 +853,7 @@ bool Sandbox::OnRenderEvent(Volt::WindowRenderEvent& e)
 	//RenderSelection(m_editorCameraController->GetCamera());
 	//RenderGizmos(myRuntimeScene, myEditorCameraController->GetCamera());
 
-	switch (m_sceneState)
+	/*switch (m_sceneState)
 	{
 		case SceneState::Edit:
 		case SceneState::Play:
@@ -861,7 +861,7 @@ bool Sandbox::OnRenderEvent(Volt::WindowRenderEvent& e)
 		case SceneState::Simulating:
 			m_sceneRenderer->OnRenderEditor(m_editorCameraController->GetCamera());
 			break;
-	}
+	}*/
 
 	if (m_shouldLoadNewScene)
 	{

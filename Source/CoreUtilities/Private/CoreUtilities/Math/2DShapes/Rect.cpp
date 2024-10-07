@@ -100,7 +100,7 @@ namespace Volt
 		const glm::vec2 otherMax = { other.m_position.x + other.m_size.x, other.m_position.y + other.m_size.y };
 
 		m_position.x = glm::min(m_position.x, other.m_position.x);
-		m_position.y = glm::min(m_position.y, other.m_position.y);
+		m_position.y = glm::max(m_position.y, other.m_position.y);
 
 		m_size.x = glm::max(otherMax.x, thisMax.x) - m_position.x;
 		m_size.y = glm::max(otherMax.y, thisMax.y) - m_position.y;

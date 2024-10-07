@@ -19,7 +19,7 @@ namespace Circuit
 	{
 		return m_windowHandle;
 	}
-	
+
 	glm::u16vec2 CircuitWindow::GetWindowSize() const
 	{
 		Volt::Window& window = Volt::WindowManager::Get().GetWindow(m_windowHandle);
@@ -33,13 +33,16 @@ namespace Circuit
 	std::vector<CircuitDrawCommand> CircuitWindow::GetDrawCommands()
 	{
 		CircuitPainter painter;
-		m_widget->OnPaint(painter);
+		if (m_widget)
+		{
+			m_widget->OnPaint(painter);
+		}
 		return painter.GetCommands();
 	}
 
-	void CircuitWindow::SetWidget(std::unique_ptr<Widget> widget)
+	void CircuitWindow::SetWidget(Ref<Widget> widget)
 	{
-		m_widget = std::move(widget);
+		m_widget = widget;
 	}
 
 	void CircuitWindow::OnRender()

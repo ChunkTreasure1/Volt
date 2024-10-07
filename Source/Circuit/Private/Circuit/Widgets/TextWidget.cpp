@@ -5,7 +5,7 @@
 
 #include <AssetSystem/AssetManager.h>
 
-Circuit::TextWidget::TextWidget()
+Circuit::TextWidget::TextWidget() : Circuit::Widget()
 {
 	m_font = CreateRef<Volt::Font>();
 	m_font->Initialize("Engine/Fonts/Futura/futura-light.ttf");
@@ -22,6 +22,6 @@ void Circuit::TextWidget::Build(const Arguments& args)
 
 void Circuit::TextWidget::OnPaint(CircuitPainter& painter)
 {
-	//painter.AddRect(GetX(), GetY(), 100, 30, CircuitColor(0xffffffff));
-	painter.AddText(GetX(), GetY(), m_text, m_font, 100.f, CircuitColor(100, 100, 50), 45.f);
+	const glm::vec2 painterPos = painter.GetAllotedArea().GetPosition();
+	painter.AddText(painterPos.x, painterPos.y, m_text, m_font, 100.f, CircuitColor(100, 100, 50), 45.f);
 }

@@ -29,12 +29,7 @@ namespace Circuit
 		CIRCUIT_API std::vector<CircuitDrawCommand> GetDrawCommands();
 
 		//takes ownership of the widget
-		CIRCUIT_API void SetWidget(std::unique_ptr<Widget> widget);
-		template<class WidgetType>
-		void SetWidget(std::unique_ptr<WidgetType>& widget)
-		{
-			SetWidget(std::move(widget));
-		}
+		CIRCUIT_API void SetWidget(Ref<Widget> widget);
 
 
 		void OnRender();
@@ -46,7 +41,7 @@ namespace Circuit
 		glm::u16vec2 m_windowSize;
 		std::string m_title;
 
-		std::unique_ptr<Widget> m_widget;
+		Ref<Widget> m_widget;
 
 	};
 }

@@ -2,7 +2,6 @@
 
 #include "Widgets/SliderWidget.h"
 
-#include "Circuit/WidgetBuilder.h"
 #include "Circuit/CircuitColor.h"
 
 #include "Circuit/CircuitPainter.h"

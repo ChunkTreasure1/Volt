@@ -7,6 +7,8 @@
 #include "Circuit/Widgets/TextWidget.h"
 #include "Circuit/Widgets/ButtonWidget.h"
 
+#include "Circuit/Widgets/Layout/LayoutWidget.h"
+
 #include <WindowModule/WindowManager.h>
 #include <WindowModule/Events/WindowEvents.h>
 #include <WindowModule/Window.h>
@@ -35,23 +37,36 @@ namespace Circuit
 
 	void CircuitManager::Init()
 	{
+		VT_PROFILE_FUNCTION();
 		RegisterEventListeners();
 
 		RegisterWindow(Volt::WindowManager::Get().GetMainWindowHandle());
 
-		static float sliderValue = 50.f;
+		Ref<LayoutWidget> layout = CreateWidget(LayoutWidget).Orientation(LayoutOrientation::Horizontal);
+
+		layout->AddFlexibleSlice(CreateWidget(TextWidget).Text("One"));
+		layout->AddFlexibleSlice(CreateWidget(TextWidget).Text("Two"));
+		layout->AddFixedSlice(CreateWidget(TextWidget).Text("Three"), 200);
+		layout->AddFixedSlice(CreateWidget(TextWidget).Text("Four"), 200);
+		
+
 		m_windows[Volt::WindowManager::Get().GetMainWindowHandle()]->SetWidget(
-			CreateWidget(SliderWidget)
+			layout
+		);
+
+
+		//static float sliderValue = 50.f;
+		/*CreateWidget(SliderWidget)
 			.X(100)
 			.Y(100)
 			.MinValue(0)
 			.MaxValue(100)
 			.Value_Lambda([]() {return sliderValue; })
-			.OnValueChanged_Lambda([](float newValue) 
+			.OnValueChanged_Lambda([](float newValue)
 		{
-			sliderValue = newValue; 
-		})
-		);
+			sliderValue = newValue;
+		})*/
+
 	}
 
 	void CircuitManager::RegisterEventListeners()

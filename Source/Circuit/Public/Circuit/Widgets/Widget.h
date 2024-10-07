@@ -3,7 +3,6 @@
 #include "Circuit/Config.h"
 
 #include <CoreUtilities/Math/2DShapes/Rect.h>
-class WidgetBuilder;
 
 namespace Circuit
 {
@@ -36,13 +35,13 @@ namespace Circuit
 
 		 void RequestRebuild();
 
-		 const std::vector<std::shared_ptr<Widget>>& GetChildren() const { return m_Children; }
+		 const std::vector<Ref<Widget>>& GetChildren() const { return m_Children; }
 
 		 bool IsRenderPrimitive() const;
 		 RenderPrimitiveType GetRenderPrimitiveType() const;
 	protected:
 		template<class WidgetType>
-		inline std::shared_ptr<WidgetType>& AddChildWidget(std::shared_ptr<WidgetType> Widget);
+		inline Ref<WidgetType>& AddChildWidget(Ref<WidgetType> Widget);
 
 		bool m_IsRenderPrimitive = false;
 		RenderPrimitiveType m_RenderPrimitiveType;
@@ -51,18 +50,18 @@ namespace Circuit
 	private:
 		Volt::Rect m_bounds;
 
-		std::vector<std::shared_ptr<Widget>> m_Children;
+		std::vector<Ref<Widget>> m_Children;
 
 
-		float m_LocalXPosition;
-		float m_LocalYPosition;
+		float m_LocalXPosition = 0;
+		float m_LocalYPosition = 0;
 		bool m_NeedsRebuild;
 
 
 	};
 
 	template<class WidgetType>
-	inline std::shared_ptr<WidgetType>& Widget::AddChildWidget(std::shared_ptr<WidgetType> Widget)
+	inline Ref<WidgetType>& Widget::AddChildWidget(Ref<WidgetType> Widget)
 	{
 		m_Children.push_back(Widget);
 		return Widget;

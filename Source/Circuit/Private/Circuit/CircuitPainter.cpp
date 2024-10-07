@@ -12,6 +12,43 @@ namespace Circuit
 	{
 	}
 
+	CircuitPainter::CircuitPainter(const Volt::Rect& allotedArea)
+		:m_allottedArea(allotedArea)
+	{
+	}
+
+	CircuitPainter::CircuitPainter(const glm::vec2& position, const glm::vec2& size)
+		:m_allottedArea(position, size)
+	{
+	}
+
+	CircuitPainter::CircuitPainter(CircuitPainter* basePainter, const Volt::Rect& allotedArea)
+		:m_allottedArea(allotedArea),
+		m_basePainter(basePainter)
+	{
+	}
+
+	CircuitPainter::CircuitPainter(CircuitPainter* basePainter, const glm::vec2& position, const glm::vec2& size)
+		:m_allottedArea(position, size),
+		m_basePainter(basePainter)
+	{
+	}
+
+	const Volt::Rect& CircuitPainter::GetAllotedArea() const
+	{
+		return m_allottedArea;
+	}
+
+	CircuitPainter CircuitPainter::CreateSubPainter(const Volt::Rect& allotedArea)
+	{
+		return CircuitPainter(m_basePainter ? m_basePainter : this, allotedArea);
+	}
+
+	CircuitPainter CircuitPainter::CreateSubPainter(const glm::vec2& position, const glm::vec2& size)
+	{
+		return CircuitPainter(m_basePainter ? m_basePainter : this, position, size);
+	}
+
 	void CircuitPainter::AddRect(float x, float y, float width, float height, CircuitColor color, float rotation, float scale)
 	{
 		CircuitDrawCommand command;
@@ -29,7 +66,12 @@ namespace Circuit
 
 		command.color = color;
 
-		m_drawCommands.push_back(command);
+		std::vector<CircuitDrawCommand>* drawCommandsToAppendTo = &m_drawCommands;
+		if (m_basePainter)
+		{
+			drawCommandsToAppendTo = &m_basePainter->m_drawCommands;
+		}
+		drawCommandsToAppendTo->push_back(command);
 	}
 
 	void CircuitPainter::AddCircle(float x, float y, float radius, CircuitColor color, float scale)
@@ -45,7 +87,13 @@ namespace Circuit
 
 		command.color = color;
 
-		m_drawCommands.push_back(command);
+
+		std::vector<CircuitDrawCommand>* drawCommandsToAppendTo = &m_drawCommands;
+		if (m_basePainter)
+		{
+			drawCommandsToAppendTo = &m_basePainter->m_drawCommands;
+		}
+		drawCommandsToAppendTo->push_back(command);
 	}
 
 	void CircuitPainter::AddText(float x, float y, const std::string& text, Ref<Volt::Font> font, float maxWidth, CircuitColor color, float scale)
@@ -164,7 +212,13 @@ namespace Circuit
 
 				l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
 
-				CircuitDrawCommand& cmd = m_drawCommands.emplace_back();
+				std::vector<CircuitDrawCommand>* drawCommandsToAppendTo = &m_drawCommands;
+				if (m_basePainter)
+				{
+					drawCommandsToAppendTo = &m_basePainter->m_drawCommands;
+				}
+
+				CircuitDrawCommand& cmd = drawCommandsToAppendTo->emplace_back();
 				cmd.type = CircuitPrimitiveType::TextCharacter;
 				cmd.pixelPos.x = x;
 				cmd.pixelPos.y = y;
