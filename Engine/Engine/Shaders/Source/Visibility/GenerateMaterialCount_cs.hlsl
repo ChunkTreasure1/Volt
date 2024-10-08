@@ -4,12 +4,14 @@
 #include "Common.hlsli"
 #include "MeshletHelpers.hlsli"
 
+#include "Atomics.hlsli"
+
 struct Constants
 {
     GPUScene gpuScene;
 
-    vt::UniformTex2D<uint2> visibilityBuffer;
-    vt::UniformRWTypedBuffer<uint> materialCountsBuffer;
+    vt::Tex2D<uint2> visibilityBuffer;
+    vt::RWTypedBuffer<uint> materialCountsBuffer;
 
     uint2 renderSize;
 };
@@ -37,5 +39,5 @@ void main(uint3 threadId : SV_DispatchThreadID)
         return;
     }
      
-    constants.materialCountsBuffer.InterlockedAdd(objectData.materialId, 1);
+    vt::InterlockedAdd(constants.materialCountsBuffer, objectData.materialId, 1);    
 }

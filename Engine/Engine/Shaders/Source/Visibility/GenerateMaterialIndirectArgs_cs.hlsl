@@ -5,8 +5,8 @@
 
 struct Constants
 {
-    vt::UniformTypedBuffer<uint> materialCounts;
-    vt::UniformRWTypedBuffer<uint> indirectArgsBuffer;
+    vt::TypedBuffer<uint> materialCounts;
+    vt::RWTypedBuffer<uint> indirectArgsBuffer;
     uint materialCount;
 };
 

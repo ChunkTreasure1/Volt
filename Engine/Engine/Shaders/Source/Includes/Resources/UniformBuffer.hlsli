@@ -9,7 +9,7 @@ namespace vt
         
         T Load()
         {
-            ByteAddressBuffer buffer = UNIFORM_DESCRIPTOR_HEAP(UniformBufferHandle, handle);
+            ByteAddressBuffer buffer = DESCRIPTOR_HEAP(UniformBufferHandle, handle);
             return buffer.Load<T>(0);
         }
     };

@@ -197,7 +197,7 @@ struct SkyCommonParams
 
 	float sunIlluminance;
 
-	vt::UniformTex2D<float4> transmittanceLUT;
+	vt::Tex2D<float4> transmittanceLUT;
 	vt::TextureSampler linearClampSampler;
 };
 

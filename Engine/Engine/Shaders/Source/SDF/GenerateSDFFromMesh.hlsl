@@ -3,9 +3,9 @@
 
 struct Constants
 {
-	vt::UniformRWTex3D<float> outSDFTexture;
-    vt::UniformTypedBuffer<float3> vertexPositions;
-    vt::UniformTypedBuffer<uint> indexBuffer;
+	vt::RWTex3D<float> outSDFTexture;
+    vt::TypedBuffer<float3> vertexPositions;
+    vt::TypedBuffer<uint> indexBuffer;
 
     uint indexCount;
     uint indexStartOffset;

@@ -10,11 +10,11 @@ struct BrickInfo
 
 struct Constants
 {
-    vt::UniformRWTypedBuffer<GPUSDFBrick> bricks;
-    vt::UniformRWTex3D<float> brickTexture;
+    vt::RWTypedBuffer<GPUSDFBrick> bricks;
+    vt::RWTex3D<float> brickTexture;
 
-    vt::UniformTypedBuffer<float> brickData;
-    vt::UniformTypedBuffer<BrickInfo> brickInfo;
+    vt::TypedBuffer<float> brickData;
+    vt::TypedBuffer<BrickInfo> brickInfo;
 
     uint brickTextureSize;
 };

@@ -5,9 +5,9 @@
 
 struct Constants
 {
-    vt::UniformRWTex2D<uint> finalAOTerm;
-    vt::UniformTex2D<uint> aoTerm;
-    vt::UniformTex2D<float> edges;
+    vt::RWTex2D<uint> finalAOTerm;
+    vt::Tex2D<uint> aoTerm;
+    vt::Tex2D<float> edges;
     vt::TextureSampler pointClampSampler;
     
     GTAOConstants constants;

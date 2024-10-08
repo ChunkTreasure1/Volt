@@ -5,14 +5,14 @@
 
 struct Constants
 {
-    vt::UniformTex2D<float> depthTexture;
+    vt::Tex2D<float> depthTexture;
     vt::UniformBuffer<ViewData> viewData;
     
-    vt::UniformTypedBuffer<PointLight> pointLights;
-    vt::UniformTypedBuffer<SpotLight> spotLights;
+    vt::TypedBuffer<PointLight> pointLights;
+    vt::TypedBuffer<SpotLight> spotLights;
 
-    vt::UniformRWTypedBuffer<int> visiblePointLightIndices;
-    vt::UniformRWTypedBuffer<int> visibleSpotLightIndices;
+    vt::RWTypedBuffer<int> visiblePointLightIndices;
+    vt::RWTypedBuffer<int> visibleSpotLightIndices;
  
     uint2 tileCount;
 };

@@ -3,7 +3,7 @@
 
 struct Constants
 {
-    vt::UniformTex2D<float3> color;
+    vt::Tex2D<float3> color;
 };
 
 struct Output

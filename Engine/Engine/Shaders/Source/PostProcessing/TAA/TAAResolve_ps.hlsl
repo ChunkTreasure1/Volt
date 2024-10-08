@@ -3,10 +3,10 @@
 
 struct Constants
 {
-    vt::UniformTex2D<float3> currentColor;
-    vt::UniformTex2D<float3> previousColor;
+    vt::Tex2D<float3> currentColor;
+    vt::Tex2D<float3> previousColor;
 
-    vt::UniformTex2D<float2> velocityTexture;
+    vt::Tex2D<float2> velocityTexture;
 
     vt::TextureSampler pointSampler;
 };

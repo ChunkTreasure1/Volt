@@ -8,7 +8,7 @@ namespace vt
         
         SamplerState Get()
         {
-            return UNIFORM_DESCRIPTOR_HEAP(SamplerStateHandle, handle);
+            return DESCRIPTOR_HEAP(SamplerStateHandle, handle);
         }
     };
 }

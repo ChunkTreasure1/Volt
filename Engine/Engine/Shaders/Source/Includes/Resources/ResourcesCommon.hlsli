@@ -1,7 +1,5 @@
 #pragma once
 
-#ifndef NO_RENDERGRAPH
-
 struct RenderGraphConstants 
 {
     uint constantsBufferIndex;
@@ -11,8 +9,6 @@ struct RenderGraphConstants
 
 #define RENDER_GRAPH_CONSTANTS_BINDING b998
 ConstantBuffer<RenderGraphConstants> u_renderGraphConstants : register(RENDER_GRAPH_CONSTANTS_BINDING, space1);
-
-#endif
 
 // Resource Handle Layout:
 // 8 bit resource type
@@ -34,6 +30,18 @@ struct BufferHandle
 };
 
 struct RWBufferHandle
+{
+    uint handle;
+};
+
+template<typename T>
+struct TypedBufferHandle
+{
+    uint handle;
+};
+
+template<typename T>
+struct RWTypedBufferHandle
 {
     uint handle;
 };
@@ -107,8 +115,10 @@ struct ResourceHandle
     uint handle;
 };
 
-#if __VULKAN__
-    #include "VulkanDescriptorHeap.hlsli"
-#elif __D3D12__
-    #include "D3D12DescriptorHeap.hlsli"
-#endif
+#include "DescriptorHeap.hlsli"
+
+//#if __VULKAN__
+//    #include "VulkanDescriptorHeap.hlsli"
+//#elif __D3D12__
+//    #include "D3D12DescriptorHeap.hlsli"
+//#endif

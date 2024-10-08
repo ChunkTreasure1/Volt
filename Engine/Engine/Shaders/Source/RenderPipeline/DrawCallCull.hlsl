@@ -5,6 +5,8 @@
 #include "MeshShaderConfig.hlsli"
 #include "Utility.hlsli"
 
+#include "Atomics.hlsli"
+
 namespace CullingType
 {
     static const uint Perspective = 0;
@@ -13,8 +15,8 @@ namespace CullingType
 
 struct Constants
 {
-    vt::UniformRWTypedBuffer<uint> countBuffer;
-    vt::UniformRWTypedBuffer<MeshTaskCommand> taskCommands;
+    vt::RWTypedBuffer<uint> countBuffer;
+    vt::RWTypedBuffer<MeshTaskCommand> taskCommands;
 
     GPUScene gpuScene;
 
@@ -71,7 +73,7 @@ void MainCS(uint dispatchThreadId : SV_DispatchThreadID)
         uint taskGroups = DivideRoundUp(mesh.meshletCount, NUM_AS_THREADS);
         
         uint drawOffset;
-        constants.countBuffer.InterlockedAdd(0, taskGroups, drawOffset);
+        vt::InterlockedAdd(constants.countBuffer, 0, taskGroups, drawOffset);
 
         // Skip draw calls if AS group count limit is reached. This equals ~4M visible draws or ~32B visible triangles.
         if (drawOffset + taskGroups <= NUM_MAX_AS_GROUP_COUNT)

@@ -4,13 +4,13 @@
 
 struct Constants
 {
-    vt::UniformRWTex2D<float> outDepthMIP0;
-    vt::UniformRWTex2D<float> outDepthMIP1;
-    vt::UniformRWTex2D<float> outDepthMIP2;
-    vt::UniformRWTex2D<float> outDepthMIP3;
-    vt::UniformRWTex2D<float> outDepthMIP4;
+    vt::RWTex2D<float> outDepthMIP0;
+    vt::RWTex2D<float> outDepthMIP1;
+    vt::RWTex2D<float> outDepthMIP2;
+    vt::RWTex2D<float> outDepthMIP3;
+    vt::RWTex2D<float> outDepthMIP4;
     
-    vt::UniformTex2D<float> sourceDepth;
+    vt::Tex2D<float> sourceDepth;
     vt::TextureSampler pointClampSampler;
     uint padding;
     

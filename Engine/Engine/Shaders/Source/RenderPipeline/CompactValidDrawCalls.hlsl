@@ -2,10 +2,12 @@
 #include "GPUScene.hlsli"
 #include "Bitwise.hlsli"
 
+#include "Atomics.hlsli"
+
 struct Constants
 {
-    vt::UniformRWTypedBuffer<uint> validPrimitiveDrawData;
-    vt::UniformTypedBuffer<PrimitiveDrawData> primitiveDrawData;
+    vt::RWTypedBuffer<uint> validPrimitiveDrawData;
+    vt::TypedBuffer<PrimitiveDrawData> primitiveDrawData;
 
     uint primitiveDrawDataCount;
 };
@@ -25,7 +27,7 @@ void MainCS(uint dispatchThreadId : SV_DispatchThreadID)
     if (IsBitSet(primitiveDrawData.flags, PrimitiveFlags::Valid))
     {
         uint index;
-        constants.validPrimitiveDrawData.InterlockedAdd(0, 1, index);
+        vt::InterlockedAdd(constants.validPrimitiveDrawData, 0, 1, index);
         constants.validPrimitiveDrawData.Store(index + 1, dispatchThreadId);
     }
 };

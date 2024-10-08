@@ -3,8 +3,8 @@
 
 struct Constants
 {
-    vt::UniformRWTypedBuffer<uint> indirectArgs;
-    vt::UniformTypedBuffer<uint> countBuffer;
+    vt::RWTypedBuffer<uint> indirectArgs;
+    vt::TypedBuffer<uint> countBuffer;
     
     uint threadGroupSize;
 };

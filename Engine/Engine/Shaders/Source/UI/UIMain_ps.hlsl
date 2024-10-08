@@ -25,7 +25,7 @@ Output main(Input input)
 {
     const Constants constants = GetConstants<Constants>();
 
-    vt::UniformTex2D<float4> texture = (vt::UniformTex2D<float4>)input.imageHandle;
+    vt::Tex2D<float4> texture = (vt::Tex2D<float4>)input.imageHandle;
 
     Output output;
     output.color = texture.Sample(constants.linearSampler, input.texCoords);

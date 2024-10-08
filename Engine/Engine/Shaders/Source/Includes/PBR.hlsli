@@ -12,20 +12,20 @@ struct PBRConstants
     vt::UniformBuffer<ViewData> viewData;
     
     vt::UniformBuffer<DirectionalLight> directionalLight;
-    vt::UniformTypedBuffer<PointLight> pointLights;
-    vt::UniformTypedBuffer<SpotLight> spotLights;
+    vt::TypedBuffer<PointLight> pointLights;
+    vt::TypedBuffer<SpotLight> spotLights;
 
-    vt::UniformTypedBuffer<int> visiblePointLights;
-    vt::UniformTypedBuffer<int> visibleSpotLights;
+    vt::TypedBuffer<int> visiblePointLights;
+    vt::TypedBuffer<int> visibleSpotLights;
     
     vt::TextureSampler linearSampler;
     vt::TextureSampler pointLinearClampSampler;
     vt::TextureSampler shadowSampler;
     
-    vt::UniformTex2D<float2> BRDFLuT;
-    vt::UniformTexCube<float3> environmentIrradiance;
-    vt::UniformTexCube<float3> environmentRadiance;
-    vt::UniformTex2DArray<float> directionalShadowMap;
+    vt::Tex2D<float2> BRDFLuT;
+    vt::TexCube<float3> environmentIrradiance;
+    vt::TexCube<float3> environmentRadiance;
+    vt::Tex2DArray<float> directionalShadowMap;
 };
 
 struct PBRInput

@@ -3,9 +3,9 @@
 
 struct Constants
 {
-    vt::UniformRWTypedBuffer<uint> dstBuffer;
-    vt::UniformTypedBuffer<uint> srcBuffer;
-    vt::UniformTypedBuffer<uint> scatterIndices;
+    vt::RWTypedBuffer<uint> dstBuffer;
+    vt::TypedBuffer<uint> srcBuffer;
+    vt::TypedBuffer<uint> scatterIndices;
 
     uint typeSizeInUINT;
     uint copyCount;

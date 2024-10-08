@@ -30,14 +30,14 @@ namespace VisualizationMode
 
 struct Constants
 {
-    vt::UniformRWTex2D<float4> output;
+    vt::RWTex2D<float4> output;
     
-    vt::UniformTex2D<float4> albedo;
-    vt::UniformTex2D<float4> normals;
-    vt::UniformTex2D<float2> material;
-    vt::UniformTex2D<float3> emissive;
-    vt::UniformTex2D<uint> aoTexture;
-    vt::UniformTex2D<float> depthTexture;
+    vt::Tex2D<float4> albedo;
+    vt::Tex2D<float4> normals;
+    vt::Tex2D<float2> material;
+    vt::Tex2D<float3> emissive;
+    vt::Tex2D<uint> aoTexture;
+    vt::Tex2D<float> depthTexture;
 
     uint shadingMode;
     uint visualizationMode;
@@ -45,7 +45,7 @@ struct Constants
     PBRConstants pbrConstants;
 };
 
-float CalculateAO(vt::UniformTex2D<uint> aoTex, uint2 pixelCoord)
+float CalculateAO(vt::Tex2D<uint> aoTex, uint2 pixelCoord)
 {
 #define XE_GTAO_OCCLUSION_TERM_SCALE (1.5f)      // for packing in UNORM (because raw, pre-denoised occlusion term can overshoot 1 but will later average out to 1)
 

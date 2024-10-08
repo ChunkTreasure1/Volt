@@ -752,27 +752,10 @@ namespace Volt::RHI
 			isResourceType = true;
 		}
 
+		// Note: The order of the ifs matter, because we are using find, Tex2D will be found in a string containing RWTex2D
+		// which will lead to mislabling of the type.
+
 		// Buffers
-		else if (str.find("UniformRWRawByteBuffer") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::RWBuffer;
-			isResourceType = true;
-		}
-		else if (str.find("UniformRawByteBuffer") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::Buffer;
-			isResourceType = true;
-		}
-		else if (str.find("UniformRWTypedBuffer") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::RWBuffer;
-			isResourceType = true;
-		}
-		else if (str.find("UniformTypedBuffer") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::Buffer;
-			isResourceType = true;
-		}
 		else if (str.find("RWRawByteBuffer") != std::string_view::npos)
 		{
 			resultType.baseType = ShaderUniformBaseType::RWBuffer;
@@ -800,12 +783,7 @@ namespace Volt::RHI
 		}
 
 		// Texture2D
-		else if (str.find("UniformTex2D") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::Texture2D;
-			isResourceType = true;
-		}
-		else if (str.find("UniformRWTex2D") != std::string_view::npos)
+		else if (str.find("RWTex2D") != std::string_view::npos)
 		{
 			resultType.baseType = ShaderUniformBaseType::RWTexture2D;
 			isResourceType = true;
@@ -815,19 +793,9 @@ namespace Volt::RHI
 			resultType.baseType = ShaderUniformBaseType::Texture2D;
 			isResourceType = true;
 		}
-		else if (str.find("RWTex2D") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::RWTexture2D;
-			isResourceType = true;
-		}
 
 		// Texture2DArray
-		else if (str.find("UniformTex2DArray") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::Texture2DArray;
-			isResourceType = true;
-		}
-		else if (str.find("UniformRWTex2DArray") != std::string_view::npos)
+		else if (str.find("RWTex2DArray") != std::string_view::npos)
 		{
 			resultType.baseType = ShaderUniformBaseType::RWTexture2DArray;
 			isResourceType = true;
@@ -837,18 +805,8 @@ namespace Volt::RHI
 			resultType.baseType = ShaderUniformBaseType::Texture2DArray;
 			isResourceType = true;
 		}
-		else if (str.find("RWTex2DArray") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::RWTexture2DArray;
-			isResourceType = true;
-		}
 
 		// TextureCube
-		else if (str.find("UniformTexCube") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::Texture2D;
-			isResourceType = true;
-		}
 		else if (str.find("TexCube") != std::string_view::npos)
 		{
 			resultType.baseType = ShaderUniformBaseType::Texture2D;
@@ -856,12 +814,7 @@ namespace Volt::RHI
 		}
 
 		// Texture3D
-		else if (str.find("UniformTex3D") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::Texture3D;
-			isResourceType = true;
-		}
-		else if (str.find("UniformRWTex3D") != std::string_view::npos)
+		else if (str.find("RWTex3D") != std::string_view::npos)
 		{
 			resultType.baseType = ShaderUniformBaseType::RWTexture3D;
 			isResourceType = true;
@@ -869,11 +822,6 @@ namespace Volt::RHI
 		else if (str.find("Tex3D") != std::string_view::npos)
 		{
 			resultType.baseType = ShaderUniformBaseType::Texture3D;
-			isResourceType = true;
-		}
-		else if (str.find("RWTex3D") != std::string_view::npos)
-		{
-			resultType.baseType = ShaderUniformBaseType::RWTexture3D;
 			isResourceType = true;
 		}
 

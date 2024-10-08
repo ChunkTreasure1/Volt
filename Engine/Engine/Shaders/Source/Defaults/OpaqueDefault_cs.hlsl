@@ -14,18 +14,18 @@
 
 struct Constants
 {
-    vt::UniformTex2D<uint2> visibilityBuffer;
-    vt::UniformTypedBuffer<uint> materialCountBuffer;
-    vt::UniformTypedBuffer<uint> materialStartBuffer;
-    vt::UniformTypedBuffer<uint2> pixelCollection;
+    vt::Tex2D<uint2> visibilityBuffer;
+    vt::TypedBuffer<uint> materialCountBuffer;
+    vt::TypedBuffer<uint> materialStartBuffer;
+    vt::TypedBuffer<uint2> pixelCollection;
     
     GPUScene gpuScene;
     vt::UniformBuffer<ViewData> viewData;
     
-    vt::UniformRWTex2D<float4> albedo;
-    vt::UniformRWTex2D<float4> normals;
-    vt::UniformRWTex2D<float2> material;
-    vt::UniformRWTex2D<float3> emissive;
+    vt::RWTex2D<float4> albedo;
+    vt::RWTex2D<float4> normals;
+    vt::RWTex2D<float2> material;
+    vt::RWTex2D<float3> emissive;
     
     uint materialId;
     

@@ -4,7 +4,7 @@
 
 struct Constants
 {
-    vt::UniformTex2D<float3> sceneColor;
+    vt::Tex2D<float3> sceneColor;
     vt::UniformBuffer<ViewData> viewData;
 
     vt::TextureSampler linearSampler;
@@ -35,7 +35,7 @@ Output MainPS(FullscreenTriangleVertex input)
     const Constants constants = GetConstants<Constants>();
     const ViewData viewData = constants.viewData.Load();
     
-    vt::UniformTex2D<float3> sceneColor = constants.sceneColor;
+    vt::Tex2D<float3> sceneColor = constants.sceneColor;
     vt::TextureSampler linearSampler = constants.linearSampler;
 
     float3 colorCenter = sceneColor.Sample(linearSampler, input.uv);

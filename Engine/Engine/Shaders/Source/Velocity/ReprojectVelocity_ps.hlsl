@@ -9,7 +9,7 @@ struct Constants
     float2 invRenderSize;
     float2 jitterOffset;
 
-    vt::UniformTex2D<float> depthTexture;
+    vt::Tex2D<float> depthTexture;
     vt::TextureSampler pointSampler;
 };
 

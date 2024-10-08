@@ -142,12 +142,12 @@ struct SDFPrimitiveDrawData
 
 struct GPUScene
 {
-    vt::UniformTypedBuffer<GPUMesh> meshesBuffer;
-    vt::UniformTypedBuffer<GPUMeshSDF> sdfMeshesBuffer;
-    vt::UniformTypedBuffer<GPUMaterial> materialsBuffer;
-    vt::UniformTypedBuffer<PrimitiveDrawData> primitiveDrawDataBuffer;
-    vt::UniformTypedBuffer<SDFPrimitiveDrawData> sdfPrimitiveDrawDataBuffer;
-    vt::UniformTypedBuffer<float4x4> bonesBuffer;
+    vt::TypedBuffer<GPUMesh> meshesBuffer;
+    vt::TypedBuffer<GPUMeshSDF> sdfMeshesBuffer;
+    vt::TypedBuffer<GPUMaterial> materialsBuffer;
+    vt::TypedBuffer<PrimitiveDrawData> primitiveDrawDataBuffer;
+    vt::TypedBuffer<SDFPrimitiveDrawData> sdfPrimitiveDrawDataBuffer;
+    vt::TypedBuffer<float4x4> bonesBuffer;
 
-    vt::UniformTypedBuffer<uint> validPrimitiveDrawDatasBuffer;
+    vt::TypedBuffer<uint> validPrimitiveDrawDatasBuffer;
 };

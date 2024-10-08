@@ -3,15 +3,17 @@
 #include "GPUScene.hlsli"
 #include "MeshletHelpers.hlsli"
 
+#include "Atomics.hlsli"
+
 struct Constants
 {
     GPUScene gpuScene;
 
-    vt::UniformTex2D<uint2> visibilityBuffer;
-    vt::UniformTypedBuffer<uint> materialStartBuffer;
+    vt::Tex2D<uint2> visibilityBuffer;
+    vt::TypedBuffer<uint> materialStartBuffer;
     
-    vt::UniformRWTypedBuffer<uint> currentMaterialCountBuffer;
-    vt::UniformRWTypedBuffer<uint2> pixelCollectionBuffer;
+    vt::RWTypedBuffer<uint> currentMaterialCountBuffer;
+    vt::RWTypedBuffer<uint2> pixelCollectionBuffer;
 
     uint2 renderSize;
 };
@@ -42,6 +44,6 @@ void main(uint3 threadId : SV_DispatchThreadID)
     uint materialStartIndex = constants.materialStartBuffer.Load(objectData.materialId);
 
     uint currentIndex;
-    constants.currentMaterialCountBuffer.InterlockedAdd(objectData.materialId, 1, currentIndex);
+    vt::InterlockedAdd(constants.currentMaterialCountBuffer, objectData.materialId, 1, currentIndex);    
     constants.pixelCollectionBuffer.Store(materialStartIndex + currentIndex, threadId.xy);
 }

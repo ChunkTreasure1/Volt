@@ -46,7 +46,7 @@ struct SpotLight
     float2 padding;
 };
 
-int GetLightBufferIndex(vt::UniformTypedBuffer<int> lightIndexBuffer, uint tileCountX, int i, uint2 tileId)
+int GetLightBufferIndex(vt::TypedBuffer<int> lightIndexBuffer, uint tileCountX, int i, uint2 tileId)
 {
     const uint index = tileId.y * tileCountX + tileId.x;
     const uint offset = index * MAX_LIGHTS_PER_TILE;
@@ -54,7 +54,7 @@ int GetLightBufferIndex(vt::UniformTypedBuffer<int> lightIndexBuffer, uint tileC
     return lightIndexBuffer.Load(offset + i);
 }
 
-int GetLightCount(vt::UniformTypedBuffer<int> lightIndexBuffer, uint tileCountX, uint2 tileId)
+int GetLightCount(vt::TypedBuffer<int> lightIndexBuffer, uint tileCountX, uint2 tileId)
 {
     int result = 0;
     for (int i = 0; i < MAX_LIGHTS_PER_TILE; i++)

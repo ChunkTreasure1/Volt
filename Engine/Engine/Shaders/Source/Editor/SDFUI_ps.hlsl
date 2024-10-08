@@ -26,7 +26,7 @@ struct UICommand
 
 struct Constants
 {
-    vt::UniformTypedBuffer<UICommand> commands;
+    vt::TypedBuffer<UICommand> commands;
     uint commandCount;
     uint2 renderSize;
 };

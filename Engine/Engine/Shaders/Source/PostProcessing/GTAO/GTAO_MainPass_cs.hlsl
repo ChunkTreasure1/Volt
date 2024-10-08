@@ -4,11 +4,11 @@
 
 struct Constants
 {
-    vt::UniformRWTex2D<uint> aoTerm;
-    vt::UniformRWTex2D<float> edges;
+    vt::RWTex2D<uint> aoTerm;
+    vt::RWTex2D<float> edges;
     
-    vt::UniformTex2D<float> srcDepth;
-    vt::UniformTex2D<float4> viewspaceNormals;
+    vt::Tex2D<float> srcDepth;
+    vt::Tex2D<float4> viewspaceNormals;
     vt::TextureSampler pointClampSampler;
     uint3 padding;
     

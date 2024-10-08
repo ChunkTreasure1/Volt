@@ -24,7 +24,7 @@ struct Constants
 {
     GPUScene gpuScene;
     vt::UniformBuffer<ViewData> viewData;
-    vt::UniformTypedBuffer<MeshTaskCommand> taskCommands;
+    vt::TypedBuffer<MeshTaskCommand> taskCommands;
 };
 #endif
 
@@ -53,7 +53,7 @@ float3 GetNormal(GPUMesh mesh, uint vertexIndex)
     return normalize(OctNormalDecode(octNormal));
 }
 
-float4x4 GetSkinningMatrix(GPUMesh mesh, uint vertexIndex, uint objectBoneOffset, vt::UniformTypedBuffer<float4x4> bonesBuffer)
+float4x4 GetSkinningMatrix(GPUMesh mesh, uint vertexIndex, uint objectBoneOffset, vt::TypedBuffer<float4x4> bonesBuffer)
 {
     VertexAnimationData animData = mesh.vertexAnimationInfoBuffer.Load(vertexIndex);
 

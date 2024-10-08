@@ -18,9 +18,9 @@ struct State
 
 struct Constants
 {
-    vt::UniformTypedBuffer<uint> inputValues;
-    vt::UniformRWTypedBuffer<uint> outputValues;
-    vt::UniformRWTypedBuffer<State> stateBuffer; // Should be globallycoherent
+    vt::TypedBuffer<uint> inputValues;
+    vt::RWTypedBuffer<uint> outputValues;
+    vt::RWTypedBuffer<State> stateBuffer; // Should be globallycoherent
     uint valueCount;
 };
 
