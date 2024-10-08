@@ -1,7 +1,6 @@
 #include "vtpch.h"
 #include "Volt/Asset/Importers/AssetImporter.h"
 
-#include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
 
 #include "Volt/Animation/BlendSpace.h"
@@ -368,7 +367,7 @@ namespace Volt
 	//	fout.close();
 	//}
 
-	bool FontImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	/*bool FontImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Font>();
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
@@ -383,7 +382,7 @@ namespace Volt
 		asset = CreateRef<Font>();
 		std::reinterpret_pointer_cast<Font>(asset)->Initialize(filePath);
 		return true;
-	}
+	}*/
 
 	bool PhysicsMaterialImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
