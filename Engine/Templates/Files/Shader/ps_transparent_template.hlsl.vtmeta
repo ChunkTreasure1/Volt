@@ -1,8 +1,0 @@
-Metadata:
-  assetHandle: 56904387068817454
-  filePath: Templates/Files/Shader/ps_transparent_template.hlsl
-  type: 128
-  Dependencies:
-    []
-  Properties:
-    {}

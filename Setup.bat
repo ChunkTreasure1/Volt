@@ -25,3 +25,6 @@ IF "%projectDir%"=="" (
 ) ELSE (
 	call python Scripts/data/Setup.py -p="%projectDir%"
 )
+
+REM Pause to view any messages
+PAUSE

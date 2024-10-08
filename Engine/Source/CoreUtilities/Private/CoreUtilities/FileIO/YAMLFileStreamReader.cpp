@@ -1,0 +1,25 @@
+#include "cupch.h"
+#include "FileIO/YAMLFileStreamReader.h"
+
+const bool YAMLFileStreamReader::OpenFile(const std::filesystem::path& filePath)
+{
+	if (!std::filesystem::exists(filePath))
+	{
+		return false;
+	}
+
+	std::ifstream file(filePath);
+	if (!file.is_open())
+	{
+		return false;
+	}
+
+	std::stringstream strStream;
+	strStream << file.rdbuf();
+	file.close();
+
+	m_rootNode = YAML::Load(strStream.str());
+	m_currentNode = m_rootNode;
+
+	return true;
+}

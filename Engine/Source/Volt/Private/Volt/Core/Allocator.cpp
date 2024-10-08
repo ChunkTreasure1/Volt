@@ -1,0 +1,64 @@
+#include "vtpch.h"
+#include "Volt/Core/Allocator.h"
+
+inline static size_t s_totalAllocation = 0;
+
+VT_NODISCARD void* operator new(size_t size)
+{
+	s_totalAllocation += size;
+	
+	if (size == 0)
+	{
+		++size;
+	}
+
+	if (void* ptr = malloc(size))
+	{
+		//VT_PROFILE_ALLOC(ptr, size);
+		return ptr;
+	}
+
+	throw std::bad_alloc();
+}
+
+VT_NODISCARD void* operator new[](size_t size)
+{
+	s_totalAllocation += size;
+	if (size == 0)
+	{
+		++size;
+	}
+
+
+	if (void* ptr = malloc(size))
+	{
+		//VT_PROFILE_ALLOC(ptr, size);
+		return ptr;
+	}
+
+	throw std::bad_alloc();
+}
+
+void operator delete(void* p, size_t size) noexcept
+{
+	//VT_PROFILE_FREE(p);
+	free(p);
+
+	s_totalAllocation -= size;
+}
+
+void operator delete[](void* p, size_t size) noexcept
+{
+	//VT_PROFILE_FREE(p);
+	free(p);
+
+	s_totalAllocation -= size;
+}
+
+void Allocator::CheckAllocations()
+{
+	if (s_totalAllocation > 0)
+	{
+		printf("Memory leak of size %d detected!", static_cast<int32_t>(s_totalAllocation));
+	}
+}

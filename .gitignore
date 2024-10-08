@@ -4,10 +4,11 @@
 .idea/
 bin/
 bin-int/
-Temp/
+Intermediate/
 
-Source/SharpmakeProject/obj
-Source/SharpmakeProject/output
+Engine/Source/SharpmakeProject/obj
+Engine/Source/SharpmakeProject/bin
+Engine/Source/SharpmakeProject/output
 Source/Properties
 
 Engine/User
@@ -16,6 +17,7 @@ Engine/Scripts/Intermediates
 Engine/Volt-ScriptCore/Scripts/Intermediates
 Engine/MonoDebugger.log
 Engine/Log
+Engine/Binaries
 
 Volt/ProjectTemplate/Intermediates/
 Volt/ProjectTemplate/Binaries
@@ -51,7 +53,7 @@ Project/Generated
 !SideProjects/VoltVSTools/VoltVSTools.sln
 !SideProjects/VoltVSTools/VoltVSTools/VoltVSTools.csproj
 
-Scripts/data/__pycache__
+__pycache__
 Sharpmake/
 
 Volt/Volt/vendor/efsw/lib

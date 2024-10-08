@@ -1,9 +1,0 @@
-Project:
-  EngineVersion: 0.1.4
-  Name: Project
-  CompanyName: None
-  AssetsDirectory: Assets
-  AudioBanksDirectory: Audio/Banks
-  IconPath: ""
-  CursorPath: ""
-  StartScenePath: ""

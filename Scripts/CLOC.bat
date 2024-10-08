@@ -1,7 +1,7 @@
 @echo off
 
 pushd ..\
-Scripts\data\cloc Source/*/Private Source/*/Public Source/*/PCH --exclude-dir=ThirdParty
+Scripts\data\cloc Engine/Source/*/Private Engine/Source/*/Public Engine/Source/*/PCH --exclude-dir=ThirdParty
 popd
 
 PAUSE
