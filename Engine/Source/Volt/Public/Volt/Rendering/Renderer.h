@@ -2,9 +2,10 @@
 
 #include "Volt/Rendering/RendererStructs.h"
 
-#include "Volt/Scene/Scene.h"
+#include <AssetSystem/AssetHandle.h>
 
-#include "Volt/Rendering/BindlessResource.h"
+#include <RenderCore/Resources/BindlessResource.h>
+
 #include <RHIModule/Images/SamplerState.h>
 #include <RHIModule/Core/RHICommon.h>
 

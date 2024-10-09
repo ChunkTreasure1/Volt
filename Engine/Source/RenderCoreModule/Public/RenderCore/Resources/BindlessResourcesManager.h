@@ -29,14 +29,10 @@ namespace Volt
 		ResourceHandle RegisterImageView(WeakPtr<RHI::ImageView> image);
 		ResourceHandle RegisterSamplerState(WeakPtr<RHI::SamplerState> samplerState);
 
-		void UnregisterBuffer(ResourceHandle handle);
-		void UnregisterImageView(ResourceHandle handle, RHI::ImageViewType viewType);
+		void UnregisterResource(ResourceHandle handle);
+		void MarkResourceAsDirty(ResourceHandle handle);
+
 		void UnregisterSamplerState(ResourceHandle handle);
-
-		ResourceHandle GetBufferHandle(WeakPtr<RHI::StorageBuffer> storageBuffer);
-
-		void MarkBufferAsDirty(ResourceHandle handle);
-		void MarkImageViewAsDirty(ResourceHandle handle, RHI::ImageViewType viewType);
 		void MarkSamplerStateAsDirty(ResourceHandle handle);
 
 		void Update();

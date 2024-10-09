@@ -1,5 +1,7 @@
 #pragma once
 
+#include "RenderCore/Resources/BindlessResource.h"
+
 #include <RHIModule/Descriptors/ResourceHandle.h>
 
 #include <CoreUtilities/Pointers/WeakPtr.h>
@@ -15,7 +17,14 @@ namespace Volt
 	class SharedRenderContext
 	{
 	public:
+		SharedRenderContext() = default;
 		~SharedRenderContext();
+
+		SharedRenderContext(SharedRenderContext&& other) noexcept;
+		SharedRenderContext& operator=(SharedRenderContext&& other) noexcept;
+
+		SharedRenderContext(const SharedRenderContext& other) = delete;
+		SharedRenderContext& operator=(const SharedRenderContext& other) = delete;
 
 		void BeginContext();
 		void EndContext();
@@ -29,7 +38,7 @@ namespace Volt
 	private:
 		friend class RenderGraph;
 
-		void SetPerPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer);
+		void SetPerPassConstantsBuffer(RefPtr<RHI::StorageBuffer> constantsBuffer);
 		void SetRenderGraphConstantsBuffer(WeakPtr<RHI::UniformBuffer> constantsBuffer);
 
 		bool m_isRenderGraphConstantsMapped = false;
@@ -38,7 +47,7 @@ namespace Volt
 		bool m_isPassConstantsMapped = false;
 		uint8_t* m_mappedPassConstantsPointer = nullptr;
 
-		WeakPtr<RHI::StorageBuffer> m_passConstantsBuffer;
+		BindlessResourceScope<RHI::StorageBuffer> m_passConstantsBuffer;
 		WeakPtr<RHI::UniformBuffer> m_renderGraphConstantsBuffer;
 	};
 }

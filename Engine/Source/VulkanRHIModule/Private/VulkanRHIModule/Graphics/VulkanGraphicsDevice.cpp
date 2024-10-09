@@ -35,7 +35,6 @@ namespace Volt::RHI
 	{
 		inline static void GetEnabledFeatures(WeakPtr<VulkanPhysicalGraphicsDevice> physicalDevice)
 		{
-
 			s_enabledFeatures.vulkan11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
 			s_enabledFeatures.vulkan11Features.pNext = nullptr;
 			s_enabledFeatures.vulkan11Features.shaderDrawParameters = VK_TRUE;
@@ -255,6 +254,10 @@ namespace Volt::RHI
 			deviceInfo.enabledLayerCount = 1u;
 			deviceInfo.ppEnabledLayerNames = &s_validationLayer;
 #endif
+
+			VT_ENSURE_MSG(m_physicalDevice->IsExtensionAvailiable(VK_EXT_MESH_SHADER_EXTENSION_NAME), "Mesh Shader support is required!");
+			VT_ENSURE_MSG(m_physicalDevice->IsExtensionAvailiable(VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME), "Mutable descriptor type support is required!");
+
 			const auto enabledExtensions = Utility::GetEnabledExtensions(m_physicalDevice);
 			Utility::GetEnabledFeatures(m_physicalDevice);
 
@@ -292,8 +295,19 @@ namespace Volt::RHI
 
 	void VulkanGraphicsDevice::WaitForIdle()
 	{
-		// #TODO_Ivar: Must be externally synced with all queues
+		RefPtr<VulkanDeviceQueue> graphicsQueue = m_deviceQueues[QueueType::Graphics].As<VulkanDeviceQueue>();
+		RefPtr<VulkanDeviceQueue> transferQueue = m_deviceQueues[QueueType::TransferCopy].As<VulkanDeviceQueue>();
+		RefPtr<VulkanDeviceQueue> computeQueue = m_deviceQueues[QueueType::Compute].As<VulkanDeviceQueue>();
+
+		graphicsQueue->AquireLock();
+		transferQueue->AquireLock();
+		computeQueue->AquireLock();
+
 		vkDeviceWaitIdle(m_device);
+
+		computeQueue->ReleaseLock();
+		transferQueue->ReleaseLock();
+		graphicsQueue->ReleaseLock();
 	}
 
 	RefPtr<DeviceQueue> VulkanGraphicsDevice::GetDeviceQueue(QueueType queueType) const

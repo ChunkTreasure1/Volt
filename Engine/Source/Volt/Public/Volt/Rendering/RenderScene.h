@@ -3,10 +3,8 @@
 #include "Volt/Asset/Mesh/Mesh.h"
 
 #include "Volt/Rendering/RenderObject.h"
-#include "Volt/Rendering/BindlessResource.h"
 
-#include "Volt/Rendering/RendererCommon.h"
-
+#include <RenderCore/Resources/BindlessResource.h>
 #include <CoreUtilities/Containers/Map.h>
 
 #include <span>

@@ -141,6 +141,67 @@ namespace Volt
 	{
 	}
 
+	RenderGraph::RenderGraph(RenderGraph&& other) noexcept
+		: m_imageExtractions(std::move(other.m_imageExtractions)),
+		m_bufferExtractions(std::move(other.m_bufferExtractions)),
+		m_standaloneMarkers(std::move(other.m_standaloneMarkers)),
+		m_passNodes(std::move(other.m_passNodes)),
+		m_resourceNodes(std::move(other.m_resourceNodes)),
+		m_standaloneBarriers(std::move(other.m_standaloneBarriers)),
+		m_compiledPasses(std::move(other.m_compiledPasses)),
+		m_registeredExternalResources(std::move(other.m_registeredExternalResources)),
+		m_temporaryAllocations(std::move(other.m_temporaryAllocations)),
+		m_registeredResources(std::move(other.m_registeredResources)),
+		m_passIndex(other.m_passIndex),
+		m_resourceIndex(other.m_resourceIndex),
+		m_commandBuffer(other.m_commandBuffer),
+		m_perPassConstantsBuffer(other.m_perPassConstantsBuffer),
+		m_renderGraphConstantsBuffer(other.m_renderGraphConstantsBuffer),
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
+		m_runtimeShaderValidator(std::move(other.m_runtimeShaderValidator)),
+#endif
+		m_transientResourceSystem(std::move(other.m_transientResourceSystem)),
+		m_sharedRenderContext(std::move(other.m_sharedRenderContext)),
+		m_currentlyInBuilder(other.m_currentlyInBuilder),
+		m_hasBeenCompiled(other.m_hasBeenCompiled),
+		m_totalAllocatedSizeCallback(other.m_totalAllocatedSizeCallback)
+	{
+	}
+
+	RenderGraph& RenderGraph::operator=(RenderGraph&& other) noexcept
+	{
+		if (this == &other)
+		{
+			return *this;
+		}
+
+		m_imageExtractions = std::move(other.m_imageExtractions);
+		m_bufferExtractions = std::move(other.m_bufferExtractions);
+		m_standaloneMarkers = std::move(other.m_standaloneMarkers);
+		m_passNodes = std::move(other.m_passNodes);
+		m_resourceNodes = std::move(other.m_resourceNodes);
+		m_standaloneBarriers = std::move(other.m_standaloneBarriers);
+		m_compiledPasses = std::move(other.m_compiledPasses);
+		m_registeredExternalResources = std::move(other.m_registeredExternalResources);
+		m_temporaryAllocations = std::move(other.m_temporaryAllocations);
+		m_registeredResources = std::move(other.m_registeredResources);
+		m_passIndex = other.m_passIndex;
+		m_resourceIndex = other.m_resourceIndex;
+		m_commandBuffer = other.m_commandBuffer;
+		m_perPassConstantsBuffer = other.m_perPassConstantsBuffer;
+		m_renderGraphConstantsBuffer = other.m_renderGraphConstantsBuffer;
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
+		m_runtimeShaderValidator = std::move(other.m_runtimeShaderValidator);
+#endif
+		m_transientResourceSystem = std::move(other.m_transientResourceSystem);
+		m_sharedRenderContext = std::move(other.m_sharedRenderContext);
+		m_currentlyInBuilder = other.m_currentlyInBuilder;
+		m_hasBeenCompiled = other.m_hasBeenCompiled;
+		m_totalAllocatedSizeCallback = other.m_totalAllocatedSizeCallback;
+
+		return *this;
+	}
+
 	inline RHI::ResourceState GetWriteStateForRasterizedImage2D(Ref<RenderGraphResourceNodeBase> resourceNode)
 	{
 		VT_ENSURE(resourceNode->GetResourceType() == ResourceType::Image2D);
@@ -299,7 +360,7 @@ namespace Volt
 			const uint32_t passIndex = resource->lastUsage->index;
 			m_compiledPasses[passIndex].surrenderableResources.emplace_back(resource->handle);
 		}
-		
+
 		struct ResourceState
 		{
 			Weak<RenderGraphPassNodeBase> previousUsage;
@@ -691,7 +752,7 @@ namespace Volt
 		constexpr size_t MAX_PASSES_PER_JOB = 20;
 
 		AllocateConstantsBuffer();
-		
+
 		m_sharedRenderContext.SetPerPassConstantsBuffer(m_perPassConstantsBuffer);
 		m_sharedRenderContext.SetRenderGraphConstantsBuffer(m_renderGraphConstantsBuffer);
 
@@ -836,16 +897,9 @@ namespace Volt
 	{
 		ExtractResources();
 
-		BindlessResourcesManager::Get().UnregisterBuffer(m_perPassConstantsBufferResourceHandle);
-
-		for (const auto& handle : m_registeredBufferResources)
+		for (const auto& handle : m_registeredResources)
 		{
-			BindlessResourcesManager::Get().UnregisterBuffer(handle);
-		}
-
-		for (const auto& imageViewInfo : m_registeredImageResources)
-		{
-			BindlessResourcesManager::Get().UnregisterImageView(imageViewInfo.handle, imageViewInfo.viewType);
+			BindlessResourcesManager::Get().UnregisterResource(handle);
 		}
 
 		for (const auto& alloc : m_temporaryAllocations)
@@ -867,8 +921,7 @@ namespace Volt
 			desc.memoryUsage = RHI::MemoryUsage::CPUToGPU;
 			desc.name = "Render Graph Per Pass Constants";
 
-			m_perPassConstantsBuffer = m_transientResourceSystem.AquireBuffer(Utility::GetValueAsHandle<RenderGraphBufferHandle>(m_resourceIndex++), desc);
-			m_perPassConstantsBufferResourceHandle = BindlessResourcesManager::Get().RegisterBuffer(m_perPassConstantsBuffer);
+			m_perPassConstantsBuffer = m_transientResourceSystem.AquireBufferRef(Utility::GetValueAsHandle<RenderGraphBufferHandle>(m_resourceIndex++), desc);
 		}
 
 		// Render Graph constants
@@ -980,7 +1033,7 @@ namespace Volt
 	{
 		VT_ENSURE_MSG(bufferDesc.elementSize > 0 && bufferDesc.count > 0, "Size must not be zero!");
 		//VT_ENSURE_MSG(EnumValueContainsFlag(bufferDesc.usage, RHI::BufferUsage::UniformBuffer), "Usage flags should contain UniformBuffer!");
-		 
+
 		RenderGraphUniformBufferHandle resourceHandle = Utility::GetValueAsHandle<RenderGraphUniformBufferHandle>(m_resourceIndex++);
 		Ref<RenderGraphResourceNode<RenderGraphUniformBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphUniformBuffer>>();
 		node->handle = resourceHandle;
@@ -1009,7 +1062,7 @@ namespace Volt
 
 		if (!view->IsSwapchainView())
 		{
-			m_registeredImageResources.emplace_back(BindlessResourcesManager::Get().RegisterImageView(view), view->GetViewType());
+			m_registeredResources.emplace_back(BindlessResourcesManager::Get().RegisterImageView(view));
 		}
 
 		return view;
@@ -1028,7 +1081,7 @@ namespace Volt
 		// #TODO_Ivar: Move this section to it's own function
 		if (!view->IsSwapchainView())
 		{
-			m_registeredImageResources.emplace_back(BindlessResourcesManager::Get().RegisterImageView(view), view->GetViewType());
+			m_registeredResources.emplace_back(BindlessResourcesManager::Get().RegisterImageView(view));
 		}
 
 		return image;
@@ -1047,7 +1100,7 @@ namespace Volt
 		VT_ENSURE(!view->IsSwapchainView());
 
 		ResourceHandle handle = BindlessResourcesManager::Get().RegisterImageView(view);
-		m_registeredImageResources.emplace_back(handle, view->GetViewType());
+		m_registeredResources.emplace_back(handle);
 
 		return handle;
 	}
@@ -1065,7 +1118,7 @@ namespace Volt
 		VT_ENSURE(!view->IsSwapchainView());
 
 		ResourceHandle handle = BindlessResourcesManager::Get().RegisterImageView(view);
-		m_registeredImageResources.emplace_back(handle, view->GetViewType());
+		m_registeredResources.emplace_back(handle);
 
 		return handle;
 	}
@@ -1080,7 +1133,7 @@ namespace Volt
 		auto buffer = m_transientResourceSystem.AquireBuffer(resourceHandle, bufferDesc.description);
 		auto handle = BindlessResourcesManager::Get().RegisterBuffer(buffer);
 
-		m_registeredBufferResources.emplace_back(handle);
+		m_registeredResources.emplace_back(handle);
 		return handle;
 	}
 
@@ -1094,7 +1147,7 @@ namespace Volt
 		auto buffer = m_transientResourceSystem.AquireBuffer(resourceHandle, bufferDesc.description);
 		auto handle = BindlessResourcesManager::Get().RegisterBuffer(buffer);
 
-		m_registeredBufferResources.emplace_back(handle);
+		m_registeredResources.emplace_back(handle);
 
 		return buffer;
 	}
@@ -1109,7 +1162,7 @@ namespace Volt
 		auto buffer = m_transientResourceSystem.AquireBuffer(*reinterpret_cast<const RenderGraphBufferHandle*>(&resourceHandle), bufferDesc.description);
 		auto handle = BindlessResourcesManager::Get().RegisterBuffer(buffer);
 
-		m_registeredBufferResources.emplace_back(handle);
+		m_registeredResources.emplace_back(handle);
 
 		return buffer;
 	}
@@ -1125,7 +1178,7 @@ namespace Volt
 		auto buffer = m_transientResourceSystem.AquireBuffer(*reinterpret_cast<const RenderGraphBufferHandle*>(&resourceHandle), bufferDesc.description);
 		auto handle = BindlessResourcesManager::Get().RegisterBuffer(buffer);
 
-		m_registeredBufferResources.emplace_back(handle);
+		m_registeredResources.emplace_back(handle);
 
 		return handle;
 	}
@@ -1194,7 +1247,7 @@ namespace Volt
 		// #TODO_Ivar: Move this section to it's own function
 		if (!view->IsSwapchainView())
 		{
-			m_registeredImageResources.emplace_back(BindlessResourcesManager::Get().RegisterImageView(view), view->GetViewType());
+			m_registeredResources.emplace_back(BindlessResourcesManager::Get().RegisterImageView(view));
 		}
 
 		return image;
@@ -1210,7 +1263,7 @@ namespace Volt
 		auto buffer = m_transientResourceSystem.AquireBufferRef(resourceHandle, bufferDesc.description);
 		auto handle = BindlessResourcesManager::Get().RegisterBuffer(buffer);
 
-		m_registeredBufferResources.emplace_back(handle);
+		m_registeredResources.emplace_back(handle);
 
 		return buffer;
 	}

@@ -23,15 +23,11 @@ namespace Volt::RHI
 		virtual ResourceHandle RegisterImageView(WeakPtr<ImageView> imageView) = 0;
 		virtual ResourceHandle RegisterSamplerState(WeakPtr<SamplerState> samplerState) = 0;
 
-		virtual void UnregisterBuffer(ResourceHandle handle) = 0;
-		virtual void UnregisterImageView(ResourceHandle handle, ImageViewType viewType) = 0;
+		virtual void UnregisterResource(ResourceHandle handle) = 0;
+		virtual void MarkResourceAsDirty(ResourceHandle handle) = 0;
+
 		virtual void UnregisterSamplerState(ResourceHandle handle) = 0;
-
-		virtual void MarkBufferAsDirty(ResourceHandle handle) = 0;
-		virtual void MarkImageViewAsDirty(ResourceHandle handle, RHI::ImageViewType viewType) = 0;
 		virtual void MarkSamplerStateAsDirty(ResourceHandle handle) = 0;
-
-		virtual ResourceHandle GetBufferHandle(WeakPtr<RHI::StorageBuffer> storageBuffer) = 0; // #TODO_Ivar: This feels weird...
 
 		virtual void Update() = 0;
 		virtual void PrepareForRender() = 0;

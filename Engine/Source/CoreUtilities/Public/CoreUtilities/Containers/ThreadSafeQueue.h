@@ -64,6 +64,12 @@ public:
 		std::queue<T>::push(obj);
 	}
 
+	inline void push(T&& obj)
+	{
+		WriteLock lock{ m_mutex };
+		std::queue<T>::push(std::move(obj));
+	}
+
 	template<typename... Args>
 	inline void emplace(Args&&... args)
 	{

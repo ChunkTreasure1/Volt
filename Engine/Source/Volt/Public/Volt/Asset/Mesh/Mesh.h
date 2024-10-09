@@ -9,19 +9,18 @@
 #include "Volt/Rendering/BoundingStructures.h"
 #include "Volt/Rendering/Mesh/MeshCommon.h"
 
-#include "Volt/Rendering/BindlessResource.h"
 #include "Volt/Rendering/GPUScene.h"
 
 #include "Volt/SDF/SDFGenerator.h"
 
+#include <RenderCore/Resources/BindlessResource.h>
+
 #include <RHIModule/Buffers/StorageBuffer.h>
 
 #include <CoreUtilities/Containers/Map.h>
-#include <CoreUtilities/Containers/SparseBrickMap.h>
 
 #include <AssetSystem/Asset.h>
 #include <AssetSystem/AssetType.h>
-#include <AssetSystem/AssetFactory.h>
 
 namespace Volt
 {

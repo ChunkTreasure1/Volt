@@ -22,15 +22,11 @@ namespace Volt::RHI
 		ResourceHandle RegisterImageView(WeakPtr<ImageView> imageView) override;
 		ResourceHandle RegisterSamplerState(WeakPtr<SamplerState> samplerState) override;
 
-		void UnregisterBuffer(ResourceHandle handle) override;
-		void UnregisterImageView(ResourceHandle handle, ImageViewType viewType) override;
+		void UnregisterResource(ResourceHandle handle) override;
+		void MarkResourceAsDirty(ResourceHandle handle) override;
+
 		void UnregisterSamplerState(ResourceHandle handle) override;
-
-		void MarkBufferAsDirty(ResourceHandle handle) override;
-		void MarkImageViewAsDirty(ResourceHandle handle, RHI::ImageViewType viewType) override;
 		void MarkSamplerStateAsDirty(ResourceHandle handle) override;
-
-		ResourceHandle GetBufferHandle(WeakPtr<RHI::StorageBuffer> storageBuffer) override;
 
 		void Update() override;
 		void PrepareForRender() override;

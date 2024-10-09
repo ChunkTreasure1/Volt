@@ -15,6 +15,33 @@ namespace Volt
 		VT_ENSURE(!m_isPassConstantsMapped);
 	}
 
+	SharedRenderContext::SharedRenderContext(SharedRenderContext&& other) noexcept
+		: m_isRenderGraphConstantsMapped(other.m_isRenderGraphConstantsMapped),
+		m_mappedRenderGraphConstantsPointer(other.m_mappedRenderGraphConstantsPointer),
+		m_isPassConstantsMapped(other.m_isPassConstantsMapped),
+		m_mappedPassConstantsPointer(other.m_mappedPassConstantsPointer),
+		m_passConstantsBuffer(std::move(other.m_passConstantsBuffer)),
+		m_renderGraphConstantsBuffer(std::move(other.m_renderGraphConstantsBuffer))
+	{
+	}
+
+	SharedRenderContext& SharedRenderContext::operator=(SharedRenderContext&& other) noexcept
+	{
+		if (this == &other)
+		{
+			return *this;
+		}
+
+		m_isRenderGraphConstantsMapped = other.m_isRenderGraphConstantsMapped;
+		m_mappedRenderGraphConstantsPointer = other.m_mappedRenderGraphConstantsPointer;
+		m_isPassConstantsMapped = other.m_isPassConstantsMapped;
+		m_mappedPassConstantsPointer = other.m_mappedPassConstantsPointer;
+		m_passConstantsBuffer = std::move(other.m_passConstantsBuffer);
+		m_renderGraphConstantsBuffer = std::move(other.m_renderGraphConstantsBuffer);
+	
+		return *this;
+	}
+
 	void SharedRenderContext::BeginContext()
 	{
 	}
@@ -30,7 +57,7 @@ namespace Volt
 
 		if (m_isPassConstantsMapped)
 		{
-			m_passConstantsBuffer->Unmap();
+			m_passConstantsBuffer->GetResource()->Unmap();
 			m_mappedPassConstantsPointer = nullptr;
 			m_isPassConstantsMapped = false;
 		}
@@ -52,7 +79,7 @@ namespace Volt
 	{
 		if (!m_isPassConstantsMapped)
 		{
-			m_mappedPassConstantsPointer = m_passConstantsBuffer->Map<uint8_t>();
+			m_mappedPassConstantsPointer = m_passConstantsBuffer->GetResource()->Map<uint8_t>();
 			m_isPassConstantsMapped = true;
 		}
 
@@ -62,12 +89,12 @@ namespace Volt
 
 	ResourceHandle SharedRenderContext::GetPassConstantsBufferResourceHandle() const
 	{
-		return BindlessResourcesManager::Get().GetBufferHandle(m_passConstantsBuffer);
+		return m_passConstantsBuffer->GetResourceHandle();
 	}
 
-	void SharedRenderContext::SetPerPassConstantsBuffer(WeakPtr<RHI::StorageBuffer> constantsBuffer)
+	void SharedRenderContext::SetPerPassConstantsBuffer(RefPtr<RHI::StorageBuffer> constantsBuffer)
 	{
-		m_passConstantsBuffer = constantsBuffer;
+		m_passConstantsBuffer = BindlessResource<RHI::StorageBuffer>::CreateScopeFromResource(constantsBuffer);
 	}
 
 	void SharedRenderContext::SetRenderGraphConstantsBuffer(WeakPtr<RHI::UniformBuffer> constantsBuffer)

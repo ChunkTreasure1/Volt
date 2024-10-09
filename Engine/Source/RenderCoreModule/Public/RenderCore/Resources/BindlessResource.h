@@ -16,10 +16,10 @@ namespace Volt
 	}
 
 	template<typename T>
-	concept BindlessResourceType = std::is_same<T, RHI::StorageBuffer>::value || 
-								   std::is_same<T, RHI::ImageView>::value || 
-								   std::is_same<T, RHI::SamplerState>::value ||
-								   std::is_same<T, RHI::Image>::value;
+	concept BindlessResourceType = std::is_same<T, RHI::StorageBuffer>::value ||
+		std::is_same<T, RHI::ImageView>::value ||
+		std::is_same<T, RHI::SamplerState>::value ||
+		std::is_same<T, RHI::Image>::value;
 
 	template<BindlessResourceType T>
 	class BindlessResource
@@ -57,44 +57,26 @@ namespace Volt
 		{
 			if (IsValid())
 			{
-				if constexpr (std::is_same<T, RHI::StorageBuffer>::value)
-				{
-					BindlessResourcesManager::Get().UnregisterBuffer(m_resourceHandle);
-				}
-				else if constexpr (std::is_same<T, RHI::ImageView>::value)
-				{
-					BindlessResourcesManager::Get().UnregisterImageView(m_resourceHandle, m_resource->GetViewType());
-				}
-				else if constexpr (std::is_same<T, RHI::SamplerState>::value)
+				if constexpr (std::is_same<T, RHI::SamplerState>::value)
 				{
 					BindlessResourcesManager::Get().UnregisterSamplerState(m_resourceHandle);
 				}
-
-				else if constexpr (std::is_same<T, RHI::Image>::value)
+				else
 				{
-					BindlessResourcesManager::Get().UnregisterImageView(m_resourceHandle, m_resource->GetView()->GetViewType());
+					BindlessResourcesManager::Get().UnregisterResource(m_resourceHandle);
 				}
 			}
 		}
 
 		void MarkAsDirty()
 		{
-			if constexpr (std::is_same<T, RHI::StorageBuffer>::value)
-			{
-				BindlessResourcesManager::Get().MarkBufferAsDirty(m_resourceHandle);
-			}
-			else if constexpr (std::is_same<T, RHI::ImageView>::value)
-			{
-				BindlessResourcesManager::Get().MarkImageViewAsDirty(m_resourceHandle, m_resource->GetViewType());
-			}
-			else if constexpr (std::is_same<T, RHI::SamplerState>::value)
+			if constexpr (std::is_same<T, RHI::SamplerState>::value)
 			{
 				BindlessResourcesManager::Get().MarkSamplerStateAsDirty(m_resourceHandle);
 			}
-
-			else if constexpr (std::is_same<T, RHI::Image>::value)
+			else
 			{
-				BindlessResourcesManager::Get().MarkImageViewAsDirty(m_resourceHandle, m_resource->GetView()->GetViewType());
+				BindlessResourcesManager::Get().MarkResourceAsDirty(m_resourceHandle);
 			}
 		}
 
@@ -108,6 +90,16 @@ namespace Volt
 		VT_NODISCARD VT_INLINE static Ref<BindlessResource<T>> CreateRef(Args&&... args)
 		{
 			return ::CreateRef<BindlessResource<T>>(T::Create(args...));
+		}
+
+		VT_NODISCARD VT_INLINE static Scope<BindlessResource<T>> CreateScopeFromResource(RefPtr<T> resource)
+		{
+			return ::CreateScope<BindlessResource<T>>(resource);
+		}
+
+		VT_NODISCARD VT_INLINE static Ref<BindlessResource<T>> CreateRefFromResource(RefPtr<T> resource)
+		{
+			return ::CreateRef<BindlessResource<T>>(resource);
 		}
 
 		VT_NODISCARD VT_INLINE bool IsValid() const { return m_resource != nullptr; }

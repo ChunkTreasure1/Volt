@@ -33,7 +33,7 @@ namespace Volt
 	{
 		if (m_image)
 		{
-			BindlessResourcesManager::Get().UnregisterImageView(m_resourceHandle, m_image->GetView()->GetViewType());
+			BindlessResourcesManager::Get().UnregisterResource(m_resourceHandle);
 		}
 		
 		m_image = nullptr;
@@ -58,7 +58,7 @@ namespace Volt
 	{
 		if (m_image)
 		{
-			BindlessResourcesManager::Get().UnregisterImageView(m_resourceHandle, m_image->GetView()->GetViewType());
+			BindlessResourcesManager::Get().UnregisterResource(m_resourceHandle);
 		}
 
 		m_resourceHandle = BindlessResourcesManager::Get().RegisterImageView(image->GetView());

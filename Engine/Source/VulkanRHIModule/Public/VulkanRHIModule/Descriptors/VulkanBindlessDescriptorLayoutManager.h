@@ -10,20 +10,6 @@ namespace Volt::RHI
 	class VulkanBindlessDescriptorLayoutManager
 	{
 	public:
-		inline static constexpr uint32_t TEXTURE1D_BINDING = 0;
-		inline static constexpr uint32_t TEXTURE2D_BINDING = 1;
-		inline static constexpr uint32_t TEXTURE3D_BINDING = 2;
-		inline static constexpr uint32_t TEXTURECUBE_BINDING = 3;
-		inline static constexpr uint32_t RWTEXTURE1D_BINDING = 4;
-		inline static constexpr uint32_t RWTEXTURE2D_BINDING = 5;
-		inline static constexpr uint32_t RWTEXTURE3D_BINDING = 6;
-		inline static constexpr uint32_t BYTEADDRESSBUFFER_BINDING = 7;
-		inline static constexpr uint32_t RWBYTEADDRESSBUFFER_BINDING = 8;
-		inline static constexpr uint32_t UNIFORMBUFFER_BINDING = 9;
-		inline static constexpr uint32_t SAMPLERSTATE_BINDING = 10;
-		inline static constexpr uint32_t RWTEXTURE2DARRAY_BINDING = 11;
-		inline static constexpr uint32_t TEXTURE2DARRAY_BINDING = 12;
-
 		inline static constexpr uint32_t CBV_SRV_UAV_BINDING = 0;
 		inline static constexpr uint32_t SAMPLERS_BINDING = 1;
 
@@ -34,7 +20,6 @@ namespace Volt::RHI
 
 	private:
 		static bool TryCreateMutableDescriptorSetLayout(VkDescriptorSetLayout_T*& outDescriptorSetLayouts);
-		static void CreateMainDescriptorSet(VkDescriptorSetLayout_T*& outDescriptorSetLayout);
 
 		VulkanBindlessDescriptorLayoutManager() = delete;
 	};

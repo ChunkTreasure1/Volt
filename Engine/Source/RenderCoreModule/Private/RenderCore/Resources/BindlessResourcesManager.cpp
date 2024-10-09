@@ -40,34 +40,19 @@ namespace Volt
 		return m_bindlessDescriptorTable->RegisterSamplerState(samplerState);
 	}
 
-	void BindlessResourcesManager::UnregisterBuffer(ResourceHandle handle)
+	void BindlessResourcesManager::UnregisterResource(ResourceHandle handle)
 	{
-		m_bindlessDescriptorTable->UnregisterBuffer(handle);
+		m_bindlessDescriptorTable->UnregisterResource(handle);
 	}
 
-	void BindlessResourcesManager::UnregisterImageView(ResourceHandle handle, RHI::ImageViewType viewType)
+	void BindlessResourcesManager::MarkResourceAsDirty(ResourceHandle handle)
 	{
-		m_bindlessDescriptorTable->UnregisterImageView(handle, viewType);
+		m_bindlessDescriptorTable->MarkResourceAsDirty(handle);
 	}
 
 	void BindlessResourcesManager::UnregisterSamplerState(ResourceHandle handle)
 	{
 		m_bindlessDescriptorTable->UnregisterSamplerState(handle);
-	}
-
-	ResourceHandle BindlessResourcesManager::GetBufferHandle(WeakPtr<RHI::StorageBuffer> storageBuffer)
-	{
-		return m_bindlessDescriptorTable->GetBufferHandle(storageBuffer);
-	}
-
-	void BindlessResourcesManager::MarkBufferAsDirty(ResourceHandle handle)
-	{
-		m_bindlessDescriptorTable->MarkBufferAsDirty(handle);
-	}
-
-	void BindlessResourcesManager::MarkImageViewAsDirty(ResourceHandle handle, RHI::ImageViewType viewType)
-	{
-		m_bindlessDescriptorTable->MarkImageViewAsDirty(handle, viewType);
 	}
 
 	void BindlessResourcesManager::MarkSamplerStateAsDirty(ResourceHandle handle)

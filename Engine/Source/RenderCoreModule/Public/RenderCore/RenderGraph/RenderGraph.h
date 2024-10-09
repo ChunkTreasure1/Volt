@@ -59,6 +59,12 @@ namespace Volt
 		RenderGraph(RefPtr<RHI::CommandBuffer> commandBuffer);
 		~RenderGraph();
 
+		RenderGraph(RenderGraph&& other) noexcept;
+		RenderGraph& operator=(RenderGraph&& other) noexcept;
+
+		RenderGraph(const RenderGraph& other) = delete;
+		RenderGraph& operator=(const RenderGraph& other) = delete;
+
 		class VTRC_API Builder
 		{
 		public:
@@ -274,16 +280,14 @@ namespace Volt
 			RHI::ImageViewType viewType;
 		};
 
-		ThreadSafeVector<ResourceHandle> m_registeredBufferResources;
-		ThreadSafeVector<RegisteredImageView> m_registeredImageResources;
+		ThreadSafeVector<ResourceHandle> m_registeredResources;
 
 		uint32_t m_passIndex = 0;
 		uint32_t m_resourceIndex = 0;
 
 		RefPtr<RHI::CommandBuffer> m_commandBuffer;
-		WeakPtr<RHI::StorageBuffer> m_perPassConstantsBuffer;
+		RefPtr<RHI::StorageBuffer> m_perPassConstantsBuffer;
 		WeakPtr<RHI::UniformBuffer> m_renderGraphConstantsBuffer;
-		ResourceHandle m_perPassConstantsBufferResourceHandle = Resource::Invalid;
 
 #ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
 		ShaderRuntimeValidator m_runtimeShaderValidator;

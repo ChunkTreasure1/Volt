@@ -59,11 +59,15 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		s_data->executionQueue.emplace([rg = std::move(renderGraph)]() mutable
-		{
-			rg.ExecuteInternal(true, false);
-		});
+		// We move construct the RenderGraph into a Ref ptr, to allow usage in a std::function
+		Ref<RenderGraph> rgPtr = CreateRef<RenderGraph>(std::move(renderGraph));
 
+		auto execFunc = [rg = std::move(rgPtr)]() mutable
+		{
+			rg->ExecuteInternal(true, false);
+		};
+
+		s_data->executionQueue.push(std::move(execFunc));
 		s_data->executeVariable.notify_one();
 	}
 
