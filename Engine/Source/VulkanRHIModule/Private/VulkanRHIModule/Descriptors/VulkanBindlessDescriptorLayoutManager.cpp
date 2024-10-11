@@ -17,7 +17,8 @@ namespace Volt::RHI
 
 	void VulkanBindlessDescriptorLayoutManager::CreateGlobalDescriptorLayout()
 	{
-		VT_ENSURE(TryCreateMutableDescriptorSetLayout(s_globalDescriptorSetLayout));
+		TryCreateMutableDescriptorSetLayout(s_globalDescriptorSetLayout);
+		VT_ENSURE(s_globalDescriptorSetLayout);
 
 		// Setup render graph constants descriptor set layout
 		{
