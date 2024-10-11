@@ -67,61 +67,6 @@ namespace Volt
 		static void OnTransformChanged(PhysicsTransformEntity entity);
 	};
 
-	struct RigidbodyComponent
-	{
-		BodyType bodyType = BodyType::Static;
-		uint32_t layerId = 0;
-		float mass = 1.f;
-		float linearDrag = 0.01f;
-		uint32_t lockFlags = 0; // #TODO: add enum support
-		float angularDrag = 0.05f;
-		CollisionDetectionType collisionType = CollisionDetectionType::Discrete;
-
-		bool disableGravity = false;
-		bool isKinematic = false;
-
-		inline RigidbodyComponent(BodyType aBodyType = BodyType::Static, uint32_t aLayerId = 0, float aMass = 1.f, float aLinearDrag = 0.01f, uint32_t aLockFlags = 0,
-			float aAngularDrag = 0.05f, bool aDisableGravity = false, bool aIsKinematic = false, CollisionDetectionType aCollisionType = CollisionDetectionType::Discrete)
-			: bodyType(aBodyType), layerId(aLayerId), mass(aMass), linearDrag(aLinearDrag), lockFlags(aLockFlags), angularDrag(aAngularDrag), collisionType(aCollisionType),
-			disableGravity(aDisableGravity), isKinematic(aIsKinematic)
-		{
-		}
-
-		static void ReflectType(TypeDesc<RigidbodyComponent>& reflect)
-		{
-			reflect.SetGUID("{460B7722-00C0-48BE-8B3E-B549BCC9269B}"_guid);
-			reflect.SetLabel("Rigidbody Component");
-			reflect.AddMember(&RigidbodyComponent::bodyType, "bodyType", "Body Type", "", BodyType::Static);
-			reflect.AddMember(&RigidbodyComponent::layerId, "layerId", "Layer ID", "", 0);
-			reflect.AddMember(&RigidbodyComponent::mass, "mass", "Mass", "", 1.f);
-			reflect.AddMember(&RigidbodyComponent::linearDrag, "linearDrag", "Linear Drag", "", 0.01f);
-			reflect.AddMember(&RigidbodyComponent::lockFlags, "lockFlags", "Lock Flags", "", 0);
-			reflect.AddMember(&RigidbodyComponent::angularDrag, "angularDrag", "Angular Drag", "", 0.05f);
-			reflect.AddMember(&RigidbodyComponent::collisionType, "collisionType", "Collision Type", "", CollisionDetectionType::Discrete);
-			reflect.AddMember(&RigidbodyComponent::disableGravity, "disableGravity", "Disable Gravity", "", false);
-			reflect.AddMember(&RigidbodyComponent::isKinematic, "isKinematic", "Is Kinematic", "", false);
-			reflect.SetOnCreateCallback(&RigidbodyComponent::OnCreate);
-			reflect.SetOnDestroyCallback(&RigidbodyComponent::OnDestroy);
-			reflect.SetOnTransformChangedCallback(&RigidbodyComponent::OnTransformChanged);
-		}
-
-		REGISTER_COMPONENT(RigidbodyComponent);
-
-	private:
-		using PhysicsEntity = ECS::Access
-			::Read<RigidbodyComponent>
-			::As<ECS::Type::Entity>;
-
-		using PhysicsTransformEntity = ECS::Access
-			::Read<TransformComponent>
-			::With<RigidbodyComponent>
-			::As<ECS::Type::Entity>;
-
-		static void OnCreate(PhysicsEntity entity);
-		static void OnDestroy(PhysicsEntity entity);
-		static void OnTransformChanged(PhysicsTransformEntity entity);
-	};
-
 	struct BoxColliderComponent
 	{
 		glm::vec3 halfSize = { 50.f, 50.f, 50.f };

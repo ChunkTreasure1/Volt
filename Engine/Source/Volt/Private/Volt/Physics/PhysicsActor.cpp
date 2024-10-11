@@ -6,9 +6,6 @@
 #include "Volt/Physics/Physics.h"
 
 #include "Volt/Physics/PhysicsShapes.h"
-#include "Volt/Physics/PhysicsLayer.h"
-
-#include "Volt/Components/CoreComponents.h"
 
 namespace Volt
 {
@@ -63,7 +60,7 @@ namespace Volt
 			VT_LOG(Warning, "Static PhysicsActor can't have mass!");
 			return;
 		}
-		m_rigidBodyData.mass = mass;
+		m_rigidBodyData.m_mass = mass;
 
 		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
@@ -78,7 +75,7 @@ namespace Volt
 			VT_LOG(Warning, "Static PhysicsActor can't be kinematic!");
 			return;
 		}
-		m_rigidBodyData.isKinematic = isKinematic;
+		m_rigidBodyData.m_isKinematic = isKinematic;
 
 		physx::PxRigidDynamic* actor = m_rigidActor->is<physx::PxRigidDynamic>();
 		VT_ASSERT_MSG(actor, "Actor is null!");
@@ -88,7 +85,7 @@ namespace Volt
 
 	void PhysicsActor::SetSimulationData(uint32_t layerId)
 	{
-		const auto data = PhysXUtilities::CreateFilterDataFromLayer(layerId, (CollisionDetectionType)m_rigidBodyData.collisionType);
+		const auto data = PhysXUtilities::CreateFilterDataFromLayer(layerId, (CollisionDetectionType)m_rigidBodyData.m_collisionType);
 		myFilterData = data;
 
 		for (auto& collider : m_colliders)
@@ -170,7 +167,7 @@ namespace Volt
 
 	const float PhysicsActor::GetMass() const
 	{
-		return !IsDynamic() ? m_rigidBodyData.mass : m_rigidActor->is<physx::PxRigidDynamic>()->getMass();
+		return !IsDynamic() ? m_rigidBodyData.m_mass : m_rigidActor->is<physx::PxRigidDynamic>()->getMass();
 	}
 
 	const glm::vec3 PhysicsActor::GetLinearVelocity() const
@@ -266,7 +263,7 @@ namespace Volt
 
 		m_rigidActor->setGlobalPose(transform);
 
-		if (m_rigidBodyData.bodyType == BodyType::Static && synchronize)
+		if (m_rigidBodyData.m_bodyType == BodyType::Static && synchronize)
 		{
 			SynchronizeTransform();
 		}
@@ -284,7 +281,7 @@ namespace Volt
 
 		m_rigidActor->setGlobalPose(transform);
 
-		if (m_rigidBodyData.bodyType == BodyType::Static && synchronize)
+		if (m_rigidBodyData.m_bodyType == BodyType::Static && synchronize)
 		{
 			SynchronizeTransform();
 		}
@@ -434,7 +431,7 @@ namespace Volt
 			transform = myEntity.GetTransform();
 		}
 
-		if (m_rigidBodyData.bodyType == BodyType::Static)
+		if (m_rigidBodyData.m_bodyType == BodyType::Static)
 		{
 			m_rigidActor = sdk.createRigidStatic(PhysXUtilities::ToPhysXTransform(transform));
 		}
@@ -443,15 +440,15 @@ namespace Volt
 			const PhysicsSettings& settings = Physics::GetSettings();
 			m_rigidActor = sdk.createRigidDynamic(PhysXUtilities::ToPhysXTransform(transform));
 
-			SetLinearDrag(m_rigidBodyData.linearDrag);
-			SetAngularDrag(m_rigidBodyData.angularDrag);
-			SetKinematic(m_rigidBodyData.isKinematic);
-			SetGravityDisabled(m_rigidBodyData.disableGravity);
-			SetLockFlags(m_rigidBodyData.lockFlags);
+			SetLinearDrag(m_rigidBodyData.m_linearDrag);
+			SetAngularDrag(m_rigidBodyData.m_angularDrag);
+			SetKinematic(m_rigidBodyData.m_isKinematic);
+			SetGravityDisabled(m_rigidBodyData.m_disableGravity);
+			SetLockFlags(m_rigidBodyData.m_lockFlags);
 
 			m_rigidActor->is<physx::PxRigidDynamic>()->setSolverIterationCounts(settings.solverIterations, settings.solverVelocityIterations);
-			m_rigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, m_rigidBodyData.collisionType == CollisionDetectionType::Continuous);
-			m_rigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, m_rigidBodyData.collisionType == CollisionDetectionType::ContinuousSpeculative);
+			m_rigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, m_rigidBodyData.m_collisionType == CollisionDetectionType::Continuous);
+			m_rigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, m_rigidBodyData.m_collisionType == CollisionDetectionType::ContinuousSpeculative);
 		}
 
 		if (myEntity.HasComponent<BoxColliderComponent>()) AddCollider(myEntity.GetComponent<BoxColliderComponent>(), myEntity);
@@ -459,9 +456,9 @@ namespace Volt
 		if (myEntity.HasComponent<CapsuleColliderComponent>()) AddCollider(myEntity.GetComponent<CapsuleColliderComponent>(), myEntity);
 		if (myEntity.HasComponent<MeshColliderComponent>()) AddCollider(myEntity.GetComponent<MeshColliderComponent>(), myEntity);
 
-		if (m_rigidBodyData.bodyType == BodyType::Dynamic)
+		if (m_rigidBodyData.m_bodyType == BodyType::Dynamic)
 		{
-			SetMass(m_rigidBodyData.mass);
+			SetMass(m_rigidBodyData.m_mass);
 		}
 
 		m_rigidActor->userData = this;
@@ -470,7 +467,7 @@ namespace Volt
 		m_rigidActor->setName(myEntity.GetTag().c_str());
 #endif
 
-		SetSimulationData(m_rigidBodyData.layerId);
+		SetSimulationData(m_rigidBodyData.m_layerId);
 	}
 
 	void PhysicsActor::SynchronizeTransform()

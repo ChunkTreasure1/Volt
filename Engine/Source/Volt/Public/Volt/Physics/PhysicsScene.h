@@ -65,14 +65,17 @@ namespace Volt
 		void Destroy();
 		bool OverlapGeometry(const glm::vec3& origin, const physx::PxGeometry& geometry, std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS>& buffer, uint32_t& count, const physx::PxQueryFilterData& filterData);
 
+		void ExecuteSystems();
+		void ExecuteRigidbodySystem();
+
 		physx::PxScene* m_physXScene = nullptr;
 		physx::PxControllerManager* m_controllerManager = nullptr;
 
 		Vector<Ref<PhysicsActor>> m_physicsActors;
 		Vector<Ref<PhysicsControllerActor>> m_controllerActors;
 
-		std::unordered_map<entt::entity, Ref<PhysicsActor>> m_physicsActorFromEntityIDMap;
-		std::unordered_map<entt::entity, Ref<PhysicsControllerActor>> m_physicsControllerActorFromEntityIDMap;
+		vt::map<entt::entity, Ref<PhysicsActor>> m_physicsActorFromEntityIDMap;
+		vt::map<entt::entity, Ref<PhysicsControllerActor>> m_physicsControllerActorFromEntityIDMap;
 
 		Vector<std::function<void()>> m_functionQueue;
 

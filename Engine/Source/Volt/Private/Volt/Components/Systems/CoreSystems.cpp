@@ -28,7 +28,7 @@ namespace Volt
 
 	void CameraSystem(CameraEntity entity, float deltaTime)
 	{
-		const auto& transform = entity.GetComponent<TransformComponent>();
+		const auto& transform = entity.GetComponent<const TransformComponent>();
 
 		if (!transform.visible)
 		{
@@ -38,8 +38,8 @@ namespace Volt
 		// #TODO_Ivar: This should be updated to include correct aspect ration and to use correct world position/rotation.
 		auto& cameraComponent = entity.GetComponent<CameraComponent>();
 		cameraComponent.camera->SetPerspectiveProjection(cameraComponent.fieldOfView, 16.f / 9.f, cameraComponent.nearPlane, cameraComponent.farPlane);
-		cameraComponent.camera->SetPosition(transform.position);
-		cameraComponent.camera->SetRotation(glm::eulerAngles(transform.rotation));
+		cameraComponent.camera->SetPosition(entity.GetPosition());
+		cameraComponent.camera->SetRotation(glm::eulerAngles(entity.GetRotation()));
 	}
 
 	using MotionWeaveEntity = ECS::Access

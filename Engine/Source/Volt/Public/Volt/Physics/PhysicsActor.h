@@ -5,6 +5,7 @@
 
 #include "Volt/Physics/PhysicsEnums.h"
 #include "Volt/Physics/PhysicsActorBase.h"
+#include "Volt/Physics/RigidbodyComponent.h"
 
 namespace Volt
 {
@@ -55,8 +56,8 @@ namespace Volt
 		inline physx::PxRigidActor& GetActor() const { return *m_rigidActor; }
 		inline const RigidbodyComponent& GetRigidbodyData() const { return m_rigidBodyData; }
 
-		inline const bool IsDynamic() const { return m_rigidBodyData.bodyType == BodyType::Dynamic; }
-		inline bool IsKinematic() const { return IsDynamic() && m_rigidBodyData.isKinematic; }
+		inline const bool IsDynamic() const { return m_rigidBodyData.m_bodyType == BodyType::Dynamic; }
+		inline bool IsKinematic() const { return IsDynamic() && m_rigidBodyData.m_isKinematic; }
 
 		inline const bool IsLockFlagSet(ActorLockFlag flag) const { return (uint32_t)flag & m_lockFlags; }
 		inline const uint32_t GetLockFlags() const { return m_lockFlags; }

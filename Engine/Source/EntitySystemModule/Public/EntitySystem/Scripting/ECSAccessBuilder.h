@@ -174,10 +174,16 @@ namespace ECS
 			}
 		}
 
+		template<typename Comp>
+		Comp& GetComponentUnsafe()
+		{
+			return m_entityHelper.GetComponent<Comp>();
+		}
+
 		template<typename Comp, typename... Args>
 		Comp& AddComponent(Args&&... args)
 		{
-			m_entityHelper.AddComponent<Comp>(std::forward<Args>(args)...);
+			return m_entityHelper.AddComponent<Comp>(std::forward<Args>(args)...);
 		}
 
 		template<typename Comp>

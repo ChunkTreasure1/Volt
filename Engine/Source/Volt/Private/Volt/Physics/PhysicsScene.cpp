@@ -8,7 +8,7 @@
 
 #include "Volt/Core/Application.h"
 
-#include "Volt/Components/CoreComponents.h"
+#include "Volt/Physics/RigidbodyComponent.h"
 
 #include <PhysX/PxActor.h>
 
@@ -54,6 +54,8 @@ namespace Volt
 	void PhysicsScene::Simulate(float timeStep)
 	{
 		VT_PROFILE_FUNCTION();
+
+		ExecuteSystems();
 
 		bool advanced = Advance(timeStep);
 		if (advanced)
@@ -547,5 +549,252 @@ namespace Volt
 		}
 
 		return result;
+	}
+
+	void PhysicsScene::ExecuteSystems()
+	{
+		VT_PROFILE_FUNCTION();
+
+		ExecuteRigidbodySystem();
+	}
+
+	void PhysicsScene::ExecuteRigidbodySystem()
+	{
+		VT_PROFILE_FUNCTION();
+		VT_ENSURE(m_entityScene);
+
+		auto& registry = m_entityScene->GetRegistry();
+	
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_BodyTypeUpdated>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_BodyTypeUpdated&)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				RemoveActor(actor);
+				CreateActor(Entity(id, m_entityScene));
+
+				registry.remove<Internal::RigidbodyComponentInternal_BodyTypeUpdated>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_LayerIdUpdated>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_LayerIdUpdated& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->SetSimulationData(data.layerId);
+				registry.remove<Internal::RigidbodyComponentInternal_LayerIdUpdated>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_MassUpdated>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_MassUpdated& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->SetMass(data.mass);
+				registry.remove<Internal::RigidbodyComponentInternal_MassUpdated>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_LinearDragUpdated>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_LinearDragUpdated& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->SetLinearDrag(data.linearDrag);
+				registry.remove<Internal::RigidbodyComponentInternal_LinearDragUpdated>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_AngularDragUpdated>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_AngularDragUpdated& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->SetAngularDrag(data.angularDrag);
+				registry.remove<Internal::RigidbodyComponentInternal_AngularDragUpdated>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_LockFlagsUpdated>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_LockFlagsUpdated& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->SetLockFlags(data.lockFlags);
+				registry.remove<Internal::RigidbodyComponentInternal_LockFlagsUpdated>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_DisableGravityUpdated>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_DisableGravityUpdated& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->SetGravityDisabled(data.disableGravity);
+				registry.remove<Internal::RigidbodyComponentInternal_DisableGravityUpdated>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_IsKinematicUpdated>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_IsKinematicUpdated& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->SetKinematic(data.isKinematic);
+				registry.remove<Internal::RigidbodyComponentInternal_IsKinematicUpdated>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_SetKinematicTarget>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_SetKinematicTarget& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->SetKinematicTarget(data.translation, data.rotation);
+				registry.remove<Internal::RigidbodyComponentInternal_SetKinematicTarget>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_SetLinearVelocity>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_SetLinearVelocity& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->SetLinearVelocity(data.velocity);
+				registry.remove<Internal::RigidbodyComponentInternal_SetLinearVelocity>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_SetAngularVelocity>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_SetAngularVelocity& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->SetAngularVelocity(data.velocity);
+				registry.remove<Internal::RigidbodyComponentInternal_SetAngularVelocity>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_SetMaxLinearVelocity>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_SetMaxLinearVelocity& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->SetMaxLinearVelocity(data.velocity);
+				registry.remove<Internal::RigidbodyComponentInternal_SetMaxLinearVelocity>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_SetMaxAngularVelocity>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_SetMaxAngularVelocity& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->SetMaxAngularVelocity(data.velocity);
+				registry.remove<Internal::RigidbodyComponentInternal_SetMaxAngularVelocity>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_AddForce_Force>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_AddForce_Force& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->AddForce(data.force, ForceMode::Force);
+				registry.remove<Internal::RigidbodyComponentInternal_AddForce_Force>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_AddForce_Impulse>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_AddForce_Impulse& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->AddForce(data.force, ForceMode::Impulse);
+				registry.remove<Internal::RigidbodyComponentInternal_AddForce_Impulse>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_AddForce_VelocityChange>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_AddForce_VelocityChange& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->AddForce(data.force, ForceMode::VelocityChange);
+				registry.remove<Internal::RigidbodyComponentInternal_AddForce_VelocityChange>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_AddForce_Acceleration>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_AddForce_Acceleration& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->AddForce(data.force, ForceMode::Acceleration);
+				registry.remove<Internal::RigidbodyComponentInternal_AddForce_Acceleration>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_AddTorque_Force>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_AddTorque_Force& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->AddTorque(data.torque, ForceMode::Force);
+				registry.remove<Internal::RigidbodyComponentInternal_AddTorque_Force>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_AddTorque_Impulse>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_AddTorque_Impulse& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->AddTorque(data.torque, ForceMode::Impulse);
+				registry.remove<Internal::RigidbodyComponentInternal_AddTorque_Impulse>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_AddTorque_VelocityChange>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_AddTorque_VelocityChange& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->AddTorque(data.torque, ForceMode::VelocityChange);
+				registry.remove<Internal::RigidbodyComponentInternal_AddTorque_VelocityChange>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_AddTorque_Acceleration>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_AddTorque_Acceleration& data)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->AddTorque(data.torque, ForceMode::Acceleration);
+				registry.remove<Internal::RigidbodyComponentInternal_AddTorque_Acceleration>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_WakeUp>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_WakeUp)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->WakeUp();
+				registry.remove<Internal::RigidbodyComponentInternal_WakeUp>(id);
+			});
+		}
+
+		{
+			auto view = registry.view<const Internal::RigidbodyComponentInternal_PutToSleep>();
+			view.each([&](const entt::entity id, const Internal::RigidbodyComponentInternal_PutToSleep)
+			{
+				auto actor = m_physicsActorFromEntityIDMap.at(id);
+				actor->PutToSleep();
+				registry.remove<Internal::RigidbodyComponentInternal_PutToSleep>(id);
+			});
+		}
 	}
 }
