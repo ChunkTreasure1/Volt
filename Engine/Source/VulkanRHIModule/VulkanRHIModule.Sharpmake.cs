@@ -52,9 +52,9 @@ namespace VoltSharpmake
             conf.LibraryFiles.Add("SPIRV-Toolsd.lib");
         }
 
-        public override void ConfigureRelease(Configuration conf, CommonTarget target)
+        public override void ConfigureDevelopment(Configuration conf, CommonTarget target)
         {
-            base.ConfigureRelease(conf, target);
+            base.ConfigureDevelopment(conf, target);
 
             string vulkanSDKPath = Path.Combine(Environment.GetEnvironmentVariable("VULKAN_SDK"), "Lib");
             conf.LibraryPaths.Add(vulkanSDKPath);

@@ -10,7 +10,7 @@ namespace VoltSharpmake
     public enum Optimization
     {
         Debug = 1 << 0,
-        Release = 1 << 1,
+        Development = 1 << 1,
         Dist = 1 << 2
     }
 
@@ -102,7 +102,7 @@ namespace VoltSharpmake
             {
                 case Optimization.Debug:
                     return Sharpmake.Optimization.Debug;
-                case Optimization.Release:
+                case Optimization.Development:
                     return Sharpmake.Optimization.Release;
                 case Optimization.Dist:
                     return Sharpmake.Optimization.Retail;
@@ -137,7 +137,7 @@ namespace VoltSharpmake
                 Platform.win64,
 				compiler,
 				devEnv,
-				Optimization.Debug | Optimization.Release | Optimization.Dist,
+				Optimization.Debug | Optimization.Development | Optimization.Dist,
                 Blob.NoBlob,
                 BuildSystem.MSBuild,
                 DotNetFramework.net6_0
