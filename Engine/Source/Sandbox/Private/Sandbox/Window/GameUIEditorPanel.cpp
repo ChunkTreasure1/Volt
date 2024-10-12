@@ -297,8 +297,8 @@ void GameUIEditorPanel::HandleSelection()
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int32_t)viewportSize.x && mouseY < (int32_t)viewportSize.y)
 		{
 			uint32_t pixelData = m_uiSceneRenderer->GetIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX), static_cast<uint32_t>(mouseY), 0u);
-			const bool multiSelect = Volt::Input::IsButtonDown(Volt::InputCode::LeftShift);
-			const bool deselect = Volt::Input::IsButtonDown(Volt::InputCode::LeftControl);
+			const bool multiSelect = Volt::Input::IsKeyDown(Volt::InputCode::LeftShift);
+			const bool deselect = Volt::Input::IsKeyDown(Volt::InputCode::LeftControl);
 
 			if (!multiSelect && !deselect)
 			{

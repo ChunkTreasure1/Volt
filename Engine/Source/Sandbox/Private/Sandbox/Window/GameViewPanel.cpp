@@ -123,7 +123,7 @@ bool GameViewPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 
 bool GameViewPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	if (!IsHovered() || Volt::Input::IsButtonDown(Volt::InputCode::Mouse_RB) || ImGui::IsAnyItemActive())
+	if (!IsHovered() || Volt::Input::IsMouseButtonDown(Volt::InputCode::Mouse_RB) || ImGui::IsAnyItemActive())
 	{
 		return false;
 	}

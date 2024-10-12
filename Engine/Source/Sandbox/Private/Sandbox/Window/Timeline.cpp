@@ -237,7 +237,7 @@ void Timeline::SortTrack(Volt::Track& track)
 
 bool Timeline::CameraQuickshotKeyframe(Volt::KeyPressedEvent& e)
 {
-	if (!Volt::Input::IsButtonDown(Volt::InputCode::LeftControl))
+	if (!Volt::Input::IsKeyDown(Volt::InputCode::LeftControl))
 	{
 		return false;
 	}

@@ -34,10 +34,21 @@ namespace Volt
 		Input(const Input&) = delete;
 		Input& operator=(const Input&) = delete;
 
+		void Update();
+
 		static Vector<int> GetAllPressedButtons();
 
-		static bool IsButtonDown(InputCode keyCode);
-		static bool IsButtonUp(InputCode keyCode);
+		// Frame events
+		static bool IsKeyPressed(InputCode keyCode);
+		static bool IsKeyReleased(InputCode keyCode);
+		static bool IsMouseButtonPressed(InputCode mouseButtonCode);
+		static bool IsMouseButtonReleased(InputCode mouseButtonCode);
+
+		// Holding or not pressing
+		static bool IsKeyDown(InputCode keyCode);
+		static bool IsKeyUp(InputCode keyCode);
+		static bool IsMouseButtonDown(InputCode mouseButtonCode);
+		static bool IsMouseButtonUp(InputCode mouseButtonCode);
 
 		static void SetMousePosition(float x, float y);
 		static glm::vec2 GetMousePosition();
@@ -68,5 +79,6 @@ namespace Volt
 
 		//we use unknown here because it is at the end of the enum
 		std::array<KeyState, static_cast<size_t>(InputCode::Unknown)> m_keyStates;
+		std::array<KeyState, static_cast<size_t>(InputCode::Unknown)> m_frameKeyStateEvents;
 	};
 }

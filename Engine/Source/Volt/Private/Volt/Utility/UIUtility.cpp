@@ -958,7 +958,7 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float rese
 
 	if (ImGui::IsItemHovered())
 	{
-		if (Volt::Input::IsButtonDown(Volt::InputCode::Mouse_LB))
+		if (Volt::Input::IsMouseButtonDown(Volt::InputCode::Mouse_LB))
 		{
 			changed = true;
 		}
@@ -989,7 +989,7 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float rese
 
 	if (ImGui::IsItemHovered())
 	{
-		if (Volt::Input::IsButtonDown(Volt::InputCode::Mouse_LB))
+		if (Volt::Input::IsMouseButtonDown(Volt::InputCode::Mouse_LB))
 		{
 			changed = true;
 		}
@@ -1020,7 +1020,7 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float rese
 
 	if (ImGui::IsItemHovered())
 	{
-		if (Volt::Input::IsButtonDown(Volt::InputCode::Mouse_LB))
+		if (Volt::Input::IsMouseButtonDown(Volt::InputCode::Mouse_LB))
 		{
 			changed = true;
 		}
@@ -1074,7 +1074,7 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec2& value, float rese
 
 	if (ImGui::IsItemHovered())
 	{
-		if (Volt::Input::IsButtonDown(Volt::InputCode::Mouse_LB))
+		if (Volt::Input::IsMouseButtonDown(Volt::InputCode::Mouse_LB))
 		{
 			changed = true;
 		}
@@ -1105,7 +1105,7 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec2& value, float rese
 
 	if (ImGui::IsItemHovered())
 	{
-		if (Volt::Input::IsButtonDown(Volt::InputCode::Mouse_LB))
+		if (Volt::Input::IsMouseButtonDown(Volt::InputCode::Mouse_LB))
 		{
 			changed = true;
 		}

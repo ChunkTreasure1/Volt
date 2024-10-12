@@ -45,8 +45,8 @@ void VertexPainterPanel::UpdateMainContent()
 	BillboardDraw();
 
 	BrushUpdate();
-	if (Volt::Input::IsButtonDown(Volt::InputCode::Mouse_LB) && Volt::Input::IsButtonDown(Volt::InputCode::LeftShift)) Paint(m_settings.paintColor);
-	else if (Volt::Input::IsButtonDown(Volt::InputCode::Mouse_LB) && Volt::Input::IsButtonDown(Volt::InputCode::LeftControl)) Paint(m_settings.eraseColor);
+	if (Volt::Input::IsMouseButtonDown(Volt::InputCode::Mouse_LB) && Volt::Input::IsKeyDown(Volt::InputCode::LeftShift)) Paint(m_settings.paintColor);
+	else if (Volt::Input::IsMouseButtonDown(Volt::InputCode::Mouse_LB) && Volt::Input::IsKeyDown(Volt::InputCode::LeftControl)) Paint(m_settings.eraseColor);
 
 	Volt::DebugRenderer::DrawLine(ray.pos + ray.dir * 10.f, m_brushPosition, { 1,0,0,1 });
 	Volt::DebugRenderer::DrawBillboard(m_brushPosition, { 0.1f,0.1f,0.1f }, { 0,1,0,1 });
@@ -405,25 +405,25 @@ void VertexPainterPanel::BillboardDraw()
 						switch (m_settings.view)
 						{
 							case Settings::eView::RED:
-								if (Volt::Input::IsButtonDown(Volt::InputCode::LeftShift))
+								if (Volt::Input::IsKeyDown(Volt::InputCode::LeftShift))
 									Volt::DebugRenderer::DrawBillboard(vPos, { .1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar }, { m_settings.paintColor, 0, 0, 1 });
-								else if (Volt::Input::IsButtonDown(Volt::InputCode::LeftControl))
+								else if (Volt::Input::IsKeyDown(Volt::InputCode::LeftControl))
 									Volt::DebugRenderer::DrawBillboard(vPos, { .1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar }, { m_settings.eraseColor, 0, 0, 1 });
 								else
 									Volt::DebugRenderer::DrawBillboard(vPos, { .1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar }, { vertexColor.x, 0, 0, 1 });
 								break;
 							case Settings::eView::GREEN:
-								if (Volt::Input::IsButtonDown(Volt::InputCode::LeftShift))
+								if (Volt::Input::IsKeyDown(Volt::InputCode::LeftShift))
 									Volt::DebugRenderer::DrawBillboard(vPos, { .1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar }, { 1, m_settings.paintColor, 0, 1 });
-								else if (Volt::Input::IsButtonDown(Volt::InputCode::LeftControl))
+								else if (Volt::Input::IsKeyDown(Volt::InputCode::LeftControl))
 									Volt::DebugRenderer::DrawBillboard(vPos, { .1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar }, { 1, m_settings.eraseColor, 0, 1 });
 								else
 									Volt::DebugRenderer::DrawBillboard(vPos, { .1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar }, { 0, vertexColor.y, 0, 1 });
 								break;
 							case Settings::eView::BLUE:
-								if (Volt::Input::IsButtonDown(Volt::InputCode::LeftShift))
+								if (Volt::Input::IsKeyDown(Volt::InputCode::LeftShift))
 									Volt::DebugRenderer::DrawBillboard(vPos, { .1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar }, { 1, 1, m_settings.paintColor, 1 });
-								else if (Volt::Input::IsButtonDown(Volt::InputCode::LeftControl))
+								else if (Volt::Input::IsKeyDown(Volt::InputCode::LeftControl))
 									Volt::DebugRenderer::DrawBillboard(vPos, { .1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar }, { 1, 1, m_settings.eraseColor,1 });
 								else
 									Volt::DebugRenderer::DrawBillboard(vPos, { .1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar }, { 0, 0, vertexColor.z, 1 });
@@ -432,9 +432,9 @@ void VertexPainterPanel::BillboardDraw()
 							case Settings::eView::ALPHA:
 							{
 								glm::vec4 alphaColor = { vertexColor.w, vertexColor.w, vertexColor.w, 1 };
-								if (Volt::Input::IsButtonDown(Volt::InputCode::LeftShift))
+								if (Volt::Input::IsKeyDown(Volt::InputCode::LeftShift))
 									alphaColor = { m_settings.paintColor, m_settings.paintColor, m_settings.paintColor,1 };
-								else if (Volt::Input::IsButtonDown(Volt::InputCode::LeftControl))
+								else if (Volt::Input::IsKeyDown(Volt::InputCode::LeftControl))
 									alphaColor = { m_settings.eraseColor, m_settings.eraseColor, m_settings.eraseColor,1 };
 
 								Volt::DebugRenderer::DrawBillboard(vPos, { .1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar }, alphaColor);
@@ -444,7 +444,7 @@ void VertexPainterPanel::BillboardDraw()
 
 								glm::vec4 drawColor;
 
-								if (Volt::Input::IsButtonDown(Volt::InputCode::LeftShift))
+								if (Volt::Input::IsKeyDown(Volt::InputCode::LeftShift))
 								{
 									drawColor =
 									{
@@ -454,7 +454,7 @@ void VertexPainterPanel::BillboardDraw()
 										1
 									};
 								}
-								else if (Volt::Input::IsButtonDown(Volt::InputCode::LeftControl))
+								else if (Volt::Input::IsKeyDown(Volt::InputCode::LeftControl))
 								{
 									drawColor =
 									{

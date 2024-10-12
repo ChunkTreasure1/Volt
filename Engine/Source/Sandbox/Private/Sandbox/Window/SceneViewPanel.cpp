@@ -533,7 +533,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 	{
 		if (!wasRowRightClicked)
 		{
-			if (!Volt::Input::IsButtonDown(Volt::InputCode::LeftControl) && !Volt::Input::IsButtonDown(Volt::InputCode::LeftShift))
+			if (!Volt::Input::IsKeyDown(Volt::InputCode::LeftControl) && !Volt::Input::IsKeyDown(Volt::InputCode::LeftShift))
 			{
 				SelectionManager::DeselectAll();
 				SelectionManager::Select(entity.GetID());
@@ -541,7 +541,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 				SelectionManager::GetFirstSelectedRow() = rowIndex;
 				SelectionManager::GetLastSelectedRow() = -1;
 			}
-			else if (Volt::Input::IsButtonDown(Volt::InputCode::LeftShift) && SelectionManager::GetSelectedCount() > 0)
+			else if (Volt::Input::IsKeyDown(Volt::InputCode::LeftShift) && SelectionManager::GetSelectedCount() > 0)
 			{
 				if (rowIndex < SelectionManager::GetFirstSelectedRow())
 				{

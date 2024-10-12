@@ -799,8 +799,8 @@ bool Sandbox::OnRenderEvent(Volt::WindowRenderEvent& e)
 
 bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	const bool ctrlPressed = Volt::Input::IsButtonDown(Volt::InputCode::LeftControl);
-	const bool shiftPressed = Volt::Input::IsButtonDown(Volt::InputCode::LeftShift);
+	const bool ctrlPressed = Volt::Input::IsKeyDown(Volt::InputCode::LeftControl);
+	const bool shiftPressed = Volt::Input::IsKeyDown(Volt::InputCode::LeftShift);
 
 	switch (e.GetKeyCode())
 	{

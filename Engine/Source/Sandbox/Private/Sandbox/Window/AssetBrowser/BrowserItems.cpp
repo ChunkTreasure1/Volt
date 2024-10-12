@@ -178,7 +178,7 @@ namespace AssetBrowser
 				const bool mouseDown = mySelectionManager->IsAnySelected() ? ImGui::IsMouseReleased(ImGuiMouseButton_Left) : ImGui::IsMouseClicked(ImGuiMouseButton_Left);
 				if (mouseDown && hovered)
 				{
-					if (!Volt::Input::IsButtonDown(Volt::InputCode::LeftControl))
+					if (!Volt::Input::IsKeyDown(Volt::InputCode::LeftControl))
 					{
 						mySelectionManager->DeselectAll();
 					}

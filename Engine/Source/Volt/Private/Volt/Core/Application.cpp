@@ -313,6 +313,7 @@ namespace Volt
 
 		{
 			VT_PROFILE_SCOPE("Application::Update");
+
 			AppUpdateEvent updateEvent(m_currentDeltaTime);
 			EventSystem::DispatchEvent(updateEvent);
 
@@ -350,6 +351,7 @@ namespace Volt
 		Renderer::EndOfFrameUpdate();
 
 		{
+			m_input->Update();
 			WindowManager::Get().Present();
 		}
 
