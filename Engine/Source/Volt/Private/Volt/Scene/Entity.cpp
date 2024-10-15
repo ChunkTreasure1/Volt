@@ -3,10 +3,10 @@
 
 #include "Volt/Components/CoreComponents.h"
 
-#include "Volt/Utility/StringUtility.h"
-
 #include "Volt/Physics/Physics.h"
 #include "Volt/Physics/PhysicsScene.h"
+
+#include <CoreUtilities/StringUtility.h>
 
 #include <cassert>
 

@@ -1,15 +1,14 @@
 #include "vtpch.h"
+
 #include "Volt/Asset/Rendering/Material.h"
-
-#include "Volt/Project/ProjectManager.h"
 #include "Volt/MosaicNodes/Texture/SampleTextureNode.h"
-#include <AssetSystem/AssetManager.h>
-
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 
-#include <Mosaic/MosaicNode.h>
+#include <Volt-Core/Project/ProjectManager.h>
 
+#include <AssetSystem/AssetManager.h>
+#include <Mosaic/MosaicNode.h>
 #include <CoreUtilities/GUIDUtilities.h>
 
 #include <RHIModule/Pipelines/ComputePipeline.h>

@@ -1,8 +1,8 @@
 #pragma once
-#include "FileSystem.h"
-#include "Volt/Project/ProjectManager.h"
 
-#include <fstream>
+#include <Volt-Core/Project/ProjectManager.h>
+
+#include <CoreUtilities/FileSystem.h>
 
 namespace Volt
 {

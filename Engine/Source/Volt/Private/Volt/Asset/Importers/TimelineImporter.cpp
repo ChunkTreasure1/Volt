@@ -3,12 +3,6 @@
 #include "Volt/Asset/Importers/TimelineImporter.h"
 #include "Volt/Asset/TimelinePreset.h"
 
-#include "Volt/Project/ProjectManager.h"
-
-#include <yaml-cpp/yaml.h>
-#include "Volt/Asset/ParticlePreset.h"
-#include "Volt/Utility/YAMLSerializationHelpers.h"
-
 #include "Volt/Scene/Entity.h"
 
 #include <AssetSystem/AssetManager.h>
@@ -46,11 +40,11 @@ namespace Volt
 		{
 			Volt::Track newTrack = Volt::Track();
 			
-			newTrack.trackType = streamReader.ReadAtKey("trackType", TrackType::T_Animation);
+			//newTrack.trackType = streamReader.ReadAtKey("trackType", TrackType::T_Animation);
 
 			if (newTrack.trackType == TrackType::T_Animation)
 			{
-				newTrack.targetEntity = streamReader.ReadAtKey("targetEntId", Entity::NullID());
+				//newTrack.targetEntity = streamReader.ReadAtKey("targetEntId", Entity::NullID());
 
 				streamReader.ForEach("Keyframes", [&]() 
 				{
@@ -71,7 +65,7 @@ namespace Volt
 				{
 					Volt::Clip newClip = Volt::Clip();
 					
-					newClip.activeCamera = streamReader.ReadAtKey("clipCamera", Entity::NullID());
+					//newClip.activeCamera = streamReader.ReadAtKey("clipCamera", Entity::NullID());
 					newClip.startTime = streamReader.ReadAtKey("startTime", 0.f);
 					newClip.endTime = streamReader.ReadAtKey("endTime", 0.f);
 
@@ -107,7 +101,7 @@ namespace Volt
 
 			if (track.trackType == TrackType::T_Animation)
 			{
-				streamWriter.SetKey("trackType", track.trackType);
+				//streamWriter.SetKey("trackType", track.trackType);
 				streamWriter.SetKey("targetEntId", track.targetEntity);
 
 				streamWriter.BeginSequence("Keyframes");
@@ -127,7 +121,7 @@ namespace Volt
 			}
 			else if (track.trackType == TrackType::T_Clip)
 			{
-				streamWriter.SetKey("trackType", track.trackType);
+				//streamWriter.SetKey("trackType", track.trackType);
 
 				streamWriter.BeginSequence("Clips");
 				for (const auto& clip : track.clips)

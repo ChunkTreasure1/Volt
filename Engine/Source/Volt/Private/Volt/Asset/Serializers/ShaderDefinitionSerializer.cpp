@@ -3,7 +3,6 @@
 
 #include <AssetSystem/AssetManager.h>
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
-#include "Volt/Utility/StringUtility.h"
 
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>

@@ -1,28 +1,22 @@
 #include "vtpch.h"
 #include "Volt/Core/Application.h"
 
-#include <AssetSystem/AssetManager.h>
-
-#include <InputModule/Input.h>
-
 #include "Volt/Core/Layer/Layer.h"
-#include "Volt/Core/DynamicLibraryManager.h"
 #include "Volt/Steam/SteamImplementation.h"
-
 #include "Volt/Rendering/Renderer.h"
-
-#include "Volt/Project/ProjectManager.h"
 #include "Volt/Scene/SceneManager.h"
-
-#include "Volt/PluginSystem/PluginRegistry.h"
-#include "Volt/PluginSystem/PluginSystem.h"
-
 #include "Volt/Physics/Physics.h"
-
 #include "Volt/Utility/Noise.h"
 #include "Volt/Utility/UIUtility.h"
+#include "Volt/Physics/PhysicsEvents.h"
+
+#include <Volt-Core/DynamicLibraryManager.h>
+#include <Volt-Core/PluginSystem/PluginRegistry.h>
+#include <Volt-Core/PluginSystem/PluginSystem.h>
 
 #include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
+
+#include <AssetSystem/AssetManager.h>
 
 #include <RHIModule/ImGui/ImGuiImplementation.h>
 #include <RHIModule/Graphics/GraphicsContext.h>
@@ -33,11 +27,10 @@
 #include <Amp/WWiseEngine/WWiseEngine.h>
 #include <Navigation/Core/NavigationSystem.h>
 
-#include <CoreUtilities/FileSystem.h>
 #include <LogModule/Log.h>
 
 #include <InputModule/Events/KeyboardEvents.h>
-#include <InputModule/Events/MouseEvents.h>
+#include <InputModule/Input.h>
 
 #include <WindowModule/Events/WindowEvents.h>
 #include <WindowModule/WindowManager.h>
@@ -46,9 +39,7 @@
 #include <EventSystem/EventSystem.h>
 
 #include <CoreUtilities/ThreadUtilities.h>
-
-#include <EntitySystem/Scripting/ECSEventDispatcher.h>
-#include <Volt/Physics/PhysicsEvents.h>
+#include <CoreUtilities/FileSystem.h>
 
 using TestEntity = ECS::Access
 	::Write<Volt::TransformComponent>
@@ -110,13 +101,14 @@ namespace Volt
 		m_input = CreateScope<Input>();
 
 		m_jobSystem = CreateScope<JobSystem>();
+		m_projectManager = CreateScope<ProjectManager>();
 		m_dynamicLibraryManager = CreateScope<DynamicLibraryManager>();
 		m_pluginRegistry = CreateScope<PluginRegistry>();
 		m_pluginSystem = CreateScope<PluginSystem>(*m_pluginRegistry);
 
 		Noise::Initialize();
 
-		ProjectManager::LoadProject(m_info.projectPath, *m_pluginRegistry);
+		m_projectManager->LoadProject(m_info.projectPath, *m_pluginRegistry);
 		m_pluginRegistry->BuildPluginDependencies();
 		m_pluginSystem->LoadPlugins(ProjectManager::GetProject());
 
@@ -254,6 +246,7 @@ namespace Volt
 		m_pluginSystem->UnloadPlugins();
 		m_pluginSystem = nullptr;
 		m_pluginRegistry = nullptr;
+		m_projectManager = nullptr;
 		m_jobSystem = nullptr;
 		m_input = nullptr;
 		m_log = nullptr;

@@ -3,10 +3,10 @@
 #include "Sandbox/Sandbox.h"
 #include "ProjectUpgrade/ProjectUpgradeLayer.h"
 
-#include <Volt/Core/Application.h>
 #include <Volt/EntryPoint.h>
 
-#include <Volt/Project/ProjectManager.h>
+#include <Volt/Core/Application.h>
+#include <Volt-Core/Project/ProjectManager.h>
 
 class SandboxApp : public Volt::Application
 {

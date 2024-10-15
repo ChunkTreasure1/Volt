@@ -51,30 +51,20 @@
 
 #include "Sandbox/UserSettingsManager.h"
 
-#include <Volt/Core/Application.h>
-
-#include <AssetSystem/AssetManager.h>
-
-#include <Volt/Components/CoreComponents.h>
-#include <Volt/Components/LightComponents.h>
+#include <InputModule/Input.h>
+#include <InputModule/InputCodes.h>
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/SceneManager.h>
-
-#include <InputModule/Input.h>
-#include <InputModule/InputCodes.h>
-
+#include <Volt/Core/Application.h>
+#include <Volt/Components/CoreComponents.h>
 #include <Volt/Rendering/Camera/Camera.h>
-
 #include <Volt/Rendering/SceneRenderer.h>
-
-#include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
-
-#include <Volt/Project/ProjectManager.h>
-
 #include <Volt/Events/ApplicationEvents.h>
+
+#include <AssetSystem/AssetManager.h>
 
 //#include <DiscordPlugin/Plugin.h>
 //#include <DiscordPlugin/DiscordManagerInterface.h>
@@ -89,7 +79,7 @@
 
 #include <EventSystem/EventSystem.h>
 
-#include <imgui.h>
+#include <CoreUtilities/FileSystem.h>
 
 Sandbox::Sandbox()
 {

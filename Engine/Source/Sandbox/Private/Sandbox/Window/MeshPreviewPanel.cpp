@@ -2,26 +2,19 @@
 #include "Window/MeshPreviewPanel.h"
 
 #include "Sandbox/Camera/EditorCameraController.h"
-#include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/EditorResources.h"
 
-#include <Volt/Asset/Rendering/Material.h>
 #include <Volt/Asset/Mesh/Mesh.h>
-
 #include <Volt/Utility/UIUtility.h>
-
 #include <Volt/Scene/Scene.h>
-#include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Rendering/SceneRenderer.h>
-
 #include <Volt/Components/RenderingComponents.h>
-#include <Volt/Components/LightComponents.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
-
-#include <Volt/Project/ProjectManager.h>
 
 #include <AssetSystem/AssetManager.h>
 #include <WindowModule/Events/WindowEvents.h>
+
+#include <CoreUtilities/FileSystem.h>
 
 MeshPreviewPanel::MeshPreviewPanel()
 	: EditorWindow("Mesh Preview", true)

@@ -1,12 +1,6 @@
 #include "sbpch.h"
 #include "Sandbox.h"
 
-#include "Sandbox/Utility/EditorUtilities.h"
-#include "Sandbox/Utility/EditorLibrary.h"
-
-#include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
-
-#include <Volt/Project/ProjectManager.h>
 #include <Volt/Asset/Rendering/ShaderDefinition.h>
 
 #include <RenderCore/Shader/ShaderMap.h>

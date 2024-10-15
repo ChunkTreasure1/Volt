@@ -1,37 +1,30 @@
 #include "sbpch.h"
-#include "Window/SceneViewPanel.h"
 
+#include "Sandbox/Window/SceneViewPanel.h"
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/Theme.h"
-
 #include "Sandbox/Sandbox.h"
-#include "Sandbox/VersionControl/VersionControl.h"
 
 #include <Volt/Asset/Prefab.h>
-#include <InputModule/Input.h>
-#include <InputModule/InputCodes.h>
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/Mesh/Mesh.h>
-
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Utility/StringUtility.h>
-
 #include <Volt/Components/CoreComponents.h>
 #include <Volt/Components/RenderingComponents.h>
 #include <Volt/Components/LightComponents.h>
 #include <Volt/Vision/VisionComponents.h>
-
 #include <Volt/ImGui/FontAwesome.h>
 
-#include <Volt/Rendering/ShapeLibrary.h>
-#include <Volt/Project/ProjectManager.h>
+#include <InputModule/Input.h>
+#include <InputModule/InputCodes.h>
 
 #include <AssetSystem/AssetManager.h>
-
 #include <WindowModule/WindowManager.h>
 #include <WindowModule/Window.h>
+
+#include <CoreUtilities/FileSystem.h>
 
 namespace Utility
 {

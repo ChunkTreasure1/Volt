@@ -16,8 +16,14 @@
 
 #include <RHIModule/Buffers/StorageBuffer.h>
 
+#include <Volt-Core/Console/ConsoleVariableRegistry.h>
+
+VT_DEFINE_LOG_CATEGORY(LogRenderScene);
+
 namespace Volt
 {
+	static ConsoleVariable<int32_t> s_logRenderSceneUpdatedCVar("r.RenderScene.LogUpdates", 0, "Whether or not to log Render Scene updates");
+
 	RenderScene::RenderScene(Scene* sceneRef)
 		: m_scene(sceneRef)
 	{
@@ -523,6 +529,11 @@ namespace Volt
 			{
 				auto& data = bufferUpload.AddUploadItem(invalidMaterial.index);
 				BuildGPUMaterial(invalidMaterial.material, data);
+			
+				if (s_logRenderSceneUpdatedCVar.GetValue())
+				{
+					VT_LOGC(Trace, LogRenderScene, "Material {} was uploaded to index {}.", invalidMaterial.material->assetName, invalidMaterial.index);
+				}
 			}
 
 			bufferUpload.UploadTo(renderGraph, *materialsBuffer);
@@ -552,6 +563,11 @@ namespace Volt
 				data = invalidMesh.mesh->GetGPUMeshes().at(invalidMesh.subMeshIndex);
 
 				m_gpuMeshes[invalidMesh.index] = data;
+
+				if (s_logRenderSceneUpdatedCVar.GetValue())
+				{
+					VT_LOGC(Trace, LogRenderScene, "Mesh {} was uploaded to index {}.", invalidMesh.mesh->assetName, invalidMesh.index);
+				}
 			}
 
 			bufferUpload.UploadTo(renderGraph, *meshesBuffer);
@@ -580,12 +596,22 @@ namespace Volt
 				const auto& renderObject = GetRenderObjectFromID(invalidPrimitive.renderObjectId);
 				auto& data = bufferUpload.AddUploadItem(invalidPrimitive.index);
 				BuildSinglePrimitiveDrawData(data, renderObject);
+
+				if (s_logRenderSceneUpdatedCVar.GetValue())
+				{
+					VT_LOGC(Trace, LogRenderScene, "Primitive Data attached to entity {} was uploaded to index {}.", data.entityId, invalidPrimitive.index);
+				}
 			}
 
 			for (const auto& removedPrimitiveIndex : m_removedPrimitiveDataIndices)
 			{
 				auto& data = bufferUpload.AddUploadItem(removedPrimitiveIndex);
 				data.flags = PrimitiveFlags::Invalid;
+
+				if (s_logRenderSceneUpdatedCVar.GetValue())
+				{
+					VT_LOGC(Trace, LogRenderScene, "Primitive Data with index {} was removed.", removedPrimitiveIndex);
+				}
 			}
 
 			bufferUpload.UploadTo(renderGraph, *drawDataBuffer);
@@ -617,9 +643,9 @@ namespace Volt
 		
 		const uint32_t primitiveDrawDataCount = m_buffers.primitiveDrawDataBuffer->GetResource()->GetCount();
 		
-		if (validPrimitiveDrawDataBuffer->GetResource()->GetCount() < primitiveDrawDataCount)
+		if (validPrimitiveDrawDataBuffer->GetResource()->GetCount() < primitiveDrawDataCount + 1)
 		{
-			validPrimitiveDrawDataBuffer->GetResource()->ResizeWithCount(primitiveDrawDataCount);
+			validPrimitiveDrawDataBuffer->GetResource()->ResizeWithCount(primitiveDrawDataCount + 1);
 			validPrimitiveDrawDataBuffer->MarkAsDirty();
 		}
 

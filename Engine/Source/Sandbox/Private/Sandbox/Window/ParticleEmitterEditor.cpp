@@ -4,22 +4,18 @@
 #include "Sandbox/Camera/EditorCameraController.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
-#include "Volt/Particles/ParticleSystem.h"
 #include <Volt/Asset/ParticlePreset.h>
-
 #include <Volt/Rendering/SceneRenderer.h>
-
 #include <Volt/Components/LightComponents.h>
 #include <Volt/Components/RenderingComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Project/ProjectManager.h>
 
 #include <AssetSystem/AssetManager.h>
 
 #include <WindowModule/Events/WindowEvents.h>
 
-#include <random>
+#include <CoreUtilities/FileSystem.h>
 
 ParticleEmitterEditor::ParticleEmitterEditor()
 	: EditorWindow("Particle Editor")

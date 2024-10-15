@@ -1,7 +1,5 @@
 #include "vtpch.h"
 #include "Volt/Asset/Importers/AnimationImporter.h"
-
-#include "Volt/Project/ProjectManager.h"
 #include "Volt/Asset/Animation/Animation.h"
 
 #include <AssetSystem/AssetManager.h>

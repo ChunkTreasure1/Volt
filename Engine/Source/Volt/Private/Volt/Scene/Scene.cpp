@@ -39,6 +39,8 @@ namespace Volt
 
 	Scene::~Scene()
 	{
+		m_entityScene.ClearScene();
+		m_renderScene = nullptr;
 	}
 
 	void Scene::SetRenderSize(uint32_t aWidth, uint32_t aHeight)

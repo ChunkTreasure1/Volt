@@ -2,7 +2,6 @@
 
 #include "Volt/Core/Base.h"
 
-#include "Volt/Rendering/RendererCommon.h"
 #include "Volt/Rendering/SceneRendererStructs.h"
 #include "Volt/Rendering/RendererStructs.h"
 

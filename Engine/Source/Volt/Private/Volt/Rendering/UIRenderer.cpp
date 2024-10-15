@@ -10,8 +10,6 @@
 
 #include "Volt/Rendering/Vertex.h"
 
-#include "Volt/Utility/StringUtility.h"
-
 #include <RHIModule/Buffers/IndexBuffer.h>
 #include <RHIModule/Buffers/VertexBuffer.h>
 

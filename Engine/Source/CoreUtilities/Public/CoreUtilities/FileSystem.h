@@ -11,6 +11,8 @@ struct FileFilter
 	std::string extensions;
 };
 
+#undef SetEnvironmentVariable
+
 namespace FileSystem
 {
 	extern VTCOREUTIL_API bool IsWriteable(const std::filesystem::path& path);
@@ -33,6 +35,14 @@ namespace FileSystem
 	extern VTCOREUTIL_API std::filesystem::path SaveFileDialogue(const Vector<FileFilter>& filters, const std::filesystem::path& baseDir);
 	extern VTCOREUTIL_API std::filesystem::path GetDocumentsPath();
 	extern VTCOREUTIL_API std::filesystem::path GetExecutablePath();
+
+	extern VTCOREUTIL_API bool HasEnvironmentVariable(const std::string& key);
+	extern VTCOREUTIL_API bool SetEnvironmentVariable(const std::string& key, const std::string& value);
+	extern VTCOREUTIL_API bool SetRegistryValue(const std::string& key, const std::string& value);
+	extern VTCOREUTIL_API std::string GetEnvironmentVariableValue(const std::string& key);
+	extern VTCOREUTIL_API std::string GetCurrentUserName();
+	extern VTCOREUTIL_API void StartProcess(const std::filesystem::path& processPath);
+	extern VTCOREUTIL_API bool RunCommand(const std::string& aCommand);
 
 	extern VTCOREUTIL_API void Initialize();
 	extern VTCOREUTIL_API void Shutdown();

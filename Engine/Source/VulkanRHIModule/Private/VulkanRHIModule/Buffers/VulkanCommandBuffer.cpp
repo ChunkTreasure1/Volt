@@ -302,14 +302,20 @@ namespace Volt::RHI
 			m_nextAvailableTimestampQuery = 2;
 		}
 
-		BeginMarker("CommandBuffer", { 1.f, 1.f, 1.f, 1.f });
+		if (m_commandBufferLevel == CommandBufferLevel::Primary)
+		{
+			BeginMarker("CommandBuffer", { 1.f, 1.f, 1.f, 1.f });
+		}
 	}
 
 	void VulkanCommandBuffer::End()
 	{
 		VT_PROFILE_FUNCTION();
 
-		EndMarker();
+		if (m_commandBufferLevel == CommandBufferLevel::Primary)
+		{
+			EndMarker();
+		}
 
 		if (m_hasTimestampSupport)
 		{

@@ -1,6 +1,5 @@
 #include "vtpch.h"
 #include "Volt/Asset/Importers/ParticlePresetImporter.h"
-#include "Volt/Project/ProjectManager.h"
 
 #include <yaml-cpp/yaml.h>
 #include "Volt/Asset/ParticlePreset.h"

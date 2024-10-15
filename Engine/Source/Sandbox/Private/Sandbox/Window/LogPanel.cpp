@@ -2,9 +2,8 @@
 #include "Window/LogPanel.h"
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Utility/StringUtility.h>
 
-#include <Volt/Console/ConsoleVariableRegistry.h>
+#include <Volt-Core/Console/ConsoleVariableRegistry.h>
 
 namespace Utility
 {

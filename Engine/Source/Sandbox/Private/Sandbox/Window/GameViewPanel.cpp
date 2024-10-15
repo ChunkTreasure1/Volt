@@ -22,8 +22,6 @@
 #include <Volt/Scene/Entity.h>
 #include <Volt/Utility/UIUtility.h>
 
-#include <Volt/Utility/StringUtility.h>
-
 #include <InputModule/Events/KeyboardEvents.h>
 
 #include "Sandbox/EditorCommandStack.h"

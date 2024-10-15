@@ -8,7 +8,6 @@
 #include <AssetSystem/AssetManager.h>
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Utility/StringUtility.h>
 
 #include <CoreUtilities/Math/Hash.h>
 

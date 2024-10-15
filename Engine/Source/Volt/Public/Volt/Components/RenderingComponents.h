@@ -50,7 +50,7 @@ namespace Volt
 		static void OnTransformChanged(MeshEntity entity);
 		static void OnComponentCopied(MeshEntity entity);
 
-		ScenePrimitiveData* m_scenePrimitiveData = nullptr;
+		Ref<ScenePrimitiveData> m_scenePrimitiveData;
 	};
 
 	struct CameraComponent

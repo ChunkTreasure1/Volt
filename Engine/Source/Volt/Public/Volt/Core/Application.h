@@ -4,7 +4,8 @@
 #include "Volt/Core/Layer/LayerStack.h"
 #include "Volt/Core/MultiTimer.h"
 
-#include "Volt/Utility/Version.h"
+#include <Volt-Core/Version.h>
+#include <Volt-Core/Project/ProjectManager.h>
 
 #include <AssetSystem/SourceAssetManager.h>
 
@@ -159,6 +160,7 @@ namespace Volt
 		Scope<AssetManager> m_assetManager;
 		Scope<SourceAssetManager> m_sourceAssetManager;
 		Scope<AI::NavigationSystem> m_navigationSystem;
+		Scope<ProjectManager> m_projectManager;
 
 		Scope<SteamImplementation> m_steamImplementation;
 	};

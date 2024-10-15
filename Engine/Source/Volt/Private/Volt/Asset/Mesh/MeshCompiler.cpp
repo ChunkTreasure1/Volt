@@ -5,11 +5,10 @@
 
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Rendering/Material.h"
-#include "Volt/Project/ProjectManager.h"
+
+#include <Volt-Core/Project/ProjectManager.h>
 
 #include <AssetSystem/AssetManager.h>
-
-#include <fstream>
 
 namespace Volt
 {

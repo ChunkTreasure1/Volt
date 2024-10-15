@@ -4,15 +4,13 @@
 #include "Sandbox/Window/AssetBrowser/AssetBrowserSelectionManager.h"
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 
-#include "Sandbox/Utility/AssetBrowserUtilities.h"
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/VersionControl/VersionControl.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
-#include <Volt/Project/ProjectManager.h>
 
-#include <InputModule/InputCodes.h>
+#include <CoreUtilities/FileSystem.h>
 
 namespace AssetBrowser
 {

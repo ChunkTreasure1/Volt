@@ -9,14 +9,13 @@
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Asset/Rendering/Material.h>
 
-#include <Volt/Utility/FileSystem.h>
-#include <Volt/Project/ProjectManager.h>
-
 #include <AssetSystem/AssetManager.h>
 
 #include <Mosaic/MosaicGraph.h>
 #include <Mosaic/MosaicNode.h>
 #include <Mosaic/NodeRegistry.h>
+
+#include <CoreUtilities/FileSystem.h>
 
 #include <builders.h>
 

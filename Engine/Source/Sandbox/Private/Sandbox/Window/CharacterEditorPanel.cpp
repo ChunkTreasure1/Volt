@@ -6,27 +6,21 @@
 #include "Sandbox/Utility/Theme.h"
 
 #include <Volt/Animation/AnimationManager.h>
-
 #include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
-
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Mesh/Mesh.h>
-
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/Entity.h>
-
 #include <Volt/Components/RenderingComponents.h>
-#include <Volt/Components/LightComponents.h>
-
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Project/ProjectManager.h>
 
 #include <AssetSystem/AssetManager.h>
-
 #include <WindowModule/Events/WindowEvents.h>
+
+#include <CoreUtilities/FileSystem.h>
 
 CharacterEditorPanel::CharacterEditorPanel()
 	: EditorWindow("Character Editor", true)

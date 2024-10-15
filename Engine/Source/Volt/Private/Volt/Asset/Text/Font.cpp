@@ -1,19 +1,14 @@
 #include "vtpch.h"
-#include "Volt/Asset/Text/Font.h"
 
+#include "Volt/Asset/Text/Font.h"
+#include "Volt/Rendering/Texture/Texture2D.h"
+#include "Volt/Core/Application.h"
 #include "Volt/Asset/Text/MSDFData.h"
+
 #include <AssetSystem/AssetManager.h>
 
-#include "Volt/Core/Base.h"
 #include <CoreUtilities/Buffer/Buffer.h>
-#include "Volt/Project/ProjectManager.h"
-
-#include "Volt/Rendering/Texture/Texture2D.h"
-
-#include "Volt/Core/Application.h"
-
-#include "Volt/Utility/FileSystem.h"
-#include "Volt/Utility/StringUtility.h"
+#include <CoreUtilities/FileSystem.h>
 
 namespace Volt
 {

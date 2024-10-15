@@ -7,13 +7,11 @@
 
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
-
-#include <Volt/Project/ProjectManager.h>
-
 #include <Volt/Utility/UIUtility.h>
-
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Asset/Mesh/Mesh.h>
+
+#include <CoreUtilities/FileSystem.h>
 
 bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHandle, AssetType wantedType)
 {

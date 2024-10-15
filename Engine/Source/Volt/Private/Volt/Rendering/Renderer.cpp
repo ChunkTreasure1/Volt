@@ -5,15 +5,10 @@
 #include "Volt/Asset/Rendering/Material.h"
 #include "Volt/Asset/Rendering/ShaderSource.h"
 #include "Volt/Asset/Rendering/ShaderDefinition.h"
-
-#include "Volt/Project/ProjectManager.h"
-
 #include "Volt/Rendering/Texture/Texture2D.h"
-
 #include "Volt/Math/Math.h"
 
 #include <AssetSystem/AssetManager.h>
-
 #include <JobSystem/TaskGraph.h>
 
 #include <RenderCore/RenderGraph/RenderGraphExecutionThread.h>
@@ -32,7 +27,6 @@
 #include <RHIModule/Images/ImageUtility.h>
 #include <RHIModule/Descriptors/DescriptorTable.h>
 #include <RHIModule/Pipelines/ComputePipeline.h>
-#include <RHIModule/Utility/ResourceUtility.h>
 
 #include <CoreUtilities/Containers/FunctionQueue.h>
 #include <CoreUtilities/Math/Hash.h>

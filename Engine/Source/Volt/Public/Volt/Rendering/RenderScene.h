@@ -9,6 +9,8 @@
 
 #include <span>
 
+VT_DECLARE_LOG_CATEGORY(LogRenderScene, LogVerbosity::Trace);
+
 namespace Volt
 {
 	namespace RHI

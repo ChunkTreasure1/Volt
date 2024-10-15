@@ -19,13 +19,13 @@ namespace Volt
 	void MeshComponent::OnCreate(MeshEntity entity)
 	{
 		auto& meshComponent = entity.GetComponent<MeshComponent>();
-		meshComponent.m_scenePrimitiveData = new ScenePrimitiveData(entity.GetID(), entity.GetRenderScene());
+		meshComponent.m_scenePrimitiveData = CreateRef<ScenePrimitiveData>(entity.GetID(), entity.GetRenderScene());
 	}
 
 	void MeshComponent::OnDestroy(MeshEntity entity)
 	{
 		auto& component = entity.GetComponent<MeshComponent>();
-		delete component.m_scenePrimitiveData;
+		component.m_scenePrimitiveData = nullptr;
 	}
 
 	void MeshComponent::OnMemberChanged(MeshEntity entity)

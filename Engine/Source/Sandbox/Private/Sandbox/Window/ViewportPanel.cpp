@@ -1,7 +1,6 @@
 #include "sbpch.h"
-#include "sbpch.h"
-#include "Window/ViewportPanel.h"
 
+#include "Sandbox/Window/ViewportPanel.h"
 #include "Sandbox/Window/SceneViewPanel.h"
 #include "Sandbox/Window/GameViewPanel.h"
 #include "Sandbox/Camera/EditorCameraController.h"
@@ -11,43 +10,30 @@
 #include "Sandbox/Utility/EditorLibrary.h"
 #include "Sandbox/UserSettingsManager.h"
 #include "Sandbox/Sandbox.h"
-
 #include "Sandbox/UISystems/ModalSystem.h"
 #include "Sandbox/Modals/MeshImportModal.h"
-
 #include "Sandbox/EditorCommandStack.h"
-
 #include "Sandbox/Utility/Theme.h"
 
 #include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Asset/ParticlePreset.h>
-#include <Volt/Asset/Prefab.h>
+#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/Rendering/Camera/Camera.h>
+#include <Volt/Components/CoreComponents.h>
+#include <Volt/Components/RenderingComponents.h>
+#include <Volt/Scene/Entity.h>
+#include <Volt/Utility/UIUtility.h>
+#include <Volt/Math/Math.h>
 
 #include <InputModule/Input.h>
 #include <InputModule/InputCodes.h>
-#include <InputModule/MouseButtonCodes.h>
-
-#include <Volt/Rendering/SceneRenderer.h>
-#include <Volt/Rendering/Camera/Camera.h>
-
-#include <Volt/Components/CoreComponents.h>
-#include <Volt/Components/RenderingComponents.h>
-
-#include <Volt/Scene/Entity.h>
-#include <Volt/Scene/SceneManager.h>
-#include <Volt/Asset/Serializers/SceneSerializer.h>
-#include <Volt/Utility/UIUtility.h>
-
-#include <Volt/Utility/StringUtility.h>
-#include <Volt/Math/RayTriangle.h>
-#include <Volt/Math/Math.h>
 
 #include <EventSystem/EventSystem.h>
 #include <WindowModule/Events/WindowEvents.h>
 
 #include <RHIModule/Images/Image.h>
 
-#include <Navigation/Core/NavigationSystem.h>
+#include <CoreUtilities/FileSystem.h>
 
 ViewportPanel::ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::Scene>& editorScene, EditorCameraController* cameraController,
 	SceneState& aSceneState)

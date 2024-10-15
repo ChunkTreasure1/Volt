@@ -370,9 +370,10 @@ namespace VoltSharpmake
 				conf.EventPostBuild.Add(@"copy /Y " + "\"" + conf.TargetPath + "\\" + Name + ".pdb\"" + " \"" + Globals.BinariesDirectory + "\"");
 			}
 
-            string UpperProjectName = Name.ToUpper(); 
+			string UpperProjectName = Name.ToUpper();
+			UpperProjectName = UpperProjectName.Replace('-', '_');
 
-            conf.Defines.Add(UpperProjectName + "_DLL_EXPORT");
+			conf.Defines.Add(UpperProjectName + "_DLL_EXPORT");
             conf.ExportDefines.Add(UpperProjectName + "_DLL_IMPORT");
         }
     }

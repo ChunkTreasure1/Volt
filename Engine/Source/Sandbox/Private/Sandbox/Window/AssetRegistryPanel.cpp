@@ -1,10 +1,12 @@
 #include "sbpch.h"
-#include "Window/AssetRegistryPanel.h"
+
+#include "Sandbox/Window/AssetRegistryPanel.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
-#include <AssetSystem/AssetManager.h>
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Utility/StringUtility.h>
+
+#include <AssetSystem/AssetManager.h>
+#include <CoreUtilities/FileSystem.h>
 
 AssetRegistryPanel::AssetRegistryPanel()
 	: EditorWindow("Asset Registry")

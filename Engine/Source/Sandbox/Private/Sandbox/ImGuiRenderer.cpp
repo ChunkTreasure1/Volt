@@ -2,22 +2,15 @@
 #include "Sandbox.h"
 
 #include "Sandbox/Window/EditorWindow.h"
-#include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/EditorLibrary.h"
 #include "Sandbox/Utility/Theme.h"
-
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Core/Application.h>
-
 #include <Volt/Utility/PremadeCommands.h>
-#include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
-
-#include <Volt/Project/ProjectManager.h>
-#include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 
 #include <EventSystem/EventSystem.h>
 
@@ -28,7 +21,6 @@
 #include <WindowModule/Window.h>
 #include <WindowModule/Events/WindowEvents.h>
 
-#include <GLFW/glfw3.h>
 #include <imgui.h>
 
 

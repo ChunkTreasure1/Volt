@@ -4,13 +4,8 @@
 #include "Volt/Asset/Animation/Skeleton.h"
 #include <AssetSystem/AssetManager.h>
 
-#include "Volt/Utility/YAMLSerializationHelpers.h"
-#include "Volt/Project/ProjectManager.h"
-
 #include <CoreUtilities/FileIO/YAMLFileStreamReader.h>
 #include <CoreUtilities/FileIO/YAMLFileStreamWriter.h>
-
-#include <yaml-cpp/yaml.h>
 
 namespace Volt
 {
