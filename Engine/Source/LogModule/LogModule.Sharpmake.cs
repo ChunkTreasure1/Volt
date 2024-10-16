@@ -19,6 +19,8 @@ namespace VoltSharpmake
             conf.SolutionFolder = "Engine";
             conf.IncludePrivatePaths.Add(Path.Combine(Globals.ThirdPartyDirectory, "spdlog/include"));
             conf.Defines.Add("_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING");
+
+			conf.AddPublicDependency<SubSystemModule>(target);
         }
     }
 }

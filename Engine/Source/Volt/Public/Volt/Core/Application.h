@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Volt/Core/Base.h"
-#include "Volt/Core/Layer/LayerStack.h"
-#include "Volt/Core/MultiTimer.h"
+#include "Volt-Core/Layer/LayerStack.h"
+#include "Volt-Core/MultiTimer.h"
 
-#include <Volt-Core/Version.h>
-#include <Volt-Core/Project/ProjectManager.h>
+#include "Volt-Core/Version.h"
+#include "Volt-Core/Project/ProjectManager.h"
+
+#include <SubSystem/SubSystemManager.h>
 
 #include <AssetSystem/SourceAssetManager.h>
 
@@ -15,7 +16,7 @@
 
 #include <EntitySystem/Scripting/ScriptingSystem.h>
 
-#include <string>
+#include <CoreUtilities/Pointers/RefPtr.h>
 
 namespace Amp
 {
@@ -64,6 +65,7 @@ namespace Volt
 	class DynamicLibraryManager;
 	class EventSystem;
 	class Input;
+	class WindowManager;
 
 	namespace RHI
 	{
@@ -142,13 +144,8 @@ namespace Volt
 		LayerStack m_layerStack;
 		MultiTimer m_frameTimer;
 
-		Scope<Log> m_log;
-		Scope<Input> m_input;
-		Scope<JobSystem> m_jobSystem;
-		Scope<DynamicLibraryManager> m_dynamicLibraryManager;
-		Scope<PluginRegistry> m_pluginRegistry;
-		Scope<PluginSystem> m_pluginSystem;
-		Scope<EventSystem> m_eventSystem;
+		Scope<SubSystemManager> m_subSystemManager;
+
 		Scope<ScriptingSystem> m_scriptingSystem;
 
 		Scope<ApplicationEventListener> m_eventListener;
@@ -160,7 +157,11 @@ namespace Volt
 		Scope<AssetManager> m_assetManager;
 		Scope<SourceAssetManager> m_sourceAssetManager;
 		Scope<AI::NavigationSystem> m_navigationSystem;
-		Scope<ProjectManager> m_projectManager;
+
+		ProjectManager* m_projectManager = nullptr;
+		PluginRegistry* m_pluginRegistry = nullptr;
+		PluginSystem* m_pluginSystem = nullptr;
+		WindowManager* m_windowManager = nullptr;
 
 		Scope<SteamImplementation> m_steamImplementation;
 	};

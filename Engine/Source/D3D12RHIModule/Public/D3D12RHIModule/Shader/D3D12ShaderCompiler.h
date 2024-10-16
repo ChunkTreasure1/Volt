@@ -41,5 +41,6 @@ namespace Volt::RHI
 		Vector<std::string> m_macros;
 		ShaderCompilerFlags m_flags = ShaderCompilerFlags::None;
 		std::filesystem::path m_cacheDirectory;
+		RefPtr<ShaderCache> m_shaderCache;
 	};
 }

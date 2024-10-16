@@ -5,6 +5,7 @@
 
 #include "WindowModule/Config.h"
 
+#include <SubSystem/SubSystem.h>
 #include <CoreUtilities/Core.h>
 
 #include <unordered_map>
@@ -13,31 +14,42 @@ namespace Volt
 {
 	class Window;
 
-	class WindowManager
+	class WINDOWMODULE_API WindowManager : public SubSystem
 	{
 	public:
-		WINDOWMODULE_API static void InitializeGLFW();
-		WINDOWMODULE_API static void Initialize(const WindowProperties& mainWindowProperties);
-		WINDOWMODULE_API static void Shutdown();
-		WINDOWMODULE_API static void ShutdownGLFW();
+		WindowManager();
+		~WindowManager();
 
-		WINDOWMODULE_API static WindowManager& Get();
+		WindowManager(const WindowManager&) = delete;
+		WindowManager& operator=(const WindowManager&) = delete;
 
-		WINDOWMODULE_API const WindowHandle CreateNewWindow(const WindowProperties& windowProperties);
-		WINDOWMODULE_API void DestroyWindow(const WindowHandle handle);
+		static void InitializeGLFW();
+		static void ShutdownGLFW();
 
-		WINDOWMODULE_API void BeginFrame();
-		WINDOWMODULE_API void Render();
-		WINDOWMODULE_API void Present();
+		void Initialize() override;
+		void Shutdown() override;
 
-		WINDOWMODULE_API WindowHandle GetMainWindowHandle() const;
+		void CreateMainWindow(const WindowProperties& windowProperties);
+		void DestroyMainWindow();
 
-		WINDOWMODULE_API Window& GetMainWindow() const;
-		WINDOWMODULE_API Window& GetWindow(const WindowHandle handle) const;
+		const WindowHandle CreateNewWindow(const WindowProperties& windowProperties);
+		void DestroyWindow(const WindowHandle handle);
+
+		void BeginFrame();
+		void Render();
+		void Present();
+
+		WindowHandle GetMainWindowHandle() const;
+
+		Window& GetMainWindow() const;
+		Window& GetWindow(const WindowHandle handle) const;
+
+		static WindowManager& Get();
+
+		VT_DECLARE_SUBSYSTEM("{DD8C1066-AA16-40C6-929D-282F15D11AC2}"_guid);
 
 	private:
-
-		inline static Scope<WindowManager> s_instance;
+		inline static WindowManager* s_instance = nullptr;
 
 		WindowHandle m_mainWindowHandle;
 		std::unordered_map<WindowHandle, Scope<Window>> m_windows;

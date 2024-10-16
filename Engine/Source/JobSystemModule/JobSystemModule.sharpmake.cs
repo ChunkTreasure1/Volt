@@ -21,6 +21,7 @@ namespace VoltSharpmake
             conf.PrecompSource = "jspch.cpp";
 
             conf.AddPublicDependency<LogModule>(target);
-        }
+			conf.AddPublicDependency<EventSystemModule>(target);
+		}
     }
 }

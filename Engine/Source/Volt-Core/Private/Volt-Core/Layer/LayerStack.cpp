@@ -1,6 +1,6 @@
-#include "vtpch.h"
-#include "Volt/Core/Layer/LayerStack.h"
-#include "Volt/Core/Layer/Layer.h"
+#include "vtcorepch.h"
+#include "Volt-Core/Layer/LayerStack.h"
+#include "Volt-Core/Layer/Layer.h"
 
 namespace Volt
 {

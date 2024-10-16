@@ -5,6 +5,8 @@
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
+VT_REGISTER_SUBSYSTEM(Log, PreEngine, 1);
+
 Log::Log()
 {
 	VT_ENSURE(s_instance == nullptr);

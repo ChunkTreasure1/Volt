@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Volt/Core/UUID.h>
+#include <CoreUtilities/UUID.h>
 #include <AssetSystem/Asset.h>
 
 #include <CoreUtilities/Containers/Vector.h>

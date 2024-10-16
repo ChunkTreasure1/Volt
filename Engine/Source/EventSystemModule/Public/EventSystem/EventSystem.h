@@ -2,13 +2,15 @@
 
 #include "EventSystem/Event.h"
 
+#include <SubSystem/SubSystem.h>
+
 #include <CoreUtilities/Containers/Map.h>
 #include <CoreUtilities/VoltGUID.h>
 
 namespace Volt
 {
 	class EventListener;
-	class EVENTMODULE_API EventSystem
+	class EVENTMODULE_API EventSystem : public SubSystem
 	{
 	public:
 		EventSystem();
@@ -26,6 +28,8 @@ namespace Volt
 			VT_ENSURE(s_instance);
 			s_instance->DispatchEventInternal(T::GetStaticGUID(), e);
 		}
+
+		VT_DECLARE_SUBSYSTEM("{53104069-97D1-459F-B307-7E6DB62676BF}"_guid)
 
 	private:
 		inline static EventSystem* s_instance = nullptr;

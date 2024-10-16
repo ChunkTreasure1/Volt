@@ -1,10 +1,7 @@
 #pragma once
 
-#include "Volt/Core/UUID.h"
-
+#include <CoreUtilities/UUID.h>
 #include <EntitySystem/EntityID.h>
-
-#include <entt.hpp>
 
 namespace Volt
 {

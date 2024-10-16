@@ -1,8 +1,6 @@
 #include "nvpch.h"
 #include "Navigation/Filesystem/NavMeshImporter.h"
 
-#include <Volt/Core/Profiling.h>
-
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 #include <CoreUtilities/FileIO/BinaryStreamReader.h>
 

@@ -1,13 +1,10 @@
 #pragma once
 
-#include "CoreInterfaces.h"
 #include "Navigation/NavMesh/VTNavMesh.h"
 
-#include <Volt/Core/Base.h>
-
-#include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Events/SceneEvents.h>
 
+#include <EventSystem/ApplicationEvents.h>
 #include <EventSystem/EventListener.h>
 
 static const int MAX_POLYS = 256;

@@ -8,9 +8,7 @@
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Scene/Scene.h>
 #include <Volt/Rendering/SceneRenderer.h>
-#include <Volt/Components/CoreComponents.h>
 #include <Volt/Components/RenderingComponents.h>
-#include <Volt/Asset/Mesh/MeshCompiler.h>
 
 #include <AssetSystem/AssetManager.h>
 #include <WindowModule/Events/WindowEvents.h>
@@ -206,12 +204,12 @@ void PrefabEditorPanel::SaveCurrentMesh()
 		return;
 	}
 
-	if (!Volt::MeshCompiler::TryCompile(myCurrentMesh, metadata.filePath, myCurrentMesh->GetMaterialTable()))
-	{
-		UI::Notify(NotificationType::Error, "Unable to save Mesh!", std::format("Unable to save mesh {0}!", metadata.filePath.string()));
-	}
-	else
-	{
-		UI::Notify(NotificationType::Success, "Saved Mesh!", std::format("Mesh {0} was saved successfully", metadata.filePath.string()));
-	}
+	//if (!Volt::MeshCompiler::TryCompile(myCurrentMesh, metadata.filePath, myCurrentMesh->GetMaterialTable()))
+	//{
+	//	UI::Notify(NotificationType::Error, "Unable to save Mesh!", std::format("Unable to save mesh {0}!", metadata.filePath.string()));
+	//}
+	//else
+	//{
+	//	UI::Notify(NotificationType::Success, "Saved Mesh!", std::format("Mesh {0} was saved successfully", metadata.filePath.string()));
+	//}
 }

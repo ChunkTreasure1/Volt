@@ -1,7 +1,6 @@
 #include "sbpch.h"
 #include "Utility/SelectionManager.h"
 
-#include <Volt/Core/Profiling.h>
 #include <Volt/Scene/Entity.h>
 
 void SelectionManager::Initialize()
@@ -66,8 +65,6 @@ bool SelectionManager::IsSelected(Volt::EntityID entity, SelectionContext contex
 
 void SelectionManager::Update(Ref<Volt::Scene> scene)
 {
-	VT_PROFILE_FUNCTION();
-
 	for (const auto& ent : GetSelectedEntities())
 	{
 		if (!scene->IsEntityValid(ent))

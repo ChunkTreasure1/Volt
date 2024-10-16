@@ -1,6 +1,6 @@
 #include "sbpch.h"
-#include "Utility/AssetBrowserUtilities.h"
 
+#include "Sandbox/Utility/AssetBrowserUtilities.h"
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 #include "Sandbox/UISystems/ModalSystem.h"
 #include "Sandbox/Modals/MeshImportModal.h"
@@ -8,18 +8,12 @@
 #include "Sandbox/Sandbox.h"
 
 #include <Volt/Asset/Prefab.h>
-#include <AssetSystem/AssetManager.h>
-#include <Volt/Asset/Mesh/MeshCompiler.h>
-#include <Volt/Asset/Animation/Animation.h>
-#include <Volt/Asset/Animation/Skeleton.h>
-#include <Volt/Asset/TextureSource.h>
-
 #include <Volt/Components/RenderingComponents.h>
-
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/MeshExporterUtilities.h>
-
 #include <Volt/Rendering/Texture/Texture2D.h>
+
+#include <AssetSystem/AssetManager.h>
 
 #include <RHIModule/Images/Image.h>
 

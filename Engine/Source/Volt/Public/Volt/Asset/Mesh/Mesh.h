@@ -117,12 +117,8 @@ namespace Volt
 		uint32_t GetVersion() const override { return 2; }
 
 	private:
-		friend class FbxImporter;
-		friend class MeshCompiler;
 		friend class MeshSerializer;
 		friend class MeshExporterUtilities;
-		friend class VTMeshImporter;
-		friend class GLTFImporter;
 		friend class FbxSourceImporter;
 		friend class GLTFSourceImporter;
 

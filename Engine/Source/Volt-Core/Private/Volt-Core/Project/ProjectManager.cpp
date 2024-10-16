@@ -13,6 +13,8 @@ VT_DEFINE_LOG_CATEGORY(LogProject);
 
 namespace Volt
 {
+	VT_REGISTER_SUBSYSTEM(ProjectManager, PreEngine, 0);
+
 	ProjectManager::ProjectManager()
 	{
 		VT_ASSERT(s_instance == nullptr);
@@ -47,7 +49,9 @@ namespace Volt
 			}
 		}
 
-		m_currentEngineDirectory = Utility::ReplaceCharacter(FileSystem::GetEnvironmentVariableValue("VOLT_PATH"), '\\', '/');
+		std::string fixedString = Utility::ReplaceCharacter(FileSystem::GetEnvironmentVariableValue("VOLT_PATH"), '\\', '/');
+
+		m_currentEngineDirectory = fixedString;
 
 		pluginRegistry.FindAndRegisterPluginsInDirectory(m_currentProject->rootDirectory / "Plugins");
 		pluginRegistry.FindAndRegisterPluginsInDirectory(m_currentEngineDirectory / "Plugins");

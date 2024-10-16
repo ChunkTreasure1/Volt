@@ -6,12 +6,12 @@
 #include "RHIModule/Shader/ShaderCommon.h"
 #include "RHIModule/Core/RHICommon.h"
 
-#include <span>
 #include <filesystem>
 
 namespace Volt::RHI
 {
 	class Shader;
+	class ShaderCache;
 
 	enum class ShaderCompilerFlags : uint32_t
 	{
@@ -27,6 +27,7 @@ namespace Volt::RHI
 		Vector<std::filesystem::path> includeDirectories;
 		Vector<std::string> initialMacros;
 	
+		RefPtr<ShaderCache> shaderCache;
 		ShaderCompilerFlags flags = ShaderCompilerFlags::None;
 	};
 

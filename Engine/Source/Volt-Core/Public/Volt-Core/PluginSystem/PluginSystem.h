@@ -4,6 +4,7 @@
 #include "Volt-Core/Plugin/Plugin.h"
 #include "Volt-Core/PluginSystem/NativePluginModule.h"
 
+#include <SubSystem/SubSystem.h>
 #include <EventSystem/Event.h>
 
 #include <CoreUtilities/Containers/Map.h>
@@ -44,10 +45,10 @@ namespace Volt
 		PFN_PluginDestroyInstance m_destroyInstanceFunc;
 	};
 
-	class VTCORE_API PluginSystem
+	class VTCORE_API PluginSystem : public SubSystem
 	{
 	public:
-		PluginSystem(PluginRegistry& pluginRegistry);
+		void SetPluginRegistry(PluginRegistry* pluginRegistry);
 
 		void LoadPlugins(const Project& project);
 		void UnloadPlugins();
@@ -57,12 +58,14 @@ namespace Volt
 
 		void SendEventToPlugins(Volt::Event& event);
 
+		VT_DECLARE_SUBSYSTEM("{AC054603-4CED-42FD-8BC8-370713EB5EE4}"_guid)
+
 	private:
 		bool LoadPlugin(const PluginDefinition& pluginDefinition);
 		
 		void InitializePluginAndDependencies(UUID64 nodeId, const Graph<VoltGUID, uint32_t>& dependencyGraph);
 
-		PluginRegistry& m_pluginRegistry;
+		PluginRegistry* m_pluginRegistry = nullptr;
 
 		vt::map<std::filesystem::path, Ref<PluginFactory>> m_pluginFactories;
 		vt::map<VoltGUID, size_t> m_guidToIndexMap;

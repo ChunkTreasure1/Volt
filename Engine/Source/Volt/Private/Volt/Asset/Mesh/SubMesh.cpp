@@ -1,8 +1,7 @@
 #include "vtpch.h"
 #include "Volt/Asset/Mesh/SubMesh.h"
 
-#include "Volt/Core/UUID.h"
-#include "Volt/Math/Math.h"
+#include <CoreUtilities/UUID.h>
 
 #include <CoreUtilities/Math/Hash.h>
 #include <CoreUtilities/FileIO/BinaryStreamWriter.h>

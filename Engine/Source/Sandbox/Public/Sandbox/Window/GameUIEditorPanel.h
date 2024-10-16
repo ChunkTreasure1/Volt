@@ -2,7 +2,6 @@
 
 #include "Sandbox/Window/EditorWindow.h"
 
-#include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Rendering/UISceneRenderer.h>
 
 #include <InputModule/Events/MouseEvents.h>
@@ -10,6 +9,8 @@
 
 #include <RHIModule/Images/Image.h>
 #include <CoreUtilities/Pointers/RefPtr.h>
+
+#include <EventSystem/ApplicationEvents.h>
 
 namespace Volt
 {

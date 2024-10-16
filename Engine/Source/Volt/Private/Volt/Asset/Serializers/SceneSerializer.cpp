@@ -9,8 +9,6 @@
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
 
-#include "Volt/Core/BinarySerializer.h"
-
 #include "Volt/Utility/Algorithms.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
@@ -282,11 +280,12 @@ namespace Volt
 				std::filesystem::permissions(vpPath, perms::_All_write);
 			}
 
-			BinarySerializer binaryVp(vpPath, sizeof(uint32_t) * vpComp.vertexColors.size() + sizeof(vpComp.meshHandle));
+			BinaryStreamWriter vpStreamWriter;
 
-			binaryVp.Serialize(vpComp.vertexColors.data(), sizeof(uint32_t) * vpComp.vertexColors.size());
-			binaryVp.Serialize(vpComp.meshHandle);
-			binaryVp.WriteToFile();
+			vpStreamWriter.Write(vpComp.vertexColors.data(), sizeof(uint32_t) * vpComp.vertexColors.size());
+			vpStreamWriter.Write(vpComp.meshHandle);
+
+			vpStreamWriter.WriteToDisk(vpPath, false, 0);
 		}
 
 		streamWriter.EndMap();

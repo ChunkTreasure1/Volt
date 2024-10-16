@@ -27,6 +27,7 @@ namespace VoltSharpmake
             conf.AddPrivateDependency<EventSystemModule>(target);
             conf.AddPrivateDependency<RHIModule>(target);
             conf.AddPrivateDependency<LogModule>(target);
+			conf.AddPrivateDependency<SubSystemModule>(target);
         }
     }
 }

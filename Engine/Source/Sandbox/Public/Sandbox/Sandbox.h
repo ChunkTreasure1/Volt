@@ -1,17 +1,14 @@
 #pragma once
 
-#include "Sandbox/Utility/Helpers.h"
-#include "Sandbox/VersionControl/VersionControl.h"
 #include "Sandbox/FileWatcher/FileWatcher.h"
 #include "Sandbox/GameBuilder.h"
 
 #include <Volt/Scene/Entity.h>
-#include <Volt/Core/Layer/Layer.h>
+#include <Volt-Core/Layer/Layer.h>
 
 #include <EventSystem/EventListener.h>
 
 #include <imgui.h>
-#include <ImGuizmo.h>
 
 namespace Volt
 {

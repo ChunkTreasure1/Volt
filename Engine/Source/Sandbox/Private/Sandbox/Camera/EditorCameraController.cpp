@@ -1,21 +1,14 @@
 #include "sbpch.h"
 #include "Camera/EditorCameraController.h"
 
-#include "Volt/Core/Application.h"
 #include "Volt/Rendering/Camera/Camera.h"
-
+#include "Volt/Utility/UIUtility.h"
 
 #include <InputModule/Input.h>
 #include <InputModule/InputCodes.h>
-#include <InputModule/MouseButtonCodes.h>
 
-#include "Volt/Utility/UIUtility.h"
-
-#include <Volt/Events/ApplicationEvents.h>
-#include <InputModule/Events/KeyboardEvents.h>
+#include <EventSystem/ApplicationEvents.h>
 #include <InputModule/Events/MouseEvents.h>
-
-#include <GLFW/glfw3.h>
 
 EditorCameraController::EditorCameraController(float fov, float nearPlane, float farPlane)
 	: m_fov(fov), m_nearPlane(nearPlane), m_farPlane(farPlane)

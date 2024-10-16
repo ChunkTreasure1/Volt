@@ -11,23 +11,42 @@
 
 namespace Volt
 {
+	VT_REGISTER_SUBSYSTEM(WindowManager, PreEngine, 4);
+
 	inline static void GLFWErrorCallback(int error, const char* description)
 	{
 		VT_LOGC(Error, LogWindowManagement, "GLFW Error ({0}): {1}", error, description);
 	}
 
-	void WindowManager::Initialize(const WindowProperties& mainWindowProperties)
+	WindowManager::WindowManager()
+	{
+		VT_ASSERT(!s_instance);
+		s_instance = this;
+	}
+
+	WindowManager::~WindowManager()
+	{
+		s_instance = nullptr;
+	}
+
+	void WindowManager::Initialize()
 	{
 		VT_LOGC(Trace, LogWindowManagement, "Initializing WindowManager");
-		s_instance = CreateScope<WindowManager>();
-		s_instance->m_mainWindowHandle = s_instance->CreateNewWindow(mainWindowProperties);
-
 	}
 
 	void WindowManager::Shutdown()
 	{
 		VT_LOGC(Trace, LogWindowManagement, "Shutting down WindowManager");
-		s_instance = nullptr;
+	}
+
+	void WindowManager::CreateMainWindow(const WindowProperties& windowProperties)
+	{
+		m_mainWindowHandle = CreateNewWindow(windowProperties);
+	}
+
+	void WindowManager::DestroyMainWindow()
+	{
+		DestroyWindow(m_mainWindowHandle);
 	}
 
 	WindowManager& WindowManager::Get()
@@ -96,6 +115,7 @@ namespace Volt
 	{
 		return *m_windows.at(handle);
 	}
+
 	void WindowManager::InitializeGLFW()
 	{
 		VT_LOGC(Trace, LogWindowManagement, "Initializing GLFW");
@@ -111,6 +131,7 @@ namespace Volt
 			glfwSetErrorCallback(GLFWErrorCallback);
 		}
 	}
+
 	void WindowManager::ShutdownGLFW()
 	{
 		VT_LOGC(Trace, LogWindowManagement, "Shutting Down GLFW");

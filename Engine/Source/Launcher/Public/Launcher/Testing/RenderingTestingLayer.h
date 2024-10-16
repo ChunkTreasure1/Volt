@@ -2,8 +2,7 @@
 
 #include "Testing/RenderingTestBase.h"
 
-#include <Volt/Core/Layer/Layer.h>
-#include <Volt/Events/ApplicationEvents.h>
+#include <Volt-Core/Layer/Layer.h>
 #include <WindowModule/Events/WindowEvents.h>
 
 #include <EventSystem/EventListener.h>

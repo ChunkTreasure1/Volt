@@ -2,8 +2,7 @@
 
 #include "Sandbox/Modals/Modal.h"
 
-#include <Volt/Core/Base.h>
-#include <Volt/Core/UUID.h>
+#include <CoreUtilities/UUID.h>
 
 #include <unordered_map>
 

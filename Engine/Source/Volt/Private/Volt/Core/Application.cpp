@@ -1,14 +1,14 @@
 #include "vtpch.h"
-#include "Volt/Core/Application.h"
 
-#include "Volt/Core/Layer/Layer.h"
+#include "Volt/Core/Application.h"
+#include "Volt-Core/Layer/Layer.h"
+
 #include "Volt/Steam/SteamImplementation.h"
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Scene/SceneManager.h"
 #include "Volt/Physics/Physics.h"
 #include "Volt/Utility/Noise.h"
 #include "Volt/Utility/UIUtility.h"
-#include "Volt/Physics/PhysicsEvents.h"
 
 #include <Volt-Core/DynamicLibraryManager.h>
 #include <Volt-Core/PluginSystem/PluginRegistry.h>
@@ -37,18 +37,10 @@
 #include <WindowModule/Window.h>
 
 #include <EventSystem/EventSystem.h>
+#include <EventSystem/ApplicationEvents.h>
 
 #include <CoreUtilities/ThreadUtilities.h>
 #include <CoreUtilities/FileSystem.h>
-
-using TestEntity = ECS::Access
-	::Write<Volt::TransformComponent>
-	::As<ECS::Type::Entity>;
-
-void SystemCallback(Volt::OnCollisionEnterEvent& event)
-{
-
-}
 
 namespace Volt
 {
@@ -93,24 +85,28 @@ namespace Volt
 		VT_ASSERT_MSG(!s_instance, "Application already exists!");
 		s_instance = this;
 
-		m_eventSystem = CreateScope<EventSystem>();
+		FileSystem::Initialize();
 
-		m_log = CreateScope<Log>();
-		m_log->SetLogOutputFilepath(m_info.projectPath.parent_path() / "Log/Log.txt");
+		m_subSystemManager = CreateScope<SubSystemManager>();
+		m_subSystemManager->InitializeSubSystems(SubSystemInitializationStage::PreEngine);
 
-		m_input = CreateScope<Input>();
+		m_pluginSystem = SubSystemManager::GetSubSystem<PluginSystem>();
+		m_pluginRegistry = SubSystemManager::GetSubSystem<PluginRegistry>();
+		m_projectManager = SubSystemManager::GetSubSystem<ProjectManager>();
 
-		m_jobSystem = CreateScope<JobSystem>();
-		m_projectManager = CreateScope<ProjectManager>();
-		m_dynamicLibraryManager = CreateScope<DynamicLibraryManager>();
-		m_pluginRegistry = CreateScope<PluginRegistry>();
-		m_pluginSystem = CreateScope<PluginSystem>(*m_pluginRegistry);
-
-		Noise::Initialize();
-
+		m_pluginSystem->SetPluginRegistry(m_pluginRegistry);
 		m_projectManager->LoadProject(m_info.projectPath, *m_pluginRegistry);
 		m_pluginRegistry->BuildPluginDependencies();
 		m_pluginSystem->LoadPlugins(ProjectManager::GetProject());
+
+		// This is required because glfwInit must be called before setting up graphics device
+		WindowManager::InitializeGLFW();
+		CreateGraphicsContext();
+
+		m_assetManager = CreateScope<AssetManager>(ProjectManager::GetRootDirectory(), ProjectManager::GetAssetsDirectory(), ProjectManager::GetEngineDirectory());
+		m_sourceAssetManager = CreateScope<SourceAssetManager>();
+
+		m_windowManager = SubSystemManager::GetSubSystem<WindowManager>();
 
 		WindowProperties windowProperties{};
 		windowProperties.Width = info.width;
@@ -135,20 +131,9 @@ namespace Volt
 			windowProperties.UseTitlebar = true;
 		}
 
-		// This is required because glfwInit must be called before setting up graphics device
-		WindowManager::InitializeGLFW();
-		CreateGraphicsContext();
-		WindowManager::Initialize(windowProperties);
+		m_windowManager->CreateMainWindow(windowProperties);
 
-		FileSystem::Initialize();
-		
-		Renderer::PreInitialize();
-		m_assetManager = CreateScope<AssetManager>(ProjectManager::GetRootDirectory(), ProjectManager::GetAssetsDirectory(), ProjectManager::GetEngineDirectory());
-		m_sourceAssetManager = CreateScope<SourceAssetManager>();
-		Renderer::Initialize();
-
-		//UIRenderer::Initialize();
-		//DebugRenderer::Initialize();
+		m_subSystemManager->InitializeSubSystems(SubSystemInitializationStage::Engine);
 
 		Physics::LoadSettings();
 		Physics::Initialize();
@@ -218,6 +203,8 @@ namespace Volt
 
 		m_scriptingSystem = nullptr;
 
+		m_subSystemManager->ShutdownSubSystems(SubSystemInitializationStage::PostEngine);
+
 		m_navigationSystem = nullptr;
 		m_layerStack.Clear();
 		m_imguiImplementation = nullptr;
@@ -227,30 +214,28 @@ namespace Volt
 		Physics::Shutdown();
 		Physics::SaveSettings();
 
-		//DebugRenderer::Shutdown();
-		//UIRenderer::Shutdown();
-
 		Amp::WWiseEngine::Get().TermWwise();
 
 		m_assetManager = nullptr;
 
-		Renderer::Shutdown();
+		m_subSystemManager->ShutdownSubSystems(SubSystemInitializationStage::Engine);
 
-		FileSystem::Shutdown();
-		WindowManager::Shutdown();
+		m_windowManager->DestroyMainWindow();
+
 		m_graphicsContext = nullptr;
-		WindowManager::ShutdownGLFW();
-		
 		m_rhiProxy = nullptr;
+		WindowManager::ShutdownGLFW();
 
 		m_pluginSystem->UnloadPlugins();
 		m_pluginSystem = nullptr;
 		m_pluginRegistry = nullptr;
 		m_projectManager = nullptr;
-		m_jobSystem = nullptr;
-		m_input = nullptr;
-		m_log = nullptr;
-		m_eventSystem = nullptr;
+
+		m_subSystemManager->ShutdownSubSystems(SubSystemInitializationStage::PreEngine);
+		 
+		FileSystem::Shutdown();
+
+		m_subSystemManager = nullptr;
 		s_instance = nullptr;
 	}
 
@@ -299,9 +284,13 @@ namespace Volt
 		{
 			VT_PROFILE_SCOPE("Application::Render");
 
-			Renderer::Flush();
-			WindowManager::Get().Render();
-			Renderer::Update();
+			AppPreRenderEvent preRenderEvent;
+			EventSystem::DispatchEvent(preRenderEvent);
+
+			AppRenderEvent renderEvent;
+			EventSystem::DispatchEvent(renderEvent);
+
+			m_windowManager->Render();
 		}
 
 		{
@@ -316,11 +305,6 @@ namespace Volt
 		{
 			VT_PROFILE_SCOPE("Application::UpdateAudio");
 			Amp::WWiseEngine::Get().Update();
-		}
-
-		{
-			VT_PROFILE_SCOPE("Application::RunMainThreadJobs");
-			m_jobSystem->ExecuteMainThreadJobs();
 		}
 
 		if (m_info.enableImGui)
@@ -341,17 +325,14 @@ namespace Volt
 			RenderGraphExecutionThread::WaitForFinishedExecution();
 		}
 
-		Renderer::EndOfFrameUpdate();
-
-		{
-			m_input->Update();
-			WindowManager::Get().Present();
-		}
-
 		{
 			VT_PROFILE_SCOPE("Application::PostFrameUpdate");
 			AppPostFrameUpdateEvent postFrameUpdateEvent{ m_currentDeltaTime };
 			EventSystem::DispatchEvent(postFrameUpdateEvent);
+		}
+
+		{
+			WindowManager::Get().Present();
 		}
 
 		m_frameTimer.Accumulate();

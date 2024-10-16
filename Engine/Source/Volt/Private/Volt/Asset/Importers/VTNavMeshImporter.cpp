@@ -2,11 +2,6 @@
 #include "Volt/Asset/Importers/VTNavMeshImporter.h"
 
 #include <AssetSystem/AssetManager.h>
-#include "Volt/Asset/Mesh/MeshCompiler.h"
-
-#include "Volt/Core/Application.h"
-
-#include <Navigation/Core/NavigationSystem.h>
 #include <Navigation/Filesystem/NavMeshImporter.h>
 
 namespace Volt

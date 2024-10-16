@@ -4,10 +4,11 @@
 
 #include <LogModule/Log.h>
 
+#include <SubSystem/SubSystem.h>
+
 #include <CoreUtilities/Containers/Map.h>
 #include <CoreUtilities/StringUtility.h>
 
-#include <map>
 #include <filesystem>
 #include <unordered_map>
 #include <shared_mutex>
@@ -20,6 +21,7 @@ namespace Volt
 	class AssetFactory;
 	class AssetSerializer;
 	class AssetDependencyGraph;
+
 	class VTAS_API AssetManager
 	{
 	public:

@@ -18,8 +18,6 @@
 #include <RenderCore/Resources/BindlessResourcesManager.h>
 #include <RenderCore/Shader/ShaderMap.h>
 
-#include <RHIModule/Shader/ShaderCompiler.h>
-#include <RHIModule/Shader/ShaderCache.h>
 #include <RHIModule/Images/SamplerState.h>
 #include <RHIModule/Graphics/Swapchain.h>
 #include <RHIModule/Images/Image.h>
@@ -28,15 +26,18 @@
 #include <RHIModule/Descriptors/DescriptorTable.h>
 #include <RHIModule/Pipelines/ComputePipeline.h>
 
-#include <CoreUtilities/Containers/FunctionQueue.h>
 #include <CoreUtilities/Math/Hash.h>
 #include <CoreUtilities/Time/ScopedTimer.h>
 
 #include <WindowModule/WindowManager.h>
 #include <WindowModule/Window.h>
 
+#include <EventSystem/ApplicationEvents.h>
+
 namespace Volt
 {
+	VT_REGISTER_SUBSYSTEM(Renderer, Engine, 3);
+
 	namespace Utility
 	{
 		inline static const size_t GetHashFromSamplerInfo(const RHI::SamplerStateCreateInfo& info)
@@ -65,8 +66,6 @@ namespace Volt
 #ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
 			shaderValidator = nullptr;
 #endif
-			shaderCache = nullptr;
-			shaderCompiler = nullptr;
 			shaderMap = nullptr;
 			bindlessResourcesManager = nullptr;
 
@@ -76,8 +75,6 @@ namespace Volt
 			}
 		}
 
-		RefPtr<RHI::ShaderCompiler> shaderCompiler;
-		Scope<RHI::ShaderCache> shaderCache;
 		Scope<ShaderMap> shaderMap;
 		Scope<BindlessResourcesManager> bindlessResourcesManager;
 
@@ -91,54 +88,36 @@ namespace Volt
 		DefaultResources defaultResources;
 	};
 
-	Scope<RendererData> s_rendererData;
-
-	void Renderer::PreInitialize()
+	Renderer::Renderer()
 	{
-		s_rendererData = CreateScope<RendererData>();
-		s_rendererData->deletionQueue.resize(WindowManager::Get().GetMainWindow().GetSwapchain().GetFramesInFlight());
+		VT_ASSERT(!s_instance);
+		s_instance = this;
 
-		// Create shader compiler
-		{
-			RHI::ShaderCompilerCreateInfo shaderCompilerInfo{};
-			shaderCompilerInfo.flags = RHI::ShaderCompilerFlags::WarningsAsErrors;
+		RegisterListener<AppPostFrameUpdateEvent>(VT_BIND_EVENT_FN(Renderer::OnEndOfFrameUpdate));
+		RegisterListener<AppPreRenderEvent>(VT_BIND_EVENT_FN(Renderer::OnPreRenderEvent));
+	}
 
-#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
-			shaderCompilerInfo.flags |= RHI::ShaderCompilerFlags::EnableShaderValidator;
-#endif
-
-			shaderCompilerInfo.includeDirectories =
-			{
-				ProjectManager::GetEngineShaderIncludeDirectory(),
-				ProjectManager::GetAssetsDirectory()
-			};
-
-			s_rendererData->shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
-		}
-
-		// Create shader cache
-		{
-			RHI::ShaderCacheCreateInfo info{};
-			info.cacheDirectory = "Engine/Shaders/Cache";
-
-			s_rendererData->shaderCache = CreateScope<RHI::ShaderCache>(info);
-		}
-
-		// Bindless resources manager
-		{
-			s_rendererData->bindlessResourcesManager = CreateScope<BindlessResourcesManager>();
-		}
+	Renderer::~Renderer()
+	{
+		s_instance = nullptr;
 	}
 
 	void Renderer::Initialize()
 	{
-		s_rendererData->shaderMap = CreateScope<ShaderMap>();
+		m_deletionQueue.resize(WindowManager::Get().GetMainWindow().GetSwapchain().GetFramesInFlight());
+
+		// Bindless resources manager
+		{
+			m_bindlessResourcesManager = CreateScope<BindlessResourcesManager>();
+		}
+
+		m_shaderMap = CreateScope<ShaderMap>();
 		LoadShaders();
 
 		RenderGraphExecutionThread::Initialize(RenderGraphExecutionThread::ExecutionMode::Multithreaded);
 
 #ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
-		s_rendererData->shaderValidator = CreateScope<ShaderRuntimeValidator>();
+		m_shaderValidator = CreateScope<ShaderRuntimeValidator>();
 #endif
 
 		CreateDefaultResources();
@@ -147,20 +126,21 @@ namespace Volt
 	void Renderer::Shutdown()
 	{
 		RenderGraphExecutionThread::Shutdown();
-		s_rendererData = nullptr;
-	}
 
-	void Renderer::Flush()
-	{
-		const uint32_t currentFrame = WindowManager::Get().GetMainWindow().GetSwapchain().GetCurrentFrame();
+		m_defaultResources.Clear();
+		m_samplers.clear();
 
-		//Application::GetThreadPool().SubmitTask([currentFrame, queueCopy = s_rendererData->deletionQueue.at(currentFrame)]() mutable
-		//{
-		//	queueCopy.Flush();
-		//});
+#ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
+		m_shaderValidator = nullptr;
+#endif
 
-		s_rendererData->deletionQueue.at(currentFrame).Flush();
-		s_rendererData->bindlessResourcesManager->Update();
+		m_shaderMap = nullptr;
+		m_bindlessResourcesManager = nullptr;
+
+		for (auto& resourceQueue : m_deletionQueue)
+		{
+			resourceQueue.Flush();
+		}
 	}
 
 	const uint32_t Renderer::GetFramesInFlight()
@@ -170,19 +150,19 @@ namespace Volt
 
 	void Renderer::DestroyResource(std::function<void()>&& function)
 	{
-		if (!s_rendererData)
+		if (!s_instance)
 		{
 			function();
 			return;
 		}
 
 		const uint32_t currentFrame = WindowManager::Get().GetMainWindow().GetSwapchain().GetCurrentFrame();
-		s_rendererData->deletionQueue.at(currentFrame).Push(std::move(function));
+		s_instance->m_deletionQueue.at(currentFrame).Push(std::move(function));
 	}
 
 	const DefaultResources& Renderer::GetDefaultResources()
 	{
-		return s_rendererData->defaultResources;
+		return s_instance->m_defaultResources;
 	}
 
 	SceneEnvironment Renderer::GenerateEnvironmentTextures(AssetHandle baseTextureHandle)
@@ -423,37 +403,45 @@ namespace Volt
 #ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
 	ShaderRuntimeValidator& Renderer::GetRuntimeShaderValidator()
 	{
-		return *s_rendererData->shaderValidator;
+		return *s_instance->m_shaderValidator;
 	}
 #endif
 
-	void Renderer::Update()
-	{
-	}
-
-	void Renderer::EndOfFrameUpdate()
+	bool Renderer::OnEndOfFrameUpdate(AppPostFrameUpdateEvent& event)
 	{
 #ifdef VT_ENABLE_SHADER_RUNTIME_VALIDATION
 		//s_rendererData->shaderValidator->ReadbackErrorBuffer();
 
-		const auto& frameErrors = s_rendererData->shaderValidator->GetValidationErrors();
+		const auto& frameErrors = m_shaderValidator->GetValidationErrors();
 		for (const auto& error : frameErrors)
 		{
 			VT_LOGC(Error, LogRender, error);
 		}
 #endif
+
+		return false;
+	}
+
+	bool Renderer::OnPreRenderEvent(AppPreRenderEvent& event)
+	{
+		const uint32_t currentFrame = WindowManager::Get().GetMainWindow().GetSwapchain().GetCurrentFrame();
+
+		m_deletionQueue.at(currentFrame).Flush();
+		m_bindlessResourcesManager->Update();
+
+		return false;
 	}
 
 	BindlessResourceRef<RHI::SamplerState> Renderer::GetSamplerInternal(const RHI::SamplerStateCreateInfo& samplerInfo)
 	{
 		const size_t hash = Utility::GetHashFromSamplerInfo(samplerInfo);
-		if (s_rendererData->samplers.contains(hash))
+		if (m_samplers.contains(hash))
 		{
-			return s_rendererData->samplers.at(hash);
+			return m_samplers.at(hash);
 		}
 
 		BindlessResourceRef<RHI::SamplerState> samplerState = BindlessResource<RHI::SamplerState>::CreateRef(samplerInfo);
-		s_rendererData->samplers[hash] = samplerState;
+		m_samplers[hash] = samplerState;
 
 		return samplerState;
 	}
@@ -463,8 +451,8 @@ namespace Volt
 		// Full white 1x1
 		{
 			constexpr uint32_t PIXEL_DATA = 0xffffffff;
-			s_rendererData->defaultResources.whiteTexture = Texture2D::Create(RHI::PixelFormat::R8G8B8A8_UNORM, 1, 1, &PIXEL_DATA);
-			s_rendererData->defaultResources.whiteTexture->handle = 0;
+			m_defaultResources.whiteTexture = Texture2D::Create(RHI::PixelFormat::R8G8B8A8_UNORM, 1, 1, &PIXEL_DATA);
+			m_defaultResources.whiteTexture->handle = 0;
 		}
 
 		// Full black cube 1x1
@@ -480,14 +468,14 @@ namespace Volt
 			imageSpec.isCubeMap = true;
 			imageSpec.debugName = "BlackCube";
 
-			s_rendererData->defaultResources.blackCubeTexture = RHI::Image::Create(imageSpec, PIXEL_DATA);
+			m_defaultResources.blackCubeTexture = RHI::Image::Create(imageSpec, PIXEL_DATA);
 		}
 
 		GenerateBRDFLuT();
 
 		// Default material
 		{
-			s_rendererData->defaultResources.defaultMaterial = AssetManager::CreateMemoryAsset<Material>("DefaultMaterial", ShaderMap::GetComputePipeline("OpaqueDefault"));
+			m_defaultResources.defaultMaterial = AssetManager::CreateMemoryAsset<Material>("DefaultMaterial", ShaderMap::GetComputePipeline("OpaqueDefault"));
 		}
 	}
 	
@@ -502,12 +490,12 @@ namespace Volt
 		spec.height = BRDFSize;
 		spec.debugName = "BRDFLut";
 
-		s_rendererData->defaultResources.BRDFLuT = RHI::Image::Create(spec);
+		m_defaultResources.BRDFLuT = RHI::Image::Create(spec);
 
 		RefPtr<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 
 		RenderGraph renderGraph{ commandBuffer };
-		RenderGraphImageHandle targetImageHandle = renderGraph.AddExternalImage(s_rendererData->defaultResources.BRDFLuT);
+		RenderGraphImageHandle targetImageHandle = renderGraph.AddExternalImage(m_defaultResources.BRDFLuT);
 
 		renderGraph.AddPass("BRDF Pass", 
 		[&](RenderGraph::Builder& builder) 

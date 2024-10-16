@@ -6,6 +6,8 @@
 
 namespace Volt
 {
+	VT_REGISTER_SUBSYSTEM(DynamicLibraryManager, PreEngine, 0);
+
 	DynamicLibraryManager::DynamicLibraryManager()
 	{
 		VT_ASSERT(s_instance == nullptr);

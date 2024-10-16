@@ -1,23 +1,26 @@
 #include "jspch.h"
 #include "JobSystem.h"
 
+#include <EventSystem/ApplicationEvents.h>
+
 #include <CoreUtilities/ThreadUtilities.h>
 #include <CoreUtilities/Atomic.h>
 #include <CoreUtilities/Random.h>
 
 namespace Volt
 {
+	VT_REGISTER_SUBSYSTEM(JobSystem, PreEngine, 3);
+
 	JobSystem::JobSystem()
 	{
 		VT_ENSURE(s_instance == nullptr);
 		s_instance = this;
 
-		Initialize();
+		RegisterListener<AppUpdateEvent>(VT_BIND_EVENT_FN(JobSystem::OnUpdate));
 	}
 
 	JobSystem::~JobSystem()
 	{
-		Shutdown();
 		s_instance = nullptr;
 	}
 
@@ -152,6 +155,12 @@ namespace Volt
 		{
 			w.join();
 		}
+	}
+
+	bool JobSystem::OnUpdate(AppUpdateEvent& event)
+	{
+		ExecuteMainThreadJobs();
+		return false;
 	}
 
 	JobSystem::AllocatedJob JobSystem::AllocateJobInternal(ExecutionPolicy executionPolicy, const std::function<void()>& task, JobID parentJob)

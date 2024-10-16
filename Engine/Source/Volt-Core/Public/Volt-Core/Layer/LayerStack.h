@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Volt/Core/Base.h"
+#include "Volt-Core/Config.h"
 
-
+#include <CoreUtilities/Containers/Vector.h>
 
 namespace Volt
 {
 	class Layer;
-	class LayerStack
+	class VTCORE_API LayerStack
 	{
 	public:
 		LayerStack();

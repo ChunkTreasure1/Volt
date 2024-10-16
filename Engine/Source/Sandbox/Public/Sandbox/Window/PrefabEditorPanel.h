@@ -5,8 +5,9 @@
 #include "Sandbox/Window/SceneViewPanel.h"
 #include "Sandbox/Window/PropertiesPanel.h"
 
-#include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Scene/Entity.h>
+
+#include <EventSystem/ApplicationEvents.h>
 
 namespace Volt
 {

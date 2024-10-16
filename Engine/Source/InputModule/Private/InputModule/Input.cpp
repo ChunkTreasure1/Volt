@@ -4,12 +4,14 @@
 #include "Events/KeyboardEvents.h"
 #include "Events/MouseEvents.h"
 
-#include "EventSystem/EventSystem.h"
+#include <EventSystem/EventSystem.h>
 
 #include <glm/vec2.hpp>
 
 namespace Volt
 {
+	VT_REGISTER_SUBSYSTEM(Input, PreEngine, 2);
+
 	Input::Input()
 	{
 		VT_ENSURE(s_instance == nullptr);
@@ -53,17 +55,13 @@ namespace Volt
 			s_instance->m_mousePos = { moveEvent.GetX(), moveEvent.GetY() };
 			return false;
 		});
+
+		RegisterListener<AppPostFrameUpdateEvent>(VT_BIND_EVENT_FN(Input::OnPostFrameUpdateEvent));
 	}
 
 	Input::~Input()
 	{
 		s_instance = nullptr;
-	}
-
-	void Input::Update()
-	{
-		// Reset all frame events
-		memset(m_frameKeyStateEvents.data(), 0, sizeof(KeyState) * m_frameKeyStateEvents.size());
 	}
 
 	Vector<int> Input::GetAllPressedButtons()
@@ -154,6 +152,14 @@ namespace Volt
 	const glm::vec2& Input::GetViewportMousePosition()
 	{
 		return s_instance->m_viewportMousePos;
+	}
+
+	bool Input::OnPostFrameUpdateEvent(AppPostFrameUpdateEvent& event)
+	{
+		// Reset all frame events
+		memset(m_frameKeyStateEvents.data(), 0, sizeof(KeyState) * m_frameKeyStateEvents.size());
+
+		return false;
 	}
 
 	void Input::SetViewportMousePosition(const glm::vec2& viewportPos)

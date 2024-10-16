@@ -27,7 +27,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <Volt/Core/Profiling.h>
+#include <CoreUtilities/Profiling/Profiling.h>
 
 #include <LogModule/Log.h>
 #include <CoreUtilities/Containers/Vector.h>

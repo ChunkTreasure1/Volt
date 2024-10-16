@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Volt/Core/Layer/Layer.h>
-#include <Volt/Events/ApplicationEvents.h>
+#include <Volt-Core/Layer/Layer.h>
 
 #include <EventSystem/EventListener.h>
+#include <EventSystem/ApplicationEvents.h>
 
 namespace Volt
 {

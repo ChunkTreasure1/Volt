@@ -89,7 +89,6 @@ namespace Volt
 		uint32_t GetVersion() const override { return 1; }
 
 	private:
-		friend class FbxImporter;
 		friend class FbxSourceImporter;
 		friend class SkeletonImporter;
 		friend class SkeletonSerializer;

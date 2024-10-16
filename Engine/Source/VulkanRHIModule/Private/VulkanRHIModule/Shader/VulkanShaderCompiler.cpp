@@ -68,7 +68,8 @@ namespace Volt::RHI
 	}
 
 	VulkanShaderCompiler::VulkanShaderCompiler(const ShaderCompilerCreateInfo& createInfo)
-		: m_includeDirectories(createInfo.includeDirectories), m_macros(createInfo.initialMacros), m_flags(createInfo.flags)
+		: m_includeDirectories(createInfo.includeDirectories), m_macros(createInfo.initialMacros), m_flags(createInfo.flags), 
+		m_shaderCache(createInfo.shaderCache)
 	{
 		VT_LOGC(Trace, LogVulkanRHI, "Initializing VulkanShaderCompiler");
 		DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&m_hlslCompiler));
@@ -88,7 +89,7 @@ namespace Volt::RHI
 		// First try and get cached shader
 		if (!specification.forceCompile)
 		{
-			const auto cachedResult = ShaderCache::TryGetCachedShader(specification);
+			const auto cachedResult = m_shaderCache->TryGetCachedShader(specification);
 			if (cachedResult.data.IsValid())
 			{
 				return cachedResult.data;
@@ -106,12 +107,12 @@ namespace Volt::RHI
 		// If compilation fails, we try to get the cached version.
 		if (result.result != ShaderCompiler::CompilationResult::Success)
 		{
-			const auto cachedResult = ShaderCache::TryGetCachedShader(specification);
+			const auto cachedResult = m_shaderCache->TryGetCachedShader(specification);
 			return cachedResult.data;
 		}
 
 		ReflectAllStages(specification, result);
-		ShaderCache::CacheShader(specification, result);
+		m_shaderCache->CacheShader(specification, result);
 
 		return result;
 	}

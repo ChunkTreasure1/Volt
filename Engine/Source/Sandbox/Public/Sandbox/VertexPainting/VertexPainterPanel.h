@@ -2,10 +2,9 @@
 #include "Sandbox/Camera/EditorCameraController.h"
 #include "Sandbox/Window/EditorWindow.h"
 
-#include <InputModule/Events/KeyboardEvents.h>
 #include <WindowModule/Events/WindowEvents.h>
-#include <Volt/Events/ApplicationEvents.h>
 
+#include <EventSystem/ApplicationEvents.h>
 
 #include <EntitySystem/EntityID.h>
 
@@ -25,7 +24,7 @@ public:
 	void BillboardDraw();
 	void CameraDraw();
 
-	bool UpdateDeltaTime(Volt::AppUpdateEvent deltaTime) { m_deltaTime = deltaTime.GetTimestep(); return false; }
+	bool UpdateDeltaTime(Volt::AppUpdateEvent& deltaTime) { m_deltaTime = deltaTime.GetTimestep(); return false; }
 
 	bool AddPainted(Volt::Entity entity);
 	void Paint(float color);

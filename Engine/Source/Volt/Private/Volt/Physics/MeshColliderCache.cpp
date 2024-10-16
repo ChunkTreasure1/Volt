@@ -1,9 +1,9 @@
 #include "vtpch.h"
 #include "Volt/Physics/MeshColliderCache.h"
 
-#include "Volt/Core/BinarySerializer.h"
-
 #include <Volt-Core/Project/ProjectManager.h>
+
+#include <CoreUtilities/FileIO/BinaryStreamWriter.h>
 #include <CoreUtilities/FileSystem.h>
 
 namespace Volt
@@ -107,22 +107,21 @@ namespace Volt
 	void MeshColliderCache::SaveToFile(const std::string& colliderName, const MeshColliderCacheData& cacheData)
 	{
 		const std::filesystem::path cachedPath = Utility::GetOrCreateCachePath() / (colliderName + ".vtmeshcoll");
-		BinarySerializer serializer{ cachedPath };
+		BinaryStreamWriter streamWriter;
 
 		const size_t count = cacheData.colliderData.size();
-		serializer.Serialize(count);
+		streamWriter.Write(count);
 
 		for (const auto& mesh : cacheData.colliderData)
 		{
 			const size_t size = mesh.data.GetSize();
 
-			serializer.Serialize(mesh.transform);
-			serializer.Serialize(size);
-			serializer.Serialize(mesh.data.As<uint8_t>(), size);
+			streamWriter.Write(mesh.transform);
+			streamWriter.Write(size);
+			streamWriter.Write(mesh.data);
 		}
 
-		serializer.WriteToFile();
-
+		streamWriter.WriteToDisk(cachedPath, false, 0);
 		myCache.emplace(colliderName, cacheData);
 	}
 

@@ -15,19 +15,17 @@ namespace Volt::RHI
 		uint64_t timeSinceLastCompile = 0;
 	};
 
-	class VTRHI_API ShaderCache
+	class VTRHI_API ShaderCache : public RefCounted
 	{
 	public:
 		ShaderCache(const ShaderCacheCreateInfo& cacheInfo);
 		~ShaderCache();
 
-		static CachedShaderResult TryGetCachedShader(const ShaderCompiler::Specification& shaderSpecification);
-		static void CacheShader(const ShaderCompiler::Specification& shaderSpec, const ShaderCompiler::CompilationResultData& compilationResult);
+		CachedShaderResult TryGetCachedShader(const ShaderCompiler::Specification& shaderSpecification);
+		void CacheShader(const ShaderCompiler::Specification& shaderSpec, const ShaderCompiler::CompilationResultData& compilationResult);
 
 	private:
 		std::filesystem::path GetCachedFilePath(const ShaderCompiler::Specification& shaderSpec) const;
-
-		inline static ShaderCache* s_instance = nullptr;
 		ShaderCacheCreateInfo m_info;
 	};
 }

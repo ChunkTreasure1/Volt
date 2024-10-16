@@ -108,7 +108,6 @@ namespace Volt
 
 		static const PoseData GetFrameDataFromAnimation(Animation& animation, const float aNormalizedTime);
 
-		friend class FbxImporter;
 		friend class FbxSourceImporter;
 		friend class AnimationImporter;
 		friend class AnimationSerializer;

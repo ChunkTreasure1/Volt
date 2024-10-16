@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Volt/Plugin/Plugin.h>
+#include <Volt-Core/Plugin/Plugin.h>
 
 class PLUGIN_API ExamplePlugin : public Volt::Plugin
 {

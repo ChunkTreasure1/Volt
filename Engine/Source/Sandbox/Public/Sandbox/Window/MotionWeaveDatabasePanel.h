@@ -2,7 +2,7 @@
 
 #include "Sandbox/Window/EditorWindow.h"
 
-#include <Volt/Events/ApplicationEvents.h>
+#include <EventSystem/ApplicationEvents.h>
 
 namespace Volt
 {

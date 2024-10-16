@@ -24,7 +24,7 @@ namespace Volt
 	{
 		VT_ASSERT_MSG(!s_instance, "AssetManager already exists!");
 		s_instance = this;
-
+	
 		Initialize();
 	}
 

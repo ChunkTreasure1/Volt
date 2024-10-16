@@ -26,6 +26,9 @@ namespace VoltSharpmake
 			conf.AddPublicDependency<LogModule>(target);
 			conf.AddPublicDependency<EventSystemModule>(target);
 			conf.AddPublicDependency<AssetSystemModule>(target);
+			conf.AddPublicDependency<EntitySystemModule>(target);
+			conf.AddPublicDependency<WindowModule>(target);
+			conf.AddPublicDependency<RHIModule>(target);
 		}
     }
 }

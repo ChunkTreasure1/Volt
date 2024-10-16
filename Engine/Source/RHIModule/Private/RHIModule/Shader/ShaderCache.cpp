@@ -80,26 +80,21 @@ namespace Volt::RHI
 	ShaderCache::ShaderCache(const ShaderCacheCreateInfo& cacheInfo)
 		: m_info(cacheInfo)
 	{
-		VT_ASSERT(s_instance == nullptr);
-		s_instance = this;
 	}
 
 	ShaderCache::~ShaderCache()
 	{
-		s_instance = nullptr;
 	}
 
 	CachedShaderResult ShaderCache::TryGetCachedShader(const ShaderCompiler::Specification& shaderSpecification)
 	{
-		VT_ASSERT(s_instance);
-
 		uint64_t lastWriteTime = 0;
 		for (const auto& [stage, sourceInfo] : shaderSpecification.shaderSourceInfo)
 		{
 			lastWriteTime = std::max(lastWriteTime, TimeUtility::GetLastWriteTime(sourceInfo.sourceEntry.filePath));
 		}
 
-		BinaryStreamReader streamReader{ s_instance->GetCachedFilePath(shaderSpecification) };
+		BinaryStreamReader streamReader{ GetCachedFilePath(shaderSpecification) };
 		if (!streamReader.IsStreamValid())
 		{
 			return {};
@@ -187,8 +182,6 @@ namespace Volt::RHI
 
 	void ShaderCache::CacheShader(const ShaderCompiler::Specification& shaderSpec, const ShaderCompiler::CompilationResultData& compilationResult)
 	{
-		VT_ASSERT(s_instance);
-
 		BinaryStreamWriter streamWriter{};
 
 		CachedShaderHeader cachedShaderHeader{};
@@ -272,7 +265,7 @@ namespace Volt::RHI
 		streamWriter.Write(images);
 		streamWriter.Write(samplers);
 
-		streamWriter.WriteToDisk(s_instance->GetCachedFilePath(shaderSpec), false, 0);
+		streamWriter.WriteToDisk(GetCachedFilePath(shaderSpec), false, 0);
 	}
 
 	std::filesystem::path ShaderCache::GetCachedFilePath(const ShaderCompiler::Specification& shaderSpec) const
@@ -292,7 +285,7 @@ namespace Volt::RHI
 			}
 		}
 
-		const auto cacheDir = s_instance->m_info.cacheDirectory / Utility::GetShaderCacheSubDirectory();
+		const auto cacheDir = m_info.cacheDirectory / Utility::GetShaderCacheSubDirectory();
 		const auto cachePath = cacheDir / (std::to_string(hash) + ".vtshcache");
 
 		if (!std::filesystem::exists(cacheDir))

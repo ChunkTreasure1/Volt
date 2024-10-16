@@ -4,7 +4,6 @@
 #include "Sandbox/Utility/Theme.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Events/ApplicationEvents.h>
 #include <Volt/Utility/UIUtility.h>
 
 #include <Volt-Core/Project/ProjectManager.h>
@@ -14,6 +13,7 @@
 #include <WindowModule/Window.h>
 
 #include <EventSystem/EventSystem.h>
+#include <EventSystem/ApplicationEvents.h>
 
 #include <imgui.h>
 

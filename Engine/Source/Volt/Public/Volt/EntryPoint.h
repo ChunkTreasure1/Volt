@@ -1,11 +1,6 @@
 #pragma once
 
 #include "Volt/Core/Application.h"
-#include "Volt/Core/Allocator.h"
-
-#include <CoreUtilities/Platform/Windows/VoltWindows.h>
-#include <shellapi.h>
-
 #include <filesystem>
 
 extern Volt::Application* Volt::CreateApplication(const std::filesystem::path& appPath);
@@ -25,8 +20,6 @@ namespace Volt
 		std::filesystem::path dmpPath;
 
 		Create(appPath);
-
-		Allocator::CheckAllocations();
 		return 0;
 	}
 }

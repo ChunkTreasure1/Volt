@@ -1,12 +1,13 @@
 #pragma once
 
 #include "JobSystem/Job.h"
-#include "JobSystem/JobQueue.h"
 #include "JobSystem/JobQueueLocking.h"
 #include "JobSystem/JobAllocator.h"
 
+#include <SubSystem/SubSystem.h>
+#include <EventSystem/EventListener.h>
+
 #include <CoreUtilities/Containers/Vector.h>
-#include <CoreUtilities/Containers/Map.h>
 
 namespace Volt
 {
@@ -15,7 +16,8 @@ namespace Volt
 		long unfinishedJobs = 0;
 	};
 
-	class VTJS_API JobSystem
+	class AppUpdateEvent;
+	class VTJS_API JobSystem : public SubSystem, EventListener
 	{
 	public:
 		JobSystem();
@@ -33,7 +35,7 @@ namespace Volt
 		static void WaitForJob(JobID jobId);
 		static void RunJob(JobID jobId);
 
-		void ExecuteMainThreadJobs();
+		VT_DECLARE_SUBSYSTEM("{FBB8F365-99B3-416D-84EA-702BD4F56962}"_guid)
 
 	private:
 		struct InternalState
@@ -60,8 +62,12 @@ namespace Volt
 
 		inline static constexpr uint32_t MAX_JOB_GROUP_COUNT = 1024;
 
-		void Initialize();
-		void Shutdown();
+		void Initialize() override;
+		void Shutdown() override;
+
+		bool OnUpdate(AppUpdateEvent& event);
+
+		void ExecuteMainThreadJobs();
 
 		AllocatedJob AllocateJobInternal(ExecutionPolicy executionPolicy, const std::function<void()>& task, JobID parentJob = INVALID_JOB_ID);
 

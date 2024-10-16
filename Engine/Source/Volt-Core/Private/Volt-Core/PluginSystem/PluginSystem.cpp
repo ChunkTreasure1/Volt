@@ -10,9 +10,11 @@
 
 namespace Volt
 {
-	PluginSystem::PluginSystem(PluginRegistry& pluginRegistry)
-		: m_pluginRegistry(pluginRegistry)
+	VT_REGISTER_SUBSYSTEM(PluginSystem, PreEngine, 0);
+
+	void PluginSystem::SetPluginRegistry(PluginRegistry* pluginRegistry)
 	{
+		m_pluginRegistry = pluginRegistry;
 	}
 
 	void PluginSystem::LoadPlugins(const Project& project)
@@ -29,7 +31,7 @@ namespace Volt
 			{
 				for (const auto& pluginDependency : pluginDef.pluginDependencies)
 				{
-					const auto& dependencyDefinition = m_pluginRegistry.GetPluginDefinitionByName(pluginDependency);
+					const auto& dependencyDefinition = m_pluginRegistry->GetPluginDefinitionByName(pluginDependency);
 					if (dependencyDefinition.IsValid())
 					{
 						pluginsToLoad.emplace_back(dependencyDefinition);
@@ -60,7 +62,7 @@ namespace Volt
 
 	void PluginSystem::InitializePlugins()
 	{
-		const auto& dependencyGraph = m_pluginRegistry.GetPluginDependencyGraph();
+		const auto& dependencyGraph = m_pluginRegistry->GetPluginDependencyGraph();
 
 		Vector<UUID64> initialPlugins;
 		for (const auto& node : dependencyGraph.GetNodes())

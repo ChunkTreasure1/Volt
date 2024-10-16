@@ -2,13 +2,15 @@
 
 #include "Volt-Core/Config.h"
 
+#include <SubSystem/SubSystem.h>
+
 #include <CoreUtilities/Containers/Map.h>
 
 namespace Volt
 {
 	typedef void* DLLHandle;
 
-	class VTCORE_API DynamicLibraryManager
+	class VTCORE_API DynamicLibraryManager : public SubSystem
 	{
 	public:
 		DynamicLibraryManager();
@@ -18,6 +20,8 @@ namespace Volt
 		bool UnloadDynamicLibrary(const std::filesystem::path& binaryFilepath);
 
 		VT_NODISCARD VT_INLINE static DynamicLibraryManager& Get() { return *s_instance; }
+
+		VT_DECLARE_SUBSYSTEM("{FCB778C9-2E7F-4E47-AFC7-A6186AC89ACE}"_guid)
 
 	private:
 		inline static DynamicLibraryManager* s_instance = nullptr;

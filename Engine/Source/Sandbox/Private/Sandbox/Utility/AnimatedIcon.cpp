@@ -4,11 +4,10 @@
 #include <Volt/Asset/SourceAssetImporters/ImportConfigs.h>
 
 #include <Volt/Rendering/Texture/Texture2D.h>
-#include <Volt/Events/ApplicationEvents.h>
 
 #include <AssetSystem/SourceAssetManager.h>
 
-#include <EventSystem/Event.h>
+#include <EventSystem/ApplicationEvents.h>
 
 AnimatedIcon::AnimatedIcon(const std::filesystem::path& firstFrame, uint32_t frameCount, float animTime)
 	: m_animationTime(animTime), m_frameCount(frameCount), m_perFrameTime(animTime / (float)frameCount)
